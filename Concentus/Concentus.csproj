@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1313F7F9-7276-46E4-9B22-BF56DC95800C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Concentus</RootNamespace>
+    <AssemblyName>Concentus</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\Concentus.Celt\Concentus.Celt.csproj">
+      <Project>{02c91902-7d21-4b53-b83f-f6f16473d7e0}</Project>
+      <Name>Concentus.Celt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Concentus.Common\Concentus.Common.csproj">
+      <Project>{6cf61097-2f5e-4b15-96ab-baefea95df83}</Project>
+      <Name>Concentus.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Concentus.Silk\Concentus.Silk.csproj">
+      <Project>{5b2f9874-e004-4694-9cc1-8ac9da0d9a3c}</Project>
+      <Name>Concentus.Silk</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="analysis.cs" />
+    <Compile Include="downmix_func.cs" />
+    <Compile Include="mlp.cs" />
+    <Compile Include="opus.cs" />
+    <Compile Include="opus_decoder.cs" />
+    <Compile Include="opus_encoder.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="repacketizer.cs" />
+    <Compile Include="Structs\ChannelLayout.cs" />
+    <Compile Include="Structs\MLP.cs" />
+    <Compile Include="Structs\OpusDecoder.cs" />
+    <Compile Include="Structs\OpusEncoder.cs" />
+    <Compile Include="Structs\OpusRepacketizer.cs" />
+    <Compile Include="Structs\StereoWidthState.cs" />
+    <Compile Include="Structs\TonalityAnalysisState.cs" />
+    <Compile Include="Tables.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
