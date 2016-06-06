@@ -81,8 +81,8 @@ namespace Concentus
             return st;
         }
 
-        public static void smooth_fade(Pointer<int> in1, Pointer<int> in2,
-              Pointer<int> output, int overlap, int channels,
+        public static void smooth_fade(Pointer<short> in1, Pointer<short> in2,
+              Pointer<short> output, int overlap, int channels,
       Pointer<int> window, int Fs)
         {
             int i, c;
@@ -92,8 +92,8 @@ namespace Concentus
                 for (i = 0; i < overlap; i++)
                 {
                     int w = Inlines.MULT16_16_Q15(window[i * inc], window[i * inc]);
-                    output[i * channels + c] = Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, in2[i * channels + c]),
-                                   CeltConstants.Q15ONE - w, in1[i * channels + c]), 15);
+                    output[i * channels + c] = Inlines.CHOP16(Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, in2[i * channels + c]),
+                                   CeltConstants.Q15ONE - w, in1[i * channels + c]), 15));
                 }
             }
         }
@@ -116,7 +116,7 @@ namespace Concentus
         }
 
         public static int opus_decode_frame(OpusDecoder st, Pointer<byte> data,
-      int len, Pointer<int> pcm, int frame_size, int decode_fec)
+      int len, Pointer<short> pcm, int frame_size, int decode_fec)
         {
             silk_decoder silk_dec;
             CELTDecoder celt_dec;
@@ -124,14 +124,14 @@ namespace Concentus
             ec_ctx dec = new ec_ctx(); // porting note: stack var
             int silk_frame_size;
             int pcm_silk_size;
-            Pointer<int> pcm_silk;
+            Pointer<short> pcm_silk;
             int pcm_transition_silk_size;
-            Pointer<int> pcm_transition_silk;
+            Pointer<short> pcm_transition_silk;
             int pcm_transition_celt_size;
-            Pointer<int> pcm_transition_celt;
-            Pointer<int> pcm_transition = null;
+            Pointer<short> pcm_transition_celt;
+            Pointer<short> pcm_transition = null;
             int redundant_audio_size;
-            Pointer<int> redundant_audio;
+            Pointer<short> redundant_audio;
 
             int audiosize;
             int mode;
@@ -230,7 +230,7 @@ namespace Concentus
                 else
                     pcm_transition_silk_size = F5 * st.channels;
             }
-            pcm_transition_celt = Pointer.Malloc<int>(pcm_transition_celt_size);
+            pcm_transition_celt = Pointer.Malloc<short>(pcm_transition_celt_size);
             if (transition != 0 && mode == OpusMode.MODE_CELT_ONLY)
             {
                 pcm_transition = pcm_transition_celt;
@@ -248,13 +248,13 @@ namespace Concentus
 
             /* Don't allocate any memory when in CELT-only mode */
             pcm_silk_size = (mode != OpusMode.MODE_CELT_ONLY && (celt_accum == 0)) ? Inlines.IMAX(F10, frame_size) * st.channels : 0;
-            pcm_silk = Pointer.Malloc<int>(pcm_silk_size);
+            pcm_silk = Pointer.Malloc<short>(pcm_silk_size);
 
             /* SILK processing */
             if (mode != OpusMode.MODE_CELT_ONLY)
             {
                 int lost_flag, decoded_samples;
-                Pointer<int> pcm_ptr;
+                Pointer<short> pcm_ptr;
 
                 if (celt_accum != 0)
                     pcm_ptr = pcm;
@@ -386,7 +386,7 @@ namespace Concentus
                 pcm_transition_silk_size = 0;
             }
 
-            pcm_transition_silk = Pointer.Malloc<int>(pcm_transition_silk_size);
+            pcm_transition_silk = Pointer.Malloc<short>(pcm_transition_silk_size);
 
             if (transition != 0 && mode != OpusMode.MODE_CELT_ONLY)
             {
@@ -396,7 +396,7 @@ namespace Concentus
 
             /* Only allocation memory for redundancy if/when needed */
             redundant_audio_size = redundancy != 0 ? F5 * st.channels : 0;
-            redundant_audio = Pointer.Malloc<int>(redundant_audio_size);
+            redundant_audio = Pointer.Malloc<short>(redundant_audio_size);
 
             /* 5 ms redundant frame for CELT.SILK*/
             if (redundancy != 0 && celt_to_silk != 0)
@@ -505,7 +505,7 @@ namespace Concentus
                 {
                     int x;
                     x = Inlines.MULT16_32_P16(pcm[i], gain);
-                    pcm[i] = Inlines.SATURATE(x, 32767);
+                    pcm[i] = (short)Inlines.SATURATE(x, 32767);
                 }
             }
 
@@ -517,26 +517,20 @@ namespace Concentus
             st.prev_mode = mode;
             st.prev_redundancy = (redundancy != 0 && celt_to_silk == 0) ? 1 : 0;
 
-            if (celt_ret >= 0)
-            {
-                if (OPUS_CHECK_ARRAY(pcm, audiosize * st.channels))
-                    OPUS_PRINT_INT(audiosize);
-            }
-
             return celt_ret < 0 ? celt_ret : audiosize;
-
         }
 
         public static int opus_decode_native(OpusDecoder st, Pointer<byte> data,
-          int len, Pointer<int> pcm, int frame_size, int decode_fec,
-          int self_delimited, Pointer<int> packet_offset, int soft_clip)
+          int len, Pointer<short> pcm, int frame_size, int decode_fec,
+          int self_delimited, BoxedValue<int> packet_offset, int soft_clip)
         {
             int i, nb_samples;
             int count, offset;
             byte toc;
             int packet_frame_size, packet_bandwidth, packet_mode, packet_stream_channels;
             /* 48 x 2.5 ms = 120 ms */
-            int[] size = new int[48];
+            // fixme: make sure these values can fit in an int16
+            short[] size = new short[48];
             if (decode_fec < 0 || decode_fec > 1)
                 return OpusError.OPUS_BAD_ARG;
             /* For FEC/PLC, frame_size has to be to have a multiple of 2.5 ms */
@@ -554,8 +548,6 @@ namespace Concentus
                     pcm_count += ret;
                 } while (pcm_count < frame_size);
                 Inlines.OpusAssert(pcm_count == frame_size);
-                if (OPUS_CHECK_ARRAY(pcm, pcm_count * st.channels))
-                    OPUS_PRINT_INT(pcm_count);
                 st.last_packet_duration = pcm_count;
                 return pcm_count;
             }
@@ -569,12 +561,10 @@ namespace Concentus
 
             BoxedValue<byte> boxed_toc = new BoxedValue<byte>();
             BoxedValue<int> boxed_offset = new BoxedValue<int>();
-            BoxedValue<int> boxed_packet_offset = new BoxedValue<int>();
             count = opus.opus_packet_parse_impl(data, len, self_delimited, boxed_toc, null,
-                                           size.GetPointer(), boxed_offset, boxed_packet_offset);
+                                           size.GetPointer(), boxed_offset, packet_offset);
             toc = boxed_toc.Val;
             offset = boxed_offset.Val;
-            packet_offset = boxed_packet_offset.Val;
 
             if (count < 0)
                 return count;
@@ -610,8 +600,6 @@ namespace Concentus
                 if (ret < 0)
                     return ret;
                 else {
-                    if (OPUS_CHECK_ARRAY(pcm, frame_size * st.channels))
-                        OPUS_PRINT_INT(frame_size);
                     st.last_packet_duration = frame_size;
                     return frame_size;
                 }
@@ -638,133 +626,121 @@ namespace Concentus
                 nb_samples += ret;
             }
             st.last_packet_duration = nb_samples;
-            if (OPUS_CHECK_ARRAY(pcm, nb_samples * st.channels))
-                OPUS_PRINT_INT(nb_samples);
 
             return nb_samples;
         }
 
         public static int opus_decode(OpusDecoder st, Pointer<byte> data,
-             int len, Pointer<int> pcm, int frame_size, int decode_fec)
+             int len, Pointer<short> pcm, int frame_size, int decode_fec)
         {
             if (frame_size <= 0)
                 return OpusError.OPUS_BAD_ARG;
-            return opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, null, 0);
+            int returnVal = opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, null, 0);
+            
+            return returnVal;
         }
 
 
-        //public static int opus_decoder_ctl(OpusDecoder st, int request, params object[] vargs)
-        //{
-        //    int ret = OPUS_OK;
-        //    va_list ap;
-        //    void* silk_dec;
-        //    CELTDecoder* celt_dec;
-
-        //    silk_dec = (char*)st + st.silk_dec_offset;
-        //    celt_dec = (CELTDecoder*)((char*)st + st.celt_dec_offset);
-
-
-        //    va_start(ap, request);
-
-        //    switch (request)
-        //    {
-        //        case OPUS_GET_BANDWIDTH_REQUEST:
-        //            {
-        //                int* value = va_arg(ap, int *);
-        //                if (!value)
-        //                {
-        //                    goto bad_arg;
-        //                }
-        //                *value = st.bandwidth;
-        //            }
-        //            break;
-        //        case OPUS_GET_FINAL_RANGE_REQUEST:
-        //            {
-        //                opus_uint32* value = va_arg(ap, opus_uint32 *);
-        //                if (!value)
-        //                {
-        //                    goto bad_arg;
-        //                }
-        //                *value = st.rangeFinal;
-        //            }
-        //            break;
-        //        case OPUS_RESET_STATE:
-        //            {
-        //                OPUS_CLEAR((char*)&st.OPUS_DECODER_RESET_START,
-        //                      sizeof(OpusDecoder) -
-        //                      ((char*)&st.OPUS_DECODER_RESET_START - (char*)st));
-
-        //                celt_decoder.opus_custom_decoder_ctl(celt_dec, OPUS_RESET_STATE);
-        //                silk_InitDecoder(silk_dec);
-        //                st.stream_channels = st.channels;
-        //                st.frame_size = st.Fs / 400;
-        //            }
-        //            break;
-        //        case OPUS_GET_SAMPLE_RATE_REQUEST:
-        //            {
-        //                int* value = va_arg(ap, int *);
-        //                if (!value)
-        //                {
-        //                    goto bad_arg;
-        //                }
-        //                *value = st.Fs;
-        //            }
-        //            break;
-        //        case OPUS_GET_PITCH_REQUEST:
-        //            {
-        //                int* value = va_arg(ap, int *);
-        //                if (!value)
-        //                {
-        //                    goto bad_arg;
-        //                }
-        //                if (st.prev_mode == OpusMode.MODE_CELT_ONLY)
-        //                    celt_decoder.opus_custom_decoder_ctl(celt_dec, OPUS_GET_PITCH(value));
-        //                else
-        //                    *value = st.DecControl.prevPitchLag;
-        //            }
-        //            break;
-        //        case OPUS_GET_GAIN_REQUEST:
-        //            {
-        //                int* value = va_arg(ap, int *);
-        //                if (!value)
-        //                {
-        //                    goto bad_arg;
-        //                }
-        //                *value = st.decode_gain;
-        //            }
-        //            break;
-        //        case OPUS_SET_GAIN_REQUEST:
-        //            {
-        //                int value = va_arg(ap, int);
-        //                if (value < -32768 || value > 32767)
-        //                {
-        //                    goto bad_arg;
-        //                }
-        //                st.decode_gain = value;
-        //            }
-        //            break;
-        //        case OPUS_GET_LAST_PACKET_DURATION_REQUEST:
-        //            {
-        //                opus_uint32* value = va_arg(ap, opus_uint32 *);
-        //                if (!value)
-        //                {
-        //                    goto bad_arg;
-        //                }
-        //                *value = st.last_packet_duration;
-        //            }
-        //            break;
-        //        default:
-        //            /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
-        //            ret = OPUS_UNIMPLEMENTED;
-        //            break;
-        //    }
-
-        //    va_end(ap);
-        //    return ret;
-        //bad_arg:
-        //    va_end(ap);
-        //    return OpusError.OPUS_BAD_ARG;
-        //}
+        public static int opus_decoder_ctl(OpusDecoder st, int request, params object[] vargs)
+        {
+            int ret = OpusError.OPUS_OK;
+            silk_decoder silk_dec = st.SilkDecoder;
+            CELTDecoder celt_dec = st.CeltDecoder;
+           
+            switch (request)
+            {
+                case OpusControl.OPUS_GET_BANDWIDTH_REQUEST:
+                    {
+                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        value.Val = st.bandwidth;
+                    }
+                    break;
+                case OpusControl.OPUS_GET_FINAL_RANGE_REQUEST:
+                    {
+                        BoxedValue<uint> value = vargs[0] as BoxedValue<uint>;
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                       value.Val = st.rangeFinal;
+                    }
+                    break;
+                case OpusControl.OPUS_RESET_STATE:
+                    {
+                        st.PartialReset();
+                        celt_decoder.opus_custom_decoder_ctl(celt_dec, OpusControl.OPUS_RESET_STATE);
+                        dec_API.silk_InitDecoder(silk_dec);
+                        st.stream_channels = st.channels;
+                        st.frame_size = st.Fs / 400;
+                    }
+                    break;
+                case OpusControl.OPUS_GET_SAMPLE_RATE_REQUEST:
+                    {
+                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        value.Val = st.Fs;
+                    }
+                    break;
+                case OpusControl.OPUS_GET_PITCH_REQUEST:
+                    {
+                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        if (st.prev_mode == OpusMode.MODE_CELT_ONLY)
+                            celt_decoder.opus_custom_decoder_ctl(celt_dec, OpusControl.OPUS_GET_PITCH_REQUEST, value);
+                        else
+                            value.Val = st.DecControl.prevPitchLag;
+                    }
+                    break;
+                case OpusControl.OPUS_GET_GAIN_REQUEST:
+                    {
+                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        value.Val = st.decode_gain;
+                    }
+                    break;
+                case OpusControl.OPUS_SET_GAIN_REQUEST:
+                    {
+                        int value = (int)vargs[0];
+                        if (value < -32768 || value > 32767)
+                        {
+                            goto bad_arg;
+                        }
+                        st.decode_gain = value;
+                    }
+                    break;
+                case OpusControl.OPUS_GET_LAST_PACKET_DURATION_REQUEST:
+                    {
+                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        value.Val = st.last_packet_duration;
+                    }
+                    break;
+                default:
+                    /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
+                    ret = OpusError.OPUS_UNIMPLEMENTED;
+                    break;
+            }
+            
+            return ret;
+        bad_arg:
+            return OpusError.OPUS_BAD_ARG;
+        }
 
         public static int opus_packet_get_bandwidth(Pointer<byte> data)
         {

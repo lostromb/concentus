@@ -87,7 +87,7 @@ namespace Concentus.Celt
 
 
 
-        public static void deemphasis(Pointer<Pointer<int>> input, Pointer<int> pcm, int N, int C, int downsample, Pointer<int> coef,
+        public static void deemphasis(Pointer<Pointer<int>> input, Pointer<short> pcm, int N, int C, int downsample, Pointer<int> coef,
               Pointer<int> mem, int accum)
         {
             int c;
@@ -102,7 +102,7 @@ namespace Concentus.Celt
             {
                 int j;
                 Pointer<int> x;
-                Pointer<int> y;
+                Pointer<short> y;
                 int m = mem[c];
                 x = input[c];
                 y = pcm.Point(c);
@@ -563,8 +563,8 @@ namespace Concentus.Celt
         }
 
         public static int celt_decode_with_ec(CELTDecoder st, Pointer<byte> data,
-              int len, Pointer<int> pcm, int frame_size, ec_ctx dec, int accum)
-        { // fixme should pcm be short?
+              int len, Pointer<short> pcm, int frame_size, ec_ctx dec, int accum)
+        {
             int c, i, N;
             int spread_decision;
             int bits;

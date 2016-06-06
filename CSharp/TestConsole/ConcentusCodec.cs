@@ -213,9 +213,6 @@ namespace TestConsole
 
         public class OpusDecompressionStream : IAudioDecompressionStream
         {
-            /// <summary>
-            /// The native pointer to the decoder state object
-            /// </summary>
             private OpusDecoder _hDecoder;
 
             private BasicBufferByte _incomingBytes;
@@ -251,25 +248,13 @@ namespace TestConsole
 
             public bool Initialize()
             {
-                //try
-                //{
-                //    IntPtr error;
-                //    _hDecoder = opus_decoder_create(_outputSampleRate, 1, out error);
-                //    if ((int)error != 0)
-                //    {
-                //        return false;
-                //    }
+                BoxedValue<int> error = new BoxedValue<int>();
+                _hDecoder = opus_decoder.opus_decoder_create(_outputSampleRate, 1, error);
+                if (error.Val != 0)
+                {
+                    return false;
+                }
 
-                //    return true;
-                //}
-                //catch (BadImageFormatException e)
-                //{
-                //    return false;
-                //}
-                //catch (DllNotFoundException)
-                //{
-                //    return false;
-                //}
                 return true;
             }
 
@@ -283,7 +268,7 @@ namespace TestConsole
                 }
 
                 // Assume the compression ratio will never be above 40:1
-                byte[] outputBuffer = new byte[_incomingBytes.Capacity() * 40];
+                short[] outputBuffer = new short[_incomingBytes.Capacity() * 40];
                 int outCursor = 0;
 
                 if (_nextPacketSize <= 0 && _incomingBytes.Available() >= 2)
@@ -291,32 +276,26 @@ namespace TestConsole
                     byte[] packetSize = _incomingBytes.Read(2);
                     _nextPacketSize = BitConverter.ToInt16(packetSize, 0);
                 }
+                
+                while (_nextPacketSize > 0 && _incomingBytes.Available() >= _nextPacketSize)
+                {
+                    byte[] nextPacketData = _incomingBytes.Read(_nextPacketSize);
+                    int thisFrameSize = opus_decoder.opus_decode(_hDecoder, nextPacketData.GetPointer(), _nextPacketSize, outputBuffer.GetPointer(outCursor), frameSize, 0);
+                    outCursor += thisFrameSize * 2;
 
-                //unsafe
-                //{
-                //    fixed (byte* bdec = outputBuffer)
-                //    {
-                //        while (_nextPacketSize > 0 && _incomingBytes.Available() >= _nextPacketSize)
-                //        {
-                //            byte[] nextPacketData = _incomingBytes.Read(_nextPacketSize);
-                //            IntPtr decodedPtr = new IntPtr((void*)(bdec + outCursor));
-                //            int thisFrameSize = opus_decode(_hDecoder, nextPacketData, _nextPacketSize, decodedPtr, frameSize, 0);
-                //            outCursor += thisFrameSize * 2;
+                    if (_incomingBytes.Available() >= 2)
+                    {
+                        byte[] packetSize = _incomingBytes.Read(2);
+                        _nextPacketSize = BitConverter.ToInt16(packetSize, 0);
+                    }
+                    else
+                    {
+                        _nextPacketSize = 0;
+                    }
+                }
 
-                //            if (_incomingBytes.Available() >= 2)
-                //            {
-                //                byte[] packetSize = _incomingBytes.Read(2);
-                //                _nextPacketSize = BitConverter.ToInt16(packetSize, 0);
-                //            }
-                //            else
-                //            {
-                //                _nextPacketSize = 0;
-                //            }
-                //        }
-                //    }
-                //}
-
-                short[] finalOutput = AudioMath.BytesToShorts(outputBuffer, 0, outCursor);
+                short[] finalOutput = new short[outCursor];
+                Array.Copy(outputBuffer, finalOutput, finalOutput.Length);
                 return new AudioChunk(finalOutput, _outputSampleRate);
             }
 
