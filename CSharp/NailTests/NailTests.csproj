@@ -97,17 +97,9 @@
     <Compile Include="TestVAD.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Concentus.Celt\Concentus.Celt.csproj">
-      <Project>{02c91902-7d21-4b53-b83f-f6f16473d7e0}</Project>
-      <Name>Concentus.Celt</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Concentus.Common\Concentus.Common.csproj">
-      <Project>{6cf61097-2f5e-4b15-96ab-baefea95df83}</Project>
-      <Name>Concentus.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Concentus.Silk\Concentus.Silk.csproj">
-      <Project>{5b2f9874-e004-4694-9cc1-8ac9da0d9a3c}</Project>
-      <Name>Concentus.Silk</Name>
+    <ProjectReference Include="..\Concentus\Concentus.csproj">
+      <Project>{1313f7f9-7276-46e4-9b22-bf56dc95800c}</Project>
+      <Name>Concentus</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

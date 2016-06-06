@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Concentus.Common;
 using System.IO;
 using Durandal.Common.Audio;
-using Concentus.Common.Enums;
+using Concentus.Opus.Enums;
 using Concentus;
 using Concentus.Structs;
 
