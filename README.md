@@ -1,1 +1,2 @@
-# concentus
+# Concentus
+Opus for Everyone
