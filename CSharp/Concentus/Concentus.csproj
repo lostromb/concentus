@@ -83,6 +83,7 @@
     <Compile Include="Opus\downmix_func.cs" />
     <Compile Include="Opus\mlp.cs" />
     <Compile Include="Opus\opus.cs" />
+    <Compile Include="Opus\opus_compare.cs" />
     <Compile Include="Opus\opus_decoder.cs" />
     <Compile Include="Opus\opus_encoder.cs" />
     <Compile Include="Opus\repacketizer.cs" />
