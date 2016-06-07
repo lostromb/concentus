@@ -264,9 +264,8 @@ namespace TestConsole
                 {
                     _incomingBytes.Write(input);
                 }
-
-                // Assume the compression ratio will never be above 40:1
-                short[] outputBuffer = new short[_incomingBytes.Capacity() * 40];
+                
+                short[] outputBuffer = new short[frameSize];
                 int outCursor = 0;
 
                 if (_nextPacketSize <= 0 && _incomingBytes.Available() >= 2)
