@@ -1,7 +1,10 @@
-﻿using Concentus.Celt.Structs;
+﻿using Concentus.Celt;
+using Concentus.Celt.Structs;
 using Concentus.Common;
 using Concentus.Common.CPlusPlus;
 using Concentus.Opus;
+using Concentus.Opus.Enums;
+using Concentus.Silk;
 using Concentus.Silk.Structs;
 using System;
 using System.Collections.Generic;
@@ -64,7 +67,7 @@ namespace Concentus.Structs
         public readonly silk_encoder SilkEncoder = new silk_encoder();
         public readonly CELTEncoder CeltEncoder = new CELTEncoder();
 
-        public void Reset()
+        internal void Reset()
         {
             silk_mode.Reset();
             application = 0;
@@ -93,7 +96,7 @@ namespace Concentus.Structs
         /// <summary>
         /// OPUS_ENCODER_RESET_START
         /// </summary>
-        public void PartialReset()
+        internal void PartialReset()
         {
             stream_channels = 0;
             hybrid_stereo_width_Q14 = 0;
@@ -114,6 +117,317 @@ namespace Concentus.Structs
             rangeFinal = 0;
             SilkEncoder.Reset();
             CeltEncoder.Reset();
+        }
+
+        public void ResetState()
+        {
+            silk_EncControlStruct dummy = new silk_EncControlStruct();
+            //st.analysis.Reset();
+
+            PartialReset();
+
+            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_RESET_STATE);
+            enc_API.silk_InitEncoder(SilkEncoder, arch, dummy);
+            stream_channels = channels;
+            hybrid_stereo_width_Q14 = 1 << 14;
+            prev_HB_gain = CeltConstants.Q15ONE;
+            first = 1;
+            mode = OpusMode.MODE_HYBRID;
+            bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+            variable_HP_smth2_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
+        }
+
+        public void SetApplication(int value)
+        {
+            if ((value != OpusApplication.OPUS_APPLICATION_VOIP && value != OpusApplication.OPUS_APPLICATION_AUDIO
+                    && value != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+                || (first == 0 && application != value))
+            {
+                throw new ArgumentException("Unsupported application");
+            }
+
+            application = value;
+        }
+
+        public int GetApplication()
+        {
+            return application;
+        }
+
+        public void SetBitrate(int bitrate)
+        {
+            if (bitrate != OpusConstants.OPUS_AUTO && bitrate != OpusConstants.OPUS_BITRATE_MAX)
+            {
+                if (bitrate <= 0)
+                    throw new ArgumentException("Bitrate must be positive");
+                else if (bitrate <= 500)
+                    bitrate = 500;
+                else if (bitrate > (int)300000 * channels)
+                    bitrate = (int)300000 * channels;
+            }
+
+            user_bitrate_bps = bitrate;
+        }
+
+        public int GetBitrate()
+        {
+            return opus_encoder.user_bitrate_to_bitrate(this, prev_framesize, 1276);
+        }
+
+        public void SetForceChannels(int value)
+        {
+            if ((value < 1 || value > channels) && value != OpusConstants.OPUS_AUTO)
+            {
+                throw new ArgumentException("Force channels must be <= num. of channels");
+            }
+
+            force_channels = value;
+        }
+
+        public int GetForceChannels()
+        {
+            return force_channels;
+        }
+
+        public void SetMaxBandwidth(int value)
+        {
+            if (value < OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND || value > OpusBandwidth.OPUS_BANDWIDTH_FULLBAND)
+            {
+                throw new ArgumentException("Max bandwidth must be within acceptable range");
+            }
+            max_bandwidth = value;
+            if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+            {
+                silk_mode.maxInternalSampleRate = 8000;
+            }
+            else if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+            {
+                silk_mode.maxInternalSampleRate = 12000;
+            }
+            else {
+                silk_mode.maxInternalSampleRate = 16000;
+            }
+        }
+
+        public int GetMaxBandwidth()
+        {
+            return max_bandwidth;
+        }
+
+        public void SetBandwidth(int value)
+        {
+            if ((value < OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND || value > OpusBandwidth.OPUS_BANDWIDTH_FULLBAND) && value != OpusConstants.OPUS_AUTO)
+            {
+                throw new ArgumentException("Bandwidth must be within acceptable range");
+            }
+            user_bandwidth = value;
+            if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+            {
+                silk_mode.maxInternalSampleRate = 8000;
+            }
+            else if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+            {
+                silk_mode.maxInternalSampleRate = 12000;
+            }
+            else {
+                silk_mode.maxInternalSampleRate = 16000;
+            }
+        }
+
+        public int GetBandwidth()
+        {
+            return bandwidth;
+        }
+
+        public void SetUseDTX(bool value)
+        {
+            silk_mode.useDTX = value ? 1 : 0;
+        }
+
+        public bool GetUseDTX()
+        {
+            return silk_mode.useDTX != 0;
+        }
+
+        public void SetComplexity(int value)
+        {
+            if (value < 0 || value > 10)
+            {
+                throw new ArgumentException("Complexity must be between 0 and 10");
+            }
+            silk_mode.complexity = value;
+            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_SET_COMPLEXITY_REQUEST, (value));
+        }
+
+        public int GetComplexity()
+        {
+            return silk_mode.complexity;
+        }
+
+        public void SetUseInbandFEC(bool value)
+        {
+            silk_mode.useInBandFEC = value ? 1 : 0;
+        }
+
+        public bool GetUseInbandFEC()
+        {
+            return silk_mode.useInBandFEC != 0;
+        }
+
+        public void SetPacketLossPercent(int value)
+        {
+            if (value < 0 || value > 100)
+            {
+                throw new ArgumentException("Packet loss must be between 0 and 100");
+            }
+            silk_mode.packetLossPercentage = value;
+            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_SET_PACKET_LOSS_PERC_REQUEST, value);
+        }
+
+        public int GetPacketLossPercent()
+        {
+            return silk_mode.packetLossPercentage;
+        }
+
+        public void SetVBR(bool value)
+        {
+            use_vbr = value ? 1 : 0;
+            silk_mode.useCBR = value ? 0 : 1;
+        }
+
+        public bool GetVBR()
+        {
+            return use_vbr != 0;
+        }
+
+        public void SetVoiceRatio(int value)
+        {
+            if (value < -1 || value > 100)
+            {
+                throw new ArgumentException("Voice ratio must be between -1 and 100");
+            }
+
+            voice_ratio = value;
+        }
+
+        public int GetVoiceRatio()
+        {
+            return voice_ratio;
+        }
+
+        public void SetVBRConstraint(bool value)
+        {
+            vbr_constraint = value ? 1 : 0;
+        }
+
+        public bool GetVBRConstraint()
+        {
+            return vbr_constraint != 0;
+        }
+
+        public void SetSignalType(int value)
+        {
+            if (value != OpusConstants.OPUS_AUTO && value != OpusSignal.OPUS_SIGNAL_VOICE && value != OpusSignal.OPUS_SIGNAL_MUSIC)
+            {
+                throw new ArgumentException("Invalid signal type");
+            }
+            signal_type = value;
+        }
+
+        public int GetSignalType()
+        {
+            return signal_type;
+        }
+
+        public int GetLookahead()
+        {
+            int returnVal = Fs / 400;
+            if (application != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+                returnVal += delay_compensation;
+
+            return returnVal;
+        }
+
+        public int GetSampleRate()
+        {
+            return Fs;
+        }
+
+        public uint GetFinalRange()
+        {
+            return rangeFinal;
+        }
+
+        public void SetLSBDepth(int value)
+        {
+            if (value < 8 || value > 24)
+            {
+                throw new ArgumentException("LSB depth must be between 8 and 24");
+            }
+
+            lsb_depth = value;
+        }
+
+        public int GetLSBDepth()
+        {
+            return lsb_depth;
+        }
+
+        public void SetExpertFrameDuration(int value)
+        {
+            if (value != OpusFramesize.OPUS_FRAMESIZE_ARG && value != OpusFramesize.OPUS_FRAMESIZE_2_5_MS &&
+                            value != OpusFramesize.OPUS_FRAMESIZE_5_MS && value != OpusFramesize.OPUS_FRAMESIZE_10_MS &&
+                            value != OpusFramesize.OPUS_FRAMESIZE_20_MS && value != OpusFramesize.OPUS_FRAMESIZE_40_MS &&
+                            value != OpusFramesize.OPUS_FRAMESIZE_60_MS && value != OpusFramesize.OPUS_FRAMESIZE_VARIABLE)
+            {
+                throw new ArgumentException("Invalid frame size");
+            }
+            variable_duration = value;
+            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_SET_EXPERT_FRAME_DURATION_REQUEST, (value));
+        }
+
+        public int GetExpertFrameDuration()
+        {
+            return variable_duration;
+        }
+
+        public void SetPredictionDisabled(bool value)
+        {
+            silk_mode.reducedDependency = value ? 1 : 0;
+        }
+
+        public bool GetPredictionDisabled()
+        {
+            return silk_mode.reducedDependency != 0;
+        }
+
+        public void SetForceMode(int value)
+        {
+            if ((value < OpusMode.MODE_SILK_ONLY || value > OpusMode.MODE_CELT_ONLY) && value != OpusConstants.OPUS_AUTO)
+            {
+                throw new ArgumentException("Unsupported mode (must be OpusMode.___ or OPUS_AUTO");
+            }
+            
+            user_forced_mode = value;
+        }
+
+        public void SetLFE(int value)
+        {
+            lfe = value;
+            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.OPUS_SET_LFE_REQUEST, (value));
+        }
+
+        public void SetEnergyMask(Pointer<int> value)
+        {
+            energy_masking = value;
+            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.OPUS_SET_ENERGY_MASK_REQUEST, (value));
+        }
+
+        public CELTMode GetCeltMode()
+        {
+            BoxedValue<CELTMode> value = new BoxedValue<CELTMode>();
+            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.CELT_GET_MODE_REQUEST, (value));
+            return value.Val;
         }
     }
 }

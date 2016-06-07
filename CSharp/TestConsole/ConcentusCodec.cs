@@ -13,7 +13,7 @@ namespace TestConsole
 
     public class ConcentusCodec
     {
-        private int _quality = 96;
+        private int _quality = 32;
 
         public ConcentusCodec()
         {
@@ -149,9 +149,9 @@ namespace TestConsole
                     return false;
                 }
 
-                // Set the encoder bitrate and set the complexity to 10
-                opus_encoder.opus_encoder_ctl(_hEncoder, OPUS_SET_BITRATE_REQUEST, _qualityKbps * 1024);
-                opus_encoder.opus_encoder_ctl(_hEncoder, OPUS_SET_COMPLEXITY_REQUEST, 10);
+                // Set the encoder bitrate and complexity
+                _hEncoder.SetBitrate(_qualityKbps * 1024);
+                _hEncoder.SetComplexity(10);
                     
                 return true;
             }
@@ -280,7 +280,7 @@ namespace TestConsole
                 {
                     byte[] nextPacketData = _incomingBytes.Read(_nextPacketSize);
                     int thisFrameSize = opus_decoder.opus_decode(_hDecoder, nextPacketData.GetPointer(), _nextPacketSize, outputBuffer.GetPointer(outCursor), frameSize, 0);
-                    outCursor += thisFrameSize * 2;
+                    outCursor += thisFrameSize;
 
                     if (_incomingBytes.Available() >= 2)
                     {
