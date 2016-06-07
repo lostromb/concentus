@@ -43,7 +43,8 @@ namespace Concentus
 
             /* Initialize CELT decoder */
             ret = celt_decoder.celt_decoder_init(celt_dec, Fs, channels);
-            if (ret != OpusError.OPUS_OK) return OpusError.OPUS_INTERNAL_ERROR;
+            if (ret != OpusError.OPUS_OK)
+                return OpusError.OPUS_INTERNAL_ERROR;
 
             celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_SET_SIGNALLING_REQUEST, 0);
 
@@ -638,108 +639,6 @@ namespace Concentus
             int returnVal = opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, null, 0);
             
             return returnVal;
-        }
-
-
-        public static int opus_decoder_ctl(OpusDecoder st, int request, params object[] vargs)
-        {
-            int ret = OpusError.OPUS_OK;
-            silk_decoder silk_dec = st.SilkDecoder;
-            CELTDecoder celt_dec = st.CeltDecoder;
-           
-            switch (request)
-            {
-                case OpusControl.OPUS_GET_BANDWIDTH_REQUEST:
-                    {
-                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        value.Val = st.bandwidth;
-                    }
-                    break;
-                case OpusControl.OPUS_GET_FINAL_RANGE_REQUEST:
-                    {
-                        BoxedValue<uint> value = vargs[0] as BoxedValue<uint>;
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                       value.Val = st.rangeFinal;
-                    }
-                    break;
-                case OpusControl.OPUS_RESET_STATE:
-                    {
-                        st.PartialReset();
-                        celt_decoder.opus_custom_decoder_ctl(celt_dec, OpusControl.OPUS_RESET_STATE);
-                        dec_API.silk_InitDecoder(silk_dec);
-                        st.stream_channels = st.channels;
-                        st.frame_size = st.Fs / 400;
-                    }
-                    break;
-                case OpusControl.OPUS_GET_SAMPLE_RATE_REQUEST:
-                    {
-                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        value.Val = st.Fs;
-                    }
-                    break;
-                case OpusControl.OPUS_GET_PITCH_REQUEST:
-                    {
-                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        if (st.prev_mode == OpusMode.MODE_CELT_ONLY)
-                            celt_decoder.opus_custom_decoder_ctl(celt_dec, OpusControl.OPUS_GET_PITCH_REQUEST, value);
-                        else
-                            value.Val = st.DecControl.prevPitchLag;
-                    }
-                    break;
-                case OpusControl.OPUS_GET_GAIN_REQUEST:
-                    {
-                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        value.Val = st.decode_gain;
-                    }
-                    break;
-                case OpusControl.OPUS_SET_GAIN_REQUEST:
-                    {
-                        int value = (int)vargs[0];
-                        if (value < -32768 || value > 32767)
-                        {
-                            goto bad_arg;
-                        }
-                        st.decode_gain = value;
-                    }
-                    break;
-                case OpusControl.OPUS_GET_LAST_PACKET_DURATION_REQUEST:
-                    {
-                        BoxedValue<int> value = vargs[0] as BoxedValue<int>;
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        value.Val = st.last_packet_duration;
-                    }
-                    break;
-                default:
-                    /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
-                    ret = OpusError.OPUS_UNIMPLEMENTED;
-                    break;
-            }
-            
-            return ret;
-        bad_arg:
-            return OpusError.OPUS_BAD_ARG;
         }
 
         public static int opus_packet_get_bandwidth(Pointer<byte> data)

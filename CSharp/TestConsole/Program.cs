@@ -24,8 +24,8 @@ namespace TestConsole
             concentus.Initialize();
             OpusCodec opus = new OpusCodec();
             opus.Initialize();
-            FileStream inputStream = new FileStream(@"C:\Users\Logan Stromberg\Documents\Visual Studio 2015\Projects\Concentus\TestConsole\Bathing in Stygian Blue.raw", FileMode.Open);
-            FileStream outputStream = new FileStream(@"C:\Users\Logan Stromberg\Documents\Visual Studio 2015\Projects\Concentus\TestConsole\OUTPUT.raw", FileMode.Create);
+            FileStream inputStream = new FileStream(@"Henrik Jose - Blunderbuss.wav", FileMode.Open);
+            FileStream outputStream = new FileStream(@"Output.wav", FileMode.Create);
             BinaryReader reader = new BinaryReader(inputStream);
             IAudioCompressionStream compressor = concentus.CreateCompressionStream(48000);
             IAudioDecompressionStream decompressor = concentus.CreateDecompressionStream(compressor.GetEncodeParams());
@@ -35,6 +35,8 @@ namespace TestConsole
             short[] inBuf = new short[320];
             try
             {
+                byte[] wavHeader = reader.ReadBytes(48);
+                outputStream.Write(wavHeader, 0, 48);
                 while (true)
                 {
                     for (int c = 0; c < inBuf.Length; c++)
