@@ -16,7 +16,7 @@ namespace Concentus.Structs
         public /*readonly*/ Pointer<float> angle = Pointer.Malloc<float>(240);
         public /*readonly*/ Pointer<float> d_angle = Pointer.Malloc<float>(240);
         public /*readonly*/ Pointer<float> d2_angle = Pointer.Malloc<float>(240);
-        public /*readonly*/ Pointer<float> inmem = Pointer.Malloc<float>(OpusConstants.ANALYSIS_BUF_SIZE);
+        public /*readonly*/ Pointer<int> inmem = Pointer.Malloc<int>(OpusConstants.ANALYSIS_BUF_SIZE);
         public int mem_fill;                      /* number of usable samples in the buffer */
         public /*readonly*/ Pointer<float> prev_band_tonality = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
         public float prev_tonality;

@@ -1971,7 +1971,7 @@ opus_int32 opus_encode_float(OpusEncoder *st, const float *pcm, int analysis_fra
    int i, ret;
    int frame_size;
    int delay_compensation;
-   VARDECL(opus_int16, in);
+   VARDECL(opus_int16, in); // opus bug: should be val16
    ALLOC_STACK;
 
    if (st->application == OPUS_APPLICATION_RESTRICTED_LOWDELAY)
@@ -2013,48 +2013,7 @@ opus_int32 opus_encode(OpusEncoder *st, const opus_int16 *pcm, int analysis_fram
                              pcm, analysis_frame_size, 0, -2, st->channels, downmix_int, 0);
 }
 
-#else
-opus_int32 opus_encode(OpusEncoder *st, const opus_int16 *pcm, int analysis_frame_size,
-      unsigned char *data, opus_int32 max_data_bytes)
-{
-   int i, ret;
-   int frame_size;
-   int delay_compensation;
-   VARDECL(float, in);
-   ALLOC_STACK;
 
-   if (st->application == OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-      delay_compensation = 0;
-   else
-      delay_compensation = st->delay_compensation;
-   frame_size = compute_frame_size(pcm, analysis_frame_size,
-         st->variable_duration, st->channels, st->Fs, st->bitrate_bps,
-         delay_compensation, downmix_int, st->analysis.subframe_mem);
-
-   ALLOC(in, frame_size*st->channels, float);
-
-   for (i=0;i<frame_size*st->channels;i++)
-      in[i] = (1.0f/32768)*pcm[i];
-   ret = opus_encode_native(st, in, frame_size, data, max_data_bytes, 16,
-                            pcm, analysis_frame_size, 0, -2, st->channels, downmix_int, 0);
-   RESTORE_STACK;
-   return ret;
-}
-opus_int32 opus_encode_float(OpusEncoder *st, const float *pcm, int analysis_frame_size,
-                      unsigned char *data, opus_int32 out_data_bytes)
-{
-   int frame_size;
-   int delay_compensation;
-   if (st->application == OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-      delay_compensation = 0;
-   else
-      delay_compensation = st->delay_compensation;
-   frame_size = compute_frame_size(pcm, analysis_frame_size,
-         st->variable_duration, st->channels, st->Fs, st->bitrate_bps,
-         delay_compensation, downmix_float, st->analysis.subframe_mem);
-   return opus_encode_native(st, pcm, frame_size, data, out_data_bytes, 24,
-                             pcm, analysis_frame_size, 0, -2, st->channels, downmix_float, 1);
-}
 #endif
 
 

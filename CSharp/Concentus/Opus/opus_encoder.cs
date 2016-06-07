@@ -18,6 +18,19 @@ namespace Concentus
 {
     public static class opus_encoder
     {
+        /** Initializes a previously allocated encoder state
+  * The memory pointed to by st must be at least the size returned by opus_encoder_get_size().
+  * This is intended for applications which use their own allocator instead of malloc.
+  * @see opus_encoder_create(),opus_encoder_get_size()
+  * To reset a previously initialized state, use the #OPUS_RESET_STATE CTL.
+  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
+  * @param [in] Fs <tt>opus_int32</tt>: Sampling rate of input signal (Hz)
+ *                                      This must be one of 8000, 12000, 16000,
+ *                                      24000, or 48000.
+  * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) in input signal
+  * @param [in] application <tt>int</tt>: Coding mode (OPUS_APPLICATION_VOIP/OPUS_APPLICATION_AUDIO/OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+  * @retval #OPUS_OK Success or @ref opus_errorcodes
+  */
         public static int opus_encoder_init(OpusEncoder st, int Fs, int channels, int application)
         {
             silk_encoder silk_enc;
@@ -95,7 +108,7 @@ namespace Concentus
             st.mode = OpusMode.MODE_HYBRID;
             st.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
 
-            //analysis.tonality_analysis_init(st.analysis);
+            analysis.tonality_analysis_init(st.analysis);
 
             return OpusError.OPUS_OK;
         }
@@ -261,6 +274,38 @@ namespace Concentus
             while (++c < channels);
         }
 
+        /** Allocates and initializes an encoder state.
+ * There are three coding modes:
+ *
+ * @ref OPUS_APPLICATION_VOIP gives best quality at a given bitrate for voice
+ *    signals. It enhances the  input signal by high-pass filtering and
+ *    emphasizing formants and harmonics. Optionally  it includes in-band
+ *    forward error correction to protect against packet loss. Use this
+ *    mode for typical VoIP applications. Because of the enhancement,
+ *    even at high bitrates the output may sound different from the input.
+ *
+ * @ref OPUS_APPLICATION_AUDIO gives best quality at a given bitrate for most
+ *    non-voice signals like music. Use this mode for music and mixed
+ *    (music/voice) content, broadcast, and applications requiring less
+ *    than 15 ms of coding delay.
+ *
+ * @ref OPUS_APPLICATION_RESTRICTED_LOWDELAY configures low-delay mode that
+ *    disables the speech-optimized mode in exchange for slightly reduced delay.
+ *    This mode can only be set on an newly initialized or freshly reset encoder
+ *    because it changes the codec delay.
+ *
+ * This is useful when the caller knows that the speech-optimized modes will not be needed (use with caution).
+ * @param [in] Fs <tt>opus_int32</tt>: Sampling rate of input signal (Hz)
+ *                                     This must be one of 8000, 12000, 16000,
+ *                                     24000, or 48000.
+ * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) in input signal
+ * @param [in] application <tt>int</tt>: Coding mode (@ref OPUS_APPLICATION_VOIP/@ref OPUS_APPLICATION_AUDIO/@ref OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+ * @param [out] error <tt>int*</tt>: @ref opus_errorcodes
+ * @note Regardless of the sampling rate and number channels selected, the Opus encoder
+ * can switch to a lower audio bandwidth or number of channels if the bitrate
+ * selected is too low. This also means that it is safe to always use 48 kHz stereo input
+ * and let the encoder optimize the encoding.
+ */
         public static OpusEncoder opus_encoder_create(int Fs, int channels, int application, BoxedValue<int> error)
         {
             int ret;
@@ -304,242 +349,242 @@ namespace Concentus
                 return st.user_bitrate_bps;
         }
 
-        ///* Don't use more than 60 ms for the frame size analysis */
-        //public const int MAX_DYNAMIC_FRAMESIZE = 24;
+        /* Don't use more than 60 ms for the frame size analysis */
+        public const int MAX_DYNAMIC_FRAMESIZE = 24;
 
-        ///* Estimates how much the bitrate will be boosted based on the sub-frame energy */
-        //public static float transient_boost(Pointer<float> E, Pointer<float> E_1, int LM, int maxM)
-        //{
-        //    int i;
-        //    int M;
-        //    float sumE = 0, sumE_1 = 0;
-        //    float metric;
+        /* Estimates how much the bitrate will be boosted based on the sub-frame energy */
+        public static float transient_boost(Pointer<float> E, Pointer<float> E_1, int LM, int maxM)
+        {
+            int i;
+            int M;
+            float sumE = 0, sumE_1 = 0;
+            float metric;
 
-        //    M = Inlines.IMIN(maxM, (1 << LM) + 1);
-        //    for (i = 0; i < M; i++)
-        //    {
-        //        sumE += E[i];
-        //        sumE_1 += E_1[i];
-        //    }
-        //    metric = sumE * sumE_1 / (M * M);
-        //    /*if (LM==3)
-        //       printf("%f\n", metric);*/
-        //    /*return metric>10 ? 1 : 0;*/
-        //    /*return Inlines.MAX16(0,1-exp(-.25*(metric-2.)));*/
-        //    return Inlines.MIN16(1, (float)Inlines.sqrt(Inlines.MAX16(0, .05f * (metric - 2))));
-        //}
+            M = Inlines.IMIN(maxM, (1 << LM) + 1);
+            for (i = 0; i < M; i++)
+            {
+                sumE += E[i];
+                sumE_1 += E_1[i];
+            }
+            metric = sumE * sumE_1 / (M * M);
+            /*if (LM==3)
+               printf("%f\n", metric);*/
+            /*return metric>10 ? 1 : 0;*/
+            /*return Inlines.MAX16(0,1-exp(-.25*(metric-2.)));*/
+            return Inlines.MIN16(1, (float)Math.Sqrt(Inlines.MAX16(0, .05f * (metric - 2))));
+        }
 
-        ///* Viterbi decoding trying to find the best frame size combination using look-ahead
+        /* Viterbi decoding trying to find the best frame size combination using look-ahead
 
-        //   State numbering:
-        //    0: unused
-        //    1:  2.5 ms
-        //    2:  5 ms (#1)
-        //    3:  5 ms (#2)
-        //    4: 10 ms (#1)
-        //    5: 10 ms (#2)
-        //    6: 10 ms (#3)
-        //    7: 10 ms (#4)
-        //    8: 20 ms (#1)
-        //    9: 20 ms (#2)
-        //   10: 20 ms (#3)
-        //   11: 20 ms (#4)
-        //   12: 20 ms (#5)
-        //   13: 20 ms (#6)
-        //   14: 20 ms (#7)
-        //   15: 20 ms (#8)
-        //*/
-        //public static int transient_viterbi(Pointer<float> E, Pointer<float> E_1, int N, int frame_cost, int rate)
-        //{
-        //    int i;
-        //    Pointer<Pointer<float>> cost = Arrays.InitTwoDimensionalArrayPointer<float>(MAX_DYNAMIC_FRAMESIZE, 16);
-        //    Pointer<Pointer<int>> states = Arrays.InitTwoDimensionalArrayPointer<int>(MAX_DYNAMIC_FRAMESIZE, 16);
-        //    float best_cost;
-        //    int best_state;
-        //    float factor;
-        //    /* Take into account that we damp VBR in the 32 kb/s to 64 kb/s range. */
-        //    if (rate < 80)
-        //        factor = 0;
-        //    else if (rate > 160)
-        //        factor = 1;
-        //    else
-        //        factor = (rate - 80.0f) / 80.0f;
-        //    /* Makes variable framesize less aggressive at lower bitrates, but I can't
-        //       find any valid theoretical justification for this (other than it seems
-        //       to help) */
-        //    for (i = 0; i < 16; i++)
-        //    {
-        //        /* Impossible state */
-        //        states[0][i] = -1;
-        //        cost[0][i] = 1e10f;
-        //    }
-        //    for (i = 0; i < 4; i++)
-        //    {
-        //        cost[0][1 << i] = (frame_cost + rate * (1 << i)) * (1 + factor * transient_boost(E, E_1, i, N + 1));
-        //        states[0][1 << i] = i;
-        //    }
-        //    for (i = 1; i < N; i++)
-        //    {
-        //        int j;
+           State numbering:
+            0: unused
+            1:  2.5 ms
+            2:  5 ms (#1)
+            3:  5 ms (#2)
+            4: 10 ms (#1)
+            5: 10 ms (#2)
+            6: 10 ms (#3)
+            7: 10 ms (#4)
+            8: 20 ms (#1)
+            9: 20 ms (#2)
+           10: 20 ms (#3)
+           11: 20 ms (#4)
+           12: 20 ms (#5)
+           13: 20 ms (#6)
+           14: 20 ms (#7)
+           15: 20 ms (#8)
+        */
+        public static int transient_viterbi(Pointer<float> E, Pointer<float> E_1, int N, int frame_cost, int rate)
+        {
+            int i;
+            Pointer<Pointer<float>> cost = Arrays.InitTwoDimensionalArrayPointer<float>(MAX_DYNAMIC_FRAMESIZE, 16);
+            Pointer<Pointer<int>> states = Arrays.InitTwoDimensionalArrayPointer<int>(MAX_DYNAMIC_FRAMESIZE, 16);
+            float best_cost;
+            int best_state;
+            float factor;
+            /* Take into account that we damp VBR in the 32 kb/s to 64 kb/s range. */
+            if (rate < 80)
+                factor = 0;
+            else if (rate > 160)
+                factor = 1;
+            else
+                factor = (rate - 80.0f) / 80.0f;
+            /* Makes variable framesize less aggressive at lower bitrates, but I can't
+               find any valid theoretical justification for this (other than it seems
+               to help) */
+            for (i = 0; i < 16; i++)
+            {
+                /* Impossible state */
+                states[0][i] = -1;
+                cost[0][i] = 1e10f;
+            }
+            for (i = 0; i < 4; i++)
+            {
+                cost[0][1 << i] = (frame_cost + rate * (1 << i)) * (1 + factor * transient_boost(E, E_1, i, N + 1));
+                states[0][1 << i] = i;
+            }
+            for (i = 1; i < N; i++)
+            {
+                int j;
 
-        //        /* Follow continuations */
-        //        for (j = 2; j < 16; j++)
-        //        {
-        //            cost[i][j] = cost[i - 1][j - 1];
-        //            states[i][j] = j - 1;
-        //        }
+                /* Follow continuations */
+                for (j = 2; j < 16; j++)
+                {
+                    cost[i][j] = cost[i - 1][j - 1];
+                    states[i][j] = j - 1;
+                }
 
-        //        /* New frames */
-        //        for (j = 0; j < 4; j++)
-        //        {
-        //            int k;
-        //            float min_cost;
-        //            float curr_cost;
-        //            states[i][1 << j] = 1;
-        //            min_cost = cost[i - 1][1];
-        //            for (k = 1; k < 4; k++)
-        //            {
-        //                float tmp = cost[i - 1][(1 << (k + 1)) - 1];
-        //                if (tmp < min_cost)
-        //                {
-        //                    states[i][1 << j] = (1 << (k + 1)) - 1;
-        //                    min_cost = tmp;
-        //                }
-        //            }
-        //            curr_cost = (frame_cost + rate * (1 << j)) * (1 + factor * transient_boost(E.Point(i), E_1.Point(i), j, N - i + 1));
-        //            cost[i][1 << j] = min_cost;
-        //            /* If part of the frame is outside the analysis window, only count part of the cost */
-        //            if (N - i < (1 << j))
-        //                cost[i][1 << j] += curr_cost * (float)(N - i) / (1 << j);
-        //            else
-        //                cost[i][1 << j] += curr_cost;
-        //        }
-        //    }
+                /* New frames */
+                for (j = 0; j < 4; j++)
+                {
+                    int k;
+                    float min_cost;
+                    float curr_cost;
+                    states[i][1 << j] = 1;
+                    min_cost = cost[i - 1][1];
+                    for (k = 1; k < 4; k++)
+                    {
+                        float tmp = cost[i - 1][(1 << (k + 1)) - 1];
+                        if (tmp < min_cost)
+                        {
+                            states[i][1 << j] = (1 << (k + 1)) - 1;
+                            min_cost = tmp;
+                        }
+                    }
+                    curr_cost = (frame_cost + rate * (1 << j)) * (1 + factor * transient_boost(E.Point(i), E_1.Point(i), j, N - i + 1));
+                    cost[i][1 << j] = min_cost;
+                    /* If part of the frame is outside the analysis window, only count part of the cost */
+                    if (N - i < (1 << j))
+                        cost[i][1 << j] += curr_cost * (float)(N - i) / (1 << j);
+                    else
+                        cost[i][1 << j] += curr_cost;
+                }
+            }
 
-        //    best_state = 1;
-        //    best_cost = cost[N - 1][1];
-        //    /* Find best end state (doesn't force a frame to end at N-1) */
-        //    for (i = 2; i < 16; i++)
-        //    {
-        //        if (cost[N - 1][i] < best_cost)
-        //        {
-        //            best_cost = cost[N - 1][i];
-        //            best_state = i;
-        //        }
-        //    }
+            best_state = 1;
+            best_cost = cost[N - 1][1];
+            /* Find best end state (doesn't force a frame to end at N-1) */
+            for (i = 2; i < 16; i++)
+            {
+                if (cost[N - 1][i] < best_cost)
+                {
+                    best_cost = cost[N - 1][i];
+                    best_state = i;
+                }
+            }
 
-        //    /* Follow transitions back */
-        //    for (i = N - 1; i >= 0; i--)
-        //    {
-        //        /*printf("%d ", best_state);*/
-        //        best_state = states[i][best_state];
-        //    }
-        //    /*printf("%d\n", best_state);*/
-        //    return best_state;
-        //}
+            /* Follow transitions back */
+            for (i = N - 1; i >= 0; i--)
+            {
+                /*printf("%d ", best_state);*/
+                best_state = states[i][best_state];
+            }
+            /*printf("%d\n", best_state);*/
+            return best_state;
+        }
 
-        //public static int optimize_framesize<T>(Pointer<T> x, int len, int C, int Fs,
-        //                int bitrate, float tonality, Pointer<float> mem, int buffering,
-        //                downmix_func_def.downmix_func<T> downmix)
-        //{
-        //    int N;
-        //    int i;
-        //    float[] e = new float[MAX_DYNAMIC_FRAMESIZE + 4];
-        //    float[] e_1 = new float[MAX_DYNAMIC_FRAMESIZE + 3];
-        //    float memx;
-        //    int bestLM = 0;
-        //    int subframe;
-        //    int pos;
-        //    int offset;
-        //    Pointer<float> sub;
+        public static int optimize_framesize<T>(Pointer<T> x, int len, int C, int Fs,
+                        int bitrate, float tonality, Pointer<float> mem, int buffering,
+                        downmix_func_def.downmix_func<T> downmix)
+        {
+            int N;
+            int i;
+            float[] e = new float[MAX_DYNAMIC_FRAMESIZE + 4];
+            float[] e_1 = new float[MAX_DYNAMIC_FRAMESIZE + 3];
+            float memx;
+            int bestLM = 0;
+            int subframe;
+            int pos;
+            int offset;
+            Pointer<int> sub;
 
-        //    subframe = Fs / 400;
-        //    sub = Pointer.Malloc<float>(subframe);
-        //    e[0] = mem[0];
-        //    e_1[0] = 1.0f / (CeltConstants.EPSILON + mem[0]);
-        //    if (buffering != 0)
-        //    {
-        //        /* Consider the CELT delay when not in restricted-lowdelay */
-        //        /* We assume the buffering is between 2.5 and 5 ms */
-        //        offset = 2 * subframe - buffering;
-        //        Inlines.OpusAssert(offset >= 0 && offset <= subframe);
-        //        len -= offset;
-        //        e[1] = mem[1];
-        //        e_1[1] = 1.0f / (CeltConstants.EPSILON + mem[1]);
-        //        e[2] = mem[2];
-        //        e_1[2] = 1.0f / (CeltConstants.EPSILON + mem[2]);
-        //        pos = 3;
-        //    }
-        //    else {
-        //        pos = 1;
-        //        offset = 0;
-        //    }
-        //    N = Inlines.IMIN(len / subframe, MAX_DYNAMIC_FRAMESIZE);
-        //    /* Just silencing a warning, it's really initialized later */
-        //    memx = 0;
-        //    for (i = 0; i < N; i++)
-        //    {
-        //        float tmp;
-        //        float tmpx;
-        //        int j;
-        //        tmp = CeltConstants.EPSILON;
+            subframe = Fs / 400;
+            sub = Pointer.Malloc<int>(subframe);
+            e[0] = mem[0];
+            e_1[0] = 1.0f / (CeltConstants.EPSILON + mem[0]);
+            if (buffering != 0)
+            {
+                /* Consider the CELT delay when not in restricted-lowdelay */
+                /* We assume the buffering is between 2.5 and 5 ms */
+                offset = 2 * subframe - buffering;
+                Inlines.OpusAssert(offset >= 0 && offset <= subframe);
+                len -= offset;
+                e[1] = mem[1];
+                e_1[1] = 1.0f / (CeltConstants.EPSILON + mem[1]);
+                e[2] = mem[2];
+                e_1[2] = 1.0f / (CeltConstants.EPSILON + mem[2]);
+                pos = 3;
+            }
+            else {
+                pos = 1;
+                offset = 0;
+            }
+            N = Inlines.IMIN(len / subframe, MAX_DYNAMIC_FRAMESIZE);
+            /* Just silencing a warning, it's really initialized later */
+            memx = 0;
+            for (i = 0; i < N; i++)
+            {
+                float tmp;
+                float tmpx;
+                int j;
+                tmp = CeltConstants.EPSILON;
 
-        //        downmix(x, sub, subframe, i * subframe + offset, 0, -2, C);
-        //        if (i == 0)
-        //            memx = sub[0];
-        //        for (j = 0; j < subframe; j++)
-        //        {
-        //            tmpx = sub[j];
-        //            tmp += (tmpx - memx) * (float)(tmpx - memx);
-        //            memx = tmpx;
-        //        }
-        //        e[i + pos] = tmp;
-        //        e_1[i + pos] = 1.0f / tmp;
-        //    }
-        //    /* Hack to get 20 ms working with APPLICATION_AUDIO
-        //       The real problem is that the corresponding memory needs to use 1.5 ms
-        //       from this frame and 1 ms from the next frame */
-        //    e[i + pos] = e[i + pos - 1];
-        //    if (buffering != 0)
-        //        N = Inlines.IMIN(MAX_DYNAMIC_FRAMESIZE, N + 2);
-        //    bestLM = transient_viterbi(e.GetPointer(), e_1.GetPointer(), N, (int)((1.0f + .5f * tonality) * (60 * C + 40)), bitrate / 400);
-        //    mem[0] = e[1 << bestLM];
-        //    if (buffering != 0)
-        //    {
-        //        mem[1] = e[(1 << bestLM) + 1];
-        //        mem[2] = e[(1 << bestLM) + 2];
-        //    }
-        //    return bestLM;
-        //}
+                downmix(x, sub, subframe, i * subframe + offset, 0, -2, C);
+                if (i == 0)
+                    memx = sub[0];
+                for (j = 0; j < subframe; j++)
+                {
+                    tmpx = sub[j];
+                    tmp += (tmpx - memx) * (float)(tmpx - memx);
+                    memx = tmpx;
+                }
+                e[i + pos] = tmp;
+                e_1[i + pos] = 1.0f / tmp;
+            }
+            /* Hack to get 20 ms working with APPLICATION_AUDIO
+               The real problem is that the corresponding memory needs to use 1.5 ms
+               from this frame and 1 ms from the next frame */
+            e[i + pos] = e[i + pos - 1];
+            if (buffering != 0)
+                N = Inlines.IMIN(MAX_DYNAMIC_FRAMESIZE, N + 2);
+            bestLM = transient_viterbi(e.GetPointer(), e_1.GetPointer(), N, (int)((1.0f + .5f * tonality) * (60 * C + 40)), bitrate / 400);
+            mem[0] = e[1 << bestLM];
+            if (buffering != 0)
+            {
+                mem[1] = e[(1 << bestLM) + 1];
+                mem[2] = e[(1 << bestLM) + 2];
+            }
+            return bestLM;
+        }
 
-        //public static void downmix_float(Pointer<float> x, Pointer<float> sub, int subframe, int offset, int c1, int c2, int C)
-        //{
-        //    float scale;
-        //    int j;
-        //    for (j = 0; j < subframe; j++)
-        //        sub[j] = Inlines.SCALEIN(x[(j + offset) * C + c1]);
-        //    if (c2 > -1)
-        //    {
-        //        for (j = 0; j < subframe; j++)
-        //            sub[j] += Inlines.SCALEIN(x[(j + offset) * C + c2]);
-        //    }
-        //    else if (c2 == -2)
-        //    {
-        //        int c;
-        //        for (c = 1; c < C; c++)
-        //        {
-        //            for (j = 0; j < subframe; j++)
-        //                sub[j] += Inlines.SCALEIN(x[(j + offset) * C + c]);
-        //        }
-        //    }
-        //    scale = 1.0f;
-        //    if (C == -2)
-        //        scale /= C;
-        //    else
-        //        scale /= 2;
-        //    for (j = 0; j < subframe; j++)
-        //        sub[j] *= scale;
-        //}
+        public static void downmix_float(Pointer<float> x, Pointer<int> sub, int subframe, int offset, int c1, int c2, int C)
+        {
+            int scale;
+            int j;
+            for (j = 0; j < subframe; j++)
+                sub[j] = Inlines.FLOAT2INT16(x[(j + offset) * C + c1]);
+            if (c2 > -1)
+            {
+                for (j = 0; j < subframe; j++)
+                    sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c2]);
+            }
+            else if (c2 == -2)
+            {
+                int c;
+                for (c = 1; c < C; c++)
+                {
+                    for (j = 0; j < subframe; j++)
+                        sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c]);
+                }
+            }
+            scale = (1 << CeltConstants.SIG_SHIFT);
+            if (C == -2)
+                scale /= C;
+            else
+                scale /= 2;
+            for (j = 0; j < subframe; j++)
+                sub[j] *= scale;
+        }
 
         public static void downmix_int(Pointer<short> x, Pointer<int> sub, int subframe, int offset, int c1, int c2, int C)
         {
@@ -593,10 +638,24 @@ namespace Concentus
 
         public static int compute_frame_size<T>(Pointer<T> analysis_pcm, int frame_size,
               int variable_duration, int C, int Fs, int bitrate_bps,
-              int delay_compensation, downmix_func_def.downmix_func<T> downmix
+              int delay_compensation, downmix_func_def.downmix_func<T> downmix,
+              Pointer<float> subframe_mem
               )
         {
-            frame_size = frame_size_select(frame_size, variable_duration, Fs);
+            if (variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size >= Fs / 200)
+            {
+                int LM = 3;
+                LM = optimize_framesize(analysis_pcm, frame_size, C, Fs, bitrate_bps,
+                      0, subframe_mem, delay_compensation, downmix);
+                while ((Fs / 400 << LM) > frame_size)
+                    LM--;
+                frame_size = (Fs / 400 << LM);
+            }
+            else
+            {
+                frame_size = frame_size_select(frame_size, variable_duration, Fs);
+            }
+
             if (frame_size < 0)
                 return -1;
             return frame_size;
@@ -733,9 +792,9 @@ namespace Concentus
             int total_buffer;
             int stereo_width;
             CELTMode celt_mode; // porting note: pointer
-            //AnalysisInfo analysis_info = new AnalysisInfo(); // porting note: stack var
-            //int analysis_read_pos_bak = -1;
-            //int analysis_read_subframe_bak = -1;
+            AnalysisInfo analysis_info = new AnalysisInfo(); // porting note: stack var
+            int analysis_read_pos_bak = -1;
+            int analysis_read_subframe_bak = -1;
             Pointer<int> tmp_prefill;
 
             max_data_bytes = Inlines.IMIN(1276, out_data_bytes);
@@ -761,37 +820,37 @@ namespace Concentus
             BoxedValue<CELTMode> boxedMode = new BoxedValue<CELTMode>();
             celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_GET_MODE_REQUEST, boxedMode);
             celt_mode = boxedMode.Val;
-            //analysis_info.valid = 0;
-            //if (st.silk_mode.complexity >= 7 && st.Fs == 48000)
-            //{
-            //    analysis_read_pos_bak = st.analysis.read_pos;
-            //    analysis_read_subframe_bak = st.analysis.read_subframe;
-            //    analysis.run_analysis<T>(st.analysis, celt_mode, analysis_pcm, analysis_size, frame_size,
-            //          c1, c2, analysis_channels, st.Fs,
-            //          lsb_depth, downmix, analysis_info);
-            //}
+            analysis_info.valid = 0;
+            if (st.silk_mode.complexity >= 10 && st.Fs == 48000)
+            {
+                analysis_read_pos_bak = st.analysis.read_pos;
+                analysis_read_subframe_bak = st.analysis.read_subframe;
+                analysis.run_analysis<T>(st.analysis, celt_mode, analysis_pcm, analysis_size, frame_size,
+                      c1, c2, analysis_channels, st.Fs,
+                      lsb_depth, downmix, analysis_info);
+            }
 
             st.voice_ratio = -1;
 
-            //st.detected_bandwidth = 0;
-            //if (analysis_info.valid != 0)
-            //{
-            //    int analysis_bandwidth;
-            //    if (st.signal_type == OpusConstants.OPUS_AUTO)
-            //        st.voice_ratio = (int)Inlines.floor(.5f + 100 * (1 - analysis_info.music_prob));
+            st.detected_bandwidth = 0;
+            if (analysis_info.valid != 0)
+            {
+                int analysis_bandwidth;
+                if (st.signal_type == OpusConstants.OPUS_AUTO)
+                    st.voice_ratio = (int)Math.Floor(.5f + 100 * (1 - analysis_info.music_prob));
 
-            //    analysis_bandwidth = analysis_info.bandwidth;
-            //    if (analysis_bandwidth <= 12)
-            //        st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
-            //    else if (analysis_bandwidth <= 14)
-            //        st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
-            //    else if (analysis_bandwidth <= 16)
-            //        st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
-            //    else if (analysis_bandwidth <= 18)
-            //        st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-            //    else
-            //        st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
-            //}
+                analysis_bandwidth = analysis_info.bandwidth;
+                if (analysis_bandwidth <= 12)
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                else if (analysis_bandwidth <= 14)
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+                else if (analysis_bandwidth <= 16)
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+                else if (analysis_bandwidth <= 18)
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+                else
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+            }
 
             if (st.channels == 2 && st.force_channels != 1)
                 stereo_width = compute_stereo_width(pcm, frame_size, st.Fs, st.width_mem);
@@ -858,7 +917,7 @@ namespace Concentus
             else {
 #if FUZZING
         /* Random mono/stereo decision */
-        if (st.channels == 2 && (rand() & 0x1F) == 0)
+        if (st.channels == 2 && (new Random().Next() & 0x1F) == 0)
             st.stream_channels = 3 - st.stream_channels;
 #else
                 /* Rate-dependent mono-stereo decision */
@@ -888,9 +947,9 @@ namespace Concentus
             {
 #if FUZZING
         /* Random mode switching */
-        if ((rand() & 0xF) == 0)
+        if ((new Random().Next() & 0xF) == 0)
         {
-            if ((rand() & 0x1) == 0)
+            if ((new Random().Next() & 0x1) == 0)
                 st.mode = OpusMode.MODE_CELT_ONLY;
             else
                 st.mode = OpusMode.MODE_SILK_ONLY;
@@ -1078,28 +1137,28 @@ namespace Concentus
                 st.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
             if (st.Fs <= 8000 && st.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
                 st.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
-            ///* Use detected bandwidth to reduce the encoded bandwidth. */
-            //if (st.detected_bandwidth != 0 && st.user_bandwidth == OpusConstants.OPUS_AUTO)
-            //{
-            //    int min_detected_bandwidth;
-            //    /* Makes bandwidth detection more conservative just in case the detector
-            //       gets it wrong when we could have coded a high bandwidth transparently.
-            //       When operating in SILK/hybrid mode, we don't go below wideband to avoid
-            //       more complicated switches that require redundancy. */
-            //    if (equiv_rate <= 18000 * st.stream_channels && st.mode == OpusMode.MODE_CELT_ONLY)
-            //        min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
-            //    else if (equiv_rate <= 24000 * st.stream_channels && st.mode == OpusMode.MODE_CELT_ONLY)
-            //        min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
-            //    else if (equiv_rate <= 30000 * st.stream_channels)
-            //        min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
-            //    else if (equiv_rate <= 44000 * st.stream_channels)
-            //        min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-            //    else
-            //        min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+            /* Use detected bandwidth to reduce the encoded bandwidth. */
+            if (st.detected_bandwidth != 0 && st.user_bandwidth == OpusConstants.OPUS_AUTO)
+            {
+                int min_detected_bandwidth;
+                /* Makes bandwidth detection more conservative just in case the detector
+                   gets it wrong when we could have coded a high bandwidth transparently.
+                   When operating in SILK/hybrid mode, we don't go below wideband to avoid
+                   more complicated switches that require redundancy. */
+                if (equiv_rate <= 18000 * st.stream_channels && st.mode == OpusMode.MODE_CELT_ONLY)
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                else if (equiv_rate <= 24000 * st.stream_channels && st.mode == OpusMode.MODE_CELT_ONLY)
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+                else if (equiv_rate <= 30000 * st.stream_channels)
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+                else if (equiv_rate <= 44000 * st.stream_channels)
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+                else
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
 
-            //    st.detected_bandwidth = Inlines.IMAX(st.detected_bandwidth, min_detected_bandwidth);
-            //    st.bandwidth = Inlines.IMIN(st.bandwidth, st.detected_bandwidth);
-            //}
+                st.detected_bandwidth = Inlines.IMAX(st.detected_bandwidth, min_detected_bandwidth);
+                st.bandwidth = Inlines.IMIN(st.bandwidth, st.detected_bandwidth);
+            }
             celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_LSB_DEPTH_REQUEST, lsb_depth);
 
             /* CELT mode doesn't support mediumband, use wideband instead */
@@ -1118,11 +1177,11 @@ namespace Concentus
                 int bytes_per_frame;
                 int repacketize_len;
 
-                //if (analysis_read_pos_bak != -1)
-                //{
-                //    st.analysis.read_pos = analysis_read_pos_bak;
-                //    st.analysis.read_subframe = analysis_read_subframe_bak;
-                //}
+                if (analysis_read_pos_bak != -1)
+                {
+                    st.analysis.read_pos = analysis_read_pos_bak;
+                    st.analysis.read_subframe = analysis_read_subframe_bak;
+                }
 
                 nb_frames = frame_size > st.Fs / 25 ? 3 : 2;
                 bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
@@ -1220,7 +1279,7 @@ namespace Concentus
             else {
                 dc_reject(pcm, 3, pcm_buf.Point(total_buffer * st.channels), st.hp_mem, frame_size, st.channels, st.Fs);
             }
-            
+
             /* SILK processing */
             HB_gain = CeltConstants.Q15ONE;
             if (st.mode != OpusMode.MODE_CELT_ONLY)
@@ -1499,12 +1558,12 @@ namespace Concentus
                     if (st.use_vbr != 0)
                     {
                         int bonus = 0;
-                        //if (st.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size != st.Fs / 50)
-                        //{
-                        //    bonus = (60 * st.stream_channels + 40) * (st.Fs / frame_size - 50);
-                        //    if (analysis_info.valid != 0)
-                        //        bonus = (int)(bonus * (1.0f + .5f * analysis_info.tonality));
-                        //}
+                        if (st.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size != st.Fs / 50)
+                        {
+                            bonus = (60 * st.stream_channels + 40) * (st.Fs / frame_size - 50);
+                            if (analysis_info.valid != 0)
+                                bonus = (int)(bonus * (1.0f + .5f * analysis_info.tonality));
+                        }
                         celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_REQUEST, (1));
                         celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, (st.vbr_constraint));
                         celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_BITRATE_REQUEST, (st.bitrate_bps + bonus));
@@ -1607,8 +1666,8 @@ namespace Concentus
                 EntropyCoder.ec_enc_shrink(enc, (uint)nb_compr_bytes);
             }
 
-            //if (redundancy != 0 || st.mode != OpusMode.MODE_SILK_ONLY)
-            //    celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_ANALYSIS_REQUEST, (analysis_info));
+            if (redundancy != 0 || st.mode != OpusMode.MODE_SILK_ONLY)
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_ANALYSIS_REQUEST, (analysis_info));
 
             /* 5 ms redundant frame for CELT.SILK */
             if (redundancy != 0 && celt_to_silk != 0)
@@ -1729,6 +1788,34 @@ namespace Concentus
             return ret;
         }
 
+        /** Encodes an Opus frame.
+  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
+  * @param [in] pcm <tt>opus_int16*</tt>: Input signal (interleaved if 2 channels). length is frame_size*channels*sizeof(opus_int16)
+  * @param [in] frame_size <tt>int</tt>: Number of samples per channel in the
+  *                                      input signal.
+  *                                      This must be an Opus frame size for
+  *                                      the encoder's sampling rate.
+  *                                      For example, at 48 kHz the permitted
+  *                                      values are 120, 240, 480, 960, 1920,
+  *                                      and 2880.
+  *                                      Passing in a duration of less than
+  *                                      10 ms (480 samples at 48 kHz) will
+  *                                      prevent the encoder from using the LPC
+  *                                      or hybrid modes.
+  * @param [out] data <tt>unsigned char*</tt>: Output payload.
+  *                                            This must contain storage for at
+  *                                            least \a max_data_bytes.
+  * @param [in] max_data_bytes <tt>opus_int32</tt>: Size of the allocated
+  *                                                 memory for the output
+  *                                                 payload. This may be
+  *                                                 used to impose an upper limit on
+  *                                                 the instant bitrate, but should
+  *                                                 not be used as the only bitrate
+  *                                                 control. Use #OPUS_SET_BITRATE to
+  *                                                 control the bitrate.
+  * @returns The length of the encoded packet (in bytes) on success or a
+  *          negative error code (see @ref opus_errorcodes) on failure.
+  */
         public static int opus_encode(OpusEncoder st, Pointer<short> pcm, int analysis_frame_size,
               Pointer<byte> data, int out_data_bytes)
         {
@@ -1742,7 +1829,7 @@ namespace Concentus
 
             frame_size = compute_frame_size(pcm, analysis_frame_size,
                   st.variable_duration, st.channels, st.Fs, st.bitrate_bps,
-                  delay_compensation, downmix_int);
+                  delay_compensation, downmix_int, st.analysis.subframe_mem);
 
             // fixme: does this belong here?
             Pointer<int> input = Pointer.Malloc<int>(frame_size * st.channels);
@@ -1753,20 +1840,62 @@ namespace Concentus
                                      pcm, analysis_frame_size, 0, -2, st.channels, downmix_int, 0);
         }
 
-        //public static int opus_encode_float(OpusEncoder st, Pointer<float> pcm, int analysis_frame_size,
-        //                      Pointer<byte> data, int out_data_bytes)
-        //{
-        //    int frame_size;
-        //    int delay_compensation;
-        //    if (st.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-        //        delay_compensation = 0;
-        //    else
-        //        delay_compensation = st.delay_compensation;
-        //    frame_size = compute_frame_size(pcm, analysis_frame_size,
-        //          st.variable_duration, st.channels, st.Fs, st.bitrate_bps,
-        //          delay_compensation, downmix_float, st.analysis.subframe_mem);
-        //    return opus_encode_native<float>(st, pcm, frame_size, data, out_data_bytes, 24,
-        //                              pcm, analysis_frame_size, 0, -2, st.channels, downmix_float, 1);
-        //}
+        /** Encodes an Opus frame from floating point input.
+  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
+  * @param [in] pcm <tt>float*</tt>: Input in float format (interleaved if 2 channels), with a normal range of +/-1.0.
+  *          Samples with a range beyond +/-1.0 are supported but will
+  *          be clipped by decoders using the integer API and should
+  *          only be used if it is known that the far end supports
+  *          extended dynamic range.
+  *          length is frame_size*channels*sizeof(float)
+  * @param [in] frame_size <tt>int</tt>: Number of samples per channel in the
+  *                                      input signal.
+  *                                      This must be an Opus frame size for
+  *                                      the encoder's sampling rate.
+  *                                      For example, at 48 kHz the permitted
+  *                                      values are 120, 240, 480, 960, 1920,
+  *                                      and 2880.
+  *                                      Passing in a duration of less than
+  *                                      10 ms (480 samples at 48 kHz) will
+  *                                      prevent the encoder from using the LPC
+  *                                      or hybrid modes.
+  * @param [out] data <tt>unsigned char*</tt>: Output payload.
+  *                                            This must contain storage for at
+  *                                            least \a max_data_bytes.
+  * @param [in] max_data_bytes <tt>opus_int32</tt>: Size of the allocated
+  *                                                 memory for the output
+  *                                                 payload. This may be
+  *                                                 used to impose an upper limit on
+  *                                                 the instant bitrate, but should
+  *                                                 not be used as the only bitrate
+  *                                                 control. Use #OPUS_SET_BITRATE to
+  *                                                 control the bitrate.
+  * @returns The length of the encoded packet (in bytes) on success or a
+  *          negative error code (see @ref opus_errorcodes) on failure.
+  */
+        public static int opus_encode_float(OpusEncoder st, Pointer<float> pcm, int analysis_frame_size,
+                              Pointer<byte> data, int max_data_bytes)
+        {
+            int i, ret;
+            int frame_size;
+            int delay_compensation;
+            if (st.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+                delay_compensation = 0;
+            else
+                delay_compensation = st.delay_compensation;
+
+            frame_size = compute_frame_size(pcm, analysis_frame_size,
+                  st.variable_duration, st.channels, st.Fs, st.bitrate_bps,
+                  delay_compensation, downmix_float, st.analysis.subframe_mem);
+
+            Pointer<int> input = Pointer.Malloc<int>(frame_size * st.channels);
+
+            for (i = 0; i < frame_size * st.channels; i++)
+                input[i] = Inlines.FLOAT2INT16(pcm[i]);
+
+            ret = opus_encode_native(st, input, frame_size, data, max_data_bytes, 16,
+                                     pcm, analysis_frame_size, 0, -2, st.channels, downmix_float, 1);
+            return ret;
+        }
     }
 }

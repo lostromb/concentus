@@ -16,24 +16,6 @@ namespace Concentus.Celt
 {
     public static class celt_encoder
     {
-        //public static int celt_encoder_get_size(int channels)
-        //{
-        //    CELTMode mode = modes.opus_custom_mode_create(48000, 960, null);
-        //    return opus_custom_encoder_get_size(mode, channels);
-        //}
-
-        //public static int opus_custom_encoder_get_size(CELTMode mode, int channels)
-        //{
-        //    int size = sizeof(struct CELTEncoder)
-        //         + (channels* mode.overlap-1)*sizeof(float)    /* float in_mem[channels*mode.overlap]; */
-        //         + channels* CeltConstants.COMBFILTER_MAXPERIOD*sizeof(float) /* float prefilter_mem[channels*CeltConstants.COMBFILTER_MAXPERIOD]; */
-        //         + 3*channels* mode.nbEBands*sizeof(float);  /* float oldBandE[channels*mode.nbEBands]; */
-        //                                                          /* float oldLogE[channels*mode.nbEBands]; */
-        //                                                          /* float oldLogE2[channels*mode.nbEBands]; */
-        //   return size;
-        //}
-
-
         public static int opus_custom_encoder_init_arch(CELTEncoder st, CELTMode mode,
                                                  int channels, int arch)
         {
@@ -209,7 +191,7 @@ namespace Concentus.Celt
             /*printf("%d %f\n", tf_max, mask_metric);*/
 
 #if FUZZING
-            is_transient = rand() & 0x1;
+            is_transient = new Random().Next() & 0x1;
 #endif
             /*printf("%d %f %d\n", is_transient, (float)*tf_estimate, tf_max);*/
             return is_transient;
@@ -314,7 +296,7 @@ namespace Concentus.Celt
                 } while (++c < C);
             }
         }
-        
+
         public static void celt_preemphasis(Pointer<int> pcmp, Pointer<int> inp,
                                 int N, int CC, int upsample, Pointer<int> coef, BoxedValue<int> mem, int clip)
         {
@@ -349,7 +331,7 @@ namespace Concentus.Celt
             for (i = 0; i < Nu; i++)
                 inp[i * upsample] = Inlines.SCALEIN(pcmp[CC * i]);
 
-           
+
             for (i = 0; i < N; i++)
             {
                 int x;
@@ -358,7 +340,7 @@ namespace Concentus.Celt
                 inp[i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                 m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
             }
-            
+
             mem.Val = m;
         }
 
@@ -535,10 +517,13 @@ namespace Concentus.Celt
             /*printf("%d %f\n", *tf_sum, tf_estimate);*/
 
 #if FUZZING
-    tf_select = rand() & 0x1;
-    tf_res[0] = rand() & 0x1;
-    for (i = 1; i < len; i++)
-        tf_res[i] = tf_res[i - 1] ^ ((rand() & 0xF) == 0);
+            Random rand = new Random();
+            tf_select = rand.Next() & 0x1;
+            tf_res[0] = rand.Next() & 0x1;
+            for (i = 1; i < len; i++)
+            {
+                tf_res[i] = tf_res[i - 1] ^ ((rand.Next() & 0xF) == 0 ? 1 : 0);
+            }
 #endif
             return tf_select;
         }
@@ -599,7 +584,7 @@ namespace Concentus.Celt
             {
                 int sum = 0; /* Q10 */
                 int minXC; /* Q10 */
-                             /* Compute inter-channel correlation for low frequencies */
+                           /* Compute inter-channel correlation for low frequencies */
                 for (i = 0; i < 8; i++)
                 {
                     int partial;
@@ -645,11 +630,17 @@ namespace Concentus.Celt
             trim -= Inlines.SHR16(surround_trim, CeltConstants.DB_SHIFT - 8);
             trim = (trim - 2 * Inlines.SHR16(tf_estimate, 14 - 8));
 
+            if (analysis.valid != 0)
+            {
+                trim -= Inlines.MAX16(-Inlines.QCONST16(2.0f, 8), Inlines.MIN16(Inlines.QCONST16(2.0f, 8),
+                      (int)(Inlines.QCONST16(2.0f, 8) * (analysis.tonality_slope + .05f))));
+            }
+
             trim_index = Inlines.PSHR32(trim, 8);
             trim_index = Inlines.IMAX(0, Inlines.IMIN(10, trim_index));
             /*printf("%d\n", trim_index);*/
 #if FUZZING
-            trim_index = rand() % 11;
+            trim_index = new Random().Next() % 11;
 #endif
             return trim_index;
         }
@@ -966,7 +957,7 @@ namespace Concentus.Celt
 
             /* Hard threshold at 0.2 */
             pf_threshold = Inlines.MAX16(pf_threshold, Inlines.QCONST16(.2f, 15));
-            
+
             if (gain1 < pf_threshold)
             {
                 gain1 = 0;
@@ -1004,7 +995,7 @@ namespace Concentus.Celt
                       st.prefilter_period, pitch_index.Val, N - offset, -st.prefilter_gain, -gain1,
                       st.prefilter_tapset, prefilter_tapset, mode.window, overlap, st.arch);
                 input.Point(c * (N + overlap) + N).MemCopyTo(st.in_mem.Point(c * overlap), overlap);
-                
+
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
                 {
                     pre[c].Point(N).MemMoveTo(prefilter_mem.Point(c * CeltConstants.COMBFILTER_MAXPERIOD), CeltConstants.COMBFILTER_MAXPERIOD);
@@ -1048,6 +1039,9 @@ namespace Concentus.Celt
 
             target = base_target;
 
+            if (analysis.valid != 0 && analysis.activity < .4)
+                target -= (int)((coded_bins << EntropyCoder.BITRES) * (.4f - analysis.activity));
+
             /* Stereo savings */
             if (C == 2)
             {
@@ -1069,7 +1063,21 @@ namespace Concentus.Celt
             tf_calibration = variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE ?
                              Inlines.QCONST16(0.02f, 14) : Inlines.QCONST16(0.04f, 14);
             target += (int)Inlines.SHL32(Inlines.MULT16_32_Q15(tf_estimate - tf_calibration, target), 1);
-            
+
+            /* Apply tonality boost */
+            if (analysis.valid != 0 && lfe == 0)
+            {
+                int tonal_target;
+                float tonal;
+
+                /* Tonality boost (compensating for the average). */
+                tonal = Inlines.MAX16(0, analysis.tonality - .15f) - 0.09f;
+                tonal_target = target + (int)((coded_bins << EntropyCoder.BITRES) * 1.2f * tonal);
+                if (pitch_change != 0)
+                    tonal_target += (int)((coded_bins << EntropyCoder.BITRES) * .8f);
+                target = tonal_target;
+            }
+
             if (has_surround_mask != 0 && lfe == 0)
             {
                 int surround_target = target + (int)Inlines.SHR32(Inlines.MULT16_16(surround_masking, coded_bins << EntropyCoder.BITRES), CeltConstants.DB_SHIFT);
@@ -1290,7 +1298,7 @@ namespace Concentus.Celt
             sample_max = Inlines.MAX32(sample_max, st.overlap_max);
             silence = (sample_max == 0) ? 1 : 0;
 #if FUZZING
-            if ((rand() & 0x3F) == 0)
+            if ((new Random().Next() & 0x3F) == 0)
                 silence = 1;
 #endif
             if (tell == 1)
@@ -1804,6 +1812,23 @@ namespace Concentus.Celt
             anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;
             bits -= anti_collapse_rsv;
             signalBandwidth = end - 1;
+
+            if (st.analysis.valid != 0)
+            {
+                int min_bandwidth;
+                if (equiv_rate < (int)32000 * C)
+                    min_bandwidth = 13;
+                else if (equiv_rate < (int)48000 * C)
+                    min_bandwidth = 16;
+                else if (equiv_rate < (int)60000 * C)
+                    min_bandwidth = 18;
+                else if (equiv_rate < (int)80000 * C)
+                    min_bandwidth = 19;
+                else
+                    min_bandwidth = 20;
+                signalBandwidth = Inlines.IMAX(st.analysis.bandwidth, min_bandwidth);
+            }
+
             if (st.lfe != 0)
             {
                 signalBandwidth = 1;
@@ -1839,7 +1864,7 @@ namespace Concentus.Celt
             {
                 anti_collapse_on = (st.consec_transient < 2) ? 1 : 0;
 #if FUZZING
-                anti_collapse_on = rand() & 0x1;
+                anti_collapse_on = new Random().Next() & 0x1;
 #endif
                 EntropyCoder.ec_enc_bits(enc, (uint)anti_collapse_on, 1);
             }
@@ -1851,7 +1876,7 @@ namespace Concentus.Celt
                 for (i = 0; i < C * nbEBands; i++)
                     oldBandE[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
             }
-            
+
             st.prefilter_period = pitch_index;
             st.prefilter_gain = gain1;
             st.prefilter_tapset = prefilter_tapset;
@@ -2005,7 +2030,7 @@ namespace Concentus.Celt
                 case OpusControl.OPUS_RESET_STATE:
                     {
                         int i;
-                        
+
                         // Fixme make sure this works
                         ///OPUS_CLEAR((char*)&st.ENCODER_RESET_START,
                         ///opus_custom_encoder_get_size(st.mode, st.channels) -

@@ -502,6 +502,16 @@ namespace Concentus.Common
             return ((a) > (b) ? (a) : (b));
         }
 
+        public static float MIN16(float a, float b)
+        {
+            return ((a) < (b) ? (a) : (b));
+        }
+
+        public static float MAX16(float a, float b)
+        {
+            return ((a) > (b) ? (a) : (b));
+        }
+
         public static int MIN(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
@@ -537,7 +547,22 @@ namespace Concentus.Common
             return ((a) > (b) ? (a) : (b));
         }
 
+        public static float MIN32(float a, float b)
+        {
+            return ((a) < (b) ? (a) : (b));
+        }
+
+        public static float MAX32(float a, float b)
+        {
+            return ((a) > (b) ? (a) : (b));
+        }
+
         public static int ABS16(int x)
+        {
+            return ((x) < 0 ? (-(x)) : (x));
+        }
+
+        public static float ABS16(float x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
@@ -905,6 +930,14 @@ namespace Concentus.Common
             x2 = MULT16_16_P15(x, x);
             return ADD32(1, MIN32(32766, ADD32(SUB16(L1, x2), MULT16_16_P15(x2, ADD32(L2, MULT16_16_P15(x2, ADD32(L3, MULT16_16_P15(L4, x2
                                                                                          ))))))));
+        }
+
+        public static int FLOAT2INT16(float x)
+        {
+            x = x * CeltConstants.CELT_SIG_SCALE;
+            x = Math.Max(x, -32768);
+            x = Math.Min(x, 32767);
+            return (int)x;
         }
 
         #endregion

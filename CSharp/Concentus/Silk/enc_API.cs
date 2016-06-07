@@ -164,7 +164,7 @@ namespace Concentus.Silk
                 for (n = 0; n < encControl.nChannelsInternal; n++)
                 {
                     ret += silk_encoder.silk_init_encoder(psEnc.state_Fxx[n], psEnc.state_Fxx[n].sCmn.arch);
-                    Inlines.OpusAssert(ret != SilkError.SILK_NO_ERROR);
+                    Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
                 }
                 tmp_payloadSize_ms = encControl.payloadSize_ms;
                 encControl.payloadSize_ms = 10;

@@ -15,28 +15,6 @@ namespace Concentus.Celt
 {
     public static class celt_decoder
     {
-        /**********************************************************************/
-        /*                                                                    */
-        /*                             DECODER                                */
-        /*                                                                    */
-        /**********************************************************************/
-
-
-        //        public static int celt_decoder_get_size(int channels)
-        //        {
-        //            CELTMode* mode = opus_custom_mode_create(48000, 960, NULL);
-        //            return opus_custom_decoder_get_size(mode, channels);
-        //        }
-
-        //        public static int opus_custom_decoder_get_size(CELTMode* mode, int channels)
-        //        {
-        //            int size = sizeof(struct CELTDecoder)
-        //            + (channels*(DECODE_BUFFER_SIZE+mode.overlap)-1)*sizeof(float)
-        //            + channels* LPC_ORDER*sizeof(float)
-        //            + 4*2*mode.nbEBands*sizeof(float);
-        //   return size;
-        //}
-
         public static int celt_decoder_init(CELTDecoder st, int sampling_rate, int channels)
         {
             int ret;
@@ -95,7 +73,6 @@ namespace Concentus.Celt
             int apply_downsampling = 0;
             int coef0;
             Pointer<int> scratch = Pointer.Malloc<int>(N);
-            Inlines.OpusAssert(accum == 0);
             coef0 = coef[0];
             Nd = N / downsample;
             c = 0; do

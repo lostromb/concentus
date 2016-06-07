@@ -1,18 +1,6 @@
-﻿using Concentus.Common.CPlusPlus;
-using Concentus.Silk;
-using Concentus.Silk.Structs;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Concentus.Common;
 using System.IO;
-using Durandal.Common.Audio;
-using Concentus.Opus.Enums;
-using Concentus;
-using Concentus.Structs;
 
 namespace TestConsole
 {

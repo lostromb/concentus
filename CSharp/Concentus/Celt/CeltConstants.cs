@@ -10,6 +10,8 @@ namespace Concentus.Celt
     {
         public const int Q15ONE = 32767;
 
+        public const float CELT_SIG_SCALE = 32768.0f;
+
         public const int SIG_SHIFT = 12;
 
         public const int NORM_SCALING = 16384;

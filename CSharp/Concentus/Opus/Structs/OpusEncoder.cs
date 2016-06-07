@@ -14,11 +14,91 @@ using System.Threading.Tasks;
 
 namespace Concentus.Structs
 {
+    /** @defgroup opus_encoder Opus Encoder
+  * @{
+  *
+  * @brief This page describes the process and functions used to encode Opus.
+  *
+  * Since Opus is a stateful codec, the encoding process starts with creating an encoder
+  * state. This can be done with:
+  *
+  * @code
+  * int          error;
+  * OpusEncoder *enc;
+  * enc = opus_encoder_create(Fs, channels, application, &error);
+  * @endcode
+  *
+  * From this point, @c enc can be used for encoding an audio stream. An encoder state
+  * @b must @b not be used for more than one stream at the same time. Similarly, the encoder
+  * state @b must @b not be re-initialized for each frame.
+  *
+  * While opus_encoder_create() allocates memory for the state, it's also possible
+  * to initialize pre-allocated memory:
+  *
+  * @code
+  * int          size;
+  * int          error;
+  * OpusEncoder *enc;
+  * size = opus_encoder_get_size(channels);
+  * enc = malloc(size);
+  * error = opus_encoder_init(enc, Fs, channels, application);
+  * @endcode
+  *
+  * where opus_encoder_get_size() returns the required size for the encoder state. Note that
+  * future versions of this code may change the size, so no assuptions should be made about it.
+  *
+  * The encoder state is always continuous in memory and only a shallow copy is sufficient
+  * to copy it (e.g. memcpy())
+  *
+  * It is possible to change some of the encoder's settings using the opus_encoder_ctl()
+  * interface. All these settings already default to the recommended value, so they should
+  * only be changed when necessary. The most common settings one may want to change are:
+  *
+  * @code
+  * opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate));
+  * opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(complexity));
+  * opus_encoder_ctl(enc, OPUS_SET_SIGNAL(signal_type));
+  * @endcode
+  *
+  * where
+  *
+  * @arg bitrate is in bits per second (b/s)
+  * @arg complexity is a value from 1 to 10, where 1 is the lowest complexity and 10 is the highest
+  * @arg signal_type is either OPUS_AUTO (default), OPUS_SIGNAL_VOICE, or OPUS_SIGNAL_MUSIC
+  *
+  * See @ref opus_encoderctls and @ref opus_genericctls for a complete list of parameters that can be set or queried. Most parameters can be set or changed at any time during a stream.
+  *
+  * To encode a frame, opus_encode() or opus_encode_float() must be called with exactly one frame (2.5, 5, 10, 20, 40 or 60 ms) of audio data:
+  * @code
+  * len = opus_encode(enc, audio_frame, frame_size, packet, max_packet);
+  * @endcode
+  *
+  * where
+  * <ul>
+  * <li>audio_frame is the audio data in opus_int16 (or float for opus_encode_float())</li>
+  * <li>frame_size is the duration of the frame in samples (per channel)</li>
+  * <li>packet is the byte array to which the compressed data is written</li>
+  * <li>max_packet is the maximum number of bytes that can be written in the packet (4000 bytes is recommended).
+  *     Do not use max_packet to control VBR target bitrate, instead use the #OPUS_SET_BITRATE CTL.</li>
+  * </ul>
+  *
+  * opus_encode() and opus_encode_float() return the number of bytes actually written to the packet.
+  * The return value <b>can be negative</b>, which indicates that an error has occurred. If the return value
+  * is 1 byte, then the packet does not need to be transmitted (DTX).
+  *
+  * Once the encoder state if no longer needed, it can be destroyed with
+  *
+  * @code
+  * opus_encoder_destroy(enc);
+  * @endcode
+  *
+  * If the encoder was created with opus_encoder_init() rather than opus_encoder_create(),
+  * then no action is required aside from potentially freeing the memory that was manually
+  * allocated for it (calling free(enc) for the example above)
+  *
+  */
     public class OpusEncoder
     {
-        // These are no longer necessary - they are only used for targeted memsets and copies
-        // public int celt_enc_offset;
-        // public int silk_enc_offset;
         public readonly silk_EncControlStruct silk_mode = new silk_EncControlStruct();
         public int application;
         public int channels;
@@ -39,7 +119,7 @@ namespace Concentus.Structs
         public int encoder_buffer;
         public int lfe;
         public int arch;
-        // public readonly TonalityAnalysisState analysis = new TonalityAnalysisState();
+        public readonly TonalityAnalysisState analysis = new TonalityAnalysisState();
 
         // partial reset happens below this line
         public int stream_channels;
@@ -58,7 +138,7 @@ namespace Concentus.Structs
         public Pointer<int> energy_masking;
         public readonly StereoWidthState width_mem = new StereoWidthState();
         public /*readonly*/ Pointer<int> delay_buffer = Pointer.Malloc<int>(OpusConstants.MAX_ENCODER_BUFFER * 2);
-        // public int detected_bandwidth;
+        public int detected_bandwidth;
         public uint rangeFinal;
 
         // [Porting Note] There were originally "cabooses" that were tacked onto the end
@@ -89,7 +169,7 @@ namespace Concentus.Structs
             encoder_buffer = 0;
             lfe = 0;
             arch = 0;
-            //analysis.Reset();
+            analysis.Reset();
             PartialReset();
         }
 
@@ -113,7 +193,7 @@ namespace Concentus.Structs
             energy_masking = null;
             width_mem.Reset();
             delay_buffer.MemSet(0, OpusConstants.MAX_ENCODER_BUFFER * 2);
-            //detected_bandwidth = 0;
+            detected_bandwidth = 0;
             rangeFinal = 0;
             SilkEncoder.Reset();
             CeltEncoder.Reset();
@@ -122,7 +202,7 @@ namespace Concentus.Structs
         public void ResetState()
         {
             silk_EncControlStruct dummy = new silk_EncControlStruct();
-            //st.analysis.Reset();
+            analysis.Reset();
 
             PartialReset();
 
@@ -300,6 +380,15 @@ namespace Concentus.Structs
             return use_vbr != 0;
         }
 
+        /** Configures the encoder's expected percentage of voice
+  * opposed to music or other signals.
+  *
+  * @note This interface is currently more aspiration than actuality. It's
+  * ultimately expected to bias an automatic signal classifier, but it currently
+  * just shifts the static bitrate to mode mapping around a little bit.
+  *
+  * @param[in] x <tt>int</tt>:   Voice percentage in the range 0-100, inclusive.
+  * @hideinitializer */
         public void SetVoiceRatio(int value)
         {
             if (value < -1 || value > 100)
@@ -310,6 +399,10 @@ namespace Concentus.Structs
             voice_ratio = value;
         }
 
+        /** Gets the encoder's configured voice ratio value, @see OPUS_SET_VOICE_RATIO
+  *
+  * @param[out] x <tt>int*</tt>:  Voice percentage in the range 0-100, inclusive.
+  * @hideinitializer */
         public int GetVoiceRatio()
         {
             return voice_ratio;

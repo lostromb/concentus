@@ -96,8 +96,6 @@ namespace TestConsole
 
         public class OpusCompressionStream : IAudioCompressionStream
         {
-            private const int OPUS_SET_BITRATE_REQUEST = 4002;
-            private const int OPUS_SET_COMPLEXITY_REQUEST = 4010;
             private const int OPUS_APPLICATION_VOIP = 2048;
             private const int OPUS_APPLICATION_MUSIC = 2049;
             private const int OUTPUT_FRAME_SIZE_MS = 60;

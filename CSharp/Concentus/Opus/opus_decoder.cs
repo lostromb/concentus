@@ -17,6 +17,17 @@ namespace Concentus
 {
     public static class opus_decoder
     {
+        /** Initializes a previously allocated decoder state.
+  * The state must be at least the size returned by opus_decoder_get_size().
+  * This is intended for applications which use their own allocator instead of malloc. @see opus_decoder_create,opus_decoder_get_size
+  * To reset a previously initialized state, use the #OPUS_RESET_STATE CTL.
+  * @param [in] st <tt>OpusDecoder*</tt>: Decoder state.
+  * @param [in] Fs <tt>opus_int32</tt>: Sampling rate to decode to (Hz).
+  *                                     This must be one of 8000, 12000, 16000,
+  *                                     24000, or 48000.
+  * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) to decode
+  * @retval #OPUS_OK Success or @ref opus_errorcodes
+  */
         public static int opus_decoder_init(OpusDecoder st, int Fs, int channels)
         {
             silk_decoder silk_dec;
@@ -54,6 +65,21 @@ namespace Concentus
             return OpusError.OPUS_OK;
         }
 
+        /** Allocates and initializes a decoder state.
+  * @param [in] Fs <tt>opus_int32</tt>: Sample rate to decode at (Hz).
+  *                                     This must be one of 8000, 12000, 16000,
+  *                                     24000, or 48000.
+  * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) to decode
+  * @param [out] error <tt>int*</tt>: #OPUS_OK Success or @ref opus_errorcodes
+  *
+  * Internally Opus stores data at 48000 Hz, so that should be the default
+  * value for Fs. However, the decoder can efficiently decode to buffers
+  * at 8, 12, 16, and 24 kHz so if for some reason the caller cannot use
+  * data at the full sample rate, or knows the compressed data doesn't
+  * use the full frequency range, it can request decoding at a reduced
+  * rate. Likewise, the decoder is capable of filling in either mono or
+  * interleaved stereo pcm buffers, at the caller's request.
+  */
         public static OpusDecoder opus_decoder_create(int Fs, int channels, BoxedValue<int> error)
         {
             int ret;
@@ -631,16 +657,73 @@ namespace Concentus
             return nb_samples;
         }
 
+        /** Decode an Opus packet.
+  * @param [in] st <tt>OpusDecoder*</tt>: Decoder state
+  * @param [in] data <tt>char*</tt>: Input payload. Use a NULL pointer to indicate packet loss
+  * @param [in] len <tt>opus_int32</tt>: Number of bytes in payload*
+  * @param [out] pcm <tt>opus_int16*</tt>: Output signal (interleaved if 2 channels). length
+  *  is frame_size*channels*sizeof(opus_int16)
+  * @param [in] frame_size Number of samples per channel of available space in \a pcm.
+  *  If this is less than the maximum packet duration (120ms; 5760 for 48kHz), this function will
+  *  not be capable of decoding some packets. In the case of PLC (data==NULL) or FEC (decode_fec=1),
+  *  then frame_size needs to be exactly the duration of audio that is missing, otherwise the
+  *  decoder will not be in the optimal state to decode the next incoming packet. For the PLC and
+  *  FEC cases, frame_size <b>must</b> be a multiple of 2.5 ms.
+  * @param [in] decode_fec <tt>int</tt>: Flag (0 or 1) to request that any in-band forward error correction data be
+  *  decoded. If no such data is available, the frame is decoded as if it were lost.
+  * @returns Number of decoded samples or @ref opus_errorcodes
+  */
         public static int opus_decode(OpusDecoder st, Pointer<byte> data,
              int len, Pointer<short> pcm, int frame_size, int decode_fec)
         {
             if (frame_size <= 0)
                 return OpusError.OPUS_BAD_ARG;
             int returnVal = opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, null, 0);
-            
+
             return returnVal;
         }
 
+        public static int opus_decode_float(OpusDecoder st, Pointer<byte> data,
+            int len, Pointer<float> pcm, int frame_size, int decode_fec)
+        {
+            Pointer<short> output;
+            int ret, i;
+            int nb_samples;
+
+            if (frame_size <= 0)
+            {
+                return OpusError.OPUS_BAD_ARG;
+            }
+            if (data != null && len > 0 && decode_fec == 0)
+            {
+                nb_samples = opus_decoder_get_nb_samples(st, data, len);
+                if (nb_samples > 0)
+                    frame_size = Inlines.IMIN(frame_size, nb_samples);
+                else
+                    return OpusError.OPUS_INVALID_PACKET;
+            }
+            output = Pointer.Malloc<short>(frame_size * st.channels);
+
+            ret = opus_decode_native(st, data, len, output, frame_size, decode_fec, 0, null, 0);
+
+            if (ret > 0)
+            {
+                for (i = 0; i < ret * st.channels; i++)
+                    pcm[i] = (1.0f / 32768.0f) * (output[i]);
+            }
+
+            return ret;
+        }
+
+        /** Gets the bandwidth of an Opus packet.
+        * @param [in] data <tt>char*</tt>: Opus packet
+        * @retval OPUS_BANDWIDTH_NARROWBAND Narrowband (4kHz bandpass)
+        * @retval OPUS_BANDWIDTH_MEDIUMBAND Mediumband (6kHz bandpass)
+        * @retval OPUS_BANDWIDTH_WIDEBAND Wideband (8kHz bandpass)
+        * @retval OPUS_BANDWIDTH_SUPERWIDEBAND Superwideband (12kHz bandpass)
+        * @retval OPUS_BANDWIDTH_FULLBAND Fullband (20kHz bandpass)
+        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
+*/
         public static int opus_packet_get_bandwidth(Pointer<byte> data)
         {
             int bandwidth;
@@ -661,11 +744,23 @@ namespace Concentus
             return bandwidth;
         }
 
+        /** Gets the number of channels from an Opus packet.
+        * @param [in] data <tt>char*</tt>: Opus packet
+        * @returns Number of channels
+        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
+*/
         public static int opus_packet_get_nb_channels(Pointer<byte> data)
         {
             return ((data[0] & 0x4) != 0) ? 2 : 1;
         }
 
+        /** Gets the number of frames in an Opus packet.
+        * @param [in] packet <tt>char*</tt>: Opus packet
+        * @param [in] len <tt>opus_int32</tt>: Length of packet
+        * @returns Number of frames
+        * @retval OPUS_BAD_ARG Insufficient data was passed to the function
+        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
+*/
         public static int opus_packet_get_nb_frames(Pointer<byte> packet, int len)
         {
             int count;
@@ -682,6 +777,16 @@ namespace Concentus
                 return packet[1] & 0x3F;
         }
 
+        /** Gets the number of samples of an Opus packet.
+        * @param [in] packet <tt>char*</tt>: Opus packet
+        * @param [in] len <tt>opus_int32</tt>: Length of packet
+        * @param [in] Fs <tt>opus_int32</tt>: Sampling rate in Hz.
+        *                                     This must be a multiple of 400, or
+        *                                     inaccurate results will be returned.
+        * @returns Number of samples
+        * @retval OPUS_BAD_ARG Insufficient data was passed to the function
+        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
+*/
         public static int opus_packet_get_nb_samples(Pointer<byte> packet, int len,
               int Fs)
         {
@@ -699,6 +804,14 @@ namespace Concentus
                 return samples;
         }
 
+        /** Gets the number of samples of an Opus packet.
+        * @param [in] dec <tt>OpusDecoder*</tt>: Decoder state
+        * @param [in] packet <tt>char*</tt>: Opus packet
+        * @param [in] len <tt>opus_int32</tt>: Length of packet
+        * @returns Number of samples
+        * @retval OPUS_BAD_ARG Insufficient data was passed to the function
+        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
+*/
         public static int opus_decoder_get_nb_samples(OpusDecoder dec,
               Pointer<byte> packet, int len)
         {

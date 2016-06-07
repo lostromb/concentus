@@ -508,8 +508,8 @@ namespace Concentus.Celt
                 decision = Spread.SPREAD_NONE;
             }
 #if FUZZING
-            decision = rand() & 0x3;
-            *tapset_decision = rand() % 3;
+            decision = new Random().Next() & 0x3;
+            tapset_decision.Val = new Random().Next() % 3;
 #endif
             return decision;
         }
