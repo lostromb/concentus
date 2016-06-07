@@ -281,7 +281,7 @@ namespace TestConsole
                 {
                     byte[] nextPacketData = _incomingBytes.Read(_nextPacketSize);
                     int thisFrameSize = opus_decoder.opus_decode(_hDecoder, nextPacketData.GetPointer(), _nextPacketSize, outputBuffer.GetPointer(outCursor), frameSize, 0);
-                    outCursor += thisFrameSize * 2;
+                    outCursor += thisFrameSize;
 
                     if (_incomingBytes.Available() >= 2)
                     {

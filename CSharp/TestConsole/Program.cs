@@ -25,10 +25,10 @@ namespace TestConsole
             OpusCodec opus = new OpusCodec();
             opus.Initialize();
             FileStream inputStream = new FileStream(@"C:\Users\Logan Stromberg\Documents\Visual Studio 2015\Projects\Concentus\TestConsole\Bathing in Stygian Blue.raw", FileMode.Open);
-            //FileStream outputStream = new FileStream(@"C:\Users\Logan Stromberg\Documents\Visual Studio 2015\Projects\Concentus\TestConsole\OUTPUT.raw", FileMode.Create);
+            FileStream outputStream = new FileStream(@"C:\Users\Logan Stromberg\Documents\Visual Studio 2015\Projects\Concentus\TestConsole\OUTPUT.raw", FileMode.Create);
             BinaryReader reader = new BinaryReader(inputStream);
             IAudioCompressionStream compressor = concentus.CreateCompressionStream(48000);
-            IAudioDecompressionStream decompressor = opus.CreateDecompressionStream(compressor.GetEncodeParams());
+            IAudioDecompressionStream decompressor = concentus.CreateDecompressionStream(compressor.GetEncodeParams());
 
             Stopwatch timer = new Stopwatch();
             timer.Start();
@@ -45,19 +45,19 @@ namespace TestConsole
                     AudioChunk audio = new AudioChunk(inBuf, 48000);
                     byte[] compressed = compressor.Compress(audio);
 
-                    /*if (compressed != null && compressed.Length > 0)
+                    if (compressed != null && compressed.Length > 0)
                     {
                         AudioChunk decompressed = decompressor.Decompress(compressed);
                         byte[] decompressedData = decompressed.GetDataAsBytes();
                         outputStream.Write(decompressedData, 0, decompressedData.Length);
                         outputStream.Flush();
-                    }*/
+                    }
                 }
             }
             catch (EndOfStreamException)
             {
                 inputStream.Close();
-                //outputStream.Close();
+                outputStream.Close();
             }
             Console.WriteLine(timer.ElapsedMilliseconds);
         }

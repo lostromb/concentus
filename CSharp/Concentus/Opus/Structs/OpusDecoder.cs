@@ -26,8 +26,8 @@ namespace Concentus.Structs
         public int prev_redundancy;
         public int last_packet_duration;
         public uint rangeFinal;
-        public silk_decoder SilkDecoder;
-        public CELTDecoder CeltDecoder;
+        public silk_decoder SilkDecoder = new silk_decoder();
+        public CELTDecoder CeltDecoder = new CELTDecoder();
 
         public void Reset()
         {
@@ -53,6 +53,8 @@ namespace Concentus.Structs
             prev_redundancy = 0;
             last_packet_duration = 0;
             rangeFinal = 0;
+            SilkDecoder.Reset();
+            CeltDecoder.Reset();
         }
     }
 }
