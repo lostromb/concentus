@@ -202,7 +202,9 @@ namespace Concentus.Structs
         public void ResetState()
         {
             silk_EncControlStruct dummy = new silk_EncControlStruct();
+#if ENABLE_ANALYSIS
             analysis.Reset();
+#endif
 
             PartialReset();
 

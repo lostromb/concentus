@@ -407,6 +407,7 @@ namespace Concentus
             features[23] = info.tonality_slope;
             features[24] = tonal.lowECount;
 
+#if ENABLE_ANALYSIS
             mlp.mlp_process(Tables.net, features, frame_probs);
             frame_probs[0] = .5f * (frame_probs[0] + 1);
             /* Curve fitting between the MLP probability and the actual probability */
@@ -526,7 +527,10 @@ namespace Concentus
             if (tonal.last_music != ((tonal.music_prob > .5f) ? 1 : 0))
                 tonal.last_transition = 0;
             tonal.last_music = (tonal.music_prob > .5f) ? 1 : 0;
-            
+#else
+            info.music_prob = 0;
+#endif
+
             info.bandwidth = bandwidth;
             info.noisiness = frame_noisiness;
             info.valid = 1;
