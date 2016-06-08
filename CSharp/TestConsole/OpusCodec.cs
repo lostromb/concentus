@@ -13,7 +13,7 @@ namespace TestConsole
 
     public class OpusCodec
     {
-        private int _quality = 96;
+        private int _quality = 16;
 
         public OpusCodec()
         {

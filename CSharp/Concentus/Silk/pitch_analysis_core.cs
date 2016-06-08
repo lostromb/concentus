@@ -607,8 +607,10 @@ namespace Concentus.Silk
                 lagIndex.Val = (short)(lag - MIN_LAG_8KHZ);
                 contourIndex.Val = (sbyte)CBimax;
             }
-            Inlines.OpusAssert(lagIndex.Val >= 0);
+            //Inlines.OpusAssert(lagIndex.Val >= 0);
             /* return as voiced */
+            if (lagIndex.Val < 0)
+                lagIndex.Val = 0; // FIXME HACK to prevent <0 errors
 
             return 0;
         }

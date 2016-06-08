@@ -13,7 +13,7 @@ namespace TestConsole
 
     public class ConcentusCodec
     {
-        private int _quality = 32;
+        private int _quality = 16;
 
         public ConcentusCodec()
         {

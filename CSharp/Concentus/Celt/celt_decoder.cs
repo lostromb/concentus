@@ -95,7 +95,6 @@ namespace Concentus.Celt
             int apply_downsampling = 0;
             int coef0;
             Pointer<int> scratch = Pointer.Malloc<int>(N);
-            Inlines.OpusAssert(accum == 0);
             coef0 = coef[0];
             Nd = N / downsample;
             c = 0; do
