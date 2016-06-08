@@ -608,11 +608,9 @@ namespace Concentus.Silk
                 contourIndex.Val = (sbyte)CBimax;
             }
             //Inlines.OpusAssert(lagIndex.Val >= 0);
-            // FIXME: HACK for a rounding error(?) that can cause lag to go to -1
-            if (lagIndex.Val < 0)
-                lagIndex.Val = 0;
-            
             /* return as voiced */
+            if (lagIndex.Val < 0)
+                lagIndex.Val = 0; // FIXME HACK to prevent <0 errors
 
             return 0;
         }
