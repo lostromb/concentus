@@ -678,9 +678,7 @@ namespace Concentus
         {
             if (frame_size <= 0)
                 return OpusError.OPUS_BAD_ARG;
-            int returnVal = opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, null, 0);
-
-            return returnVal;
+            return  opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, null, 0);
         }
 
         public static int opus_decode_float(OpusDecoder st, Pointer<byte> data,

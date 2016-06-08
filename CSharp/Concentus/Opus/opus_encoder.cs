@@ -350,7 +350,7 @@ namespace Concentus
         }
 
         /* Don't use more than 60 ms for the frame size analysis */
-        public const int MAX_DYNAMIC_FRAMESIZE = 24;
+        private const int MAX_DYNAMIC_FRAMESIZE = 24;
 
         /* Estimates how much the bitrate will be boosted based on the sub-frame energy */
         public static float transient_boost(Pointer<float> E, Pointer<float> E_1, int LM, int maxM)
@@ -484,14 +484,14 @@ namespace Concentus
         }
 
         public static int optimize_framesize<T>(Pointer<T> x, int len, int C, int Fs,
-                        int bitrate, float tonality, Pointer<float> mem, int buffering,
+                        int bitrate, int tonality, Pointer<float> mem, int buffering,
                         downmix_func_def.downmix_func<T> downmix)
         {
             int N;
             int i;
             float[] e = new float[MAX_DYNAMIC_FRAMESIZE + 4];
             float[] e_1 = new float[MAX_DYNAMIC_FRAMESIZE + 3];
-            float memx;
+            int memx;
             int bestLM = 0;
             int subframe;
             int pos;
@@ -525,7 +525,7 @@ namespace Concentus
             for (i = 0; i < N; i++)
             {
                 float tmp;
-                float tmpx;
+                int tmpx;
                 int j;
                 tmp = CeltConstants.EPSILON;
 
@@ -821,7 +821,7 @@ namespace Concentus
             celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_GET_MODE_REQUEST, boxedMode);
             celt_mode = boxedMode.Val;
             analysis_info.valid = 0;
-            if (st.silk_mode.complexity >= 10 && st.Fs == 48000)
+            if (st.silk_mode.complexity >= 7 && st.Fs == 48000)
             {
                 analysis_read_pos_bak = st.analysis.read_pos;
                 analysis_read_subframe_bak = st.analysis.read_subframe;
@@ -1879,6 +1879,8 @@ namespace Concentus
             int i, ret;
             int frame_size;
             int delay_compensation;
+            Pointer<int> input;
+
             if (st.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 delay_compensation = 0;
             else
@@ -1888,7 +1890,7 @@ namespace Concentus
                   st.variable_duration, st.channels, st.Fs, st.bitrate_bps,
                   delay_compensation, downmix_float, st.analysis.subframe_mem);
 
-            Pointer<int> input = Pointer.Malloc<int>(frame_size * st.channels);
+            input = Pointer.Malloc<int>(frame_size * st.channels);
 
             for (i = 0; i < frame_size * st.channels; i++)
                 input[i] = Inlines.FLOAT2INT16(pcm[i]);
