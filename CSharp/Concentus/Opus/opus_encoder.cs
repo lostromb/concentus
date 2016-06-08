@@ -108,7 +108,9 @@ namespace Concentus
             st.mode = OpusMode.MODE_HYBRID;
             st.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
 
+#if ENABLE_ANALYSIS
             analysis.tonality_analysis_init(st.analysis);
+#endif
 
             return OpusError.OPUS_OK;
         }
@@ -350,7 +352,7 @@ namespace Concentus
         }
 
         /* Don't use more than 60 ms for the frame size analysis */
-        public const int MAX_DYNAMIC_FRAMESIZE = 24;
+        private const int MAX_DYNAMIC_FRAMESIZE = 24;
 
         /* Estimates how much the bitrate will be boosted based on the sub-frame energy */
         public static float transient_boost(Pointer<float> E, Pointer<float> E_1, int LM, int maxM)
@@ -484,14 +486,14 @@ namespace Concentus
         }
 
         public static int optimize_framesize<T>(Pointer<T> x, int len, int C, int Fs,
-                        int bitrate, float tonality, Pointer<float> mem, int buffering,
+                        int bitrate, int tonality, Pointer<float> mem, int buffering,
                         downmix_func_def.downmix_func<T> downmix)
         {
             int N;
             int i;
             float[] e = new float[MAX_DYNAMIC_FRAMESIZE + 4];
             float[] e_1 = new float[MAX_DYNAMIC_FRAMESIZE + 3];
-            float memx;
+            int memx;
             int bestLM = 0;
             int subframe;
             int pos;
@@ -525,7 +527,7 @@ namespace Concentus
             for (i = 0; i < N; i++)
             {
                 float tmp;
-                float tmpx;
+                int tmpx;
                 int j;
                 tmp = CeltConstants.EPSILON;
 
@@ -638,10 +640,13 @@ namespace Concentus
 
         public static int compute_frame_size<T>(Pointer<T> analysis_pcm, int frame_size,
               int variable_duration, int C, int Fs, int bitrate_bps,
-              int delay_compensation, downmix_func_def.downmix_func<T> downmix,
-              Pointer<float> subframe_mem
+              int delay_compensation, downmix_func_def.downmix_func<T> downmix
+#if ENABLE_ANALYSIS
+              , Pointer<float> subframe_mem
+#endif
               )
         {
+#if ENABLE_ANALYSIS
             if (variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size >= Fs / 200)
             {
                 int LM = 3;
@@ -652,6 +657,7 @@ namespace Concentus
                 frame_size = (Fs / 400 << LM);
             }
             else
+#endif
             {
                 frame_size = frame_size_select(frame_size, variable_duration, Fs);
             }
@@ -792,9 +798,11 @@ namespace Concentus
             int total_buffer;
             int stereo_width;
             CELTMode celt_mode; // porting note: pointer
+#if ENABLE_ANALYSIS
             AnalysisInfo analysis_info = new AnalysisInfo(); // porting note: stack var
             int analysis_read_pos_bak = -1;
             int analysis_read_subframe_bak = -1;
+#endif
             Pointer<int> tmp_prefill;
 
             max_data_bytes = Inlines.IMIN(1276, out_data_bytes);
@@ -820,8 +828,9 @@ namespace Concentus
             BoxedValue<CELTMode> boxedMode = new BoxedValue<CELTMode>();
             celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_GET_MODE_REQUEST, boxedMode);
             celt_mode = boxedMode.Val;
+#if ENABLE_ANALYSIS
             analysis_info.valid = 0;
-            if (st.silk_mode.complexity >= 10 && st.Fs == 48000)
+            if (st.silk_mode.complexity >= 7 && st.Fs == 48000)
             {
                 analysis_read_pos_bak = st.analysis.read_pos;
                 analysis_read_subframe_bak = st.analysis.read_subframe;
@@ -829,9 +838,11 @@ namespace Concentus
                       c1, c2, analysis_channels, st.Fs,
                       lsb_depth, downmix, analysis_info);
             }
+#endif
 
             st.voice_ratio = -1;
 
+#if ENABLE_ANALYSIS
             st.detected_bandwidth = 0;
             if (analysis_info.valid != 0)
             {
@@ -851,6 +862,7 @@ namespace Concentus
                 else
                     st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
             }
+#endif
 
             if (st.channels == 2 && st.force_channels != 1)
                 stereo_width = compute_stereo_width(pcm, frame_size, st.Fs, st.width_mem);
@@ -1177,11 +1189,13 @@ namespace Concentus
                 int bytes_per_frame;
                 int repacketize_len;
 
+#if ENABLE_ANALYSIS
                 if (analysis_read_pos_bak != -1)
                 {
                     st.analysis.read_pos = analysis_read_pos_bak;
                     st.analysis.read_subframe = analysis_read_subframe_bak;
                 }
+#endif
 
                 nb_frames = frame_size > st.Fs / 25 ? 3 : 2;
                 bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
@@ -1558,12 +1572,14 @@ namespace Concentus
                     if (st.use_vbr != 0)
                     {
                         int bonus = 0;
+#if ENABLE_ANALYSIS
                         if (st.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size != st.Fs / 50)
                         {
                             bonus = (60 * st.stream_channels + 40) * (st.Fs / frame_size - 50);
                             if (analysis_info.valid != 0)
                                 bonus = (int)(bonus * (1.0f + .5f * analysis_info.tonality));
                         }
+#endif
                         celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_REQUEST, (1));
                         celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, (st.vbr_constraint));
                         celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_BITRATE_REQUEST, (st.bitrate_bps + bonus));
@@ -1666,9 +1682,10 @@ namespace Concentus
                 EntropyCoder.ec_enc_shrink(enc, (uint)nb_compr_bytes);
             }
 
+#if ENABLE_ANALYSIS
             if (redundancy != 0 || st.mode != OpusMode.MODE_SILK_ONLY)
                 celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_ANALYSIS_REQUEST, (analysis_info));
-
+#endif
             /* 5 ms redundant frame for CELT.SILK */
             if (redundancy != 0 && celt_to_silk != 0)
             {
@@ -1829,7 +1846,11 @@ namespace Concentus
 
             frame_size = compute_frame_size(pcm, analysis_frame_size,
                   st.variable_duration, st.channels, st.Fs, st.bitrate_bps,
-                  delay_compensation, downmix_int, st.analysis.subframe_mem);
+                  delay_compensation, downmix_int
+#if ENABLE_ANALYSIS
+                  , st.analysis.subframe_mem
+#endif
+                  );
 
             // fixme: does this belong here?
             Pointer<int> input = Pointer.Malloc<int>(frame_size * st.channels);
@@ -1879,6 +1900,8 @@ namespace Concentus
             int i, ret;
             int frame_size;
             int delay_compensation;
+            Pointer<int> input;
+
             if (st.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 delay_compensation = 0;
             else
@@ -1886,9 +1909,13 @@ namespace Concentus
 
             frame_size = compute_frame_size(pcm, analysis_frame_size,
                   st.variable_duration, st.channels, st.Fs, st.bitrate_bps,
-                  delay_compensation, downmix_float, st.analysis.subframe_mem);
+                  delay_compensation, downmix_float
+#if ENABLE_ANALYSIS
+                  , st.analysis.subframe_mem
+#endif
+                  );
 
-            Pointer<int> input = Pointer.Malloc<int>(frame_size * st.channels);
+            input = Pointer.Malloc<int>(frame_size * st.channels);
 
             for (i = 0; i < frame_size * st.channels; i++)
                 input[i] = Inlines.FLOAT2INT16(pcm[i]);

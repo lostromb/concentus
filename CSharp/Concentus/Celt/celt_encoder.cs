@@ -629,13 +629,13 @@ namespace Concentus.Celt
             trim -= Inlines.MAX16(Inlines.NEG16(Inlines.QCONST16(2.0f, 8)), Inlines.MIN16(Inlines.QCONST16(2.0f, 8), (Inlines.SHR16((diff + Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)), CeltConstants.DB_SHIFT - 8) / 6)));
             trim -= Inlines.SHR16(surround_trim, CeltConstants.DB_SHIFT - 8);
             trim = (trim - 2 * Inlines.SHR16(tf_estimate, 14 - 8));
-
+#if ENABLE_ANALYSIS
             if (analysis.valid != 0)
             {
                 trim -= Inlines.MAX16(-Inlines.QCONST16(2.0f, 8), Inlines.MIN16(Inlines.QCONST16(2.0f, 8),
                       (int)(Inlines.QCONST16(2.0f, 8) * (analysis.tonality_slope + .05f))));
             }
-
+#endif
             trim_index = Inlines.PSHR32(trim, 8);
             trim_index = Inlines.IMAX(0, Inlines.IMIN(10, trim_index));
             /*printf("%d\n", trim_index);*/
@@ -1064,6 +1064,7 @@ namespace Concentus.Celt
                              Inlines.QCONST16(0.02f, 14) : Inlines.QCONST16(0.04f, 14);
             target += (int)Inlines.SHL32(Inlines.MULT16_32_Q15(tf_estimate - tf_calibration, target), 1);
 
+#if ENABLE_ANALYSIS
             /* Apply tonality boost */
             if (analysis.valid != 0 && lfe == 0)
             {
@@ -1077,6 +1078,7 @@ namespace Concentus.Celt
                     tonal_target += (int)((coded_bins << EntropyCoder.BITRES) * .8f);
                 target = tonal_target;
             }
+#endif
 
             if (has_surround_mask != 0 && lfe == 0)
             {
@@ -1813,6 +1815,7 @@ namespace Concentus.Celt
             bits -= anti_collapse_rsv;
             signalBandwidth = end - 1;
 
+#if ENABLE_ANALYSIS
             if (st.analysis.valid != 0)
             {
                 int min_bandwidth;
@@ -1828,6 +1831,7 @@ namespace Concentus.Celt
                     min_bandwidth = 20;
                 signalBandwidth = Inlines.IMAX(st.analysis.bandwidth, min_bandwidth);
             }
+#endif
 
             if (st.lfe != 0)
             {

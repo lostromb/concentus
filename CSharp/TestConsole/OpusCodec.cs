@@ -13,10 +13,12 @@ namespace TestConsole
 
     public class OpusCodec
     {
-        private int _quality = 96;
+        private int _quality = 32;
+        private const string OPUS_TARGET_DLL = "opus64-fix.dll";
 
-        public OpusCodec()
+        public OpusCodec(int bitrate)
         {
+            _quality = bitrate;
         }
 
         /// <summary>
@@ -96,16 +98,16 @@ namespace TestConsole
 
         public class OpusCompressionStream : IAudioCompressionStream, IDisposable
         {
-            [DllImport("opus64-fix.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
             private static extern IntPtr opus_encoder_create(int Fs, int channels, int application, out IntPtr error);
 
-            [DllImport("opus64-fix.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
             private static extern void opus_encoder_destroy(IntPtr encoder);
 
-            [DllImport("opus64-fix.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
             private static extern int opus_encode(IntPtr st, byte[] pcm, int frame_size, IntPtr data, int max_data_bytes);
 
-            [DllImport("opus64-fix.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
             private static extern int opus_encoder_ctl(IntPtr st, int request, int value);
 
             private const int OPUS_SET_BITRATE_REQUEST = 4002;
@@ -257,13 +259,13 @@ namespace TestConsole
 
         public class OpusDecompressionStream : IAudioDecompressionStream, IDisposable
         {
-            [DllImport("opus64-fix.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
             private static extern IntPtr opus_decoder_create(int Fs, int channels, out IntPtr error);
 
-            [DllImport("opus64-fix.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
             private static extern void opus_decoder_destroy(IntPtr decoder);
 
-            [DllImport("opus64-fix.dll", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
             private static extern int opus_decode(IntPtr st, byte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
 
             /// <summary>
