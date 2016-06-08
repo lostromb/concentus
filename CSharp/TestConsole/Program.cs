@@ -8,12 +8,13 @@ namespace TestConsole
     {
         public static void Main(string[] args)
         {
-            ConcentusCodec concentus = new ConcentusCodec();
+            int quality = 16;
+            ConcentusCodec concentus = new ConcentusCodec(quality);
             concentus.Initialize();
-            OpusCodec opus = new OpusCodec();
+            OpusCodec opus = new OpusCodec(quality);
             opus.Initialize();
             FileStream inputStream = new FileStream(@"Henrik Jose - Blunderbuss.wav", FileMode.Open);
-            FileStream outputStream = new FileStream(@"Output.wav", FileMode.Create);
+            FileStream outputStream = new FileStream(@"Concentus.wav", FileMode.Create);
             BinaryReader reader = new BinaryReader(inputStream);
             IAudioCompressionStream compressor = concentus.CreateCompressionStream(48000);
             IAudioDecompressionStream decompressor = concentus.CreateDecompressionStream(compressor.GetEncodeParams());

@@ -15,8 +15,9 @@ namespace TestConsole
     {
         private int _quality = 32;
 
-        public ConcentusCodec()
+        public ConcentusCodec(int bitrate)
         {
+            _quality = bitrate;
         }
 
         /// <summary>

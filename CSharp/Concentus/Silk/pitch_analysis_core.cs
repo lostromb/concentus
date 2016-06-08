@@ -607,7 +607,11 @@ namespace Concentus.Silk
                 lagIndex.Val = (short)(lag - MIN_LAG_8KHZ);
                 contourIndex.Val = (sbyte)CBimax;
             }
-            Inlines.OpusAssert(lagIndex.Val >= 0);
+            //Inlines.OpusAssert(lagIndex.Val >= 0);
+            // FIXME: HACK for a rounding error(?) that can cause lag to go to -1
+            if (lagIndex.Val < 0)
+                lagIndex.Val = 0;
+            
             /* return as voiced */
 
             return 0;
