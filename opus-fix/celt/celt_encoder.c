@@ -1393,11 +1393,11 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
 	int nbCompressedBytes, // I Inputs maximum number of output bytes allowed (i.e. size of buffer)
 	ec_enc *enc) // I/O An entropy coder
 {
-	if (TEST_COUNT == TARGET_TEST)
+	/*if (TEST_COUNT == TARGET_TEST)
 	{
 		fprintf(stdout, "Test begin------------------------------------------------\n");
 		enc->EC_DIFF = 1;
-	}
+	}*/
 	
 	/*NailTestPrintTestHeader("celt_encode_with_ec");
 	fprintf(stdout, "CELTEncoder ");
@@ -1651,11 +1651,6 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
                   mode->preemph, st->preemph_memE+c, need_clip);
    } while (++c<CC);
 
-   for (int zz = 0; zz < 480; zz++)
-   {
-	   fprintf(stdout, "14a %d\n", in[zz]);
-   }
-
    /* Find pitch period and gain */
    {
       int enabled;
@@ -1665,11 +1660,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
 
       prefilter_tapset = st->tapset_decision;
       pf_on = run_prefilter(st, in, prefilter_mem, CC, N, prefilter_tapset, &pitch_index, &gain1, &qg, enabled, nbAvailableBytes);
-	  for (int zz = 0; zz < 480; zz++)
-	  {
-		  fprintf(stdout, "14b %d\n", in[zz]);
-	  }
-
+	  
 	  if ((gain1 > QCONST16(.4f,15) || st->prefilter_gain > QCONST16(.4f,15)) && (!st->analysis.valid || st->analysis.tonality > .3)
             && (pitch_index > 1.26*st->prefilter_period || pitch_index < .79*st->prefilter_period)) // opus bug: why is floating point used here?
          pitch_change = 1;
@@ -1698,11 +1689,6 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
    {
       isTransient = transient_analysis(in, N+overlap, CC,
             &tf_estimate, &tf_chan);
-   }
-
-   for (int zz = 0; zz < 480; zz++)
-   {
-	   fprintf(stdout, "14c %d\n", in[zz]);
    }
 
    if (LM>0 && ec_tell(enc)+3<=total_bits)
@@ -2280,12 +2266,12 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
    fprintf(stdout, "Helpers.AssertEcCtxEquals(expected_enc, through_enc);\n");
    NailTestPrintTestFooter();*/
 
-   if (TEST_COUNT++ == TARGET_TEST)
+   /*if (TEST_COUNT++ == TARGET_TEST)
    {
 	   //fprintf(stdout, "Test end\n");
 	   exit(0);
-   }
-
+   }*/
+   
    if (ec_get_error(enc))
       return OPUS_INTERNAL_ERROR;
    else
