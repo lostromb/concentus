@@ -86,11 +86,14 @@
     <Compile Include="Opus\opus_compare.cs" />
     <Compile Include="Opus\opus_decoder.cs" />
     <Compile Include="Opus\opus_encoder.cs" />
+    <Compile Include="Opus\opus_multistream.cs" />
+    <Compile Include="Opus\opus_multistream_encoder.cs" />
     <Compile Include="Opus\repacketizer.cs" />
     <Compile Include="Opus\Structs\ChannelLayout.cs" />
     <Compile Include="Opus\Structs\MLP.cs" />
     <Compile Include="Opus\Structs\OpusDecoder.cs" />
     <Compile Include="Opus\Structs\OpusEncoder.cs" />
+    <Compile Include="Opus\Structs\OpusMSEncoder.cs" />
     <Compile Include="Opus\Structs\OpusRepacketizer.cs" />
     <Compile Include="Opus\Structs\StereoWidthState.cs" />
     <Compile Include="Opus\Structs\TonalityAnalysisState.cs" />
