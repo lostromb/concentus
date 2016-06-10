@@ -28,6 +28,8 @@ namespace Concentus.Opus.Structs
                 throw new ArgumentException("Invalid channel count in MS encoder");
 
             encoders = new OpusEncoder[nb_streams];
+            for (int c = 0; c < nb_streams; c++)
+                encoders[c] = new OpusEncoder();
             // fixme is this nb_streams or nb_channels?
             window_mem = new int[nb_streams * 120];
             preemph_mem = new int[nb_streams];
@@ -294,6 +296,8 @@ namespace Concentus.Opus.Structs
         
         public OpusEncoder GetMultistreamEncoderState(int streamId)
         {
+            if (streamId >= layout.nb_streams)
+                throw new ArgumentException("Requested stream doesn't exist");
             return encoders[streamId];
         }
 

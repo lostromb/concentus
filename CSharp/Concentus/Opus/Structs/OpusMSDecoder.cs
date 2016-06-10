@@ -16,6 +16,8 @@ namespace Concentus.Opus.Structs
         public OpusMSDecoder(int nb_streams, int nb_coupled_streams)
         {
             decoders = new OpusDecoder[nb_streams];
+            for (int c = 0; c < nb_streams; c++)
+                decoders[c] = new OpusDecoder();
         }
 
         public int GetBandwidth()

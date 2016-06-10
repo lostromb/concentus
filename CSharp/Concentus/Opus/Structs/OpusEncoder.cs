@@ -195,8 +195,8 @@ namespace Concentus.Structs
             delay_buffer.MemSet(0, OpusConstants.MAX_ENCODER_BUFFER * 2);
             detected_bandwidth = 0;
             rangeFinal = 0;
-            SilkEncoder.Reset();
-            CeltEncoder.Reset();
+            //SilkEncoder.Reset();
+            //CeltEncoder.Reset();
         }
 
         public void ResetState()
