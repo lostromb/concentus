@@ -274,61 +274,6 @@ namespace Concentus.Opus
             }
         }
 
-        //public int opus_multistream_encoder_get_size(int nb_streams, int nb_coupled_streams)
-        //{
-        //    int coupled_size;
-        //    int mono_size;
-
-        //    if (nb_streams < 1 || nb_coupled_streams > nb_streams || nb_coupled_streams < 0) return 0;
-        //    coupled_size = opus_encoder_get_size(2);
-        //    mono_size = opus_encoder_get_size(1);
-        //    return align(sizeof(OpusMSEncoder))
-        //         + nb_coupled_streams * align(coupled_size)
-        //         + (nb_streams - nb_coupled_streams) * align(mono_size);
-        //}
-
-        //int opus_multistream_surround_encoder_get_size(int channels, int mapping_family)
-        //{
-        //    int nb_streams;
-        //    int nb_coupled_streams;
-        //    int size;
-
-        //    if (mapping_family == 0)
-        //    {
-        //        if (channels == 1)
-        //        {
-        //            nb_streams = 1;
-        //            nb_coupled_streams = 0;
-        //        }
-        //        else if (channels == 2)
-        //        {
-        //            nb_streams = 1;
-        //            nb_coupled_streams = 1;
-        //        }
-        //        else
-        //            return 0;
-        //    }
-        //    else if (mapping_family == 1 && channels <= 8 && channels >= 1)
-        //    {
-        //        nb_streams = vorbis_mappings[channels - 1].nb_streams;
-        //        nb_coupled_streams = vorbis_mappings[channels - 1].nb_coupled_streams;
-        //    }
-        //    else if (mapping_family == 255)
-        //    {
-        //        nb_streams = channels;
-        //        nb_coupled_streams = 0;
-        //    }
-        //    else
-        //        return 0;
-        //    size = opus_multistream_encoder_get_size(nb_streams, nb_coupled_streams);
-        //    if (channels > 2)
-        //    {
-        //        size += channels * (120 * sizeof(int) + sizeof(int));
-        //    }
-        //    return size;
-        //}
-
-
         public static int opus_multistream_encoder_init(
               OpusMSEncoder st,
               int Fs,
@@ -465,12 +410,6 @@ namespace Concentus.Opus
                 return null;
             }
             st = new OpusMSEncoder(streams, coupled_streams);
-            if (st == null)
-            {
-                if (error != null)
-                    error.Val = OpusError.OPUS_ALLOC_FAIL;
-                return null;
-            }
             ret = opus_multistream_encoder_init(st, Fs, channels, streams, coupled_streams, mapping, application, 0);
             if (ret != OpusError.OPUS_OK)
             {

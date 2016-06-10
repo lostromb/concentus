@@ -18,11 +18,8 @@ namespace Concentus.Opus.Structs
         public int surround = 0;
         public int bitrate_bps = 0;
         public float[] subframe_mem = new float[3];
-        /* Encoder states go here */
         public OpusEncoder[] encoders = null;
-        /* then int window_mem[channels*120]; */
         public int[] window_mem = null;
-        /* then int preemph_mem[channels]; */
         public int[] preemph_mem = null;
 
         public OpusMSEncoder(int nb_streams, int nb_coupled_streams)
@@ -31,7 +28,7 @@ namespace Concentus.Opus.Structs
                 throw new ArgumentException("Invalid channel count in MS encoder");
 
             encoders = new OpusEncoder[nb_streams];
-            // fixme is this the right size?
+            // fixme is this nb_streams or nb_channels?
             window_mem = new int[nb_streams * 120];
             preemph_mem = new int[nb_streams];
         }
