@@ -59,8 +59,7 @@ namespace Concentus.Silk
                 {
                     max_gain_Q7 = Inlines.silk_log2lin((Inlines.SILK_FIX_CONST(TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f, 7) - sum_log_gain_tmp_Q7)
                                                 + Inlines.SILK_FIX_CONST(7, 7)) - gain_safety;
-
-
+                    
                     BoxedValue<sbyte> temp_idx_box = new BoxedValue<sbyte>(temp_idx[j]);
                     BoxedValue<int> rate_dist_Q14_subfr_box = new BoxedValue<int>();
                     BoxedValue<int> gain_Q7_box = new BoxedValue<int>();
@@ -79,6 +78,7 @@ namespace Concentus.Silk
                     );
                     rate_dist_Q14_subfr = rate_dist_Q14_subfr_box.Val;
                     gain_Q7 = gain_Q7_box.Val;
+                    temp_idx[j] = temp_idx_box.Val;
 
                     rate_dist_Q14 = Inlines.silk_ADD_POS_SAT32(rate_dist_Q14, rate_dist_Q14_subfr);
                     sum_log_gain_tmp_Q7 = Inlines.silk_max(0, sum_log_gain_tmp_Q7

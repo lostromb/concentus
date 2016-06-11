@@ -28,8 +28,7 @@ namespace Concentus.Silk
             Pointer<short> LPC_in_pre;
             int tmp, min_gain_Q16, minInvGain_Q30;
             Pointer<int> LTP_corrs_rshift = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
-
-
+            
             /* weighting for weighted least squares */
             min_gain_Q16 = int.MaxValue >> 6;
             for (i = 0; i < psEnc.sCmn.nb_subfr; i++)

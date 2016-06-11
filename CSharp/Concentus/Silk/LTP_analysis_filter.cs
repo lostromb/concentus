@@ -11,7 +11,7 @@ namespace Concentus.Silk
         public static void silk_LTP_analysis_filter_FIX(
             Pointer<short> LTP_res,                               /* O    LTP residual signal of length SilkConstants.MAX_NB_SUBFR * ( pre_length + subfr_length )  */
             Pointer<short> x,                                     /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
-            Pointer<short> LTPCoef_Q14,/* I    SilkConstants.LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe  [SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR]                 */
+            Pointer<short> LTPCoef_Q14,/* I     LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe  [SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR]                 */
             Pointer<int> pitchL,                 /* I    Pitch lag, one for each subframe [SilkConstants.MAX_NB_SUBFR]                                           */
             Pointer<int> invGains_Q16,           /* I    Inverse quantization gains, one for each subframe [SilkConstants.MAX_NB_SUBFR]                           */
             int subfr_length,                           /* I    Length of each subframe                                                     */
