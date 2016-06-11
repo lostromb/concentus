@@ -84,6 +84,7 @@
     <Compile Include="TestNLSF.cs" />
     <Compile Include="TestNoiseShapeAnalysis.cs" />
     <Compile Include="TestNSQ.cs" />
+    <Compile Include="TestOpusEndToEnd.cs" />
     <Compile Include="TestPointers.cs" />
     <Compile Include="TestPrefilter.cs" />
     <Compile Include="TestProcessGains.cs" />

@@ -22,7 +22,7 @@ namespace TestConsole
         }
 
         /// <summary>
-        /// The bitrate to use for encoding. 24 is the default
+        /// The bitrate to use for encoding.
         /// </summary>
         public int QualityKbps
         {

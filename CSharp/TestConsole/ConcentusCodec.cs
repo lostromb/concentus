@@ -7,6 +7,7 @@ namespace TestConsole
 {
     using Concentus;
     using Concentus.Common.CPlusPlus;
+    using Concentus.Opus.Enums;
     using Concentus.Structs;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
@@ -21,7 +22,7 @@ namespace TestConsole
         }
 
         /// <summary>
-        /// The bitrate to use for encoding. 24 is the default
+        /// The bitrate to use for encoding.
         /// </summary>
         public int QualityKbps
         {
@@ -97,8 +98,6 @@ namespace TestConsole
 
         public class OpusCompressionStream : IAudioCompressionStream
         {
-            private const int OPUS_APPLICATION_VOIP = 2048;
-            private const int OPUS_APPLICATION_MUSIC = 2049;
             private const int OUTPUT_FRAME_SIZE_MS = 60;
 
             private BasicBufferShort _incomingSamples;
@@ -142,7 +141,7 @@ namespace TestConsole
             public bool Initialize()
             {
                 BoxedValue<int> error = new BoxedValue<int>();
-                _hEncoder = opus_encoder.opus_encoder_create(_sampleRate, 1, OPUS_APPLICATION_MUSIC, error);
+                _hEncoder = opus_encoder.opus_encoder_create(_sampleRate, 1, OpusApplication.OPUS_APPLICATION_AUDIO, error);
                 if (error.Val != 0)
                 {
                     return false;
@@ -151,7 +150,7 @@ namespace TestConsole
                 // Set the encoder bitrate and complexity
                 _hEncoder.SetBitrate(_qualityKbps * 1024);
                 _hEncoder.SetComplexity(10);
-                    
+
                 return true;
             }
 
@@ -180,14 +179,14 @@ namespace TestConsole
                     }
                 }
 
-                byte[] outputBuffer = new byte[_incomingSamples.Available() * 3];
+                byte[] outputBuffer = new byte[frameSize * 2];
                 int outCursor = 0;
                 
                 while (outCursor < outputBuffer.Length - 4000 && _incomingSamples.Available() >= frameSize)
                 {
                     short[] nextFrameData = _incomingSamples.Read(frameSize);
                     int thisPacketSize = opus_encoder.opus_encode(_hEncoder, nextFrameData.GetPointer(), frameSize, outputBuffer.GetPointer(outCursor + 2), 4000);
-                    byte[] packetSize = BitConverter.GetBytes(thisPacketSize);
+                    byte[] packetSize = BitConverter.GetBytes((ushort)thisPacketSize);
                     outputBuffer[outCursor++] = packetSize[0];
                     outputBuffer[outCursor++] = packetSize[1];
                     outCursor += thisPacketSize;
@@ -216,7 +215,7 @@ namespace TestConsole
 
             private BasicBufferByte _incomingBytes;
 
-            private int _nextPacketSize = 0;
+            private ushort _nextPacketSize = 0;
             private float _outputFrameLengthMs;
             private int _outputSampleRate;
 
@@ -272,7 +271,7 @@ namespace TestConsole
                 if (_nextPacketSize <= 0 && _incomingBytes.Available() >= 2)
                 {
                     byte[] packetSize = _incomingBytes.Read(2);
-                    _nextPacketSize = BitConverter.ToInt16(packetSize, 0);
+                    _nextPacketSize = BitConverter.ToUInt16(packetSize, 0);
                 }
                 
                 while (_nextPacketSize > 0 && _incomingBytes.Available() >= _nextPacketSize)
@@ -284,7 +283,7 @@ namespace TestConsole
                     if (_incomingBytes.Available() >= 2)
                     {
                         byte[] packetSize = _incomingBytes.Read(2);
-                        _nextPacketSize = BitConverter.ToInt16(packetSize, 0);
+                        _nextPacketSize = BitConverter.ToUInt16(packetSize, 0);
                     }
                     else
                     {

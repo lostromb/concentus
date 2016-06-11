@@ -8,7 +8,7 @@ namespace TestConsole
     {
         public static void Main(string[] args)
         {
-            int quality = 16;
+            int quality = 64;
             ConcentusCodec concentus = new ConcentusCodec(quality);
             concentus.Initialize();
             OpusCodec opus = new OpusCodec(quality);
@@ -16,12 +16,14 @@ namespace TestConsole
             FileStream inputStream = new FileStream(@"Henrik Jose - Blunderbuss.wav", FileMode.Open);
             FileStream outputStream = new FileStream(@"Concentus.wav", FileMode.Create);
             BinaryReader reader = new BinaryReader(inputStream);
-            IAudioCompressionStream compressor = opus.CreateCompressionStream(48000);
+            IAudioCompressionStream compressor = concentus.CreateCompressionStream(48000);
             IAudioDecompressionStream decompressor = concentus.CreateDecompressionStream(compressor.GetEncodeParams());
+
+            int inputTimeMs = 0;
 
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            short[] inBuf = new short[320];
+            short[] inBuf = new short[2880];
             try
             {
                 byte[] wavHeader = reader.ReadBytes(48);
@@ -32,6 +34,8 @@ namespace TestConsole
                     {
                         inBuf[c] = reader.ReadInt16();
                     }
+
+                    inputTimeMs += 60;
 
                     AudioChunk audio = new AudioChunk(inBuf, 48000);
                     byte[] compressed = compressor.Compress(audio);
