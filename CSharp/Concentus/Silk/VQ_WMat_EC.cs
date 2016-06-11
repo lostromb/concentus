@@ -28,7 +28,7 @@ namespace Concentus.Silk
         {
             int k, gain_tmp_Q7;
             Pointer<sbyte> cb_row_Q7;
-            Pointer<short> diff_Q14 = Pointer.Malloc<short>(5);
+            short[] diff_Q14 = new short[5];
             int sum1_Q14, sum2_Q16;
 
             /* Loop over codebook */
