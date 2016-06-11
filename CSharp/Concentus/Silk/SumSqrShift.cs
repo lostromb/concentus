@@ -38,7 +38,7 @@ namespace Concentus.Silk
                 if (nrg < 0)
                 {
                     /* Scale down */
-                    nrg = (int)Inlines.silk_RSHIFT_uint((uint)nrg, 2);
+                    nrg = unchecked((int)Inlines.silk_RSHIFT_uint((uint)nrg, 2));
                     shft = 2;
                     i += 2;
                     break;

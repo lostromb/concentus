@@ -8,7 +8,7 @@ namespace TestConsole
     {
         public static void Main(string[] args)
         {
-            int quality = 64;
+            int quality = 32;
             ConcentusCodec concentus = new ConcentusCodec(quality);
             concentus.Initialize();
             OpusCodec opus = new OpusCodec(quality);
