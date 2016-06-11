@@ -149,7 +149,7 @@ namespace TestConsole
 
                 // Set the encoder bitrate and complexity
                 _hEncoder.SetBitrate(_qualityKbps * 1024);
-                _hEncoder.SetComplexity(10);
+                _hEncoder.SetComplexity(0);
 
                 return true;
             }

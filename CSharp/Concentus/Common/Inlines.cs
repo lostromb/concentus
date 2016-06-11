@@ -143,12 +143,12 @@ namespace Concentus.Common
         //        /** Arithmetic shift-left of a 16-bit value */
         public static short SHL16(short a, int shift)
         {
-            return unchecked((short)((ushort)(a) << (shift)));
+            return ((short)((ushort)(a) << (shift)));
         }
 
         public static int SHL16(int a, int shift)
         {
-            return unchecked((int)((uint)(a) << (shift)));
+            return ((int)((uint)(a) << (shift)));
         }
 
         //        /** Arithmetic shift-right of a 32-bit value */
@@ -160,7 +160,7 @@ namespace Concentus.Common
         //        /** Arithmetic shift-left of a 32-bit value */
         public static int SHL32(int a, int shift)
         {
-            return unchecked((int)((uint)(a) << (shift)));
+            return ((int)((uint)(a) << (shift)));
         }
 
         //        /** 32-bit arithmetic shift right with rounding-to-nearest instead of rounding down */
@@ -457,7 +457,7 @@ namespace Concentus.Common
         {
             return a / b;
         }
-        
+
         // identical to silk_SAT16 - saturate operation
         public static short SAT16(int x)
         {
@@ -720,7 +720,7 @@ namespace Concentus.Common
             int k;
             short n;
             int rt;
-            
+
             if (x == 0)
                 return 0;
             else if (x >= 1073741824)
@@ -811,9 +811,9 @@ namespace Concentus.Common
                 return SHL32(result, 2);
         }
 
-        private static readonly short[] log2_C = 
+        private static readonly short[] log2_C =
             { -6801 + (1 << (3)), 15746, -5217, 2545, -1401 };
-        
+
         /** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
         public static int celt_log2(int x)
         {
@@ -955,7 +955,7 @@ namespace Concentus.Common
         /// <returns></returns>
         public static int silk_ROR32(int a32, int rot)
         {
-            return unchecked((int)silk_ROR32((uint)a32, rot));
+            return (int)silk_ROR32((uint)a32, rot);
         }
 
         /// <summary>
@@ -983,23 +983,32 @@ namespace Concentus.Common
 
         public static int silk_MUL(int a32, int b32)
         {
-            return a32 * b32;
+            int ret = a32 * b32;
+            long ret64 = (long)a32 * (long)b32;
+            Inlines.OpusAssert((long)ret == ret64);
+            return ret;
         }
 
         public static uint silk_MUL_uint(uint a32, uint b32)
         {
-            return a32 * b32;
+            uint ret = a32 * b32;
+            Inlines.OpusAssert((ulong)ret == (ulong)a32 * (ulong)b32);
+            return ret;
         }
 
         public static int silk_MLA(int a32, int b32, int c32)
         {
-            return (a32) + ((b32) * (c32));
+            int ret = silk_ADD32((a32), ((b32) * (c32)));
+            Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
+            return ret;
         }
 
 
-        public static uint silk_MLA_uint(uint a32, uint b32, uint c32)
+        public static int silk_MLA_uint(uint a32, uint b32, uint c32)
         {
-            return (a32) + ((b32) * (c32));
+            uint ret = silk_ADD32((a32), ((b32) * (c32)));
+            Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
+            return (int)ret;
         }
 
         /// <summary>
@@ -1014,15 +1023,16 @@ namespace Concentus.Common
             return ((a32 >> 16) * (b32 >> 16));
         }
 
+
         public static int silk_SMLATT(int a32, int b32, int c32)
         {
-            return (a32) + (((b32) >> 16) * ((c32) >> 16));
+            return silk_ADD32((a32), ((b32) >> 16) * ((c32) >> 16));
         }
 
 
         public static long silk_SMLALBB(long a64, short b16, short c16)
         {
-            return (a64) + ((long)((int)(b16) * (int)(c16)));
+            return silk_ADD64((a64), (long)((int)(b16) * (int)(c16)));
         }
 
 
@@ -1084,7 +1094,7 @@ namespace Concentus.Common
 
         public static int silk_SMULBB(int a32, int b32)
         {
-            return unchecked(((int)((short)a32) * (int)((short)b32)));
+            return ((int)((short)a32) * (int)((short)b32));
         }
 
         /// <summary>
@@ -1096,17 +1106,29 @@ namespace Concentus.Common
 
         public static int silk_SMULWB(int a32, int b32)
         {
-            return unchecked((int)((a32 * (long)((short)b32)) >> 16));
+            //return (int)((a32 * (long)((short)b32)) >> 16);
+            int ret;
+            ret = (a32 >> 16) * (int)((short)b32) + (((a32 & 0x0000FFFF) * (int)((short)b32)) >> 16);
+            if ((long)ret != ((long)a32 * (short)b32) >> 16)
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;
         }
 
 
         public static int silk_SMLABB(int a32, int b32, int c32)
         {
-            return unchecked(((a32) + ((int)((short)(b32))) * (int)((short)(c32))));
+            return ((a32) + ((int)((short)(b32))) * (int)((short)(c32)));
         }
 
         public static int silk_DIV32_16(int a32, int b32)
         {
+            bool fail = false;
+            fail |= b32 == 0;
+            fail |= b32 > short.MaxValue;
+            fail |= b32 < short.MinValue;
+            Inlines.OpusAssert(!fail);
             return a32 / b32;
         }
 
@@ -1115,47 +1137,75 @@ namespace Concentus.Common
             return a32 / b32;
         }
 
+
         public static short silk_ADD16(short a, short b)
         {
-            return (short)(a + b);
+            short ret = (short)(a + b);
+            //Debug.WriteLine("0x{0:x} 0x{1:x} 0x{2:x}", (uint)(a), (uint)(b), (uint)(ret));
+            if (ret != silk_ADD_SAT16(a, b))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;
         }
-        
+
+
         public static int silk_ADD32(int a, int b)
         {
-            return a + b;
+            int ret = a + b;
+            //Debug.WriteLine("0x{0:x} 0x{1:x} 0x{2:x}", (uint)(a), (uint)(b), (uint)(ret));
+            if (ret != silk_ADD_SAT32(a, b))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;
         }
 
         public static uint silk_ADD32(uint a, uint b)
         {
-            return a + b;
+            uint ret = a + b;
+            //Debug.WriteLine("0x{0:x} 0x{1:x} 0x{2:x}", (uint)(a), (uint)(b), (uint)(ret));
+            return ret;
         }
 
         public static long silk_ADD64(long a, long b)
         {
-            return a + b;
+            long ret = a + b;
+            //Debug.WriteLine("0x{0:x} 0x{1:x} 0x{2:x}", (ulong)a, (ulong)b, (ulong)(ret));
+            Inlines.OpusAssert(ret == silk_ADD_SAT64(a, b));
+            return ret;
         }
 
 
         public static short silk_SUB16(short a, short b)
         {
-            return (short)(a - b);
+            short ret = (short)(a - b);
+            Inlines.OpusAssert(ret == silk_SUB_SAT16(a, b));
+            return ret;
         }
 
 
         public static int silk_SUB32(int a, int b)
         {
-            return a - b;
+            int ret = a - b;
+            Inlines.OpusAssert(ret == silk_SUB_SAT32(a, b));
+            return ret;
         }
+
 
         public static long silk_SUB64(long a, long b)
         {
-            return a - b;
+            long ret = a - b;
+            Inlines.OpusAssert(ret == silk_SUB_SAT64(a, b));
+            return ret;
         }
+
 
         public static int silk_SAT8(int a)
         {
             return a > byte.MaxValue ? byte.MaxValue : ((a) < byte.MinValue ? byte.MinValue : (a));
         }
+
 
         public static int silk_SAT16(int a)
         {
@@ -1238,42 +1288,90 @@ namespace Concentus.Common
 
         public static short silk_ADD_SAT16(short a16, short b16)
         {
-            return (short)silk_SAT16(silk_ADD32((int)(a16), (b16)));
+            short res = (short)silk_SAT16(silk_ADD32((int)(a16), (b16)));
+            Inlines.OpusAssert(res == silk_SAT16((int)a16 + (int)b16));
+            return res;
         }
 
         public static int silk_ADD_SAT32(int a32, int b32)
         {
-            return ((((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
+            int res = ((((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
                 ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
                 ((((a32) | (b32)) & 0x80000000) == 0 ? int.MaxValue : (a32) + (b32)));
+            Inlines.OpusAssert(res == silk_SAT32((long)a32 + (long)b32));
+            return res;
         }
 
         public static long silk_ADD_SAT64(long a64, long b64)
         {
-            return (((ulong)((a64) + (b64)) & 0x8000000000000000UL) == 0 ?
+            long res;
+            bool fail = false;
+            res = (((ulong)((a64) + (b64)) & 0x8000000000000000UL) == 0 ?
                 (((ulong)((a64) & (b64)) & 0x8000000000000000UL) != 0 ? long.MinValue : (a64) + (b64)) :
                 (((ulong)((a64) | (b64)) & 0x8000000000000000UL) == 0 ? long.MaxValue : (a64) + (b64)));
+
+            if (res != a64 + b64)
+            {
+                /* Check that we saturated to the correct extreme value */
+                if (!((res == long.MaxValue && ((a64 >> 1) + (b64 >> 1) > (long.MaxValue >> 3))) ||
+                       (res == long.MinValue && ((a64 >> 1) + (b64 >> 1) < (long.MinValue >> 3)))))
+                {
+                    fail = true;
+                }
+            }
+            else
+            {
+                /* Saturation not necessary */
+                fail = res != a64 + b64;
+            }
+            Inlines.OpusAssert(!fail);
+            return res;
         }
 
         public static short silk_SUB_SAT16(short a16, short b16)
         {
-            return (short)silk_SAT16(silk_SUB32((int)(a16), (b16)));
+            short res = (short)silk_SAT16(silk_SUB32((int)(a16), (b16)));
+            Inlines.OpusAssert(res == silk_SAT16((int)a16 - (int)b16));
+            return res;
         }
 
         public static int silk_SUB_SAT32(int a32, int b32)
         {
-            return ((((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
+            int res = ((((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
                 (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
                 ((((a32) ^ 0x80000000) & (b32) & 0x80000000) != 0 ? int.MaxValue : (a32) - (b32)));
+            Inlines.OpusAssert(res == silk_SAT32((long)a32 - (long)b32));
+            return res;
         }
 
         public static long silk_SUB_SAT64(long a64, long b64)
         {
-            return (((ulong)((a64) - (b64)) & 0x8000000000000000UL) == 0 ?
+            long res;
+            bool fail = false;
+            res = (((ulong)((a64) - (b64)) & 0x8000000000000000UL) == 0 ?
                 (((ulong)(a64) & ((ulong)(b64) ^ 0x8000000000000000UL) & 0x8000000000000000UL) != 0 ? long.MinValue : (a64) - (b64)) :
                 ((((ulong)(a64) ^ 0x8000000000000000UL) & (ulong)(b64) & 0x8000000000000000UL) != 0 ? long.MaxValue : (a64) - (b64)));
+            if (res != a64 - b64)
+            {
+                /* Check that we saturated to the correct extreme value */
+                if (!((res == long.MaxValue && ((a64 >> 1) + (b64 >> 1) > (long.MaxValue >> 3))) ||
+                      (res == long.MinValue && ((a64 >> 1) + (b64 >> 1) < (long.MinValue >> 3)))))
+                {
+                    fail = true;
+                }
+            }
+            else
+            {
+                /* Saturation not necessary */
+                fail = res != a64 - b64;
+            }
+            Inlines.OpusAssert(!fail);
+            return res;
         }
-        
+
+        ///* Saturation for positive input values */
+        //#define silk_POS_SAT32(a)                   ((a) > int_MAX ? int_MAX : (a))
+
         /// <summary>
         /// Add with saturation for positive input values
         /// </summary>
@@ -1324,37 +1422,77 @@ namespace Concentus.Common
 
         public static sbyte silk_LSHIFT8(sbyte a, int shift)
         {
-            return (sbyte)(a << shift);
+            sbyte ret = (sbyte)(a << shift);
+            bool fail = false;
+            fail |= shift < 0;
+            fail |= shift >= 8;
+            fail |= (long)ret != ((long)a) << shift;
+            Inlines.OpusAssert(!fail);
+            return ret;
         }
 
         public static short silk_LSHIFT16(short a, int shift)
         {
-            return (short)(a << shift);
+            short ret = (short)(a << shift);
+            bool fail = false;
+            fail |= shift < 0;
+            fail |= shift >= 16;
+            fail |= (long)ret != ((long)a) << shift;
+            Inlines.OpusAssert(!fail);
+            return ret;
         }
 
         public static int silk_LSHIFT32(int a, int shift)
         {
-            return a << shift;
+            int ret = a << shift;
+            bool fail = false;
+            fail |= shift < 0;
+            fail |= shift >= 32;
+            fail |= (long)ret != ((long)a) << shift;
+            Inlines.OpusAssert(!fail);
+            return ret;
         }
 
         public static long silk_LSHIFT64(long a, int shift)
         {
-            return a << shift;
+            long ret = a << shift;
+            bool fail = false;
+            fail |= shift < 0;
+            fail |= shift >= 64;
+            fail |= (ret >> shift) != ((long)a);
+            Inlines.OpusAssert(!fail);
+            return ret;
         }
 
         public static int silk_LSHIFT(int a, int shift)
         {
-            return a << shift;
+            int ret = a << shift;
+            bool fail = false;
+            fail |= shift < 0;
+            fail |= shift >= 32;
+            fail |= (long)ret != ((long)a) << shift;
+            Inlines.OpusAssert(!fail);
+            return ret;
         }
 
         public static int silk_LSHIFT_ovflw(int a, int shift)
         {
+            if ((shift < 0) || (shift >= 32)) /* no check for overflow */
+            {
+                Inlines.OpusAssert(false);
+            }
             return a << shift;
         }
 
         public static uint silk_LSHIFT_uint(uint a, int shift)
         {
-            return a << shift;
+            uint ret;
+            ret = a << shift;
+            if ((shift < 0) || ((long)ret != ((long)a) << shift))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;
         }
 
         /// <summary>
@@ -1370,84 +1508,172 @@ namespace Concentus.Common
 
         public static sbyte silk_RSHIFT8(sbyte a, int shift)
         {
+            if ((shift < 0) || (shift >= 8))
+            {
+                Inlines.OpusAssert(false);
+            }
             return (sbyte)(a >> shift);
         }
 
         public static short silk_RSHIFT16(short a, int shift)
         {
+            if ((shift < 0) || (shift >= 16))
+            {
+                Inlines.OpusAssert(false);
+            }
             return (short)(a >> shift);
         }
 
         public static int silk_RSHIFT32(int a, int shift)
         {
+            if ((shift < 0) || (shift >= 32))
+            {
+                Inlines.OpusAssert(false);
+            }
             return a >> shift;
         }
 
         public static int silk_RSHIFT(int a, int shift)
         {
+            if ((shift < 0) || (shift >= 32))
+            {
+                Inlines.OpusAssert(false);
+            }
             return a >> shift;
         }
 
         public static long silk_RSHIFT64(long a, int shift)
         {
+            if ((shift < 0) || (shift >= 64))
+            {
+                Inlines.OpusAssert(false);
+            }
             return a >> shift;
         }
 
         public static uint silk_RSHIFT_uint(uint a, int shift)
         {
+            if ((shift < 0) || (shift > 32))
+            {
+                Inlines.OpusAssert(false);
+            }
             return a >> shift;
         }
 
         public static short silk_ADD_LSHIFT(int a, int b, int shift)
         {
-            return (short)(a + (b << shift)); // fixme should this return int?
+            short ret = (short)(a + (b << shift));
+            if ((shift < 0) || (shift > 15) || ((long)ret != (long)a + (((long)b) << shift)))
+            {
+                //Inlines.OpusAssert(false);
+            }
+            return ret;                /* shift >= 0 */
         }
 
         public static int silk_ADD_LSHIFT32(int a, int b, int shift)
         {
-            return a + (b << shift);
+            int ret = a + (b << shift);
+            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) << shift)))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;                /* shift >= 0 */
         }
 
         public static uint silk_ADD_LSHIFT_uint(uint a, uint b, int shift)
         {
-            return a + (b << shift);
+            uint ret;
+            ret = a + (b << shift);
+            if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) << shift)))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;                /* shift >= 0 */
         }
 
         public static short silk_ADD_RSHIFT(int a, int b, int shift)
         {
-            return (short)(a + (b >> shift));
+            short ret = (short)(a + (b >> shift));
+            if ((shift < 0) || (shift > 15) || ((long)ret != (long)a + (((long)b) >> shift)))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;                /* shift  > 0 */
         }
 
         public static int silk_ADD_RSHIFT32(int a, int b, int shift)
         {
-            return a + (b >> shift);
+            int ret;
+            ret = a + (b >> shift);
+            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) >> shift)))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;                /* shift  > 0 */
         }
 
         public static uint silk_ADD_RSHIFT_uint(uint a, uint b, int shift)
         {
-            return a + (b >> shift);
+            uint ret;
+            ret = a + (b >> shift);
+            if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) >> shift)))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;                /* shift  > 0 */
         }
 
         public static int silk_SUB_LSHIFT32(int a, int b, int shift)
         {
-            return a - (b << shift);
+            int ret;
+            ret = a - (b << shift);
+            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a - (((long)b) << shift)))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;                /* shift >= 0 */
         }
 
         public static int silk_SUB_RSHIFT32(int a, int b, int shift)
         {
-            return a - (b >> shift);
+            int ret;
+            ret = a - (b >> shift);
+            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a - (((long)b) >> shift)))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;                /* shift  > 0 */
         }
 
         public static int silk_RSHIFT_ROUND(int a, int shift)
         {
-            return shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
+            int ret;
+            ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
+            /* the marco definition can't handle a shift of zero */
+            if ((shift <= 0) || (shift > 31) || ((long)ret != ((long)a + ((long)1 << (shift - 1))) >> shift))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;
         }
 
         public static long silk_RSHIFT_ROUND64(long a, int shift)
         {
-            return shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
+            long ret;
+            /* the macro definition can't handle a shift of zero */
+            if ((shift <= 0) || (shift >= 64))
+            {
+                Inlines.OpusAssert(false);
+            }
+            ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
+            return ret;
         }
-        
+
+        ///* Number of rightshift required to fit the multiplication */
+        //#define silk_NSHIFT_MUL_32_32(a, b)         ( -(31- (32-silk_CLZ32(silk_abs(a)) + (32-silk_CLZ32(silk_abs(b))))) )
+        //#define silk_NSHIFT_MUL_16_16(a, b)         ( -(15- (16-silk_CLZ16(silk_abs(a)) + (16-silk_CLZ16(silk_abs(b))))) )
+
+
         public static int silk_min(int a, int b)
         {
             return ((a) < (b)) ? (a) : (b);
@@ -1616,7 +1842,13 @@ namespace Concentus.Common
         /* a32 + (b32 * (c32 >> 16)) >> 16 */
         public static int silk_SMLAWT(int a32, int b32, int c32)
         {
-            return (int)((a32) + (((b32) * ((long)(c32) >> 16)) >> 16));
+            int ret;
+            ret = a32 + ((b32 >> 16) * (c32 >> 16)) + (((b32 & 0x0000FFFF) * ((c32 >> 16)) >> 16));
+            if ((long)ret != (long)a32 + (((long)b32 * (c32 >> 16)) >> 16))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;
         }
 
         /// <summary>
@@ -1732,7 +1964,14 @@ namespace Concentus.Common
 
         public static int silk_SMLAWB(int a32, int b32, int c32)
         {
-            return unchecked((int)(a32 + ((b32 * (long)((short)c32)) >> 16)));
+            //return (int)(a32 + ((b32 * (long)((short)c32)) >> 16));
+            int ret;
+            ret = silk_ADD32(a32, silk_SMULWB(b32, c32));
+            if (silk_ADD32(a32, silk_SMULWB(b32, c32)) != silk_ADD_SAT32(a32, silk_SMULWB(b32, c32)))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;
         }
 
         ///* (a32 * (b32 >> 16)) >> 16 */
@@ -1744,7 +1983,7 @@ namespace Concentus.Common
         ///* (int)((short)(a32)) * (b32 >> 16) */
         public static int silk_SMULBT(int a32, int b32)
         {
-            return unchecked(((int)((short)(a32)) * ((b32) >> 16)));
+            return ((int)((short)(a32)) * ((b32) >> 16));
         }
 
         ///* a32 + (int)((short)(b32)) * (c32 >> 16) */
@@ -1800,7 +2039,31 @@ namespace Concentus.Common
         /// </summary>
         public static int silk_SMULWW(int a32, int b32)
         {
-            return CHOP32(((long)(a32) * (b32)) >> 16);
+            //return CHOP32(((long)(a32) * (b32)) >> 16);
+            //return silk_MLA(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16));
+            int ret, tmp1, tmp2;
+            long ret64;
+            bool fail = false;
+
+            ret = silk_SMULWB(a32, b32);
+            tmp1 = silk_RSHIFT_ROUND(b32, 16);
+            tmp2 = silk_MUL(a32, tmp1);
+
+            fail |= (long)tmp2 != (long)a32 * (long)tmp1;
+
+            tmp1 = ret;
+            ret = silk_ADD32(tmp1, tmp2);
+            fail |= silk_ADD32(tmp1, tmp2) != silk_ADD_SAT32(tmp1, tmp2);
+
+            ret64 = silk_RSHIFT64(silk_SMULL(a32, b32), 16);
+            fail |= (long)ret != ret64;
+
+            if (fail)
+            {
+                Inlines.OpusAssert(false);
+            }
+
+            return ret;
         }
 
         /// <summary>
@@ -1808,7 +2071,17 @@ namespace Concentus.Common
         /// </summary>
         public static int silk_SMLAWW(int a32, int b32, int c32)
         {
-            return CHOP32(((a32) + (((long)(b32) * (c32)) >> 16)));
+            //return CHOP32(((a32) + (((long)(b32) * (c32)) >> 16)));
+            //return silk_MLA(silk_SMLAWB((a32), (b32), (c32)), (b32), silk_RSHIFT_ROUND((c32), 16));
+            int ret, tmp;
+
+            tmp = silk_SMULWW(b32, c32);
+            ret = silk_ADD32(a32, tmp);
+            if (ret != silk_ADD_SAT32(a32, tmp))
+            {
+                Inlines.OpusAssert(false);
+            }
+            return ret;
         }
 
         /* count leading zeros of opus_int64 */
@@ -1820,7 +2093,7 @@ namespace Concentus.Common
             if (in_upper == 0)
             {
                 /* Search in the lower 32 bits */
-                return 32 + unchecked(silk_CLZ32((int)input));
+                return 32 + silk_CLZ32((int)input);
             }
             else {
                 /* Search in the upper 32 bits */
@@ -1830,7 +2103,7 @@ namespace Concentus.Common
 
         public static int silk_CLZ32(int in32)
         {
-            return in32 == 0 ? 32 : 32 - unchecked(EC_ILOG((uint)in32));
+            return in32 == 0 ? 32 : 32 - EC_ILOG((uint)in32);
         }
 
         /// <summary>
@@ -2106,7 +2379,7 @@ namespace Concentus.Common
         /// <returns></returns>
         public static uint EC_MINI(uint a, uint b)
         {
-            return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
+            return a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0));
         }
 
         /// <summary>

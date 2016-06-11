@@ -135,7 +135,6 @@ static void celt_fir5(const opus_val16 *x,
       mem1 = mem0;
       mem0 = x[i];
       y[i] = ROUND16(sum, SIG_SHIFT);
-	  fprintf(stdout, "15i %d\n", y[i]);
    }
    mem[0]=mem0;
    mem[1]=mem1;
@@ -173,7 +172,6 @@ void pitch_downsample(celt_sig * OPUS_RESTRICT x[], opus_val16 * OPUS_RESTRICT x
    for (i = 1; i < len >> 1; i++)
    {
 	   x_lp[i] = SHR32(HALF32(HALF32(x[0][(2 * i - 1)] + x[0][(2 * i + 1)]) + x[0][2 * i]), shift);
-	   fprintf(stdout, "14g %d\n", x_lp[i]);
    }
    x_lp[0] = SHR32(HALF32(HALF32(x[0][1])+x[0][0]), shift);
    if (C==2)
@@ -239,7 +237,6 @@ celt_pitch_xcorr(const opus_val16 *_x, const opus_val16 *_y,
    {
       opus_val32 sum[4]={0,0,0,0};
       xcorr_kernel(_x, _y+i, sum, len, arch);
-	  fprintf(stdout, "15g %d\n", xcorr[i]);
       xcorr[i]=sum[0];
       xcorr[i+1]=sum[1];
       xcorr[i+2]=sum[2];

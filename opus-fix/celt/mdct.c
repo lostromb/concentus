@@ -202,22 +202,14 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
          t0 = t[i];
          t1 = t[N4+i];
          re = *yp++;
-		 fprintf(stdout, "13i %d\n", re);
          im = *yp++;
-		 fprintf(stdout, "13j %d\n", im);
          yr = S_MUL(re,t0)  -  S_MUL(im,t1);
-		 fprintf(stdout, "13k %d\n", yr);
          yi = S_MUL(im,t0)  +  S_MUL(re,t1);
-		 fprintf(stdout, "13l %d\n", yi);
          yc.r = yr;
          yc.i = yi;
          yc.r = PSHR32(MULT16_32_Q16(scale, yc.r), scale_shift);
          yc.i = PSHR32(MULT16_32_Q16(scale, yc.i), scale_shift);
          f2[st->bitrev[i]] = yc;
-		 fprintf(stdout, "13e %d\n", t0);
-		 fprintf(stdout, "13f %d\n", t1);
-		 fprintf(stdout, "13g %d\n", yc.r);
-		 fprintf(stdout, "13h %d\n", yc.i);
       }
    }
 
@@ -242,8 +234,6 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
          fp++;
          yp1 += 2*stride;
          yp2 -= 2*stride;
-		 fprintf(stdout, "13i %d\n", yr);
-		 fprintf(stdout, "13j %d\n", yi);
       }
    }
    RESTORE_STACK;

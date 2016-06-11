@@ -87,7 +87,6 @@ int          p
    for (i = 0; i < p; i++)
    {
 	   _lpc[i] = ROUND16(lpc[i], 16);
-	   fprintf(stdout, "15h %d\n", _lpc[i]);
    }
 #endif
 }
@@ -292,7 +291,6 @@ int _celt_autocorr(
       for (i = k+fastN, d = 0; i < n; i++)
          d = MAC16_16(d, xptr[i], xptr[i-k]);
       ac[k] += d;
-	  fprintf(stdout, "15e %d\n", ac[k]);
    }
 #ifdef FIXED_POINT
    shift = 2*shift;
@@ -316,6 +314,5 @@ int _celt_autocorr(
 #endif
 
    RESTORE_STACK;
-   fprintf(stdout, "15f %d\n", shift);
    return shift;
 }

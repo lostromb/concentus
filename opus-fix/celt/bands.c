@@ -104,14 +104,10 @@ void compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener *band
          opus_val32 maxval=0;
          opus_val32 sum = 0;
 
-		 fprintf(stdout, "13a %d\n", eBands[i]);
-		 fprintf(stdout, "13b %d\n", X[c*N + (eBands[i] << LM)]);
          maxval = celt_maxabs32(&X[c*N+(eBands[i]<<LM)], (eBands[i+1]-eBands[i])<<LM);
-		 fprintf(stdout, "13c %d\n", maxval);
          if (maxval > 0)
          {
             int shift = celt_ilog2(maxval) - 14 + (((m->logN[i]>>BITRES)+LM+1)>>1);
-			fprintf(stdout, "13d %d\n", shift);
             j=eBands[i]<<LM;
             if (shift>0)
             {

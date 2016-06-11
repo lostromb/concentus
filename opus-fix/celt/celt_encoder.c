@@ -457,8 +457,6 @@ static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OPUS
          OPUS_CLEAR(&out[c*B*N+bound], B*N-bound);
       } while (++c<C);
    }
-   for (i = 0; i < B * N; i++)
-	   fprintf(stdout, "13e %d\n", out[i]);
 }
 
 
@@ -1105,10 +1103,8 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
             COMBFILTER_MAXPERIOD-3*COMBFILTER_MINPERIOD, &pitch_index,
             st->arch);
       pitch_index = COMBFILTER_MAXPERIOD-pitch_index;
-	  fprintf(stdout, "14d %d\n", pitch_index);
       gain1 = remove_doubling(pitch_buf, COMBFILTER_MAXPERIOD, COMBFILTER_MINPERIOD,
             N, &pitch_index, st->prefilter_period, st->prefilter_gain, st->arch);
-	  fprintf(stdout, "14e %d\n", gain1);
       if (pitch_index > COMBFILTER_MAXPERIOD-2)
          pitch_index = COMBFILTER_MAXPERIOD-2;
       gain1 = MULT16_16_Q15(QCONST16(.7f,15),gain1);
@@ -1123,8 +1119,6 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
       gain1 = 0;
       pitch_index = COMBFILTER_MINPERIOD;
    }
-
-   fprintf(stdout, "15a %d\n", pitch_index);
 
    /* Gain threshold for enabling the prefilter/postfilter */
    pf_threshold = QCONST16(.2f,15);
@@ -1143,8 +1137,6 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
 
    /* Hard threshold at 0.2 */
    pf_threshold = MAX16(pf_threshold, QCONST16(.2f, 15));
-
-   fprintf(stdout, "15b %d\n", pf_threshold);
 
    if (gain1<pf_threshold)
    {
@@ -1166,8 +1158,6 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
       gain1 = QCONST16(0.09375f,15)*(qg+1);
       pf_on = 1;
    }
-   fprintf(stdout, "15c %d\n", gain1);
-   fprintf(stdout, "15d %d\n", qg);
    /*printf("%d %f\n", pitch_index, gain1);*/
 
    c=0; do {

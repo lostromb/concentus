@@ -169,7 +169,6 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
                + MULT16_32_Q15(g10,x2)
                + MULT16_32_Q15(g11,ADD32(x1,x3))
                + MULT16_32_Q15(g12,ADD32(x0,x4));
-	  fprintf(stdout, "14g %d\n", y[i]);
       x4=x3;
       x3=x2;
       x2=x1;
@@ -226,7 +225,6 @@ void comb_filter(opus_val32 *y, opus_val32 *x, int T0, int T1, int N,
                + MULT16_32_Q15(MULT16_16_Q15(f,g10),x2)
                + MULT16_32_Q15(MULT16_16_Q15(f,g11),ADD32(x1,x3))
                + MULT16_32_Q15(MULT16_16_Q15(f,g12),ADD32(x0,x4));
-	  fprintf(stdout, "14f %d\n", y[i]);
       x4=x3;
       x3=x2;
       x2=x1;

@@ -189,19 +189,13 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
          opus_val16 oldE;
          opus_val16 decay_bound;
          x = eBands[i+c*m->nbEBands];
-		 fprintf(stdout, "12d %d\n", x);
          oldE = MAX16(-QCONST16(9.f,DB_SHIFT), oldEBands[i+c*m->nbEBands]);
-		 fprintf(stdout, "12ea %d %d\n", oldEBands[i + c*m->nbEBands], i + c*m->nbEBands);
-		 fprintf(stdout, "12e %d\n", oldE);
 #ifdef FIXED_POINT
          f = SHL32(EXTEND32(x),7) - PSHR32(MULT16_16(coef,oldE), 8) - prev[c];
-		 fprintf(stdout, "12f %d\n", f);
          /* Rounding to nearest integer here is really important! */
          qi = (f+QCONST32(.5f,DB_SHIFT+7))>>(DB_SHIFT+7);
-		 fprintf(stdout, "12g %d\n", qi);
          decay_bound = EXTRACT16(MAX32(-QCONST16(28.f,DB_SHIFT),
                SUB32((opus_val32)oldEBands[i+c*m->nbEBands],max_decay)));
-		 fprintf(stdout, "12h %d\n", decay_bound);
 #else
          f = x-coef*oldE-prev[c];
          /* Rounding to nearest integer here is really important! */
@@ -234,8 +228,6 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
          {
             int pi;
             pi = 2*IMIN(i,20);
-			fprintf(stdout, "12i 0x%x\n", (unsigned int)prob_model[pi] << 7);
-			fprintf(stdout, "12j 0x%x\n", (unsigned int)prob_model[pi + 1] << 6);
             ec_laplace_encode(enc, &qi,
                   prob_model[pi]<<7, prob_model[pi+1]<<6);
          }
@@ -259,11 +251,8 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
 #ifdef FIXED_POINT
          tmp = MAX32(-QCONST32(28.f, DB_SHIFT+7), tmp);
 #endif
-		 fprintf(stdout, "12a %d\n", tmp);
          oldEBands[i+c*m->nbEBands] = PSHR32(tmp, 7);
-		 fprintf(stdout, "12b %d %d\n", oldEBands[i + c*m->nbEBands], i + c*m->nbEBands);
          prev[c] = prev[c] + SHL32(q,7) - MULT16_16(beta,PSHR32(q,8));
-		 fprintf(stdout, "12c %d\n", prev[c]);
       } while (++c < C);
    }
    return lfe ? 0 : badness;
