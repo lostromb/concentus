@@ -317,11 +317,6 @@
     <ClCompile Include="..\..\silk\table_LSF_cos.c" />
     <ClCompile Include="..\..\silk\VAD.c" />
     <ClCompile Include="..\..\silk\VQ_WMat_EC.c" />
-    <ClCompile Include="..\..\silk\x86\NSQ_del_dec_sse.c" />
-    <ClCompile Include="..\..\silk\x86\NSQ_sse.c" />
-    <ClCompile Include="..\..\silk\x86\VAD_sse.c" />
-    <ClCompile Include="..\..\silk\x86\VQ_WMat_EC_sse.c" />
-    <ClCompile Include="..\..\silk\x86\x86_silk_map.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

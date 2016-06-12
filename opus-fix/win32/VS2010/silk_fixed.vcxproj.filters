@@ -107,14 +107,5 @@
     <ClCompile Include="..\..\silk\fixed\LTP_analysis_filter_FIX.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\silk\fixed\x86\burg_modified_FIX_sse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\silk\fixed\x86\prefilter_FIX_sse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\silk\fixed\x86\vector_ops_FIX_sse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

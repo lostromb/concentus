@@ -84,7 +84,8 @@ opus_int silk_encode_frame_FIX(
     opus_int                        useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
 )
 {
-	/*NailTestPrintTestHeader("silk_encode_frame_FIX");
+	/*NailTestPrintTestHeader("silk_encode_frame_FIX_manual");
+	fprintf(stdout, "#region autogen\n");
 	fprintf(stdout, "silk_encoder_state_fix ");
 	NailTesterPrint_silk_encoder_state_FIX("through_psEnc", psEnc);
 	fprintf(stdout, "ec_ctx ");
@@ -413,22 +414,14 @@ opus_int silk_encode_frame_FIX(
 	NailTesterPrint_silk_encoder_state_FIX("expected_psEnc", psEnc);
 	fprintf(stdout, "ec_ctx ");
 	NailTesterPrint_ec_ctx("expected_psRangeEnc", psRangeEnc);
+	fprintf(stdout, "#endregion\n");
 	fprintf(stdout, "BoxedValue<int> out_pnBytesOut = new BoxedValue<int>();\n");
 	NailTestPrintOutputIntDeclaration("pnBytesOut", *pnBytesOut);
 	fprintf(stdout, "int returnVal = encode_frame.silk_encode_frame_FIX(through_psEnc, out_pnBytesOut, through_psRangeEnc, in_condCoding, in_maxBits, in_useCBR);\n");
 	fprintf(stdout, "Assert.AreEqual(0, returnVal);\n");
 	fprintf(stdout, "Assert.AreEqual(expected_pnBytesOut, out_pnBytesOut.Val);\n");
 	fprintf(stdout, "Helpers.AssertEcCtxEquals(expected_psRangeEnc, through_psRangeEnc);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sCmn.indices.NLSFInterpCoef_Q2, through_psEnc.sCmn.indices.NLSFInterpCoef_Q2);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sCmn.frameCounter, through_psEnc.sCmn.frameCounter);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sCmn.sNSQ.prev_gain_Q16, through_psEnc.sCmn.sNSQ.prev_gain_Q16);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sCmn.sNSQ.rand_seed, through_psEnc.sCmn.sNSQ.rand_seed);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sCmn.sNSQ.sLF_AR_shp_Q14, through_psEnc.sCmn.sNSQ.sLF_AR_shp_Q14);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sCmn.sNSQ.sLTP_buf_idx, through_psEnc.sCmn.sNSQ.sLTP_buf_idx);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sPrefilt.sHarmHP_Q2, through_psEnc.sPrefilt.sHarmHP_Q2);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sPrefilt.sLF_AR_shp_Q12, through_psEnc.sPrefilt.sLF_AR_shp_Q12);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sPrefilt.sLF_MA_shp_Q12, through_psEnc.sPrefilt.sLF_MA_shp_Q12);\n");
-	fprintf(stdout, "Assert.AreEqual(expected_psEnc.sPrefilt.sLTP_shp_buf_idx, through_psEnc.sPrefilt.sLTP_shp_buf_idx);\n");
+	fprintf(stdout, "Helpers.AssertSilkEncStateEquals(expected_psEnc, through_psEnc);\n");
 
 	NailTestPrintTestFooter();*/
 

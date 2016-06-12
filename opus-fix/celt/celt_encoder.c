@@ -50,7 +50,7 @@
 #include <stdarg.h>
 #include "celt_lpc.h"
 #include "vq.h"
-#include "NailTester.h"
+//#include "NailTester.h"
 
 
 /** Encoder state
@@ -1372,7 +1372,7 @@ void NailTesterPrint_CELTEncoder(char* varName, const CELTEncoder* enc_state)
 }
 
 static opus_int TEST_COUNT = 0;
-static opus_int TARGET_TEST = 2;
+static opus_int TARGET_TEST = 0;
 
 // Encodes a frame with CELT
 // Returns number of bytes written, or <0 for error
@@ -1383,13 +1383,14 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
 	int nbCompressedBytes, // I Inputs maximum number of output bytes allowed (i.e. size of buffer)
 	ec_enc *enc) // I/O An entropy coder
 {
-	/*if (TEST_COUNT == TARGET_TEST)
+	if (TEST_COUNT == TARGET_TEST)
 	{
 		fprintf(stdout, "Test begin------------------------------------------------\n");
 		enc->EC_DIFF = 1;
-	}*/
+	}
 	
 	/*NailTestPrintTestHeader("celt_encode_with_ec");
+	fprintf(stdout, "#region autogen\n");
 	fprintf(stdout, "CELTEncoder ");
 	NailTesterPrint_CELTEncoder("through_st", st);
 	NailTestPrintInputShortArrayDeclaration("pcm_short", pcm, frame_size * st->channels);
@@ -2249,6 +2250,7 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
    /*fprintf(stdout, "Pointer<byte> out_compressed = Pointer.Malloc<byte>(1250);\n");
    fprintf(stdout, "ec_ctx ");
    NailTesterPrint_ec_ctx("expected_enc", enc);
+   fprintf(stdout, "#endregion\n");
    NailTestPrintOutputIntDeclaration("returnVal", nbCompressedBytes);
    //NailTestPrintOutputByteArrayDeclaration("compressed", compressed, nbCompressedBytes);
    fprintf(stdout, "int returnVal = celt_encoder.celt_encode_with_ec(through_st, new Pointer<int>(in_pcm), in_frame_size, out_compressed, in_nbCompressedBytes, through_enc);\n");
@@ -2256,11 +2258,11 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
    fprintf(stdout, "Helpers.AssertEcCtxEquals(expected_enc, through_enc);\n");
    NailTestPrintTestFooter();*/
 
-   /*if (TEST_COUNT++ == TARGET_TEST)
+   if (TEST_COUNT++ == TARGET_TEST)
    {
 	   //fprintf(stdout, "Test end\n");
 	   exit(0);
-   }*/
+   }
    
    if (ec_get_error(enc))
       return OPUS_INTERNAL_ERROR;

@@ -317,20 +317,5 @@
     <ClCompile Include="..\..\silk\VAD.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\silk\x86\NSQ_del_dec_sse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\silk\x86\NSQ_sse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\silk\x86\VAD_sse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\silk\x86\VQ_WMat_EC_sse.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\silk\x86\x86_silk_map.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
