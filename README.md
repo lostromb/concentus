@@ -4,7 +4,7 @@ This project is an effort to port the Opus reference library to work natively in
 
 ## Project Status
 
-Currently this repo contains a functional Opus implementation in Portable C#. It it based on libopus master 1.1.2 configured with FIXED_POINT and DISABLE_FLOAT_API, and aims to be bit-exact with its equivalent C library. The decoder path is casually tested and appears to work fine. The encoder path is likewise functional but there seems to be a lingering bug in SILK pitch analysis which is causing distortion at low bitrates.
+As of 12 June 2016 this repo contains a mostly functional Opus implementation in portable C#. It it based on libopus master 1.1.2 configured with FIXED_POINT and DISABLE_FLOAT_API, and aims to be bit-exact with its equivalent C library. The decoder path is casually tested and appears to work fine. The encoder path is likewise functional in most cases, but there are lingering bugs causing discrepancies in both the CELT and SILK paths, meaning distortions and pops are possible, especially at low bitrates.
 
 Performance-wise, the current build run about 25% as fast as its equivalent libopus build, but there is still huge room for optimization.
 
