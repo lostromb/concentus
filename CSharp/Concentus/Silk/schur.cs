@@ -68,7 +68,7 @@ namespace Concentus.Silk
                 }
 
                 /* Get reflection coefficient */
-                rc_tmp_Q15 = -Inlines.silk_DIV32_16(C[k + 1][0], Inlines.silk_max_32(Inlines.silk_RSHIFT(C[0][1], 15), 1));
+                rc_tmp_Q15 = 0 - Inlines.silk_DIV32_16(C[k + 1][0], Inlines.silk_max_32(Inlines.silk_RSHIFT(C[0][1], 15), 1));
 
                 /* Clip (shouldn't happen for properly conditioned inputs) */
                 rc_tmp_Q15 = Inlines.silk_SAT16(rc_tmp_Q15);
@@ -82,7 +82,7 @@ namespace Concentus.Silk
                     Ctmp1 = C[n + k + 1][0];
                     Ctmp2 = C[n][1];
                     C[n + k + 1][0] = Inlines.silk_SMLAWB(Ctmp1, Inlines.silk_LSHIFT(Ctmp2, 1), rc_tmp_Q15);
-                    C[n][1] = Inlines.silk_SMLAWB(Ctmp2, Inlines.silk_LSHIFT(Ctmp1, 1), rc_tmp_Q15);
+                    C[n][1]         = Inlines.silk_SMLAWB(Ctmp2, Inlines.silk_LSHIFT(Ctmp1, 1), rc_tmp_Q15);
                 }
             }
 

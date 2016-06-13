@@ -88,7 +88,7 @@ namespace Concentus.Silk
             frame_length_4kHz = (SilkConstants.PE_LTP_MEM_LENGTH_MS + nb_subfr * SilkConstants.PE_SUBFR_LENGTH_MS) * 4;
             frame_length_8kHz = (SilkConstants.PE_LTP_MEM_LENGTH_MS + nb_subfr * SilkConstants.PE_SUBFR_LENGTH_MS) * 8;
             sf_length = SilkConstants.PE_SUBFR_LENGTH_MS * Fs_kHz;
-            min_lag = SilkConstants.PE_MAX_LAG_MS * Fs_kHz;
+            min_lag = SilkConstants.PE_MIN_LAG_MS * Fs_kHz;
             max_lag = SilkConstants.PE_MAX_LAG_MS * Fs_kHz - 1;
 
             /* Resample from input sampled at Fs_kHz to 8 kHz */
@@ -295,6 +295,9 @@ namespace Concentus.Silk
             ** Scale signal down to avoid correlations measures from overflowing
             *******************************************************************************/
             /* find scaling as max scaling for each subframe */
+            // fixme see if these are really necessary
+            boxed_shift.Val = 0;
+            boxed_energy.Val = 0;
             SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_8kHz, frame_length_8kHz);
             energy = boxed_energy.Val;
             shift = boxed_shift.Val;
@@ -404,9 +407,9 @@ namespace Concentus.Silk
                         /* Try all codebooks */
                         d_subfr = d + Inlines.matrix_ptr(Lag_CB_ptr, i, j, cbk_size);
                         CC[j] = CC[j]
-                                            + (int)Inlines.matrix_ptr(C, i,
-                                                                      d_subfr - (MIN_LAG_8KHZ - 2),
-                                                                      CSTRIDE_8KHZ);
+                           + (int)Inlines.matrix_ptr(C, i,
+                                                    d_subfr - (MIN_LAG_8KHZ - 2),
+                                                    CSTRIDE_8KHZ);
                     }
                 }
                 /* Find best codebook */
@@ -492,7 +495,6 @@ namespace Concentus.Silk
                 }
 
                 /* Search in original signal */
-
                 CBimax_old = CBimax;
                 /* Compensate for decimation */
                 Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
@@ -518,7 +520,7 @@ namespace Concentus.Silk
                 /* pitch lags according to second stage */
                 for (k = 0; k < nb_subfr; k++)
                 {
-                    pitch_out[k] = lag + 2 * Tables.silk_CB_lags_stage2[(k * SilkConstants.PE_MAX_NB_SUBFR) + CBimax_old];
+                    pitch_out[k] = lag + 2 * Tables.silk_CB_lags_stage2[(k * SilkConstants.PE_NB_CBKS_STAGE2_EXT) + CBimax_old];
                 }
 
                 /* Set up codebook parameters according to complexity setting and frame length */
@@ -607,10 +609,8 @@ namespace Concentus.Silk
                 lagIndex.Val = (short)(lag - MIN_LAG_8KHZ);
                 contourIndex.Val = (sbyte)CBimax;
             }
-            //Inlines.OpusAssert(lagIndex.Val >= 0);
+            Inlines.OpusAssert(lagIndex.Val >= 0);
             /* return as voiced */
-            if (lagIndex.Val < 0)
-                lagIndex.Val = 0; // FIXME HACK to prevent <0 errors
 
             return 0;
         }
@@ -644,8 +644,7 @@ namespace Concentus.Silk
             Pointer<int> scratch_mem;
             Pointer<int> xcorr32;
             Pointer<sbyte> Lag_range_ptr, Lag_CB_ptr;
-
-
+            
             Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
             Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
 

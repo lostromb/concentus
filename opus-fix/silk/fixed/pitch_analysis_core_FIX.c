@@ -603,8 +603,8 @@ static void silk_P_Ana_calc_corr_st3(
     opus_int          complexity,                      /* I Complexity setting          */
     int               arch                             /* I Run-time architecture       */
 )
-{
-    const opus_int16 *target_ptr;
+{	
+	const opus_int16 *target_ptr;
     opus_int   i, j, k, lag_counter, lag_low, lag_high;
     opus_int   nb_cbk_search, delta, idx, cbk_size;
     VARDECL( opus_int32, scratch_mem );

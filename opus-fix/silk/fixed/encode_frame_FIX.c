@@ -72,6 +72,9 @@ void silk_encode_do_VAD_FIX(
     }
 }
 
+static opus_int TEST_COUNT = 0;
+static opus_int TARGET_TEST = 1;
+
 /****************/
 /* Encode frame */
 /****************/
@@ -93,6 +96,11 @@ opus_int silk_encode_frame_FIX(
 	NailTestPrintInputIntDeclaration("condCoding", condCoding);
 	NailTestPrintInputIntDeclaration("maxBits", maxBits);
 	NailTestPrintInputIntDeclaration("useCBR", useCBR);*/
+
+	if (TEST_COUNT == TARGET_TEST)
+	{
+		fprintf(stdout, "Test begin------------------------------------------------\n");
+	}
 
 	silk_encoder_control_FIX sEncCtrl;
     opus_int     i, iter, maxIter, found_upper, found_lower, ret = 0;
@@ -245,8 +253,8 @@ opus_int silk_encode_frame_FIX(
 		fprintf(stdout, "Helpers.AssertSilkEncStateEquals(expectedEncoder, through_psEnc);\n");
 		fprintf(stdout, "Helpers.AssertSilkEncControlEquals(expectedControl, through_sEncCtrl);\n");
 		fprintf(stdout, "Helpers.AssertArrayDataEquals(expected_xfw_Q3_2, xfw_Q3);\n");
-		NailTestPrintTestFooter();
-		*/
+		NailTestPrintTestFooter();*/
+		
         /* Loop over quantizer and entropy coding to control bitrate */
         maxIter = 6;
         gainMult_Q8 = SILK_FIX_CONST( 1, 8 );
@@ -424,6 +432,12 @@ opus_int silk_encode_frame_FIX(
 	fprintf(stdout, "Helpers.AssertSilkEncStateEquals(expected_psEnc, through_psEnc);\n");
 
 	NailTestPrintTestFooter();*/
+
+	if (TEST_COUNT++ == TARGET_TEST)
+	{
+		//fprintf(stdout, "Test end\n");
+		exit(0);
+	}
 
     RESTORE_STACK;
 

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Concentus.Celt;
 
 namespace Concentus.Silk
 {
@@ -341,45 +342,27 @@ namespace Concentus.Silk
         {
             int j;
 
+            Pointer<short> mem = Pointer.Malloc<short>(SilkConstants.SILK_MAX_ORDER_LPC);
+            Pointer<short> num = Pointer.Malloc<short>(SilkConstants.SILK_MAX_ORDER_LPC);
+
             Inlines.OpusAssert(d >= 6);
             Inlines.OpusAssert((d & 1) == 0);
             Inlines.OpusAssert(d <= len);
 
-            int ix;
-            int out32_Q12, out32;
-            Pointer<short> in_ptr;
-
-            for (ix = d; ix < len; ix++)
+            Inlines.OpusAssert(d <= SilkConstants.SILK_MAX_ORDER_LPC);
+            for (j = 0; j < d; j++)
             {
-                in_ptr = input.Point(ix - 1);
-
-                out32_Q12 = Inlines.silk_SMULBB(in_ptr[0], B[0]);
-                /* Allowing wrap around so that two wraps can cancel each other. The rare
-                   cases where the result wraps around can only be triggered by invalid streams*/
-                out32_Q12 = Inlines.silk_SMLABB_ovflw(out32_Q12, in_ptr[-1], B[1]);
-                out32_Q12 = Inlines.silk_SMLABB_ovflw(out32_Q12, in_ptr[-2], B[2]);
-                out32_Q12 = Inlines.silk_SMLABB_ovflw(out32_Q12, in_ptr[-3], B[3]);
-                out32_Q12 = Inlines.silk_SMLABB_ovflw(out32_Q12, in_ptr[-4], B[4]);
-                out32_Q12 = Inlines.silk_SMLABB_ovflw(out32_Q12, in_ptr[-5], B[5]);
-
-                for (j = 6; j < d; j += 2)
-                {
-                    out32_Q12 = Inlines.silk_SMLABB_ovflw(out32_Q12, in_ptr[-j], B[j]);
-                    out32_Q12 = Inlines.silk_SMLABB_ovflw(out32_Q12, in_ptr[-j - 1], B[j + 1]);
-                }
-
-                /* Subtract prediction */
-                out32_Q12 = Inlines.silk_SUB32_ovflw(Inlines.silk_LSHIFT((int)in_ptr[1], 12), out32_Q12);
-
-                /* Scale to Q0 */
-                out32 = Inlines.silk_RSHIFT_ROUND(out32_Q12, 12);
-
-                /* Saturate output */
-                output[ix] = (short)Inlines.silk_SAT16(out32);
+                num[j] = Inlines.CHOP16(0 - B[j]);
             }
-
-            /* Set first d output samples to zero */
-            output.MemSet(0, d);
+            for (j = 0; j < d; j++)
+            {
+                mem[j] = input[d - j - 1];
+            }
+            celt_fir.celt_fir_c(input.Point(d), num, output.Point(d), len - d, d, mem, arch);
+            for (j = 0; j < d; j++)
+            {
+                output[j] = 0;
+            }
         }
 
         private const int QA = 24;

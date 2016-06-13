@@ -27,7 +27,6 @@ namespace Concentus.Celt
                 int[] sum = { 0, 0, 0, 0 };
 
                 xcorr_kernel.xcorr_kernel_c(_x, _y.Point(i), sum.GetPointer(), len);
-                Debug.WriteLine("15g {0}", xcorr[i]);
                 xcorr[i] = sum[0];
                 xcorr[i + 1] = sum[1];
                 xcorr[i + 2] = sum[2];

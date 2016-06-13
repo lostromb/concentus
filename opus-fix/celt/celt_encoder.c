@@ -1309,67 +1309,67 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, opus_int32 
    return target;
 }
 
-void NailTesterPrint_CELTEncoder(char* varName, const CELTEncoder* enc_state)
-{
-	fprintf(stdout, "%s = new CELTEncoder();\n", varName);
-	fprintf(stdout, "%s.mode = modes.mode48000_960_120;\n", varName);
-	NailTestPrintMemberVarInt(varName, "channels", enc_state->channels);
-	NailTestPrintMemberVarInt(varName, "stream_channels", enc_state->stream_channels);
-	NailTestPrintMemberVarInt(varName, "force_intra", enc_state->force_intra);
-	NailTestPrintMemberVarInt(varName, "clip", enc_state->clip);
-	NailTestPrintMemberVarInt(varName, "disable_pf", enc_state->disable_pf);
-	NailTestPrintMemberVarInt(varName, "complexity", enc_state->complexity);
-	NailTestPrintMemberVarInt(varName, "upsample", enc_state->upsample);
-	NailTestPrintMemberVarInt(varName, "start", enc_state->start);
-	NailTestPrintMemberVarInt(varName, "end", enc_state->end);
-	NailTestPrintMemberVarInt(varName, "bitrate", enc_state->bitrate);
-	NailTestPrintMemberVarInt(varName, "vbr", enc_state->vbr);
-	NailTestPrintMemberVarInt(varName, "signalling", enc_state->signalling);
-	NailTestPrintMemberVarInt(varName, "constrained_vbr", enc_state->constrained_vbr);
-	NailTestPrintMemberVarInt(varName, "loss_rate", enc_state->loss_rate);
-	NailTestPrintMemberVarInt(varName, "lsb_depth", enc_state->lsb_depth);
-	NailTestPrintMemberVarInt(varName, "variable_duration", enc_state->variable_duration);
-	NailTestPrintMemberVarInt(varName, "lfe", enc_state->lfe);
-	NailTestPrintMemberVarInt(varName, "arch", enc_state->arch);
-	NailTestPrintMemberVarUint(varName, "rng", enc_state->rng);
-	NailTestPrintMemberVarInt(varName, "spread_decision", enc_state->spread_decision);
-	NailTestPrintMemberVarInt(varName, "delayedIntra", enc_state->delayedIntra);
-	NailTestPrintMemberVarInt(varName, "tonal_average", enc_state->tonal_average);
-	NailTestPrintMemberVarInt(varName, "lastCodedBands", enc_state->lastCodedBands);
-	NailTestPrintMemberVarInt(varName, "hf_average", enc_state->hf_average);
-	NailTestPrintMemberVarInt(varName, "tapset_decision", enc_state->tapset_decision);
-	NailTestPrintMemberVarInt(varName, "prefilter_period", enc_state->prefilter_period);
-	NailTestPrintMemberVarShort(varName, "prefilter_gain", enc_state->prefilter_gain);
-	NailTestPrintMemberVarInt(varName, "prefilter_tapset", enc_state->prefilter_tapset);
-	NailTestPrintMemberVarInt(varName, "consec_transient", enc_state->consec_transient);
-	NailTestPrint_AnalysisInfo(concatenate(varName, ".analysis"), &enc_state->analysis);
-	NailTestPrintMemberVarIntArray(varName, "preemph_memE", enc_state->preemph_memE, 2);
-	NailTestPrintMemberVarIntArray(varName, "preemph_memD", enc_state->preemph_memD, 2);
-	NailTestPrintMemberVarInt(varName, "vbr_reservoir", enc_state->vbr_reservoir);
-	NailTestPrintMemberVarInt(varName, "vbr_drift", enc_state->vbr_drift);
-	NailTestPrintMemberVarInt(varName, "vbr_offset", enc_state->vbr_offset);
-	NailTestPrintMemberVarInt(varName, "vbr_count", enc_state->vbr_count);
-	NailTestPrintMemberVarInt(varName, "overlap_max", enc_state->overlap_max);
-	NailTestPrintMemberVarShort(varName, "stereo_saving", enc_state->stereo_saving);
-	NailTestPrintMemberVarInt(varName, "intensity", enc_state->intensity);
-	NailTestPrintMemberVarShortArray(varName, "energy_mask", enc_state->energy_mask, 500);
-	NailTestPrintMemberVarShort(varName, "spec_avg", enc_state->spec_avg);
-	// straighten out this variable buffer junk
-	celt_sig* prefilter_mem = enc_state->in_mem + (enc_state->channels * enc_state->mode->overlap);
-	opus_val16* oldBandE = (opus_val16*)(enc_state->in_mem + enc_state->channels*(enc_state->mode->overlap + COMBFILTER_MAXPERIOD));
-	opus_val16* oldLogE = oldBandE + enc_state->channels*enc_state->mode->nbEBands;
-	opus_val16* oldLogE2 = oldLogE + enc_state->channels*enc_state->mode->nbEBands;
-	NailTestPrintMemberVarIntArray(varName, "in_mem", enc_state->in_mem,
-		(enc_state->channels * enc_state->mode->overlap));
-	NailTestPrintMemberVarIntArray(varName, "prefilter_mem", prefilter_mem,
-		(enc_state->channels * COMBFILTER_MAXPERIOD));
-	NailTestPrintMemberVarShortArrayAsInt(varName, "oldBandE", oldBandE,
-		(enc_state->channels*enc_state->mode->nbEBands));
-	NailTestPrintMemberVarShortArrayAsInt(varName, "oldLogE", oldLogE,
-		(enc_state->channels*enc_state->mode->nbEBands));
-	NailTestPrintMemberVarShortArrayAsInt(varName, "oldLogE2", oldLogE2,
-		(enc_state->channels*enc_state->mode->nbEBands));
-}
+//void NailTesterPrint_CELTEncoder(char* varName, const CELTEncoder* enc_state)
+//{
+//	fprintf(stdout, "%s = new CELTEncoder();\n", varName);
+//	fprintf(stdout, "%s.mode = modes.mode48000_960_120;\n", varName);
+//	NailTestPrintMemberVarInt(varName, "channels", enc_state->channels);
+//	NailTestPrintMemberVarInt(varName, "stream_channels", enc_state->stream_channels);
+//	NailTestPrintMemberVarInt(varName, "force_intra", enc_state->force_intra);
+//	NailTestPrintMemberVarInt(varName, "clip", enc_state->clip);
+//	NailTestPrintMemberVarInt(varName, "disable_pf", enc_state->disable_pf);
+//	NailTestPrintMemberVarInt(varName, "complexity", enc_state->complexity);
+//	NailTestPrintMemberVarInt(varName, "upsample", enc_state->upsample);
+//	NailTestPrintMemberVarInt(varName, "start", enc_state->start);
+//	NailTestPrintMemberVarInt(varName, "end", enc_state->end);
+//	NailTestPrintMemberVarInt(varName, "bitrate", enc_state->bitrate);
+//	NailTestPrintMemberVarInt(varName, "vbr", enc_state->vbr);
+//	NailTestPrintMemberVarInt(varName, "signalling", enc_state->signalling);
+//	NailTestPrintMemberVarInt(varName, "constrained_vbr", enc_state->constrained_vbr);
+//	NailTestPrintMemberVarInt(varName, "loss_rate", enc_state->loss_rate);
+//	NailTestPrintMemberVarInt(varName, "lsb_depth", enc_state->lsb_depth);
+//	NailTestPrintMemberVarInt(varName, "variable_duration", enc_state->variable_duration);
+//	NailTestPrintMemberVarInt(varName, "lfe", enc_state->lfe);
+//	NailTestPrintMemberVarInt(varName, "arch", enc_state->arch);
+//	NailTestPrintMemberVarUint(varName, "rng", enc_state->rng);
+//	NailTestPrintMemberVarInt(varName, "spread_decision", enc_state->spread_decision);
+//	NailTestPrintMemberVarInt(varName, "delayedIntra", enc_state->delayedIntra);
+//	NailTestPrintMemberVarInt(varName, "tonal_average", enc_state->tonal_average);
+//	NailTestPrintMemberVarInt(varName, "lastCodedBands", enc_state->lastCodedBands);
+//	NailTestPrintMemberVarInt(varName, "hf_average", enc_state->hf_average);
+//	NailTestPrintMemberVarInt(varName, "tapset_decision", enc_state->tapset_decision);
+//	NailTestPrintMemberVarInt(varName, "prefilter_period", enc_state->prefilter_period);
+//	NailTestPrintMemberVarShort(varName, "prefilter_gain", enc_state->prefilter_gain);
+//	NailTestPrintMemberVarInt(varName, "prefilter_tapset", enc_state->prefilter_tapset);
+//	NailTestPrintMemberVarInt(varName, "consec_transient", enc_state->consec_transient);
+//	NailTestPrint_AnalysisInfo(concatenate(varName, ".analysis"), &enc_state->analysis);
+//	NailTestPrintMemberVarIntArray(varName, "preemph_memE", enc_state->preemph_memE, 2);
+//	NailTestPrintMemberVarIntArray(varName, "preemph_memD", enc_state->preemph_memD, 2);
+//	NailTestPrintMemberVarInt(varName, "vbr_reservoir", enc_state->vbr_reservoir);
+//	NailTestPrintMemberVarInt(varName, "vbr_drift", enc_state->vbr_drift);
+//	NailTestPrintMemberVarInt(varName, "vbr_offset", enc_state->vbr_offset);
+//	NailTestPrintMemberVarInt(varName, "vbr_count", enc_state->vbr_count);
+//	NailTestPrintMemberVarInt(varName, "overlap_max", enc_state->overlap_max);
+//	NailTestPrintMemberVarShort(varName, "stereo_saving", enc_state->stereo_saving);
+//	NailTestPrintMemberVarInt(varName, "intensity", enc_state->intensity);
+//	NailTestPrintMemberVarShortArray(varName, "energy_mask", enc_state->energy_mask, 500);
+//	NailTestPrintMemberVarShort(varName, "spec_avg", enc_state->spec_avg);
+//	// straighten out this variable buffer junk
+//	celt_sig* prefilter_mem = enc_state->in_mem + (enc_state->channels * enc_state->mode->overlap);
+//	opus_val16* oldBandE = (opus_val16*)(enc_state->in_mem + enc_state->channels*(enc_state->mode->overlap + COMBFILTER_MAXPERIOD));
+//	opus_val16* oldLogE = oldBandE + enc_state->channels*enc_state->mode->nbEBands;
+//	opus_val16* oldLogE2 = oldLogE + enc_state->channels*enc_state->mode->nbEBands;
+//	NailTestPrintMemberVarIntArray(varName, "in_mem", enc_state->in_mem,
+//		(enc_state->channels * enc_state->mode->overlap));
+//	NailTestPrintMemberVarIntArray(varName, "prefilter_mem", prefilter_mem,
+//		(enc_state->channels * COMBFILTER_MAXPERIOD));
+//	NailTestPrintMemberVarShortArrayAsInt(varName, "oldBandE", oldBandE,
+//		(enc_state->channels*enc_state->mode->nbEBands));
+//	NailTestPrintMemberVarShortArrayAsInt(varName, "oldLogE", oldLogE,
+//		(enc_state->channels*enc_state->mode->nbEBands));
+//	NailTestPrintMemberVarShortArrayAsInt(varName, "oldLogE2", oldLogE2,
+//		(enc_state->channels*enc_state->mode->nbEBands));
+//}
 
 static opus_int TEST_COUNT = 0;
 static opus_int TARGET_TEST = 0;
@@ -1383,11 +1383,11 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
 	int nbCompressedBytes, // I Inputs maximum number of output bytes allowed (i.e. size of buffer)
 	ec_enc *enc) // I/O An entropy coder
 {
-	if (TEST_COUNT == TARGET_TEST)
+	/*if (TEST_COUNT == TARGET_TEST)
 	{
 		fprintf(stdout, "Test begin------------------------------------------------\n");
 		enc->EC_DIFF = 1;
-	}
+	}*/
 	
 	/*NailTestPrintTestHeader("celt_encode_with_ec");
 	fprintf(stdout, "#region autogen\n");
@@ -2258,11 +2258,11 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
    fprintf(stdout, "Helpers.AssertEcCtxEquals(expected_enc, through_enc);\n");
    NailTestPrintTestFooter();*/
 
-   if (TEST_COUNT++ == TARGET_TEST)
+   /*if (TEST_COUNT++ == TARGET_TEST)
    {
 	   //fprintf(stdout, "Test end\n");
 	   exit(0);
-   }
+   }*/
    
    if (ec_get_error(enc))
       return OPUS_INTERNAL_ERROR;
