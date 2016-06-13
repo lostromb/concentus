@@ -57,7 +57,7 @@ namespace Concentus.Celt
                 if (shift > 0)
                 {
                     for (i = 0; i < n; i++)
-                        xx[i] = Inlines.PSHR16(xptr[i], shift); // porting note: this was originally PSHR32, but I believe that is a bug in the original code
+                        xx[i] = Inlines.PSHR16(xptr[i], shift); // opus bug: this was originally PSHR32
                     xptr = xx;
                 }
                 else

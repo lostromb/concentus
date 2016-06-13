@@ -955,7 +955,7 @@ namespace Concentus.Common
         /// <returns></returns>
         public static int silk_ROR32(int a32, int rot)
         {
-            return (int)silk_ROR32((uint)a32, rot);
+            return unchecked((int)silk_ROR32(unchecked((uint)a32), rot));
         }
 
         /// <summary>
@@ -984,8 +984,10 @@ namespace Concentus.Common
         public static int silk_MUL(int a32, int b32)
         {
             int ret = a32 * b32;
+#if DEBUG_MACROS
             long ret64 = (long)a32 * (long)b32;
             Inlines.OpusAssert((long)ret == ret64);
+#endif
             return ret;
         }
 
@@ -1106,14 +1108,17 @@ namespace Concentus.Common
 
         public static int silk_SMULWB(int a32, int b32)
         {
-            //return (int)((a32 * (long)((short)b32)) >> 16);
+#if DEBUG_MACROS
             int ret;
-            ret = (a32 >> 16) * (int)((short)b32) + (((a32 & 0x0000FFFF) * (int)((short)b32)) >> 16);
+            ret = ((a32 >> 16) * (int)((short)b32) + (((a32 & 0x0000FFFF) * (int)((short)b32)) >> 16));
             if ((long)ret != ((long)a32 * (short)b32) >> 16)
             {
                 Inlines.OpusAssert(false);
             }
             return ret;
+#else
+            return (int)((a32 * (long)((short)b32)) >> 16);
+#endif
         }
 
 
@@ -1124,11 +1129,13 @@ namespace Concentus.Common
 
         public static int silk_DIV32_16(int a32, int b32)
         {
+#if DEBUG_MACROS
             bool fail = false;
             fail |= b32 == 0;
             fail |= b32 > short.MaxValue;
             fail |= b32 < short.MinValue;
             Inlines.OpusAssert(!fail);
+#endif
             return a32 / b32;
         }
 
@@ -1141,11 +1148,12 @@ namespace Concentus.Common
         public static short silk_ADD16(short a, short b)
         {
             short ret = (short)(a + b);
-            //Debug.WriteLine("0x{0:x} 0x{1:x} 0x{2:x}", (uint)(a), (uint)(b), (uint)(ret));
+#if DEBUG_MACROS
             if (ret != silk_ADD_SAT16(a, b))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;
         }
 
@@ -1153,25 +1161,24 @@ namespace Concentus.Common
         public static int silk_ADD32(int a, int b)
         {
             int ret = a + b;
-            //Debug.WriteLine("0x{0:x} 0x{1:x} 0x{2:x}", (uint)(a), (uint)(b), (uint)(ret));
+#if DEBUG_MACROS
             if (ret != silk_ADD_SAT32(a, b))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;
         }
 
         public static uint silk_ADD32(uint a, uint b)
         {
             uint ret = a + b;
-            //Debug.WriteLine("0x{0:x} 0x{1:x} 0x{2:x}", (uint)(a), (uint)(b), (uint)(ret));
             return ret;
         }
 
         public static long silk_ADD64(long a, long b)
         {
             long ret = a + b;
-            //Debug.WriteLine("0x{0:x} 0x{1:x} 0x{2:x}", (ulong)a, (ulong)b, (ulong)(ret));
             Inlines.OpusAssert(ret == silk_ADD_SAT64(a, b));
             return ret;
         }
@@ -1295,7 +1302,7 @@ namespace Concentus.Common
 
         public static int silk_ADD_SAT32(int a32, int b32)
         {
-            int res = ((((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
+            int res = (unchecked(((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
                 ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
                 ((((a32) | (b32)) & 0x80000000) == 0 ? int.MaxValue : (a32) + (b32)));
             Inlines.OpusAssert(res == silk_SAT32((long)a32 + (long)b32));
@@ -1305,11 +1312,11 @@ namespace Concentus.Common
         public static long silk_ADD_SAT64(long a64, long b64)
         {
             long res;
-            bool fail = false;
-            res = (((ulong)((a64) + (b64)) & 0x8000000000000000UL) == 0 ?
+            res = (unchecked((ulong)((a64) + (b64)) & 0x8000000000000000UL) == 0 ?
                 (((ulong)((a64) & (b64)) & 0x8000000000000000UL) != 0 ? long.MinValue : (a64) + (b64)) :
                 (((ulong)((a64) | (b64)) & 0x8000000000000000UL) == 0 ? long.MaxValue : (a64) + (b64)));
-
+#if DEBUG_MACROS
+            bool fail = false;
             if (res != a64 + b64)
             {
                 /* Check that we saturated to the correct extreme value */
@@ -1325,6 +1332,7 @@ namespace Concentus.Common
                 fail = res != a64 + b64;
             }
             Inlines.OpusAssert(!fail);
+#endif
             return res;
         }
 
@@ -1337,7 +1345,7 @@ namespace Concentus.Common
 
         public static int silk_SUB_SAT32(int a32, int b32)
         {
-            int res = ((((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
+            int res = (unchecked(((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
                 (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
                 ((((a32) ^ 0x80000000) & (b32) & 0x80000000) != 0 ? int.MaxValue : (a32) - (b32)));
             Inlines.OpusAssert(res == silk_SAT32((long)a32 - (long)b32));
@@ -1347,10 +1355,11 @@ namespace Concentus.Common
         public static long silk_SUB_SAT64(long a64, long b64)
         {
             long res;
-            bool fail = false;
-            res = (((ulong)((a64) - (b64)) & 0x8000000000000000UL) == 0 ?
+            res = (unchecked((ulong)((a64) - (b64)) & 0x8000000000000000UL) == 0 ?
                 (((ulong)(a64) & ((ulong)(b64) ^ 0x8000000000000000UL) & 0x8000000000000000UL) != 0 ? long.MinValue : (a64) - (b64)) :
                 ((((ulong)(a64) ^ 0x8000000000000000UL) & (ulong)(b64) & 0x8000000000000000UL) != 0 ? long.MaxValue : (a64) - (b64)));
+#if DEBUG_MACROS
+            bool fail = false;
             if (res != a64 - b64)
             {
                 /* Check that we saturated to the correct extreme value */
@@ -1366,6 +1375,7 @@ namespace Concentus.Common
                 fail = res != a64 - b64;
             }
             Inlines.OpusAssert(!fail);
+#endif
             return res;
         }
 
@@ -1393,7 +1403,7 @@ namespace Concentus.Common
 
         public static short silk_ADD_POS_SAT16(short a, short b)
         {
-            return (short)((((a + b) & 0x8000) != 0) ? short.MaxValue : (a + b));
+            return (short)(unchecked(((a + b) & 0x8000) != 0) ? short.MaxValue : (a + b));
         }
 
         /// <summary>
@@ -1405,7 +1415,7 @@ namespace Concentus.Common
 
         public static int silk_ADD_POS_SAT32(int a, int b)
         {
-            return ((((a + b) & 0x80000000) != 0) ? int.MaxValue : (a + b));
+            return (unchecked(((a + b) & 0x80000000) != 0) ? int.MaxValue : (a + b));
         }
 
         /// <summary>
@@ -1417,7 +1427,7 @@ namespace Concentus.Common
 
         public static long silk_ADD_POS_SAT64(long a, long b)
         {
-            return ((((ulong)(a + b) & 0x8000000000000000L) != 0) ? long.MaxValue : (a + b));
+            return ((unchecked((ulong)(a + b) & 0x8000000000000000L) != 0) ? long.MaxValue : (a + b));
         }
 
         public static sbyte silk_LSHIFT8(sbyte a, int shift)
@@ -1434,11 +1444,13 @@ namespace Concentus.Common
         public static short silk_LSHIFT16(short a, int shift)
         {
             short ret = (short)(a << shift);
+#if DEBUG_MACROS
             bool fail = false;
             fail |= shift < 0;
             fail |= shift >= 16;
             fail |= (long)ret != ((long)a) << shift;
             Inlines.OpusAssert(!fail);
+#endif
             return ret;
         }
 
@@ -1456,22 +1468,26 @@ namespace Concentus.Common
         public static long silk_LSHIFT64(long a, int shift)
         {
             long ret = a << shift;
+#if DEBUG_MACROS
             bool fail = false;
             fail |= shift < 0;
             fail |= shift >= 64;
             fail |= (ret >> shift) != ((long)a);
             Inlines.OpusAssert(!fail);
+#endif
             return ret;
         }
 
         public static int silk_LSHIFT(int a, int shift)
         {
             int ret = a << shift;
+#if DEBUG_MACROS
             bool fail = false;
             fail |= shift < 0;
             fail |= shift >= 32;
             fail |= (long)ret != ((long)a) << shift;
             Inlines.OpusAssert(!fail);
+#endif
             return ret;
         }
 
@@ -1486,8 +1502,7 @@ namespace Concentus.Common
 
         public static uint silk_LSHIFT_uint(uint a, int shift)
         {
-            uint ret;
-            ret = a << shift;
+            uint ret = a << shift;
             if ((shift < 0) || ((long)ret != ((long)a) << shift))
             {
                 Inlines.OpusAssert(false);
@@ -2039,8 +2054,7 @@ namespace Concentus.Common
         /// </summary>
         public static int silk_SMULWW(int a32, int b32)
         {
-            //return CHOP32(((long)(a32) * (b32)) >> 16);
-            //return silk_MLA(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16));
+#if DEBUG_MACROS
             int ret, tmp1, tmp2;
             long ret64;
             bool fail = false;
@@ -2064,6 +2078,10 @@ namespace Concentus.Common
             }
 
             return ret;
+#else
+            //return CHOP32(((long)(a32) * (b32)) >> 16);
+            return silk_MLA(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16));
+#endif
         }
 
         /// <summary>
@@ -2071,8 +2089,7 @@ namespace Concentus.Common
         /// </summary>
         public static int silk_SMLAWW(int a32, int b32, int c32)
         {
-            //return CHOP32(((a32) + (((long)(b32) * (c32)) >> 16)));
-            //return silk_MLA(silk_SMLAWB((a32), (b32), (c32)), (b32), silk_RSHIFT_ROUND((c32), 16));
+#if DEBUG_MACROS
             int ret, tmp;
 
             tmp = silk_SMULWW(b32, c32);
@@ -2082,6 +2099,10 @@ namespace Concentus.Common
                 Inlines.OpusAssert(false);
             }
             return ret;
+#else
+            //return CHOP32(((a32) + (((long)(b32) * (c32)) >> 16)));
+            return silk_MLA(silk_SMLAWB((a32), (b32), (c32)), (b32), silk_RSHIFT_ROUND((c32), 16));
+#endif
         }
 
         /* count leading zeros of opus_int64 */
@@ -2330,9 +2351,9 @@ namespace Concentus.Common
         }
 
 
-        #endregion
+#endregion
 
-        #region EntropyCoder helper functions, common to both projects
+#region EntropyCoder helper functions, common to both projects
 
         /// <summary>
         /// implementation of platform-specific bitscanreverse method
@@ -2427,9 +2448,9 @@ namespace Concentus.Common
             return ret;
         }*/
 
-        #endregion
+#endregion
 
-        #region C++ Math
+#region C++ Math
 
         /*[DllImport("CMath.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern double pow_wrapper_d_d(double a, double b);*/
@@ -2441,6 +2462,6 @@ namespace Concentus.Common
             return a;
         }
 
-        #endregion
+#endregion
     }
 }

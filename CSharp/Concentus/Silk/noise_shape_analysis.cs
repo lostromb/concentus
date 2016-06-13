@@ -412,7 +412,7 @@ namespace Concentus.Silk
                                                                                  /* Pack two coefficients in one int32 */
                 psEncCtrl.LF_shp_Q14[0] = Inlines.silk_LSHIFT(Inlines.SILK_FIX_CONST(1.0f, 14) - b_Q14 -
                     Inlines.silk_SMULWB(strength_Q16, Inlines.silk_SMULWB(Inlines.SILK_FIX_CONST(0.6f, 16), b_Q14)), 16);
-                psEncCtrl.LF_shp_Q14[0] |= (b_Q14 - Inlines.SILK_FIX_CONST(1.0f, 14)) & 0xFFFF; // opus bug: cast to ushort is better expressed as a bitwise operator
+                psEncCtrl.LF_shp_Q14[0] |= (b_Q14 - Inlines.SILK_FIX_CONST(1.0f, 14)) & 0xFFFF; // opus bug: cast to ushort is better expressed as a bitwise operator, otherwise runtime analysis might flag it as an overflow error
                 for (k = 1; k < psEnc.sCmn.nb_subfr; k++)
                 {
                     psEncCtrl.LF_shp_Q14[k] = psEncCtrl.LF_shp_Q14[0];
