@@ -1433,11 +1433,13 @@ namespace Concentus.Common
         public static sbyte silk_LSHIFT8(sbyte a, int shift)
         {
             sbyte ret = (sbyte)(a << shift);
+#if DEBUG_MACROS
             bool fail = false;
             fail |= shift < 0;
             fail |= shift >= 8;
             fail |= (long)ret != ((long)a) << shift;
             Inlines.OpusAssert(!fail);
+#endif
             return ret;
         }
 
@@ -1457,11 +1459,13 @@ namespace Concentus.Common
         public static int silk_LSHIFT32(int a, int shift)
         {
             int ret = a << shift;
+#if DEBUG_MACROS
             bool fail = false;
             fail |= shift < 0;
             fail |= shift >= 32;
             fail |= (long)ret != ((long)a) << shift;
             Inlines.OpusAssert(!fail);
+ #endif
             return ret;
         }
 
@@ -1493,20 +1497,24 @@ namespace Concentus.Common
 
         public static int silk_LSHIFT_ovflw(int a, int shift)
         {
+#if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32)) /* no check for overflow */
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return a << shift;
         }
 
         public static uint silk_LSHIFT_uint(uint a, int shift)
         {
             uint ret = a << shift;
+#if DEBUG_MACROS
             if ((shift < 0) || ((long)ret != ((long)a) << shift))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;
         }
 
@@ -1523,75 +1531,91 @@ namespace Concentus.Common
 
         public static sbyte silk_RSHIFT8(sbyte a, int shift)
         {
+#if DEBUG_MACROS
             if ((shift < 0) || (shift >= 8))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return (sbyte)(a >> shift);
         }
 
         public static short silk_RSHIFT16(short a, int shift)
         {
+#if DEBUG_MACROS
             if ((shift < 0) || (shift >= 16))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return (short)(a >> shift);
         }
 
         public static int silk_RSHIFT32(int a, int shift)
         {
+#if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return a >> shift;
         }
 
         public static int silk_RSHIFT(int a, int shift)
         {
+#if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return a >> shift;
         }
 
         public static long silk_RSHIFT64(long a, int shift)
         {
+#if DEBUG_MACROS
             if ((shift < 0) || (shift >= 64))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return a >> shift;
         }
 
         public static uint silk_RSHIFT_uint(uint a, int shift)
         {
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 32))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return a >> shift;
         }
 
         public static short silk_ADD_LSHIFT(int a, int b, int shift)
         {
             short ret = (short)(a + (b << shift));
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 15) || ((long)ret != (long)a + (((long)b) << shift)))
             {
                 //Inlines.OpusAssert(false);
             }
+#endif
             return ret;                /* shift >= 0 */
         }
 
         public static int silk_ADD_LSHIFT32(int a, int b, int shift)
         {
             int ret = a + (b << shift);
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) << shift)))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;                /* shift >= 0 */
         }
 
@@ -1599,20 +1623,24 @@ namespace Concentus.Common
         {
             uint ret;
             ret = a + (b << shift);
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) << shift)))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;                /* shift >= 0 */
         }
 
         public static short silk_ADD_RSHIFT(int a, int b, int shift)
         {
             short ret = (short)(a + (b >> shift));
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 15) || ((long)ret != (long)a + (((long)b) >> shift)))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;                /* shift  > 0 */
         }
 
@@ -1620,10 +1648,12 @@ namespace Concentus.Common
         {
             int ret;
             ret = a + (b >> shift);
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) >> shift)))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;                /* shift  > 0 */
         }
 
@@ -1631,10 +1661,12 @@ namespace Concentus.Common
         {
             uint ret;
             ret = a + (b >> shift);
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) >> shift)))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;                /* shift  > 0 */
         }
 
@@ -1642,10 +1674,12 @@ namespace Concentus.Common
         {
             int ret;
             ret = a - (b << shift);
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a - (((long)b) << shift)))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;                /* shift >= 0 */
         }
 
@@ -1653,10 +1687,12 @@ namespace Concentus.Common
         {
             int ret;
             ret = a - (b >> shift);
+#if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a - (((long)b) >> shift)))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;                /* shift  > 0 */
         }
 
@@ -1664,22 +1700,26 @@ namespace Concentus.Common
         {
             int ret;
             ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
+#if DEBUG_MACROS
             /* the marco definition can't handle a shift of zero */
             if ((shift <= 0) || (shift > 31) || ((long)ret != ((long)a + ((long)1 << (shift - 1))) >> shift))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;
         }
 
         public static long silk_RSHIFT_ROUND64(long a, int shift)
         {
             long ret;
+#if DEBUG_MACROS
             /* the macro definition can't handle a shift of zero */
             if ((shift <= 0) || (shift >= 64))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
             return ret;
         }
@@ -1859,10 +1899,12 @@ namespace Concentus.Common
         {
             int ret;
             ret = a32 + ((b32 >> 16) * (c32 >> 16)) + (((b32 & 0x0000FFFF) * ((c32 >> 16)) >> 16));
+#if DEBUG_MACROS
             if ((long)ret != (long)a32 + (((long)b32 * (c32 >> 16)) >> 16))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;
         }
 
@@ -1982,10 +2024,12 @@ namespace Concentus.Common
             //return (int)(a32 + ((b32 * (long)((short)c32)) >> 16));
             int ret;
             ret = silk_ADD32(a32, silk_SMULWB(b32, c32));
+#if DEBUG_MACROS
             if (silk_ADD32(a32, silk_SMULWB(b32, c32)) != silk_ADD_SAT32(a32, silk_SMULWB(b32, c32)))
             {
                 Inlines.OpusAssert(false);
             }
+#endif
             return ret;
         }
 

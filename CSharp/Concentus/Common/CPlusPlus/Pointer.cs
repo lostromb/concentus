@@ -150,6 +150,15 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
+        // This should only be temporary while I migrate from pointers to arrays
+        public T[] Data
+        {
+            get
+            {
+                return _array;
+            }
+        }
+
         public T this[int index]
         {
             get

@@ -14,10 +14,10 @@ namespace TestConsole
             OpusCodec opus = new OpusCodec(quality);
             opus.Initialize();
             FileStream inputStream = new FileStream(@"Henrik Jose - Blunderbuss.wav", FileMode.Open);
-            FileStream outputStream = new FileStream(@"Opus.wav", FileMode.Create);
+            FileStream outputStream = new FileStream(@"Concentus.wav", FileMode.Create);
             BinaryReader reader = new BinaryReader(inputStream);
-            IAudioCompressionStream compressor = opus.CreateCompressionStream(48000);
-            IAudioDecompressionStream decompressor = opus.CreateDecompressionStream(compressor.GetEncodeParams());
+            IAudioCompressionStream compressor = concentus.CreateCompressionStream(48000);
+            IAudioDecompressionStream decompressor = concentus.CreateDecompressionStream(compressor.GetEncodeParams());
 
             int inputTimeMs = 0;
 

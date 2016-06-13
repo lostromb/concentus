@@ -61,7 +61,7 @@ namespace Concentus.Celt
             {
                 int[] sum = { 0, 0, 0, 0 };
 
-                xcorr_kernel.xcorr_kernel_c(_x, _y.Point(i), sum.GetPointer(), len);
+                xcorr_kernel.xcorr_kernel_c(_x.Data, _x.Offset, _y.Data, _y.Offset + i, sum, len);
 
                 xcorr[i] = sum[0];
                 xcorr[i + 1] = sum[1];

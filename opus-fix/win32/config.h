@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Comment out the next line for floating-point code */
 #define FIXED_POINT           1
-//#define DISABLE_FLOAT_API     1
+#define DISABLE_FLOAT_API     1
 // #define FIXED_DEBUG           1
 
 #define OPUS_BUILD            1

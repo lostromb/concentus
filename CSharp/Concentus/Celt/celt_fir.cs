@@ -41,7 +41,7 @@ namespace Concentus.Celt
             for (i = 0; i < N - 3; i += 4)
             {
                 int[] sum = { 0, 0, 0, 0 };
-                xcorr_kernel.xcorr_kernel_c(rnum, x.Point(i), sum.GetPointer(), ord);
+                xcorr_kernel.xcorr_kernel_c(rnum.Data, rnum.Offset, x.Data, x.Offset + i, sum, ord);
                 _y[i] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
                 _y[i + 1] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
                 _y[i + 2] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
