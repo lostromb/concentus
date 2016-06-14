@@ -1577,35 +1577,40 @@ void encode_three_frames()
 	opus_encoder_ctl(encoder, OPUS_SET_BITRATE_REQUEST, 16 * 1024);
 	opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY_REQUEST, 10);
 
+	const int bufSize = 200;
+
 	unsigned char outputBuffer[200];
 	int thisPacketSize;
 
-	memset(outputBuffer, 0, 200 * sizeof(unsigned char));
-	thisPacketSize = opus_encode(encoder, frame1, 2880, outputBuffer, 200);
+	memset(outputBuffer, 0, bufSize * sizeof(unsigned char));
+	thisPacketSize = opus_encode(encoder, frame1, 2880, outputBuffer, bufSize);
 	
 	/*printf("%d\n", thisPacketSize);
 	for (int c = 0; c < thisPacketSize; c++)
 	{
 		printf("0x%x,\n", outputBuffer[c]);
-	}*/
+	}
+	printf("\n");*/
 
-	memset(outputBuffer, 0, 200 * sizeof(unsigned char));
-	thisPacketSize = opus_encode(encoder, frame2, 2880, outputBuffer, 200);
+	memset(outputBuffer, 0, bufSize * sizeof(unsigned char));
+	thisPacketSize = opus_encode(encoder, frame2, 2880, outputBuffer, bufSize);
 	
 	/*printf("%d\n", thisPacketSize);
 	for (int c = 0; c < thisPacketSize; c++)
 	{
 		printf("0x%x,\n", outputBuffer[c]);
-	}*/
+	}
+	printf("\n");*/
 
-	memset(outputBuffer, 0, 200 * sizeof(unsigned char));
-	thisPacketSize = opus_encode(encoder, frame3, 2880, outputBuffer, 200);
+	memset(outputBuffer, 0, bufSize * sizeof(unsigned char));
+	thisPacketSize = opus_encode(encoder, frame3, 2880, outputBuffer, bufSize);
 	
 	/*printf("%d\n", thisPacketSize);
 	for (int c = 0; c < thisPacketSize; c++)
 	{
 		printf("0x%x,\n", outputBuffer[c]);
-	}*/
+	}
+	printf("\n");*/
 }
 
 int main(int _argc, char **_argv)

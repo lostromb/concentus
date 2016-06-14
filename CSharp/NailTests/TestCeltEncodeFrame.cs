@@ -1377,13 +1377,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 0;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3d9a8b4fU), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3d5fcf37U), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3efbc4a4U), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f3ef129U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f25216cU), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { 0, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -1570,15 +1570,15 @@ namespace NailTests
             Pointer<byte> out_compressed = Pointer.Malloc<byte>(1250);
             ec_ctx expected_enc = new ec_ctx();
             expected_enc.buf = new Pointer<byte>(new byte[] { 132,193,180,198,169,152,205,188,129,138,106,137,108,190,56,242,212,5,59,254,126,121,243,176,94,111,203,200,156,158,58,130,3,
-241,118,39,52,103,22,228});
+244,154,52,15,150,0,164});
             expected_enc.storage = 0x28U;
             expected_enc.end_offs = 0x3U;
-            expected_enc.end_window = 0x346716e4U;
-            expected_enc.nend_bits = 31;
-            expected_enc.nbits_total = 344;
+            expected_enc.end_window = 0xf9600a4U;
+            expected_enc.nend_bits = 29;
+            expected_enc.nbits_total = 342;
             expected_enc.offs = 0x24U;
-            expected_enc.rng = 0x1203400U;
-            expected_enc.val = 0x13475c00U;
+            expected_enc.rng = 0x2518d00U;
+            expected_enc.val = 0x19535c00U;
             expected_enc.ext = 0x0U;
             expected_enc.rem = 0;
             expected_enc.error = 0;
@@ -1613,7 +1613,7 @@ namespace NailTests
             through_st.variable_duration = 0;
             through_st.lfe = 0;
             through_st.arch = 0;
-            through_st.rng = 0x1203400U;
+            through_st.rng = 0x2518d00U;
             through_st.spread_decision = 2;
             through_st.delayedIntra = 30;
             through_st.tonal_average = 256;
@@ -1625,13 +1625,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 1;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3ec27b63U), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3c65b9ccU), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f1f72f1U), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f4fb978U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f25216cU), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { -23424373, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -1873,13 +1873,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 0;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3eb857e1U), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0xbda0f95fU), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3eeee957U), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f3bba56U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f25216cU), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { 3349323, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -2121,13 +2121,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 0;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3e9ba186U), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0xbb8ebbe4U), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3ec0fc3fU), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f303f10U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f4e9036U), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { -32953581, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -2369,13 +2369,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 0;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3ea3f927U), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3d42140dU), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3ecfea4aU), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f33fa92U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f4e9036U), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { 19664218, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -2562,15 +2562,15 @@ namespace NailTests
             Pointer<byte> out_compressed = Pointer.Malloc<byte>(1250);
             ec_ctx expected_enc = new ec_ctx();
             expected_enc.buf = new Pointer<byte>(new byte[] { 188,119,106,247,10,123,70,142,180,3,137,251,248,228,213,96,206,148,37,25,247,102,160,220,30,240,22,87,68,59,163,144,157,
-63,129,12,119,103,166,100,90,104,151,159,107});
+63,129,12,148,60,41,224,90,104,151,159,107});
             expected_enc.storage = 0x2dU;
             expected_enc.end_offs = 0x5U;
-            expected_enc.end_window = 0x45a68U;
-            expected_enc.nend_bits = 19;
-            expected_enc.nbits_total = 388;
+            expected_enc.end_window = 0x5a68U;
+            expected_enc.nend_bits = 18;
+            expected_enc.nbits_total = 387;
             expected_enc.offs = 0x28U;
-            expected_enc.rng = 0xfc48d00U;
-            expected_enc.val = 0x2874b000U;
+            expected_enc.rng = 0x78a8600U;
+            expected_enc.val = 0x6dc8a000U;
             expected_enc.ext = 0x0U;
             expected_enc.rem = 0;
             expected_enc.error = 0;
@@ -2605,7 +2605,7 @@ namespace NailTests
             through_st.variable_duration = 0;
             through_st.lfe = 0;
             through_st.arch = 0;
-            through_st.rng = 0xfc48d00U;
+            through_st.rng = 0x78a8600U;
             through_st.spread_decision = 2;
             through_st.delayedIntra = 0;
             through_st.tonal_average = 256;
@@ -2617,13 +2617,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 0;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3ed03efcU), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3dc8c041U), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3edb3ab0U), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f37c1f0U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f4e9036U), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { -12495553, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -2725,9 +2725,9 @@ namespace NailTests
 3005459,2492855,2180136,641280,-2126572,-3072306,-2280515,-1416849,-814313,-712723,-2114367,-4432893,-5926882,
 -5539778,-3748778,-2159520,-1437806,-1361830,-2166904,-3017233,-2854207,-2129620,-1724527});
             through_st.oldBandE = new Pointer<int>(new int[] { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1604,2157,0,0});
+1540,2157,0,0});
             through_st.oldLogE = new Pointer<int>(new int[] { -28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,
-1604,2157,-28672,-28672});
+1540,2157,-28672,-28672});
             through_st.oldLogE2 = new Pointer<int>(new int[] { -28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,
 2312,2649,-28672,-28672});
             Pointer<short> in_pcm_short = Helpers.WrapWithArrayPointer<short>(
@@ -2865,13 +2865,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 0;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3ebf43e4U), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3dd3d103U), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3eafa364U), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f258848U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f7094a9U), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { -5936171, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -2973,11 +2973,11 @@ namespace NailTests
 3843668,3594611,3588246,3693704,4022806,5081200,4905055,3169361,1607351,1757888,2111175,1583408,1005674,
 544268,-146512,-1021814,-1734911,-1564909,-835192,-1667082,-2680830,-2619579,-2694318});
             through_st.oldBandE = new Pointer<int>(new int[] { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1634,1962,0,0});
+1602,1962,0,0});
             through_st.oldLogE = new Pointer<int>(new int[] { -28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,
-1634,1962,-28672,-28672});
+1602,1962,-28672,-28672});
             through_st.oldLogE2 = new Pointer<int>(new int[] { -28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,
-1604,2157,-28672,-28672});
+1540,2157,-28672,-28672});
             Pointer<short> in_pcm_short = Helpers.WrapWithArrayPointer<short>(
             new short[] { -2346,-2970,-3435,-3880,-4230,-4348,-4349,-4285,-4095,-3874,-3811,-3978,-4252,-4439,-4664,-5247,-6114,
 -6863,-7279,-7401,-7241,-6995,-6802,-6695,-6573,-6279,-5803,-5238,-4627,-4121,-3936,-3977,-3964,-3662,
@@ -3113,13 +3113,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 0;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3ec3b975U), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3d98a708U), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3eac05c5U), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f2ffe66U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f7094a9U), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { -1187235, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -3221,11 +3221,11 @@ namespace NailTests
 2243173,3266780,3291365,2412985,1109444,524758,888092,829532,107624,349303,991976,-51680,-1801685,
 -1660558,123471,915436,116099,-255201,-12508,-588813,-1840545,-1264635,225702});
             through_st.oldBandE = new Pointer<int>(new int[] { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1393,1896,0,0});
+1377,1896,0,0});
             through_st.oldLogE = new Pointer<int>(new int[] { -28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,
-1393,1896,-28672,-28672});
+1377,1896,-28672,-28672});
             through_st.oldLogE2 = new Pointer<int>(new int[] { -28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,
-1634,1962,-28672,-28672});
+1602,1962,-28672,-28672});
             Pointer<short> in_pcm_short = Helpers.WrapWithArrayPointer<short>(
             new short[] { -253,-442,-629,-519,-123,339,705,969,1306,1570,1609,1457,1310,1286,1305,1230,1111,
 1136,1311,1492,1737,2170,2845,3682,4434,4838,5001,5308,5769,6015,6024,6026,5975,5907,
@@ -3361,13 +3361,13 @@ namespace NailTests
             through_st.prefilter_tapset = 0;
             through_st.consec_transient = 0;
             through_st.analysis = new AnalysisInfo();
-            through_st.analysis.valid = 1;
-            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3ec257c4U), 0);
-            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3d1bb49dU), 0);
-            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3eed7045U), 0);
-            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f3eba64U), 0);
-            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x3f7094a9U), 0);
-            through_st.analysis.bandwidth = 20;
+            through_st.analysis.valid = 0;
+            through_st.analysis.tonality = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.tonality_slope = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.noisiness = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.activity = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.music_prob = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x0U), 0);
+            through_st.analysis.bandwidth = 0;
             through_st.preemph_memE = new Pointer<int>(new int[] { 12655706, 0 });
             through_st.preemph_memD = new Pointer<int>(new int[] { 0, 0 });
             through_st.vbr_reservoir = 0;
@@ -3469,11 +3469,11 @@ namespace NailTests
 3050235,2130468,2223444,2696324,2442367,2371708,3151379,2839667,1145967,544272,1517081,2315394,2566271,
 2680341,2231620,1585885,1835949,2610914,2548446,2143758,2168130,2409794,2396890});
             through_st.oldBandE = new Pointer<int>(new int[] { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1401,1671,0,0});
+1393,1671,0,0});
             through_st.oldLogE = new Pointer<int>(new int[] { -28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,
-1401,1671,-28672,-28672});
+1393,1671,-28672,-28672});
             through_st.oldLogE2 = new Pointer<int>(new int[] { -28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,-28672,
-1393,1896,-28672,-28672});
+1377,1896,-28672,-28672});
             Pointer<short> in_pcm_short = Helpers.WrapWithArrayPointer<short>(
             new short[] { 3723,3902,4111,4356,4621,4767,4831,5053,5495,5904,6102,6117,6097,6123,6072,5864,5689,
 5698,5822,6032,6259,6478,6763,7195,7713,8139,8303,8266,8215,8088,7794,7499,7307,6977,

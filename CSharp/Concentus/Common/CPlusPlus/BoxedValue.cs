@@ -14,5 +14,10 @@ namespace Concentus.Common.CPlusPlus
         {
             Val = v;
         }
+
+        public override string ToString()
+        {
+            return Val == null ? "null" : Val.ToString();
+        }
     }
 }
