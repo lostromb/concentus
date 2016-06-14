@@ -1,4 +1,5 @@
-﻿using Concentus.Common;
+﻿using Concentus.Celt.Structs;
+using Concentus.Common;
 using Concentus.Common.CPlusPlus;
 using Concentus.Silk.Structs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -62,7 +63,7 @@ namespace NailTests
 
             Assert.IsNotNull(expectedOutput);
             Assert.IsNotNull(actualOutput);
-            
+
             // If write range is null, it means the function that was tested never actually output any new data to this array
             if (actualOutput.WriteRange == null)
             {
@@ -317,17 +318,87 @@ namespace NailTests
 
         public static void AssertSilkLPStateEquals(silk_LP_state expected, silk_LP_state actual)
         {
-
+            AssertPointerDataEquals(expected.In_LP_State, actual.In_LP_State, false);
+            Assert.AreEqual(expected.transition_frame_no, actual.transition_frame_no);
+            Assert.AreEqual(expected.mode, actual.mode);
         }
 
         public static void AssertSilkVADStateEquals(silk_VAD_state expected, silk_VAD_state actual)
         {
-
+            AssertPointerDataEquals(expected.AnaState, actual.AnaState, false);
+            AssertPointerDataEquals(expected.AnaState1, actual.AnaState1, false);
+            AssertPointerDataEquals(expected.AnaState2, actual.AnaState2, false);
+            AssertPointerDataEquals(expected.XnrgSubfr, actual.XnrgSubfr, false);
+            AssertPointerDataEquals(expected.NrgRatioSmth_Q8, actual.NrgRatioSmth_Q8, false);
+            Assert.AreEqual(expected.HPstate, actual.HPstate);
+            AssertPointerDataEquals(expected.NL, actual.NL, false);
+            AssertPointerDataEquals(expected.inv_NL, actual.inv_NL, false);
+            AssertPointerDataEquals(expected.NoiseLevelBias, actual.NoiseLevelBias, false);
+            Assert.AreEqual(expected.counter, actual.counter);
         }
 
         public static void AssertSilkNSQStateEquals(silk_nsq_state expected, silk_nsq_state actual)
         {
+            AssertPointerDataEquals(expected.xq, actual.xq, false);
+            AssertPointerDataEquals(expected.sLTP_shp_Q14, actual.sLTP_shp_Q14, false);
+            AssertPointerDataEquals(expected.sLPC_Q14, actual.sLPC_Q14, false);
+            AssertPointerDataEquals(expected.sAR2_Q14, actual.sAR2_Q14, false);
+            Assert.AreEqual(expected.sLF_AR_shp_Q14, actual.sLF_AR_shp_Q14);
+            Assert.AreEqual(expected.lagPrev, actual.lagPrev);
+            Assert.AreEqual(expected.sLTP_buf_idx, actual.sLTP_buf_idx);
+            Assert.AreEqual(expected.sLTP_shp_buf_idx, actual.sLTP_shp_buf_idx);
+            Assert.AreEqual(expected.rand_seed, actual.rand_seed);
+            Assert.AreEqual(expected.prev_gain_Q16, actual.prev_gain_Q16);
+            Assert.AreEqual(expected.rewhite_flag, actual.rewhite_flag);
+        }
 
+        public static void AssertCeltEncoderStateEquals(CELTEncoder expected, CELTEncoder actual)
+        {
+            Assert.AreEqual(expected.channels, actual.channels);
+            Assert.AreEqual(expected.stream_channels, actual.stream_channels);
+            Assert.AreEqual(expected.force_intra, actual.force_intra);
+            Assert.AreEqual(expected.clip, actual.clip);
+            Assert.AreEqual(expected.disable_pf, actual.disable_pf);
+            Assert.AreEqual(expected.complexity, actual.complexity);
+            Assert.AreEqual(expected.upsample, actual.upsample);
+            Assert.AreEqual(expected.start, actual.start);
+            Assert.AreEqual(expected.end, actual.end);
+            Assert.AreEqual(expected.bitrate, actual.bitrate);
+            Assert.AreEqual(expected.vbr, actual.vbr);
+            Assert.AreEqual(expected.signalling, actual.signalling);
+            Assert.AreEqual(expected.constrained_vbr, actual.constrained_vbr);
+            Assert.AreEqual(expected.loss_rate, actual.loss_rate);
+            Assert.AreEqual(expected.lsb_depth, actual.lsb_depth);
+            Assert.AreEqual(expected.variable_duration, actual.variable_duration);
+            Assert.AreEqual(expected.lfe, actual.lfe);
+            Assert.AreEqual(expected.arch, actual.arch);
+            Assert.AreEqual(expected.rng, actual.rng);
+            Assert.AreEqual(expected.spread_decision, actual.spread_decision);
+            Assert.AreEqual(expected.delayedIntra, actual.delayedIntra);
+            Assert.AreEqual(expected.tonal_average, actual.tonal_average);
+            Assert.AreEqual(expected.lastCodedBands, actual.lastCodedBands);
+            Assert.AreEqual(expected.hf_average, actual.hf_average);
+            Assert.AreEqual(expected.tapset_decision, actual.tapset_decision);
+            Assert.AreEqual(expected.prefilter_period, actual.prefilter_period);
+            Assert.AreEqual(expected.prefilter_gain, actual.prefilter_gain);
+            Assert.AreEqual(expected.prefilter_tapset, actual.prefilter_tapset);
+            Assert.AreEqual(expected.consec_transient, actual.consec_transient);
+            AssertPointerDataEquals(expected.preemph_memE, actual.preemph_memE, false);
+            AssertPointerDataEquals(expected.preemph_memD, actual.preemph_memD, false);
+            Assert.AreEqual(expected.vbr_reservoir, actual.vbr_reservoir);
+            Assert.AreEqual(expected.vbr_drift, actual.vbr_drift);
+            Assert.AreEqual(expected.vbr_offset, actual.vbr_offset);
+            Assert.AreEqual(expected.vbr_count, actual.vbr_count);
+            Assert.AreEqual(expected.overlap_max, actual.overlap_max);
+            Assert.AreEqual(expected.stereo_saving, actual.stereo_saving);
+            Assert.AreEqual(expected.intensity, actual.intensity);
+            // AssertPointerDataEquals(expected.energy_mask, actual.energy_mask, false);
+            Assert.AreEqual(expected.spec_avg, actual.spec_avg);
+            AssertPointerDataEquals(expected.in_mem, actual.in_mem, false);
+            AssertPointerDataEquals(expected.prefilter_mem, actual.prefilter_mem, false);
+            AssertPointerDataEquals(expected.oldBandE, actual.oldBandE, false);
+            AssertPointerDataEquals(expected.oldLogE, actual.oldLogE, false);
+            AssertPointerDataEquals(expected.oldLogE2, actual.oldLogE2, false);
         }
     }
 }

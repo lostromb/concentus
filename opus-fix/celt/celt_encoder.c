@@ -2247,22 +2247,25 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
 
    RESTORE_STACK;
 
-   /*fprintf(stdout, "Pointer<byte> out_compressed = Pointer.Malloc<byte>(1250);\n");
-   fprintf(stdout, "ec_ctx ");
-   NailTesterPrint_ec_ctx("expected_enc", enc);
-   fprintf(stdout, "#endregion\n");
-   NailTestPrintOutputIntDeclaration("returnVal", nbCompressedBytes);
-   //NailTestPrintOutputByteArrayDeclaration("compressed", compressed, nbCompressedBytes);
-   fprintf(stdout, "int returnVal = celt_encoder.celt_encode_with_ec(through_st, new Pointer<int>(in_pcm), in_frame_size, out_compressed, in_nbCompressedBytes, through_enc);\n");
-   fprintf(stdout, "Assert.AreEqual(expected_returnVal, returnVal);\n");
-   fprintf(stdout, "Helpers.AssertEcCtxEquals(expected_enc, through_enc);\n");
-   NailTestPrintTestFooter();*/
+   //fprintf(stdout, "CELTEncoder ");
+   //NailTesterPrint_CELTEncoder("expected_st", st);
+   //fprintf(stdout, "Pointer<byte> out_compressed = Pointer.Malloc<byte>(1250);\n");
+   //fprintf(stdout, "ec_ctx ");
+   //NailTesterPrint_ec_ctx("expected_enc", enc);
+   //fprintf(stdout, "#endregion\n");
+   //NailTestPrintOutputIntDeclaration("returnVal", nbCompressedBytes);
+   ////NailTestPrintOutputByteArrayDeclaration("compressed", compressed, nbCompressedBytes);
+   //fprintf(stdout, "int returnVal = celt_encoder.celt_encode_with_ec(through_st, new Pointer<int>(in_pcm), in_frame_size, out_compressed, in_nbCompressedBytes, through_enc);\n");
+   //fprintf(stdout, "Assert.AreEqual(expected_returnVal, returnVal);\n");
+   //fprintf(stdout, "Helpers.AssertCeltEncoderStateEquals(expected_st, through_st);\n");
+   //fprintf(stdout, "Helpers.AssertEcCtxEquals(expected_enc, through_enc);\n");
+   //NailTestPrintTestFooter();
 
-   /*if (TEST_COUNT++ == TARGET_TEST)
-   {
-	   //fprintf(stdout, "Test end\n");
-	   exit(0);
-   }*/
+   //if (TEST_COUNT++ == TARGET_TEST)
+   //{
+	  // //fprintf(stdout, "Test end\n");
+	  // exit(0);
+   //}
    
    if (ec_get_error(enc))
       return OPUS_INTERNAL_ERROR;

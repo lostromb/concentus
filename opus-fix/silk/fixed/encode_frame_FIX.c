@@ -87,7 +87,7 @@ opus_int silk_encode_frame_FIX(
     opus_int                        useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
 )
 {
-	NailTestPrintTestHeader("silk_encode_frame_FIX_manual");
+	/*NailTestPrintTestHeader("silk_encode_frame_FIX_manual");
 	fprintf(stdout, "#region autogen\n");
 	fprintf(stdout, "silk_encoder_state_fix ");
 	NailTesterPrint_silk_encoder_state_FIX("through_psEnc", psEnc);
@@ -95,7 +95,7 @@ opus_int silk_encode_frame_FIX(
 	NailTesterPrint_ec_ctx("through_psRangeEnc", psRangeEnc);
 	NailTestPrintInputIntDeclaration("condCoding", condCoding);
 	NailTestPrintInputIntDeclaration("maxBits", maxBits);
-	NailTestPrintInputIntDeclaration("useCBR", useCBR);
+	NailTestPrintInputIntDeclaration("useCBR", useCBR);*/
 
 	/*if (TEST_COUNT == TARGET_TEST)
 	{
@@ -418,7 +418,7 @@ opus_int silk_encode_frame_FIX(
     /* Payload size */
     *pnBytesOut = silk_RSHIFT( ec_tell( psRangeEnc ) + 7, 3 );
 
-	fprintf(stdout, "silk_encoder_state_fix ");
+	/*fprintf(stdout, "silk_encoder_state_fix ");
 	NailTesterPrint_silk_encoder_state_FIX("expected_psEnc", psEnc);
 	fprintf(stdout, "ec_ctx ");
 	NailTesterPrint_ec_ctx("expected_psRangeEnc", psRangeEnc);
@@ -431,7 +431,7 @@ opus_int silk_encode_frame_FIX(
 	fprintf(stdout, "Helpers.AssertEcCtxEquals(expected_psRangeEnc, through_psRangeEnc);\n");
 	fprintf(stdout, "Helpers.AssertSilkEncStateEquals(expected_psEnc, through_psEnc);\n");
 
-	NailTestPrintTestFooter();
+	NailTestPrintTestFooter();*/
 
 	/*if (TEST_COUNT++ == TARGET_TEST)
 	{
