@@ -65,7 +65,7 @@ namespace ParityTest
             Console.WriteLine("Preparing " + numTestCases + " test cases");
 
             // Shuffle the test list
-            TestParameters temp;
+            /*TestParameters temp;
             int a;
             int b;
             Random rand = new Random();
@@ -76,7 +76,11 @@ namespace ParityTest
                 temp = allTestsRandom[a];
                 allTestsRandom[a] = allTestsRandom[b];
                 allTestsRandom[b] = temp;
-            }
+            }*/
+
+            double concentusTime = 0;
+            double opusTime = 0;
+            int passedTests = 0;
 
             foreach (TestParameters p in allTestsRandom)
             {
@@ -89,20 +93,29 @@ namespace ParityTest
                     p.FrameSize,
                     p.PacketLossPercent);
 
-                string response = TestDriver.RunTest(p, GetTestSample(p));
+                TestResults response = TestDriver.RunTest(p, GetTestSample(p));
 
-                if (string.IsNullOrEmpty(response))
+                if (response.Passed)
                 {
+                    concentusTime += response.ConcentusTimeMs;
+                    opusTime += response.OpusTimeMs;
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Ok!");
+                    Console.WriteLine("{0} (Speed {1:F2}%)", response.Message, (opusTime * 100 / concentusTime));
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    passedTests++;
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("FAIL: " + response);
+                    Console.WriteLine("FAIL: " + response.Message);
+                    Console.ForegroundColor = ConsoleColor.Gray;
                 }
-                Console.ForegroundColor = ConsoleColor.Gray;
             }
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("All tests FINISHED");
+            Console.WriteLine("{0} out of {1} tests passed ({2:F2}%)", passedTests, numTestCases, ((double)passedTests * 100 / numTestCases));
+            Console.WriteLine("Speed benchmark was {0:F2}%", (opusTime * 100 / concentusTime));
         }
 
         private static string PrintApplication(int app)
