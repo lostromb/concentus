@@ -30,6 +30,7 @@ namespace ParityTest
 
         private const int OPUS_SET_BITRATE_REQUEST = 4002;
         private const int OPUS_SET_COMPLEXITY_REQUEST = 4010;
+        private const int OPUS_SET_PACKET_LOSS_PERC_REQUEST = 4014;
 
         public static TestResults RunTest(TestParameters parameters, short[] inputFile)
         {
@@ -47,6 +48,7 @@ namespace ParityTest
 
             opus_encoder_ctl(opusEncoder, OPUS_SET_BITRATE_REQUEST, parameters.Bitrate * 1024);
             opus_encoder_ctl(opusEncoder, OPUS_SET_COMPLEXITY_REQUEST, parameters.Complexity);
+            opus_encoder_ctl(opusEncoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, parameters.PacketLossPercent);
 
             // Create Concentus encoder
             BoxedValue<int> concentusError = new BoxedValue<int>();
@@ -60,26 +62,37 @@ namespace ParityTest
 
             concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
             concentusEncoder.SetComplexity(parameters.Complexity);
-            // concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
+            concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
 
-            int frameSize = (int)(parameters.FrameSize * parameters.Channels * parameters.SampleRate / 1000);
+            // Number of paired samples (the audio length)
+            int frameSize = (int)(parameters.FrameSize  * parameters.SampleRate / 1000);
+            // Number of actual samples in the array (the array length)
+            int frameSizeStereo = frameSize * parameters.Channels;
+
             int inputPointer = 0;
             byte[] outputBuffer = new byte[10000];
-            short[] inputPacket = new short[frameSize];
+            short[] inputPacket = new short[frameSizeStereo];
+            int frameCount = 0;
             Stopwatch concentusTimer = new Stopwatch();
             Stopwatch opusTimer = new Stopwatch();
 
             try
             {
-                while (inputPointer + frameSize < inputFile.Length)
+                while (inputPointer + frameSizeStereo < inputFile.Length)
                 {
-                    Array.Copy(inputFile, inputPointer, inputPacket, 0, frameSize);
-                    inputPointer += frameSize;
+                    Array.Copy(inputFile, inputPointer, inputPacket, 0, frameSizeStereo);
+                    inputPointer += frameSizeStereo;
 
                     concentusTimer.Start();
                     // Encode with Concentus
                     int concentusPacketSize = opus_encoder.opus_encode(concentusEncoder, inputPacket.GetPointer(), frameSize, outputBuffer.GetPointer(), 10000);
                     concentusTimer.Stop();
+                    if (concentusPacketSize <= 0)
+                    {
+                        returnVal.Message = "Invalid packet produced (" + concentusPacketSize + ") (frame " + frameCount + ")";
+                        returnVal.Passed = false;
+                        return returnVal;
+                    }
                     byte[] concentusEncoded = new byte[concentusPacketSize];
                     Array.Copy(outputBuffer, concentusEncoded, concentusPacketSize);
 
@@ -96,7 +109,7 @@ namespace ParityTest
                             opusTimer.Stop();
                             if (opusPacketSize != concentusPacketSize)
                             {
-                                returnVal.Message = "Output packet sizes do not match";
+                                returnVal.Message = "Output packet sizes do not match (frame " + frameCount + ")";
                                 returnVal.Passed = false;
                                 return returnVal;
                             }
@@ -110,7 +123,7 @@ namespace ParityTest
                     {
                         if (opusEncoded[c] != concentusEncoded[c])
                         {
-                            returnVal.Message = "Encoded packets do not match";
+                            returnVal.Message = "Encoded packets do not match (frame " + frameCount + ")";
                             returnVal.Passed = false;
                             return returnVal;
                         }
@@ -119,9 +132,10 @@ namespace ParityTest
                     // Decode with Concentus
 
                     // Decode with Opus
+                    frameCount++;
                 }
             }
-            catch (Exception e)
+            catch (ArgumentException e)
             {
                 returnVal.Message = e.Message;
                 returnVal.Passed = false;
@@ -131,7 +145,7 @@ namespace ParityTest
             returnVal.Passed = true;
             returnVal.ConcentusTimeMs = concentusTimer.ElapsedMilliseconds;
             returnVal.OpusTimeMs = opusTimer.ElapsedMilliseconds;
-            returnVal.Message = "Ok!";
+            returnVal.Message = "Ok! (" + frameCount + " frames)";
 
             return returnVal;
         }

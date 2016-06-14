@@ -26,32 +26,37 @@ namespace ParityTest
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
-            double[] FrameSizes = new double[] { 20, 60 };
+            double[] FrameSizes = new double[] { 5, 20, 60 };
+            int[] PacketLosses = new int[] { 0, 20 };
 
             IList<TestParameters> allTests = new List<TestParameters>();
 
             for (int app_idx = 0; app_idx < Applications.Length; app_idx++)
             {
-                for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
+                for (int plc_idx = 0; plc_idx < PacketLosses.Length; plc_idx++)
                 {
                     for (int chan_idx = 0; chan_idx < Channels.Length; chan_idx++)
                     {
-                        for (int cpx_idx = 0; cpx_idx < Complexities.Length; cpx_idx++)
+                        for (int sr_idx = 0; sr_idx < SampleRates.Length; sr_idx++)
                         {
-                            for (int sr_idx = 0; sr_idx < SampleRates.Length; sr_idx++)
+                            for (int fs_idx = 0; fs_idx < FrameSizes.Length; fs_idx++)
                             {
-                                for (int fs_idx = 0; fs_idx < FrameSizes.Length; fs_idx++)
+                                for (int cpx_idx = 0; cpx_idx < Complexities.Length; cpx_idx++)
                                 {
-                                    allTests.Add(new TestParameters()
+                                    for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
                                     {
-                                        Application = Applications[app_idx],
-                                        Bitrate = Bitrates[bit_idx],
-                                        Channels = Channels[chan_idx],
-                                        Complexity = Complexities[cpx_idx],
-                                        PacketLossPercent = 0,
-                                        SampleRate = SampleRates[sr_idx],
-                                        FrameSize = FrameSizes[fs_idx]
-                                    });
+                                        // Todo: validate parameters first (mostly frame size for jumbo or tiny frames)
+                                        allTests.Add(new TestParameters()
+                                        {
+                                            Application = Applications[app_idx],
+                                            Bitrate = Bitrates[bit_idx],
+                                            Channels = Channels[chan_idx],
+                                            Complexity = Complexities[cpx_idx],
+                                            PacketLossPercent = PacketLosses[plc_idx],
+                                            SampleRate = SampleRates[sr_idx],
+                                            FrameSize = FrameSizes[fs_idx]
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -65,18 +70,21 @@ namespace ParityTest
             Console.WriteLine("Preparing " + numTestCases + " test cases");
 
             // Shuffle the test list
-            /*TestParameters temp;
-            int a;
-            int b;
-            Random rand = new Random();
-            for (int c = 0; c < numTestCases; c++)
+            if (true)
             {
-                a = rand.Next(numTestCases);
-                b = rand.Next(numTestCases);
-                temp = allTestsRandom[a];
-                allTestsRandom[a] = allTestsRandom[b];
-                allTestsRandom[b] = temp;
-            }*/
+                TestParameters temp;
+                int a;
+                int b;
+                Random rand = new Random();
+                for (int c = 0; c < numTestCases; c++)
+                {
+                    a = rand.Next(numTestCases);
+                    b = rand.Next(numTestCases);
+                    temp = allTestsRandom[a];
+                    allTestsRandom[a] = allTestsRandom[b];
+                    allTestsRandom[b] = temp;
+                }
+            }
 
             double concentusTime = 0;
             double opusTime = 0;
@@ -84,7 +92,7 @@ namespace ParityTest
 
             foreach (TestParameters p in allTestsRandom)
             {
-                Console.Write("{0}\t{1}\tCpx={2}\t{3}Kbps\t{4}Khz\t{5}Ms\tPLC {6}% ... ",
+                Console.Write("{0} {1} Cpx={2}\t{3}Kbps\t{4}Khz\t{5} Ms\tPLC {6}% ... ",
                     PrintApplication(p.Application),
                     p.Channels == 1 ? "Mono  " : "Stereo",
                     p.Complexity,
