@@ -170,7 +170,7 @@ namespace TestConsole
 
                     // Set the encoder bitrate and set the complexity to 10
                     opus_encoder_ctl(_hEncoder, OPUS_SET_BITRATE_REQUEST, _qualityKbps * 1024);
-                    opus_encoder_ctl(_hEncoder, OPUS_SET_COMPLEXITY_REQUEST, 0);
+                    opus_encoder_ctl(_hEncoder, OPUS_SET_COMPLEXITY_REQUEST, 10);
 
                     return true;
                 }

@@ -1573,7 +1573,7 @@ static const opus_int16 frame3[2880] = {
 void encode_three_frames()
 {
 	int error = 0;
-	OpusEncoder* encoder = opus_encoder_create(48000, 1, 2049, &error);
+	OpusEncoder* encoder = opus_encoder_create(48000, 1, OPUS_APPLICATION_AUDIO, &error);
 	opus_encoder_ctl(encoder, OPUS_SET_BITRATE_REQUEST, 16 * 1024);
 	opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY_REQUEST, 10);
 

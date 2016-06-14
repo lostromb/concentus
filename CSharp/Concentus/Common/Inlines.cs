@@ -1250,39 +1250,64 @@ namespace Concentus.Common
 
         public static sbyte CHOP8(int a)
         {
+            if (a > sbyte.MaxValue)
+                a = sbyte.MaxValue;
+            else if (a < sbyte.MinValue)
+                a = sbyte.MinValue;
             return checked((sbyte)a);
         }
 
         public static byte CHOP8U(int a)
         {
+            if (a > byte.MaxValue)
+                a = byte.MaxValue;
+            else if (a < byte.MinValue)
+                a = byte.MinValue;
             return checked((byte)a);
         }
 
         public static sbyte CHOP8(long a)
         {
+            if (a > sbyte.MaxValue)
+                a = sbyte.MaxValue;
+            else if (a < sbyte.MinValue)
+                a = sbyte.MinValue;
             return checked((sbyte)a);
         }
 
-
         public static short CHOP16(int a)
         {
+            if (a > short.MaxValue)
+                a = short.MaxValue;
+            else if (a < short.MinValue)
+                a = short.MinValue;
             return checked((short)a);
         }
-
 
         public static short CHOP16(long a)
         {
+            if (a > short.MaxValue)
+                a = short.MaxValue;
+            else if (a < short.MinValue)
+                a = short.MinValue;
             return checked((short)a);
         }
 
-
         public static int CHOP32(long a)
         {
+            if (a > int.MaxValue)
+                a = int.MaxValue;
+            else if (a < int.MinValue)
+                a = int.MinValue;
             return checked((int)a);
         }
 
         public static uint CHOP32U(long a)
         {
+            if (a > uint.MaxValue)
+                a = uint.MaxValue;
+            else if (a < uint.MinValue)
+                a = uint.MinValue;
             return checked((uint)a);
         }
 

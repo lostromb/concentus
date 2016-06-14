@@ -1107,7 +1107,7 @@ namespace NailTests
         public void TestOpusThreeFramesLP()
         {
             BoxedValue<int> error = new BoxedValue<int>();
-            OpusEncoder encoder = opus_encoder.opus_encoder_create(48000, 1, 2049, error);
+            OpusEncoder encoder = opus_encoder.opus_encoder_create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO, error);
             Assert.AreEqual(0, error.Val);
             encoder.SetBitrate(16 * 1024);
             encoder.SetComplexity(10);
