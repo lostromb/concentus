@@ -14,7 +14,7 @@ namespace Concentus.Celt
 {
     public static class bands
     {
-        private const bool TRACE_FILE = false;
+        private const bool TRACE_FILE = true;
 
         public static int hysteresis_decision(
             int val,

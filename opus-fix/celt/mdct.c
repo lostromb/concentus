@@ -53,7 +53,7 @@
 #include "mathops.h"
 #include "stack_alloc.h"
 
-#define TRACE_FILE 0
+#define TRACE_FILE 1
 
 #if defined(MIPSr1_ASM)
 #include "mips/mdct_mipsr1.h"
@@ -217,12 +217,15 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
          im = *yp++;
 		 if (TRACE_FILE) printf("13g 0x%x\n", (unsigned int)re);
 		 if (TRACE_FILE) printf("13h 0x%x\n", (unsigned int)im);
+		 if (TRACE_FILE) printf("13i 0x%x\n", (unsigned int)t0);
+		 if (TRACE_FILE) printf("13j 0x%x\n", (unsigned int)t1);
          yr = S_MUL(re,t0)  -  S_MUL(im,t1);
          yi = S_MUL(im,t0)  +  S_MUL(re,t1);
          yc.r = yr;
          yc.i = yi;
          yc.r = PSHR32(MULT16_32_Q16(scale, yc.r), scale_shift);
          yc.i = PSHR32(MULT16_32_Q16(scale, yc.i), scale_shift);
+		 if (TRACE_FILE) printf("13k 0x%x 0x%x\n", (unsigned int)yc.r, (unsigned int)yc.i);
          f2[st->bitrev[i]] = yc;
       }
    }
@@ -243,6 +246,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
          kiss_fft_scalar yr, yi;
          yr = S_MUL(fp->i,t[N4+i]) - S_MUL(fp->r,t[i]);
          yi = S_MUL(fp->r,t[N4+i]) + S_MUL(fp->i,t[i]);
+		 if (TRACE_FILE) printf("13i 0x%x\n", (unsigned int)yr);
+		 if (TRACE_FILE) printf("13j 0x%x\n", (unsigned int)yi);
          *yp1 = yr;
          *yp2 = yi;
          fp++;

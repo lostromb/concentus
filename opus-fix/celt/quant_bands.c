@@ -39,7 +39,7 @@
 #include "stack_alloc.h"
 #include "rate.h"
 
-#define TRACE_FILE 0
+#define TRACE_FILE 1
 
 #ifdef FIXED_POINT
 /* Mean energy in each band quantized in Q4 */

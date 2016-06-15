@@ -12,6 +12,8 @@ namespace Concentus.Celt
 {
     public static class KissFFT
     {
+        private const bool TRACE_FILE = true;
+        
         // #define kiss_fft_scalar opus_int32
         // #define kiss_twiddle_scalar opus_int16
         public const int SAMP_MAX = 2147483647;
@@ -149,21 +151,25 @@ namespace Concentus.Celt
                     kiss_fft_cpx t = new kiss_fft_cpx();
                     Fout2 = Fout.Point(4);
                     t.Assign(Fout2[0]);
+                    if (TRACE_FILE) Debug.WriteLine("14a1 0x{0:x} 0x{0:x}", (uint)t.r, (uint)t.i);
                     C_SUB(Fout2[0], Fout[0], t);
                     C_ADDTO(Fout[0], t);
 
                     t.r = S_MUL(Fout2[1].r + Fout2[1].i, tw);
                     t.i = S_MUL(Fout2[1].i - Fout2[1].r, tw);
+                    if (TRACE_FILE) Debug.WriteLine("14a2 0x{0:x} 0x{0:x}", (uint)t.r, (uint)t.i);
                     C_SUB(Fout2[1], Fout[1], t);
                     C_ADDTO(Fout[1], t);
 
                     t.r = Fout2[2].i;
                     t.i = -Fout2[2].r;
+                    if (TRACE_FILE) Debug.WriteLine("14a3 0x{0:x} 0x{0:x}", (uint)t.r, (uint)t.i);
                     C_SUB(Fout2[2], Fout[2], t);
                     C_ADDTO(Fout[2], t);
 
                     t.r = S_MUL(Fout2[3].i - Fout2[3].r, tw);
                     t.i = S_MUL(-Fout2[3].i - Fout2[3].r, tw);
+                    if (TRACE_FILE) Debug.WriteLine("14a4 0x{0:x} 0x{0:x}", (uint)t.r, (uint)t.i);
                     C_SUB(Fout2[3], Fout[3], t);
                     C_ADDTO(Fout[3], t);
                     Fout = Fout.Point(8);
@@ -200,6 +206,8 @@ namespace Concentus.Celt
                     Fout[1].i = scratch0.i - scratch1.r;
                     Fout[3].r = scratch0.r - scratch1.i;
                     Fout[3].i = scratch0.i + scratch1.r;
+                    if (TRACE_FILE) Debug.WriteLine("14b1 0x{0:x} 0x{0:x}", (uint)Fout[1].r, (uint)Fout[1].i);
+                    if (TRACE_FILE) Debug.WriteLine("14b2 0x{0:x} 0x{0:x}", (uint)Fout[3].r, (uint)Fout[3].i);
                     Fout = Fout.Point(4);
                 }
             }
@@ -236,7 +244,7 @@ namespace Concentus.Celt
                         tw2 = tw2.Point(fstride * 2);
                         tw3 = tw3.Point(fstride * 3);
                         C_ADDTO(Fout[0], scratch[3]);
-
+                        if (TRACE_FILE) Debug.WriteLine("14c 0x{0:x} 0x{0:x}", (uint)scratch[0].r, (uint)scratch[0].i);
                         Fout[m].r = scratch[5].r + scratch[4].i;
                         Fout[m].i = scratch[5].i - scratch[4].r;
                         Fout[m3].r = scratch[5].r - scratch[4].i;
@@ -302,6 +310,7 @@ namespace Concentus.Celt
 
                     Fout[m].r -= scratch[0].i;
                     Fout[m].i += scratch[0].r;
+                    if (TRACE_FILE) Debug.WriteLine("14d 0x{0:x} 0x{0:x}", (uint)scratch[0].r, (uint)scratch[0].i);
 
                     Fout = Fout.Point(1);
                 } while ((--k) != 0);
@@ -386,6 +395,7 @@ namespace Concentus.Celt
                     Fout2 = Fout2.Point(1);
                     Fout3 = Fout3.Point(1);
                     Fout4 = Fout4.Point(1);
+                    if (TRACE_FILE) Debug.WriteLine("14e 0x{0:x} 0x{0:x}", (uint)scratch[0].r, (uint)scratch[0].i);
                 }
             }
         }

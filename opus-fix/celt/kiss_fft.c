@@ -42,6 +42,8 @@
 #include "stack_alloc.h"
 #include <stdio.h>
 
+#define TRACE_FILE 1
+
 /* The guts header contains all the multiplication and addition macros that are defined for
    complex numbers.  It also delares the kf_ internal functions.
 */
@@ -80,21 +82,25 @@ static void kf_bfly2(
          kiss_fft_cpx t;
          Fout2 = Fout + 4;
          t = Fout2[0];
+		 if (TRACE_FILE) printf("14a1 0x%x 0x%x\n", (unsigned int)t.r, (unsigned int)t.i);
          C_SUB( Fout2[0] ,  Fout[0] , t );
          C_ADDTO( Fout[0] ,  t );
 
          t.r = S_MUL(Fout2[1].r+Fout2[1].i, tw);
          t.i = S_MUL(Fout2[1].i-Fout2[1].r, tw);
+		 if (TRACE_FILE) printf("14a2 0x%x 0x%x\n", (unsigned int)t.r, (unsigned int)t.i);
          C_SUB( Fout2[1] ,  Fout[1] , t );
          C_ADDTO( Fout[1] ,  t );
 
          t.r = Fout2[2].i;
          t.i = -Fout2[2].r;
+		 if (TRACE_FILE) printf("14a3 0x%x 0x%x\n", (unsigned int)t.r, (unsigned int)t.i);
          C_SUB( Fout2[2] ,  Fout[2] , t );
          C_ADDTO( Fout[2] ,  t );
 
          t.r = S_MUL(Fout2[3].i-Fout2[3].r, tw);
          t.i = S_MUL(-Fout2[3].i-Fout2[3].r, tw);
+		 if (TRACE_FILE) printf("14a4 0x%x 0x%x\n", (unsigned int)t.r, (unsigned int)t.i);
          C_SUB( Fout2[3] ,  Fout[3] , t );
          C_ADDTO( Fout[3] ,  t );
          Fout += 8;
@@ -126,11 +132,13 @@ static void kf_bfly4(
          C_SUB( Fout[2], *Fout, scratch1 );
          C_ADDTO( *Fout , scratch1 );
          C_SUB( scratch1 , Fout[1] , Fout[3] );
-
+		 
          Fout[1].r = scratch0.r + scratch1.i;
          Fout[1].i = scratch0.i - scratch1.r;
          Fout[3].r = scratch0.r - scratch1.i;
          Fout[3].i = scratch0.i + scratch1.r;
+		 if (TRACE_FILE) printf("14b1 0x%x 0x%x\n", (unsigned int)Fout[1].r, (unsigned int)Fout[1].i);
+		 if (TRACE_FILE) printf("14b2 0x%x 0x%x\n", (unsigned int)Fout[3].r, (unsigned int)Fout[3].i);
          Fout+=4;
       }
    } else {
@@ -160,7 +168,7 @@ static void kf_bfly4(
             tw2 += fstride*2;
             tw3 += fstride*3;
             C_ADDTO( *Fout , scratch[3] );
-
+			if (TRACE_FILE) printf("14c 0x%x 0x%x\n", (unsigned int)scratch[0].r, (unsigned int)scratch[0].i);
             Fout[m].r = scratch[5].r + scratch[4].i;
             Fout[m].i = scratch[5].i - scratch[4].r;
             Fout[m3].r = scratch[5].r - scratch[4].i;
@@ -225,6 +233,7 @@ static void kf_bfly3(
 
          Fout[m].r -= scratch[0].i;
          Fout[m].i += scratch[0].r;
+		 if (TRACE_FILE) printf("14d 0x%x 0x%x\n", (unsigned int)scratch[0].r, (unsigned int)scratch[0].i);
 
          ++Fout;
       } while(--k);
@@ -304,6 +313,7 @@ static void kf_bfly5(
          C_SUB(*Fout3,scratch[11],scratch[12]);
 
          ++Fout0;++Fout1;++Fout2;++Fout3;++Fout4;
+		 if (TRACE_FILE) printf("14e 0x%x 0x%x\n", (unsigned int)scratch[0].r, (unsigned int)scratch[0].i);
       }
    }
 }

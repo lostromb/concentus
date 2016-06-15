@@ -14,7 +14,7 @@ namespace Concentus.Celt
 {
     public static class mdct
     {
-        private const bool TRACE_FILE = false;
+        private const bool TRACE_FILE = true;
         
         /* Forward MDCT trashes the input array */
         public static void clt_mdct_forward_c(mdct_lookup l, Pointer<int> input, Pointer<int> output,
@@ -113,17 +113,20 @@ namespace Concentus.Celt
                     t0 = t[i];
                     t1 = t[N4 + i];
                     re = yp[0];
-                    if (TRACE_FILE) Debug.WriteLine("13g 0x{0:x}", (uint)yp[0]);
                     yp = yp.Point(1);
                     im = yp[0];
-                    if (TRACE_FILE) Debug.WriteLine("13h 0x{0:x}", (uint)yp[0]);
                     yp = yp.Point(1);
+                    if (TRACE_FILE) Debug.WriteLine("13g 0x{0:x}", (uint)re);
+                    if (TRACE_FILE) Debug.WriteLine("13h 0x{0:x}", (uint)im);
+                    if (TRACE_FILE) Debug.WriteLine("13i 0x{0:x}", (uint)t0);
+                    if (TRACE_FILE) Debug.WriteLine("13j 0x{0:x}", (uint)t1);
                     yr = KissFFT.S_MUL(re, t0) - KissFFT.S_MUL(im, t1);
                     yi = KissFFT.S_MUL(im, t0) + KissFFT.S_MUL(re, t1);
                     yc.r = yr;
                     yc.i = yi;
                     yc.r = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.r), scale_shift);
                     yc.i = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.i), scale_shift);
+                    if (TRACE_FILE) Debug.WriteLine("13k 0x{0:x} 0x{0:x}", (uint)yc.r, (uint)yc.i);
                     f2[st.bitrev[i]].Assign(yc); // fixme: no need for assign()?
                 }
             }
@@ -143,6 +146,8 @@ namespace Concentus.Celt
                     int yr, yi;
                     yr = KissFFT.S_MUL(fp[0].i, t[N4 + i]) - KissFFT.S_MUL(fp[0].r, t[i]);
                     yi = KissFFT.S_MUL(fp[0].r, t[N4 + i]) + KissFFT.S_MUL(fp[0].i, t[i]);
+                    if (TRACE_FILE) Debug.WriteLine("13i 0x{0:x}", (uint)yr);
+                    if (TRACE_FILE) Debug.WriteLine("13j 0x{0:x}", (uint)yi);
                     yp1[0] = yr;
                     yp2[0] = yi;
                     fp = fp.Point(1);

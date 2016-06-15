@@ -52,7 +52,7 @@
 #include "vq.h"
 //#include "NailTester.h"
 
-#define TRACE_FILE 0
+#define TRACE_FILE 1
 
 /** Encoder state
  @brief Encoder state

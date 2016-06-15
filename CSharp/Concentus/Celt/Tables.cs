@@ -699,7 +699,7 @@ namespace Concentus.Celt
         public static readonly kiss_fft_state fft_state48000_960_2 = new kiss_fft_state()
         {
             nfft = 120,
-            scale = 17576,
+            scale = 17476,
             scale_shift = 6,
             shift = 2,
             factors = new short[] { 5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
