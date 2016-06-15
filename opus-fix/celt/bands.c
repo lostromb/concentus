@@ -43,6 +43,8 @@
 #include "quant_bands.h"
 #include "pitch.h"
 
+#define TRACE_FILE 0
+
 int hysteresis_decision(opus_val16 val, const opus_val16 *thresholds, const opus_val16 *hysteresis, int N, int prev)
 {
    int i;
@@ -103,26 +105,34 @@ void compute_band_energies(const CELTMode *m, const celt_sig *X, celt_ener *band
          int j;
          opus_val32 maxval=0;
          opus_val32 sum = 0;
-
+		 if (TRACE_FILE) printf("12a 0x%x\n", (unsigned int)eBands[i]);
          maxval = celt_maxabs32(&X[c*N+(eBands[i]<<LM)], (eBands[i+1]-eBands[i])<<LM);
+		 if (TRACE_FILE) printf("12b 0x%x\n", (unsigned int)maxval);
          if (maxval > 0)
          {
             int shift = celt_ilog2(maxval) - 14 + (((m->logN[i]>>BITRES)+LM+1)>>1);
-            j=eBands[i]<<LM;
+			j = eBands[i] << LM;
+			if (TRACE_FILE) printf("12c 0x%x\n", (unsigned int)j);
+			if (TRACE_FILE) printf("12d 0x%x\n", (unsigned int)shift);
             if (shift>0)
             {
                do {
                   sum = MAC16_16(sum, EXTRACT16(SHR32(X[j+c*N],shift)),
                         EXTRACT16(SHR32(X[j+c*N],shift)));
+				  if (TRACE_FILE) printf("12e 0x%x\n", (unsigned int)X[j + c*N]);
+				  if (TRACE_FILE) printf("12f 0x%x\n", (unsigned int)sum);
                } while (++j<eBands[i+1]<<LM);
             } else {
                do {
                   sum = MAC16_16(sum, EXTRACT16(SHL32(X[j+c*N],-shift)),
                         EXTRACT16(SHL32(X[j+c*N],-shift)));
+				  if (TRACE_FILE) printf("12g 0x%x\n", (unsigned int)X[j + c*N]);
+				  if (TRACE_FILE) printf("12h 0x%x\n", (unsigned int)sum);
                } while (++j<eBands[i+1]<<LM);
             }
             /* We're adding one here to ensure the normalized band isn't larger than unity norm */
             bandE[i+c*m->nbEBands] = EPSILON+VSHR32(EXTEND32(celt_sqrt(sum)),-shift);
+			if (TRACE_FILE) printf("12i 0x%x\n", (unsigned int)bandE[i + c*m->nbEBands]);
          } else {
             bandE[i+c*m->nbEBands] = EPSILON;
          }

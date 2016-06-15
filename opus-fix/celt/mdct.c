@@ -53,6 +53,8 @@
 #include "mathops.h"
 #include "stack_alloc.h"
 
+#define TRACE_FILE 0
+
 #if defined(MIPSr1_ASM)
 #include "mips/mdct_mipsr1.h"
 #endif
@@ -161,8 +163,10 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
       {
          /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
          *yp = MULT16_32_Q15(*wp2, xp1[N2]) + MULT16_32_Q15(*wp1,*xp2);
+		 if (TRACE_FILE) printf("13a 0x%x\n", (unsigned int)*yp);
 		 yp++;
          *yp = MULT16_32_Q15(*wp1, *xp1)    - MULT16_32_Q15(*wp2, xp2[-N2]);
+		 if (TRACE_FILE) printf("13b 0x%x\n", (unsigned int)*yp);
 		 yp++;
          xp1+=2;
          xp2-=2;
@@ -174,16 +178,24 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
       for(;i<N4-((overlap+3)>>2);i++)
       {
          /* Real part arranged as a-bR, Imag part arranged as -c-dR */
-         *yp++ = *xp2;
-         *yp++ = *xp1;
+         *yp = *xp2;
+		 if (TRACE_FILE) printf("13c 0x%x\n", (unsigned int)*yp);
+		 yp++;
+         *yp = *xp1;
+		 if (TRACE_FILE) printf("13d 0x%x\n", (unsigned int)*yp);
+		 yp++;
          xp1+=2;
          xp2-=2;
       }
       for(;i<N4;i++)
       {
          /* Real part arranged as a-bR, Imag part arranged as -c-dR */
-         *yp++ =  -MULT16_32_Q15(*wp1, xp1[-N2]) + MULT16_32_Q15(*wp2, *xp2);
-         *yp++ = MULT16_32_Q15(*wp2, *xp1)     + MULT16_32_Q15(*wp1, xp2[N2]);
+         *yp =  -MULT16_32_Q15(*wp1, xp1[-N2]) + MULT16_32_Q15(*wp2, *xp2);
+		 if (TRACE_FILE) printf("13e 0x%x\n", (unsigned int)*yp);
+		 yp++;
+         *yp = MULT16_32_Q15(*wp2, *xp1)     + MULT16_32_Q15(*wp1, xp2[N2]);
+		 if (TRACE_FILE) printf("13f 0x%x\n", (unsigned int)*yp);
+		 yp++;
          xp1+=2;
          xp2-=2;
          wp1+=2;
@@ -203,6 +215,8 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
          t1 = t[N4+i];
          re = *yp++;
          im = *yp++;
+		 if (TRACE_FILE) printf("13g 0x%x\n", (unsigned int)re);
+		 if (TRACE_FILE) printf("13h 0x%x\n", (unsigned int)im);
          yr = S_MUL(re,t0)  -  S_MUL(im,t1);
          yi = S_MUL(im,t0)  +  S_MUL(re,t1);
          yc.r = yr;

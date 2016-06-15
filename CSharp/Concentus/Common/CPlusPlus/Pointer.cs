@@ -165,7 +165,7 @@ namespace Concentus.Common.CPlusPlus
             {
 #if DEBUG
                 if (CHECK_UNINIT_MEM) Inlines.OpusAssert(_initialized[index + _offset], "Attempted to read from uninitialized memory!");
-                Inlines.OpusAssert(index < _length, "Attempted to read past the end of an array!");
+                // Inlines.OpusAssert(index < _length, "Attempted to read past the end of an array!");
                 _statistics.maxReadIndex = Math.Max(_statistics.maxReadIndex, index + _offset);
                 _statistics.minReadIndex = Math.Min(_statistics.minReadIndex, index + _offset);
 #endif
@@ -175,7 +175,7 @@ namespace Concentus.Common.CPlusPlus
             set
             {
 #if DEBUG
-                Inlines.OpusAssert(index < _length, "Attempted to write past the end of an array!");
+                // Inlines.OpusAssert(index < _length, "Attempted to write past the end of an array!");
                 _statistics.maxWriteIndex = Math.Max(_statistics.maxWriteIndex, index + _offset);
                 _statistics.minWriteIndex = Math.Min(_statistics.minWriteIndex, index + _offset);
                 _initialized[index + _offset] = true;

@@ -69,6 +69,8 @@ namespace ParityTest
             // Number of actual samples in the array (the array length)
             int frameSizeStereo = frameSize * parameters.Channels;
 
+            returnVal.FrameLength = frameSize;
+
             int inputPointer = 0;
             byte[] outputBuffer = new byte[10000];
             short[] inputPacket = new short[frameSizeStereo];
@@ -80,6 +82,7 @@ namespace ParityTest
             {
                 while (inputPointer + frameSizeStereo < inputFile.Length)
                 {
+                    returnVal.FrameCount = frameCount;
                     Array.Copy(inputFile, inputPointer, inputPacket, 0, frameSizeStereo);
                     inputPointer += frameSizeStereo;
 
@@ -91,6 +94,7 @@ namespace ParityTest
                     {
                         returnVal.Message = "Invalid packet produced (" + concentusPacketSize + ") (frame " + frameCount + ")";
                         returnVal.Passed = false;
+                        returnVal.FailureFrame = inputPacket;
                         return returnVal;
                     }
                     byte[] concentusEncoded = new byte[concentusPacketSize];
@@ -111,6 +115,7 @@ namespace ParityTest
                             {
                                 returnVal.Message = "Output packet sizes do not match (frame " + frameCount + ")";
                                 returnVal.Passed = false;
+                                returnVal.FailureFrame = inputPacket;
                                 return returnVal;
                             }
                             opusEncoded = new byte[opusPacketSize];
@@ -125,6 +130,7 @@ namespace ParityTest
                         {
                             returnVal.Message = "Encoded packets do not match (frame " + frameCount + ")";
                             returnVal.Passed = false;
+                            returnVal.FailureFrame = inputPacket;
                             return returnVal;
                         }
                     }

@@ -32,7 +32,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main_FIX.h"
 #include "stack_alloc.h"
 #include "tuning_parameters.h"
-//#include "NailTester.h"
+
+#define TRACE_FILE 0
+#if TRACE_FILE
+#include "NailTester.h"
+#endif
 
 /* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate           */
 static OPUS_INLINE void silk_LBRR_encode_FIX(
@@ -87,6 +91,8 @@ opus_int silk_encode_frame_FIX(
     opus_int                        useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
 )
 {
+	if (TRACE_FILE) printf("Entering silk encode frame");
+	if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state1", psEnc);
 	/*NailTestPrintTestHeader("silk_encode_frame_FIX_manual");
 	fprintf(stdout, "#region autogen\n");
 	fprintf(stdout, "silk_encoder_state_fix ");
@@ -167,6 +173,8 @@ opus_int silk_encode_frame_FIX(
 		/*****************************************/
 		silk_find_pitch_lags_FIX(psEnc, &sEncCtrl, res_pitch, x_frame, psEnc->sCmn.arch);
 
+		if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state2", psEnc);
+
 		/*fprintf(stdout, "find_pitch_lags.silk_find_pitch_lags_FIX(through_psEnc, through_sEncCtrl, res_pitch, in_x_frame, through_psEnc.sCmn.arch);\n");
 
 		fprintf(stdout, "#region autogen\n");
@@ -183,6 +191,8 @@ opus_int silk_encode_frame_FIX(
 		/************************/
 		silk_noise_shape_analysis_FIX(psEnc, &sEncCtrl, res_pitch_frame, x_frame, psEnc->sCmn.arch);
 
+		if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state3", psEnc);
+
 		/*fprintf(stdout, "noise_shape_analysis.silk_noise_shape_analysis_FIX(through_psEnc, through_sEncCtrl, res_pitch_frame, in_x_frame, through_psEnc.sCmn.arch);\n");
 
 		fprintf(stdout, "#region autogen\n");
@@ -196,6 +206,8 @@ opus_int silk_encode_frame_FIX(
 		/* Find linear prediction coefficients (LPC + LTP) */
 		/***************************************************/
 		silk_find_pred_coefs_FIX(psEnc, &sEncCtrl, res_pitch, x_frame, condCoding);
+
+		if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state4", psEnc);
 
 		/*fprintf(stdout, "find_pred_coefs.silk_find_pred_coefs_FIX(through_psEnc, through_sEncCtrl, res_pitch, in_x_frame, in_condCoding);\n");
 
@@ -211,6 +223,8 @@ opus_int silk_encode_frame_FIX(
 		/****************************************/
 		silk_process_gains_FIX(psEnc, &sEncCtrl, condCoding);
 
+		if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state5", psEnc);
+
 		/*fprintf(stdout, "process_gains.silk_process_gains_FIX(through_psEnc, through_sEncCtrl, in_condCoding);\n");
 
 		fprintf(stdout, "#region autogen\n");
@@ -225,6 +239,8 @@ opus_int silk_encode_frame_FIX(
 		/*****************************************/
 		ALLOC(xfw_Q3, psEnc->sCmn.frame_length, opus_int32);
 		silk_prefilter_FIX(psEnc, &sEncCtrl, xfw_Q3, x_frame);
+
+		if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state6", psEnc);
 
 		/*fprintf(stdout, "Pointer<int> xfw_Q3 = Pointer.Malloc<int>(through_psEnc.sCmn.frame_length);\n");
 		fprintf(stdout, "prefilter.silk_prefilter_FIX(through_psEnc, through_sEncCtrl, xfw_Q3, in_x_frame);\n");
@@ -242,6 +258,8 @@ opus_int silk_encode_frame_FIX(
 		/* Low Bitrate Redundant Encoding       */
 		/****************************************/
 		silk_LBRR_encode_FIX(psEnc, &sEncCtrl, xfw_Q3, condCoding);
+
+		if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state7", psEnc);
 
 		/*fprintf(stdout, "encode_frame.silk_LBRR_encode_FIX(through_psEnc, through_sEncCtrl, xfw_Q3, in_condCoding);\n");
 
@@ -300,16 +318,22 @@ opus_int silk_encode_frame_FIX(
                             psEnc->sCmn.arch);
                 }
 
+				if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state8", psEnc);
+
                 /****************************************/
                 /* Encode Parameters                    */
                 /****************************************/
                 silk_encode_indices( &psEnc->sCmn, psRangeEnc, psEnc->sCmn.nFramesEncoded, 0, condCoding );
+
+				if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state9", psEnc);
 
                 /****************************************/
                 /* Encode Excitation Signal             */
                 /****************************************/
                 silk_encode_pulses( psRangeEnc, psEnc->sCmn.indices.signalType, psEnc->sCmn.indices.quantOffsetType,
                     psEnc->sCmn.pulses, psEnc->sCmn.frame_length );
+
+				if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state10", psEnc);
 
                 nBits = ec_tell( psRangeEnc );
 
@@ -390,6 +414,8 @@ opus_int silk_encode_frame_FIX(
             silk_gains_quant( psEnc->sCmn.indices.GainsIndices, sEncCtrl.Gains_Q16,
                   &psEnc->sShape.LastGainIndex, condCoding == CODE_CONDITIONALLY, psEnc->sCmn.nb_subfr );
 
+			if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state11", psEnc);
+
             /* Unique identifier of gains vector */
             gainsID = silk_gains_ID( psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr );
         }
@@ -417,6 +443,10 @@ opus_int silk_encode_frame_FIX(
     psEnc->sCmn.first_frame_after_reset = 0;
     /* Payload size */
     *pnBytesOut = silk_RSHIFT( ec_tell( psRangeEnc ) + 7, 3 );
+
+	if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state12", psEnc);
+
+	if (TRACE_FILE) printf("Exiting silk encode frame\n");
 
 	/*fprintf(stdout, "silk_encoder_state_fix ");
 	NailTesterPrint_silk_encoder_state_FIX("expected_psEnc", psEnc);

@@ -8,9 +8,12 @@ namespace ParityTest
 {
     public class TestResults
     {
-        public bool Passed;
-        public string Message;
-        public double ConcentusTimeMs;
-        public double OpusTimeMs;
+        public bool Passed = false;
+        public string Message = string.Empty;
+        public double ConcentusTimeMs = 0;
+        public double OpusTimeMs = 0;
+        public int FrameLength = 0;
+        public int FrameCount = 0;
+        public short[] FailureFrame = null;
     }
 }

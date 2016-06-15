@@ -1,4 +1,6 @@
-﻿using Concentus.Opus.Enums;
+﻿using Concentus.Common;
+using Concentus.Common.CPlusPlus;
+using Concentus.Opus.Enums;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,7 +29,7 @@ namespace ParityTest
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
             double[] FrameSizes = new double[] { 5, 20, 60 };
-            int[] PacketLosses = new int[] { 0, 20 };
+            int[] PacketLosses = new int[] { 0/*, 20*/ };
 
             IList<TestParameters> allTests = new List<TestParameters>();
 
@@ -117,6 +119,12 @@ namespace ParityTest
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("FAIL: " + response.Message);
                     Console.ForegroundColor = ConsoleColor.Gray;
+
+                    //if (response.FrameCount == 0)
+                    //{
+                    //    PrintShortArray(response.FailureFrame);
+                    //    Console.ReadLine();
+                    //}
                 }
             }
 
@@ -135,6 +143,27 @@ namespace ParityTest
             else if (app == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 return "LowDelay";
             return "???";
+        }
+
+        private static void PrintShortArray(short[] array)
+        {
+            Console.Write("new short[] { ");
+            int col = 0;
+            for (int c = 0; c < array.Length; c++)
+            {
+                Console.Write("{0}", array[c]);
+                if (c != (array.Length - 1))
+                {
+                    Console.Write(",");
+                }
+                if (++col > 16)
+                {
+                    Console.Write("\n");
+                    col = 0;
+                }
+            }
+
+            Console.Write("}\n");
         }
 
         private static string GetTestFileName(int band, bool stereo)

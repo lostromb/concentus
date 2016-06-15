@@ -39,6 +39,8 @@
 #include "stack_alloc.h"
 #include "rate.h"
 
+#define TRACE_FILE 0
+
 #ifdef FIXED_POINT
 /* Mean energy in each band quantized in Q4 */
 const signed char eMeans[25] = {
@@ -189,13 +191,18 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
          opus_val16 oldE;
          opus_val16 decay_bound;
          x = eBands[i+c*m->nbEBands];
+		 if (TRACE_FILE) printf("11a 0x%x\n", (unsigned int)x);
          oldE = MAX16(-QCONST16(9.f,DB_SHIFT), oldEBands[i+c*m->nbEBands]);
+		 if (TRACE_FILE) printf("11b 0x%x\n", (unsigned int)oldE);
 #ifdef FIXED_POINT
          f = SHL32(EXTEND32(x),7) - PSHR32(MULT16_16(coef,oldE), 8) - prev[c];
+		 if (TRACE_FILE) printf("11c 0x%x\n", (unsigned int)f);
          /* Rounding to nearest integer here is really important! */
          qi = (f+QCONST32(.5f,DB_SHIFT+7))>>(DB_SHIFT+7);
+		 if (TRACE_FILE) printf("11d 0x%x\n", (unsigned int)qi);
          decay_bound = EXTRACT16(MAX32(-QCONST16(28.f,DB_SHIFT),
                SUB32((opus_val32)oldEBands[i+c*m->nbEBands],max_decay)));
+		 if (TRACE_FILE) printf("11e 0x%x\n", (unsigned int)decay_bound);
 #else
          f = x-coef*oldE-prev[c];
          /* Rounding to nearest integer here is really important! */
@@ -228,6 +235,7 @@ static int quant_coarse_energy_impl(const CELTMode *m, int start, int end,
          {
             int pi;
             pi = 2*IMIN(i,20);
+			if (TRACE_FILE) printf("11f 0x%x\n", (unsigned int)prob_model[pi]);
             ec_laplace_encode(enc, &qi,
                   prob_model[pi]<<7, prob_model[pi+1]<<6);
          }
@@ -548,13 +556,17 @@ void amp2Log2(const CELTMode *m, int effEnd, int end,
    do {
 	   for (i = 0; i < effEnd; i++)
 	   {
+		   if (TRACE_FILE) printf("11g 0x%x\n", (unsigned int)bandE[i + c*m->nbEBands]);
+		   if (TRACE_FILE) printf("11h 0x%x\n", (unsigned int)eMeans[i]);
 		   bandLogE[i + c*m->nbEBands] =
 			   celt_log2(SHL32(bandE[i + c*m->nbEBands], 2))
 			   - SHL16((opus_val16)eMeans[i], 6);
+		   if (TRACE_FILE) printf("11i 0x%x\n", (unsigned int)bandLogE[i + c*m->nbEBands]);
 	   }
 	   for (i = effEnd; i < end; i++)
 	   {
 		   bandLogE[c*m->nbEBands + i] = -QCONST16(14.f, DB_SHIFT);
+		   if (TRACE_FILE) printf("11j 0x%x\n", (unsigned int)bandLogE[c*m->nbEBands + i]);
 	   }
    } while (++c < C);
 }

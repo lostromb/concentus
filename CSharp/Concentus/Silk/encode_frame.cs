@@ -8,6 +8,8 @@ namespace Concentus.Silk
 {
     public static class encode_frame
     {
+        private const bool TRACE_FILE = false;
+
         public static void silk_encode_do_VAD_FIX(
             silk_encoder_state_fix psEnc                                  /* I/O  Pointer to Silk FIX encoder state                                           */
         )
@@ -55,6 +57,9 @@ namespace Concentus.Silk
             int useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
         )
         {
+            if (TRACE_FILE) Debug.WriteLine("Entering silk encode frame");
+            if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state1", psEnc);
+
             silk_encoder_control sEncCtrl = new silk_encoder_control();
             int i, iter, maxIter, found_upper, found_lower, ret = 0;
             Pointer<short> x_frame;
@@ -108,20 +113,28 @@ namespace Concentus.Silk
                 /*****************************************/
                 find_pitch_lags.silk_find_pitch_lags_FIX(psEnc, sEncCtrl, res_pitch, x_frame, psEnc.sCmn.arch);
 
+                if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state2", psEnc);
+
                 /************************/
                 /* Noise shape analysis */
                 /************************/
                 noise_shape_analysis.silk_noise_shape_analysis_FIX(psEnc, sEncCtrl, res_pitch_frame, x_frame, psEnc.sCmn.arch);
+
+                if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state3", psEnc);
 
                 /***************************************************/
                 /* Find linear prediction coefficients (LPC + LTP) */
                 /***************************************************/
                 find_pred_coefs.silk_find_pred_coefs_FIX(psEnc, sEncCtrl, res_pitch, x_frame, condCoding);
 
+                if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state4", psEnc);
+
                 /****************************************/
                 /* Process gains                        */
                 /****************************************/
                 process_gains.silk_process_gains_FIX(psEnc, sEncCtrl, condCoding);
+
+                if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state5", psEnc);
 
                 /*****************************************/
                 /* Prefiltering for noise shaper         */
@@ -129,10 +142,14 @@ namespace Concentus.Silk
                 xfw_Q3 = Pointer.Malloc<int>(psEnc.sCmn.frame_length);
                 prefilter.silk_prefilter_FIX(psEnc, sEncCtrl, xfw_Q3, x_frame);
 
+                if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state6", psEnc);
+
                 /****************************************/
                 /* Low Bitrate Redundant Encoding       */
                 /****************************************/
                 silk_LBRR_encode_FIX(psEnc, sEncCtrl, xfw_Q3, condCoding);
+
+                if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state7", psEnc);
 
                 /* Loop over quantizer and entropy coding to control bitrate */
                 maxIter = 6;
@@ -185,16 +202,22 @@ namespace Concentus.Silk
                                     sEncCtrl.Tilt_Q14, sEncCtrl.LF_shp_Q14, sEncCtrl.Gains_Q16, sEncCtrl.pitchL, sEncCtrl.Lambda_Q10, sEncCtrl.LTP_scale_Q14);
                         }
 
+                        if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state8", psEnc);
+
                         /****************************************/
                         /* Encode Parameters                    */
                         /****************************************/
                         encode_indices.silk_encode_indices(psEnc.sCmn, psRangeEnc, psEnc.sCmn.nFramesEncoded, 0, condCoding);
+
+                        if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state9", psEnc);
 
                         /****************************************/
                         /* Encode Excitation Signal             */
                         /****************************************/
                         encode_pulses.silk_encode_pulses(psRangeEnc, psEnc.sCmn.indices.signalType, psEnc.sCmn.indices.quantOffsetType,
                             psEnc.sCmn.pulses, psEnc.sCmn.frame_length);
+
+                        if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state10", psEnc);
 
                         nBits = EntropyCoder.ec_tell(psRangeEnc);
 
@@ -295,6 +318,8 @@ namespace Concentus.Silk
                           boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.sCmn.nb_subfr);
                     psEnc.sShape.LastGainIndex = boxed_gainIndex.Val;
 
+                    if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state11", psEnc);
+
                     /* Unique identifier of gains vector */
                     gainsID = GainQuantization.silk_gains_ID(psEnc.sCmn.indices.GainsIndices, psEnc.sCmn.nb_subfr);
                 }
@@ -322,7 +347,10 @@ namespace Concentus.Silk
             psEnc.sCmn.first_frame_after_reset = 0;
             /* Payload size */
             pnBytesOut.Val = Inlines.silk_RSHIFT(EntropyCoder.ec_tell(psRangeEnc) + 7, 3);
-            
+
+            if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state12", psEnc);
+            if (TRACE_FILE) Debug.WriteLine("Exiting silk encode frame");
+
             return ret;
         }
 

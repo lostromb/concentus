@@ -1615,11 +1615,12 @@ namespace Concentus
 
             /* gain_fade() and stereo_fade() need to be after the buffer copying
                because we don't want any of this to affect the SILK part */
-            if (st.prev_HB_gain < 1.0f || HB_gain < 1.0f)
+            if (st.prev_HB_gain < CeltConstants.Q15ONE || HB_gain < CeltConstants.Q15ONE)
             {
                 gain_fade(pcm_buf, pcm_buf,
                       st.prev_HB_gain, HB_gain, celt_mode.overlap, frame_size, st.channels, celt_mode.window, st.Fs);
             }
+            
             st.prev_HB_gain = HB_gain;
             if (st.mode != OpusMode.MODE_HYBRID || st.stream_channels == 1)
                 st.silk_mode.stereoWidth_Q14 = Inlines.IMIN((1 << 14), 2 * Inlines.IMAX(0, equiv_rate - 30000));

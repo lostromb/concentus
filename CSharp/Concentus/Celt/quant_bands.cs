@@ -19,6 +19,7 @@ namespace Concentus.Celt
         private static readonly int[] beta_coef = new int[] { 30147, 22282, 12124, 6554 };
         private static readonly int beta_intra = 4915;
         private static byte[] small_energy_icdf = { 2, 1, 0 };
+        private const bool TRACE_FILE = false;
 
         public static int loss_distortion(Pointer<int> eBands, Pointer<int> oldEBands, int start, int end, int len, int C)
         {
@@ -78,13 +79,17 @@ namespace Concentus.Celt
                     int oldE;
                     int decay_bound;
                     x = eBands[i + c * m.nbEBands];
+                    if (TRACE_FILE) Debug.WriteLine("11a 0x{0:x}", (uint)x);
                     oldE = Inlines.MAX16(-Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT), oldEBands[i + c * m.nbEBands]);
+                    if (TRACE_FILE) Debug.WriteLine("11b 0x{0:x}", (uint)oldE);
                     f = Inlines.SHL32(Inlines.EXTEND32(x), 7) - Inlines.PSHR32(Inlines.MULT16_16(coef, oldE), 8) - prev[c];
                     /* Rounding to nearest integer here is really important! */
+                    if (TRACE_FILE) Debug.WriteLine("11c 0x{0:x}", (uint)f);
                     qi = (f + Inlines.QCONST32(.5f, CeltConstants.DB_SHIFT + 7)) >> (CeltConstants.DB_SHIFT + 7);
+                    if (TRACE_FILE) Debug.WriteLine("11d 0x{0:x}", (uint)qi);
                     decay_bound = Inlines.EXTRACT16(Inlines.MAX32(-Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT),
                           Inlines.SUB32((int)oldEBands[i + c * m.nbEBands], max_decay)));
-                    
+                    if (TRACE_FILE) Debug.WriteLine("11e 0x{0:x}", (uint)decay_bound);
                     /* Prevent the energy from going down too quickly (e.g. for bands
                        that have just one bin) */
                     if (qi < 0 && x < decay_bound)
@@ -112,7 +117,8 @@ namespace Concentus.Celt
                         int pi;
                         pi = 2 * Inlines.IMIN(i, 20);
                         BoxedValue<int> qi_Boxed = new BoxedValue<int>(qi);
-                        laplace.ec_laplace_encode(enc, qi_Boxed, ((uint)(prob_model[pi]) << 7), prob_model[pi + 1] << 6);
+                        if (TRACE_FILE) Debug.WriteLine("11f 0x{0:x}", (uint)prob_model[pi]);
+                        laplace.ec_laplace_encode(enc, qi_Boxed, (((uint)prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
                         qi = qi_Boxed.Val;
                     }
                     else if (budget - tell >= 2)
@@ -433,13 +439,17 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < effEnd; i++)
                 {
+                    if (TRACE_FILE) Debug.WriteLine("11g 0x{0:x}", (uint)bandE[i + c * m.nbEBands]);
+                    if (TRACE_FILE) Debug.WriteLine("11h 0x{0:x}", (uint)Tables.eMeans[i]);
                     bandLogE[i + c * m.nbEBands] =
                        (Inlines.celt_log2(Inlines.SHL32(bandE[i + c * m.nbEBands], 2))
                        - Inlines.SHL16((int)Tables.eMeans[i], 6));
+                    if (TRACE_FILE) Debug.WriteLine("11i 0x{0:x}", (uint)bandLogE[i + c * m.nbEBands]);
                 }
                 for (i = effEnd; i < end; i++)
                 {
                     bandLogE[c * m.nbEBands + i] = (0 - Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT));
+                    if (TRACE_FILE) Debug.WriteLine("11j 0x{0:x}", (uint)bandLogE[c * m.nbEBands + i]);
                 }
             } while (++c < C);
         }

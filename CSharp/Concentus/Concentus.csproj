@@ -70,6 +70,7 @@
     <Compile Include="Common\CPlusPlus\Pointer.cs" />
     <Compile Include="Common\ec_ctx.cs" />
     <Compile Include="Common\EntropyCoder.cs" />
+    <Compile Include="Common\NailTester.cs" />
     <Compile Include="Opus\Enums\OpusApplication.cs" />
     <Compile Include="Opus\Enums\OpusBandwidth.cs" />
     <Compile Include="Opus\Enums\OpusControl.cs" />

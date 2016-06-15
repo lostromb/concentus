@@ -2,6 +2,7 @@
 #define NAILTEST_H
 
 #include <stdio.h>
+#include "../silk/resampler_structs.h"
 #include "../silk/structs.h"
 #include "../silk/fixed/structs_FIX.h"
 #include "../celt/modes.h"
@@ -18,175 +19,175 @@ char* concatenate(char* a, char* b)
 
 void NailTestPrintFloatArray(const float* array, int length)
 {
-	fprintf(stdout, "Helpers.ConvertBytesToFloatArray(new uint[] {\n");
+	printf("Helpers.ConvertBytesToFloatArray(new uint[] {\n");
 	int col = 0;
 	for (int c = 0; c < length; c++)
 	{
 		unsigned int testhex = *((unsigned int*)&array[c]);
-		fprintf(stdout, "0x%xU", testhex);
+		printf("0x%xU", testhex);
 		if (c != (length - 1))
 		{
-			fprintf(stdout, ", ");
+			printf(", ");
 		}
 		if (++col > 12)
 		{
-			fprintf(stdout, "\n");
+			printf("\n");
 			col = 0;
 		}
 	}
 
-	fprintf(stdout, "})");
+	printf("})");
 }
 
 void NailTestPrintIntArray(const int* array, int length)
 {
-	fprintf(stdout, "new int[] { ");
+	printf("new int[] { ");
 	int col = 0;
 	for (int c = 0; c < length; c++)
 	{
-		fprintf(stdout, "%d", array[c]);
+		printf("%d", array[c]);
 		if (c != (length - 1))
 		{
-			fprintf(stdout, ",");
+			printf(",");
 		}
 		if (++col > 12)
 		{
-			fprintf(stdout, "\n");
+			printf("\n");
 			col = 0;
 		}
 	}
 
-	fprintf(stdout, "}");
+	printf("}");
 }
 
 void NailTestPrintUintArray(const unsigned int* array, int length)
 {
-	fprintf(stdout, "new uint[] { ");
+	printf("new uint[] { ");
 	int col = 0;
 	for (int c = 0; c < length; c++)
 	{
-		fprintf(stdout, "%dU", array[c]);
+		printf("%dU", array[c]);
 		if (c != (length - 1))
 		{
-			fprintf(stdout, ",");
+			printf(",");
 		}
 		if (++col > 12)
 		{
-			fprintf(stdout, "\n");
+			printf("\n");
 			col = 0;
 		}
 	}
 
-	fprintf(stdout, "}");
+	printf("}");
 }
 
 void NailTestPrintShortArray(const short* array, int length)
 {
-	fprintf(stdout, "new short[] { ");
+	printf("new short[] { ");
 	int col = 0;
 	for (int c = 0; c < length; c++)
 	{
-		fprintf(stdout, "%d", array[c]);
+		printf("%d", array[c]);
 		if (c != (length - 1))
 		{
-			fprintf(stdout, ",");
+			printf(",");
 		}
 		if (++col > 16)
 		{
-			fprintf(stdout, "\n");
+			printf("\n");
 			col = 0;
 		}
 	}
 
-	fprintf(stdout, "}");
+	printf("}");
 }
 
 void NailTestPrintShortArrayAsInt(const short* array, int length)
 {
-	fprintf(stdout, "new int[] { ");
+	printf("new int[] { ");
 	int col = 0;
 	for (int c = 0; c < length; c++)
 	{
-		fprintf(stdout, "%d", array[c]);
+		printf("%d", array[c]);
 		if (c != (length - 1))
 		{
-			fprintf(stdout, ",");
+			printf(",");
 		}
 		if (++col > 16)
 		{
-			fprintf(stdout, "\n");
+			printf("\n");
 			col = 0;
 		}
 	}
 
-	fprintf(stdout, "}");
+	printf("}");
 }
 
 void NailTestPrintByteArray(const unsigned char* array, int length)
 {
-	fprintf(stdout, "new byte[] { ");
+	printf("new byte[] { ");
 	int col = 0;
 	for (int c = 0; c < length; c++)
 	{
-		fprintf(stdout, "%d", array[c]);
+		printf("%d", array[c]);
 		if (c != (length - 1))
 		{
-			fprintf(stdout, ",");
+			printf(",");
 		}
 		if (++col > 32)
 		{
-			fprintf(stdout, "\n");
+			printf("\n");
 			col = 0;
 		}
 	}
 
-	fprintf(stdout, "}");
+	printf("}");
 }
 
 void NailTestPrintSbyteArray(const signed char* array, int length)
 {
-	fprintf(stdout, "new sbyte[] { ");
+	printf("new sbyte[] { ");
 	int col = 0;
 	for (int c = 0; c < length; c++)
 	{
-		fprintf(stdout, "%d", array[c]);
+		printf("%d", array[c]);
 		if (c != (length - 1))
 		{
-			fprintf(stdout, ",");
+			printf(",");
 		}
 		if (++col > 32)
 		{
-			fprintf(stdout, "\n");
+			printf("\n");
 			col = 0;
 		}
 	}
 
-	fprintf(stdout, "}");
+	printf("}");
 }
 
 void NailTestPrintInt(char* varName, const int var)
 {
-	fprintf(stdout, "%s = %d", varName, var);
+	printf("%s = %d", varName, var);
 }
 
 void NailTestPrintUint(char* varName, const unsigned int var)
 {
-	fprintf(stdout, "%s = 0x%xU", varName, var);
+	printf("%s = 0x%xU", varName, var);
 }
 
 void NailTestPrintShort(char* varName, const short var)
 {
-	fprintf(stdout, "%s = %d", varName, var);
+	printf("%s = %d", varName, var);
 }
 
 void NailTestPrintSbyte(char* varName, const int var)
 {
-	fprintf(stdout, "%s = %d", varName, var);
+	printf("%s = %d", varName, var);
 }
 
 void NailTestPrintFloat(char* varName, const float var)
 {
-	fprintf(stdout, "%s = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x%xU), 0)", varName, *((unsigned int*)&var));
+	printf("%s = BitConverter.ToSingle(BitConverter.GetBytes((uint)0x%xU), 0)", varName, *((unsigned int*)&var));
 }
 
 
@@ -194,559 +195,559 @@ static int TestNumCounter = 0;
 
 void NailTestPrintTestHeader(char* methodName)
 {
-	fprintf(stdout, "[TestMethod]\npublic void Test_%s_%d()\n{\n", methodName, TestNumCounter++);
+	printf("[TestMethod]\npublic void Test_%s_%d()\n{\n", methodName, TestNumCounter++);
 }
 
 void NailTestPrintTestFooter()
 {
-	fprintf(stdout, "}\n\n");
+	printf("}\n\n");
 }
 
 void NailTestPrintInputFloatArrayDeclaration(char* varName, const float* array, const int length)
 {
-	fprintf(stdout, "Pointer<float> in_%s = Helpers.WrapWithArrayPointer<float>(\n", varName);
+	printf("Pointer<float> in_%s = Helpers.WrapWithArrayPointer<float>(\n", varName);
 	NailTestPrintFloatArray(array, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintInputIntArrayDeclaration(char* varName, const int* array, const int length)
 {
-	fprintf(stdout, "Pointer<int> in_%s = Helpers.WrapWithArrayPointer<int>(\n", varName);
+	printf("Pointer<int> in_%s = Helpers.WrapWithArrayPointer<int>(\n", varName);
 	NailTestPrintIntArray(array, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintInputShortArrayDeclaration(char* varName, const short* array, const int length)
 {
-	fprintf(stdout, "Pointer<short> in_%s = Helpers.WrapWithArrayPointer<short>(\n", varName);
+	printf("Pointer<short> in_%s = Helpers.WrapWithArrayPointer<short>(\n", varName);
 	NailTestPrintShortArray(array, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintInputSbyteArrayDeclaration(char* varName, const signed char* array, const int length)
 {
-	fprintf(stdout, "Pointer<sbyte> in_%s = Helpers.WrapWithArrayPointer<sbyte>(\n", varName);
+	printf("Pointer<sbyte> in_%s = Helpers.WrapWithArrayPointer<sbyte>(\n", varName);
 	NailTestPrintSbyteArray(array, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintInputByteArrayDeclaration(char* varName, const unsigned char* array, const int length)
 {
-	fprintf(stdout, "Pointer<byte> in_%s = Helpers.WrapWithArrayPointer<byte>(\n", varName);
+	printf("Pointer<byte> in_%s = Helpers.WrapWithArrayPointer<byte>(\n", varName);
 	NailTestPrintByteArray(array, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintInputIntDeclaration(char* varName, const int var)
 {
-	fprintf(stdout, "int in_");
+	printf("int in_");
 	NailTestPrintInt(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintInputUintDeclaration(char* varName, const unsigned int var)
 {
-	fprintf(stdout, "uint in_");
+	printf("uint in_");
 	NailTestPrintUint(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintInputSbyteDeclaration(char* varName, const signed char var)
 {
-	fprintf(stdout, "sbyte in_");
+	printf("sbyte in_");
 	NailTestPrintSbyte(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintInputFloatDeclaration(char* varName, const float var)
 {
-	fprintf(stdout, "float in_");
+	printf("float in_");
 	NailTestPrintFloat(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputFloatArrayDeclaration(char* varName, const float* array, const int length)
 {
-	fprintf(stdout, "float[] expected_%s = \n", varName);
+	printf("float[] expected_%s = \n", varName);
 	NailTestPrintFloatArray(array, length);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputIntArrayDeclaration(char* varName, const int* array, const int length)
 {
-	fprintf(stdout, "int[] expected_%s = \n", varName);
+	printf("int[] expected_%s = \n", varName);
 	NailTestPrintIntArray(array, length);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputSbyteArrayDeclaration(char* varName, const signed char* array, const int length)
 {
-	fprintf(stdout, "sbyte[] expected_%s = \n", varName);
+	printf("sbyte[] expected_%s = \n", varName);
 	NailTestPrintSbyteArray(array, length);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputByteArrayDeclaration(char* varName, const unsigned char* array, const int length)
 {
-	fprintf(stdout, "byte[] expected_%s = \n", varName);
+	printf("byte[] expected_%s = \n", varName);
 	if (!array)
 	{
-		fprintf(stdout, "new byte[0];\n");
+		printf("new byte[0];\n");
 		return;
 	}
 	NailTestPrintByteArray(array, length);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputIntDeclaration(char* varName, int var)
 {
-	fprintf(stdout, "int expected_");
+	printf("int expected_");
 	NailTestPrintInt(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputUintDeclaration(char* varName, unsigned int var)
 {
-	fprintf(stdout, "uint expected_");
+	printf("uint expected_");
 	NailTestPrintUint(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputShortArrayDeclaration(char* varName, const short* array, const int length)
 {
-	fprintf(stdout, "short[] expected_%s = \n", varName);
+	printf("short[] expected_%s = \n", varName);
 	NailTestPrintShortArray(array, length);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputShortDeclaration(char* varName, const short var)
 {
-	fprintf(stdout, "short expected_");
+	printf("short expected_");
 	NailTestPrintShort(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputByteDeclaration(char* varName, const unsigned char var)
 {
-	fprintf(stdout, "byte expected_");
+	printf("byte expected_");
 	NailTestPrintInt(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputSbyteDeclaration(char* varName, const signed char var)
 {
-	fprintf(stdout, "sbyte expected_");
+	printf("sbyte expected_");
 	NailTestPrintInt(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintOutputFloatDeclaration(char* varName, const float var)
 {
-	fprintf(stdout, "float expected_");
+	printf("float expected_");
 	NailTestPrintFloat(varName, var);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintMemberVarInt(char* structName, char* varName, const int value)
 {
-	fprintf(stdout, "%s.", structName);
+	printf("%s.", structName);
 	NailTestPrintInt(varName, value);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintMemberVarUint(char* structName, char* varName, const unsigned int value)
 {
-	fprintf(stdout, "%s.", structName);
+	printf("%s.", structName);
 	NailTestPrintUint(varName, value);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintMemberVarFloat(char* structName, char* varName, const float value)
 {
-	fprintf(stdout, "%s.", structName);
+	printf("%s.", structName);
 	NailTestPrintFloat(varName, value);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintMemberVarShort(char* structName, char* varName, const short value)
 {
-	fprintf(stdout, "%s.", structName);
+	printf("%s.", structName);
 	NailTestPrintShort(varName, value);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintMemberVarSbyte(char* structName, char* varName, const signed char value)
 {
-	fprintf(stdout, "%s.", structName);
+	printf("%s.", structName);
 	NailTestPrintSbyte(varName, value);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 void NailTestPrintMemberVarIntArray(char* structName, char* varName, const int* value, int length)
 {
 	if (!value)
 	{
-		fprintf(stdout, "%s.%s = null;\n", structName, varName);
+		printf("%s.%s = null;\n", structName, varName);
 		return;
 	}
-	fprintf(stdout, "%s.%s = new Pointer<int>(", structName, varName);
+	printf("%s.%s = new Pointer<int>(", structName, varName);
 	NailTestPrintIntArray(value, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintMemberVarShortArray(char* structName, char* varName, const short* value, int length)
 {
 	if (!value)
 	{
-		fprintf(stdout, "%s.%s = null;\n", structName, varName);
+		printf("%s.%s = null;\n", structName, varName);
 		return;
 	}
-	fprintf(stdout, "%s.%s = new Pointer<short>(", structName, varName);
+	printf("%s.%s = new Pointer<short>(", structName, varName);
 	NailTestPrintShortArray(value, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintMemberVarShortArrayAsInt(char* structName, char* varName, const short* value, int length)
 {
 	if (!value)
 	{
-		fprintf(stdout, "%s.%s = null;\n", structName, varName);
+		printf("%s.%s = null;\n", structName, varName);
 		return;
 	}
-	fprintf(stdout, "%s.%s = new Pointer<int>(", structName, varName);
+	printf("%s.%s = new Pointer<int>(", structName, varName);
 	NailTestPrintShortArrayAsInt(value, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintMemberVarByteArray(char* structName, char* varName, const unsigned char* value, int length)
 {
 	if (!value)
 	{
-		fprintf(stdout, "%s.%s = null;\n", structName, varName);
+		printf("%s.%s = null;\n", structName, varName);
 		return;
 	}
-	fprintf(stdout, "%s.%s = new Pointer<byte>(", structName, varName);
+	printf("%s.%s = new Pointer<byte>(", structName, varName);
 	NailTestPrintByteArray(value, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintMemberVarSbyteArray(char* structName, char* varName, const signed char* value, int length)
 {
 	if (!value)
 	{
-		fprintf(stdout, "%s.%s = null;\n", structName, varName);
+		printf("%s.%s = null;\n", structName, varName);
 		return;
 	}
-	fprintf(stdout, "%s.%s = new Pointer<sbyte>(", structName, varName);
+	printf("%s.%s = new Pointer<sbyte>(", structName, varName);
 	NailTestPrintSbyteArray(value, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 void NailTestPrintMemberVarFloatArray(char* structName, char* varName, const float* value, int length)
 {
 	if (!value)
 	{
-		fprintf(stdout, "%s.%s = null;\n", structName, varName);
+		printf("%s.%s = null;\n", structName, varName);
 		return;
 	}
-	fprintf(stdout, "%s.%s = new Pointer<float>(", structName, varName);
+	printf("%s.%s = new Pointer<float>(", structName, varName);
 	NailTestPrintFloatArray(value, length);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 // PRINT silk_nsq_state
 void NailTesterPrint_silk_nsq_state(char* varName, const silk_nsq_state* nsq_state)
 {
-	fprintf(stdout, "%s = new silk_nsq_state();\n", varName);
-	fprintf(stdout, "%s.xq = new Pointer<short>(", varName);
+	printf("%s = new silk_nsq_state();\n", varName);
+	printf("%s.xq = new Pointer<short>(", varName);
 	NailTestPrintShortArray(nsq_state->xq, 640);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.sLTP_shp_Q14 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.sLTP_shp_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(nsq_state->sLTP_shp_Q14, 640);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.sLPC_Q14 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.sLPC_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(nsq_state->sLPC_Q14, 112);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.sAR2_Q14 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.sAR2_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(nsq_state->sAR2_Q14, 16);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintInt("sLF_AR_shp_Q14", nsq_state->sLF_AR_shp_Q14);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("lagPrev", nsq_state->lagPrev);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("sLTP_buf_idx", nsq_state->sLTP_buf_idx);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("sLTP_shp_buf_idx", nsq_state->sLTP_shp_buf_idx);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("rand_seed", nsq_state->rand_seed);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("prev_gain_Q16", nsq_state->prev_gain_Q16);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("rewhite_flag", nsq_state->rewhite_flag);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 // PRINT silk_VAD_state
 void NailTesterPrint_silk_VAD_state(char* varName, const silk_VAD_state* vad_state)
 {
-	fprintf(stdout, "%s = new silk_VAD_state();\n", varName);
-	fprintf(stdout, "%s.AnaState = new Pointer<int>(", varName);
+	printf("%s = new silk_VAD_state();\n", varName);
+	printf("%s.AnaState = new Pointer<int>(", varName);
 	NailTestPrintIntArray(vad_state->AnaState, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.AnaState1 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.AnaState1 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(vad_state->AnaState1, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.AnaState2 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.AnaState2 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(vad_state->AnaState2, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.XnrgSubfr = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.XnrgSubfr = new Pointer<int>(", varName);
 	NailTestPrintIntArray(vad_state->XnrgSubfr, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.NrgRatioSmth_Q8 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.NrgRatioSmth_Q8 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(vad_state->NrgRatioSmth_Q8, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintShort("HPstate", vad_state->HPstate);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.NL = new Pointer<int>(", varName);
+	printf(";\n");
+	printf("%s.NL = new Pointer<int>(", varName);
 	NailTestPrintIntArray(vad_state->NL, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.inv_NL = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.inv_NL = new Pointer<int>(", varName);
 	NailTestPrintIntArray(vad_state->inv_NL, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.NoiseLevelBias = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.NoiseLevelBias = new Pointer<int>(", varName);
 	NailTestPrintIntArray(vad_state->NoiseLevelBias, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintInt("counter", vad_state->counter);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 // PRINT silk_LP_state
 void NailTesterPrint_silk_LP_state(char* varName, const silk_LP_state* state)
 {
-	fprintf(stdout, "%s = new silk_LP_state();\n", varName);
-	fprintf(stdout, "%s.In_LP_State = new Pointer<int>(", varName);
+	printf("%s = new silk_LP_state();\n", varName);
+	printf("%s.In_LP_State = new Pointer<int>(", varName);
 	NailTestPrintIntArray(state->In_LP_State, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintInt("transition_frame_no", state->transition_frame_no);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("mode", state->mode);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 // PRINT silk_NLSF_CB_struct
 void NailTesterPrint_silk_NLSF_CB_struct(char* varName, const silk_NLSF_CB_struct* state, int arraySize)
 {
-	fprintf(stdout, "%s = new silk_NLSF_CB_struct();\n", varName);
-	fprintf(stdout, "%s.", varName);
+	printf("%s = new silk_NLSF_CB_struct();\n", varName);
+	printf("%s.", varName);
 	NailTestPrintShort("nVectors", state->nVectors);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintShort("order", state->order);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintShort("quantStepSize_Q16", state->quantStepSize_Q16);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintShort("invQuantStepSize_Q6", state->invQuantStepSize_Q6);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.CB1_NLSF_Q8 = new Pointer<byte>(", varName);
-	NailTestPrintByteArray(state->CB1_NLSF_Q8, arraySize); // FIXME what are the sizes here?
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.CB1_iCDF = new Pointer<byte>(", varName);
-	NailTestPrintByteArray(state->CB1_iCDF, arraySize);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.pred_Q8 = new Pointer<byte>(", varName);
-	NailTestPrintByteArray(state->pred_Q8, arraySize);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.ec_sel = new Pointer<byte>(", varName);
-	NailTestPrintByteArray(state->ec_sel, arraySize);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.ec_iCDF = new Pointer<byte>(", varName);
-	NailTestPrintByteArray(state->ec_iCDF, arraySize);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.ec_Rates_Q5 = new Pointer<byte>(", varName);
-	NailTestPrintByteArray(state->ec_Rates_Q5, arraySize);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.deltaMin_Q15 = new Pointer<short>(", varName);
-	NailTestPrintShortArray(state->deltaMin_Q15, arraySize);
-	fprintf(stdout, ");\n");
+	printf(";\n");
+	printf("%s.CB1_NLSF_Q8 = new Pointer<byte>(", varName);
+	NailTestPrintByteArray(state->CB1_NLSF_Q8, 16); // FIXME sizes here are estimates
+	printf(");\n");
+	printf("%s.CB1_iCDF = new Pointer<byte>(", varName);
+	NailTestPrintByteArray(state->CB1_iCDF, 16);
+	printf(");\n");
+	printf("%s.pred_Q8 = new Pointer<byte>(", varName);
+	NailTestPrintByteArray(state->pred_Q8, 16);
+	printf(");\n");
+	printf("%s.ec_sel = new Pointer<byte>(", varName);
+	NailTestPrintByteArray(state->ec_sel, 16);
+	printf(");\n");
+	printf("%s.ec_iCDF = new Pointer<byte>(", varName);
+	NailTestPrintByteArray(state->ec_iCDF, 16);
+	printf(");\n");
+	printf("%s.ec_Rates_Q5 = new Pointer<byte>(", varName);
+	NailTestPrintByteArray(state->ec_Rates_Q5, 16);
+	printf(");\n");
+	printf("%s.deltaMin_Q15 = new Pointer<short>(", varName);
+	NailTestPrintShortArray(state->deltaMin_Q15, 16);
+	printf(");\n");
 }
 
 // PRINT SideInfoIndices
 void NailTesterPrint_SideInfoIndices(char* varName, const SideInfoIndices* indices)
 {
-	fprintf(stdout, "%s = new SideInfoIndices();\n", varName);
-	fprintf(stdout, "%s.GainsIndices = new Pointer<sbyte>(", varName);
+	printf("%s = new SideInfoIndices();\n", varName);
+	printf("%s.GainsIndices = new Pointer<sbyte>(", varName);
 	NailTestPrintSbyteArray(indices->GainsIndices, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.LTPIndex = new Pointer<sbyte>(", varName);
+	printf(");\n");
+	printf("%s.LTPIndex = new Pointer<sbyte>(", varName);
 	NailTestPrintSbyteArray(indices->LTPIndex, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.NLSFIndices = new Pointer<sbyte>(", varName);
+	printf(");\n");
+	printf("%s.NLSFIndices = new Pointer<sbyte>(", varName);
 	NailTestPrintSbyteArray(indices->NLSFIndices, 17);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintShort("lagIndex", indices->lagIndex);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintSbyte("contourIndex", indices->contourIndex);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintSbyte("signalType", indices->signalType);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintSbyte("quantOffsetType", indices->quantOffsetType);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintSbyte("NLSFInterpCoef_Q2", indices->NLSFInterpCoef_Q2);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintSbyte("PERIndex", indices->PERIndex);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintSbyte("LTP_scaleIndex", indices->LTP_scaleIndex);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintSbyte("Seed", indices->Seed);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 // PRINT stereo_enc_state
 void NailTesterPrint_stereo_enc_state(char* varName, const stereo_enc_state* state)
 {
-	fprintf(stdout, "%s = new stereo_enc_state();\n", varName);
-	fprintf(stdout, "%s.pred_prev_Q13 = new Pointer<short>(", varName);
+	printf("%s = new stereo_enc_state();\n", varName);
+	printf("%s.pred_prev_Q13 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->pred_prev_Q13, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.sMid = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.sMid = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->sMid, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.sSide = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.sSide = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->sSide, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.mid_side_amp_Q0 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.mid_side_amp_Q0 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(state->mid_side_amp_Q0, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintShort("smth_width_Q14", state->smth_width_Q14);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintShort("width_prev_Q14", state->width_prev_Q14);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintShort("silent_side_len", state->silent_side_len);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 	
-	fprintf(stdout, "%s.predIx = Pointer.Malloc<Pointer<Pointer<sbyte>>>(SilkConstants.MAX_FRAMES_PER_PACKET);\n", varName);
+	printf("%s.predIx = Pointer.Malloc<Pointer<Pointer<sbyte>>>(SilkConstants.MAX_FRAMES_PER_PACKET);\n", varName);
 	for (int x = 0; x < MAX_FRAMES_PER_PACKET; x++)
 	{
-		fprintf(stdout, "%s.predIx[%d] = Pointer.Malloc<Pointer<sbyte>>(2);\n", varName, x);
+		printf("%s.predIx[%d] = Pointer.Malloc<Pointer<sbyte>>(2);\n", varName, x);
 		for (int y = 0; y < 2; y++)
 		{
-			fprintf(stdout, "%s.predIx[%d][%d] = new Pointer<sbyte>(", varName, x, y);
+			printf("%s.predIx[%d][%d] = new Pointer<sbyte>(", varName, x, y);
 			NailTestPrintSbyteArray(state->predIx[x][y], 3);
-			fprintf(stdout, ");\n");
+			printf(");\n");
 		}
 	}
 
-	fprintf(stdout, "%s.mid_only_flags = new Pointer<sbyte>(", varName);
+	printf("%s.mid_only_flags = new Pointer<sbyte>(", varName);
 	NailTestPrintSbyteArray(state->mid_only_flags, 3);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 // PRINT stereo_dec_state
 void NailTesterPrint_stereo_dec_state(char* varName, const stereo_dec_state* state)
 {
-	fprintf(stdout, "%s = new stereo_dec_state();\n", varName);
-	fprintf(stdout, "%s.pred_prev_Q13 = new Pointer<short>(", varName);
+	printf("%s = new stereo_dec_state();\n", varName);
+	printf("%s.pred_prev_Q13 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->pred_prev_Q13, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.sMid = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.sMid = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->sMid, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.sSide = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.sSide = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->sSide, 2);
-	fprintf(stdout, ");\n");
+	printf(");\n");
 }
 
 // PRINT silk_PLC_struct
 void NailTesterPrint_silk_PLC_struct(char* varName, const silk_PLC_struct* state)
 {
-	fprintf(stdout, "%s = new silk_PLC_struct();\n", varName);
-	fprintf(stdout, "%s.", varName);
+	printf("%s = new silk_PLC_struct();\n", varName);
+	printf("%s.", varName);
 	NailTestPrintInt("pitchL_Q8", state->pitchL_Q8);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.LTPCoef_Q14 = new Pointer<short>(", varName);
+	printf(";\n");
+	printf("%s.LTPCoef_Q14 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->LTPCoef_Q14, 5);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.prevLPC_Q12 = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.prevLPC_Q12 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->prevLPC_Q12, 16);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintInt("last_frame_lost", state->last_frame_lost);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("rand_seed", state->rand_seed);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintShort("randScale_Q14", state->randScale_Q14);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("conc_energy", state->conc_energy);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("conc_energy_shift", state->conc_energy_shift);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintShort("prevLTP_scale_Q14", state->prevLTP_scale_Q14);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.prevGain_Q16 = new Pointer<int>(", varName);
+	printf(";\n");
+	printf("%s.prevGain_Q16 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(state->prevGain_Q16, 2);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintInt("fs_kHz", state->fs_kHz);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("nb_subfr", state->nb_subfr);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("subfr_length", state->subfr_length);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 // PRINT silksilk_CNG_struct_PLC_struct
 void NailTesterPrint_silk_CNG_struct(char* varName, const silk_CNG_struct* state)
 {
-	fprintf(stdout, "%s = new silk_CNG_struct();\n", varName);
-	fprintf(stdout, "%s.CNG_exc_buf_Q14 = new Pointer<int>(", varName);
+	printf("%s = new silk_CNG_struct();\n", varName);
+	printf("%s.CNG_exc_buf_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(state->CNG_exc_buf_Q14, 320);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.CNG_smth_NLSF_Q15 = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.CNG_smth_NLSF_Q15 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(state->CNG_smth_NLSF_Q15, 16);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.CNG_synth_state = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.CNG_synth_state = new Pointer<int>(", varName);
 	NailTestPrintIntArray(state->CNG_synth_state, 16);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintInt("CNG_smth_Gain_Q16", state->CNG_smth_Gain_Q16);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("rand_seed", state->rand_seed);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("fs_kHz", state->fs_kHz);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 // PRINT ec_ctx
@@ -754,123 +755,140 @@ void NailTesterPrint_ec_ctx(char* varName, const ec_ctx* coder)
 {
 	if (!coder)
 	{
-		fprintf(stdout, "%s = null;\n", varName);
+		printf("%s = null;\n", varName);
 		return;
 	}
 
-	fprintf(stdout, "%s = new ec_ctx();\n", varName);
+	printf("%s = new ec_ctx();\n", varName);
 	NailTestPrintMemberVarByteArray(varName, "buf", coder->buf, coder->storage);
-	fprintf(stdout, "%s.", varName);
+	printf("%s.", varName);
 	NailTestPrintUint("storage", coder->storage);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintUint("end_offs", coder->end_offs);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintUint("end_window", coder->end_window);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("nend_bits", coder->nend_bits);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("nbits_total", coder->nbits_total);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintUint("offs", coder->offs);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintUint("rng", coder->rng);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintUint("val", coder->val);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintUint("ext", coder->ext);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("rem", coder->rem);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("error", coder->error);
-	fprintf(stdout, ";\n");
+	printf(";\n");
 }
 
 // PRINT silk_encoder_control
 void NailTesterPrint_silk_encoder_control(char* varName, const silk_encoder_control_FIX* enc_control)
 {
-	fprintf(stdout, "%s = new silk_encoder_control();\n", varName);
-	fprintf(stdout, "%s.Gains_Q16 = new Pointer<int>(", varName);
+	printf("%s = new silk_encoder_control();\n", varName);
+	printf("%s.Gains_Q16 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->Gains_Q16, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.PredCoef_Q12 = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.PredCoef_Q12 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(enc_control->PredCoef_Q12[0], 32);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.LTPCoef_Q14 = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.LTPCoef_Q14 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(enc_control->LTPCoef_Q14, 20);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintInt("LTP_scale_Q14", enc_control->LTP_scale_Q14);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.pitchL = new Pointer<int>(", varName);
+	printf(";\n");
+	printf("%s.pitchL = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->pitchL, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.AR1_Q13 = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.AR1_Q13 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(enc_control->AR1_Q13, 64);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.AR2_Q13 = new Pointer<short>(", varName);
+	printf(");\n");
+	printf("%s.AR2_Q13 = new Pointer<short>(", varName);
 	NailTestPrintShortArray(enc_control->AR2_Q13, 64);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.LF_shp_Q14 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.LF_shp_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->LF_shp_Q14, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.GainsPre_Q14 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.GainsPre_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->GainsPre_Q14, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.HarmBoost_Q14 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.HarmBoost_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->HarmBoost_Q14, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.Tilt_Q14 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.Tilt_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->Tilt_Q14, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.HarmShapeGain_Q14 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.HarmShapeGain_Q14 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->HarmShapeGain_Q14, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintInt("Lambda_Q10", enc_control->Lambda_Q10);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("input_quality_Q14", enc_control->input_quality_Q14);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("coding_quality_Q14", enc_control->coding_quality_Q14);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("sparseness_Q8", enc_control->sparseness_Q8);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("predGain_Q16", enc_control->predGain_Q16);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.", varName);
+	printf(";\n");
+	printf("%s.", varName);
 	NailTestPrintInt("LTPredCodGain_Q7", enc_control->LTPredCodGain_Q7);
-	fprintf(stdout, ";\n");
-	fprintf(stdout, "%s.ResNrg = new Pointer<int>(", varName);
+	printf(";\n");
+	printf("%s.ResNrg = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->ResNrg, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.ResNrgQ = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.ResNrgQ = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->ResNrgQ, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.GainsUnq_Q16 = new Pointer<int>(", varName);
+	printf(");\n");
+	printf("%s.GainsUnq_Q16 = new Pointer<int>(", varName);
 	NailTestPrintIntArray(enc_control->GainsUnq_Q16, 4);
-	fprintf(stdout, ");\n");
-	fprintf(stdout, "%s.", varName);
+	printf(");\n");
+	printf("%s.", varName);
 	NailTestPrintSbyte("lastGainIndexPrev", enc_control->lastGainIndexPrev);
-	fprintf(stdout, ";\n");
+	printf(";\n");
+}
+
+// PRINT silk_resampler_state_struct
+void NailTesterPrint_silk_resampler_state(char* varName, const silk_resampler_state_struct* state)
+{
+	printf("%s = new _silk_resampler_state_struct();\n", varName);
+	NailTestPrintMemberVarIntArray(varName, "sIIR", state->sIIR, 6);
+	NailTestPrintMemberVarIntArray(varName, "i32", state->sFIR.i32, 36);
+	NailTestPrintMemberVarShortArray(varName, "i16", state->sFIR.i16, 36);
+	NailTestPrintMemberVarInt(varName, "resampler_function", state->resampler_function);
+	NailTestPrintMemberVarInt(varName, "batchSize", state->batchSize);
+	NailTestPrintMemberVarInt(varName, "invRatio_Q16", state->invRatio_Q16);
+	NailTestPrintMemberVarInt(varName, "FIR_Order", state->FIR_Order);
+	NailTestPrintMemberVarInt(varName, "FIR_Fracs", state->FIR_Fracs);
+	NailTestPrintMemberVarInt(varName, "Fs_in_kHz", state->Fs_in_kHz);
+	NailTestPrintMemberVarInt(varName, "Fs_out_kHz", state->Fs_out_kHz);
+	NailTestPrintMemberVarInt(varName, "inputDelay", state->inputDelay);
 }
 
 // PRINT silk_encoder_state
 void NailTesterPrint_silk_encoder_state(char* varName, const silk_encoder_state* state)
 {
-	fprintf(stdout, "%s = new silk_encoder_state();\n", varName);
+	printf("%s = new silk_encoder_state();\n", varName);
 	NailTestPrintMemberVarIntArray(varName, "In_HP_State", state->In_HP_State, 2);
 	NailTestPrintMemberVarInt(varName, "variable_HP_smth1_Q15", state->variable_HP_smth1_Q15);
 	NailTestPrintMemberVarInt(varName, "variable_HP_smth2_Q15", state->variable_HP_smth2_Q15);
@@ -919,8 +937,8 @@ void NailTesterPrint_silk_encoder_state(char* varName, const silk_encoder_state*
 	NailTestPrintMemberVarInt(varName, "warping_Q16", state->warping_Q16);
 	NailTestPrintMemberVarInt(varName, "useCBR", state->useCBR);
 	NailTestPrintMemberVarInt(varName, "prefillFlag", state->prefillFlag);
-	NailTestPrintMemberVarByteArray(varName, "pitch_lag_low_bits_iCDF", state->pitch_lag_low_bits_iCDF, 1024);
-	NailTestPrintMemberVarByteArray(varName, "pitch_contour_iCDF", state->pitch_contour_iCDF, 1024);
+	NailTestPrintMemberVarByteArray(varName, "pitch_lag_low_bits_iCDF", state->pitch_lag_low_bits_iCDF, 16);
+	NailTestPrintMemberVarByteArray(varName, "pitch_contour_iCDF", state->pitch_contour_iCDF, 16);
 	NailTesterPrint_silk_NLSF_CB_struct(concatenate(varName, ".psNLSF_CB"), state->psNLSF_CB, 1024);
 	NailTestPrintMemberVarIntArray(varName, "input_quality_bands_Q15", state->input_quality_bands_Q15, 4);
 	NailTestPrintMemberVarInt(varName, "input_tilt_Q15", state->input_tilt_Q15);
@@ -941,7 +959,7 @@ void NailTesterPrint_silk_encoder_state(char* varName, const silk_encoder_state*
 	NailTestPrintMemberVarInt(varName, "frames_since_onset", state->frames_since_onset);
 	NailTestPrintMemberVarInt(varName, "ec_prevSignalType", state->ec_prevSignalType);
 	NailTestPrintMemberVarShort(varName, "ec_prevLagIndex", state->ec_prevLagIndex);
-	//NailTestPrintMemberVarInt(varName, "resampler_state", state->resampler_state);
+	NailTesterPrint_silk_resampler_state(concatenate(varName, ".resampler_state"), &state->resampler_state);
 	NailTestPrintMemberVarInt(varName, "useDTX", state->useDTX);
 	NailTestPrintMemberVarInt(varName, "inDTX", state->inDTX);
 	NailTestPrintMemberVarInt(varName, "noSpeechCounter", state->noSpeechCounter);
@@ -959,7 +977,7 @@ void NailTesterPrint_silk_encoder_state(char* varName, const silk_encoder_state*
 // PRINT silk_shape_state_FLP
 void NailTesterPrint_silk_shape_state_FIX(char* varName, const silk_shape_state_FIX* state)
 {
-	fprintf(stdout, "%s = new silk_shape_state();\n", varName);
+	printf("%s = new silk_shape_state();\n", varName);
 	NailTestPrintMemberVarSbyte(varName, "LastGainIndex", state->LastGainIndex);
 	NailTestPrintMemberVarInt(varName, "HarmBoost_smth_Q16", state->HarmBoost_smth_Q16);
 	NailTestPrintMemberVarInt(varName, "HarmShapeGain_smth_Q16", state->HarmShapeGain_smth_Q16);
@@ -969,7 +987,7 @@ void NailTesterPrint_silk_shape_state_FIX(char* varName, const silk_shape_state_
 // PRINT silk_shape_state_FLP
 void NailTesterPrint_silk_prefilter_state_FIX(char* varName, const silk_prefilter_state_FIX* state)
 {
-	fprintf(stdout, "%s = new silk_prefilter_state();\n", varName);
+	printf("%s = new silk_prefilter_state();\n", varName);
 	NailTestPrintMemberVarShortArray(varName, "sLTP_shp", state->sLTP_shp, 512);
 	NailTestPrintMemberVarIntArray(varName, "sAR_shp", state->sAR_shp, 17);
 	NailTestPrintMemberVarInt(varName, "sLTP_shp_buf_idx", state->sLTP_shp_buf_idx);
@@ -983,7 +1001,7 @@ void NailTesterPrint_silk_prefilter_state_FIX(char* varName, const silk_prefilte
 // PRINT silk_encoder_state_FLP
 void NailTesterPrint_silk_encoder_state_FIX(char* varName, const silk_encoder_state_FIX* enc_state)
 {
-	fprintf(stdout, "%s = new silk_encoder_state_fix();\n", varName);
+	printf("%s = new silk_encoder_state_fix();\n", varName);
 	NailTesterPrint_silk_encoder_state(concatenate(varName, ".sCmn"), &enc_state->sCmn);
 	NailTesterPrint_silk_shape_state_FIX(concatenate(varName, ".sShape"), &enc_state->sShape);
 	NailTesterPrint_silk_prefilter_state_FIX(concatenate(varName, ".sPrefilt"), &enc_state->sPrefilt);
@@ -994,12 +1012,12 @@ void NailTesterPrint_silk_encoder_state_FIX(char* varName, const silk_encoder_st
 //
 //void NailTesterPrint_kiss_fft_state(char* varName, const kiss_fft_state* state)
 //{
-//	fprintf(stdout, "%s = new kiss_fft_state();\n", varName);
+//	printf("%s = new kiss_fft_state();\n", varName);
 //}
 //
 //void NailTesterPrint_mdct_lookup(char* varName, const mdct_lookup* info)
 //{
-//	fprintf(stdout, "%s = new mdct_lookup();\n", varName);
+//	printf("%s = new mdct_lookup();\n", varName);
 //	NailTestPrintMemberVarInt(varName, "n", info->n);
 //	NailTestPrintMemberVarInt(varName, "maxshift", info->maxshift);
 //	NailTesterPrint_kiss_fft_state(concatenate(varName, ".kfft[0]"), info->kfft[0]);
@@ -1011,7 +1029,7 @@ void NailTesterPrint_silk_encoder_state_FIX(char* varName, const silk_encoder_st
 //
 //void NailTestPrint_PulseCache(char* varName, const PulseCache* info)
 //{
-//	fprintf(stdout, "%s = new PulseCache();\n", varName);
+//	printf("%s = new PulseCache();\n", varName);
 //	NailTestPrintMemberVarInt(varName, "size", info->size);
 //	NailTestPrintMemberVarShortArray(varName, "index", info->index, 105);
 //	NailTestPrintMemberVarByteArray(varName, "bits", info->bits, 392);
@@ -1020,7 +1038,7 @@ void NailTesterPrint_silk_encoder_state_FIX(char* varName, const silk_encoder_st
 //
 //void NailTesterPrint_OpusCustomMode(char* varName, const OpusCustomMode* mode)
 //{
-//	fprintf(stdout, "%s = new CELTMode();\n", varName);
+//	printf("%s = new CELTMode();\n", varName);
 //	NailTestPrintMemberVarInt(varName, "Fs", mode->Fs);
 //	NailTestPrintMemberVarInt(varName, "overlap", mode->overlap);
 //	NailTestPrintMemberVarInt(varName, "nbEBands", mode->nbEBands);
@@ -1042,11 +1060,11 @@ void NailTestPrint_AnalysisInfo(char* varName, const AnalysisInfo* info)
 {
 	if (!info)
 	{
-		fprintf(stdout, "%s = null;\n", varName);
+		printf("%s = null;\n", varName);
 		return;
 	}
 
-	fprintf(stdout, "%s = new AnalysisInfo();\n", varName);
+	printf("%s = new AnalysisInfo();\n", varName);
 	NailTestPrintMemberVarInt(varName, "valid", info->valid);
 	NailTestPrintMemberVarFloat(varName, "tonality", info->tonality);
 	NailTestPrintMemberVarFloat(varName, "tonality_slope", info->tonality_slope);
