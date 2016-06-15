@@ -1250,64 +1250,64 @@ namespace Concentus.Common
 
         public static sbyte CHOP8(int a)
         {
-            if (a > sbyte.MaxValue)
-                a = sbyte.MaxValue;
-            else if (a < sbyte.MinValue)
-                a = sbyte.MinValue;
+            //if (a > sbyte.MaxValue)
+            //    a = sbyte.MaxValue;
+            //else if (a < sbyte.MinValue)
+            //    a = sbyte.MinValue;
             return checked((sbyte)a);
         }
 
         public static byte CHOP8U(int a)
         {
-            if (a > byte.MaxValue)
-                a = byte.MaxValue;
-            else if (a < byte.MinValue)
-                a = byte.MinValue;
+            //if (a > byte.MaxValue)
+            //    a = byte.MaxValue;
+            //else if (a < byte.MinValue)
+            //    a = byte.MinValue;
             return checked((byte)a);
         }
 
         public static sbyte CHOP8(long a)
         {
-            if (a > sbyte.MaxValue)
-                a = sbyte.MaxValue;
-            else if (a < sbyte.MinValue)
-                a = sbyte.MinValue;
+            //if (a > sbyte.MaxValue)
+            //    a = sbyte.MaxValue;
+            //else if (a < sbyte.MinValue)
+            //    a = sbyte.MinValue;
             return checked((sbyte)a);
         }
 
         public static short CHOP16(int a)
         {
-            if (a > short.MaxValue)
-                a = short.MaxValue;
-            else if (a < short.MinValue)
-                a = short.MinValue;
+            //if (a > short.MaxValue)
+            //    a = short.MaxValue;
+            //else if (a < short.MinValue)
+            //    a = short.MinValue;
             return checked((short)a);
         }
 
         public static short CHOP16(long a)
         {
-            if (a > short.MaxValue)
-                a = short.MaxValue;
-            else if (a < short.MinValue)
-                a = short.MinValue;
+            //if (a > short.MaxValue)
+            //    a = short.MaxValue;
+            //else if (a < short.MinValue)
+            //    a = short.MinValue;
             return checked((short)a);
         }
 
         public static int CHOP32(long a)
         {
-            if (a > int.MaxValue)
-                a = int.MaxValue;
-            else if (a < int.MinValue)
-                a = int.MinValue;
+            //if (a > int.MaxValue)
+            //    a = int.MaxValue;
+            //else if (a < int.MinValue)
+            //    a = int.MinValue;
             return checked((int)a);
         }
 
         public static uint CHOP32U(long a)
         {
-            if (a > uint.MaxValue)
-                a = uint.MaxValue;
-            else if (a < uint.MinValue)
-                a = uint.MinValue;
+            //if (a > uint.MaxValue)
+            //    a = uint.MaxValue;
+            //else if (a < uint.MinValue)
+            //    a = uint.MinValue;
             return checked((uint)a);
         }
 
@@ -1620,13 +1620,13 @@ namespace Concentus.Common
             return a >> shift;
         }
 
-        public static short silk_ADD_LSHIFT(int a, int b, int shift)
+        public static int silk_ADD_LSHIFT(int a, int b, int shift)
         {
-            short ret = (short)(a + (b << shift));
+            int ret = a + (b << shift);
 #if DEBUG_MACROS
-            if ((shift < 0) || (shift > 15) || ((long)ret != (long)a + (((long)b) << shift)))
+            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) << shift)))
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift >= 0 */
@@ -1657,11 +1657,11 @@ namespace Concentus.Common
             return ret;                /* shift >= 0 */
         }
 
-        public static short silk_ADD_RSHIFT(int a, int b, int shift)
+        public static int silk_ADD_RSHIFT(int a, int b, int shift)
         {
-            short ret = (short)(a + (b >> shift));
+            int ret = a + (b >> shift);
 #if DEBUG_MACROS
-            if ((shift < 0) || (shift > 15) || ((long)ret != (long)a + (((long)b) >> shift)))
+            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) >> shift)))
             {
                 Inlines.OpusAssert(false);
             }
@@ -1671,8 +1671,7 @@ namespace Concentus.Common
 
         public static int silk_ADD_RSHIFT32(int a, int b, int shift)
         {
-            int ret;
-            ret = a + (b >> shift);
+            int ret = a + (b >> shift);
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) >> shift)))
             {

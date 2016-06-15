@@ -14,7 +14,7 @@ namespace Concentus.Celt
 {
     public static class mdct
     {
-        private const bool TRACE_FILE = true;
+        private const bool TRACE_FILE = false;
         
         /* Forward MDCT trashes the input array */
         public static void clt_mdct_forward_c(mdct_lookup l, Pointer<int> input, Pointer<int> output,

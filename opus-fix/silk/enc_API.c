@@ -408,10 +408,18 @@ opus_int silk_Encode(                                   /* O    Returns error co
 
             /* Convert Left/Right to Mid/Side */
             if( encControl->nChannelsInternal == 2 ) {
-                silk_stereo_LR_to_MS( &psEnc->sStereo, &psEnc->state_Fxx[ 0 ].sCmn.inputBuf[ 2 ], &psEnc->state_Fxx[ 1 ].sCmn.inputBuf[ 2 ],
-                    psEnc->sStereo.predIx[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ], &psEnc->sStereo.mid_only_flags[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ],
-                    MStargetRates_bps, TargetRate_bps, psEnc->state_Fxx[ 0 ].sCmn.speech_activity_Q8, encControl->toMono,
-                    psEnc->state_Fxx[ 0 ].sCmn.fs_kHz, psEnc->state_Fxx[ 0 ].sCmn.frame_length );
+                silk_stereo_LR_to_MS( &psEnc->sStereo,
+					&psEnc->state_Fxx[ 0 ].sCmn.inputBuf[ 2 ],
+					&psEnc->state_Fxx[ 1 ].sCmn.inputBuf[ 2 ],
+                    psEnc->sStereo.predIx[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ],
+					&psEnc->sStereo.mid_only_flags[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ],
+                    MStargetRates_bps,
+					TargetRate_bps,
+					psEnc->state_Fxx[ 0 ].sCmn.speech_activity_Q8,
+					encControl->toMono,
+                    psEnc->state_Fxx[ 0 ].sCmn.fs_kHz,
+					psEnc->state_Fxx[ 0 ].sCmn.frame_length );
+
                 if( psEnc->sStereo.mid_only_flags[ psEnc->state_Fxx[ 0 ].sCmn.nFramesEncoded ] == 0 ) {
                     /* Reset side channel encoder memory for first frame with side coding */
                     if( psEnc->prev_decode_only_middle == 1 ) {

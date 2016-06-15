@@ -32,6 +32,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main.h"
 #include "stack_alloc.h"
 
+#define TRACE_FILE 0
+
 /* Silk VAD noise level estimation */
 # if !defined(OPUS_X86_MAY_HAVE_SSE4_1)
 static OPUS_INLINE void silk_VAD_GetNoiseLevels(
@@ -105,6 +107,14 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
     silk_assert( psEncC->frame_length <= 512 );
     silk_assert( psEncC->frame_length == 8 * silk_RSHIFT( psEncC->frame_length, 3 ) );
 
+	if (TRACE_FILE)
+	{
+		for (int c = 0; c < psEncC->frame_length; c++)
+		{
+			printf("15a %d\n", pIn[c]);
+		}
+	}
+
     /***********************/
     /* Filter and Decimate */
     /***********************/
@@ -138,17 +148,26 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
     silk_ana_filt_bank_1( X, &psSilk_VAD->AnaState2[ 0 ],
         X, &X[ X_offset[ 1 ] ], decimated_framelength2 );
 
+	if (TRACE_FILE)
+	{
+		for (int c = 0; c < X_offset[3] + decimated_framelength1; c++)
+		{
+			printf("15b %d\n", X[c]);
+		}
+	}
+
     /*********************************************/
     /* HP filter on lowest band (differentiator) */
     /*********************************************/
     X[ decimated_framelength - 1 ] = silk_RSHIFT( X[ decimated_framelength - 1 ], 1 );
     HPstateTmp = X[ decimated_framelength - 1 ];
     for( i = decimated_framelength - 1; i > 0; i-- ) {
-        X[ i - 1 ]  = silk_RSHIFT( X[ i - 1 ], 1 );
+		X[ i - 1 ]  = silk_RSHIFT( X[ i - 1 ], 1 );
         X[ i ]     -= X[ i - 1 ];
     }
     X[ 0 ] -= psSilk_VAD->HPstate;
     psSilk_VAD->HPstate = HPstateTmp;
+	if (TRACE_FILE) printf("15c 0x%x\n", (unsigned int)HPstateTmp);
 
     /*************************************/
     /* Calculate the energy in each band */
@@ -164,6 +183,7 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
         /* Compute energy per sub-frame */
         /* initialize with summed energy of last subframe */
         Xnrg[ b ] = psSilk_VAD->XnrgSubfr[ b ];
+		if (TRACE_FILE) printf("15d 0x%x\n", (unsigned int)Xnrg[b]);
         for( s = 0; s < VAD_INTERNAL_SUBFRAMES; s++ ) {
             sumSquared = 0;
             for( i = 0; i < dec_subframe_length; i++ ) {
@@ -172,7 +192,7 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
                 x_tmp = silk_RSHIFT(
                     X[ X_offset[ b ] + i + dec_subframe_offset ], 3 );
                 sumSquared = silk_SMLABB( sumSquared, x_tmp, x_tmp );
-
+				if (TRACE_FILE) printf("15e 0x%x\n", (unsigned int)sumSquared);
                 /* Safety check */
                 silk_assert( sumSquared >= 0 );
             }
@@ -188,6 +208,7 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
             dec_subframe_offset += dec_subframe_length;
         }
         psSilk_VAD->XnrgSubfr[ b ] = sumSquared;
+		if (TRACE_FILE) printf("15f 0x%x\n", (unsigned int)sumSquared);
     }
 
     /********************/
@@ -202,6 +223,7 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
     input_tilt = 0;
     for( b = 0; b < VAD_N_BANDS; b++ ) {
         speech_nrg = Xnrg[ b ] - psSilk_VAD->NL[ b ];
+		if (TRACE_FILE) printf("15g 0x%x\n", (unsigned int)speech_nrg);
         if( speech_nrg > 0 ) {
             /* Divide, with sufficient resolution */
             if( ( Xnrg[ b ] & 0xFF800000 ) == 0 ) {
@@ -222,6 +244,7 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
                 SNR_Q7 = silk_SMULWB( silk_LSHIFT( silk_SQRT_APPROX( speech_nrg ), 6 ), SNR_Q7 );
             }
             input_tilt = silk_SMLAWB( input_tilt, tiltWeights[ b ], SNR_Q7 );
+			if (TRACE_FILE) printf("15h 0x%x\n", (unsigned int)input_tilt);
         } else {
             NrgToNoiseRatio_Q8[ b ] = 256;
         }
@@ -237,11 +260,13 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
     /* Speech Probability Estimation */
     /*********************************/
     SA_Q15 = silk_sigm_Q15( silk_SMULWB( VAD_SNR_FACTOR_Q16, pSNR_dB_Q7 ) - VAD_NEGATIVE_OFFSET_Q5 );
+	if (TRACE_FILE) printf("15i 0x%x\n", (unsigned int)SA_Q15);
 
     /**************************/
     /* Frequency Tilt Measure */
     /**************************/
     psEncC->input_tilt_Q15 = silk_LSHIFT( silk_sigm_Q15( input_tilt ) - 16384, 1 );
+	if (TRACE_FILE) printf("15j 0x%x\n", (unsigned int)psEncC->input_tilt_Q15);
 
     /**************************************************/
     /* Scale the sigmoid output based on power levels */
@@ -250,6 +275,7 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
     for( b = 0; b < VAD_N_BANDS; b++ ) {
         /* Accumulate signal-without-noise energies, higher frequency bands have more weight */
         speech_nrg += ( b + 1 ) * silk_RSHIFT( Xnrg[ b ] - psSilk_VAD->NL[ b ], 4 );
+		if (TRACE_FILE) printf("15k 0x%x\n", (unsigned int)speech_nrg);
     }
 
     /* Power scaling */
@@ -269,6 +295,7 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
 
     /* Copy the resulting speech activity in Q8 */
     psEncC->speech_activity_Q8 = silk_min_int( silk_RSHIFT( SA_Q15, 7 ), silk_uint8_MAX );
+	if (TRACE_FILE) printf("15l 0x%x\n", (unsigned int)psEncC->speech_activity_Q8);
 
     /***********************************/
     /* Energy Level and SNR estimation */
@@ -284,12 +311,13 @@ opus_int silk_VAD_GetSA_Q8_c(                                   /* O    Return v
         /* compute smoothed energy-to-noise ratio per band */
         psSilk_VAD->NrgRatioSmth_Q8[ b ] = silk_SMLAWB( psSilk_VAD->NrgRatioSmth_Q8[ b ],
             NrgToNoiseRatio_Q8[ b ] - psSilk_VAD->NrgRatioSmth_Q8[ b ], smooth_coef_Q16 );
-
+		if (TRACE_FILE) printf("15m 0x%x\n", (unsigned int)psSilk_VAD->NrgRatioSmth_Q8[b]);
         /* signal to noise ratio in dB per band */
         SNR_Q7 = 3 * ( silk_lin2log( psSilk_VAD->NrgRatioSmth_Q8[b] ) - 8 * 128 );
         /* quality = sigmoid( 0.25 * ( SNR_dB - 16 ) ); */
         psEncC->input_quality_bands_Q15[ b ] = silk_sigm_Q15( silk_RSHIFT( SNR_Q7 - 16 * 128, 4 ) );
-    }
+		if (TRACE_FILE) printf("15n 0x%x\n", (unsigned int)psEncC->input_quality_bands_Q15[b]);
+	}
 
     RESTORE_STACK;
     return( ret );

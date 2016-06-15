@@ -42,7 +42,7 @@
 #include "stack_alloc.h"
 #include <stdio.h>
 
-#define TRACE_FILE 1
+#define TRACE_FILE 0
 
 /* The guts header contains all the multiplication and addition macros that are defined for
    complex numbers.  It also delares the kf_ internal functions.

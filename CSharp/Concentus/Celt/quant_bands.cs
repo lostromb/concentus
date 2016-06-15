@@ -19,7 +19,7 @@ namespace Concentus.Celt
         private static readonly int[] beta_coef = new int[] { 30147, 22282, 12124, 6554 };
         private static readonly int beta_intra = 4915;
         private static byte[] small_energy_icdf = { 2, 1, 0 };
-        private const bool TRACE_FILE = true;
+        private const bool TRACE_FILE = false;
 
         public static int loss_distortion(Pointer<int> eBands, Pointer<int> oldEBands, int start, int end, int len, int C)
         {

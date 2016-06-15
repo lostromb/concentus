@@ -43,7 +43,7 @@
 #include "quant_bands.h"
 #include "pitch.h"
 
-#define TRACE_FILE 1
+#define TRACE_FILE 0
 
 int hysteresis_decision(opus_val16 val, const opus_val16 *thresholds, const opus_val16 *hysteresis, int N, int prev)
 {

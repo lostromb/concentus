@@ -218,7 +218,7 @@ namespace Concentus.Silk
             HP_mid = Pointer.Malloc<short>(frame_length);
             for (n = 0; n < frame_length; n++)
             {
-                sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT(mid[n] + mid[n + 2], mid[n + 1], 1), 2);
+                sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(mid[n] + mid[n + 2], mid[n + 1], 1), 2); // opus bug: was ADD_LSHIFT, but the intermediate calculation would overflow
                 LP_mid[n] = Inlines.CHOP16(sum);
                 HP_mid[n] = Inlines.CHOP16(mid[n + 1] - sum);
             }
@@ -228,7 +228,7 @@ namespace Concentus.Silk
             HP_side = Pointer.Malloc<short>(frame_length);
             for (n = 0; n < frame_length; n++)
             {
-                sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT(side[n] + side[n + 2], side[n + 1], 1), 2);
+                sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(side[n] + side[n + 2], side[n + 1], 1), 2);
                 LP_side[n] = Inlines.CHOP16(sum);
                 HP_side[n] = Inlines.CHOP16(side[n + 1] - sum);
             }
@@ -372,8 +372,8 @@ namespace Concentus.Silk
                 x2[n - 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
             }
 
-            pred0_Q13 = -pred_Q13[0];
-            pred1_Q13 = -pred_Q13[1];
+            pred0_Q13 = 0 - pred_Q13[0];
+            pred1_Q13 = 0 - pred_Q13[1];
             w_Q24 = Inlines.silk_LSHIFT(width_Q14, 10);
             for (n = SilkConstants.STEREO_INTERP_LEN_MS * fs_kHz; n < frame_length; n++)
             {

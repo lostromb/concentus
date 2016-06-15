@@ -16,7 +16,7 @@ namespace Concentus.Celt
 {
     public static class celt_encoder
     {
-        private const bool TRACE_FILE = true;
+        private const bool TRACE_FILE = false;
 
         public static int opus_custom_encoder_init_arch(CELTEncoder st, CELTMode mode,
                                                  int channels, int arch)

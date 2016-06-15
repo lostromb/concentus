@@ -8,7 +8,7 @@ namespace Concentus.Silk
 {
     public static class encode_frame
     {
-        private const bool TRACE_FILE = true;
+        private const bool TRACE_FILE = false;
 
         public static void silk_encode_do_VAD_FIX(
             silk_encoder_state_fix psEnc                                  /* I/O  Pointer to Silk FIX encoder state                                           */

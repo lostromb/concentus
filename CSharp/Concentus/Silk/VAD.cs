@@ -15,6 +15,8 @@ namespace Concentus.Silk
     /// </summary>
     public static class VAD
     {
+        private const bool TRACE_FILE = false;
+        
         /// <summary>
         /// Weighting factors for tilt measure
         /// </summary>
@@ -89,6 +91,14 @@ namespace Concentus.Silk
             Inlines.OpusAssert(psEncC.frame_length <= 512);
             Inlines.OpusAssert(psEncC.frame_length == 8 * Inlines.silk_RSHIFT(psEncC.frame_length, 3));
 
+            if (TRACE_FILE)
+            {
+                for (int c = 0; c < psEncC.frame_length; c++)
+                {
+                    Debug.WriteLine("15a {0}", pIn[c]);
+                }
+            }
+
             /***********************/
             /* Filter and Decimate */
             /***********************/
@@ -123,6 +133,14 @@ namespace Concentus.Silk
             Filters.silk_ana_filt_bank_1(X, psSilk_VAD.AnaState2,
                 X, X.Point(X_offset[1]), decimated_framelength2);
 
+            if (TRACE_FILE)
+            {
+                for (int c = 0; c < X_offset[3] + decimated_framelength1; c++)
+                {
+                    Debug.WriteLine("15b {0}", X[c]);
+                }
+            }
+
             /*********************************************/
             /* HP filter on lowest band (differentiator) */
             /*********************************************/
@@ -137,6 +155,7 @@ namespace Concentus.Silk
 
             X[0] -= psSilk_VAD.HPstate;
             psSilk_VAD.HPstate = HPstateTmp;
+            if (TRACE_FILE) Debug.WriteLine("15c 0x{0:x}", (uint)HPstateTmp);
 
             /*************************************/
             /* Calculate the energy in each band */
@@ -153,6 +172,7 @@ namespace Concentus.Silk
                 /* Compute energy per sub-frame */
                 /* initialize with summed energy of last subframe */
                 Xnrg[b] = psSilk_VAD.XnrgSubfr[b];
+                if (TRACE_FILE) Debug.WriteLine("15d 0x{0:x}", (uint)Xnrg[b]);
                 for (s = 0; s < SilkConstants.VAD_INTERNAL_SUBFRAMES; s++)
                 {
                     sumSquared = 0;
@@ -164,7 +184,7 @@ namespace Concentus.Silk
                         x_tmp = Inlines.silk_RSHIFT(
                             X[X_offset[b] + i + dec_subframe_offset], 3);
                         sumSquared = Inlines.silk_SMLABB(sumSquared, x_tmp, x_tmp);
-
+                        if (TRACE_FILE) Debug.WriteLine("15e 0x{0:x}", (uint)sumSquared);
                         /* Safety check */
                         Inlines.OpusAssert(sumSquared >= 0);
                     }
@@ -184,6 +204,7 @@ namespace Concentus.Silk
                 }
 
                 psSilk_VAD.XnrgSubfr[b] = sumSquared;
+                if (TRACE_FILE) Debug.WriteLine("15f 0x{0:x}", (uint)sumSquared);
             }
 
             /********************/
@@ -199,6 +220,7 @@ namespace Concentus.Silk
             for (b = 0; b < SilkConstants.VAD_N_BANDS; b++)
             {
                 speech_nrg = Xnrg[b] - psSilk_VAD.NL[b];
+                if (TRACE_FILE) Debug.WriteLine("15g 0x{0:x}", (uint)speech_nrg);
                 if (speech_nrg > 0)
                 {
                     /* Divide, with sufficient resolution */
@@ -223,6 +245,7 @@ namespace Concentus.Silk
                         SNR_Q7 = Inlines.silk_SMULWB(Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(speech_nrg), 6), SNR_Q7);
                     }
                     input_tilt = Inlines.silk_SMLAWB(input_tilt, tiltWeights[b], SNR_Q7);
+                    if (TRACE_FILE) Debug.WriteLine("15h 0x{0:x}", (uint)input_tilt);
                 }
                 else
                 {
@@ -240,11 +263,13 @@ namespace Concentus.Silk
             /* Speech Probability Estimation */
             /*********************************/
             SA_Q15 = Sigmoid.silk_sigm_Q15(Inlines.silk_SMULWB(SilkConstants.VAD_SNR_FACTOR_Q16, pSNR_dB_Q7) - SilkConstants.VAD_NEGATIVE_OFFSET_Q5);
+            if (TRACE_FILE) Debug.WriteLine("15i 0x{0:x}", (uint)SA_Q15);
 
             /**************************/
             /* Frequency Tilt Measure */
             /**************************/
             psEncC.input_tilt_Q15 = Inlines.silk_LSHIFT(Sigmoid.silk_sigm_Q15(input_tilt) - 16384, 1);
+            if (TRACE_FILE) Debug.WriteLine("15j 0x{0:x}", (uint)psEncC.input_tilt_Q15);
 
             /**************************************************/
             /* Scale the sigmoid output based on power levels */
@@ -254,6 +279,7 @@ namespace Concentus.Silk
             {
                 /* Accumulate signal-without-noise energies, higher frequency bands have more weight */
                 speech_nrg += (b + 1) * Inlines.silk_RSHIFT(Xnrg[b] - psSilk_VAD.NL[b], 4);
+                if (TRACE_FILE) Debug.WriteLine("15k 0x{0:x}", (uint)speech_nrg);
             }
 
             /* Power scaling */
@@ -279,6 +305,7 @@ namespace Concentus.Silk
 
             /* Copy the resulting speech activity in Q8 */
             psEncC.speech_activity_Q8 = Inlines.silk_min_int(Inlines.silk_RSHIFT(SA_Q15, 7), byte.MaxValue);
+            if (TRACE_FILE) Debug.WriteLine("15l 0x{0:x}", (uint)psEncC.speech_activity_Q8);
 
             /***********************************/
             /* Energy Level and SNR estimation */
@@ -296,11 +323,12 @@ namespace Concentus.Silk
                 /* compute smoothed energy-to-noise ratio per band */
                 psSilk_VAD.NrgRatioSmth_Q8[b] = Inlines.silk_SMLAWB(psSilk_VAD.NrgRatioSmth_Q8[b],
                   NrgToNoiseRatio_Q8[b] - psSilk_VAD.NrgRatioSmth_Q8[b], smooth_coef_Q16);
-
+                if (TRACE_FILE) Debug.WriteLine("15m 0x{0:x}", (uint)psSilk_VAD.NrgRatioSmth_Q8[b]);
                 /* signal to noise ratio in dB per band */
                 SNR_Q7 = 3 * (Inlines.silk_lin2log(psSilk_VAD.NrgRatioSmth_Q8[b]) - 8 * 128);
                 /* quality = sigmoid( 0.25 * ( SNR_dB - 16 ) ); */
                 psEncC.input_quality_bands_Q15[b] = Sigmoid.silk_sigm_Q15(Inlines.silk_RSHIFT(SNR_Q7 - 16 * 128, 4));
+                if (TRACE_FILE) Debug.WriteLine("15n 0x{0:x}", (uint)psEncC.input_quality_bands_Q15[b]);
             }
 
             return (ret);

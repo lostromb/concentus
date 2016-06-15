@@ -53,7 +53,7 @@
 #include "mathops.h"
 #include "stack_alloc.h"
 
-#define TRACE_FILE 1
+#define TRACE_FILE 0
 
 #if defined(MIPSr1_ASM)
 #include "mips/mdct_mipsr1.h"

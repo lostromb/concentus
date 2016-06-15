@@ -12,7 +12,7 @@ namespace Concentus.Celt
 {
     public static class KissFFT
     {
-        private const bool TRACE_FILE = true;
+        private const bool TRACE_FILE = false;
         
         // #define kiss_fft_scalar opus_int32
         // #define kiss_twiddle_scalar opus_int16

@@ -62,7 +62,7 @@ namespace Concentus.Common
   }*/
     public static class EntropyCoder
     {
-        private const bool EC_DIFF = true;
+        private const bool EC_DIFF = false;
 
         private const int EC_WINDOW_SIZE = ((int)sizeof(uint) * 8);
 
