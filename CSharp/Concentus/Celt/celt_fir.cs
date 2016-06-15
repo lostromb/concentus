@@ -42,10 +42,10 @@ namespace Concentus.Celt
             {
                 int[] sum = { 0, 0, 0, 0 };
                 xcorr_kernel.xcorr_kernel_c(rnum.Data, rnum.Offset, x.Data, x.Offset + i, sum, ord);
-                _y[i] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
-                _y[i + 1] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
-                _y[i + 2] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
-                _y[i + 3] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i + 3]), Inlines.PSHR32(sum[3], CeltConstants.SIG_SHIFT))));
+                _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
+                _y[i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
+                _y[i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
+                _y[i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 3]), Inlines.PSHR32(sum[3], CeltConstants.SIG_SHIFT))));
             }
 
             for (; i < N; i++)
@@ -57,7 +57,7 @@ namespace Concentus.Celt
                     sum = Inlines.MAC16_16(sum, rnum[j], x[i + j]);
                 }
 
-                _y[i] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
+                _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
             }
         }
 
@@ -98,10 +98,10 @@ namespace Concentus.Celt
             {
                 int[] sum = { 0, 0, 0, 0 };
                 xcorr_kernel.xcorr_kernel_c(rnum, x.Point(i), sum.GetPointer(), ord);
-                _y[i] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
-                _y[i + 1] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
-                _y[i + 2] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
-                _y[i + 3] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i + 3]), Inlines.PSHR32(sum[3], CeltConstants.SIG_SHIFT))));
+                _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
+                _y[i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
+                _y[i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
+                _y[i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 3]), Inlines.PSHR32(sum[3], CeltConstants.SIG_SHIFT))));
             }
 
             for (; i < N; i++)
@@ -113,7 +113,7 @@ namespace Concentus.Celt
                     sum = Inlines.MAC16_16(sum, rnum[j], x[i + j]);
                 }
 
-                _y[i] = Inlines.SATURATE16(Inlines.CHOP16(Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
+                _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
             }
         }
     }

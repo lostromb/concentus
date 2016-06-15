@@ -29,7 +29,7 @@ namespace ParityTest
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
             double[] FrameSizes = new double[] { 5, 20, 60 };
-            int[] PacketLosses = new int[] { 0/*, 20*/ };
+            int[] PacketLosses = new int[] { 0, 20 };
 
             IList<TestParameters> allTests = new List<TestParameters>();
 
@@ -91,10 +91,13 @@ namespace ParityTest
             double concentusTime = 0;
             double opusTime = 0;
             int passedTests = 0;
+            int testsRun = 0;
 
             foreach (TestParameters p in allTestsRandom)
             {
-                Console.Write("{0} {1} Cpx={2}\t{3}Kbps\t{4}Khz\t{5} Ms\tPLC {6}% ... ",
+                testsRun++;
+                Console.Write("{0,5} {1} {2} Cpx={3,2} {4,3}Kbps {5,2}Khz {6,2} Ms PLC {7,2}% ... ",
+                    testsRun,
                     PrintApplication(p.Application),
                     p.Channels == 1 ? "Mono  " : "Stereo",
                     p.Complexity,
@@ -107,12 +110,12 @@ namespace ParityTest
 
                 if (response.Passed)
                 {
+                    passedTests++;
                     concentusTime += response.ConcentusTimeMs;
                     opusTime += response.OpusTimeMs;
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("{0} (Speed {1:F2}%)", response.Message, (opusTime * 100 / concentusTime));
+                    Console.WriteLine("{0} (Speed {1:F2}% Pass {2:F2}%)", response.Message, (opusTime * 100 / concentusTime), ((double)passedTests * 100 / testsRun));
                     Console.ForegroundColor = ConsoleColor.Gray;
-                    passedTests++;
                 }
                 else
                 {

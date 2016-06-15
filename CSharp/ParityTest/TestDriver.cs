@@ -151,7 +151,7 @@ namespace ParityTest
             returnVal.Passed = true;
             returnVal.ConcentusTimeMs = concentusTimer.ElapsedMilliseconds;
             returnVal.OpusTimeMs = opusTimer.ElapsedMilliseconds;
-            returnVal.Message = "Ok! (" + frameCount + " frames)";
+            returnVal.Message = "Ok!";
 
             return returnVal;
         }

@@ -216,7 +216,7 @@ namespace Concentus.Common
             return (((x) > (a) ? (a) : (x) < -(a) ? -(a) : (x)));
         }
 
-        public static short SATURATE16(short x)
+        public static short SATURATE16(int x)
         {
             return (EXTRACT16((x) > 32767 ? 32767 : (x) < -32768 ? -32768 : (x)));
         }
@@ -1218,12 +1218,10 @@ namespace Concentus.Common
         {
             return a > short.MaxValue ? short.MaxValue : ((a) < short.MinValue ? short.MinValue : (a));
         }
-
-        // fixme: get the parameter types correct here
-
-        public static long silk_SAT32(long a)
+        
+        public static int silk_SAT32(long a)
         {
-            return a > int.MaxValue ? int.MaxValue : ((a) < int.MinValue ? int.MinValue : (a));
+            return a > int.MaxValue ? int.MaxValue : ((a) < int.MinValue ? int.MinValue : (int)(a));
         }
 
         // fixme: these are for debug assertions only; either implement the assertions or remove these macros

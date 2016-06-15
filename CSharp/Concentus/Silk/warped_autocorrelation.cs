@@ -58,13 +58,13 @@ namespace Concentus.Silk
             {
                 for (i = 0; i < order + 1; i++)
                 {
-                    corr[i] = (int)Inlines.CHOP32(Inlines.silk_LSHIFT64(corr_QC[i], lsh));
+                    corr[i] = Inlines.CHOP32(Inlines.silk_LSHIFT64(corr_QC[i], lsh));
                 }
             }
             else {
                 for (i = 0; i < order + 1; i++)
                 {
-                    corr[i] = (int)Inlines.CHOP32(Inlines.silk_RSHIFT64(corr_QC[i], -lsh));
+                    corr[i] = Inlines.CHOP32(Inlines.silk_RSHIFT64(corr_QC[i], -lsh));
                 }
             }
             Inlines.OpusAssert(corr_QC[0] >= 0); /* If breaking, decrease QC*/
