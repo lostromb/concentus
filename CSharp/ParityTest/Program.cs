@@ -123,6 +123,7 @@ namespace ParityTest
                     //if (response.FrameCount == 0)
                     //{
                     //    PrintShortArray(response.FailureFrame);
+                    //    Console.WriteLine(response.FrameLength);
                     //    Console.ReadLine();
                     //}
                 }

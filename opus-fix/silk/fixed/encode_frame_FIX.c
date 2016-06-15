@@ -36,6 +36,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define TRACE_FILE 0
 #if TRACE_FILE
 #include "NailTester.h"
+#else
+void NailTesterPrint_silk_encoder_state_FIX(char* var1, void* var2) {}
 #endif
 
 /* Low Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode with lower bitrate           */
@@ -91,7 +93,7 @@ opus_int silk_encode_frame_FIX(
     opus_int                        useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
 )
 {
-	if (TRACE_FILE) printf("Entering silk encode frame");
+	if (TRACE_FILE) printf("Entering silk encode frame\n");
 	if (TRACE_FILE) NailTesterPrint_silk_encoder_state_FIX("state1", psEnc);
 	/*NailTestPrintTestHeader("silk_encode_frame_FIX_manual");
 	fprintf(stdout, "#region autogen\n");

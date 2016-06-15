@@ -181,7 +181,7 @@ void ec_enc_init(ec_enc *_this, unsigned char *_buf, opus_uint32 _size) {
 	_this->ext = 0;
 	_this->storage = _size;
 	_this->error = 0;
-	_this->EC_DIFF = 1;
+	_this->EC_DIFF = 0;
 }
 
 void ec_encode(ec_enc *_this, unsigned _fl, unsigned _fh, unsigned _ft) {

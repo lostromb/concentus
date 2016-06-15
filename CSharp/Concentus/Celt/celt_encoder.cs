@@ -16,6 +16,8 @@ namespace Concentus.Celt
 {
     public static class celt_encoder
     {
+        private const bool TRACE_FILE = false;
+
         public static int opus_custom_encoder_init_arch(CELTEncoder st, CELTMode mode,
                                                  int channels, int arch)
         {
@@ -1038,10 +1040,10 @@ namespace Concentus.Celt
                 coded_bins += eBands[Inlines.IMIN(intensity, coded_bands)] << LM;
 
             target = base_target;
-
+#if ENABLE_ANALYSIS
             if (analysis.valid != 0 && analysis.activity < .4)
                 target -= (int)((coded_bins << EntropyCoder.BITRES) * (.4f - analysis.activity));
-
+#endif
             /* Stereo savings */
             if (C == 2)
             {
@@ -1105,8 +1107,7 @@ namespace Concentus.Celt
                 if (constrained_vbr != 0)
                     rate_factor = Inlines.MIN16(rate_factor, Inlines.QCONST16(0.67f, 15));
                 target = base_target + (int)Inlines.MULT16_32_Q15(rate_factor, target - base_target);
-
-            }
+                }
 
             if (has_surround_mask == 0 && tf_estimate < Inlines.QCONST16(.2f, 14))
             {

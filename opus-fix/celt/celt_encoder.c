@@ -52,6 +52,7 @@
 #include "vq.h"
 //#include "NailTester.h"
 
+#define TRACE_FILE 0
 
 /** Encoder state
  @brief Encoder state
@@ -1282,16 +1283,15 @@ static int compute_vbr(const CELTMode *mode, AnalysisInfo *analysis, opus_int32 
 
    if ((!has_surround_mask||lfe) && (constrained_vbr || bitrate<64000))
    {
-      opus_val16 rate_factor;
+      opus_val32 rate_factor; // opus bug: this needs to be val32 to prevent overflow on the next line if bitrate is around 64000
 #ifdef FIXED_POINT
-      rate_factor = MAX16(0,(bitrate-32000));
+      rate_factor = MAX32(0,(bitrate-32000));
 #else
-      rate_factor = MAX16(0,(1.f/32768)*(bitrate-32000));
+      rate_factor = MAX32(0,(1.f/32768)*(bitrate-32000));
 #endif
       if (constrained_vbr)
-         rate_factor = MIN16(rate_factor, QCONST16(0.67f, 15));
+         rate_factor = MIN32(rate_factor, QCONST16(0.67f, 15));
       target = base_target + (opus_int32)MULT16_32_Q15(rate_factor, target-base_target);
-
    }
 
    if (!has_surround_mask && tf_estimate < QCONST16(.2f, 14))
@@ -1701,7 +1701,6 @@ int celt_encode_with_ec(CELTEncoder * OPUS_RESTRICT st, // I/O CELT state
    {
 	  compute_mdcts(mode, 0, in, freq, C, CC, LM, st->upsample, st->arch);
       compute_band_energies(mode, freq, bandE, effEnd, C, LM);
-	  for (int zz = 0; zz < nbEBands * CC; zz++)
       amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
 	  for (i = 0; i < C*nbEBands; i++)
 	  {
