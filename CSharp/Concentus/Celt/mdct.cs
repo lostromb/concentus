@@ -126,7 +126,7 @@ namespace Concentus.Celt
                     yc.i = yi;
                     yc.r = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.r), scale_shift);
                     yc.i = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.i), scale_shift);
-                    if (TRACE_FILE) Debug.WriteLine("13k 0x{0:x} 0x{0:x}", (uint)yc.r, (uint)yc.i);
+                    if (TRACE_FILE) Debug.WriteLine("13k {0} {1}", yc.r, yc.i);
                     f2[st.bitrev[i]].Assign(yc); // fixme: no need for assign()?
                 }
             }

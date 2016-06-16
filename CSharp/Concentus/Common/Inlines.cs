@@ -17,9 +17,12 @@ namespace Concentus.Common
 #if DEBUG
             Debug.Assert(condition, message);
 #endif
+#if DEBUG_MACROS
+            if (!condition) throw new ArithmeticException("Debug macro failed validation");
+#endif
         }
 
-        #region CELT
+#region CELT
 
         // CELT-SPECIFIC INLINES
 
@@ -940,9 +943,9 @@ namespace Concentus.Common
             return (int)x;
         }
 
-        #endregion
+#endregion
 
-        #region SILK
+#region SILK
 
         // SILK-SPECIFIC INLINES
 
@@ -1488,7 +1491,7 @@ namespace Concentus.Common
             fail |= shift >= 32;
             fail |= (long)ret != ((long)a) << shift;
             Inlines.OpusAssert(!fail);
- #endif
+#endif
             return ret;
         }
 

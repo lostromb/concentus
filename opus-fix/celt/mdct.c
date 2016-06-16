@@ -225,7 +225,7 @@ void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in, kiss_fft_scal
          yc.i = yi;
          yc.r = PSHR32(MULT16_32_Q16(scale, yc.r), scale_shift);
          yc.i = PSHR32(MULT16_32_Q16(scale, yc.i), scale_shift);
-		 if (TRACE_FILE) printf("13k 0x%x 0x%x\n", (unsigned int)yc.r, (unsigned int)yc.i);
+		 if (TRACE_FILE) printf("13k %d %d\n", yc.r, yc.i);
          f2[st->bitrev[i]] = yc;
       }
    }

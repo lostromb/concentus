@@ -373,7 +373,7 @@ opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
       int N, int *T0_, int prev_period, opus_val16 prev_gain, int arch)
 {
    int k, i, T, T0;
-   opus_val16 g, g0;
+   opus_val32 g, g0;
    opus_val16 pg;
    opus_val32 xy,xx,yy,xy2;
    opus_val32 xcorr[3];
@@ -413,6 +413,11 @@ opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
          x2y2 = 1+HALF32(MULT32_32_Q31(xx,yy));
          sh = celt_ilog2(x2y2)>>1;
          t = VSHR32(x2y2, 2*(sh-7));
+		 // OPUS BUG!
+		 // g overflows int16 with these values:
+		 // t = 32767
+		 // xy = 98240
+		 // sh = 0
          g = g0 = VSHR32(MULT16_32_Q15(celt_rsqrt_norm(t), xy),sh+1);
       }
 #else
@@ -422,9 +427,9 @@ opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
    for (k=2;k<=15;k++)
    {
       int T1, T1b;
-      opus_val16 g1;
+      opus_val32 g1;
       opus_val16 cont=0;
-      opus_val16 thresh;
+      opus_val32 thresh;
       T1 = celt_udiv(2*T0+k, 2*k);
       if (T1 < minperiod)
          break;
@@ -460,13 +465,13 @@ opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
          cont = HALF32(prev_gain);
       else
          cont = 0;
-      thresh = MAX16(QCONST16(.3f,15), MULT16_16_Q15(QCONST16(.7f,15),g0)-cont);
+      thresh = MAX32(QCONST32(.3f,15), MULT16_32_Q15(QCONST16(.7f,15),g0)-cont);
       /* Bias against very high pitch (very short period) to avoid false-positives
          due to short-term correlation */
       if (T1<3*minperiod)
-         thresh = MAX16(QCONST16(.4f,15), MULT16_16_Q15(QCONST16(.85f,15),g0)-cont);
+         thresh = MAX32(QCONST32(.4f,15), MULT16_32_Q15(QCONST16(.85f,15),g0)-cont);
       else if (T1<2*minperiod)
-         thresh = MAX16(QCONST16(.5f,15), MULT16_16_Q15(QCONST16(.9f,15),g0)-cont);
+         thresh = MAX32(QCONST32(.5f,15), MULT16_32_Q15(QCONST16(.9f,15),g0)-cont);
       if (g1 > thresh)
       {
          best_xy = xy;
