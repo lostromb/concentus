@@ -140,7 +140,7 @@ namespace Concentus.Celt
                 j = 0;
                 do
                 {
-                    tmp |= (uint)iy[i * N0 + j];
+                    tmp |= unchecked((uint)iy[i * N0 + j]);
                 } while (++j < N0);
 
                 collapse_mask |= (tmp != 0 ? 1U : 0) << i;

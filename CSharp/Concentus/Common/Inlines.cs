@@ -146,24 +146,24 @@ namespace Concentus.Common
         //        /** Arithmetic shift-left of a 16-bit value */
         public static short SHL16(short a, int shift)
         {
-            return ((short)((ushort)(a) << (shift)));
+            return unchecked((short)(unchecked((ushort)a) << shift));
         }
 
         public static int SHL16(int a, int shift)
         {
-            return ((int)((uint)(a) << (shift)));
+            return unchecked(((int)(unchecked((unchecked((uint)(a)) << (shift))))));
         }
 
         //        /** Arithmetic shift-right of a 32-bit value */
         public static int SHR32(int a, int shift)
         {
-            return ((a) >> (shift));
+            return a >> shift;
         }
 
         //        /** Arithmetic shift-left of a 32-bit value */
         public static int SHL32(int a, int shift)
         {
-            return ((int)((uint)(a) << (shift)));
+            return unchecked(((int)(unchecked((unchecked((uint)(a)) << (shift))))));
         }
 
         //        /** 32-bit arithmetic shift right with rounding-to-nearest instead of rounding down */
@@ -631,9 +631,9 @@ namespace Concentus.Common
         /** Integer log in base2. Undefined for zero and negative numbers */
         public static int celt_ilog2(int x)
         {
-            //Inlines.OpusAssert(x > 0, "celt_ilog2() only defined for strictly positive numbers");
-            if (x <= 0)
-                throw new ArgumentException("");
+            Inlines.OpusAssert(x > 0, "celt_ilog2() only defined for strictly positive numbers");
+            //if (x <= 0)
+            //    throw new ArgumentException("celt_ilog2() only defined for strictly positive numbers");
             return (EC_ILOG((uint)x) - 1);
         }
 
@@ -1099,7 +1099,7 @@ namespace Concentus.Common
 
         public static int silk_SMULBB(int a32, int b32)
         {
-            return ((int)((short)a32) * (int)((short)b32));
+            return ((int)unchecked((short)a32) * (int)unchecked((short)b32));
         }
 
         /// <summary>
@@ -1120,14 +1120,14 @@ namespace Concentus.Common
             }
             return ret;
 #else
-            return (int)((a32 * (long)((short)b32)) >> 16);
+            return unchecked((int)(unchecked(unchecked(a32 * (long)(unchecked((short)b32))) >> 16)));
 #endif
         }
 
 
         public static int silk_SMLABB(int a32, int b32, int c32)
         {
-            return ((a32) + ((int)((short)(b32))) * (int)((short)(c32)));
+            return ((a32) + ((int)unchecked((short)b32)) * (int)unchecked((short)c32));
         }
 
         public static int silk_DIV32_16(int a32, int b32)
@@ -1338,9 +1338,9 @@ namespace Concentus.Common
         public static long silk_ADD_SAT64(long a64, long b64)
         {
             long res;
-            res = (unchecked((ulong)((a64) + (b64)) & 0x8000000000000000UL) == 0 ?
-                (((ulong)((a64) & (b64)) & 0x8000000000000000UL) != 0 ? long.MinValue : (a64) + (b64)) :
-                (((ulong)((a64) | (b64)) & 0x8000000000000000UL) == 0 ? long.MaxValue : (a64) + (b64)));
+            res = (unchecked((ulong)(a64 + b64) & 0x8000000000000000UL) == 0 ?
+                (unchecked((ulong)(a64 & b64) & 0x8000000000000000UL) != 0 ? long.MinValue : a64 + b64) :
+                (unchecked((ulong)(a64 | b64) & 0x8000000000000000UL) == 0 ? long.MaxValue : a64 + b64));
 #if DEBUG_MACROS
             bool fail = false;
             if (res != a64 + b64)
@@ -2183,7 +2183,7 @@ namespace Concentus.Common
             if (in_upper == 0)
             {
                 /* Search in the lower 32 bits */
-                return 32 + silk_CLZ32((int)input);
+                return 32 + silk_CLZ32(unchecked((int)input));
             }
             else {
                 /* Search in the upper 32 bits */
@@ -2193,7 +2193,7 @@ namespace Concentus.Common
 
         public static int silk_CLZ32(int in32)
         {
-            return in32 == 0 ? 32 : 32 - EC_ILOG((uint)in32);
+            return in32 == 0 ? 32 : 32 - EC_ILOG(unchecked((uint)in32));
         }
 
         /// <summary>
@@ -2469,7 +2469,7 @@ namespace Concentus.Common
         /// <returns></returns>
         public static uint EC_MINI(uint a, uint b)
         {
-            return a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0));
+            return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
         }
 
         /// <summary>

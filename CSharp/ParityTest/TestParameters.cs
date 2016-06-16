@@ -15,5 +15,8 @@ namespace ParityTest
         public double FrameSize;
         public int Complexity;
         public int PacketLossPercent;
+        public bool UseVBR;
+        public bool ConstrainedVBR;
+        public bool UseDTX;
     }
 }

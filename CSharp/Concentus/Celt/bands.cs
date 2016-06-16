@@ -45,7 +45,7 @@ namespace Concentus.Celt
 
         public static uint celt_lcg_rand(uint seed)
         {
-            return 1664525 * seed + 1013904223;
+            return unchecked(1664525 * seed + 1013904223);
         }
 
         /* This is a cos() approximation designed to be bit-exact on any platform. Bit exactness
@@ -1123,7 +1123,7 @@ namespace Concentus.Celt
                                 for (j = 0; j < N; j++)
                                 {
                                     ctx.seed = celt_lcg_rand(ctx.seed);
-                                    X[j] = ((int)ctx.seed >> 20);
+                                    X[j] = unchecked(unchecked((int)ctx.seed) >> 20);
                                 }
                                 cm = cm_mask;
                             }
@@ -1661,8 +1661,8 @@ namespace Concentus.Celt
                     }
                     y_cm = x_cm;
                 }
-                collapse_masks[i * C + 0] = (byte)x_cm;
-                collapse_masks[i * C + C - 1] = (byte)y_cm;
+                collapse_masks[i * C + 0] = (byte)(x_cm & 0xFF);
+                collapse_masks[i * C + C - 1] = (byte)(y_cm & 0xFF);
                 balance += pulses[i] + tell;
 
                 /* Update the folding position only as long as we have 1 bit/sample depth. */

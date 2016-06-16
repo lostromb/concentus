@@ -40,6 +40,9 @@ namespace ParityTest
         private const int OPUS_SET_BITRATE_REQUEST = 4002;
         private const int OPUS_SET_COMPLEXITY_REQUEST = 4010;
         private const int OPUS_SET_PACKET_LOSS_PERC_REQUEST = 4014;
+        private const int OPUS_SET_VBR_REQUEST = 4006;
+        private const int OPUS_SET_VBR_CONSTRAINT_REQUEST = 4020;
+        private const int OPUS_SET_DTX_REQUEST = 4016;
 
         public static TestResults RunTest(TestParameters parameters, short[] inputFile)
         {
@@ -58,6 +61,9 @@ namespace ParityTest
             opus_encoder_ctl(opusEncoder, OPUS_SET_BITRATE_REQUEST, parameters.Bitrate * 1024);
             opus_encoder_ctl(opusEncoder, OPUS_SET_COMPLEXITY_REQUEST, parameters.Complexity);
             opus_encoder_ctl(opusEncoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, parameters.PacketLossPercent);
+            opus_encoder_ctl(opusEncoder, OPUS_SET_VBR_REQUEST, parameters.UseVBR ? 1 : 0);
+            opus_encoder_ctl(opusEncoder, OPUS_SET_VBR_CONSTRAINT_REQUEST, parameters.ConstrainedVBR ? 1 : 0);
+            opus_encoder_ctl(opusEncoder, OPUS_SET_DTX_REQUEST, parameters.UseDTX ? 1 : 0);
 
             // Create Opus decoder
             IntPtr opusDecoder = IntPtr.Zero;
@@ -82,6 +88,9 @@ namespace ParityTest
             concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
             concentusEncoder.SetComplexity(parameters.Complexity);
             concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
+            concentusEncoder.SetVBR(parameters.UseVBR);
+            concentusEncoder.SetVBRConstraint(parameters.ConstrainedVBR);
+            concentusEncoder.SetUseDTX(parameters.UseDTX);
 
             // Create Concentus decoder
             OpusDecoder concentusDecoder = opus_decoder.opus_decoder_create(parameters.SampleRate, parameters.Channels, concentusError);

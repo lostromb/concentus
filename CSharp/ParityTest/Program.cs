@@ -30,6 +30,8 @@ namespace ParityTest
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
             double[] FrameSizes = new double[] { 5, 20, 60 };
             int[] PacketLosses = new int[] { 0, 20 };
+            int[] VBRModes = new int[] { 0, 1, 2 };
+            bool[] DTXModes = new bool[] { false };
 
             IList<TestParameters> allTests = new List<TestParameters>();
 
@@ -37,27 +39,62 @@ namespace ParityTest
             {
                 for (int plc_idx = 0; plc_idx < PacketLosses.Length; plc_idx++)
                 {
-                    for (int chan_idx = 0; chan_idx < Channels.Length; chan_idx++)
+                    for (int dtx_idx = 0; dtx_idx < DTXModes.Length; dtx_idx++)
                     {
-                        for (int sr_idx = 0; sr_idx < SampleRates.Length; sr_idx++)
+                        for (int chan_idx = 0; chan_idx < Channels.Length; chan_idx++)
                         {
-                            for (int fs_idx = 0; fs_idx < FrameSizes.Length; fs_idx++)
+                            for (int sr_idx = 0; sr_idx < SampleRates.Length; sr_idx++)
                             {
-                                for (int cpx_idx = 0; cpx_idx < Complexities.Length; cpx_idx++)
+                                for (int fs_idx = 0; fs_idx < FrameSizes.Length; fs_idx++)
                                 {
-                                    for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
+                                    for (int cpx_idx = 0; cpx_idx < Complexities.Length; cpx_idx++)
                                     {
-                                        // Todo: validate parameters first (mostly frame size for jumbo or tiny frames)
-                                        allTests.Add(new TestParameters()
+                                        for (int vbr_idx = 0; vbr_idx < VBRModes.Length; vbr_idx++)
                                         {
-                                            Application = Applications[app_idx],
-                                            Bitrate = Bitrates[bit_idx],
-                                            Channels = Channels[chan_idx],
-                                            Complexity = Complexities[cpx_idx],
-                                            PacketLossPercent = PacketLosses[plc_idx],
-                                            SampleRate = SampleRates[sr_idx],
-                                            FrameSize = FrameSizes[fs_idx]
-                                        });
+                                            for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
+                                            {
+                                                TestParameters newParams = new TestParameters()
+                                                {
+                                                    Application = Applications[app_idx],
+                                                    Bitrate = Bitrates[bit_idx],
+                                                    Channels = Channels[chan_idx],
+                                                    Complexity = Complexities[cpx_idx],
+                                                    PacketLossPercent = PacketLosses[plc_idx],
+                                                    SampleRate = SampleRates[sr_idx],
+                                                    FrameSize = FrameSizes[fs_idx],
+                                                    UseDTX = DTXModes[dtx_idx]
+                                                };
+                                                if (VBRModes[vbr_idx] == 0)
+                                                {
+                                                    newParams.UseVBR = false;
+                                                    newParams.ConstrainedVBR = false;
+                                                }
+                                                else if (VBRModes[vbr_idx] == 1)
+                                                {
+                                                    newParams.UseVBR = true;
+                                                    newParams.ConstrainedVBR = true;
+                                                }
+                                                else if (VBRModes[vbr_idx] == 2)
+                                                {
+                                                    newParams.UseVBR = true;
+                                                    newParams.ConstrainedVBR = false;
+                                                }
+
+                                                // Validate parameters
+                                                // No large frames in lowdelay mode
+                                                if (newParams.Application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY && newParams.FrameSize > 20)
+                                                {
+                                                    continue;
+                                                }
+                                                // No DTX at high bitrates
+                                                if (newParams.UseDTX && newParams.Bitrate > 40)
+                                                {
+                                                    continue;
+                                                }
+
+                                                allTests.Add(newParams);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -96,7 +133,7 @@ namespace ParityTest
             foreach (TestParameters p in allTestsRandom)
             {
                 testsRun++;
-                Console.Write("{0,5} {1} {2} Cpx={3,2} {4,3}Kbps {5,2}Khz {6,2} Ms PLC {7,2}% ... ",
+                Console.Write("{0,5} {1} {2} Cpx={3,2} {4,3}Kbps {5,2}Khz {6,2} Ms PLC {7,2}% {8} {9} ... ",
                     testsRun,
                     PrintApplication(p.Application),
                     p.Channels == 1 ? "Mono  " : "Stereo",
@@ -104,7 +141,9 @@ namespace ParityTest
                     p.Bitrate,
                     p.SampleRate / 1000,
                     p.FrameSize,
-                    p.PacketLossPercent);
+                    p.PacketLossPercent,
+                    PrintVBR(p),
+                    p.UseDTX ? "DTX" : "   ");
 
                 TestResults response = TestDriver.RunTest(p, GetTestSample(p));
 
@@ -147,6 +186,15 @@ namespace ParityTest
             else if (app == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 return "LowDelay";
             return "???";
+        }
+
+        private static string PrintVBR(TestParameters p)
+        {
+            if (p.UseVBR && p.ConstrainedVBR)
+                return "CVBR";
+            if (p.UseVBR)
+                return " VBR";
+            return "    ";
         }
 
         private static void PrintShortArray(short[] array)

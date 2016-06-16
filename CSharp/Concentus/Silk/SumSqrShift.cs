@@ -38,7 +38,7 @@ namespace Concentus.Silk
                 if (nrg < 0)
                 {
                     /* Scale down */
-                    nrg = unchecked((int)Inlines.silk_RSHIFT_uint((uint)nrg, 2));
+                    nrg = unchecked((int)Inlines.silk_RSHIFT_uint(unchecked((uint)nrg), 2));
                     shft = 2;
                     i += 2;
                     break;
@@ -49,11 +49,11 @@ namespace Concentus.Silk
             {
                 nrg_tmp = Inlines.silk_SMULBB(x[i], x[i]);
                 nrg_tmp = Inlines.silk_SMLABB_ovflw(nrg_tmp, x[i + 1], x[i + 1]);
-                nrg = (int)Inlines.silk_ADD_RSHIFT_uint((uint)nrg, (uint)nrg_tmp, shft);
+                nrg = unchecked((int)Inlines.silk_ADD_RSHIFT_uint(unchecked((uint)nrg), unchecked((uint)nrg_tmp), shft));
                 if (nrg < 0)
                 {
                     /* Scale down */
-                    nrg = (int)Inlines.silk_RSHIFT_uint((uint)nrg, 2);
+                    nrg = unchecked((int)Inlines.silk_RSHIFT_uint(unchecked((uint)nrg), 2));
                     shft += 2;
                 }
             }
@@ -62,13 +62,13 @@ namespace Concentus.Silk
             {
                 /* One sample left to process */
                 nrg_tmp = Inlines.silk_SMULBB(x[i], x[i]);
-                nrg = (int)Inlines.silk_ADD_RSHIFT_uint((uint)nrg, (uint)nrg_tmp, shft);
+                nrg = unchecked((int)Inlines.silk_ADD_RSHIFT_uint(unchecked((uint)nrg), unchecked((uint)nrg_tmp), shft));
             }
 
             /* Make sure to have at least one extra leading zero (two leading zeros in total) */
             if ((nrg & 0xC0000000) != 0)
             {
-                nrg = (int)Inlines.silk_RSHIFT_uint((uint)nrg, 2);
+                nrg = unchecked((int)Inlines.silk_RSHIFT_uint(unchecked((uint)nrg), 2));
                 shft += 2;
             }
 

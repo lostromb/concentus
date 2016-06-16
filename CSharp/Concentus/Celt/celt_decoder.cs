@@ -109,8 +109,16 @@ namespace Concentus.Celt
                     {
                         for (j = 0; j < N; j++)
                         {
-                            int tmp = x[j] + m + CeltConstants.VERY_SMALL;
-                            m = Inlines.MULT16_32_Q15(coef0, tmp);
+                            int tmp = unchecked(x[j] + m + CeltConstants.VERY_SMALL); // Opus bug: This can overflow.
+                            if (x[j] > 0 && m > 0 && tmp < 0) // I have hacked it to saturate to INT_MAXVALUE
+                            {
+                                tmp = int.MaxValue;
+                                m = int.MaxValue;
+                            }
+                            else
+                            {
+                                m = Inlines.MULT16_32_Q15(coef0, tmp);
+                            }
                             y[j * C] = Inlines.SCALEOUT(Inlines.SIG2WORD16(tmp));
                         }
                     }
@@ -327,7 +335,7 @@ namespace Concentus.Celt
                         for (j = 0; j < blen; j++)
                         {
                             seed = bands.celt_lcg_rand(seed);
-                            X[boffs + j] = ((int)seed >> 20);
+                            X[boffs + j] = (unchecked((int)seed) >> 20);
                         }
 
                         vq.renormalise_vector(X.Point(boffs), blen, CeltConstants.Q15ONE, st.arch);
@@ -422,14 +430,15 @@ namespace Concentus.Celt
                     {
                         int E1 = 1, E2 = 1;
                         int decay_length;
+                        int shift = Inlines.IMAX(0, 2 * Inlines.celt_zlog2(Inlines.celt_maxabs16(exc.Point(CeltConstants.MAX_PERIOD - exc_length), exc_length)) - 20);
                         decay_length = exc_length >> 1;
                         for (i = 0; i < decay_length; i++)
                         {
                             int e;
                             e = exc[CeltConstants.MAX_PERIOD - decay_length + i];
-                            E1 += Inlines.SHR32(Inlines.MULT16_16(e, e), 0);
+                            E1 += Inlines.SHR32(Inlines.MULT16_16(e, e), shift);
                             e = exc[CeltConstants.MAX_PERIOD - 2 * decay_length + i];
-                            E2 += Inlines.SHR32(Inlines.MULT16_16(e, e), 0);
+                            E2 += Inlines.SHR32(Inlines.MULT16_16(e, e), shift);
                         }
                         E1 = Inlines.MIN32(E1, E2);
                         decay = Inlines.celt_sqrt(Inlines.frac_div32(Inlines.SHR32(E1, 1), E2));
