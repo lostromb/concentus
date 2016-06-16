@@ -14,6 +14,7 @@ namespace Concentus
 {
     public static class analysis
     {
+#if ENABLE_ANALYSIS
         private const double M_PI = 3.141592653;
         private const float cA = 0.43157974f;
         private const float cB = 0.67848403f;
@@ -564,5 +565,6 @@ namespace Concentus
             analysis_info.valid = 0;
             tonality_get_info(analysis, analysis_info, frame_size);
         }
+#endif
     }
 }

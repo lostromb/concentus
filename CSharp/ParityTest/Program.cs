@@ -123,12 +123,12 @@ namespace ParityTest
                     Console.WriteLine("FAIL: " + response.Message);
                     Console.ForegroundColor = ConsoleColor.Gray;
 
-                    if (response.FrameCount == 0)
+                    /*if (response.FrameCount == 0)
                     {
                         PrintShortArray(response.FailureFrame);
                         Console.WriteLine(response.FrameLength);
                         Console.ReadLine();
-                    }
+                    }*/
                 }
             }
 

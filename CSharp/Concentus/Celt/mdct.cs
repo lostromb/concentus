@@ -23,7 +23,7 @@ namespace Concentus.Celt
             int i;
             int N, N2, N4;
             Pointer<int> f;
-            Pointer<kiss_fft_cpx> f2;
+            Pointer<int> f2;
             kiss_fft_state st = l.kfft[shift];
             Pointer<short> trig;
             int scale;
@@ -42,11 +42,7 @@ namespace Concentus.Celt
             N4 = N >> 2;
 
             f = Pointer.Malloc<int>(N2);
-            f2 = Pointer.Malloc<kiss_fft_cpx>(N4);
-            for (int c = 0; c < N4; c++)
-            {
-                f2[c] = new kiss_fft_cpx();
-            }
+            f2 = Pointer.Malloc<int>(N4 * 2);
 
             /* Consider the input to be composed of four blocks: [a, b, c, d] */
             /* Window, shuffle, fold */
@@ -127,7 +123,8 @@ namespace Concentus.Celt
                     yc.r = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.r), scale_shift);
                     yc.i = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.i), scale_shift);
                     if (TRACE_FILE) Debug.WriteLine("13k {0} {1}", yc.r, yc.i);
-                    f2[st.bitrev[i]].Assign(yc); // fixme: no need for assign()?
+                    f2[2 * st.bitrev[i]] = yc.r;
+                    f2[2 * st.bitrev[i] + 1] = yc.i;
                 }
             }
 
@@ -137,20 +134,20 @@ namespace Concentus.Celt
             /* Post-rotate */
             {
                 /* Temp pointers to make it really clear to the compiler what we're doing */
-                Pointer<kiss_fft_cpx> fp = f2;
+                Pointer<int> fp = f2;
                 Pointer<int> yp1 = output;
                 Pointer<int> yp2 = output.Point(stride * (N2 - 1));
                 Pointer<short> t = trig;
                 for (i = 0; i < N4; i++)
                 {
                     int yr, yi;
-                    yr = KissFFT.S_MUL(fp[0].i, t[N4 + i]) - KissFFT.S_MUL(fp[0].r, t[i]);
-                    yi = KissFFT.S_MUL(fp[0].r, t[N4 + i]) + KissFFT.S_MUL(fp[0].i, t[i]);
+                    yr = KissFFT.S_MUL(fp[1], t[N4 + i]) - KissFFT.S_MUL(fp[0], t[i]);
+                    yi = KissFFT.S_MUL(fp[0], t[N4 + i]) + KissFFT.S_MUL(fp[1], t[i]);
                     if (TRACE_FILE) Debug.WriteLine("13i 0x{0:x}", (uint)yr);
                     if (TRACE_FILE) Debug.WriteLine("13j 0x{0:x}", (uint)yi);
                     yp1[0] = yr;
                     yp2[0] = yi;
-                    fp = fp.Point(1);
+                    fp = fp.Point(2);
                     yp1 = yp1.Point(2 * stride);
                     yp2 = yp2.Point(0 - (2 * stride));
                 }
@@ -200,14 +197,8 @@ namespace Concentus.Celt
                     xp2 = xp2.Point(0 - (2 * stride));
                 }
             }
-
-            // FIXME is nfft the right length to use? or n / 2?
-            // FIXME super slow janky code, needs to be optimized
-            kiss_fft_cpx[] complexArray = kiss_fft_cpx.ConvertInterleavedIntArray(output.Point(overlap >> 1), l.kfft[shift].nfft);
-
-            KissFFT.opus_fft_impl(l.kfft[shift], complexArray.GetPointer());
-
-            kiss_fft_cpx.WriteComplexValuesToInterleavedIntArray(complexArray.GetPointer(), output.Point(overlap >> 1), l.kfft[shift].nfft);
+            
+            KissFFT.opus_fft_impl(l.kfft[shift], output.Point(overlap >> 1));
 
             /* Post-rotate and de-shuffle from both ends of the buffer at once to make
                it in-place. */
