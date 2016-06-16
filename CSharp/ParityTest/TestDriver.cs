@@ -28,6 +28,15 @@ namespace ParityTest
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern int opus_encoder_ctl(IntPtr st, int request, int value);
 
+        [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr opus_decoder_create(int Fs, int channels, out IntPtr error);
+
+        [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern void opus_decoder_destroy(IntPtr decoder);
+
+        [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int opus_decode(IntPtr st, byte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
+
         private const int OPUS_SET_BITRATE_REQUEST = 4002;
         private const int OPUS_SET_COMPLEXITY_REQUEST = 4010;
         private const int OPUS_SET_PACKET_LOSS_PERC_REQUEST = 4014;
@@ -50,6 +59,16 @@ namespace ParityTest
             opus_encoder_ctl(opusEncoder, OPUS_SET_COMPLEXITY_REQUEST, parameters.Complexity);
             opus_encoder_ctl(opusEncoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, parameters.PacketLossPercent);
 
+            // Create Opus decoder
+            IntPtr opusDecoder = IntPtr.Zero;
+            opusDecoder = opus_decoder_create(parameters.SampleRate, parameters.Channels, out opusError);
+            if ((int)opusError != 0)
+            {
+                returnVal.Message = "There was an error initializing the Opus decoder";
+                returnVal.Passed = false;
+                return returnVal;
+            }
+
             // Create Concentus encoder
             BoxedValue<int> concentusError = new BoxedValue<int>();
             OpusEncoder concentusEncoder = opus_encoder.opus_encoder_create(parameters.SampleRate, parameters.Channels, parameters.Application, concentusError);
@@ -64,6 +83,15 @@ namespace ParityTest
             concentusEncoder.SetComplexity(parameters.Complexity);
             concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
 
+            // Create Concentus decoder
+            OpusDecoder concentusDecoder = opus_decoder.opus_decoder_create(parameters.SampleRate, parameters.Channels, concentusError);
+            if (concentusError.Val != 0)
+            {
+                returnVal.Message = "There was an error initializing the Concentus decoder";
+                returnVal.Passed = false;
+                return returnVal;
+            }
+
             // Number of paired samples (the audio length)
             int frameSize = (int)(parameters.FrameSize  * parameters.SampleRate / 1000);
             // Number of actual samples in the array (the array length)
@@ -74,6 +102,8 @@ namespace ParityTest
             int inputPointer = 0;
             byte[] outputBuffer = new byte[10000];
             short[] inputPacket = new short[frameSizeStereo];
+            short[] opusDecoded = new short[frameSizeStereo];
+            short[] concentusDecoded = new short[frameSizeStereo];
             int frameCount = 0;
             Stopwatch concentusTimer = new Stopwatch();
             Stopwatch opusTimer = new Stopwatch();
@@ -136,8 +166,30 @@ namespace ParityTest
                     }
 
                     // Decode with Concentus
+                    int concentusOutputFrameSize = opus_decoder.opus_decode(concentusDecoder, concentusEncoded.GetPointer(), concentusPacketSize, concentusDecoded.GetPointer(), frameSize, 0);
 
                     // Decode with Opus
+                    unsafe
+                    {
+                        fixed (short* bdec = opusDecoded)
+                        {
+                            IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                            int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, frameSize, 0);
+                        }
+                    }
+
+                    // Check for decoder parity
+                    for (int c = 0; c < frameSizeStereo; c++)
+                    {
+                        if (opusDecoded[c] != concentusDecoded[c])
+                        {
+                            returnVal.Message = "Decoded frames do not match (frame " + frameCount + ")";
+                            returnVal.Passed = false;
+                            returnVal.FailureFrame = inputPacket;
+                            return returnVal;
+                        }
+                    }
+
                     frameCount++;
                 }
             }
