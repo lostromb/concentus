@@ -202,7 +202,7 @@ namespace Concentus.Celt
                     /*Are the pulses in this dimension negative?*/
                     p = row[_k + 1];
                     s = 0 - (_i >= p ? 1 : 0);
-                    _i -= (p & (uint)s);
+                    _i -= (p & unchecked((uint)s));
                     /*Count how many pulses were placed in this dimension.*/
                     k0 = _k;
                     q = row[_n];
@@ -247,7 +247,7 @@ namespace Concentus.Celt
                     {
                         /*Are the pulses in this dimension negative?*/
                         s = 0 - (_i >= q ? 1 : 0);
-                        _i -= (q & (uint)s);
+                        _i -= (q & unchecked((uint)s));
                         /*Count how many pulses were placed in this dimension.*/
                         k0 = _k;
                         do
@@ -268,7 +268,7 @@ namespace Concentus.Celt
             /*_n==2*/
             p = (uint)(2 * _k + 1);
             s = 0 - (_i >= p ? 1 : 0);
-            _i -= (p & (uint)s);
+            _i -= (p & unchecked((uint)s));
             k0 = _k;
             _k = (int)((_i + 1) >> 1);
             if (_k != 0)
