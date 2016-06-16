@@ -30,7 +30,9 @@ namespace Concentus.Celt
             }
             else {
                 for (i = 0; i < n; i++)
+                {
                     xx[i] = x[i];
+                }
                 for (i = 0; i < overlap; i++)
                 {
                     xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
@@ -51,13 +53,14 @@ namespace Concentus.Celt
                     ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[i], xptr[i]), 9);
                     ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[i + 1], xptr[i + 1]), 9);
                 }
-
                 shift = Inlines.celt_ilog2(ac0) - 30 + 10;
                 shift = (shift) / 2;
                 if (shift > 0)
                 {
                     for (i = 0; i < n; i++)
-                        xx[i] = Inlines.PSHR16(xptr[i], shift); // opus bug: this was originally PSHR32
+                    {
+                        xx[i] = Inlines.CHOP16(Inlines.PSHR32(xptr[i], shift));
+                    }
                     xptr = xx;
                 }
                 else
@@ -77,7 +80,9 @@ namespace Concentus.Celt
             {
                 int shift2 = 29 - Inlines.EC_ILOG((uint)ac[0]);
                 for (i = 0; i <= lag; i++)
+                {
                     ac[i] = Inlines.SHL32(ac[i], shift2);
+                }
                 shift -= shift2;
             }
             else if (ac[0] >= 536870912)
@@ -86,7 +91,9 @@ namespace Concentus.Celt
                 if (ac[0] >= 1073741824)
                     shift2++;
                 for (i = 0; i <= lag; i++)
+                {
                     ac[i] = Inlines.SHR32(ac[i], shift2);
+                }
                 shift += shift2;
             }
 

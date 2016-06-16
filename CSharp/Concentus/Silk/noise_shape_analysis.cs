@@ -400,7 +400,7 @@ namespace Concentus.Silk
                     b_Q14 = fs_kHz_inv + Inlines.silk_DIV32_16(Inlines.SILK_FIX_CONST(3.0f, 14), psEncCtrl.pitchL[k]);
                     /* Pack two coefficients in one int32 */
                     psEncCtrl.LF_shp_Q14[k] = Inlines.silk_LSHIFT(Inlines.SILK_FIX_CONST(1.0f, 14) - b_Q14 - Inlines.silk_SMULWB(strength_Q16, b_Q14), 16);
-                    psEncCtrl.LF_shp_Q14[k] |= (ushort)(b_Q14 - Inlines.SILK_FIX_CONST(1.0f, 14));
+                    psEncCtrl.LF_shp_Q14[k] |= (b_Q14 - Inlines.SILK_FIX_CONST(1.0f, 14)) & 0xFFFF; // opus bug: again, cast to ushort was done here where bitwise masking was intended
                 }
                 Inlines.OpusAssert(Inlines.SILK_FIX_CONST(TuningParameters.HARM_HP_NOISE_COEF, 24) < Inlines.SILK_FIX_CONST(0.5f, 24)); /* Guarantees that second argument to SMULWB() is within range of an short*/
                 Tilt_Q16 = -Inlines.SILK_FIX_CONST(TuningParameters.HP_NOISE_COEF, 16) -
