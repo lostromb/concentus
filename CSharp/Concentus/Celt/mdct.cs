@@ -129,7 +129,7 @@ namespace Concentus.Celt
             }
 
             /* N/4 complex FFT, does not downscale anymore */
-            KissFFT.opus_fft_impl(st, f2);
+            KissFFT.opus_fft_impl(st, f2.Data, f2.Offset);
 
             /* Post-rotate */
             {
@@ -198,7 +198,7 @@ namespace Concentus.Celt
                 }
             }
             
-            KissFFT.opus_fft_impl(l.kfft[shift], output.Point(overlap >> 1));
+            KissFFT.opus_fft_impl(l.kfft[shift], output.Data, output.Offset + (overlap >> 1));
 
             /* Post-rotate and de-shuffle from both ends of the buffer at once to make
                it in-place. */
