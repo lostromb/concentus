@@ -10,23 +10,23 @@ namespace Concentus.Silk.Structs
     /// <summary>
     /// Prefilter state
     /// </summary>
-    public class SilkPrefilterState
+    internal class SilkPrefilterState
     {
-        public readonly Pointer<short> sLTP_shp = Pointer.Malloc<short>(SilkConstants.LTP_BUF_LENGTH);
-        public readonly Pointer<int> sAR_shp = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
-        public int sLTP_shp_buf_idx = 0;
-        public int sLF_AR_shp_Q12 = 0;
-        public int sLF_MA_shp_Q12 = 0;
-        public int sHarmHP_Q2 = 0;
-        public int rand_seed = 0;
-        public int lagPrev = 0;
+        internal readonly Pointer<short> sLTP_shp = Pointer.Malloc<short>(SilkConstants.LTP_BUF_LENGTH);
+        internal readonly Pointer<int> sAR_shp = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
+        internal int sLTP_shp_buf_idx = 0;
+        internal int sLF_AR_shp_Q12 = 0;
+        internal int sLF_MA_shp_Q12 = 0;
+        internal int sHarmHP_Q2 = 0;
+        internal int rand_seed = 0;
+        internal int lagPrev = 0;
 
-        public SilkPrefilterState()
+        internal SilkPrefilterState()
         {
 
         }
 
-        public void Reset()
+        internal void Reset()
         {
             sLTP_shp.MemSet(0, SilkConstants.LTP_BUF_LENGTH);
             sAR_shp.MemSet(0, SilkConstants.MAX_SHAPE_LPC_ORDER + 1);

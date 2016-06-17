@@ -2,7 +2,7 @@
 using Concentus.Celt.Structs;
 using Concentus.Common;
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus;
+using Concentus;
 using Concentus.Structs;
 using System;
 using System.Collections.Generic;

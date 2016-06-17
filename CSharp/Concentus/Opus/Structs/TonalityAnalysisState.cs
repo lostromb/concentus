@@ -1,7 +1,7 @@
 ﻿using Concentus.Celt.Structs;
 using Concentus.Common;
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus;
+using Concentus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,47 +10,47 @@ using System.Threading.Tasks;
 
 namespace Concentus.Structs
 {
-    public class TonalityAnalysisState
+    internal class TonalityAnalysisState
     {
-        public readonly Pointer<float> angle = Pointer.Malloc<float>(240);
-        public readonly Pointer<float> d_angle = Pointer.Malloc<float>(240);
-        public readonly Pointer<float> d2_angle = Pointer.Malloc<float>(240);
-        public readonly Pointer<int> inmem = Pointer.Malloc<int>(OpusConstants.ANALYSIS_BUF_SIZE);
-        public int mem_fill;                      /* number of usable samples in the buffer */
-        public readonly Pointer<float> prev_band_tonality = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-        public float prev_tonality;
-        public readonly Pointer<Pointer<float>> E = Arrays.InitTwoDimensionalArrayPointer<float>(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
-        public readonly Pointer<float> lowE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-        public readonly Pointer<float> highE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-        public readonly Pointer<float> meanE = Pointer.Malloc<float>(OpusConstants.NB_TOT_BANDS);
-        public readonly Pointer<float> mem = Pointer.Malloc<float>(32);
-        public readonly Pointer<float> cmean = Pointer.Malloc<float>(8);
-        public readonly Pointer<float> std = Pointer.Malloc<float>(9);
-        public float music_prob;
-        public float Etracker;
-        public float lowECount;
-        public int E_count;
-        public int last_music;
-        public int last_transition;
-        public int count;
-        public readonly Pointer<float> subframe_mem = Pointer.Malloc<float>(3);
-        public int analysis_offset;
+        internal readonly Pointer<float> angle = Pointer.Malloc<float>(240);
+        internal readonly Pointer<float> d_angle = Pointer.Malloc<float>(240);
+        internal readonly Pointer<float> d2_angle = Pointer.Malloc<float>(240);
+        internal readonly Pointer<int> inmem = Pointer.Malloc<int>(OpusConstants.ANALYSIS_BUF_SIZE);
+        internal int mem_fill;                      /* number of usable samples in the buffer */
+        internal readonly Pointer<float> prev_band_tonality = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
+        internal float prev_tonality;
+        internal readonly Pointer<Pointer<float>> E = Arrays.InitTwoDimensionalArrayPointer<float>(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
+        internal readonly Pointer<float> lowE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
+        internal readonly Pointer<float> highE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
+        internal readonly Pointer<float> meanE = Pointer.Malloc<float>(OpusConstants.NB_TOT_BANDS);
+        internal readonly Pointer<float> mem = Pointer.Malloc<float>(32);
+        internal readonly Pointer<float> cmean = Pointer.Malloc<float>(8);
+        internal readonly Pointer<float> std = Pointer.Malloc<float>(9);
+        internal float music_prob;
+        internal float Etracker;
+        internal float lowECount;
+        internal int E_count;
+        internal int last_music;
+        internal int last_transition;
+        internal int count;
+        internal readonly Pointer<float> subframe_mem = Pointer.Malloc<float>(3);
+        internal int analysis_offset;
         /** Probability of having speech for time i to DETECT_SIZE-1 (and music before).
             pspeech[0] is the probability that all frames in the window are speech. */
-        public readonly Pointer<float> pspeech = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
+        internal readonly Pointer<float> pspeech = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
         /** Probability of having music for time i to DETECT_SIZE-1 (and speech before).
             pmusic[0] is the probability that all frames in the window are music. */
-        public readonly Pointer<float> pmusic = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
-        public float speech_confidence;
-        public float music_confidence;
-        public int speech_confidence_count;
-        public int music_confidence_count;
-        public int write_pos;
-        public int read_pos;
-        public int read_subframe;
-        public readonly AnalysisInfo[] info = new AnalysisInfo[OpusConstants.DETECT_SIZE];
+        internal readonly Pointer<float> pmusic = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
+        internal float speech_confidence;
+        internal float music_confidence;
+        internal int speech_confidence_count;
+        internal int music_confidence_count;
+        internal int write_pos;
+        internal int read_pos;
+        internal int read_subframe;
+        internal readonly AnalysisInfo[] info = new AnalysisInfo[OpusConstants.DETECT_SIZE];
 
-        public TonalityAnalysisState()
+        internal TonalityAnalysisState()
         {
             for (int c = 0; c < OpusConstants.DETECT_SIZE; c++)
             {
@@ -58,7 +58,7 @@ namespace Concentus.Structs
             }
         }
 
-        public void Reset()
+        internal void Reset()
         {
             angle.MemSet(0, 240);
             d_angle.MemSet(0, 240);

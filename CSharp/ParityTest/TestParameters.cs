@@ -1,4 +1,4 @@
-﻿using Concentus.Opus.Enums;
+﻿using Concentus.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;

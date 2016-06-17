@@ -2,8 +2,8 @@
 using Concentus.Celt.Structs;
 using Concentus.Common;
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus;
-using Concentus.Opus.Enums;
+using Concentus;
+using Concentus.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

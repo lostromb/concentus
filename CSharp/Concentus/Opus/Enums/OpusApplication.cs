@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Concentus.Opus.Enums
+namespace Concentus.Enums
 {
     public enum OpusApplication
     {

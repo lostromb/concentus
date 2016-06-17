@@ -1,6 +1,6 @@
-﻿using Concentus;
+﻿
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus.Enums;
+using Concentus.Enums;
 using Concentus.Structs;
 using System;
 using System.Collections.Generic;
@@ -77,7 +77,7 @@ namespace ParityTest
 
             // Create Concentus encoder
             BoxedValue<int> concentusError = new BoxedValue<int>();
-            OpusEncoder concentusEncoder = opus_encoder.opus_encoder_create(parameters.SampleRate, parameters.Channels, parameters.Application, concentusError);
+            OpusEncoder concentusEncoder = OpusEncoder.Create(parameters.SampleRate, parameters.Channels, parameters.Application, concentusError);
             if (concentusError.Val != 0)
             {
                 returnVal.Message = "There was an error initializing the Concentus encoder";
@@ -93,7 +93,7 @@ namespace ParityTest
             concentusEncoder.SetUseDTX(parameters.UseDTX);
 
             // Create Concentus decoder
-            OpusDecoder concentusDecoder = opus_decoder.opus_decoder_create(parameters.SampleRate, parameters.Channels, concentusError);
+            OpusDecoder concentusDecoder = OpusDecoder.Create(parameters.SampleRate, parameters.Channels, concentusError);
             if (concentusError.Val != 0)
             {
                 returnVal.Message = "There was an error initializing the Concentus decoder";
@@ -127,7 +127,7 @@ namespace ParityTest
 
                     concentusTimer.Start();
                     // Encode with Concentus
-                    int concentusPacketSize = opus_encoder.opus_encode(concentusEncoder, inputPacket.GetPointer(), frameSize, outputBuffer.GetPointer(), 10000);
+                    int concentusPacketSize = concentusEncoder.Encode(inputPacket.GetPointer(), frameSize, outputBuffer.GetPointer(), 10000);
                     concentusTimer.Stop();
                     if (concentusPacketSize <= 0)
                     {
@@ -175,7 +175,7 @@ namespace ParityTest
                     }
 
                     // Decode with Concentus
-                    int concentusOutputFrameSize = opus_decoder.opus_decode(concentusDecoder, concentusEncoded.GetPointer(), concentusPacketSize, concentusDecoded.GetPointer(), frameSize, 0);
+                    int concentusOutputFrameSize = concentusDecoder.Decode(concentusEncoded.GetPointer(), concentusPacketSize, concentusDecoded.GetPointer(), frameSize, 0);
 
                     // Decode with Opus
                     unsafe

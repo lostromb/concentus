@@ -1,5 +1,5 @@
 ﻿using Concentus.Common.CPlusPlus;
-using Concentus.Opus.Enums;
+using Concentus.Enums;
 using Concentus.Structs;
 using System;
 using System.Collections.Generic;
@@ -7,20 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Concentus.Opus.Structs
+namespace Concentus.Structs
 {
     public class OpusMSEncoder
     {
-        public readonly ChannelLayout layout = new ChannelLayout();
-        public int lfe_stream = 0;
-        public OpusApplication application = OpusApplication.OPUS_APPLICATION_AUDIO;
-        public OpusFramesize variable_duration = 0;
-        public int surround = 0;
-        public int bitrate_bps = 0;
-        public float[] subframe_mem = new float[3];
-        public OpusEncoder[] encoders = null;
-        public int[] window_mem = null;
-        public int[] preemph_mem = null;
+        internal readonly ChannelLayout layout = new ChannelLayout();
+        internal int lfe_stream = 0;
+        internal OpusApplication application = OpusApplication.OPUS_APPLICATION_AUDIO;
+        internal OpusFramesize variable_duration = 0;
+        internal int surround = 0;
+        internal int bitrate_bps = 0;
+        internal float[] subframe_mem = new float[3];
+        internal OpusEncoder[] encoders = null;
+        internal int[] window_mem = null;
+        internal int[] preemph_mem = null;
 
         public OpusMSEncoder(int nb_streams, int nb_coupled_streams)
         {

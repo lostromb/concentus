@@ -11,20 +11,15 @@ namespace Concentus.Celt.Structs
     /// Complex numbers used in FFT calcs.
     /// TODO this should really really be a struct
     /// </summary>
-    public class kiss_fft_cpx
+    internal class kiss_fft_cpx
     {
-        public int r;
-        public int i;
+        internal int r;
+        internal int i;
 
-        public void Assign(kiss_fft_cpx other)
+        internal void Assign(kiss_fft_cpx other)
         {
             r = other.r;
             i = other.i;
-        }
-
-        public override string ToString()
-        {
-            return "{r=" + r + " i=" + i + " }";
         }
 
         /// <summary>

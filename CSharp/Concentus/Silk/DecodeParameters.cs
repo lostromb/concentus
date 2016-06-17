@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk
 {
-    public class DecodeParameters
+    internal class DecodeParameters
     {
         /* Decode parameters from payload */
         internal static void silk_decode_parameters(

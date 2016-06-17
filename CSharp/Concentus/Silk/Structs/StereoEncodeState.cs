@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk.Structs
 {
-    public class StereoEncodeState
+    internal class StereoEncodeState
     {
-        public readonly Pointer<short> pred_prev_Q13 = Pointer.Malloc<short>(2);
-        public readonly Pointer<short> sMid = Pointer.Malloc<short>(2);
-        public readonly Pointer<short> sSide = Pointer.Malloc<short>(2);
-        public readonly Pointer<int> mid_side_amp_Q0 = Pointer.Malloc<int>(4);
-        public short smth_width_Q14 = 0;
-        public short width_prev_Q14 = 0;
-        public short silent_side_len = 0;
-        public readonly Pointer<Pointer<Pointer<sbyte>>> predIx = Arrays.InitThreeDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
-        public readonly Pointer<sbyte> mid_only_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal readonly Pointer<short> pred_prev_Q13 = Pointer.Malloc<short>(2);
+        internal readonly Pointer<short> sMid = Pointer.Malloc<short>(2);
+        internal readonly Pointer<short> sSide = Pointer.Malloc<short>(2);
+        internal readonly Pointer<int> mid_side_amp_Q0 = Pointer.Malloc<int>(4);
+        internal short smth_width_Q14 = 0;
+        internal short width_prev_Q14 = 0;
+        internal short silent_side_len = 0;
+        internal readonly Pointer<Pointer<Pointer<sbyte>>> predIx = Arrays.InitThreeDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
+        internal readonly Pointer<sbyte> mid_only_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
         
-        public void Reset()
+        internal void Reset()
         {
             pred_prev_Q13.MemSet(0, 2);
             sMid.MemSet(0, 2);

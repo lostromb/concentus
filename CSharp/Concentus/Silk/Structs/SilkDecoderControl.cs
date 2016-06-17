@@ -10,19 +10,19 @@ namespace Concentus.Silk.Structs
     /// <summary>
     /// Decoder control
     /// </summary>
-    public class SilkDecoderControl
+    internal class SilkDecoderControl
     {
         /* Prediction and coding parameters */
-        public readonly Pointer<int> pitchL = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
-        public readonly Pointer<int> Gains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        internal readonly Pointer<int> pitchL = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        internal readonly Pointer<int> Gains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
 
         /* Holds interpolated and final coefficients, 4-byte aligned */
         // FIXME check alignment
-        public /*silk_DWORD_ALIGN*/ readonly Pointer<Pointer<short>> PredCoef_Q12 = Arrays.InitTwoDimensionalArrayPointer<short>(2, SilkConstants.MAX_LPC_ORDER);
-        public readonly Pointer<short> LTPCoef_Q14 = Pointer.Malloc<short>(SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
-        public int LTP_scale_Q14 = 0;
+        internal /*silk_DWORD_ALIGN*/ readonly Pointer<Pointer<short>> PredCoef_Q12 = Arrays.InitTwoDimensionalArrayPointer<short>(2, SilkConstants.MAX_LPC_ORDER);
+        internal readonly Pointer<short> LTPCoef_Q14 = Pointer.Malloc<short>(SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
+        internal int LTP_scale_Q14 = 0;
 
-        public void Reset()
+        internal void Reset()
         {
             pitchL.MemSet(0, SilkConstants.MAX_NB_SUBFR);
             Gains_Q16.MemSet(0, SilkConstants.MAX_NB_SUBFR);

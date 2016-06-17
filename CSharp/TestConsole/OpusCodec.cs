@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TestConsole
 {
-    using Concentus;
+    
     using Concentus.Common.CPlusPlus;
     using Concentus.Structs;
     using System.Runtime.InteropServices;

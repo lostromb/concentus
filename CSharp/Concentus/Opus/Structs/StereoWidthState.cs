@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Concentus.Structs
 {
-    public class StereoWidthState
+    internal class StereoWidthState
     {
-        public int XX;
-        public int XY;
-        public int YY;
-        public int smoothed_width;
-        public int max_follower;
+        internal int XX;
+        internal int XY;
+        internal int YY;
+        internal int smoothed_width;
+        internal int max_follower;
 
-        public void Reset()
+        internal void Reset()
         {
             XX = 0;
             XY = 0;

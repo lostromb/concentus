@@ -11,24 +11,24 @@ namespace Concentus.Silk.Structs
     /// <summary>
     /// Variable cut-off low-pass filter state
     /// </summary>
-    public class SilkLPState
+    internal class SilkLPState
     {
         /// <summary>
         /// Low pass filter state
         /// </summary>
-        public readonly Pointer<int> In_LP_State = Pointer.Malloc<int>(2);
+        internal readonly Pointer<int> In_LP_State = Pointer.Malloc<int>(2);
 
         /// <summary>
         /// Counter which is mapped to a cut-off frequency
         /// </summary>
-        public int transition_frame_no = 0;
+        internal int transition_frame_no = 0;
 
         /// <summary>
         /// Operating mode, <0: switch down, >0: switch up; 0: do nothing
         /// </summary>
-        public int mode = 0;
+        internal int mode = 0;
 
-        public void Reset()
+        internal void Reset()
         {
             In_LP_State.MemSet(0, 2);
             transition_frame_no = 0;

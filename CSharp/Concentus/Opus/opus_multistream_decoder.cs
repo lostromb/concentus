@@ -1,7 +1,7 @@
 ﻿using Concentus.Common;
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus.Enums;
-using Concentus.Opus.Structs;
+using Concentus.Enums;
+using Concentus.Structs;
 using Concentus.Structs;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Concentus.Opus
+namespace Concentus
 {
     public static class opus_multistream_decoder
     {
@@ -40,13 +40,13 @@ namespace Concentus.Opus
 
             for (i = 0; i < st.layout.nb_coupled_streams; i++)
             {
-                ret = opus_decoder.opus_decoder_init(st.decoders[decoder_ptr], Fs, 2);
+                ret = st.decoders[decoder_ptr].opus_decoder_init(Fs, 2);
                 if (ret != OpusError.OPUS_OK) return ret;
                 decoder_ptr++;
             }
             for (; i < st.layout.nb_streams; i++)
             {
-                ret = opus_decoder.opus_decoder_init(st.decoders[decoder_ptr], Fs, 1);
+                ret = st.decoders[decoder_ptr].opus_decoder_init(Fs, 1);
                 if (ret != OpusError.OPUS_OK) return ret;
                 decoder_ptr++;
             }
@@ -180,8 +180,8 @@ namespace Concentus.Opus
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
                 BoxedValue<int> packet_offset = new BoxedValue<int>(0);
-                ret = opus_decoder.opus_decode_native(
-                    dec, data, len, buf, frame_size, decode_fec,
+                ret = dec.opus_decode_native(
+                    data, len, buf, frame_size, decode_fec,
                     (s != st.layout.nb_streams - 1) ? 1 : 0, packet_offset, soft_clip);
                 data = data.Point(packet_offset.Val);
                 len -= packet_offset.Val;

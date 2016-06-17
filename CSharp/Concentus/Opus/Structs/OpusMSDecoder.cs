@@ -1,4 +1,4 @@
-﻿using Concentus.Opus.Enums;
+﻿using Concentus.Enums;
 using Concentus.Structs;
 using System;
 using System.Collections.Generic;
@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Concentus.Opus.Structs
+namespace Concentus.Structs
 {
     public class OpusMSDecoder
     {
-        public ChannelLayout layout = new ChannelLayout();
-        public OpusDecoder[] decoders = null;
+        internal ChannelLayout layout = new ChannelLayout();
+        internal OpusDecoder[] decoders = null;
 
         public OpusMSDecoder(int nb_streams, int nb_coupled_streams)
         {

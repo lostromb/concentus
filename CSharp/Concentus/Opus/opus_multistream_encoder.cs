@@ -30,13 +30,13 @@ using Concentus.Celt;
 using Concentus.Celt.Structs;
 using Concentus.Common;
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus.Enums;
-using Concentus.Opus.Structs;
+using Concentus.Enums;
+using Concentus.Structs;
 using Concentus.Structs;
 using System;
 using static Concentus.Downmix;
 
-namespace Concentus.Opus
+namespace Concentus
 {
     public static class opus_multistream_encoder
     {
@@ -310,7 +310,7 @@ namespace Concentus.Opus
 
             for (i = 0; i < st.layout.nb_coupled_streams; i++)
             {
-                ret = opus_encoder.opus_encoder_init(st.encoders[encoder_ptr], Fs, 2, application);
+                ret = st.encoders[encoder_ptr].opus_init_encoder(Fs, 2, application);
                 if (ret != OpusError.OPUS_OK) return ret;
                 if (i == st.lfe_stream)
                     st.encoders[encoder_ptr].SetLFE(1);
@@ -318,7 +318,7 @@ namespace Concentus.Opus
             }
             for (; i < st.layout.nb_streams; i++)
             {
-                ret = opus_encoder.opus_encoder_init(st.encoders[encoder_ptr], Fs, 1, application);
+                ret = st.encoders[encoder_ptr].opus_init_encoder(Fs, 1, application);
                 if (i == st.lfe_stream)
                     st.encoders[encoder_ptr].SetLFE(1);
                 if (ret != OpusError.OPUS_OK) return ret;
@@ -612,7 +612,7 @@ namespace Concentus.Opus
                 channels = st.layout.nb_streams + st.layout.nb_coupled_streams;
                 delay_compensation = st.encoders[encoder_ptr].GetLookahead();
                 delay_compensation -= Fs / 400;
-                frame_size = opus_encoder.compute_frame_size(pcm, analysis_frame_size,
+                frame_size = CodecHelpers.compute_frame_size(pcm, analysis_frame_size,
                       st.variable_duration, channels, Fs, st.bitrate_bps,
                       delay_compensation, downmix
 #if ENABLE_ANALYSIS
@@ -752,7 +752,7 @@ namespace Concentus.Opus
                 if (s != st.layout.nb_streams - 1) curr_max -= curr_max > 253 ? 2 : 1;
                 if (vbr == 0 && s == st.layout.nb_streams - 1)
                     enc.SetBitrate(curr_max * (8 * Fs / frame_size));
-                len = opus_encoder.opus_encode_native(enc, buf, frame_size, tmp_data, curr_max, lsb_depth,
+                len = enc.opus_encode_native(buf, frame_size, tmp_data, curr_max, lsb_depth,
                       pcm, analysis_frame_size, c1, c2, st.layout.nb_channels, downmix, float_api);
                 if (len < 0)
                 {

@@ -10,31 +10,31 @@ namespace Concentus.Celt.Structs
     /// <summary>
     /// Decoder state
     /// </summary>
-    public class CeltDecoder
+    internal class CeltDecoder
     {
-        public CeltMode mode = new CeltMode();
-        public int overlap = 0;
-        public int channels = 0;
-        public int stream_channels = 0;
+        internal CeltMode mode = new CeltMode();
+        internal int overlap = 0;
+        internal int channels = 0;
+        internal int stream_channels = 0;
 
-        public int downsample = 0;
-        public int start = 0;
-        public int end = 0;
-        public int signalling = 0;
+        internal int downsample = 0;
+        internal int start = 0;
+        internal int end = 0;
+        internal int signalling = 0;
 
         /* Everything beyond this point gets cleared on a reset */
-        public uint rng = 0;
-        public int error = 0;
-        public int last_pitch_index = 0;
-        public int loss_count = 0;
-        public int postfilter_period = 0;
-        public int postfilter_period_old = 0;
-        public int postfilter_gain = 0;
-        public int postfilter_gain_old = 0;
-        public int postfilter_tapset = 0;
-        public int postfilter_tapset_old = 0;
+        internal uint rng = 0;
+        internal int error = 0;
+        internal int last_pitch_index = 0;
+        internal int loss_count = 0;
+        internal int postfilter_period = 0;
+        internal int postfilter_period_old = 0;
+        internal int postfilter_gain = 0;
+        internal int postfilter_gain_old = 0;
+        internal int postfilter_tapset = 0;
+        internal int postfilter_tapset_old = 0;
 
-        public readonly Pointer<int> preemph_memD = Pointer.Malloc<int>(2);
+        internal readonly Pointer<int> preemph_memD = Pointer.Malloc<int>(2);
 
         /// <summary>
         /// Scratch space used by the decoder. It is actually a variable-sized
@@ -48,14 +48,14 @@ namespace Concentus.Celt.Structs
         /// val16 oldLogE2[],       Size = 2*mode.nbEBands
         /// val16 backgroundLogE[], Size = 2*mode.nbEBands
         /// </summary>
-        public Pointer<int> decode_mem = null;
-        public Pointer<int> lpc = null;
-        public Pointer<int> oldEBands = null;
-        public Pointer<int> oldLogE = null;
-        public Pointer<int> oldLogE2 = null;
-        public Pointer<int> backgroundLogE = null;
+        internal Pointer<int> decode_mem = null;
+        internal Pointer<int> lpc = null;
+        internal Pointer<int> oldEBands = null;
+        internal Pointer<int> oldLogE = null;
+        internal Pointer<int> oldLogE2 = null;
+        internal Pointer<int> backgroundLogE = null;
 
-        public void Reset()
+        internal void Reset()
         {
             mode.Reset();
             overlap = 0;
@@ -68,7 +68,7 @@ namespace Concentus.Celt.Structs
             PartialReset();
         }
 
-        public void PartialReset()
+        internal void PartialReset()
         {
             rng = 0;
             error = 0;

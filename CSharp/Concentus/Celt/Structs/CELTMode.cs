@@ -7,44 +7,44 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Structs
 {
-    public class CeltMode
+    internal class CeltMode
     {
-        public int Fs = 0;
-        public int overlap = 0;
+        internal int Fs = 0;
+        internal int overlap = 0;
 
-        public int nbEBands = 0;
-        public int effEBands = 0;
-        public int[] preemph = { 0, 0, 0, 0 };
+        internal int nbEBands = 0;
+        internal int effEBands = 0;
+        internal int[] preemph = { 0, 0, 0, 0 };
 
         /// <summary>
         /// Definition for each "pseudo-critical band"
         /// </summary>
-        public Pointer<short> eBands = null;
+        internal Pointer<short> eBands = null;
 
-        public int maxLM = 0;
-        public int nbShortMdcts = 0;
-        public int shortMdctSize = 0;
+        internal int maxLM = 0;
+        internal int nbShortMdcts = 0;
+        internal int shortMdctSize = 0;
 
         /// <summary>
         /// Number of lines in allocVectors
         /// </summary>
-        public int nbAllocVectors = 0;
+        internal int nbAllocVectors = 0;
 
         /// <summary>
         /// Number of bits in each band for several rates
         /// </summary>
-        public Pointer<byte> allocVectors = null;
-        public Pointer<short> logN = null;
+        internal Pointer<byte> allocVectors = null;
+        internal Pointer<short> logN = null;
 
-        public Pointer<int> window = null;
-        public MDCTLookup mdct = new MDCTLookup();
-        public PulseCache cache = new PulseCache();
+        internal Pointer<int> window = null;
+        internal MDCTLookup mdct = new MDCTLookup();
+        internal PulseCache cache = new PulseCache();
 
-        public CeltMode()
+        internal CeltMode()
         {
         }
 
-        public void Reset()
+        internal void Reset()
         {
             Fs = 0;
             overlap = 0;

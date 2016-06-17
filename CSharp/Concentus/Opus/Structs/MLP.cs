@@ -10,10 +10,10 @@ namespace Concentus.Structs
     /// <summary>
     /// state object for multi-layer perceptron
     /// </summary>
-    public class MLP
+    internal class MLP
     {
-        public int layers;
-        public Pointer<int> topo;
-        public Pointer<float> weights;
+        internal int layers;
+        internal Pointer<int> topo;
+        internal Pointer<float> weights;
     }
 }

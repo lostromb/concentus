@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Structs
 {
-    public class PulseCache
+    internal class PulseCache
     {
-        public int size = 0;
-        public Pointer<short> index = null;
-        public Pointer<byte> bits = null;
-        public Pointer<byte> caps = null;
+        internal int size = 0;
+        internal Pointer<short> index = null;
+        internal Pointer<byte> bits = null;
+        internal Pointer<byte> caps = null;
 
-        public void Reset()
+        internal void Reset()
         {
             size = 0;
             index = null;

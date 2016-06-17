@@ -7,21 +7,21 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk.Structs
 {
-    public class SideInfoIndices
+    internal class SideInfoIndices
     {
-        public readonly Pointer<sbyte> GainsIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
-        public readonly Pointer<sbyte> LTPIndex = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
-        public readonly Pointer<sbyte> NLSFIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_LPC_ORDER + 1);
-        public short lagIndex = 0;
-        public sbyte contourIndex = 0;
-        public sbyte signalType = 0;
-        public sbyte quantOffsetType = 0;
-        public sbyte NLSFInterpCoef_Q2 = 0;
-        public sbyte PERIndex = 0;
-        public sbyte LTP_scaleIndex = 0;
-        public sbyte Seed = 0;
+        internal readonly Pointer<sbyte> GainsIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
+        internal readonly Pointer<sbyte> LTPIndex = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
+        internal readonly Pointer<sbyte> NLSFIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_LPC_ORDER + 1);
+        internal short lagIndex = 0;
+        internal sbyte contourIndex = 0;
+        internal sbyte signalType = 0;
+        internal sbyte quantOffsetType = 0;
+        internal sbyte NLSFInterpCoef_Q2 = 0;
+        internal sbyte PERIndex = 0;
+        internal sbyte LTP_scaleIndex = 0;
+        internal sbyte Seed = 0;
 
-        public void Reset()
+        internal void Reset()
         {
             GainsIndices.MemSet(0, SilkConstants.MAX_NB_SUBFR);
             LTPIndex.MemSet(0, SilkConstants.MAX_NB_SUBFR);
@@ -40,7 +40,7 @@ namespace Concentus.Silk.Structs
         /// Overwrites this struct with values from another one. Equivalent to C struct assignment this = other
         /// </summary>
         /// <param name="other"></param>
-        public void Assign(SideInfoIndices other)
+        internal void Assign(SideInfoIndices other)
         {
             other.GainsIndices.MemCopyTo(this.GainsIndices, SilkConstants.MAX_NB_SUBFR);
             other.LTPIndex.MemCopyTo(this.LTPIndex, SilkConstants.MAX_NB_SUBFR);

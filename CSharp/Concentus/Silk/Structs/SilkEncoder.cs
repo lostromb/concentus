@@ -12,20 +12,20 @@ namespace Concentus.Silk.Structs
     /// <summary>
     /// Encoder Super Struct
     /// </summary>
-    public class SilkEncoder
+    internal class SilkEncoder
     {
-        public readonly Pointer<SilkChannelEncoder> state_Fxx = Pointer.Malloc<SilkChannelEncoder>(SilkConstants.ENCODER_NUM_CHANNELS);
-        public readonly StereoEncodeState sStereo = new StereoEncodeState();
-        public int nBitsUsedLBRR = 0;
-        public int nBitsExceeded = 0;
-        public int nChannelsAPI = 0;
-        public int nChannelsInternal = 0;
-        public int nPrevChannelsInternal = 0;
-        public int timeSinceSwitchAllowed_ms = 0;
-        public int allowBandwidthSwitch = 0;
-        public int prev_decode_only_middle = 0;
+        internal readonly Pointer<SilkChannelEncoder> state_Fxx = Pointer.Malloc<SilkChannelEncoder>(SilkConstants.ENCODER_NUM_CHANNELS);
+        internal readonly StereoEncodeState sStereo = new StereoEncodeState();
+        internal int nBitsUsedLBRR = 0;
+        internal int nBitsExceeded = 0;
+        internal int nChannelsAPI = 0;
+        internal int nChannelsInternal = 0;
+        internal int nPrevChannelsInternal = 0;
+        internal int timeSinceSwitchAllowed_ms = 0;
+        internal int allowBandwidthSwitch = 0;
+        internal int prev_decode_only_middle = 0;
 
-        public SilkEncoder()
+        internal SilkEncoder()
         {
             for (int c = 0; c < SilkConstants.ENCODER_NUM_CHANNELS; c++)
             {
@@ -33,7 +33,7 @@ namespace Concentus.Silk.Structs
             }
         }
 
-        public void Reset()
+        internal void Reset()
         {
             for (int c = 0; c < SilkConstants.ENCODER_NUM_CHANNELS; c++)
             {

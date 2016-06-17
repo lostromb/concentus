@@ -5,9 +5,9 @@ using System.Text;
 
 namespace TestConsole
 {
-    using Concentus;
+    
     using Concentus.Common.CPlusPlus;
-    using Concentus.Opus.Enums;
+    using Concentus.Enums;
     using Concentus.Structs;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
@@ -141,7 +141,7 @@ namespace TestConsole
             public bool Initialize()
             {
                 BoxedValue<int> error = new BoxedValue<int>();
-                _hEncoder = opus_encoder.opus_encoder_create(_sampleRate, 1, OpusApplication.OPUS_APPLICATION_AUDIO, error);
+                _hEncoder = OpusEncoder.Create(_sampleRate, 1, OpusApplication.OPUS_APPLICATION_AUDIO, error);
                 if (error.Val != 0)
                 {
                     return false;
@@ -185,7 +185,7 @@ namespace TestConsole
                 while (outCursor < outputBuffer.Length - 4000 && _incomingSamples.Available() >= frameSize)
                 {
                     short[] nextFrameData = _incomingSamples.Read(frameSize);
-                    int thisPacketSize = opus_encoder.opus_encode(_hEncoder, nextFrameData.GetPointer(), frameSize, outputBuffer.GetPointer(outCursor + 2), 4000);
+                    int thisPacketSize = _hEncoder.Encode(nextFrameData.GetPointer(), frameSize, outputBuffer.GetPointer(outCursor + 2), 4000);
                     byte[] packetSize = BitConverter.GetBytes((ushort)thisPacketSize);
                     outputBuffer[outCursor++] = packetSize[0];
                     outputBuffer[outCursor++] = packetSize[1];
@@ -247,7 +247,7 @@ namespace TestConsole
             public bool Initialize()
             {
                 BoxedValue<int> error = new BoxedValue<int>();
-                _hDecoder = opus_decoder.opus_decoder_create(_outputSampleRate, 1, error);
+                _hDecoder = OpusDecoder.Create(_outputSampleRate, 1, error);
                 if (error.Val != 0)
                 {
                     return false;
@@ -273,11 +273,11 @@ namespace TestConsole
                     byte[] packetSize = _incomingBytes.Read(2);
                     _nextPacketSize = BitConverter.ToUInt16(packetSize, 0);
                 }
-                
+
                 while (_nextPacketSize > 0 && _incomingBytes.Available() >= _nextPacketSize)
                 {
                     byte[] nextPacketData = _incomingBytes.Read(_nextPacketSize);
-                    int thisFrameSize = opus_decoder.opus_decode(_hDecoder, nextPacketData.GetPointer(), _nextPacketSize, outputBuffer.GetPointer(outCursor), frameSize, 0);
+                    int thisFrameSize = _hDecoder.Decode(nextPacketData.GetPointer(), _nextPacketSize, outputBuffer.GetPointer(outCursor), frameSize, 0);
                     outCursor += thisFrameSize;
 
                     if (_incomingBytes.Available() >= 2)

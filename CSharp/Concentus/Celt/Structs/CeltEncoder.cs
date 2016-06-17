@@ -1,5 +1,5 @@
 ﻿using Concentus.Common.CPlusPlus;
-using Concentus.Opus.Enums;
+using Concentus.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,60 +8,60 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Structs
 {
-    public class CeltEncoder
+    internal class CeltEncoder
     {
-        public CeltMode mode = null;     /**< Mode used by the encoder [Porting Note] Pointer*/
-        public int channels = 0;
-        public int stream_channels = 0;
+        internal CeltMode mode = null;     /**< Mode used by the encoder [Porting Note] Pointer*/
+        internal int channels = 0;
+        internal int stream_channels = 0;
 
-        public int force_intra = 0;
-        public int clip = 0;
-        public int disable_pf = 0;
-        public int complexity = 0;
-        public int upsample = 0;
-        public int start = 0;
-        public int end = 0;
+        internal int force_intra = 0;
+        internal int clip = 0;
+        internal int disable_pf = 0;
+        internal int complexity = 0;
+        internal int upsample = 0;
+        internal int start = 0;
+        internal int end = 0;
 
-        public int bitrate = 0;
-        public int vbr = 0;
-        public int signalling = 0;
+        internal int bitrate = 0;
+        internal int vbr = 0;
+        internal int signalling = 0;
 
         /* If zero, VBR can do whatever it likes with the rate */
-        public int constrained_vbr = 0;
-        public int loss_rate = 0;
-        public int lsb_depth = 0;
-        public OpusFramesize variable_duration = 0;
-        public int lfe = 0;
+        internal int constrained_vbr = 0;
+        internal int loss_rate = 0;
+        internal int lsb_depth = 0;
+        internal OpusFramesize variable_duration = 0;
+        internal int lfe = 0;
 
         /* Everything beyond this point gets cleared on a reset */
 
-        public uint rng = 0;
-        public int spread_decision = 0;
-        public int delayedIntra = 0;
-        public int tonal_average = 0;
-        public int lastCodedBands = 0;
-        public int hf_average = 0;
-        public int tapset_decision = 0;
+        internal uint rng = 0;
+        internal int spread_decision = 0;
+        internal int delayedIntra = 0;
+        internal int tonal_average = 0;
+        internal int lastCodedBands = 0;
+        internal int hf_average = 0;
+        internal int tapset_decision = 0;
 
-        public int prefilter_period = 0;
-        public int prefilter_gain = 0;
-        public int prefilter_tapset = 0;
-        public int consec_transient = 0;
-        public AnalysisInfo analysis = new AnalysisInfo(); // fixme is this necessary? Huh?
+        internal int prefilter_period = 0;
+        internal int prefilter_gain = 0;
+        internal int prefilter_tapset = 0;
+        internal int consec_transient = 0;
+        internal AnalysisInfo analysis = new AnalysisInfo(); // fixme is this necessary? Huh?
 
-        public readonly Pointer<int> preemph_memE = Pointer.Malloc<int>(2);
-        public readonly Pointer<int> preemph_memD = Pointer.Malloc<int>(2);
+        internal readonly Pointer<int> preemph_memE = Pointer.Malloc<int>(2);
+        internal readonly Pointer<int> preemph_memD = Pointer.Malloc<int>(2);
 
         /* VBR-related parameters */
-        public int vbr_reservoir = 0;
-        public int vbr_drift = 0;
-        public int vbr_offset = 0;
-        public int vbr_count = 0;
-        public int overlap_max = 0;
-        public int stereo_saving = 0;
-        public int intensity = 0;
-        public Pointer<int> energy_mask = null;
-        public int spec_avg = 0;
+        internal int vbr_reservoir = 0;
+        internal int vbr_drift = 0;
+        internal int vbr_offset = 0;
+        internal int vbr_count = 0;
+        internal int overlap_max = 0;
+        internal int stereo_saving = 0;
+        internal int intensity = 0;
+        internal Pointer<int> energy_mask = null;
+        internal int spec_avg = 0;
 
         /// <summary>
         /// The original C++ defined in_mem as a single float[1] which was the "caboose"
@@ -74,13 +74,13 @@ namespace Concentus.Celt.Structs
         /// val16 oldLogE[],       Size = channels*mode.nbEBands
         /// val16 oldLogE2[],      Size = channels*mode.nbEBands
         /// </summary>
-        public Pointer<int> in_mem = null;
-        public Pointer<int> prefilter_mem = null;
-        public Pointer<int> oldBandE = null;
-        public Pointer<int> oldLogE = null;
-        public Pointer<int> oldLogE2 = null;
+        internal Pointer<int> in_mem = null;
+        internal Pointer<int> prefilter_mem = null;
+        internal Pointer<int> oldBandE = null;
+        internal Pointer<int> oldLogE = null;
+        internal Pointer<int> oldLogE2 = null;
 
-        public void Reset()
+        internal void Reset()
         {
             mode = null;
             channels = 0;
@@ -103,7 +103,7 @@ namespace Concentus.Celt.Structs
             PartialReset();
         }
 
-        public void PartialReset()
+        internal void PartialReset()
         {
             rng = 0;
             spread_decision = 0;

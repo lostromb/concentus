@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Structs
 {
-    public class FFTState
+    internal class FFTState
     {
-        public int nfft = 0;
-        public short scale = 0;
-        public int scale_shift = 0;
-        public int shift = 0;
-        public short[] factors = new short[2 * KissFFT.MAXFACTORS];
-        public Pointer<short> bitrev = null;
-        public short[] twiddles = null;
+        internal int nfft = 0;
+        internal short scale = 0;
+        internal int scale_shift = 0;
+        internal int shift = 0;
+        internal short[] factors = new short[2 * KissFFT.MAXFACTORS];
+        internal Pointer<short> bitrev = null;
+        internal short[] twiddles = null;
     }
 }

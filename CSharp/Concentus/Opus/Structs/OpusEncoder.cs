@@ -2,8 +2,8 @@
 using Concentus.Celt.Structs;
 using Concentus.Common;
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus;
-using Concentus.Opus.Enums;
+using Concentus;
+using Concentus.Enums;
 using Concentus.Silk;
 using Concentus.Silk.Structs;
 using System;
@@ -99,54 +99,56 @@ namespace Concentus.Structs
   */
     public class OpusEncoder
     {
-        public readonly EncControlState silk_mode = new EncControlState();
-        public OpusApplication application;
-        public int channels;
-        public int delay_compensation;
-        public int force_channels;
-        public OpusSignal signal_type;
-        public int user_bandwidth;
-        public int max_bandwidth;
-        public OpusMode user_forced_mode;
-        public int voice_ratio;
-        public int Fs;
-        public int use_vbr;
-        public int vbr_constraint;
-        public OpusFramesize variable_duration;
-        public int bitrate_bps;
-        public int user_bitrate_bps;
-        public int lsb_depth;
-        public int encoder_buffer;
-        public int lfe;
-        public readonly TonalityAnalysisState analysis = new TonalityAnalysisState();
+        #region Encoder state
+
+        internal readonly EncControlState silk_mode = new EncControlState();
+        internal OpusApplication application;
+        internal int channels;
+        internal int delay_compensation;
+        internal int force_channels;
+        internal OpusSignal signal_type;
+        internal int user_bandwidth;
+        internal int max_bandwidth;
+        internal OpusMode user_forced_mode;
+        internal int voice_ratio;
+        internal int Fs;
+        internal int use_vbr;
+        internal int vbr_constraint;
+        internal OpusFramesize variable_duration;
+        internal int bitrate_bps;
+        internal int user_bitrate_bps;
+        internal int lsb_depth;
+        internal int encoder_buffer;
+        internal int lfe;
+        internal readonly TonalityAnalysisState analysis = new TonalityAnalysisState();
 
         // partial reset happens below this line
-        public int stream_channels;
-        public short hybrid_stereo_width_Q14;
-        public int variable_HP_smth2_Q15;
-        public int prev_HB_gain;
-        public readonly Pointer<int> hp_mem = Pointer.Malloc<int>(4);
-        public OpusMode mode;
-        public OpusMode prev_mode;
-        public int prev_channels;
-        public int prev_framesize;
-        public int bandwidth;
-        public int silk_bw_switch;
+        internal int stream_channels;
+        internal short hybrid_stereo_width_Q14;
+        internal int variable_HP_smth2_Q15;
+        internal int prev_HB_gain;
+        internal readonly Pointer<int> hp_mem = Pointer.Malloc<int>(4);
+        internal OpusMode mode;
+        internal OpusMode prev_mode;
+        internal int prev_channels;
+        internal int prev_framesize;
+        internal int bandwidth;
+        internal int silk_bw_switch;
         /* Sampling rate (at the API level) */
-        public int first;
-        public Pointer<int> energy_masking;
-        public readonly StereoWidthState width_mem = new StereoWidthState();
-        public readonly Pointer<int> delay_buffer = Pointer.Malloc<int>(OpusConstants.MAX_ENCODER_BUFFER * 2);
-        public int detected_bandwidth;
-        public uint rangeFinal;
+        internal int first;
+        internal Pointer<int> energy_masking;
+        internal readonly StereoWidthState width_mem = new StereoWidthState();
+        internal readonly Pointer<int> delay_buffer = Pointer.Malloc<int>(OpusConstants.MAX_ENCODER_BUFFER * 2);
+        internal int detected_bandwidth;
+        internal uint rangeFinal;
 
         // [Porting Note] There were originally "cabooses" that were tacked onto the end
         // of the struct without being explicitly included (since they have a variable size).
         // Here they are just included as an intrinsic variable.
-        public readonly SilkEncoder SilkEncoder = new SilkEncoder();
-        public readonly CeltEncoder CeltEncoder = new CeltEncoder();
+        internal readonly SilkEncoder SilkEncoder = new SilkEncoder();
+        internal readonly CeltEncoder CeltEncoder = new CeltEncoder();
 
-        public void Reset()
+        internal void Reset()
         {
             silk_mode.Reset();
             application = 0;
@@ -174,7 +176,7 @@ namespace Concentus.Structs
         /// <summary>
         /// OPUS_ENCODER_RESET_START
         /// </summary>
-        public void PartialReset()
+        internal void PartialReset()
         {
             stream_channels = 0;
             hybrid_stereo_width_Q14 = 0;
@@ -217,6 +219,1364 @@ namespace Concentus.Structs
             variable_HP_smth2_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
         }
 
+        #endregion
+
+        #region Encoder API functions
+
+        /** Allocates and initializes an encoder state.
+ * There are three coding modes:
+ *
+ * @ref OPUS_APPLICATION_VOIP gives best quality at a given bitrate for voice
+ *    signals. It enhances the  input signal by high-pass filtering and
+ *    emphasizing formants and harmonics. Optionally  it includes in-band
+ *    forward error correction to protect against packet loss. Use this
+ *    mode for typical VoIP applications. Because of the enhancement,
+ *    even at high bitrates the output may sound different from the input.
+ *
+ * @ref OPUS_APPLICATION_AUDIO gives best quality at a given bitrate for most
+ *    non-voice signals like music. Use this mode for music and mixed
+ *    (music/voice) content, broadcast, and applications requiring less
+ *    than 15 ms of coding delay.
+ *
+ * @ref OPUS_APPLICATION_RESTRICTED_LOWDELAY configures low-delay mode that
+ *    disables the speech-optimized mode in exchange for slightly reduced delay.
+ *    This mode can only be set on an newly initialized or freshly reset encoder
+ *    because it changes the codec delay.
+ *
+ * This is useful when the caller knows that the speech-optimized modes will not be needed (use with caution).
+ * @param [in] Fs <tt>opus_int32</tt>: Sampling rate of input signal (Hz)
+ *                                     This must be one of 8000, 12000, 16000,
+ *                                     24000, or 48000.
+ * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) in input signal
+ * @param [in] application <tt>int</tt>: Coding mode (@ref OPUS_APPLICATION_VOIP/@ref OPUS_APPLICATION_AUDIO/@ref OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+ * @param [out] error <tt>int*</tt>: @ref opus_errorcodes
+ * @note Regardless of the sampling rate and number channels selected, the Opus encoder
+ * can switch to a lower audio bandwidth or number of channels if the bitrate
+ * selected is too low. This also means that it is safe to always use 48 kHz stereo input
+ * and let the encoder optimize the encoding.
+ */
+        public static OpusEncoder Create(int Fs, int channels, OpusApplication application, BoxedValue<int> error)
+        {
+            int ret;
+            OpusEncoder st;
+            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2))
+            {
+                if (error != null)
+                    error.Val = OpusError.OPUS_BAD_ARG;
+                return null;
+            }
+            st = new OpusEncoder();
+            if (st == null)
+            {
+                if (error != null)
+                    error.Val = OpusError.OPUS_ALLOC_FAIL;
+                return null;
+            }
+            ret = st.opus_init_encoder(Fs, channels, application);
+            if (error != null)
+                error.Val = ret;
+            if (ret != OpusError.OPUS_OK)
+            {
+                st = null;
+            }
+            return st;
+        }
+
+        /** Initializes a previously allocated encoder state
+  * The memory pointed to by st must be at least the size returned by opus_encoder_get_size().
+  * This is intended for applications which use their own allocator instead of malloc.
+  * @see opus_encoder_create(),opus_encoder_get_size()
+  * To reset a previously initialized state, use the #OPUS_RESET_STATE CTL.
+  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
+  * @param [in] Fs <tt>opus_int32</tt>: Sampling rate of input signal (Hz)
+ *                                      This must be one of 8000, 12000, 16000,
+ *                                      24000, or 48000.
+  * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) in input signal
+  * @param [in] application <tt>int</tt>: Coding mode (OPUS_APPLICATION_VOIP/OPUS_APPLICATION_AUDIO/OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+  * @retval #OPUS_OK Success or @ref opus_errorcodes
+  */
+        internal int opus_init_encoder(int Fs, int channels, OpusApplication application)
+        {
+            SilkEncoder silk_enc;
+            CeltEncoder celt_enc;
+            int err;
+            int ret;
+
+            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2) ||
+                application == OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED)
+                return OpusError.OPUS_BAD_ARG;
+
+            this.Reset();
+            /* Create SILK encoder */
+            silk_enc = this.SilkEncoder;
+            celt_enc = this.CeltEncoder;
+
+            this.stream_channels = this.channels = channels;
+
+            this.Fs = Fs;
+
+            ret = EncodeAPI.silk_InitEncoder(silk_enc, this.silk_mode);
+            if (ret != 0) return OpusError.OPUS_INTERNAL_ERROR;
+
+            /* default SILK parameters */
+            this.silk_mode.nChannelsAPI = channels;
+            this.silk_mode.nChannelsInternal = channels;
+            this.silk_mode.API_sampleRate = this.Fs;
+            this.silk_mode.maxInternalSampleRate = 16000;
+            this.silk_mode.minInternalSampleRate = 8000;
+            this.silk_mode.desiredInternalSampleRate = 16000;
+            this.silk_mode.payloadSize_ms = 20;
+            this.silk_mode.bitRate = 25000;
+            this.silk_mode.packetLossPercentage = 0;
+            this.silk_mode.complexity = 9;
+            this.silk_mode.useInBandFEC = 0;
+            this.silk_mode.useDTX = 0;
+            this.silk_mode.useCBR = 0;
+            this.silk_mode.reducedDependency = 0;
+
+            /* Create CELT encoder */
+            /* Initialize CELT encoder */
+            err = celt_encoder.celt_encoder_init(celt_enc, Fs, channels);
+            if (err != OpusError.OPUS_OK) return OpusError.OPUS_INTERNAL_ERROR;
+
+            celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_SIGNALLING_REQUEST, 0);
+            celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_COMPLEXITY_REQUEST, this.silk_mode.complexity);
+
+            this.use_vbr = 1;
+            /* Makes constrained VBR the default (safer for real-time use) */
+            this.vbr_constraint = 1;
+            this.user_bitrate_bps = OpusConstants.OPUS_AUTO;
+            this.bitrate_bps = 3000 + Fs * channels;
+            this.application = application;
+            this.signal_type = OpusSignal.OPUS_SIGNAL_AUTO;
+            this.user_bandwidth = OpusConstants.OPUS_AUTO;
+            this.max_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+            this.force_channels = OpusConstants.OPUS_AUTO;
+            this.user_forced_mode = OpusMode.MODE_AUTO;
+            this.voice_ratio = -1;
+            this.encoder_buffer = this.Fs / 100;
+            this.lsb_depth = 24;
+            this.variable_duration = OpusFramesize.OPUS_FRAMESIZE_ARG;
+
+            /* Delay compensation of 4 ms (2.5 ms for SILK's extra look-ahead
+               + 1.5 ms for SILK resamplers and stereo prediction) */
+            this.delay_compensation = this.Fs / 250;
+
+            this.hybrid_stereo_width_Q14 = 1 << 14;
+            this.prev_HB_gain = CeltConstants.Q15ONE;
+            this.variable_HP_smth2_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
+            this.first = 1;
+            this.mode = OpusMode.MODE_HYBRID;
+            this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+
+#if ENABLE_ANALYSIS
+            analysis.tonality_analysis_init(st.analysis);
+#endif
+
+            return OpusError.OPUS_OK;
+        }
+
+
+        internal int user_bitrate_to_bitrate(int frame_size, int max_data_bytes)
+        {
+            if (frame_size == 0)
+            {
+                frame_size = this.Fs / 400;
+            }
+            if (this.user_bitrate_bps == OpusConstants.OPUS_AUTO)
+                return 60 * this.Fs / frame_size + this.Fs * this.channels;
+            else if (this.user_bitrate_bps == OpusConstants.OPUS_BITRATE_MAX)
+                return max_data_bytes * 8 * this.Fs / frame_size;
+            else
+                return this.user_bitrate_bps;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T">The storage type of analysis_pcm, either short or float</typeparam>
+        /// <param name="this"></param>
+        /// <param name="pcm"></param>
+        /// <param name="frame_size"></param>
+        /// <param name="data"></param>
+        /// <param name="out_data_bytes"></param>
+        /// <param name="lsb_depth"></param>
+        /// <param name="analysis_pcm"></param>
+        /// <param name="analysis_size"></param>
+        /// <param name="c1"></param>
+        /// <param name="c2"></param>
+        /// <param name="analysis_channels"></param>
+        /// <param name="downmix"></param>
+        /// <param name="float_api"></param>
+        /// <returns></returns>
+        internal int opus_encode_native<T>(Pointer<int> pcm, int frame_size,
+                        Pointer<byte> data, int out_data_bytes, int lsb_depth,
+                        Pointer<T> analysis_pcm, int analysis_size, int c1, int c2,
+                        int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
+        {
+            SilkEncoder silk_enc; // porting note: pointer
+            CeltEncoder celt_enc; // porting note: pointer
+            int i;
+            int ret = 0;
+            int nBytes;
+            EntropyCoder enc = new EntropyCoder(); // porting note: stack var
+            int bytes_target;
+            int prefill = 0;
+            int start_band = 0;
+            int redundancy = 0;
+            int redundancy_bytes = 0; /* Number of bytes to use for redundancy frame */
+            int celt_to_silk = 0;
+            Pointer<int> pcm_buf;
+            int nb_compr_bytes;
+            int to_celt = 0;
+            uint redundant_rng = 0;
+            int cutoff_Hz, hp_freq_smth1;
+            int voice_est; /* Probability of voice in Q7 */
+            int equiv_rate;
+            int delay_compensation;
+            int frame_rate;
+            int max_rate; /* Max bitrate we're allowed to use */
+            int curr_bandwidth;
+            int HB_gain;
+            int max_data_bytes; /* Max number of bytes we're allowed to use */
+            int total_buffer;
+            int stereo_width;
+            CeltMode celt_mode; // porting note: pointer
+#if ENABLE_ANALYSIS
+            AnalysisInfo analysis_info = new AnalysisInfo(); // porting note: stack var
+            int analysis_read_pos_bak = -1;
+            int analysis_read_subframe_bak = -1;
+#endif
+            Pointer<int> tmp_prefill;
+
+            max_data_bytes = Inlines.IMIN(1276, out_data_bytes);
+
+            this.rangeFinal = 0;
+            if ((this.variable_duration == 0 && 400 * frame_size != this.Fs && 200 * frame_size != this.Fs && 100 * frame_size != this.Fs &&
+                 50 * frame_size != this.Fs && 25 * frame_size != this.Fs && 50 * frame_size != 3 * this.Fs)
+                 || (400 * frame_size < this.Fs)
+                 || max_data_bytes <= 0
+                 )
+            {
+                return OpusError.OPUS_BAD_ARG;
+            }
+
+            silk_enc = this.SilkEncoder;
+            celt_enc = this.CeltEncoder;
+            if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+                delay_compensation = 0;
+            else
+                delay_compensation = this.delay_compensation;
+
+            lsb_depth = Inlines.IMIN(lsb_depth, this.lsb_depth);
+            BoxedValue<CeltMode> boxedMode = new BoxedValue<CeltMode>();
+            celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_GET_MODE_REQUEST, boxedMode);
+            celt_mode = boxedMode.Val;
+#if ENABLE_ANALYSIS
+            analysis_info.valid = 0;
+            if (st.silk_mode.complexity >= 7 && st.Fs == 48000)
+            {
+                analysis_read_pos_bak = st.analysis.read_pos;
+                analysis_read_subframe_bak = st.analysis.read_subframe;
+                analysis.run_analysis<T>(st.analysis, celt_mode, analysis_pcm, analysis_size, frame_size,
+                      c1, c2, analysis_channels, st.Fs,
+                      lsb_depth, downmix, analysis_info);
+            }
+#endif
+
+            this.voice_ratio = -1;
+
+#if ENABLE_ANALYSIS
+            st.detected_bandwidth = 0;
+            if (analysis_info.valid != 0)
+            {
+                int analysis_bandwidth;
+                if (st.signal_type == OpusConstants.OPUS_AUTO)
+                    st.voice_ratio = (int)Math.Floor(.5f + 100 * (1 - analysis_info.music_prob));
+
+                analysis_bandwidth = analysis_info.bandwidth;
+                if (analysis_bandwidth <= 12)
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                else if (analysis_bandwidth <= 14)
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+                else if (analysis_bandwidth <= 16)
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+                else if (analysis_bandwidth <= 18)
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+                else
+                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+            }
+#endif
+
+            if (this.channels == 2 && this.force_channels != 1)
+                stereo_width = CodecHelpers.compute_stereo_width(pcm, frame_size, this.Fs, this.width_mem);
+            else
+                stereo_width = 0;
+            total_buffer = delay_compensation;
+            this.bitrate_bps = user_bitrate_to_bitrate(frame_size, max_data_bytes);
+
+            frame_rate = this.Fs / frame_size;
+            if (max_data_bytes < 3 || this.bitrate_bps < 3 * frame_rate * 8
+               || (frame_rate < 50 && (max_data_bytes * frame_rate < 300 || this.bitrate_bps < 2400)))
+            {
+                /*If the space is too low to do something useful, emit 'PLC' frames.*/
+                OpusMode tocmode = this.mode;
+                int bw = this.bandwidth == 0 ? OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND : this.bandwidth;
+                if (tocmode == 0)
+                    tocmode = OpusMode.MODE_SILK_ONLY;
+                if (frame_rate > 100)
+                    tocmode = OpusMode.MODE_CELT_ONLY;
+                if (frame_rate < 50)
+                    tocmode = OpusMode.MODE_SILK_ONLY;
+                if (tocmode == OpusMode.MODE_SILK_ONLY && bw > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+                    bw = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+                else if (tocmode == OpusMode.MODE_CELT_ONLY && bw == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+                    bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                else if (bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
+                    bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+                data[0] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
+
+                return 1;
+            }
+            if (this.use_vbr == 0)
+            {
+                int cbrBytes;
+                cbrBytes = Inlines.IMIN((this.bitrate_bps + 4 * frame_rate) / (8 * frame_rate), max_data_bytes);
+                this.bitrate_bps = cbrBytes * (8 * frame_rate);
+                max_data_bytes = cbrBytes;
+            }
+            max_rate = frame_rate * max_data_bytes * 8;
+
+            /* Equivalent 20-ms rate for mode/channel/bandwidth decisions */
+            equiv_rate = this.bitrate_bps - (40 * this.channels + 20) * (this.Fs / frame_size - 50);
+
+            if (this.signal_type == OpusSignal.OPUS_SIGNAL_VOICE)
+                voice_est = 127;
+            else if (this.signal_type == OpusSignal.OPUS_SIGNAL_MUSIC)
+                voice_est = 0;
+            else if (this.voice_ratio >= 0)
+            {
+                voice_est = this.voice_ratio * 327 >> 8;
+                /* For AUDIO, never be more than 90% confident of having speech */
+                if (this.application == OpusApplication.OPUS_APPLICATION_AUDIO)
+                    voice_est = Inlines.IMIN(voice_est, 115);
+            }
+            else if (this.application == OpusApplication.OPUS_APPLICATION_VOIP)
+                voice_est = 115;
+            else
+                voice_est = 48;
+
+            if (this.force_channels != OpusConstants.OPUS_AUTO && this.channels == 2)
+            {
+                this.stream_channels = this.force_channels;
+            }
+            else {
+#if FUZZING
+        /* Random mono/stereo decision */
+        if (st.channels == 2 && (new Random().Next() & 0x1F) == 0)
+            st.stream_channels = 3 - st.stream_channels;
+#else
+                /* Rate-dependent mono-stereo decision */
+                if (this.channels == 2)
+                {
+                    int stereo_threshold;
+                    stereo_threshold = Tables.stereo_music_threshold + ((voice_est * voice_est * (Tables.stereo_voice_threshold - Tables.stereo_music_threshold)) >> 14);
+                    if (this.stream_channels == 2)
+                        stereo_threshold -= 1000;
+                    else
+                        stereo_threshold += 1000;
+                    this.stream_channels = (equiv_rate > stereo_threshold) ? 2 : 1;
+                }
+                else {
+                    this.stream_channels = this.channels;
+                }
+#endif
+            }
+            equiv_rate = this.bitrate_bps - (40 * this.stream_channels + 20) * (this.Fs / frame_size - 50);
+
+            /* Mode selection depending on application and signal type */
+            if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+            {
+                this.mode = OpusMode.MODE_CELT_ONLY;
+            }
+            else if (this.user_forced_mode == OpusMode.MODE_AUTO)
+            {
+#if FUZZING
+        /* Random mode switching */
+        if ((new Random().Next() & 0xF) == 0)
+        {
+            if ((new Random().Next() & 0x1) == 0)
+                st.mode = OpusMode.MODE_CELT_ONLY;
+            else
+                st.mode = OpusMode.MODE_SILK_ONLY;
+        }
+        else {
+            if (st.prev_mode == OpusMode.MODE_CELT_ONLY)
+                st.mode = OpusMode.MODE_CELT_ONLY;
+            else
+                st.mode = OpusMode.MODE_SILK_ONLY;
+        }
+#else
+                int mode_voice, mode_music;
+                int threshold;
+
+                /* Interpolate based on stereo width */
+                mode_voice = (int)(Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, Tables.mode_thresholds[0][0])
+                      + Inlines.MULT16_32_Q15(stereo_width, Tables.mode_thresholds[1][0]));
+                mode_music = (int)(Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, Tables.mode_thresholds[1][1])
+                      + Inlines.MULT16_32_Q15(stereo_width, Tables.mode_thresholds[1][1]));
+                /* Interpolate based on speech/music probability */
+                threshold = mode_music + ((voice_est * voice_est * (mode_voice - mode_music)) >> 14);
+                /* Bias towards SILK for VoIP because of some useful features */
+                if (this.application == OpusApplication.OPUS_APPLICATION_VOIP)
+                    threshold += 8000;
+
+                /*printf("%f %d\n", stereo_width/(float)1.0f, threshold);*/
+                /* Hysteresis */
+                if (this.prev_mode == OpusMode.MODE_CELT_ONLY)
+                    threshold -= 4000;
+                else if (this.prev_mode > 0)
+                    threshold += 4000;
+
+                this.mode = (equiv_rate >= threshold) ? OpusMode.MODE_CELT_ONLY : OpusMode.MODE_SILK_ONLY;
+
+                /* When FEC is enabled and there's enough packet loss, use SILK */
+                if (this.silk_mode.useInBandFEC != 0 && this.silk_mode.packetLossPercentage > (128 - voice_est) >> 4)
+                    this.mode = OpusMode.MODE_SILK_ONLY;
+                /* When encoding voice and DTX is enabled, set the encoder to SILK mode (at least for now) */
+                if (this.silk_mode.useDTX != 0 && voice_est > 100)
+                    this.mode = OpusMode.MODE_SILK_ONLY;
+#endif
+            }
+            else {
+                this.mode = this.user_forced_mode;
+            }
+
+            /* Override the chosen mode to make sure we meet the requested frame size */
+            if (this.mode != OpusMode.MODE_CELT_ONLY && frame_size < this.Fs / 100)
+                this.mode = OpusMode.MODE_CELT_ONLY;
+            if (this.lfe != 0)
+                this.mode = OpusMode.MODE_CELT_ONLY;
+            /* If max_data_bytes represents less than 8 kb/s, switch to CELT-only mode */
+            if (max_data_bytes < (frame_rate > 50 ? 12000 : 8000) * frame_size / (this.Fs * 8))
+                this.mode = OpusMode.MODE_CELT_ONLY;
+
+            if (this.stream_channels == 1 && this.prev_channels == 2 && this.silk_mode.toMono == 0
+                  && this.mode != OpusMode.MODE_CELT_ONLY && this.prev_mode != OpusMode.MODE_CELT_ONLY)
+            {
+                /* Delay stereo.mono transition by two frames so that SILK can do a smooth downmix */
+                this.silk_mode.toMono = 1;
+                this.stream_channels = 2;
+            }
+            else {
+                this.silk_mode.toMono = 0;
+            }
+
+            if (this.prev_mode > 0 &&
+                ((this.mode != OpusMode.MODE_CELT_ONLY && this.prev_mode == OpusMode.MODE_CELT_ONLY) ||
+            (this.mode == OpusMode.MODE_CELT_ONLY && this.prev_mode != OpusMode.MODE_CELT_ONLY)))
+            {
+                redundancy = 1;
+                celt_to_silk = (this.mode != OpusMode.MODE_CELT_ONLY) ? 1 : 0;
+                if (celt_to_silk == 0)
+                {
+                    /* Switch to SILK/hybrid if frame size is 10 ms or more*/
+                    if (frame_size >= this.Fs / 100)
+                    {
+                        this.mode = this.prev_mode;
+                        to_celt = 1;
+                    }
+                    else {
+                        redundancy = 0;
+                    }
+                }
+            }
+            /* For the first frame at a new SILK bandwidth */
+            if (this.silk_bw_switch != 0)
+            {
+                redundancy = 1;
+                celt_to_silk = 1;
+                this.silk_bw_switch = 0;
+                prefill = 1;
+            }
+
+            if (redundancy != 0)
+            {
+                /* Fair share of the max size allowed */
+                redundancy_bytes = Inlines.IMIN(257, max_data_bytes * (int)(this.Fs / 200) / (frame_size + this.Fs / 200));
+                /* For VBR, target the actual bitrate (subject to the limit above) */
+                if (this.use_vbr != 0)
+                    redundancy_bytes = Inlines.IMIN(redundancy_bytes, this.bitrate_bps / 1600);
+            }
+
+            if (this.mode != OpusMode.MODE_CELT_ONLY && this.prev_mode == OpusMode.MODE_CELT_ONLY)
+            {
+                EncControlState dummy = new EncControlState();
+                EncodeAPI.silk_InitEncoder(silk_enc, dummy);
+                prefill = 1;
+            }
+
+            /* Automatic (rate-dependent) bandwidth selection */
+            if (this.mode == OpusMode.MODE_CELT_ONLY || this.first != 0 || this.silk_mode.allowBandwidthSwitch != 0)
+            {
+                Pointer<int> voice_bandwidth_thresholds;
+                Pointer<int> music_bandwidth_thresholds;
+                int[] bandwidth_thresholds = new int[8];
+                int bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+                int equiv_rate2;
+
+                equiv_rate2 = equiv_rate;
+                if (this.mode != OpusMode.MODE_CELT_ONLY)
+                {
+                    /* Adjust the threshold +/- 10% depending on complexity */
+                    equiv_rate2 = equiv_rate2 * (45 + this.silk_mode.complexity) / 50;
+                    /* CBR is less efficient by ~1 kb/s */
+                    if (this.use_vbr == 0)
+                        equiv_rate2 -= 1000;
+                }
+                if (this.channels == 2 && this.force_channels != 1)
+                {
+                    voice_bandwidth_thresholds = Tables.stereo_voice_bandwidth_thresholds.GetPointer();
+                    music_bandwidth_thresholds = Tables.stereo_music_bandwidth_thresholds.GetPointer();
+                }
+                else {
+                    voice_bandwidth_thresholds = Tables.mono_voice_bandwidth_thresholds.GetPointer();
+                    music_bandwidth_thresholds = Tables.mono_music_bandwidth_thresholds.GetPointer();
+                }
+                /* Interpolate bandwidth thresholds depending on voice estimation */
+                for (i = 0; i < 8; i++)
+                {
+                    bandwidth_thresholds[i] = music_bandwidth_thresholds[i]
+                             + ((voice_est * voice_est * (voice_bandwidth_thresholds[i] - music_bandwidth_thresholds[i])) >> 14);
+                }
+                do
+                {
+                    int threshold, hysteresis;
+                    threshold = bandwidth_thresholds[2 * (bandwidth - OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)];
+                    hysteresis = bandwidth_thresholds[2 * (bandwidth - OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND) + 1];
+                    if (this.first == 0)
+                    {
+                        if (this.bandwidth >= bandwidth)
+                            threshold -= hysteresis;
+                        else
+                            threshold += hysteresis;
+                    }
+                    if (equiv_rate2 >= threshold)
+                        break;
+                } while (--bandwidth > OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND);
+                this.bandwidth = bandwidth;
+                /* Prevents any transition to SWB/FB until the SILK layer has fully
+                   switched to WB mode and turned the variable LP filter off */
+                if (this.first == 0 && this.mode != OpusMode.MODE_CELT_ONLY && this.silk_mode.inWBmodeWithoutVariableLP == 0 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+                    this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+            }
+
+            if (this.bandwidth > this.max_bandwidth)
+                this.bandwidth = this.max_bandwidth;
+
+            if (this.user_bandwidth != OpusConstants.OPUS_AUTO)
+                this.bandwidth = this.user_bandwidth;
+
+            /* This prevents us from using hybrid at unsafe CBR/max rates */
+            if (this.mode != OpusMode.MODE_CELT_ONLY && max_rate < 15000)
+            {
+                this.bandwidth = Inlines.IMIN(this.bandwidth, OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
+            }
+
+            /* Prevents Opus from wasting bits on frequencies that are above
+               the Nyquist rate of the input signal */
+            if (this.Fs <= 24000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
+                this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+            if (this.Fs <= 16000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+                this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+            if (this.Fs <= 12000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+                this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+            if (this.Fs <= 8000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+                this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+            /* Use detected bandwidth to reduce the encoded bandwidth. */
+            if (this.detected_bandwidth != 0 && this.user_bandwidth == OpusConstants.OPUS_AUTO)
+            {
+                int min_detected_bandwidth;
+                /* Makes bandwidth detection more conservative just in case the detector
+                   gets it wrong when we could have coded a high bandwidth transparently.
+                   When operating in SILK/hybrid mode, we don't go below wideband to avoid
+                   more complicated switches that require redundancy. */
+                if (equiv_rate <= 18000 * this.stream_channels && this.mode == OpusMode.MODE_CELT_ONLY)
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                else if (equiv_rate <= 24000 * this.stream_channels && this.mode == OpusMode.MODE_CELT_ONLY)
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+                else if (equiv_rate <= 30000 * this.stream_channels)
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+                else if (equiv_rate <= 44000 * this.stream_channels)
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+                else
+                    min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+
+                this.detected_bandwidth = Inlines.IMAX(this.detected_bandwidth, min_detected_bandwidth);
+                this.bandwidth = Inlines.IMIN(this.bandwidth, this.detected_bandwidth);
+            }
+            celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_LSB_DEPTH_REQUEST, lsb_depth);
+
+            /* CELT mode doesn't support mediumband, use wideband instead */
+            if (this.mode == OpusMode.MODE_CELT_ONLY && this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+                this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+            if (this.lfe != 0)
+                this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+
+            /* Can't support higher than wideband for >20 ms frames */
+            if (frame_size > this.Fs / 50 && (this.mode == OpusMode.MODE_CELT_ONLY || this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
+            {
+                Pointer<byte> tmp_data;
+                int nb_frames;
+                int bak_bandwidth, bak_channels, bak_to_mono;
+                OpusMode bak_mode;
+                OpusRepacketizer rp; // porting note: pointer
+                int bytes_per_frame;
+                int repacketize_len;
+
+#if ENABLE_ANALYSIS
+                if (analysis_read_pos_bak != -1)
+                {
+                    st.analysis.read_pos = analysis_read_pos_bak;
+                    st.analysis.read_subframe = analysis_read_subframe_bak;
+                }
+#endif
+
+                nb_frames = frame_size > this.Fs / 25 ? 3 : 2;
+                bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
+
+                tmp_data = Pointer.Malloc<byte>(nb_frames * bytes_per_frame);
+
+                rp = new OpusRepacketizer();
+                Repacketizer.opus_repacketizer_init(rp);
+
+                bak_mode = this.user_forced_mode;
+                bak_bandwidth = this.user_bandwidth;
+                bak_channels = this.force_channels;
+
+                this.user_forced_mode = this.mode;
+                this.user_bandwidth = this.bandwidth;
+                this.force_channels = this.stream_channels;
+                bak_to_mono = this.silk_mode.toMono;
+
+                if (bak_to_mono != 0)
+                    this.force_channels = 1;
+                else
+                    this.prev_channels = this.stream_channels;
+                for (i = 0; i < nb_frames; i++)
+                {
+                    int tmp_len;
+                    this.silk_mode.toMono = 0;
+                    /* When switching from SILK/Hybrid to CELT, only ask for a switch at the last frame */
+                    if (to_celt != 0 && i == nb_frames - 1)
+                        this.user_forced_mode = OpusMode.MODE_CELT_ONLY;
+                    tmp_len = opus_encode_native(pcm.Point(i * (this.channels * this.Fs / 50)), this.Fs / 50,
+                          tmp_data.Point(i * bytes_per_frame), bytes_per_frame, lsb_depth,
+                          null, 0, c1, c2, analysis_channels, downmix, float_api);
+                    if (tmp_len < 0)
+                    {
+
+                        return OpusError.OPUS_INTERNAL_ERROR;
+                    }
+                    ret = Repacketizer.opus_repacketizer_cat(rp, tmp_data.Point(i * bytes_per_frame), tmp_len);
+                    if (ret < 0)
+                    {
+
+                        return OpusError.OPUS_INTERNAL_ERROR;
+                    }
+                }
+                if (this.use_vbr != 0)
+                    repacketize_len = out_data_bytes;
+                else
+                    repacketize_len = Inlines.IMIN(3 * this.bitrate_bps / (3 * 8 * 50 / nb_frames), out_data_bytes);
+                ret = Repacketizer.opus_repacketizer_out_range_impl(rp, 0, nb_frames, data, repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
+                if (ret < 0)
+                {
+                    return OpusError.OPUS_INTERNAL_ERROR;
+                }
+                this.user_forced_mode = bak_mode;
+                this.user_bandwidth = bak_bandwidth;
+                this.force_channels = bak_channels;
+                this.silk_mode.toMono = bak_to_mono;
+
+                return ret;
+            }
+            curr_bandwidth = this.bandwidth;
+
+            /* Chooses the appropriate mode for speech
+               *NEVER* switch to/from CELT-only mode here as this will invalidate some assumptions */
+            if (this.mode == OpusMode.MODE_SILK_ONLY && curr_bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+                this.mode = OpusMode.MODE_HYBRID;
+            if (this.mode == OpusMode.MODE_HYBRID && curr_bandwidth <= OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+                this.mode = OpusMode.MODE_SILK_ONLY;
+
+            /* printf("%d %d %d %d\n", st.bitrate_bps, st.stream_channels, st.mode, curr_bandwidth); */
+            bytes_target = Inlines.IMIN(max_data_bytes - redundancy_bytes, this.bitrate_bps * frame_size / (this.Fs * 8)) - 1;
+
+            data = data.Point(1);
+
+            enc.enc_init(data, (uint)(max_data_bytes - 1));
+
+            pcm_buf = Pointer.Malloc<int>((total_buffer + frame_size) * this.channels);
+            this.delay_buffer.Point((this.encoder_buffer - total_buffer) * this.channels).MemCopyTo(pcm_buf, total_buffer * this.channels);
+
+            if (this.mode == OpusMode.MODE_CELT_ONLY)
+                hp_freq_smth1 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
+            else
+                hp_freq_smth1 = silk_enc.state_Fxx[0].variable_HP_smth1_Q15;
+
+            this.variable_HP_smth2_Q15 = Inlines.silk_SMLAWB(this.variable_HP_smth2_Q15,
+                  hp_freq_smth1 - this.variable_HP_smth2_Q15, Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_SMTH_COEF2, 16));
+
+            /* convert from log scale to Hertz */
+            cutoff_Hz = Inlines.silk_log2lin(Inlines.silk_RSHIFT(this.variable_HP_smth2_Q15, 8));
+
+            if (this.application == OpusApplication.OPUS_APPLICATION_VOIP)
+            {
+                CodecHelpers.hp_cutoff(pcm, cutoff_Hz, pcm_buf.Point(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
+            }
+            else {
+                CodecHelpers.dc_reject(pcm, 3, pcm_buf.Point(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
+            }
+
+            /* SILK processing */
+            HB_gain = CeltConstants.Q15ONE;
+            if (this.mode != OpusMode.MODE_CELT_ONLY)
+            {
+                int total_bitRate, celt_rate;
+                Pointer<short> pcm_silk = Pointer.Malloc<short>(this.channels * frame_size);
+
+                /* Distribute bits between SILK and CELT */
+                total_bitRate = 8 * bytes_target * frame_rate;
+                if (this.mode == OpusMode.MODE_HYBRID)
+                {
+                    int HB_gain_ref;
+                    /* Base rate for SILK */
+                    this.silk_mode.bitRate = this.stream_channels * (5000 + 1000 * ((this.Fs == 100 ? 1 : 0) * frame_size));
+                    if (curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
+                    {
+                        /* SILK gets 2/3 of the remaining bits */
+                        this.silk_mode.bitRate += (total_bitRate - this.silk_mode.bitRate) * 2 / 3;
+                    }
+                    else { /* FULLBAND */
+                           /* SILK gets 3/5 of the remaining bits */
+                        this.silk_mode.bitRate += (total_bitRate - this.silk_mode.bitRate) * 3 / 5;
+                    }
+                    /* Don't let SILK use more than 80% */
+                    if (this.silk_mode.bitRate > total_bitRate * 4 / 5)
+                    {
+                        this.silk_mode.bitRate = total_bitRate * 4 / 5;
+                    }
+                    if (this.energy_masking == null)
+                    {
+                        /* Increasingly attenuate high band when it gets allocated fewer bits */
+                        celt_rate = total_bitRate - this.silk_mode.bitRate;
+                        HB_gain_ref = (curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND) ? 3000 : 3600;
+                        HB_gain = Inlines.SHL32((int)celt_rate, 9) / Inlines.SHR32((int)celt_rate + this.stream_channels * HB_gain_ref, 6);
+                        HB_gain = HB_gain < CeltConstants.Q15ONE * 6 / 7 ? HB_gain + CeltConstants.Q15ONE / 7 : CeltConstants.Q15ONE;
+                    }
+                }
+                else {
+                    /* SILK gets all bits */
+                    this.silk_mode.bitRate = total_bitRate;
+                }
+
+                /* Surround masking for SILK */
+                if (this.energy_masking != null && this.use_vbr != 0 && this.lfe == 0)
+                {
+                    int mask_sum = 0;
+                    int masking_depth;
+                    int rate_offset;
+                    int c;
+                    int end = 17;
+                    short srate = 16000;
+                    if (this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+                    {
+                        end = 13;
+                        srate = 8000;
+                    }
+                    else if (this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+                    {
+                        end = 15;
+                        srate = 12000;
+                    }
+                    for (c = 0; c < this.channels; c++)
+                    {
+                        for (i = 0; i < end; i++)
+                        {
+                            int mask;
+                            mask = Inlines.MAX16(Inlines.MIN16(this.energy_masking[21 * c + i],
+                                   Inlines.QCONST16(.5f, 10)), -Inlines.QCONST16(2.0f, 10));
+                            if (mask > 0)
+                                mask = Inlines.HALF16(mask);
+                            mask_sum += mask;
+                        }
+                    }
+                    /* Conservative rate reduction, we cut the masking in half */
+                    masking_depth = mask_sum / end * this.channels;
+                    masking_depth += Inlines.QCONST16(.2f, 10);
+                    rate_offset = (int)Inlines.PSHR32(Inlines.MULT16_16(srate, masking_depth), 10);
+                    rate_offset = Inlines.MAX32(rate_offset, -2 * this.silk_mode.bitRate / 3);
+                    /* Split the rate change between the SILK and CELT part for hybrid. */
+                    if (this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND || this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_FULLBAND)
+                        this.silk_mode.bitRate += 3 * rate_offset / 5;
+                    else
+                        this.silk_mode.bitRate += rate_offset;
+                    bytes_target += rate_offset * frame_size / (8 * this.Fs);
+                }
+
+                this.silk_mode.payloadSize_ms = 1000 * frame_size / this.Fs;
+                this.silk_mode.nChannelsAPI = this.channels;
+                this.silk_mode.nChannelsInternal = this.stream_channels;
+                if (curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+                {
+                    this.silk_mode.desiredInternalSampleRate = 8000;
+                }
+                else if (curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+                {
+                    this.silk_mode.desiredInternalSampleRate = 12000;
+                }
+                else {
+                    Inlines.OpusAssert(this.mode == OpusMode.MODE_HYBRID || curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
+                    this.silk_mode.desiredInternalSampleRate = 16000;
+                }
+                if (this.mode == OpusMode.MODE_HYBRID)
+                {
+                    /* Don't allow bandwidth reduction at lowest bitrates in hybrid mode */
+                    this.silk_mode.minInternalSampleRate = 16000;
+                }
+                else {
+                    this.silk_mode.minInternalSampleRate = 8000;
+                }
+
+                if (this.mode == OpusMode.MODE_SILK_ONLY)
+                {
+                    int effective_max_rate = max_rate;
+                    this.silk_mode.maxInternalSampleRate = 16000;
+                    if (frame_rate > 50)
+                        effective_max_rate = effective_max_rate * 2 / 3;
+                    if (effective_max_rate < 13000)
+                    {
+                        this.silk_mode.maxInternalSampleRate = 12000;
+                        this.silk_mode.desiredInternalSampleRate = Inlines.IMIN(12000, this.silk_mode.desiredInternalSampleRate);
+                    }
+                    if (effective_max_rate < 9600)
+                    {
+                        this.silk_mode.maxInternalSampleRate = 8000;
+                        this.silk_mode.desiredInternalSampleRate = Inlines.IMIN(8000, this.silk_mode.desiredInternalSampleRate);
+                    }
+                }
+                else {
+                    this.silk_mode.maxInternalSampleRate = 16000;
+                }
+
+                this.silk_mode.useCBR = this.use_vbr == 0 ? 1 : 0;
+
+                /* Call SILK encoder for the low band */
+                nBytes = Inlines.IMIN(1275, max_data_bytes - 1 - redundancy_bytes);
+
+                this.silk_mode.maxBits = nBytes * 8;
+                /* Only allow up to 90% of the bits for hybrid mode*/
+                if (this.mode == OpusMode.MODE_HYBRID)
+                    this.silk_mode.maxBits = (int)this.silk_mode.maxBits * 9 / 10;
+                if (this.silk_mode.useCBR != 0)
+                {
+                    this.silk_mode.maxBits = (this.silk_mode.bitRate * frame_size / (this.Fs * 8)) * 8;
+                    /* Reduce the initial target to make it easier to reach the CBR rate */
+                    this.silk_mode.bitRate = Inlines.IMAX(1, this.silk_mode.bitRate - 2000);
+                }
+
+                if (prefill != 0)
+                {
+                    BoxedValue<int> zero = new BoxedValue<int>(0);
+                    int prefill_offset;
+
+                    /* Use a smooth onset for the SILK prefill to avoid the encoder trying to encode
+                       a discontinuity. The exact location is what we need to avoid leaving any "gap"
+                       in the audio when mixing with the redundant CELT frame. Here we can afford to
+                       overwrite st.delay_buffer because the only thing that uses it before it gets
+                       rewritten is tmp_prefill[] and even then only the part after the ramp really
+                       gets used (rather than sent to the encoder and discarded) */
+                    prefill_offset = this.channels * (this.encoder_buffer - this.delay_compensation - this.Fs / 400);
+                    CodecHelpers.gain_fade(this.delay_buffer.Point(prefill_offset), this.delay_buffer.Point(prefill_offset),
+                          0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
+                    this.delay_buffer.MemSet(0, prefill_offset);
+
+                    // fixme: wasteful conversion here; need to normalize the PCM path to use int16 exclusively
+                    for (i = 0; i < this.encoder_buffer * this.channels; i++)
+                    {
+                        pcm_silk[i] = (short)(this.delay_buffer[i]);
+                    }
+
+                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, zero, 1);
+                }
+
+                for (i = 0; i < frame_size * this.channels; i++)
+                {
+                    pcm_silk[i] = (short)(pcm_buf[total_buffer * this.channels + i]);
+                }
+
+                BoxedValue<int> boxed_silkBytes = new BoxedValue<int>(nBytes);
+                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
+                nBytes = boxed_silkBytes.Val;
+
+                if (ret != 0)
+                {
+                    /*fprintf (stderr, "SILK encode error: %d\n", ret);*/
+                    /* Handle error */
+
+                    return OpusError.OPUS_INTERNAL_ERROR;
+                }
+                if (nBytes == 0)
+                {
+                    this.rangeFinal = 0;
+                    data[-1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+
+                    return 1;
+                }
+                /* Extract SILK public bandwidth for signaling in first byte */
+                if (this.mode == OpusMode.MODE_SILK_ONLY)
+                {
+                    if (this.silk_mode.internalSampleRate == 8000)
+                    {
+                        curr_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                    }
+                    else if (this.silk_mode.internalSampleRate == 12000)
+                    {
+                        curr_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+                    }
+                    else if (this.silk_mode.internalSampleRate == 16000)
+                    {
+                        curr_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+                    }
+                }
+                else
+                {
+                    Inlines.OpusAssert(this.silk_mode.internalSampleRate == 16000);
+                }
+
+                this.silk_mode.opusCanSwitch = this.silk_mode.switchReady;
+                if (this.silk_mode.opusCanSwitch != 0)
+                {
+                    redundancy = 1;
+                    celt_to_silk = 0;
+                    this.silk_bw_switch = 1;
+                }
+            }
+
+            /* CELT processing */
+            {
+                int endband = 21;
+
+                switch (curr_bandwidth)
+                {
+                    case OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND:
+                        endband = 13;
+                        break;
+                    case OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND:
+                    case OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND:
+                        endband = 17;
+                        break;
+                    case OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND:
+                        endband = 19;
+                        break;
+                    case OpusBandwidth.OPUS_BANDWIDTH_FULLBAND:
+                        endband = 21;
+                        break;
+                }
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_END_BAND_REQUEST, endband);
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_CHANNELS_REQUEST, this.stream_channels);
+            }
+            celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_BITRATE_REQUEST, OpusConstants.OPUS_BITRATE_MAX);
+            if (this.mode != OpusMode.MODE_SILK_ONLY)
+            {
+                int celt_pred = 2;
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_REQUEST, 0);
+                /* We may still decide to disable prediction later */
+                if (this.silk_mode.reducedDependency != 0)
+                    celt_pred = 0;
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_PREDICTION_REQUEST, celt_pred);
+
+                if (this.mode == OpusMode.MODE_HYBRID)
+                {
+                    int len;
+
+                    len = (enc.tell() + 7) >> 3;
+                    if (redundancy != 0)
+                        len += this.mode == OpusMode.MODE_HYBRID ? 3 : 1;
+                    if (this.use_vbr != 0)
+                    {
+                        nb_compr_bytes = len + bytes_target - (this.silk_mode.bitRate * frame_size) / (8 * this.Fs);
+                    }
+                    else {
+                        /* check if SILK used up too much */
+                        nb_compr_bytes = len > bytes_target ? len : bytes_target;
+                    }
+                }
+                else {
+                    if (this.use_vbr != 0)
+                    {
+                        int bonus = 0;
+#if ENABLE_ANALYSIS
+                        if (st.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size != st.Fs / 50)
+                        {
+                            bonus = (60 * st.stream_channels + 40) * (st.Fs / frame_size - 50);
+                            if (analysis_info.valid != 0)
+                                bonus = (int)(bonus * (1.0f + .5f * analysis_info.tonality));
+                        }
+#endif
+                        celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_REQUEST, (1));
+                        celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, (this.vbr_constraint));
+                        celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_BITRATE_REQUEST, (this.bitrate_bps + bonus));
+                        nb_compr_bytes = max_data_bytes - 1 - redundancy_bytes;
+                    }
+                    else {
+                        nb_compr_bytes = bytes_target;
+                    }
+                }
+
+            }
+            else {
+                nb_compr_bytes = 0;
+            }
+
+
+            tmp_prefill = Pointer.Malloc<int>(this.channels * this.Fs / 400);
+            if (this.mode != OpusMode.MODE_SILK_ONLY && this.mode != this.prev_mode && this.prev_mode > 0)
+            {
+                this.delay_buffer.Point((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels).MemCopyTo(tmp_prefill, this.channels * this.Fs / 400);
+            }
+
+            if (this.channels * (this.encoder_buffer - (frame_size + total_buffer)) > 0)
+            {
+                this.delay_buffer.Point(this.channels * frame_size).MemMoveTo(this.delay_buffer, this.channels * (this.encoder_buffer - frame_size - total_buffer));
+
+                pcm_buf.MemCopyTo(this.delay_buffer.Point(this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
+            }
+            else
+            {
+                pcm_buf.Point((frame_size + total_buffer - this.encoder_buffer) * this.channels).MemCopyTo(this.delay_buffer, this.encoder_buffer * this.channels);
+            }
+
+            /* gain_fade() and stereo_fade() need to be after the buffer copying
+               because we don't want any of this to affect the SILK part */
+            if (this.prev_HB_gain < CeltConstants.Q15ONE || HB_gain < CeltConstants.Q15ONE)
+            {
+                CodecHelpers.gain_fade(pcm_buf, pcm_buf,
+                      this.prev_HB_gain, HB_gain, celt_mode.overlap, frame_size, this.channels, celt_mode.window, this.Fs);
+            }
+
+            this.prev_HB_gain = HB_gain;
+            if (this.mode != OpusMode.MODE_HYBRID || this.stream_channels == 1)
+                this.silk_mode.stereoWidth_Q14 = Inlines.IMIN((1 << 14), 2 * Inlines.IMAX(0, equiv_rate - 30000));
+            if (this.energy_masking == null && this.channels == 2)
+            {
+                /* Apply stereo width reduction (at low bitrates) */
+                if (this.hybrid_stereo_width_Q14 < (1 << 14) || this.silk_mode.stereoWidth_Q14 < (1 << 14))
+                {
+                    int g1, g2;
+                    g1 = this.hybrid_stereo_width_Q14;
+                    g2 = (int)(this.silk_mode.stereoWidth_Q14);
+                    g1 = g1 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g1, 1);
+                    g2 = g2 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g2, 1);
+                    CodecHelpers.stereo_fade(pcm_buf, pcm_buf, g1, g2, celt_mode.overlap,
+                          frame_size, this.channels, celt_mode.window, this.Fs);
+                    this.hybrid_stereo_width_Q14 = Inlines.CHOP16(this.silk_mode.stereoWidth_Q14);
+                }
+            }
+
+            if (this.mode != OpusMode.MODE_CELT_ONLY && enc.tell() + 17 + 20 * ((this.mode == OpusMode.MODE_HYBRID) ? 1 : 0) <= 8 * (max_data_bytes - 1))
+            {
+                /* For SILK mode, the redundancy is inferred from the length */
+                if (this.mode == OpusMode.MODE_HYBRID && (redundancy != 0 || enc.tell() + 37 <= 8 * nb_compr_bytes))
+                    enc.enc_bit_logp(redundancy, 12);
+                if (redundancy != 0)
+                {
+                    int max_redundancy;
+                    enc.enc_bit_logp(celt_to_silk, 1);
+                    if (this.mode == OpusMode.MODE_HYBRID)
+                        max_redundancy = (max_data_bytes - 1) - nb_compr_bytes;
+                    else
+                        max_redundancy = (max_data_bytes - 1) - ((enc.tell() + 7) >> 3);
+                    /* Target the same bit-rate for redundancy as for the rest,
+                       up to a max of 257 bytes */
+                    redundancy_bytes = Inlines.IMIN(max_redundancy, this.bitrate_bps / 1600);
+                    redundancy_bytes = Inlines.IMIN(257, Inlines.IMAX(2, redundancy_bytes));
+                    if (this.mode == OpusMode.MODE_HYBRID)
+                        enc.enc_uint((uint)(redundancy_bytes - 2), 256);
+                }
+            }
+            else {
+                redundancy = 0;
+            }
+
+            if (redundancy == 0)
+            {
+                this.silk_bw_switch = 0;
+                redundancy_bytes = 0;
+            }
+            if (this.mode != OpusMode.MODE_CELT_ONLY) start_band = 17;
+
+            if (this.mode == OpusMode.MODE_SILK_ONLY)
+            {
+                ret = (enc.tell() + 7) >> 3;
+                enc.enc_done();
+                nb_compr_bytes = ret;
+            }
+            else {
+                nb_compr_bytes = Inlines.IMIN((max_data_bytes - 1) - redundancy_bytes, nb_compr_bytes);
+                enc.enc_shrink((uint)nb_compr_bytes);
+            }
+
+#if ENABLE_ANALYSIS
+            if (redundancy != 0 || st.mode != OpusMode.MODE_SILK_ONLY)
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_ANALYSIS_REQUEST, (analysis_info));
+#endif
+            /* 5 ms redundant frame for CELT.SILK */
+            if (redundancy != 0 && celt_to_silk != 0)
+            {
+                int err;
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_START_BAND_REQUEST, (0));
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_REQUEST, (0));
+                err = celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf, this.Fs / 200, data.Point(nb_compr_bytes), redundancy_bytes, null);
+                if (err < 0)
+                {
+                    return OpusError.OPUS_INTERNAL_ERROR;
+                }
+
+                BoxedValue<uint> boxed_redundant_rng = new BoxedValue<uint>(redundant_rng);
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_GET_FINAL_RANGE_REQUEST, boxed_redundant_rng);
+                redundant_rng = boxed_redundant_rng.Val;
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_RESET_STATE);
+            }
+
+            celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_START_BAND_REQUEST, (start_band));
+
+            if (this.mode != OpusMode.MODE_SILK_ONLY)
+            {
+                if (this.mode != this.prev_mode && this.prev_mode > 0)
+                {
+                    byte[] dummy = new byte[2];
+                    celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_RESET_STATE);
+
+                    /* Prefilling */
+                    celt_encoder.celt_encode_with_ec(celt_enc, tmp_prefill, this.Fs / 400, dummy.GetPointer(), 2, null);
+                    celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_PREDICTION_REQUEST, (0));
+                }
+                /* If false, we already busted the budget and we'll end up with a "PLC packet" */
+                if (enc.tell() <= 8 * nb_compr_bytes)
+                {
+                    ret = celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf, frame_size, null, nb_compr_bytes, enc);
+                    if (ret < 0)
+                    {
+                        return OpusError.OPUS_INTERNAL_ERROR;
+                    }
+                }
+            }
+
+            /* 5 ms redundant frame for SILK.CELT */
+            if (redundancy != 0 && celt_to_silk == 0)
+            {
+                int err;
+                byte[] dummy = new byte[2];
+                int N2, N4;
+                N2 = this.Fs / 200;
+                N4 = this.Fs / 400;
+
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_RESET_STATE);
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_START_BAND_REQUEST, (0));
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_PREDICTION_REQUEST, (0));
+
+                /* NOTE: We could speed this up slightly (at the expense of code size) by just adding a function that prefills the buffer */
+                celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf.Point(this.channels * (frame_size - N2 - N4)), N4, dummy.GetPointer(), 2, null);
+
+                err = celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf.Point(this.channels * (frame_size - N2)), N2, data.Point(nb_compr_bytes), redundancy_bytes, null);
+                if (err < 0)
+                {
+                    return OpusError.OPUS_INTERNAL_ERROR;
+                }
+                BoxedValue<uint> boxed_redundant_rng = new BoxedValue<uint>(redundant_rng);
+                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_GET_FINAL_RANGE_REQUEST, (boxed_redundant_rng));
+                redundant_rng = boxed_redundant_rng.Val;
+            }
+
+            /* Signalling the mode in the first byte */
+            data = data.Point(-1);
+            data[0] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+
+            this.rangeFinal = enc.rng ^ redundant_rng;
+
+            if (to_celt != 0)
+                this.prev_mode = OpusMode.MODE_CELT_ONLY;
+            else
+                this.prev_mode = this.mode;
+            this.prev_channels = this.stream_channels;
+            this.prev_framesize = frame_size;
+
+            this.first = 0;
+
+            /* In the unlikely case that the SILK encoder busted its target, tell
+               the decoder to call the PLC */
+            if (enc.tell() > (max_data_bytes - 1) * 8)
+            {
+                if (max_data_bytes < 2)
+                {
+                    return OpusError.OPUS_BUFFER_TOO_SMALL;
+                }
+                data[1] = 0;
+                ret = 1;
+                this.rangeFinal = 0;
+            }
+            else if (this.mode == OpusMode.MODE_SILK_ONLY && redundancy == 0)
+            {
+                /*When in LPC only mode it's perfectly
+                  reasonable to strip off trailing zero bytes as
+                  the required range decoder behavior is to
+                  fill these in. This can't be done when the MDCT
+                  modes are used because the decoder needs to know
+                  the actual length for allocation purposes.*/
+                while (ret > 2 && data[ret] == 0) ret--;
+            }
+            /* Count ToC and redundancy */
+            ret += 1 + redundancy_bytes;
+            if (this.use_vbr == 0)
+            {
+                if (Repacketizer.opus_packet_pad(data, ret, max_data_bytes) != OpusError.OPUS_OK)
+                {
+                    return OpusError.OPUS_INTERNAL_ERROR;
+                }
+                ret = max_data_bytes;
+            }
+
+            return ret;
+        }
+
+
+
+        /** Encodes an Opus frame.
+  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
+  * @param [in] pcm <tt>opus_int16*</tt>: Input signal (interleaved if 2 channels). length is frame_size*channels*sizeof(opus_int16)
+  * @param [in] frame_size <tt>int</tt>: Number of samples per channel in the
+  *                                      input signal.
+  *                                      This must be an Opus frame size for
+  *                                      the encoder's sampling rate.
+  *                                      For example, at 48 kHz the permitted
+  *                                      values are 120, 240, 480, 960, 1920,
+  *                                      and 2880.
+  *                                      Passing in a duration of less than
+  *                                      10 ms (480 samples at 48 kHz) will
+  *                                      prevent the encoder from using the LPC
+  *                                      or hybrid modes.
+  * @param [out] data <tt>unsigned char*</tt>: Output payload.
+  *                                            This must contain storage for at
+  *                                            least \a max_data_bytes.
+  * @param [in] max_data_bytes <tt>opus_int32</tt>: Size of the allocated
+  *                                                 memory for the output
+  *                                                 payload. This may be
+  *                                                 used to impose an upper limit on
+  *                                                 the instant bitrate, but should
+  *                                                 not be used as the only bitrate
+  *                                                 control. Use #OPUS_SET_BITRATE to
+  *                                                 control the bitrate.
+  * @returns The length of the encoded packet (in bytes) on success or a
+  *          negative error code (see @ref opus_errorcodes) on failure.
+  */
+        public int Encode(Pointer<short> pcm, int analysis_frame_size,
+              Pointer<byte> data, int out_data_bytes)
+        {
+            int i;
+            int frame_size;
+            int delay_compensation;
+            if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+                delay_compensation = 0;
+            else
+                delay_compensation = this.delay_compensation;
+
+            frame_size = CodecHelpers.compute_frame_size(pcm, analysis_frame_size,
+                  this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
+                  delay_compensation, Downmix.downmix_int
+#if ENABLE_ANALYSIS
+                  , st.analysis.subframe_mem
+#endif
+                  );
+
+            // fixme: does this belong here?
+            Pointer<int> input = Pointer.Malloc<int>(frame_size * this.channels);
+            for (i = 0; i < frame_size * this.channels; i++)
+                input[i] = (int)pcm[i];
+
+            return opus_encode_native<short>(input, frame_size, data, out_data_bytes, 16,
+                                     pcm, analysis_frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
+        }
+
+        /** Encodes an Opus frame from floating point input.
+  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
+  * @param [in] pcm <tt>float*</tt>: Input in float format (interleaved if 2 channels), with a normal range of +/-1.0.
+  *          Samples with a range beyond +/-1.0 are supported but will
+  *          be clipped by decoders using the integer API and should
+  *          only be used if it is known that the far end supports
+  *          extended dynamic range.
+  *          length is frame_size*channels*sizeof(float)
+  * @param [in] frame_size <tt>int</tt>: Number of samples per channel in the
+  *                                      input signal.
+  *                                      This must be an Opus frame size for
+  *                                      the encoder's sampling rate.
+  *                                      For example, at 48 kHz the permitted
+  *                                      values are 120, 240, 480, 960, 1920,
+  *                                      and 2880.
+  *                                      Passing in a duration of less than
+  *                                      10 ms (480 samples at 48 kHz) will
+  *                                      prevent the encoder from using the LPC
+  *                                      or hybrid modes.
+  * @param [out] data <tt>unsigned char*</tt>: Output payload.
+  *                                            This must contain storage for at
+  *                                            least \a max_data_bytes.
+  * @param [in] max_data_bytes <tt>opus_int32</tt>: Size of the allocated
+  *                                                 memory for the output
+  *                                                 payload. This may be
+  *                                                 used to impose an upper limit on
+  *                                                 the instant bitrate, but should
+  *                                                 not be used as the only bitrate
+  *                                                 control. Use #OPUS_SET_BITRATE to
+  *                                                 control the bitrate.
+  * @returns The length of the encoded packet (in bytes) on success or a
+  *          negative error code (see @ref opus_errorcodes) on failure.
+  */
+        public int Encode(Pointer<float> pcm, int analysis_frame_size,
+                              Pointer<byte> data, int max_data_bytes)
+        {
+            int i, ret;
+            int frame_size;
+            int delay_compensation;
+            Pointer<int> input;
+
+            if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+                delay_compensation = 0;
+            else
+                delay_compensation = this.delay_compensation;
+
+            frame_size = CodecHelpers.compute_frame_size(pcm, analysis_frame_size,
+                  this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
+                  delay_compensation, Downmix.downmix_float
+#if ENABLE_ANALYSIS
+                  , st.analysis.subframe_mem
+#endif
+                  );
+
+            input = Pointer.Malloc<int>(frame_size * this.channels);
+
+            for (i = 0; i < frame_size * this.channels; i++)
+                input[i] = Inlines.FLOAT2INT16(pcm[i]);
+
+            ret = opus_encode_native(input, frame_size, data, max_data_bytes, 16,
+                                     pcm, analysis_frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
+            return ret;
+        }
+
+        #endregion
+        
+        #region Getters and Setters
+
         public void SetApplication(OpusApplication value)
         {
             if (first == 0 && application != value)
@@ -249,7 +1609,7 @@ namespace Concentus.Structs
 
         public int GetBitrate()
         {
-            return opus_encoder.user_bitrate_to_bitrate(this, prev_framesize, 1276);
+            return user_bitrate_to_bitrate(prev_framesize, 1276);
         }
 
         public void SetForceChannels(int value)
@@ -498,11 +1858,13 @@ namespace Concentus.Structs
             celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.OPUS_SET_ENERGY_MASK_REQUEST, (value));
         }
 
-        public CeltMode GetCeltMode()
+        internal CeltMode GetCeltMode()
         {
             BoxedValue<CeltMode> value = new BoxedValue<CeltMode>();
             celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.CELT_GET_MODE_REQUEST, (value));
             return value.Val;
         }
+
+        #endregion
     }
 }

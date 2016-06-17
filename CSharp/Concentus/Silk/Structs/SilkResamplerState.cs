@@ -7,28 +7,28 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk.Structs
 {
-    public class SilkResamplerState
+    internal class SilkResamplerState
     {
-        public readonly Pointer<int> sIIR = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER); /* this must be the first element of this struct FIXME why? */
-        public readonly Pointer<int> sFIR_i32 = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-        public readonly Pointer<short> sFIR_i16 = Pointer.Malloc<short>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+        internal readonly Pointer<int> sIIR = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER); /* this must be the first element of this struct FIXME why? */
+        internal readonly Pointer<int> sFIR_i32 = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+        internal readonly Pointer<short> sFIR_i16 = Pointer.Malloc<short>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
 
-        public readonly Pointer<short> delayBuf = Pointer.Malloc<short>(48);
-        public int resampler_function = 0;
-        public int batchSize = 0;
-        public int invRatio_Q16 = 0;
-        public int FIR_Order = 0;
-        public int FIR_Fracs = 0;
-        public int Fs_in_kHz = 0;
-        public int Fs_out_kHz = 0;
-        public int inputDelay = 0;
+        internal readonly Pointer<short> delayBuf = Pointer.Malloc<short>(48);
+        internal int resampler_function = 0;
+        internal int batchSize = 0;
+        internal int invRatio_Q16 = 0;
+        internal int FIR_Order = 0;
+        internal int FIR_Fracs = 0;
+        internal int Fs_in_kHz = 0;
+        internal int Fs_out_kHz = 0;
+        internal int inputDelay = 0;
 
         /// <summary>
         /// POINTER
         /// </summary>
-        public Pointer<short> Coefs = null;
+        internal Pointer<short> Coefs = null;
 
-        public void Reset()
+        internal void Reset()
         {
             sIIR.MemSet(0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
             sFIR_i32.MemSet(0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
@@ -45,7 +45,7 @@ namespace Concentus.Silk.Structs
             Coefs = null;
         }
 
-        public void Assign(SilkResamplerState other)
+        internal void Assign(SilkResamplerState other)
         {
             resampler_function = other.resampler_function;
             batchSize = other.batchSize;

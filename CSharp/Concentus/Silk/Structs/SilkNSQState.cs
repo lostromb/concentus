@@ -11,24 +11,24 @@ namespace Concentus.Silk.Structs
     /// <summary>
     /// Noise shaping quantization state
     /// </summary>
-    public class SilkNSQState
+    internal class SilkNSQState
     {
         /// <summary>
         /// Buffer for quantized output signal
         /// </summary>
-        public readonly Pointer<short> xq = Pointer.Malloc<short>(2 * SilkConstants.MAX_FRAME_LENGTH);
-        public readonly Pointer<int> sLTP_shp_Q14 = Pointer.Malloc<int>(2 * SilkConstants.MAX_FRAME_LENGTH);
-        public readonly Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-        public readonly Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
-        public int sLF_AR_shp_Q14 = 0;
-        public int lagPrev = 0;
-        public int sLTP_buf_idx = 0;
-        public int sLTP_shp_buf_idx = 0;
-        public int rand_seed = 0;
-        public int prev_gain_Q16 = 0;
-        public int rewhite_flag = 0;
+        internal readonly Pointer<short> xq = Pointer.Malloc<short>(2 * SilkConstants.MAX_FRAME_LENGTH);
+        internal readonly Pointer<int> sLTP_shp_Q14 = Pointer.Malloc<int>(2 * SilkConstants.MAX_FRAME_LENGTH);
+        internal readonly Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+        internal readonly Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
+        internal int sLF_AR_shp_Q14 = 0;
+        internal int lagPrev = 0;
+        internal int sLTP_buf_idx = 0;
+        internal int sLTP_shp_buf_idx = 0;
+        internal int rand_seed = 0;
+        internal int prev_gain_Q16 = 0;
+        internal int rewhite_flag = 0;
 
-        public void Reset()
+        internal void Reset()
         {
             xq.MemSet(0, 2 * SilkConstants.MAX_FRAME_LENGTH);
             sLTP_shp_Q14.MemSet(0, 2 * SilkConstants.MAX_FRAME_LENGTH);
@@ -44,7 +44,7 @@ namespace Concentus.Silk.Structs
         }
 
         // Copies another nsq state to this one
-        public void Assign(SilkNSQState other)
+        internal void Assign(SilkNSQState other)
         {
             this.sLF_AR_shp_Q14 = other.sLF_AR_shp_Q14;
             this.lagPrev = other.lagPrev;
@@ -61,24 +61,24 @@ namespace Concentus.Silk.Structs
 
         private class NSQ_del_dec_struct
         {
-            public Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-            public Pointer<int> RandState = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            public Pointer<int> Q_Q10 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            public Pointer<int> Xq_Q14 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            public Pointer<int> Pred_Q15 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            public Pointer<int> Shape_Q14 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            public Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
-            public int LF_AR_Q14;
-            public int Seed;
-            public int SeedInit;
-            public int RD_Q10;
+            internal Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+            internal Pointer<int> RandState = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
+            internal Pointer<int> Q_Q10 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
+            internal Pointer<int> Xq_Q14 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
+            internal Pointer<int> Pred_Q15 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
+            internal Pointer<int> Shape_Q14 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
+            internal Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
+            internal int LF_AR_Q14;
+            internal int Seed;
+            internal int SeedInit;
+            internal int RD_Q10;
 
-            public NSQ_del_dec_struct()
+            internal NSQ_del_dec_struct()
             {
                 Reset();
             }
 
-            public void Reset()
+            internal void Reset()
             {
                 sLPC_Q14.MemSet(0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
                 RandState.MemSet(0, SilkConstants.DECISION_DELAY);
@@ -93,7 +93,7 @@ namespace Concentus.Silk.Structs
                 RD_Q10 = 0;
             }
 
-            public void PartialCopyFrom(NSQ_del_dec_struct other, int q14Offset)
+            internal void PartialCopyFrom(NSQ_del_dec_struct other, int q14Offset)
             {
                 other.sLPC_Q14.Point(q14Offset).MemCopyTo(sLPC_Q14.Point(q14Offset), SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH - q14Offset);
                 other.RandState.MemCopyTo(RandState, SilkConstants.DECISION_DELAY);
@@ -109,7 +109,7 @@ namespace Concentus.Silk.Structs
                 RD_Q10 = other.RD_Q10;
             }
 
-            public void Assign(NSQ_del_dec_struct other)
+            internal void Assign(NSQ_del_dec_struct other)
             {
                 this.PartialCopyFrom(other, 0);
             }
@@ -117,19 +117,19 @@ namespace Concentus.Silk.Structs
 
         private class NSQ_sample_struct
         {
-            public int Q_Q10;
-            public int RD_Q10;
-            public int xq_Q14;
-            public int LF_AR_Q14;
-            public int sLTP_shp_Q14;
-            public int LPC_exc_Q14;
+            internal int Q_Q10;
+            internal int RD_Q10;
+            internal int xq_Q14;
+            internal int LF_AR_Q14;
+            internal int sLTP_shp_Q14;
+            internal int LPC_exc_Q14;
 
-            public NSQ_sample_struct()
+            internal NSQ_sample_struct()
             {
                 Reset();
             }
 
-            public void Reset()
+            internal void Reset()
             {
                 Q_Q10 = 0;
                 RD_Q10 = 0;
@@ -139,7 +139,7 @@ namespace Concentus.Silk.Structs
                 LPC_exc_Q14 = 0;
             }
 
-            public void Assign(NSQ_sample_struct other)
+            internal void Assign(NSQ_sample_struct other)
             {
                 this.Q_Q10 = other.Q_Q10;
                 this.RD_Q10 = other.RD_Q10;
@@ -153,8 +153,8 @@ namespace Concentus.Silk.Structs
         // fixme: linearize this
         private class NSQ_sample_pair
         {
-            public NSQ_sample_struct left = new NSQ_sample_struct();
-            public NSQ_sample_struct right = new NSQ_sample_struct();
+            internal NSQ_sample_struct left = new NSQ_sample_struct();
+            internal NSQ_sample_struct right = new NSQ_sample_struct();
         }
 
         internal void silk_NSQ

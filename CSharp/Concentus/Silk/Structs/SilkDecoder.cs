@@ -11,15 +11,15 @@ namespace Concentus.Silk.Structs
     /// <summary>
     /// Decoder super struct
     /// </summary>
-    public class SilkDecoder
+    internal class SilkDecoder
     {
-        public readonly Pointer<SilkChannelDecoder> channel_state = Pointer.Malloc<SilkChannelDecoder>(SilkConstants.DECODER_NUM_CHANNELS);
-        public readonly StereoDecodeState sStereo = new StereoDecodeState();
-        public int nChannelsAPI = 0;
-        public int nChannelsInternal = 0;
-        public int prev_decode_only_middle = 0;
+        internal readonly Pointer<SilkChannelDecoder> channel_state = Pointer.Malloc<SilkChannelDecoder>(SilkConstants.DECODER_NUM_CHANNELS);
+        internal readonly StereoDecodeState sStereo = new StereoDecodeState();
+        internal int nChannelsAPI = 0;
+        internal int nChannelsInternal = 0;
+        internal int prev_decode_only_middle = 0;
 
-        public SilkDecoder()
+        internal SilkDecoder()
         {
             for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)
             {
@@ -27,7 +27,7 @@ namespace Concentus.Silk.Structs
             }
         }
 
-        public void Reset()
+        internal void Reset()
         {
             for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)
             {

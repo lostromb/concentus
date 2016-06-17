@@ -1,6 +1,6 @@
 ﻿using Concentus.Common;
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus.Enums;
+using Concentus.Enums;
 using System;
 using System.Collections.Generic;
 using System.IO;

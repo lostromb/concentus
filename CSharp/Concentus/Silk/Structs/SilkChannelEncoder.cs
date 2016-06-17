@@ -12,114 +12,114 @@ namespace Concentus.Silk.Structs
     /// <summary>
     /// Encoder state
     /// </summary>
-    public class SilkChannelEncoder
+    internal class SilkChannelEncoder
     {
-        public readonly Pointer<int> In_HP_State = Pointer.Malloc<int>(2);                  /* High pass filter state                                           */
-        public int variable_HP_smth1_Q15 = 0;             /* State of first smoother                                          */
-        public int variable_HP_smth2_Q15 = 0;             /* State of second smoother                                         */
-        public readonly SilkLPState sLP = new SilkLPState();                               /* Low pass filter state                                            */
-        public readonly SilkVADState sVAD = new SilkVADState();                              /* Voice activity detector state                                    */
-        public readonly SilkNSQState sNSQ = new SilkNSQState();                              /* Noise Shape Quantizer State                                      */
-        public readonly Pointer<short> prev_NLSFq_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);   /* Previously quantized NLSF vector                                 */
-        public int speech_activity_Q8 = 0;                /* Speech activity                                                  */
-        public int allow_bandwidth_switch = 0;            /* Flag indicating that switching of internal bandwidth is allowed  */
-        public sbyte LBRRprevLastGainIndex = 0;
-        public sbyte prevSignalType = 0;
-        public int prevLag = 0;
-        public int pitch_LPC_win_length = 0;
-        public int max_pitch_lag = 0;                     /* Highest possible pitch lag (samples)                             */
-        public int API_fs_Hz = 0;                         /* API sampling frequency (Hz)                                      */
-        public int prev_API_fs_Hz = 0;                    /* Previous API sampling frequency (Hz)                             */
-        public int maxInternal_fs_Hz = 0;                 /* Maximum internal sampling frequency (Hz)                         */
-        public int minInternal_fs_Hz = 0;                 /* Minimum internal sampling frequency (Hz)                         */
-        public int desiredInternal_fs_Hz = 0;             /* Soft request for internal sampling frequency (Hz)                */
-        public int fs_kHz = 0;                            /* Internal sampling frequency (kHz)                                */
-        public int nb_subfr = 0;                          /* Number of 5 ms subframes in a frame                              */
-        public int frame_length = 0;                      /* Frame length (samples)                                           */
-        public int subfr_length = 0;                      /* Subframe length (samples)                                        */
-        public int ltp_mem_length = 0;                    /* Length of LTP memory                                             */
-        public int la_pitch = 0;                          /* Look-ahead for pitch analysis (samples)                          */
-        public int la_shape = 0;                          /* Look-ahead for noise shape analysis (samples)                    */
-        public int shapeWinLength = 0;                    /* Window length for noise shape analysis (samples)                 */
-        public int TargetRate_bps = 0;                    /* Target bitrate (bps)                                             */
-        public int PacketSize_ms = 0;                     /* Number of milliseconds to put in each packet                     */
-        public int PacketLoss_perc = 0;                   /* Packet loss rate measured by farend                              */
-        public int frameCounter = 0;
-        public int Complexity = 0;                        /* Complexity setting                                               */
-        public int nStatesDelayedDecision = 0;            /* Number of states in delayed decision quantization                */
-        public int useInterpolatedNLSFs = 0;              /* Flag for using NLSF interpolation                                */
-        public int shapingLPCOrder = 0;                   /* Filter order for noise shaping filters                           */
-        public int predictLPCOrder = 0;                   /* Filter order for prediction filters                              */
-        public int pitchEstimationComplexity = 0;         /* Complexity level for pitch estimator                             */
-        public int pitchEstimationLPCOrder = 0;           /* Whitening filter order for pitch estimator                       */
-        public int pitchEstimationThreshold_Q16 = 0;      /* Threshold for pitch estimator                                    */
-        public int LTPQuantLowComplexity = 0;             /* Flag for low complexity LTP quantization                         */
-        public int mu_LTP_Q9 = 0;                         /* Rate-distortion tradeoff in LTP quantization                     */
-        public int sum_log_gain_Q7 = 0;                   /* Cumulative max prediction gain                                   */
-        public int NLSF_MSVQ_Survivors = 0;               /* Number of survivors in NLSF MSVQ                                 */
-        public int first_frame_after_reset = 0;           /* Flag for deactivating NLSF interpolation, pitch prediction       */
-        public int controlled_since_last_payload = 0;     /* Flag for ensuring codec_control only runs once per packet        */
-        public int warping_Q16 = 0;                       /* Warping parameter for warped noise shaping                       */
-        public int useCBR = 0;                            /* Flag to enable constant bitrate                                  */
-        public int prefillFlag = 0;                       /* Flag to indicate that only buffers are prefilled, no coding      */
-        public Pointer<byte> pitch_lag_low_bits_iCDF = null;          /* Pointer to iCDF table for low bits of pitch lag index            */
-        public Pointer<byte> pitch_contour_iCDF = null;               /* Pointer to iCDF table for pitch contour index                    */
-        public NLSFCodebook psNLSF_CB = null;                        /* Pointer to NLSF codebook                                         */
-        public readonly Pointer<int> input_quality_bands_Q15 = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
-        public int input_tilt_Q15 = 0;
-        public int SNR_dB_Q7 = 0;                         /* Quality setting                                                  */
+        internal readonly Pointer<int> In_HP_State = Pointer.Malloc<int>(2);                  /* High pass filter state                                           */
+        internal int variable_HP_smth1_Q15 = 0;             /* State of first smoother                                          */
+        internal int variable_HP_smth2_Q15 = 0;             /* State of second smoother                                         */
+        internal readonly SilkLPState sLP = new SilkLPState();                               /* Low pass filter state                                            */
+        internal readonly SilkVADState sVAD = new SilkVADState();                              /* Voice activity detector state                                    */
+        internal readonly SilkNSQState sNSQ = new SilkNSQState();                              /* Noise Shape Quantizer State                                      */
+        internal readonly Pointer<short> prev_NLSFq_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);   /* Previously quantized NLSF vector                                 */
+        internal int speech_activity_Q8 = 0;                /* Speech activity                                                  */
+        internal int allow_bandwidth_switch = 0;            /* Flag indicating that switching of internal bandwidth is allowed  */
+        internal sbyte LBRRprevLastGainIndex = 0;
+        internal sbyte prevSignalType = 0;
+        internal int prevLag = 0;
+        internal int pitch_LPC_win_length = 0;
+        internal int max_pitch_lag = 0;                     /* Highest possible pitch lag (samples)                             */
+        internal int API_fs_Hz = 0;                         /* API sampling frequency (Hz)                                      */
+        internal int prev_API_fs_Hz = 0;                    /* Previous API sampling frequency (Hz)                             */
+        internal int maxInternal_fs_Hz = 0;                 /* Maximum internal sampling frequency (Hz)                         */
+        internal int minInternal_fs_Hz = 0;                 /* Minimum internal sampling frequency (Hz)                         */
+        internal int desiredInternal_fs_Hz = 0;             /* Soft request for internal sampling frequency (Hz)                */
+        internal int fs_kHz = 0;                            /* Internal sampling frequency (kHz)                                */
+        internal int nb_subfr = 0;                          /* Number of 5 ms subframes in a frame                              */
+        internal int frame_length = 0;                      /* Frame length (samples)                                           */
+        internal int subfr_length = 0;                      /* Subframe length (samples)                                        */
+        internal int ltp_mem_length = 0;                    /* Length of LTP memory                                             */
+        internal int la_pitch = 0;                          /* Look-ahead for pitch analysis (samples)                          */
+        internal int la_shape = 0;                          /* Look-ahead for noise shape analysis (samples)                    */
+        internal int shapeWinLength = 0;                    /* Window length for noise shape analysis (samples)                 */
+        internal int TargetRate_bps = 0;                    /* Target bitrate (bps)                                             */
+        internal int PacketSize_ms = 0;                     /* Number of milliseconds to put in each packet                     */
+        internal int PacketLoss_perc = 0;                   /* Packet loss rate measured by farend                              */
+        internal int frameCounter = 0;
+        internal int Complexity = 0;                        /* Complexity setting                                               */
+        internal int nStatesDelayedDecision = 0;            /* Number of states in delayed decision quantization                */
+        internal int useInterpolatedNLSFs = 0;              /* Flag for using NLSF interpolation                                */
+        internal int shapingLPCOrder = 0;                   /* Filter order for noise shaping filters                           */
+        internal int predictLPCOrder = 0;                   /* Filter order for prediction filters                              */
+        internal int pitchEstimationComplexity = 0;         /* Complexity level for pitch estimator                             */
+        internal int pitchEstimationLPCOrder = 0;           /* Whitening filter order for pitch estimator                       */
+        internal int pitchEstimationThreshold_Q16 = 0;      /* Threshold for pitch estimator                                    */
+        internal int LTPQuantLowComplexity = 0;             /* Flag for low complexity LTP quantization                         */
+        internal int mu_LTP_Q9 = 0;                         /* Rate-distortion tradeoff in LTP quantization                     */
+        internal int sum_log_gain_Q7 = 0;                   /* Cumulative max prediction gain                                   */
+        internal int NLSF_MSVQ_Survivors = 0;               /* Number of survivors in NLSF MSVQ                                 */
+        internal int first_frame_after_reset = 0;           /* Flag for deactivating NLSF interpolation, pitch prediction       */
+        internal int controlled_since_last_payload = 0;     /* Flag for ensuring codec_control only runs once per packet        */
+        internal int warping_Q16 = 0;                       /* Warping parameter for warped noise shaping                       */
+        internal int useCBR = 0;                            /* Flag to enable constant bitrate                                  */
+        internal int prefillFlag = 0;                       /* Flag to indicate that only buffers are prefilled, no coding      */
+        internal Pointer<byte> pitch_lag_low_bits_iCDF = null;          /* Pointer to iCDF table for low bits of pitch lag index            */
+        internal Pointer<byte> pitch_contour_iCDF = null;               /* Pointer to iCDF table for pitch contour index                    */
+        internal NLSFCodebook psNLSF_CB = null;                        /* Pointer to NLSF codebook                                         */
+        internal readonly Pointer<int> input_quality_bands_Q15 = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
+        internal int input_tilt_Q15 = 0;
+        internal int SNR_dB_Q7 = 0;                         /* Quality setting                                                  */
 
-        public readonly Pointer<sbyte> VAD_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
-        public sbyte LBRR_flag = 0;
-        public readonly Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal readonly Pointer<sbyte> VAD_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal sbyte LBRR_flag = 0;
+        internal readonly Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
 
-        public readonly SideInfoIndices indices = new SideInfoIndices();
-        public readonly Pointer<sbyte> pulses = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAME_LENGTH);
+        internal readonly SideInfoIndices indices = new SideInfoIndices();
+        internal readonly Pointer<sbyte> pulses = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAME_LENGTH);
 
         /* Input/output buffering */
-        public readonly Pointer<short> inputBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2);  /* Buffer containing input signal                                   */
-        public int inputBufIx = 0;
-        public int nFramesPerPacket = 0;
-        public int nFramesEncoded = 0;                    /* Number of frames analyzed in current packet                      */
+        internal readonly Pointer<short> inputBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2);  /* Buffer containing input signal                                   */
+        internal int inputBufIx = 0;
+        internal int nFramesPerPacket = 0;
+        internal int nFramesEncoded = 0;                    /* Number of frames analyzed in current packet                      */
 
-        public int nChannelsAPI = 0;
-        public int nChannelsInternal = 0;
-        public int channelNb = 0;
+        internal int nChannelsAPI = 0;
+        internal int nChannelsInternal = 0;
+        internal int channelNb = 0;
 
         /* Parameters For LTP scaling Control */
-        public int frames_since_onset = 0;
+        internal int frames_since_onset = 0;
 
         /* Specifically for entropy coding */
-        public int ec_prevSignalType = 0;
-        public short ec_prevLagIndex = 0;
+        internal int ec_prevSignalType = 0;
+        internal short ec_prevLagIndex = 0;
 
-        public readonly SilkResamplerState resampler_state = new SilkResamplerState();
+        internal readonly SilkResamplerState resampler_state = new SilkResamplerState();
 
         /* DTX */
-        public int useDTX = 0;                            /* Flag to enable DTX                                               */
-        public int inDTX = 0;                             /* Flag to signal DTX period                                        */
-        public int noSpeechCounter = 0;                   /* Counts concecutive nonactive frames, used by DTX                 */
+        internal int useDTX = 0;                            /* Flag to enable DTX                                               */
+        internal int inDTX = 0;                             /* Flag to signal DTX period                                        */
+        internal int noSpeechCounter = 0;                   /* Counts concecutive nonactive frames, used by DTX                 */
 
         /* Inband Low Bitrate Redundancy (LBRR) data */
-        public int useInBandFEC = 0;                      /* Saves the API setting for query                                  */
-        public int LBRR_enabled = 0;                      /* Depends on useInBandFRC, bitrate and packet loss rate            */
-        public int LBRR_GainIncreases = 0;                /* Gains increment for coding LBRR frames                           */
-        public readonly Pointer<SideInfoIndices> indices_LBRR = Pointer.Malloc<SideInfoIndices>(SilkConstants.MAX_FRAMES_PER_PACKET);
-        public readonly Pointer<Pointer<sbyte>> pulses_LBRR = Arrays.InitTwoDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
+        internal int useInBandFEC = 0;                      /* Saves the API setting for query                                  */
+        internal int LBRR_enabled = 0;                      /* Depends on useInBandFRC, bitrate and packet loss rate            */
+        internal int LBRR_GainIncreases = 0;                /* Gains increment for coding LBRR frames                           */
+        internal readonly Pointer<SideInfoIndices> indices_LBRR = Pointer.Malloc<SideInfoIndices>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal readonly Pointer<Pointer<sbyte>> pulses_LBRR = Arrays.InitTwoDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
 
         /* Noise shaping state */
-        public readonly SilkShapeState sShape = new SilkShapeState();
+        internal readonly SilkShapeState sShape = new SilkShapeState();
 
         /* Prefilter State */
-        public readonly SilkPrefilterState sPrefilt = new SilkPrefilterState();
+        internal readonly SilkPrefilterState sPrefilt = new SilkPrefilterState();
 
         /* Buffer for find pitch and noise shape analysis */
-        public readonly Pointer<short> x_buf = Pointer.Malloc<short>(2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
+        internal readonly Pointer<short> x_buf = Pointer.Malloc<short>(2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
 
         /* Normalized correlation from pitch lag estimator */
-        public int LTPCorr_Q15 = 0;
+        internal int LTPCorr_Q15 = 0;
 
-        public SilkChannelEncoder()
+        internal SilkChannelEncoder()
         {
             for (int c = 0; c < SilkConstants.MAX_FRAMES_PER_PACKET; c++)
             {
@@ -127,7 +127,7 @@ namespace Concentus.Silk.Structs
             }
         }
 
-        public void Reset()
+        internal void Reset()
         {
             In_HP_State.MemSet(0, 2);
             variable_HP_smth1_Q15 = 0;

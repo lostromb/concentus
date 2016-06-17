@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Structs
 {
-    public class AnalysisInfo
+    internal class AnalysisInfo
     {
-        public int valid = 0;
-        public float tonality = 0;
-        public float tonality_slope = 0;
-        public float noisiness = 0;
-        public float activity = 0;
-        public float music_prob = 0;
-        public int bandwidth = 0;
+        internal int valid = 0;
+        internal float tonality = 0;
+        internal float tonality_slope = 0;
+        internal float noisiness = 0;
+        internal float activity = 0;
+        internal float music_prob = 0;
+        internal int bandwidth = 0;
 
-        public AnalysisInfo()
+        internal AnalysisInfo()
         {
         }
 
-        public void Assign(AnalysisInfo other)
+        internal void Assign(AnalysisInfo other)
         {
             this.valid = other.valid;
             this.tonality = other.tonality;
@@ -31,7 +31,7 @@ namespace Concentus.Celt.Structs
             this.bandwidth = other.bandwidth;
         }
 
-        public void Reset()
+        internal void Reset()
         {
             valid = 0;
             tonality = 0;

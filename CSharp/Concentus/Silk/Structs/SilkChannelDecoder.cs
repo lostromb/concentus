@@ -12,55 +12,55 @@ namespace Concentus.Silk.Structs
     /// <summary>
     /// Decoder state
     /// </summary>
-    public class SilkChannelDecoder
+    internal class SilkChannelDecoder
     {
-        public int prev_gain_Q16 = 0;
-        public readonly Pointer<int> exc_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_FRAME_LENGTH);
-        public readonly Pointer<int> sLPC_Q14_buf = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
-        public readonly Pointer<short> outBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);  /* Buffer for output signal                     */
-        public int lagPrev = 0;                            /* Previous Lag                                                     */
-        public sbyte LastGainIndex = 0;                      /* Previous gain index                                              */
-        public int fs_kHz = 0;                             /* Sampling frequency in kHz                                        */
-        public int fs_API_hz = 0;                          /* API sample frequency (Hz)                                        */
-        public int nb_subfr = 0;                           /* Number of 5 ms subframes in a frame                              */
-        public int frame_length = 0;                       /* Frame length (samples)                                           */
-        public int subfr_length = 0;                       /* Subframe length (samples)                                        */
-        public int ltp_mem_length = 0;                     /* Length of LTP memory                                             */
-        public int LPC_order = 0;                          /* LPC order                                                        */
-        public readonly Pointer<short> prevNLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);      /* Used to interpolate LSFs                                         */
-        public int first_frame_after_reset = 0;            /* Flag for deactivating NLSF interpolation                         */
-        public Pointer<byte> pitch_lag_low_bits_iCDF;           /* Pointer to iCDF table for low bits of pitch lag index            */
-        public Pointer<byte> pitch_contour_iCDF;                /* Pointer to iCDF table for pitch contour index                    */
+        internal int prev_gain_Q16 = 0;
+        internal readonly Pointer<int> exc_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_FRAME_LENGTH);
+        internal readonly Pointer<int> sLPC_Q14_buf = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
+        internal readonly Pointer<short> outBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);  /* Buffer for output signal                     */
+        internal int lagPrev = 0;                            /* Previous Lag                                                     */
+        internal sbyte LastGainIndex = 0;                      /* Previous gain index                                              */
+        internal int fs_kHz = 0;                             /* Sampling frequency in kHz                                        */
+        internal int fs_API_hz = 0;                          /* API sample frequency (Hz)                                        */
+        internal int nb_subfr = 0;                           /* Number of 5 ms subframes in a frame                              */
+        internal int frame_length = 0;                       /* Frame length (samples)                                           */
+        internal int subfr_length = 0;                       /* Subframe length (samples)                                        */
+        internal int ltp_mem_length = 0;                     /* Length of LTP memory                                             */
+        internal int LPC_order = 0;                          /* LPC order                                                        */
+        internal readonly Pointer<short> prevNLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);      /* Used to interpolate LSFs                                         */
+        internal int first_frame_after_reset = 0;            /* Flag for deactivating NLSF interpolation                         */
+        internal Pointer<byte> pitch_lag_low_bits_iCDF;           /* Pointer to iCDF table for low bits of pitch lag index            */
+        internal Pointer<byte> pitch_contour_iCDF;                /* Pointer to iCDF table for pitch contour index                    */
 
         /* For buffering payload in case of more frames per packet */
-        public int nFramesDecoded = 0;
-        public int nFramesPerPacket = 0;
+        internal int nFramesDecoded = 0;
+        internal int nFramesPerPacket = 0;
 
         /* Specifically for entropy coding */
-        public int ec_prevSignalType = 0;
-        public short ec_prevLagIndex = 0;
+        internal int ec_prevSignalType = 0;
+        internal short ec_prevLagIndex = 0;
 
-        public readonly Pointer<int> VAD_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
-        public int LBRR_flag = 0;
-        public readonly Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal readonly Pointer<int> VAD_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal int LBRR_flag = 0;
+        internal readonly Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
 
-        public readonly SilkResamplerState resampler_state = new SilkResamplerState();
+        internal readonly SilkResamplerState resampler_state = new SilkResamplerState();
 
-        public NLSFCodebook psNLSF_CB = null;                         /* Pointer to NLSF codebook                                         */
+        internal NLSFCodebook psNLSF_CB = null;                         /* Pointer to NLSF codebook                                         */
 
         /* Quantization indices */
-        public readonly SideInfoIndices indices = new SideInfoIndices();
+        internal readonly SideInfoIndices indices = new SideInfoIndices();
 
         /* CNG state */
-        public readonly CNGState sCNG = new CNGState();
+        internal readonly CNGState sCNG = new CNGState();
 
         /* Stuff used for PLC */
-        public int lossCnt = 0;
-        public int prevSignalType = 0;
+        internal int lossCnt = 0;
+        internal int prevSignalType = 0;
 
-        public readonly PLCStruct sPLC = new PLCStruct();
+        internal readonly PLCStruct sPLC = new PLCStruct();
         
-        public void Reset()
+        internal void Reset()
         {
             prev_gain_Q16 = 0;
             exc_Q14.MemSet(0, SilkConstants.MAX_FRAME_LENGTH);

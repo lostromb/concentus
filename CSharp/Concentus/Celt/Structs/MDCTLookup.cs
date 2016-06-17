@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Structs
 {
-    public class MDCTLookup
+    internal class MDCTLookup
     {
-        public int n = 0;
+        internal int n = 0;
 
-        public int maxshift = 0;
+        internal int maxshift = 0;
 
         // [porting note] these are pointers to static states defined in tables.cs
-        public FFTState[] kfft = new FFTState[4];
+        internal FFTState[] kfft = new FFTState[4];
 
-        public Pointer<short> trig = null;
+        internal Pointer<short> trig = null;
 
-        public MDCTLookup()
+        internal MDCTLookup()
         {
         }
 
-        public void Reset()
+        internal void Reset()
         {
             n = 0;
             maxshift = 0;

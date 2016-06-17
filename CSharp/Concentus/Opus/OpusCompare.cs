@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Concentus.Opus
+namespace Concentus
 {
     internal static class OpusCompare
     {

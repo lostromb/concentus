@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Concentus.Structs
 {
-    public class ChannelLayout
+    internal class ChannelLayout
     {
-        public int nb_channels;
-        public int nb_streams;
-        public int nb_coupled_streams;
-        public Pointer<byte> mapping = Pointer.Malloc<byte>(256);
+        internal int nb_channels;
+        internal int nb_streams;
+        internal int nb_coupled_streams;
+        internal Pointer<byte> mapping = Pointer.Malloc<byte>(256);
 
-        public void Reset()
+        internal void Reset()
         {
             nb_channels = 0;
             nb_streams = 0;
