@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Structs
 {
-    public class CELTEncoder
+    public class CeltEncoder
     {
-        public CELTMode mode = null;     /**< Mode used by the encoder [Porting Note] Pointer*/
+        public CeltMode mode = null;     /**< Mode used by the encoder [Porting Note] Pointer*/
         public int channels = 0;
         public int stream_channels = 0;
 

@@ -15,7 +15,7 @@ namespace TestConsole
         /// <param name="compressor"></param>
         /// <param name="encodeParams"></param>
         /// <returns></returns>
-        public static byte[] CompressAudioUsingStream(AudioChunk audio, IAudioCompressionStream compressor, out string encodeParams)
+        internal static byte[] CompressAudioUsingStream(AudioChunk audio, IAudioCompressionStream compressor, out string encodeParams)
         {
             if (compressor == null)
             {
@@ -43,7 +43,7 @@ namespace TestConsole
         /// <param name="input"></param>
         /// <param name="decompressor"></param>
         /// <returns></returns>
-        public static AudioChunk DecompressAudioUsingStream(byte[] input, IAudioDecompressionStream decompressor)
+        internal static AudioChunk DecompressAudioUsingStream(byte[] input, IAudioDecompressionStream decompressor)
         {
             if (decompressor == null)
             {

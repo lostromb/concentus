@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace Concentus.Silk
 {
-    public static class GainQuantization
+    internal static class GainQuantization
     {
         private static readonly int OFFSET = ((SilkConstants.MIN_QGAIN_DB * 128) / 6 + 16 * 128);
         private static readonly int SCALE_Q16 = ((65536 * (SilkConstants.N_LEVELS_QGAIN - 1)) / (((SilkConstants.MAX_QGAIN_DB - SilkConstants.MIN_QGAIN_DB) * 128) / 6));
@@ -23,7 +23,7 @@ namespace Concentus.Silk
         /// <param name="prev_ind">I/O  last index in previous frame. [Porting note] original implementation passed this as an int8*</param>
         /// <param name="conditional">I    first gain is delta coded if 1</param>
         /// <param name="nb_subfr">I    number of subframes</param>
-        public static void silk_gains_quant(
+        internal static void silk_gains_quant(
             Pointer<sbyte> ind,
             Pointer<int> gain_Q16,
             BoxedValue<sbyte> prev_ind,
@@ -95,7 +95,7 @@ namespace Concentus.Silk
         /// <param name="prev_ind">I/O  last index in previous frame [Porting note] original implementation passed this as an int8*</param>
         /// <param name="conditional">I    first gain is delta coded if 1</param>
         /// <param name="nb_subfr">I    number of subframes</param>
-        public static void silk_gains_dequant(
+        internal static void silk_gains_dequant(
             Pointer<int> gain_Q16,
             Pointer<sbyte> ind,
             BoxedValue<sbyte> prev_ind,
@@ -141,7 +141,7 @@ namespace Concentus.Silk
         /// <param name="ind">I    gain indices [MAX_NB_SUBFR]</param>
         /// <param name="nb_subfr">I    number of subframes</param>
         /// <returns>unique identifier of gains</returns>
-        public static int silk_gains_ID(Pointer<sbyte> ind, int nb_subfr)
+        internal static int silk_gains_ID(Pointer<sbyte> ind, int nb_subfr)
         {
             int k;
             int gainsID;

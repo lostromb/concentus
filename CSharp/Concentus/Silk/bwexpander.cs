@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk
 {
-    public static class bwexpander
+    internal static class BWExpander
     {
         /// <summary>
         /// Chirp (bw expand) LP AR filter (Fixed point implementation)
@@ -16,7 +16,7 @@ namespace Concentus.Silk
         /// <param name="ar">I/O  AR filter to be expanded (without leading 1)</param>
         /// <param name="d">I length of ar</param>
         /// <param name="chirp">I    chirp factor (typically in range (0..1) )</param>
-        public static void silk_bwexpander_32(
+        internal static void silk_bwexpander_32(
             Pointer<int> ar,                /* I/O  AR filter to be expanded (without leading 1)                */
     int d,                  /* I    Length of ar                                                */
     int chirp_Q16           /* I    Chirp factor in Q16                                         */
@@ -39,7 +39,7 @@ namespace Concentus.Silk
         /// <param name="ar">I/O  AR filter to be expanded (without leading 1)</param>
         /// <param name="d">I length of ar</param>
         /// <param name="chirp">I    chirp factor (typically in range (0..1) )</param>
-        public static void silk_bwexpander(
+        internal static void silk_bwexpander(
                     Pointer<short> ar,
                     int d,
                     int chirp_Q16)

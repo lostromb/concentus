@@ -6,7 +6,7 @@ namespace TestConsole
 {
     public class Program
     {
-        public static void Main(string[] args)
+        internal static void Main(string[] args)
         {
             int quality = 16;
             ConcentusCodec concentus = new ConcentusCodec(quality);

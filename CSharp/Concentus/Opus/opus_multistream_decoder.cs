@@ -35,7 +35,7 @@ namespace Concentus.Opus
 
             for (i = 0; i < st.layout.nb_channels; i++)
                 st.layout.mapping[i] = mapping[i];
-            if (opus_multistream.validate_layout(st.layout) == 0)
+            if (OpusMultistream.validate_layout(st.layout) == 0)
                 return OpusError.OPUS_BAD_ARG;
 
             for (i = 0; i < st.layout.nb_coupled_streams; i++)
@@ -91,7 +91,7 @@ namespace Concentus.Opus
           int frame_size
         );
 
-        public static int opus_multistream_packet_validate(Pointer<byte> data,
+        internal static int opus_multistream_packet_validate(Pointer<byte> data,
             int len, int nb_streams, int Fs)
         {
             int s;
@@ -107,12 +107,12 @@ namespace Concentus.Opus
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
 
-                count = opus.opus_packet_parse_impl(data, len, (s != nb_streams - 1) ? 1 : 0, toc, null,
+                count = OpusPacket.opus_packet_parse_impl(data, len, (s != nb_streams - 1) ? 1 : 0, toc, null,
                                                size.GetPointer(), null, packet_offset);
                 if (count < 0)
                     return count;
 
-                tmp_samples = opus_decoder.opus_packet_get_nb_samples(data, packet_offset.Val, Fs);
+                tmp_samples = OpusPacket.opus_packet_get_nb_samples(data, packet_offset.Val, Fs);
                 if (s != 0 && samples != tmp_samples)
                     return OpusError.OPUS_INVALID_PACKET;
                 samples = tmp_samples;
@@ -123,7 +123,7 @@ namespace Concentus.Opus
             return samples;
         }
 
-        public static int opus_multistream_decode_native<T>(
+        internal static int opus_multistream_decode_native<T>(
               OpusMSDecoder st,
       Pointer<byte> data,
       int len,
@@ -195,7 +195,7 @@ namespace Concentus.Opus
                     int chan, prev;
                     prev = -1;
                     /* Copy "left" audio to the channel(s) where it belongs */
-                    while ((chan = opus_multistream.get_left_channel(st.layout, s, prev)) != -1)
+                    while ((chan = OpusMultistream.get_left_channel(st.layout, s, prev)) != -1)
                     {
                         copy_channel_out(pcm, st.layout.nb_channels, chan,
                            buf, 2, frame_size);
@@ -203,7 +203,7 @@ namespace Concentus.Opus
                     }
                     prev = -1;
                     /* Copy "right" audio to the channel(s) where it belongs */
-                    while ((chan = opus_multistream.get_right_channel(st.layout, s, prev)) != -1)
+                    while ((chan = OpusMultistream.get_right_channel(st.layout, s, prev)) != -1)
                     {
                         copy_channel_out(pcm, st.layout.nb_channels, chan,
                            buf.Point(1), 2, frame_size);
@@ -214,7 +214,7 @@ namespace Concentus.Opus
                     int chan, prev;
                     prev = -1;
                     /* Copy audio to the channel(s) where it belongs */
-                    while ((chan = opus_multistream.get_mono_channel(st.layout, s, prev)) != -1)
+                    while ((chan = OpusMultistream.get_mono_channel(st.layout, s, prev)) != -1)
                     {
                         copy_channel_out(pcm, st.layout.nb_channels, chan,
                            buf, 1, frame_size);
@@ -235,7 +235,7 @@ namespace Concentus.Opus
             return frame_size;
         }
 
-        public static void opus_copy_channel_out_float(
+        internal static void opus_copy_channel_out_float(
           Pointer<float> dst,
           int dst_stride,
           int dst_channel,
@@ -257,7 +257,7 @@ namespace Concentus.Opus
             }
         }
 
-        public static void opus_copy_channel_out_short(
+        internal static void opus_copy_channel_out_short(
           Pointer<short> dst,
           int dst_stride,
           int dst_channel,

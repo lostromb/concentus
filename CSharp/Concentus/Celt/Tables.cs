@@ -3,10 +3,10 @@ using Concentus.Common.CPlusPlus;
 
 namespace Concentus.Celt
 {
-    public static class Tables
+    internal static class Tables
     {
         /* Mean energy in each band quantized in Q4 */
-        public static readonly byte[] eMeans/*[25]*/ = {
+        internal static readonly byte[] eMeans/*[25]*/ = {
               103,100, 92, 85, 81,
                77, 72, 70, 78, 75,
                73, 71, 78, 74, 69,
@@ -18,14 +18,14 @@ namespace Concentus.Celt
            This is essentially a bit-reversed Gray, on top of which we've added
            an inversion of the order because we want the DC at the end rather than
            the beginning. The lines are for N=2, 4, 8, 16 */
-        public static readonly int[] ordery_table = {
+        internal static readonly int[] ordery_table = {
                 1,  0,
                 3,  0,  2,  1,
                 7,  0,  4,  3,  6,  1,  5,  2,
                 15,  0,  8,  7, 12,  3, 11,  4, 14,  1,  9,  6, 13,  2, 10,  5,
         };
 
-        public static readonly short[] eband5ms = {
+        internal static readonly short[] eband5ms = {
             /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
               0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40, 48, 60, 78, 100
             };
@@ -35,7 +35,7 @@ namespace Concentus.Celt
            (inter/intra), and band number.
           The first number of each pair is the probability of 0, and the second is the
            decay rate, both in Q8 precision.*/
-        public static readonly byte[][][] e_prob_model = {
+        internal static readonly byte[][][] e_prob_model = {
            /*120 sample frames.*/
            new byte[][]{
               /*Inter*/
@@ -98,21 +98,21 @@ namespace Concentus.Celt
            }
         };
 
-        public static readonly sbyte[][] tf_select_table = {
+        internal static readonly sbyte[][] tf_select_table = {
               new sbyte[] { 0, -1, 0, -1,    0,-1, 0,-1},
               new sbyte[] { 0, -1, 0, -2,    1, 0, 1,-1},
               new sbyte[] { 0, -2, 0, -3,    2, 0, 1,-1},
               new sbyte[] { 0, -2, 0, -3,    3, 0, 1,-1},
         };
 
-        public static readonly byte[] trim_icdf = { 126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0 };
+        internal static readonly byte[] trim_icdf = { 126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0 };
         /* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
-        public static readonly byte[] spread_icdf = { 25, 23, 2, 0 };
+        internal static readonly byte[] spread_icdf = { 25, 23, 2, 0 };
 
-        public static readonly byte[] tapset_icdf = { 2, 1, 0 };
+        internal static readonly byte[] tapset_icdf = { 2, 1, 0 };
 
         /* Bit allocation table in units of 1/32 bit/sample (0.1875 dB SNR) */
-        public static readonly byte[] band_allocation = {
+        internal static readonly byte[] band_allocation = {
             /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
               0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
              90, 80, 75, 69, 63, 56, 49, 40, 34, 29, 20, 18, 10,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -136,7 +136,7 @@ namespace Concentus.Celt
           Otherwise, we can limit things to the set of N which can be achieved by
            splitting a band from a standard Opus mode: 176, 144, 96, 88, 72, 64, 48,
            44, 36, 32, 24, 22, 18, 16, 8, 4, 2).*/
-        public static readonly uint[] CELT_PVQ_U_DATA ={
+        internal static readonly uint[] CELT_PVQ_U_DATA ={
           /*N=0, K=0...176:*/
           1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -274,7 +274,7 @@ namespace Concentus.Celt
           1409933619
         };
 
-        public static readonly int[] window120 = {
+        internal static readonly int[] window120 = {
             2, 20, 55, 108, 178,
             266, 372, 494, 635, 792,
             966, 1157, 1365, 1590, 1831,
@@ -301,10 +301,10 @@ namespace Concentus.Celt
             32767, 32767, 32767, 32767, 32767,
             };
 
-        public static readonly short[] logN400 =
+        internal static readonly short[] logN400 =
             { 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 16, 16, 16, 21, 21, 24, 29, 34, 36, };
 
-        public static readonly short[] cache_index50 = {
+        internal static readonly short[] cache_index50 = {
             -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 41, 41, 41,
             82, 82, 123, 164, 200, 222, 0, 0, 0, 0, 0, 0, 0, 0, 41,
             41, 41, 41, 123, 123, 123, 164, 164, 240, 266, 283, 295, 41, 41, 41,
@@ -314,7 +314,7 @@ namespace Concentus.Celt
             240, 240, 305, 305, 305, 305, 343, 343, 343, 351, 351, 370, 376, 382, 387,
             };
 
-        public static readonly byte[] cache_bits50 = {
+        internal static readonly byte[] cache_bits50 = {
 40, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
             7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
             7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 40, 15, 23, 28,
@@ -343,7 +343,7 @@ namespace Concentus.Celt
             224, 5, 60, 113, 161, 206, 248, 4, 65, 122, 175, 224, 4, 67, 127,
             182, 234, };
 
-        public static readonly byte[] cache_caps50 = {
+        internal static readonly byte[] cache_caps50 = {
             224, 224, 224, 224, 224, 224, 224, 224, 160, 160, 160, 160, 185, 185, 185,
             178, 178, 168, 134, 61, 37, 224, 224, 224, 224, 224, 224, 224, 224, 240,
             240, 240, 240, 207, 207, 207, 198, 198, 183, 144, 66, 40, 160, 160, 160,
@@ -357,7 +357,7 @@ namespace Concentus.Celt
             204, 204, 204, 204, 204, 201, 201, 201, 201, 198, 198, 198, 187, 187, 175,
             140, 66, 40, };
 
-        public static readonly short[] fft_twiddles48000_960 =
+        internal static readonly short[] fft_twiddles48000_960 =
             new short[] {
             32767, 0, 32766, -429,
             32757, -858, 32743, -1287,
@@ -601,7 +601,7 @@ namespace Concentus.Celt
             32757, 860, 32766, 430
             };
 
-        public static readonly short[] fft_bitrev480 = {
+        internal static readonly short[] fft_bitrev480 = {
             0, 96, 192, 288, 384, 32, 128, 224, 320, 416, 64, 160, 256, 352, 448,
             8, 104, 200, 296, 392, 40, 136, 232, 328, 424, 72, 168, 264, 360, 456,
             16, 112, 208, 304, 400, 48, 144, 240, 336, 432, 80, 176, 272, 368, 464,
@@ -636,7 +636,7 @@ namespace Concentus.Celt
             31, 127, 223, 319, 415, 63, 159, 255, 351, 447, 95, 191, 287, 383, 479,
             };
 
-        public static readonly short[] fft_bitrev240 = {
+        internal static readonly short[] fft_bitrev240 = {
             0, 48, 96, 144, 192, 16, 64, 112, 160, 208, 32, 80, 128, 176, 224,
             4, 52, 100, 148, 196, 20, 68, 116, 164, 212, 36, 84, 132, 180, 228,
             8, 56, 104, 152, 200, 24, 72, 120, 168, 216, 40, 88, 136, 184, 232,
@@ -655,7 +655,7 @@ namespace Concentus.Celt
             15, 63, 111, 159, 207, 31, 79, 127, 175, 223, 47, 95, 143, 191, 239,
             };
 
-        public static readonly short[] fft_bitrev120 = {
+        internal static readonly short[] fft_bitrev120 = {
             0, 24, 48, 72, 96, 8, 32, 56, 80, 104, 16, 40, 64, 88, 112,
             4, 28, 52, 76, 100, 12, 36, 60, 84, 108, 20, 44, 68, 92, 116,
             1, 25, 49, 73, 97, 9, 33, 57, 81, 105, 17, 41, 65, 89, 113,
@@ -666,7 +666,7 @@ namespace Concentus.Celt
             7, 31, 55, 79, 103, 15, 39, 63, 87, 111, 23, 47, 71, 95, 119,
             };
 
-        public static readonly short[] fft_bitrev60 = {
+        internal static readonly short[] fft_bitrev60 = {
             0, 12, 24, 36, 48, 4, 16, 28, 40, 52, 8, 20, 32, 44, 56,
             1, 13, 25, 37, 49, 5, 17, 29, 41, 53, 9, 21, 33, 45, 57,
             2, 14, 26, 38, 50, 6, 18, 30, 42, 54, 10, 22, 34, 46, 58,
@@ -674,7 +674,7 @@ namespace Concentus.Celt
             };
 
 
-        public static readonly kiss_fft_state fft_state48000_960_0 = new kiss_fft_state()
+        internal static readonly FFTState fft_state48000_960_0 = new FFTState()
         {
             nfft = 480,
             scale = 17476,
@@ -685,7 +685,7 @@ namespace Concentus.Celt
             twiddles = fft_twiddles48000_960
         };
 
-        public static readonly kiss_fft_state fft_state48000_960_1 = new kiss_fft_state()
+        internal static readonly FFTState fft_state48000_960_1 = new FFTState()
         {
             nfft = 240,
             scale = 17476,
@@ -696,7 +696,7 @@ namespace Concentus.Celt
             twiddles = fft_twiddles48000_960
         };
 
-        public static readonly kiss_fft_state fft_state48000_960_2 = new kiss_fft_state()
+        internal static readonly FFTState fft_state48000_960_2 = new FFTState()
         {
             nfft = 120,
             scale = 17476,
@@ -707,7 +707,7 @@ namespace Concentus.Celt
             twiddles = fft_twiddles48000_960
         };
 
-        public static readonly kiss_fft_state fft_state48000_960_3 = new kiss_fft_state()
+        internal static readonly FFTState fft_state48000_960_3 = new FFTState()
         {
             nfft = 60,
             scale = 17476,
@@ -718,7 +718,7 @@ namespace Concentus.Celt
             twiddles = fft_twiddles48000_960
         };
 
-        public static readonly short[] mdct_twiddles960 /*1800*/ = {
+        internal static readonly short[] mdct_twiddles960 /*1800*/ = {
             32767, 32767, 32767, 32766, 32765,
             32763, 32761, 32759, 32756, 32753,
             32750, 32746, 32742, 32738, 32733,

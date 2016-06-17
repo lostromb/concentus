@@ -44,7 +44,7 @@ namespace ParityTest
         private const int OPUS_SET_VBR_CONSTRAINT_REQUEST = 4020;
         private const int OPUS_SET_DTX_REQUEST = 4016;
 
-        public static TestResults RunTest(TestParameters parameters, short[] inputFile)
+        internal static TestResults RunTest(TestParameters parameters, short[] inputFile)
         {
             TestResults returnVal = new TestResults();
             // Create Opus encoder
@@ -223,7 +223,7 @@ namespace ParityTest
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static short[] BytesToShorts(byte[] input)
+        internal static short[] BytesToShorts(byte[] input)
         {
             return BytesToShorts(input, 0, input.Length);
         }
@@ -234,7 +234,7 @@ namespace ParityTest
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static short[] BytesToShorts(byte[] input, int offset, int length)
+        internal static short[] BytesToShorts(byte[] input, int offset, int length)
         {
             short[] processedValues = new short[length / 2];
             for (int c = 0; c < processedValues.Length; c++)
@@ -251,7 +251,7 @@ namespace ParityTest
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static byte[] ShortsToBytes(short[] input)
+        internal static byte[] ShortsToBytes(short[] input)
         {
             return ShortsToBytes(input, 0, input.Length);
         }
@@ -261,7 +261,7 @@ namespace ParityTest
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static byte[] ShortsToBytes(short[] input, int offset, int length)
+        internal static byte[] ShortsToBytes(short[] input, int offset, int length)
         {
             byte[] processedValues = new byte[length * 2];
             for (int c = 0; c < length; c++)

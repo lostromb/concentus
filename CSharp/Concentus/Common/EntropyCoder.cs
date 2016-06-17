@@ -60,7 +60,7 @@ namespace Concentus.Common
    month=Jul,
    URL="http://www.stanford.edu/class/ee398a/handouts/papers/Moffat98ArithmCoding.pdf"
   }*/
-    public static class EntropyCoder
+    internal static class EntropyCoder
     {
         private const bool EC_DIFF = false;
 
@@ -94,18 +94,18 @@ namespace Concentus.Common
         /*The number of bits available for the last, partial symbol in the code field.*/
         private const int EC_CODE_EXTRA = ((EC_CODE_BITS - 2) % EC_SYM_BITS + 1);
 
-        public static int ec_read_byte(ec_ctx _this)
+        internal static int ec_read_byte(ec_ctx _this)
         {
             return _this.offs < _this.storage ? _this.buf[_this.offs++] : 0;
         }
 
-        public static int ec_read_byte_from_end(ec_ctx _this)
+        internal static int ec_read_byte_from_end(ec_ctx _this)
         {
             return _this.end_offs < _this.storage ?
              _this.buf[(_this.storage - ++(_this.end_offs))] : 0;
         }
 
-        public static int ec_write_byte(ec_ctx _this, uint _value)
+        internal static int ec_write_byte(ec_ctx _this, uint _value)
         {
             if (EC_DIFF) Debug.WriteLine("1a 0x{0:x}", (uint)_value);
             if (EC_DIFF) Debug.WriteLine("8a 0x{0:x}", (uint)_this.nbits_total);
@@ -117,7 +117,7 @@ namespace Concentus.Common
             return 0;
         }
 
-        public static int ec_write_byte_at_end(ec_ctx _this, uint _value)
+        internal static int ec_write_byte_at_end(ec_ctx _this, uint _value)
         {
             if (EC_DIFF) Debug.WriteLine("1b 0x{0:x}", (uint)_value);
             if (EC_DIFF) Debug.WriteLine("8b 0x{0:x}", (uint)_this.nbits_total);
@@ -134,7 +134,7 @@ namespace Concentus.Common
         /// Normalizes the contents of val and rng so that rng lies entirely in the high-order symbol.
         /// </summary>
         /// <param name="_this"></param>
-        public static void ec_dec_normalize(ec_ctx _this)
+        internal static void ec_dec_normalize(ec_ctx _this)
         {
             /*If the range is too small, rescale it and input some bits.*/
             while (_this.rng <= EC_CODE_BOT)
@@ -160,7 +160,7 @@ namespace Concentus.Common
             }
         }
 
-        public static void ec_dec_init(ec_ctx _this, Pointer<byte> _buf, uint _storage)
+        internal static void ec_dec_init(ec_ctx _this, Pointer<byte> _buf, uint _storage)
         {
             _this.buf = _buf;
             _this.storage = _storage;
@@ -182,7 +182,7 @@ namespace Concentus.Common
             ec_dec_normalize(_this);
         }
 
-        public static uint ec_decode(ec_ctx _this, uint _ft)
+        internal static uint ec_decode(ec_ctx _this, uint _ft)
         {
             uint s;
             _this.ext = _this.rng / _ft;
@@ -190,7 +190,7 @@ namespace Concentus.Common
             return _ft - Inlines.EC_MINI(s + 1, _ft);
         }
 
-        public static uint ec_decode_bin(ec_ctx _this, uint _bits)
+        internal static uint ec_decode_bin(ec_ctx _this, uint _bits)
         {
             uint s;
             _this.ext = _this.rng >> (int)_bits;
@@ -198,7 +198,7 @@ namespace Concentus.Common
             return (1U << (int)_bits) - Inlines.EC_MINI(s + 1U, 1U << (int)_bits);
         }
 
-        public static void ec_dec_update(ec_ctx _this, uint _fl, uint _fh, uint _ft)
+        internal static void ec_dec_update(ec_ctx _this, uint _fl, uint _fh, uint _ft)
         {
             uint s;
             s = _this.ext * (_ft - _fh);
@@ -213,7 +213,7 @@ namespace Concentus.Common
         /// <param name="_this"></param>
         /// <param name="_logp"></param>
         /// <returns></returns>
-        public static int ec_dec_bit_logp(ec_ctx _this, uint _logp)
+        internal static int ec_dec_bit_logp(ec_ctx _this, uint _logp)
         {
             uint r;
             uint d;
@@ -229,7 +229,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static int ec_dec_icdf(ec_ctx _this, Pointer<byte> _icdf, uint _ftb)
+        internal static int ec_dec_icdf(ec_ctx _this, Pointer<byte> _icdf, uint _ftb)
         {
             uint r;
             uint d;
@@ -252,7 +252,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static uint ec_dec_uint(ec_ctx _this, uint _ft)
+        internal static uint ec_dec_uint(ec_ctx _this, uint _ft)
         {
             uint ft;
             uint s;
@@ -281,7 +281,7 @@ namespace Concentus.Common
             }
         }
 
-        public static uint ec_dec_bits(ec_ctx _this, uint _bits)
+        internal static uint ec_dec_bits(ec_ctx _this, uint _bits)
         {
             uint window;
             int available;
@@ -321,7 +321,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_this"></param>
         /// <param name="_c"></param>
-        public static void ec_enc_carry_out(ec_ctx _this, int _c)
+        internal static void ec_enc_carry_out(ec_ctx _this, int _c)
         {
             if (EC_DIFF) Debug.WriteLine("1e 0x{0:x}", (uint)_c);
             if (EC_DIFF) Debug.WriteLine("8c 0x{0:x}", (uint)_this.nbits_total);
@@ -356,7 +356,7 @@ namespace Concentus.Common
             if (EC_DIFF) Debug.WriteLine("6b 0x{0:x}", (uint)_this.ext);
         }
 
-        public static void ec_enc_normalize(ec_ctx _this)
+        internal static void ec_enc_normalize(ec_ctx _this)
         {
             /*If the range is too small, output some bits and rescale it.*/
             if (EC_DIFF) Debug.WriteLine("8d 0x{0:x}", (uint)_this.nbits_total);
@@ -375,7 +375,7 @@ namespace Concentus.Common
             }
         }
 
-        public static void ec_enc_init(ec_ctx _this, Pointer<byte> _buf, uint _size)
+        internal static void ec_enc_init(ec_ctx _this, Pointer<byte> _buf, uint _size)
         {
             _this.buf = _buf;
             _this.end_offs = 0;
@@ -392,7 +392,7 @@ namespace Concentus.Common
             _this.error = 0;
         }
 
-        public static void ec_encode(ec_ctx _this, uint _fl, uint _fh, uint _ft)
+        internal static void ec_encode(ec_ctx _this, uint _fl, uint _fh, uint _ft)
         {
             if (EC_DIFF) Debug.WriteLine("1f 0x{0:x}", (uint)_fl);
             if (EC_DIFF) Debug.WriteLine("1g 0x{0:x}", (uint)_fh);
@@ -415,7 +415,7 @@ namespace Concentus.Common
             ec_enc_normalize(_this);
         }
 
-        public static void ec_encode_bin(ec_ctx _this, uint _fl, uint _fh, uint _bits)
+        internal static void ec_encode_bin(ec_ctx _this, uint _fl, uint _fh, uint _bits)
         {
             if (EC_DIFF) Debug.WriteLine("1i 0x{0:x}", (uint)_fl);
             if (EC_DIFF) Debug.WriteLine("1j 0x{0:x}", (uint)_fh);
@@ -435,7 +435,7 @@ namespace Concentus.Common
         }
 
         /*The probability of having a "one" is 1/(1<<_logp).*/
-        public static void ec_enc_bit_logp(ec_ctx _this, int _val, uint _logp)
+        internal static void ec_enc_bit_logp(ec_ctx _this, int _val, uint _logp)
         {
             if (EC_DIFF) Debug.WriteLine("1l 0x{0:x}", (uint)_val);
             if (EC_DIFF) Debug.WriteLine("1m 0x{0:x}", (uint)_logp);
@@ -458,7 +458,7 @@ namespace Concentus.Common
             ec_enc_normalize(_this);
         }
 
-        public static void ec_enc_icdf(ec_ctx _this, int _s, Pointer<byte> _icdf, uint _ftb)
+        internal static void ec_enc_icdf(ec_ctx _this, int _s, Pointer<byte> _icdf, uint _ftb)
         {
             if (EC_DIFF) Debug.WriteLine("1n 0x{0:x}", (uint)_s);
             if (EC_DIFF) Debug.WriteLine("1p 0x{0:x}", (uint)_ftb);
@@ -481,7 +481,7 @@ namespace Concentus.Common
             ec_enc_normalize(_this);
         }
 
-        public static void ec_enc_uint(ec_ctx _this, uint _fl, uint _ft)
+        internal static void ec_enc_uint(ec_ctx _this, uint _fl, uint _ft)
         {
             if (EC_DIFF) Debug.WriteLine("1q 0x{0:x}", (uint)_fl);
             if (EC_DIFF) Debug.WriteLine("1r 0x{0:x}", (uint)_ft);
@@ -504,7 +504,7 @@ namespace Concentus.Common
             else ec_encode(_this, _fl, _fl + 1, _ft + 1);
         }
 
-        public static void ec_enc_bits(ec_ctx _this, uint _fl, uint _bits)
+        internal static void ec_enc_bits(ec_ctx _this, uint _fl, uint _bits)
         {
             if (EC_DIFF) Debug.WriteLine("1s 0x{0:x}", (uint)_fl);
             if (EC_DIFF) Debug.WriteLine("1t 0x{0:x}", (uint)_bits);
@@ -538,7 +538,7 @@ namespace Concentus.Common
             if (EC_DIFF) Debug.WriteLine("6o 0x{0:x}", (uint)_this.nend_bits);
         }
 
-        public static void ec_enc_patch_initial_bits(ec_ctx _this, uint _val, uint _nbits)
+        internal static void ec_enc_patch_initial_bits(ec_ctx _this, uint _val, uint _nbits)
         {
             if (EC_DIFF) Debug.WriteLine("1u 0x{0:x}", (uint)_val);
             if (EC_DIFF) Debug.WriteLine("1v 0x{0:x}", (uint)_nbits);
@@ -576,7 +576,7 @@ namespace Concentus.Common
             if (EC_DIFF) Debug.WriteLine("6r 0x{0:x}", (uint)_this.val);
         }
 
-        public static void ec_enc_shrink(ec_ctx _this, uint _size)
+        internal static void ec_enc_shrink(ec_ctx _this, uint _size)
         {
             if (EC_DIFF) Debug.WriteLine("1w 0x{0:x}", (uint)_size);
             if (EC_DIFF) Debug.WriteLine("8m 0x{0:x}", (uint)_this.nbits_total);
@@ -586,17 +586,17 @@ namespace Concentus.Common
             _this.storage = _size;
         }
 
-        public static uint ec_range_bytes(ec_ctx _this)
+        internal static uint ec_range_bytes(ec_ctx _this)
         {
             return _this.offs;
         }
 
-        public static Pointer<byte> ec_get_buffer(ec_ctx _this)
+        internal static Pointer<byte> ec_get_buffer(ec_ctx _this)
         {
             return _this.buf;
         }
 
-        public static int ec_get_error(ec_ctx _this)
+        internal static int ec_get_error(ec_ctx _this)
         {
             return _this.error;
         }
@@ -610,7 +610,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_this"></param>
         /// <returns>The number of bits.</returns>
-        public static int ec_tell(ec_ctx _this)
+        internal static int ec_tell(ec_ctx _this)
         {
             int returnVal = _this.nbits_total - Inlines.EC_ILOG(_this.rng);
             if (EC_DIFF) Debug.WriteLine("1ya 0x{0:x}", (uint)_this.rng);
@@ -629,7 +629,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_this"></param>
         /// <returns></returns>
-        public static uint ec_tell_frac(ec_ctx _this)
+        internal static uint ec_tell_frac(ec_ctx _this)
         {
             if (EC_DIFF) Debug.WriteLine("8o 0x{0:x}", (uint)_this.nbits_total);
             int nbits;
@@ -646,7 +646,7 @@ namespace Concentus.Common
             return (uint)(nbits - l);
         }
 
-        public static void ec_enc_done(ec_ctx _this)
+        internal static void ec_enc_done(ec_ctx _this)
         {
             uint window;
             int used;

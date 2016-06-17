@@ -29,7 +29,7 @@ namespace Concentus.Silk
      * AF  . AR2 filter followed by FIR interpolation
      */
 
-    public static class Resampler
+    internal static class Resampler
     {
         private const int USE_silk_resampler_copy = 0;
         private const int USE_silk_resampler_private_up2_HQ_wrapper = 1;
@@ -56,8 +56,8 @@ namespace Concentus.Silk
         /// <param name="Fs_Hz_out">I    Output sampling rate (Hz)</param>
         /// <param name="forEnc">I    If 1: encoder; if 0: decoder</param>
         /// <returns></returns>
-        public static int silk_resampler_init(
-            silk_resampler_state_struct S,
+        internal static int silk_resampler_init(
+            SilkResamplerState S,
             int Fs_Hz_in,
             int Fs_Hz_out,
             int forEnc)
@@ -184,8 +184,8 @@ namespace Concentus.Silk
         /// <param name="input">I    Input signal</param>
         /// <param name="inLen">I    Number of input samples</param>
         /// <returns></returns>
-        public static int silk_resampler(
-            silk_resampler_state_struct S,
+        internal static int silk_resampler(
+            SilkResamplerState S,
             Pointer<short> output,
             Pointer<short> input,
             int inLen)
@@ -237,7 +237,7 @@ namespace Concentus.Silk
         /// <param name="output">O    Output signal [ floor(len/2) ]</param>
         /// <param name="input">I    Input signal [ len ]</param>
         /// <param name="inLen">I    Number of input samples</param>
-        public static void silk_resampler_down2(
+        internal static void silk_resampler_down2(
             Pointer<int> S,
             Pointer<short> output,
             Pointer<short> input,
@@ -283,7 +283,7 @@ namespace Concentus.Silk
         /// <param name="output">O    Output signal [ floor(2*inLen/3) ]</param>
         /// <param name="input">I    Input signal [ inLen ]</param>
         /// <param name="inLen">I    Number of input samples</param>
-        public static void silk_resampler_down2_3(
+        internal static void silk_resampler_down2_3(
             Pointer<int> S,
             Pointer<short> output,
             Pointer<short> input,
@@ -359,7 +359,7 @@ namespace Concentus.Silk
         /// <param name="input">I    Input signal</param>
         /// <param name="A_Q14">I    AR coefficients, Q14</param>
         /// <param name="len">I    Signal length</param>
-        public static void silk_resampler_private_AR2(
+        internal static void silk_resampler_private_AR2(
             Pointer<int> S,
             Pointer<int> out_Q8,
             Pointer<short> input,
@@ -378,7 +378,7 @@ namespace Concentus.Silk
             }
         }
 
-        public static Pointer<short> silk_resampler_private_down_FIR_INTERPOL(
+        internal static Pointer<short> silk_resampler_private_down_FIR_INTERPOL(
             Pointer<short> output,
             Pointer<int> buf,
             Pointer<short> FIR_Coefs,
@@ -501,8 +501,8 @@ namespace Concentus.Silk
         /// <param name="output">O    Output signal</param>
         /// <param name="input">I    Input signal</param>
         /// <param name="inLen">I    Number of input samples</param>
-        public static void silk_resampler_private_down_FIR(
-            silk_resampler_state_struct S,
+        internal static void silk_resampler_private_down_FIR(
+            SilkResamplerState S,
             Pointer<short> output,
             Pointer<short> input,
             int inLen)
@@ -550,7 +550,7 @@ namespace Concentus.Silk
             buf.Point(nSamplesIn).MemCopyTo(S.sFIR_i32, S.FIR_Order);
         }
 
-        public static Pointer<short> silk_resampler_private_IIR_FIR_INTERPOL(
+        internal static Pointer<short> silk_resampler_private_IIR_FIR_INTERPOL(
             Pointer<short> output,
             Pointer<short> buf,
             int max_index_Q16,
@@ -587,8 +587,8 @@ namespace Concentus.Silk
         /// <param name="output">O    Output signal</param>
         /// <param name="input">I    Input signal</param>
         /// <param name="inLen">I    Number of input samples</param>
-        public static void silk_resampler_private_IIR_FIR(
-            silk_resampler_state_struct S,
+        internal static void silk_resampler_private_IIR_FIR(
+            SilkResamplerState S,
             Pointer<short> output,
             Pointer<short> input,
             int inLen)
@@ -639,7 +639,7 @@ namespace Concentus.Silk
         /// <param name="output">O    Output signal [ 2 * len ]</param>
         /// <param name="input">I    Input signal [ len ]</param>
         /// <param name="len">I    Number of input samples</param>
-        public static void silk_resampler_private_up2_HQ(
+        internal static void silk_resampler_private_up2_HQ(
             Pointer<int> S,
             Pointer<short> output,
             Pointer<short> input,

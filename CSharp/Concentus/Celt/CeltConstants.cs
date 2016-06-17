@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class CeltConstants
+    internal static class CeltConstants
     {
         public const int Q15ONE = 32767;
 

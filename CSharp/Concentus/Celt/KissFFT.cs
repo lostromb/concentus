@@ -4,7 +4,7 @@ using Concentus.Common.CPlusPlus;
 
 namespace Concentus.Celt
 {
-    public static class KissFFT
+    internal static class KissFFT
     {
         public const int SAMP_MAX = 2147483647;
         public const int SAMP_MIN = 0 - SAMP_MAX;
@@ -13,22 +13,22 @@ namespace Concentus.Celt
 
         public const int MAXFACTORS = 8;
         
-        public static int S_MUL(int a, int b)
+        internal static int S_MUL(int a, int b)
         {
             return Inlines.MULT16_32_Q15(b, a);
         }
 
-        public static int S_MUL(int a, short b)
+        internal static int S_MUL(int a, short b)
         {
             return Inlines.MULT16_32_Q15(b, a);
         }
 
-        public static int HALF_OF(int x)
+        internal static int HALF_OF(int x)
         {
             return x >> 1;
         }
 
-        public static void kf_bfly2(int[] Fout, int fout_ptr, int m, int N)
+        internal static void kf_bfly2(int[] Fout, int fout_ptr, int m, int N)
         {
             int Fout2;
             int i;
@@ -74,11 +74,11 @@ namespace Concentus.Celt
             }
         }
 
-        public static void kf_bfly4(
+        internal static void kf_bfly4(
                      int[] Fout,
                      int fout_ptr,
                      int fstride,
-                     kiss_fft_state st,
+                     FFTState st,
                      int m,
                      int N,
                      int mm)
@@ -160,11 +160,11 @@ namespace Concentus.Celt
             }
         }
 
-        public static void kf_bfly3(
+        internal static void kf_bfly3(
                      int[] Fout,
                      int fout_ptr,
                      int fstride,
-                     kiss_fft_state st,
+                     FFTState st,
                      int m,
                      int N,
                      int mm
@@ -221,11 +221,11 @@ namespace Concentus.Celt
             }
         }
 
-        public static void kf_bfly5(
+        internal static void kf_bfly5(
                      int[] Fout,
                      int fout_ptr,
                      int fstride,
-                     kiss_fft_state st,
+                     FFTState st,
                      int m,
                      int N,
                      int mm
@@ -315,7 +315,7 @@ namespace Concentus.Celt
             }
         }
 
-        public static void opus_fft_impl(kiss_fft_state st, int[] fout, int fout_ptr)
+        internal static void opus_fft_impl(FFTState st, int[] fout, int fout_ptr)
         {
             int m2, m;
             int p;
@@ -363,7 +363,7 @@ namespace Concentus.Celt
             }
         }
 
-        public static void opus_fft_c(kiss_fft_state st, Pointer<int> fin, Pointer<int> fout)
+        internal static void opus_fft(FFTState st, Pointer<int> fin, Pointer<int> fout)
         {
             int i;
             /* Allows us to scale with MULT16_32_Q16() */
@@ -383,7 +383,7 @@ namespace Concentus.Celt
         }
 
 
-        public static void opus_ifft_c(kiss_fft_state st, Pointer<int> fin, Pointer<int> fout)
+        internal static void opus_ifft(FFTState st, Pointer<int> fin, Pointer<int> fout)
         {
             int i;
             Inlines.OpusAssert(fin != fout, "In-place iFFT not supported");

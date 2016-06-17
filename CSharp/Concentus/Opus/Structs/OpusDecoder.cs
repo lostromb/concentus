@@ -78,7 +78,7 @@ namespace Concentus.Structs
     {
         public int channels;
         public int Fs;          /** Sampling rate (at the API level) */
-        public readonly silk_DecControlStruct DecControl = new silk_DecControlStruct();
+        public readonly DecControlState DecControl = new DecControlState();
         public int decode_gain;
 
         /* Everything beyond this point gets cleared on a reset */
@@ -90,10 +90,10 @@ namespace Concentus.Structs
         public int prev_redundancy;
         public int last_packet_duration;
         public uint rangeFinal;
-        public silk_decoder SilkDecoder = new silk_decoder();
-        public CELTDecoder CeltDecoder = new CELTDecoder();
+        public SilkDecoder SilkDecoder = new SilkDecoder();
+        public CeltDecoder CeltDecoder = new CeltDecoder();
 
-        internal void Reset()
+        public void Reset()
         {
             channels = 0;
             Fs = 0;          /** Sampling rate (at the API level) */
@@ -105,7 +105,7 @@ namespace Concentus.Structs
         /// <summary>
         /// OPUS_DECODER_RESET_START
         /// </summary>
-        internal void PartialReset()
+        public void PartialReset()
         {
             stream_channels = 0;
             bandwidth = 0;
@@ -134,7 +134,7 @@ namespace Concentus.Structs
         {
             PartialReset();
             celt_decoder.opus_custom_decoder_ctl(CeltDecoder, OpusControl.OPUS_RESET_STATE);
-            dec_API.silk_InitDecoder(SilkDecoder);
+            DecodeAPI.silk_InitDecoder(SilkDecoder);
             stream_channels = channels;
             frame_size = Fs / 400;
         }

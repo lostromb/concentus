@@ -34,7 +34,7 @@ namespace Concentus.Celt.Structs
         /// <param name="data"></param>
         /// <param name="numComplexValues"></param>
         /// <returns></returns>
-        public static kiss_fft_cpx[] ConvertInterleavedIntArray(Pointer<int> data, int numComplexValues)
+        internal static kiss_fft_cpx[] ConvertInterleavedIntArray(Pointer<int> data, int numComplexValues)
         {
             kiss_fft_cpx[] returnVal = new kiss_fft_cpx[numComplexValues];
             for (int c = 0; c < numComplexValues; c++)
@@ -54,7 +54,7 @@ namespace Concentus.Celt.Structs
         /// <param name="complex"></param>
         /// <param name="interleaved"></param>
         /// <param name="numComplexValues"></param>
-        public static void WriteComplexValuesToInterleavedIntArray(Pointer<kiss_fft_cpx> complex, Pointer<int> interleaved, int numComplexValues)
+        internal static void WriteComplexValuesToInterleavedIntArray(Pointer<kiss_fft_cpx> complex, Pointer<int> interleaved, int numComplexValues)
         {
             for (int c = 0; c < numComplexValues; c++)
             {

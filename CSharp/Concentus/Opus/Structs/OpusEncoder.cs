@@ -99,7 +99,7 @@ namespace Concentus.Structs
   */
     public class OpusEncoder
     {
-        public readonly silk_EncControlStruct silk_mode = new silk_EncControlStruct();
+        public readonly EncControlState silk_mode = new EncControlState();
         public int application;
         public int channels;
         public int delay_compensation;
@@ -143,10 +143,10 @@ namespace Concentus.Structs
         // [Porting Note] There were originally "cabooses" that were tacked onto the end
         // of the struct without being explicitly included (since they have a variable size).
         // Here they are just included as an intrinsic variable.
-        public readonly silk_encoder SilkEncoder = new silk_encoder();
-        public readonly CELTEncoder CeltEncoder = new CELTEncoder();
+        public readonly SilkEncoder SilkEncoder = new SilkEncoder();
+        public readonly CeltEncoder CeltEncoder = new CeltEncoder();
 
-        internal void Reset()
+        public void Reset()
         {
             silk_mode.Reset();
             application = 0;
@@ -174,7 +174,7 @@ namespace Concentus.Structs
         /// <summary>
         /// OPUS_ENCODER_RESET_START
         /// </summary>
-        internal void PartialReset()
+        public void PartialReset()
         {
             stream_channels = 0;
             hybrid_stereo_width_Q14 = 0;
@@ -199,7 +199,7 @@ namespace Concentus.Structs
 
         public void ResetState()
         {
-            silk_EncControlStruct dummy = new silk_EncControlStruct();
+            EncControlState dummy = new EncControlState();
 #if ENABLE_ANALYSIS
             analysis.Reset();
 #endif
@@ -207,7 +207,7 @@ namespace Concentus.Structs
             PartialReset();
 
             celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_RESET_STATE);
-            enc_API.silk_InitEncoder(SilkEncoder, dummy);
+            EncodeAPI.silk_InitEncoder(SilkEncoder, dummy);
             stream_channels = channels;
             hybrid_stereo_width_Q14 = 1 << 14;
             prev_HB_gain = CeltConstants.Q15ONE;
@@ -516,9 +516,9 @@ namespace Concentus.Structs
             celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.OPUS_SET_ENERGY_MASK_REQUEST, (value));
         }
 
-        public CELTMode GetCeltMode()
+        public CeltMode GetCeltMode()
         {
-            BoxedValue<CELTMode> value = new BoxedValue<CELTMode>();
+            BoxedValue<CeltMode> value = new BoxedValue<CeltMode>();
             celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.CELT_GET_MODE_REQUEST, (value));
             return value.Val;
         }

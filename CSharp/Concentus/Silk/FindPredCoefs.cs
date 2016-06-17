@@ -1,0 +1,140 @@
+﻿using Concentus.Common.CPlusPlus;
+using Concentus.Common;
+using Concentus.Silk.Enums;
+using Concentus.Silk.Structs;
+using System.Diagnostics;
+
+namespace Concentus.Silk
+{
+    internal static class FindPredCoefs
+    {
+        // fixme: this is a priority for testing
+
+        internal static void silk_find_pred_coefs(
+            SilkChannelEncoder psEnc,                                 /* I/O  encoder state                                                               */
+            SilkEncoderControl psEncCtrl,                             /* I/O  encoder control                                                             */
+            Pointer<short> res_pitch,                            /* I    Residual from pitch analysis                                                */
+            Pointer<short> x,                                    /* I    Speech signal                                                               */
+            int condCoding                              /* I    The type of conditional coding to use                                       */
+        )
+        {
+            int i;
+            Pointer<int> invGains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+            Pointer<int> local_gains = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+            Pointer<int> Wght_Q15 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+            Pointer<short> NLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
+            Pointer<short> x_ptr;
+            Pointer<short> x_pre_ptr;
+            Pointer<short> LPC_in_pre;
+            int tmp, min_gain_Q16, minInvGain_Q30;
+            Pointer<int> LTP_corrs_rshift = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+            
+            /* weighting for weighted least squares */
+            min_gain_Q16 = int.MaxValue >> 6;
+            for (i = 0; i < psEnc.nb_subfr; i++)
+            {
+                min_gain_Q16 = Inlines.silk_min(min_gain_Q16, psEncCtrl.Gains_Q16[i]);
+            }
+            for (i = 0; i < psEnc.nb_subfr; i++)
+            {
+                /* Divide to Q16 */
+                Inlines.OpusAssert(psEncCtrl.Gains_Q16[i] > 0);
+                /* Invert and normalize gains, and ensure that maximum invGains_Q16 is within range of a 16 bit int */
+                invGains_Q16[i] = Inlines.silk_DIV32_varQ(min_gain_Q16, psEncCtrl.Gains_Q16[i], 16 - 2);
+
+                /* Ensure Wght_Q15 a minimum value 1 */
+                invGains_Q16[i] = Inlines.silk_max(invGains_Q16[i], 363);
+
+                /* Square the inverted gains */
+                Inlines.OpusAssert(invGains_Q16[i] == Inlines.silk_SAT16(invGains_Q16[i]));
+                tmp = Inlines.silk_SMULWB(invGains_Q16[i], invGains_Q16[i]);
+                Wght_Q15[i] = Inlines.silk_RSHIFT(tmp, 1);
+
+                /* Invert the inverted and normalized gains */
+                local_gains[i] = Inlines.silk_DIV32(((int)1 << 16), invGains_Q16[i]);
+            }
+
+            LPC_in_pre = Pointer.Malloc<short>(psEnc.nb_subfr * psEnc.predictLPCOrder + psEnc.frame_length);
+            if (psEnc.indices.signalType == SilkConstants.TYPE_VOICED)
+            {
+                Pointer<int> WLTP;
+
+                /**********/
+                /* VOICED */
+                /**********/
+                Inlines.OpusAssert(psEnc.ltp_mem_length - psEnc.predictLPCOrder >= psEncCtrl.pitchL[0] + SilkConstants.LTP_ORDER / 2);
+
+                WLTP = Pointer.Malloc<int>(psEnc.nb_subfr * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER);
+
+                /* LTP analysis */
+                BoxedValue<int> boxed_codgain = new BoxedValue<int>(psEncCtrl.LTPredCodGain_Q7);
+                FindLTP.silk_find_LTP(psEncCtrl.LTPCoef_Q14, WLTP, boxed_codgain,
+                    res_pitch, psEncCtrl.pitchL, Wght_Q15, psEnc.subfr_length,
+                    psEnc.nb_subfr, psEnc.ltp_mem_length, LTP_corrs_rshift);
+                psEncCtrl.LTPredCodGain_Q7 = boxed_codgain.Val;
+
+                /* Quantize LTP gain parameters */
+                BoxedValue<sbyte> boxed_periodicity = new BoxedValue<sbyte>(psEnc.indices.PERIndex);
+                BoxedValue<int> boxed_gain = new BoxedValue<int>(psEnc.sum_log_gain_Q7);
+                QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex, boxed_periodicity,
+                    boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr
+                    );
+                psEnc.indices.PERIndex = boxed_periodicity.Val;
+                psEnc.sum_log_gain_Q7 = boxed_gain.Val;
+
+                /* Control LTP scaling */
+                LTPScaleControl.silk_LTP_scale_ctrl(psEnc, psEncCtrl, condCoding);
+
+                /* Create LTP residual */
+                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre, x.Point(0 - psEnc.predictLPCOrder), psEncCtrl.LTPCoef_Q14,
+                    psEncCtrl.pitchL, invGains_Q16, psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
+
+            }
+            else {
+                /************/
+                /* UNVOICED */
+                /************/
+                /* Create signal with prepended subframes, scaled by inverse gains */
+                x_ptr = x.Point(0 - psEnc.predictLPCOrder);
+                x_pre_ptr = LPC_in_pre;
+                for (i = 0; i < psEnc.nb_subfr; i++)
+                {
+                    Inlines.silk_scale_copy_vector16(x_pre_ptr, x_ptr, invGains_Q16[i],
+                        psEnc.subfr_length + psEnc.predictLPCOrder);
+                    x_pre_ptr = x_pre_ptr.Point(psEnc.subfr_length + psEnc.predictLPCOrder);
+                    x_ptr = x_ptr.Point(psEnc.subfr_length);
+                }
+
+                psEncCtrl.LTPCoef_Q14.MemSet(0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);
+                psEncCtrl.LTPredCodGain_Q7 = 0;
+                psEnc.sum_log_gain_Q7 = 0;
+            }
+
+            /* Limit on total predictive coding gain */
+            if (psEnc.first_frame_after_reset != 0)
+            {
+                minInvGain_Q30 = Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN_AFTER_RESET, 30);
+            }
+            else {
+                minInvGain_Q30 = Inlines.silk_log2lin(Inlines.silk_SMLAWB(16 << 7, (int)psEncCtrl.LTPredCodGain_Q7, Inlines.SILK_CONST(1.0f / 3f, 16)));      /* Q16 */
+                minInvGain_Q30 = Inlines.silk_DIV32_varQ(minInvGain_Q30,
+                    Inlines.silk_SMULWW(Inlines.SILK_CONST(SilkConstants.MAX_PREDICTION_POWER_GAIN, 0),
+                        Inlines.silk_SMLAWB(Inlines.SILK_CONST(0.25f, 18), Inlines.SILK_CONST(0.75f, 18), psEncCtrl.coding_quality_Q14)), 14);
+            }
+
+            /* LPC_in_pre contains the LTP-filtered input for voiced, and the unfiltered input for unvoiced */
+            FindLPC.silk_find_LPC(psEnc, NLSF_Q15, LPC_in_pre, minInvGain_Q30);
+
+            /* Quantize LSFs */
+            NLSF.silk_process_NLSFs(psEnc, psEncCtrl.PredCoef_Q12, NLSF_Q15, psEnc.prev_NLSFq_Q15);
+
+            /* Calculate residual energy using quantized LPC coefficients */
+            ResidualEnergy.silk_residual_energy(psEncCtrl.ResNrg, psEncCtrl.ResNrgQ, LPC_in_pre, psEncCtrl.PredCoef_Q12, local_gains,
+                psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
+
+            /* Copy to prediction struct for use in next frame for interpolation */
+            NLSF_Q15.MemCopyTo(psEnc.prev_NLSFq_Q15, SilkConstants.MAX_LPC_ORDER);
+
+        }
+    }
+}

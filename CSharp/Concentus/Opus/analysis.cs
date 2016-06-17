@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Concentus
 {
-    public static class analysis
+    internal static class analysis
     {
 #if ENABLE_ANALYSIS
         private const double M_PI = 3.141592653;
@@ -23,7 +23,7 @@ namespace Concentus
 
         private const int NB_TONAL_SKIP_BANDS = 9;
 
-        public static float fast_atan2f(float y, float x)
+        internal static float fast_atan2f(float y, float x)
         {
             float x2, y2;
             /* Should avoid underflow on the values we'll get */
@@ -51,7 +51,7 @@ namespace Concentus
             }
         }
 
-        public static void tonality_analysis_init(TonalityAnalysisState tonal)
+        internal static void tonality_analysis_init(TonalityAnalysisState tonal)
         {
             /* Initialize reusable fields. */
             tonal.arch = 0;
@@ -59,7 +59,7 @@ namespace Concentus
             tonal.Reset();
         }
 
-        public static void tonality_get_info(TonalityAnalysisState tonal, AnalysisInfo info_out, int len)
+        internal static void tonality_get_info(TonalityAnalysisState tonal, AnalysisInfo info_out, int len)
         {
             int pos;
             int curr_lookahead;
@@ -123,7 +123,7 @@ namespace Concentus
         /// <param name="C"></param>
         /// <param name="lsb_depth"></param>
         /// <param name="downmix"></param>
-        public static void tonality_analysis<T>(TonalityAnalysisState tonal, CELTMode celt_mode, Pointer<T> x, int len, int offset, int c1, int c2, int C, int lsb_depth, downmix_func_def.downmix_func<T> downmix)
+        internal static void tonality_analysis<T>(TonalityAnalysisState tonal, CELTMode celt_mode, Pointer<T> x, int len, int offset, int c1, int c2, int C, int lsb_depth, downmix_func_def.downmix_func<T> downmix)
         {
             int i, b;
             kiss_fft_state kfft;
@@ -204,7 +204,7 @@ namespace Concentus
             remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
             downmix(x, tonal.inmem.Point(240), remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
             tonal.mem_fill = 240 + remaining;
-            KissFFT.opus_fft_c(kfft, input, output);
+            KissFFT.opus_fft(kfft, input, output);
 
             for (i = 1; i < N2; i++)
             {
@@ -537,7 +537,7 @@ namespace Concentus
             info.valid = 1;
         }
 
-        public static void run_analysis<T>(TonalityAnalysisState analysis, CELTMode celt_mode, Pointer<T> analysis_pcm,
+        internal static void run_analysis<T>(TonalityAnalysisState analysis, CELTMode celt_mode, Pointer<T> analysis_pcm,
                          int analysis_frame_size, int frame_size, int c1, int c2, int C, int Fs,
                          int lsb_depth, downmix_func_def.downmix_func<T> downmix, AnalysisInfo analysis_info)
         {

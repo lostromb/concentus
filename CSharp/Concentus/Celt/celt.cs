@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class celt
+    internal static class Celt
     {
-        public static int resampling_factor(int rate)
+        internal static int resampling_factor(int rate)
         {
             int ret;
             switch (rate)
@@ -42,7 +42,7 @@ namespace Concentus.Celt
             return ret;
         }
 
-        public static void comb_filter_const_c(Pointer<int> y, Pointer<int> x, int T, int N,
+        internal static void comb_filter_const(Pointer<int> y, Pointer<int> x, int T, int N,
               int g10, int g11, int g12)
         {
             int x0, x1, x2, x3, x4;
@@ -66,7 +66,7 @@ namespace Concentus.Celt
 
         }
 
-        public static void comb_filter(Pointer<int> y, Pointer<int> x, int T0, int T1, int N,
+        internal static void comb_filter(Pointer<int> y, Pointer<int> x, int T0, int T1, int N,
               int g0, int g1, int tapset0, int tapset1,
             Pointer<int> window, int overlap)
         {
@@ -133,7 +133,7 @@ namespace Concentus.Celt
             }
 
             /* Compute the part with the constant filter. */
-            comb_filter_const_c(y.Point(i), x.Point(i), T1, N - i, g10, g11, g12);
+            comb_filter_const(y.Point(i), x.Point(i), T1, N - i, g10, g11, g12);
         }
 
         private static readonly sbyte[][] tf_select_table = {
@@ -144,7 +144,7 @@ namespace Concentus.Celt
         };
 
 
-        public static void init_caps(CELTMode m, Pointer<int> cap, int LM, int C)
+        internal static void init_caps(CeltMode m, Pointer<int> cap, int LM, int C)
         {
             int i;
             for (i = 0; i < m.nbEBands; i++)
@@ -153,33 +153,6 @@ namespace Concentus.Celt
                 N = (m.eBands[i + 1] - m.eBands[i]) << LM;
                 cap[i] = (m.cache.caps[m.nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
             }
-        }
-
-        public static string opus_strerror(int error)
-        {
-            string[] error_strings = {
-              "success",
-              "invalid argument",
-              "buffer too small",
-              "internal error",
-              "corrupted stream",
-              "request not implemented",
-              "invalid state",
-              "memory allocation failed"
-           };
-            if (error > 0 || error < -7)
-                return "unknown error";
-            else
-                return error_strings[-error];
-        }
-
-        public static string opus_get_version_string()
-        {
-            return "concentus 1.0-fixed"
-#if FUZZING
-          + "-fuzzing"
-#endif
-          ;
         }
     }
 }

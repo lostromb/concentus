@@ -17,7 +17,7 @@ namespace Concentus.Opus.Enums
         /** Not enough bytes allocated in the buffer*/
         public const int OPUS_BUFFER_TOO_SMALL = -2;
 
-        /** An internal error was detected*/
+        /** An public error was detected*/
         public const int OPUS_INTERNAL_ERROR = -3;
 
         /** The compressed data passed is corrupted*/

@@ -34,7 +34,7 @@ using Concentus.Opus.Enums;
 using Concentus.Opus.Structs;
 using Concentus.Structs;
 using System;
-using static Concentus.downmix_func_def;
+using static Concentus.Downmix;
 
 namespace Concentus.Opus
 {
@@ -69,27 +69,27 @@ namespace Concentus.Opus
         public delegate void opus_copy_channel_in_func<T>(
             Pointer<int> dst, int dst_stride, Pointer<T> src, int src_stride, int src_channel, int frame_size);
         
-        public static int validate_encoder_layout(ChannelLayout layout)
+        internal static int validate_encoder_layout(ChannelLayout layout)
         {
             int s;
             for (s = 0; s < layout.nb_streams; s++)
             {
                 if (s < layout.nb_coupled_streams)
                 {
-                    if (opus_multistream.get_left_channel(layout, s, -1) == -1)
+                    if (OpusMultistream.get_left_channel(layout, s, -1) == -1)
                         return 0;
-                    if (opus_multistream.get_right_channel(layout, s, -1) == -1)
+                    if (OpusMultistream.get_right_channel(layout, s, -1) == -1)
                         return 0;
                 }
                 else {
-                    if (opus_multistream.get_mono_channel(layout, s, -1) == -1)
+                    if (OpusMultistream.get_mono_channel(layout, s, -1) == -1)
                         return 0;
                 }
             }
             return 1;
         }
 
-        public static void channel_pos(int channels, int[] pos/*[8]*/)
+        internal static void channel_pos(int channels, int[] pos/*[8]*/)
         {
             /* Position in the mix: 0 don't mix, 1: left, 2: center, 3:right */
             if (channels == 4)
@@ -138,7 +138,7 @@ namespace Concentus.Opus
        };
 
         /* Computes a rough approximation of log2(2^a + 2^b) */
-        public static int logSum(int a, int b)
+        internal static int logSum(int a, int b)
         {
             int max;
             int diff;
@@ -167,7 +167,7 @@ namespace Concentus.Opus
         //    return log2(pow(4, a) + pow(4, b)) / 2;
         //}
 
-        public static void surround_analysis<T>(CELTMode celt_mode, Pointer<T> pcm,
+        internal static void surround_analysis<T>(CeltMode celt_mode, Pointer<T> pcm,
             Pointer<int> bandLogE, Pointer<int> mem, Pointer<int> preemph_mem,
           int len, int overlap, int channels, int rate, opus_copy_channel_in_func<T> copy_channel_in
     )
@@ -185,7 +185,7 @@ namespace Concentus.Opus
             Pointer<int> x;
             Pointer<int> freq;
 
-            upsample = celt.resampling_factor(rate);
+            upsample = Celt.Celt.resampling_factor(rate);
             frame_size = len * upsample;
 
             for (LM = 0; LM < celt_mode.maxLM; LM++)
@@ -211,7 +211,7 @@ namespace Concentus.Opus
                 celt_encoder.celt_preemphasis(x, input.Point(overlap), frame_size, 1, upsample, celt_mode.preemph.GetPointer(), boxed_preemph, 0);
                 preemph_mem[c] = boxed_preemph.Val;
 
-                mdct.clt_mdct_forward_c(celt_mode.mdct, input, freq, celt_mode.window,
+                MDCT.clt_mdct_forward(celt_mode.mdct, input, freq, celt_mode.window,
                       overlap, celt_mode.maxLM - LM, 1);
                 if (upsample != 1)
                 {
@@ -222,8 +222,8 @@ namespace Concentus.Opus
                         freq[i] = 0;
                 }
 
-                bands.compute_band_energies(celt_mode, freq, bandE.GetPointer(), 21, 1, LM);
-                quant_bands.amp2Log2(celt_mode, 21, 21, bandE.GetPointer(), bandLogE.Point(21 * c), 1);
+                Bands.compute_band_energies(celt_mode, freq, bandE.GetPointer(), 21, 1, LM);
+                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE.GetPointer(), bandLogE.Point(21 * c), 1);
                 /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
                 for (i = 1; i < 21; i++)
                     bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT));
@@ -303,7 +303,7 @@ namespace Concentus.Opus
             st.variable_duration = OpusFramesize.OPUS_FRAMESIZE_ARG;
             for (i = 0; i < st.layout.nb_channels; i++)
                 st.layout.mapping[i] = mapping[i];
-            if (opus_multistream.validate_layout(st.layout) == 0 || validate_encoder_layout(st.layout) == 0)
+            if (OpusMultistream.validate_layout(st.layout) == 0 || validate_encoder_layout(st.layout) == 0)
                 return OpusError.OPUS_BAD_ARG;
 
             encoder_ptr = 0;
@@ -419,7 +419,7 @@ namespace Concentus.Opus
             return st;
         }
 
-        public static void GetStreamCount(int channels, int mapping_family, BoxedValue<int> nb_streams, BoxedValue<int> nb_coupled_streams)
+        internal static void GetStreamCount(int channels, int mapping_family, BoxedValue<int> nb_streams, BoxedValue<int> nb_coupled_streams)
         {
             if (mapping_family == 0)
             {
@@ -490,7 +490,7 @@ namespace Concentus.Opus
             return st;
         }
 
-        public static int surround_rate_allocation(
+        internal static int surround_rate_allocation(
               OpusMSEncoder st,
               Pointer<int> rate,
               int frame_size
@@ -563,7 +563,7 @@ namespace Concentus.Opus
         /* Max size in case the encoder decides to return three frames */
         private const int MS_FRAME_TMP = (3 * 1275 + 7);
 
-        public static int opus_multistream_encode_native<T>
+        internal static int opus_multistream_encode_native<T>
         (
             OpusMSEncoder st,
             opus_copy_channel_in_func<T> copy_channel_in,
@@ -585,7 +585,7 @@ namespace Concentus.Opus
             Pointer<byte> tmp_data = Pointer.Malloc<byte>(MS_FRAME_TMP);
             OpusRepacketizer rp = new OpusRepacketizer();
             int vbr;
-            CELTMode celt_mode;
+            CeltMode celt_mode;
             Pointer<int> bitrates = Pointer.Malloc<int>(256);
             Pointer<int> bandLogE = Pointer.Malloc<int>(42);
             Pointer<int> mem = null;
@@ -702,14 +702,14 @@ namespace Concentus.Opus
                 int curr_max;
                 int c1, c2;
 
-                repacketizer.opus_repacketizer_init(rp);
+                Repacketizer.opus_repacketizer_init(rp);
                 enc = st.encoders[encoder_ptr];
                 if (s < st.layout.nb_coupled_streams)
                 {
                     int i;
                     int left, right;
-                    left = opus_multistream.get_left_channel(st.layout, s, -1);
-                    right = opus_multistream.get_right_channel(st.layout, s, -1);
+                    left = OpusMultistream.get_left_channel(st.layout, s, -1);
+                    right = OpusMultistream.get_right_channel(st.layout, s, -1);
                     copy_channel_in(buf, 2,
                        pcm, st.layout.nb_channels, left, frame_size);
                     copy_channel_in(buf.Point(1), 2,
@@ -728,7 +728,7 @@ namespace Concentus.Opus
                 }
                 else {
                     int i;
-                    int chan = opus_multistream.get_mono_channel(st.layout, s, -1);
+                    int chan = OpusMultistream.get_mono_channel(st.layout, s, -1);
                     copy_channel_in(buf, 1,
                        pcm, st.layout.nb_channels, chan, frame_size);
                     encoder_ptr += 1;
@@ -761,8 +761,8 @@ namespace Concentus.Opus
                 /* We need to use the repacketizer to add the self-delimiting lengths
                    while taking into account the fact that the encoder can now return
                    more than one frame at a time (e.g. 60 ms CELT-only) */
-                repacketizer.opus_repacketizer_cat(rp, tmp_data, len);
-                len = repacketizer.opus_repacketizer_out_range_impl(rp, 0, repacketizer.opus_repacketizer_get_nb_frames(rp),
+                Repacketizer.opus_repacketizer_cat(rp, tmp_data, len);
+                len = Repacketizer.opus_repacketizer_out_range_impl(rp, 0, Repacketizer.opus_repacketizer_get_nb_frames(rp),
                                                   data, max_data_bytes - tot_size, (s != st.layout.nb_streams - 1) ? 1 : 0, (vbr == 0 && s == st.layout.nb_streams - 1) ? 1 : 0);
                 data = data.Point(len);
                 tot_size += len;
@@ -771,7 +771,7 @@ namespace Concentus.Opus
             return tot_size;
         }
 
-        public static void opus_copy_channel_in_float(
+        internal static void opus_copy_channel_in_float(
           Pointer<int> dst,
           int dst_stride,
           Pointer<float> src,
@@ -785,7 +785,7 @@ namespace Concentus.Opus
                 dst[i * dst_stride] = Inlines.FLOAT2INT16(src[i * src_stride + src_channel]);
         }
 
-        public static void opus_copy_channel_in_short(
+        internal static void opus_copy_channel_in_short(
           Pointer<int> dst,
           int dst_stride,
           Pointer<short> src,
@@ -808,7 +808,7 @@ namespace Concentus.Opus
         )
         {
             return opus_multistream_encode_native<short>(st, opus_copy_channel_in_short,
-               pcm, frame_size, data, max_data_bytes, 16, opus_encoder.downmix_int, 0);
+               pcm, frame_size, data, max_data_bytes, 16, Downmix.downmix_int, 0);
         }
 
         public static int opus_multistream_encode_float(
@@ -820,7 +820,7 @@ namespace Concentus.Opus
         )
         {
             return opus_multistream_encode_native<float>(st, opus_copy_channel_in_float,
-               pcm, frame_size, data, max_data_bytes, 16, opus_encoder.downmix_float, 1);
+               pcm, frame_size, data, max_data_bytes, 16, Downmix.downmix_float, 1);
         }
     }
 }

@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk
 {
-    public static class NSQ
+    internal static class NSQ
     {
-        public static void silk_NSQ_c
+        internal static void silk_NSQ
             (
-                silk_encoder_state psEncC,                                    /* I/O  Encoder State                   */
-                silk_nsq_state NSQ,                                       /* I/O  NSQ state                       */
+                SilkChannelEncoder psEncC,                                    /* I/O  Encoder State                   */
+                SilkNSQState NSQ,                                       /* I/O  NSQ state                       */
                 SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
                 Pointer<int> x_Q3,                                     /* I    Prefiltered input signal        */
                 Pointer<sbyte> pulses,                                   /* O    Quantized pulse signal          */
@@ -122,8 +122,8 @@ namespace Concentus.Silk
         /***********************************/
         /* silk_noise_shape_quantizer  */
         /***********************************/
-        public static void silk_noise_shape_quantizer(
-                silk_nsq_state NSQ_state,                   /* I/O  NSQ state                       */
+        internal static void silk_noise_shape_quantizer(
+                SilkNSQState NSQ_state,                   /* I/O  NSQ state                       */
                 int signalType,             /* I    Signal type                     */
                 Pointer<int> x_sc_Q10,             /* I [length]                                   */
                 Pointer<sbyte> pulses,               /* O [length]                                    */
@@ -338,9 +338,9 @@ namespace Concentus.Silk
             NSQ_state.sLPC_Q14.Point(length).MemCopyTo(NSQ_state.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
         }
 
-        public static void silk_nsq_scale_states(
-                silk_encoder_state psEncC,           /* I    Encoder State                   */
-                silk_nsq_state NSQ,                   /* I/O  NSQ state                       */
+        internal static void silk_nsq_scale_states(
+                SilkChannelEncoder psEncC,           /* I    Encoder State                   */
+                SilkNSQState NSQ,                   /* I/O  NSQ state                       */
                 Pointer<int> x_Q3,                 /* I    input in Q3                     */
                 Pointer<int> x_sc_Q10,             /* O    input scaled with 1/Gain        */
                 Pointer<short> sLTP,                 /* I    re-whitened LTP state in Q0     */
@@ -425,9 +425,9 @@ namespace Concentus.Silk
             }
         }
 
-        public static void silk_NSQ_del_dec_c(
-            silk_encoder_state psEncC,                                    /* I  Encoder State                   */
-            silk_nsq_state NSQ,                                       /* I/O  NSQ state                       */
+        internal static void silk_NSQ_del_dec(
+            SilkChannelEncoder psEncC,                                    /* I  Encoder State                   */
+            SilkNSQState NSQ,                                       /* I/O  NSQ state                       */
             SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
             Pointer<int> x_Q3,                                     /* I    Prefiltered input signal        */
             Pointer<sbyte> pulses,                                   /* O    Quantized pulse signal          */
@@ -650,7 +650,7 @@ namespace Concentus.Silk
         /* Noise shape quantizer for one subframe */
         /******************************************/
         private static void silk_noise_shape_quantizer_del_dec(
-            silk_nsq_state NSQ,                   /* I/O  NSQ state                           */
+            SilkNSQState NSQ,                   /* I/O  NSQ state                           */
             NSQ_del_dec_struct[] psDelDec,             /* I/O  Delayed decision states             */
             int signalType,             /* I    Signal type                         */
             Pointer<int> x_Q10,                /* I                                        */
@@ -1015,8 +1015,8 @@ namespace Concentus.Silk
         }
 
         private static void silk_nsq_del_dec_scale_states(
-                silk_encoder_state psEncC,               /* I    Encoder State                       */
-                silk_nsq_state NSQ,                       /* I/O  NSQ state                           */
+                SilkChannelEncoder psEncC,               /* I    Encoder State                       */
+                SilkNSQState NSQ,                       /* I/O  NSQ state                           */
                 NSQ_del_dec_struct[] psDelDec,                 /* I/O  Delayed decision states             */
                 Pointer<int> x_Q3,                     /* I    Input in Q3                         */
                 Pointer<int> x_sc_Q10,                 /* O    Input scaled with 1/Gain in Q10     */

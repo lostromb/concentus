@@ -12,11 +12,11 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class bands
+    internal static class Bands
     {
         private const bool TRACE_FILE = false;
 
-        public static int hysteresis_decision(
+        internal static int hysteresis_decision(
             int val,
             Pointer<int> thresholds,
             Pointer<int> hysteresis,
@@ -43,14 +43,14 @@ namespace Concentus.Celt
             return i;
         }
 
-        public static uint celt_lcg_rand(uint seed)
+        internal static uint celt_lcg_rand(uint seed)
         {
             return unchecked(1664525 * seed + 1013904223);
         }
 
         /* This is a cos() approximation designed to be bit-exact on any platform. Bit exactness
            with this approximation is important because it has an impact on the bit allocation */
-        public static int bitexact_cos(int x)
+        internal static int bitexact_cos(int x)
         {
             int tmp;
             int x2;
@@ -62,7 +62,7 @@ namespace Concentus.Celt
             return (1 + x2);
         }
 
-        public static int bitexact_log2tan(int isin, int icos)
+        internal static int bitexact_log2tan(int isin, int icos)
         {
             int lc = Inlines.EC_ILOG((uint)icos);
             int ls = Inlines.EC_ILOG((uint)isin);
@@ -74,7 +74,7 @@ namespace Concentus.Celt
         }
 
         /* Compute the amplitude (sqrt energy) in each of the bands */
-        public static void compute_band_energies(CELTMode m, Pointer<int> X, Pointer<int> bandE, int end, int C, int LM)
+        internal static void compute_band_energies(CeltMode m, Pointer<int> X, Pointer<int> bandE, int end, int C, int LM)
         {
             int i, c, N;
             Pointer<short> eBands = m.eBands;
@@ -129,7 +129,7 @@ namespace Concentus.Celt
         }
 
         /* Normalise each band such that the energy is one. */
-        public static void normalise_bands(CELTMode m, Pointer<int> freq, Pointer<int> X, Pointer<int> bandE, int end, int C, int M)
+        internal static void normalise_bands(CeltMode m, Pointer<int> freq, Pointer<int> X, Pointer<int> bandE, int end, int C, int M)
         {
             int i, c, N;
             Pointer<short> eBands = m.eBands;
@@ -155,7 +155,7 @@ namespace Concentus.Celt
         }
 
         /* De-normalise the energy to produce the synthesis from the unit-energy bands */
-        public static void denormalise_bands(CELTMode m, Pointer<int> X,
+        internal static void denormalise_bands(CeltMode m, Pointer<int> X,
               Pointer<int> freq, Pointer<int> bandLogE, int start,
               int end, int M, int downsample, int silence)
         {
@@ -236,7 +236,7 @@ namespace Concentus.Celt
         }
 
         /* This prevents energy collapse for transients with multiple short MDCTs */
-        public static void anti_collapse(CELTMode m, Pointer<int> X_, Pointer<byte> collapse_masks, int LM, int C, int size,
+        internal static void anti_collapse(CeltMode m, Pointer<int> X_, Pointer<byte> collapse_masks, int LM, int C, int size,
               int start, int end, Pointer<int> logE, Pointer<int> prev1logE,
               Pointer<int> prev2logE, Pointer<int> pulses, uint seed)
         {
@@ -313,13 +313,13 @@ namespace Concentus.Celt
                     /* We just added some energy, so we need to renormalise */
                     if (renormalize != 0)
                     {
-                        vq.renormalise_vector(X, N0 << LM, CeltConstants.Q15ONE);
+                        VQ.renormalise_vector(X, N0 << LM, CeltConstants.Q15ONE);
                     }
                 } while (++c < C);
             }
         }
 
-        public static void intensity_stereo(CELTMode m, Pointer<int> X, Pointer<int> Y, Pointer<int> bandE, int bandID, int N)
+        internal static void intensity_stereo(CeltMode m, Pointer<int> X, Pointer<int> Y, Pointer<int> bandE, int bandID, int N)
         {
             int i = bandID;
             int j;
@@ -366,7 +366,7 @@ namespace Concentus.Celt
             int t, lgain, rgain;
 
             /* Compute the norm of X+Y and X-Y as |X|^2 + |Y|^2 +/- sum(xy) */
-            celt_inner_prod.dual_inner_prod_c(Y, X, Y, N, xp, side);
+            Kernels.dual_inner_prod(Y, X, Y, N, xp, side);
             /* Compensating for the mid normalization */
             xp.Val = Inlines.MULT16_32_Q15(mid, xp.Val);
             /* mid and side are in Q15, not Q14 like X and Y */
@@ -403,7 +403,7 @@ namespace Concentus.Celt
         }
 
         /* Decide whether we should spread the pulses in the current frame */
-        public static int spreading_decision(CELTMode m, Pointer<int> X, BoxedValue<int> average,
+        internal static int spreading_decision(CeltMode m, Pointer<int> X, BoxedValue<int> average,
               int last_decision, BoxedValue<int> hf_average, BoxedValue<int> tapset_decision, int update_hf,
               int end, int C, int M)
         {
@@ -524,7 +524,7 @@ namespace Concentus.Celt
             return decision;
         }
 
-        public static void deinterleave_hadamard(Pointer<int> X, int N0, int stride, int hadamard)
+        internal static void deinterleave_hadamard(Pointer<int> X, int N0, int stride, int hadamard)
         {
             int i, j;
             int N;
@@ -558,7 +558,7 @@ namespace Concentus.Celt
             tmp.MemCopyTo(X, N);
         }
 
-        public static void interleave_hadamard(Pointer<int> X, int N0, int stride, int hadamard)
+        internal static void interleave_hadamard(Pointer<int> X, int N0, int stride, int hadamard)
         {
             int i, j;
             int N;
@@ -590,7 +590,7 @@ namespace Concentus.Celt
             tmp.MemCopyTo(X, N);
         }
 
-        public static void haar1(Pointer<int> X, int N0, int stride)
+        internal static void haar1(Pointer<int> X, int N0, int stride)
         {
             int i, j;
             N0 >>= 1;
@@ -605,7 +605,7 @@ namespace Concentus.Celt
                 }
         }
 
-        public static int compute_qn(int N, int b, int offset, int pulse_cap, int stereo)
+        internal static int compute_qn(int N, int b, int offset, int pulse_cap, int stereo)
         {
             short[] exp2_table8 =
                {16384, 17866, 19483, 21247, 23170, 25267, 27554, 30048};
@@ -640,7 +640,7 @@ namespace Concentus.Celt
         public class band_ctx
         {
             public int encode;
-            public CELTMode m;
+            public CeltMode m;
             public int i;
             public int intensity;
             public int spread;
@@ -661,7 +661,7 @@ namespace Concentus.Celt
             public int qalloc;
         };
 
-        public static void compute_theta(band_ctx ctx, split_ctx sctx,
+        internal static void compute_theta(band_ctx ctx, split_ctx sctx,
                Pointer<int> X, Pointer<int> Y, int N, BoxedValue<int> b, int B, int B0,
               int LM,
               int stereo, BoxedValue<int> fill)
@@ -676,7 +676,7 @@ namespace Concentus.Celt
             int tell;
             int inv = 0;
             int encode;
-            CELTMode m;
+            CeltMode m;
             int i;
             int intensity;
             ec_ctx ec; // porting note: pointer
@@ -704,7 +704,7 @@ namespace Concentus.Celt
                    side and mid. With just that parameter, we can re-scale both
                    mid and side because we know that 1) they have unit norm and
                    2) they are orthogonal. */
-                itheta = vq.stereo_itheta(X, Y, stereo, N);
+                itheta = VQ.stereo_itheta(X, Y, stereo, N);
             }
 
             tell = (int)EntropyCoder.ec_tell_frac(ec);
@@ -884,7 +884,7 @@ namespace Concentus.Celt
             sctx.qalloc = qalloc;
         }
 
-        public static uint quant_band_n1(band_ctx ctx, Pointer<int> X, Pointer<int> Y, int b,
+        internal static uint quant_band_n1(band_ctx ctx, Pointer<int> X, Pointer<int> Y, int b,
                  Pointer<int> lowband_out)
         {
             int resynth = ctx.encode == 0 ? 1 : 0;
@@ -932,7 +932,7 @@ namespace Concentus.Celt
            It can split the band in two and transmit the energy difference with
            the two half-bands. It can be called recursively so bands can end up being
            split in 8 parts. */
-        public static uint quant_partition(band_ctx ctx, Pointer<int> X,
+        internal static uint quant_partition(band_ctx ctx, Pointer<int> X,
       int N, int b, int B, Pointer<int> lowband,
       int LM,
       int gain, int fill)
@@ -947,7 +947,7 @@ namespace Concentus.Celt
             int resynth = (ctx.encode == 0) ? 1 : 0;
             Pointer<int> Y = null;
             int encode;
-            CELTMode m; //porting note: pointer
+            CeltMode m; //porting note: pointer
             int i;
             int spread;
             ec_ctx ec; //porting note: pointer
@@ -1039,8 +1039,8 @@ namespace Concentus.Celt
             }
             else {
                 /* This is the basic no-split case */
-                q = rate.bits2pulses(m, i, LM, b);
-                curr_bits = rate.pulses2bits(m, i, LM, q);
+                q = Rate.bits2pulses(m, i, LM, b);
+                curr_bits = Rate.pulses2bits(m, i, LM, q);
                 ctx.remaining_bits -= curr_bits;
 
                 /* Ensures we can never bust the budget */
@@ -1048,21 +1048,21 @@ namespace Concentus.Celt
                 {
                     ctx.remaining_bits += curr_bits;
                     q--;
-                    curr_bits = rate.pulses2bits(m, i, LM, q);
+                    curr_bits = Rate.pulses2bits(m, i, LM, q);
                     ctx.remaining_bits -= curr_bits;
                 }
 
                 if (q != 0)
                 {
-                    int K = rate.get_pulses(q);
+                    int K = Rate.get_pulses(q);
 
                     /* Finally do the actual quantization */
                     if (encode != 0)
                     {
-                        cm = vq.alg_quant(X, N, K, spread, B, ec);
+                        cm = VQ.alg_quant(X, N, K, spread, B, ec);
                     }
                     else {
-                        cm = vq.alg_unquant(X, N, K, spread, B, ec, gain);
+                        cm = VQ.alg_unquant(X, N, K, spread, B, ec, gain);
                     }
                 }
                 else
@@ -1109,7 +1109,7 @@ namespace Concentus.Celt
                                 cm = (uint)fill;
                             }
 
-                            vq.renormalise_vector(X, N, gain);
+                            VQ.renormalise_vector(X, N, gain);
                         }
                     }
                 }
@@ -1120,7 +1120,7 @@ namespace Concentus.Celt
 
 
         /* This function is responsible for encoding and decoding a band for the mono case. */
-        public static uint quant_band(band_ctx ctx, Pointer<int> X,
+        internal static uint quant_band(band_ctx ctx, Pointer<int> X,
               int N, int b, int B, Pointer<int> lowband,
               int LM, Pointer<int> lowband_out,
               int gain, Pointer<int> lowband_scratch, int fill)
@@ -1249,7 +1249,7 @@ namespace Concentus.Celt
 
 
         /* This function is responsible for encoding and decoding a band for the stereo case. */
-        public static uint quant_band_stereo(band_ctx ctx, Pointer<int> X, Pointer<int> Y,
+        internal static uint quant_band_stereo(band_ctx ctx, Pointer<int> X, Pointer<int> Y,
               int N, int b, int B, Pointer<int> lowband,
               int LM, Pointer<int> lowband_out,
               Pointer<int> lowband_scratch, int fill)
@@ -1416,7 +1416,7 @@ namespace Concentus.Celt
         }
 
 
-        public static void quant_all_bands(int encode, CELTMode m, int start, int end,
+        internal static void quant_all_bands(int encode, CeltMode m, int start, int end,
               Pointer<int> X_, Pointer<int> Y_, Pointer<byte> collapse_masks,
               Pointer<int> bandE, Pointer<int> pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, Pointer<int> tf_res, int total_bits,

@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Concentus
 {
-    public static class Tables
+    internal static class Tables
     {
-        public static readonly float[] dct_table = {
+        internal static readonly float[] dct_table = {
                     0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f,
                     0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f,
                     0.351851f, 0.338330f, 0.311806f, 0.273300f, 0.224292f, 0.166664f, 0.102631f, 0.034654f,
@@ -29,7 +29,7 @@ namespace Concentus
                     0.224292f, 0.311806f,-0.102631f,-0.351851f,-0.034654f, 0.338330f, 0.166664f,-0.273300f,
             };
 
-        public static readonly float[] analysis_window = {
+        internal static readonly float[] analysis_window = {
                   0.000043f, 0.000171f, 0.000385f, 0.000685f, 0.001071f, 0.001541f, 0.002098f, 0.002739f,
                   0.003466f, 0.004278f, 0.005174f, 0.006156f, 0.007222f, 0.008373f, 0.009607f, 0.010926f,
                   0.012329f, 0.013815f, 0.015385f, 0.017037f, 0.018772f, 0.020590f, 0.022490f, 0.024472f,
@@ -62,11 +62,11 @@ namespace Concentus
                   0.997902f, 0.998459f, 0.998929f, 0.999315f, 0.999615f, 0.999829f, 0.999957f, 1.000000f,
             };
 
-        public static readonly int[] tbands/*[NB_TBANDS + 1]*/ = {
+        internal static readonly int[] tbands/*[NB_TBANDS + 1]*/ = {
                    2,  4,  6,  8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56, 68, 80, 96, 120
             };
 
-        public static readonly int[] extra_bands/*[NB_TOT_BANDS + 1]*/ = {
+        internal static readonly int[] extra_bands/*[NB_TOT_BANDS + 1]*/ = {
                   1, 2,  4,  6,  8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56, 68, 80, 96, 120, 160, 200
             };
 
@@ -76,7 +76,7 @@ namespace Concentus
 
         /* RMS error was 0.138320, seed was 1361535663 */
 
-        public static readonly float[] weights/*[422]*/ = {
+        internal static readonly float[] weights/*[422]*/ = {
             /* hidden layer */
             -0.0941125f, -0.302976f, -0.603555f, -0.19393f, -0.185983f,
             -0.601617f, -0.0465317f, -0.114563f, -0.103599f, -0.618938f,
@@ -166,17 +166,17 @@ namespace Concentus
             -1.1584f, -0.0277241f, -9.85f, -4.82386f, 3.71333f,
             3.87308f, 3.52558f};
 
-        public static readonly int[] topo = { 25, 15, 2 };
+        internal static readonly int[] topo = { 25, 15, 2 };
 
         // fixme: move this into an MLP class singleton or something?
-        public static readonly MLP net = new MLP()
+        internal static readonly MLP net = new MLP()
         {
             layers = 3,
             topo = topo.GetPointer(),
             weights = weights.GetPointer()
         };
 
-        public static readonly float[] tansig_table/*[201]*/ = {
+        internal static readonly float[] tansig_table/*[201]*/ = {
             0.000000f, 0.039979f, 0.079830f, 0.119427f, 0.158649f,
             0.197375f, 0.235496f, 0.272905f, 0.309507f, 0.345214f,
             0.379949f, 0.413644f, 0.446244f, 0.477700f, 0.507977f,
@@ -224,25 +224,25 @@ namespace Concentus
         /* Transition tables for the voice and music. First column is the
        middle (memoriless) threshold. The second column is the hysteresis
        (difference with the middle) */
-        public static readonly int[] mono_voice_bandwidth_thresholds = {
+        internal static readonly int[] mono_voice_bandwidth_thresholds = {
                 11000, 1000, /* NB<->MB */
                 14000, 1000, /* MB<->WB */
                 17000, 1000, /* WB<->SWB */
                 21000, 2000, /* SWB<->FB */
         };
-        public static readonly int[] mono_music_bandwidth_thresholds = {
+        internal static readonly int[] mono_music_bandwidth_thresholds = {
                 12000, 1000, /* NB<->MB */
                 15000, 1000, /* MB<->WB */
                 18000, 2000, /* WB<->SWB */
                 22000, 2000, /* SWB<->FB */
         };
-        public static readonly int[] stereo_voice_bandwidth_thresholds = {
+        internal static readonly int[] stereo_voice_bandwidth_thresholds = {
                 11000, 1000, /* NB<->MB */
                 14000, 1000, /* MB<->WB */
                 21000, 2000, /* WB<->SWB */
                 28000, 2000, /* SWB<->FB */
         };
-        public static readonly int[] stereo_music_bandwidth_thresholds = {
+        internal static readonly int[] stereo_music_bandwidth_thresholds = {
                 12000, 1000, /* NB<->MB */
                 18000, 2000, /* MB<->WB */
                 21000, 2000, /* WB<->SWB */
@@ -254,7 +254,7 @@ namespace Concentus
         public const int stereo_music_threshold = 30000;
 
         /* Threshold bit-rate for switching between SILK/hybrid and CELT-only */
-        public static readonly int[][] mode_thresholds = {
+        internal static readonly int[][] mode_thresholds = {
               /* voice */ /* music */
               new int[]{  64000,      16000}, /* mono */
               new int[]{  36000,      16000}, /* stereo */

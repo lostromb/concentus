@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk
 {
-    public static class Sort
+    internal static class Sort
     {
         /// <summary>
         /// 
@@ -18,7 +18,7 @@ namespace Concentus.Silk
         /// <param name="idx">(O) Index vector for the sorted elements</param>
         /// <param name="L">(I) Vector length</param>
         /// <param name="K">(I) Number of correctly sorted positions</param>
-        public static void silk_insertion_sort_increasing(Pointer<int> a, Pointer<int> idx, int L, int K)
+        internal static void silk_insertion_sort_increasing(Pointer<int> a, Pointer<int> idx, int L, int K)
         {
             int value;
             int i, j;
@@ -76,7 +76,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="a">(I/O) Unsorted / Sorted vector</param>
         /// <param name="L">(I) Vector length</param>
-        public static void silk_insertion_sort_increasing_all_values_int16(Pointer<short> a, int L)
+        internal static void silk_insertion_sort_increasing_all_values_int16(Pointer<short> a, int L)
         {
             // FIXME: Could just use Array.Sort(a.Array, a.Offset, L);
 
@@ -100,7 +100,7 @@ namespace Concentus.Silk
         }
 
         /* This function is only used by the fixed-point build */
-        public static void silk_insertion_sort_decreasing_int16(
+        internal static void silk_insertion_sort_decreasing_int16(
             Pointer<short> a,                 /* I/O   Unsorted / Sorted vector                                   */
             Pointer<int> idx,               /* O     Index vector for the sorted elements                       */
     int L,                  /* I     Vector length                                              */

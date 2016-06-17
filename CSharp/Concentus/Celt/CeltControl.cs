@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class CeltControl
+    internal static class CeltControl
     {
         public const int CELT_SET_PREDICTION_REQUEST = 10002;
         /** Controls the use of interframe prediction.

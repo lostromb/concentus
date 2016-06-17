@@ -9,13 +9,13 @@ using Concentus.Common.CPlusPlus;
 
 namespace Concentus.Silk
 {
-    public static class Tables
+    internal static class Tables
     {
         /// <summary>
         /// Cosine approximation table for LSF conversion
         /// Q12 values (even)
         /// </summary>
-        public static readonly short[] silk_LSFCosTab_FIX_Q12 = {
+        internal static readonly short[] silk_LSFCosTab_Q12 = {
                 8192,             8190,             8182,             8170,
                 8152,             8130,             8104,             8072,
                 8034,             7994,             7946,             7896,
@@ -51,7 +51,7 @@ namespace Concentus.Silk
                -8192
          };
 
-        public static readonly byte[][] silk_gain_iCDF =
+        internal static readonly byte[][] silk_gain_iCDF =
         {
             new byte[] {
                    224,    112,     44,     15,      3,      2,      1,      0
@@ -64,7 +64,7 @@ namespace Concentus.Silk
             }
         };
 
-        public static readonly byte[] silk_delta_gain_iCDF = {
+        internal static readonly byte[] silk_delta_gain_iCDF = {
                250,    245,    234,    203,     71,     50,     42,     38,
                 35,     33,     31,     29,     28,     27,     26,     25,
                 24,     23,     22,     21,     20,     19,     18,     17,
@@ -73,38 +73,38 @@ namespace Concentus.Silk
                  0
         };
 
-        public static readonly byte[] silk_LTP_per_index_iCDF = {
+        internal static readonly byte[] silk_LTP_per_index_iCDF = {
                179,     99,      0
         };
 
-        public static readonly byte[] silk_LTP_gain_iCDF_0 = {
+        internal static readonly byte[] silk_LTP_gain_iCDF_0 = {
                 71,     56,     43,     30,     21,     12,      6,      0
         };
 
-        public static readonly byte[] silk_LTP_gain_iCDF_1 = {
+        internal static readonly byte[] silk_LTP_gain_iCDF_1 = {
                199,    165,    144,    124,    109,     96,     84,     71,
                 61,     51,     42,     32,     23,     15,      8,      0
         };
 
-        public static readonly byte[] silk_LTP_gain_iCDF_2 = {
+        internal static readonly byte[] silk_LTP_gain_iCDF_2 = {
                241,    225,    211,    199,    187,    175,    164,    153,
                142,    132,    123,    114,    105,     96,     88,     80,
                 72,     64,     57,     50,     44,     38,     33,     29,
                 24,     20,     16,     12,      9,      5,      2,      0
         };
 
-        public static readonly short silk_LTP_gain_middle_avg_RD_Q14 = 12304;
+        internal static readonly short silk_LTP_gain_middle_avg_RD_Q14 = 12304;
 
-        public static readonly byte[] silk_LTP_gain_BITS_Q5_0 = {
+        internal static readonly byte[] silk_LTP_gain_BITS_Q5_0 = {
                 15,    131,    138,    138,    155,    155,    173,    173
         };
 
-        public static readonly byte[] silk_LTP_gain_BITS_Q5_1 = {
+        internal static readonly byte[] silk_LTP_gain_BITS_Q5_1 = {
                 69,     93,    115,    118,    131,    138,    141,    138,
                150,    150,    155,    150,    155,    160,    166,    160
         };
 
-        public static readonly byte[] silk_LTP_gain_BITS_Q5_2 = {
+        internal static readonly byte[] silk_LTP_gain_BITS_Q5_2 = {
                131,    128,    134,    141,    141,    141,    145,    145,
                145,    150,    155,    155,    155,    155,    160,    160,
                160,    160,    166,    166,    173,    173,    182,    192,
@@ -112,20 +112,20 @@ namespace Concentus.Silk
         };
 
         // FIXME are these tables correct?
-        public static readonly byte[][] silk_LTP_gain_iCDF_ptrs = {
+        internal static readonly byte[][] silk_LTP_gain_iCDF_ptrs = {
             silk_LTP_gain_iCDF_0,
             silk_LTP_gain_iCDF_1,
             silk_LTP_gain_iCDF_2
         };
 
-        public static readonly byte[][] silk_LTP_gain_BITS_Q5_ptrs = {
+        internal static readonly byte[][] silk_LTP_gain_BITS_Q5_ptrs = {
             silk_LTP_gain_BITS_Q5_0,
             silk_LTP_gain_BITS_Q5_1,
             silk_LTP_gain_BITS_Q5_2
         };
         
         // [Porting note] linearized table of width 5
-        public static readonly sbyte[] silk_LTP_gain_vq_0 =
+        internal static readonly sbyte[] silk_LTP_gain_vq_0 =
         {
                     4,      6,     24,      7,      5,
                     0,      0,      2,      0,      0,
@@ -138,7 +138,7 @@ namespace Concentus.Silk
         };
 
         // [Porting note] linearized table of width 5
-        public static readonly sbyte[] silk_LTP_gain_vq_1 =
+        internal static readonly sbyte[] silk_LTP_gain_vq_1 =
         {
                 13,     22,     39,     23,     12,
                 -1,     36,     64,     27,     -6,
@@ -159,7 +159,7 @@ namespace Concentus.Silk
         };
 
         // [Porting note] linearized table of width 5
-        public static readonly sbyte[] silk_LTP_gain_vq_2 =
+        internal static readonly sbyte[] silk_LTP_gain_vq_2 =
         {
                 -6,     27,     61,     39,      5,
                -11,     42,     88,      4,      1,
@@ -195,7 +195,7 @@ namespace Concentus.Silk
                  2,      0,      9,     10,     88
         };
 
-        public static readonly Pointer<sbyte>[] silk_LTP_vq_ptrs_Q7 = {
+        internal static readonly Pointer<sbyte>[] silk_LTP_vq_ptrs_Q7 = {
             silk_LTP_gain_vq_0.GetPointer(),
             silk_LTP_gain_vq_1.GetPointer(),
             silk_LTP_gain_vq_2.GetPointer()
@@ -203,33 +203,33 @@ namespace Concentus.Silk
 
         /* Maximum frequency-dependent response of the pitch taps above,
            computed as max(abs(freqz(taps))) */
-        public static readonly byte[] silk_LTP_gain_vq_0_gain = {
+        internal static readonly byte[] silk_LTP_gain_vq_0_gain = {
               46,      2,     90,     87,     93,     91,     82,     98
         };
 
-        public static readonly byte[] silk_LTP_gain_vq_1_gain = {
+        internal static readonly byte[] silk_LTP_gain_vq_1_gain = {
              109,    120,    118,     12,    113,    115,    117,    119,
               99,     59,     87,    111,     63,    111,    112,     80
         };
 
-        public static readonly byte[] silk_LTP_gain_vq_2_gain = {
+        internal static readonly byte[] silk_LTP_gain_vq_2_gain = {
              126,    124,    125,    124,    129,    121,    126,     23,
              132,    127,    127,    127,    126,    127,    122,    133,
              130,    134,    101,    118,    119,    145,    126,     86,
              124,    120,    123,    119,    170,    173,    107,    109
         };
 
-        public static readonly Pointer<byte>[] silk_LTP_vq_gain_ptrs_Q7 = {
+        internal static readonly Pointer<byte>[] silk_LTP_vq_gain_ptrs_Q7 = {
             silk_LTP_gain_vq_0_gain.GetPointer(),
             silk_LTP_gain_vq_1_gain.GetPointer(),
             silk_LTP_gain_vq_2_gain.GetPointer()
         };
 
-        public static readonly sbyte[] silk_LTP_vq_sizes = {
+        internal static readonly sbyte[] silk_LTP_vq_sizes = {
             8, 16, 32
         };
 
-        public static readonly byte[] silk_NLSF_CB1_NB_MB_Q8 = {
+        internal static readonly byte[] silk_NLSF_CB1_NB_MB_Q8 = {
                 12,     35,     60,     83,    108,    132,    157,    180,
                206,    228,     15,     32,     55,     77,    101,    125,
                151,    175,    201,    225,     19,     42,     66,     89,
@@ -272,7 +272,7 @@ namespace Concentus.Silk
                 64,     84,    104,    118,    156,    177,    201,    230
         };
 
-        public static readonly byte[] silk_NLSF_CB1_iCDF_NB_MB = {
+        internal static readonly byte[] silk_NLSF_CB1_iCDF_NB_MB = {
                212,    178,    148,    129,    108,     96,     85,     82,
                 79,     77,     61,     59,     57,     56,     51,     49,
                 48,     45,     42,     41,     40,     38,     36,     34,
@@ -283,7 +283,7 @@ namespace Concentus.Silk
                 28,     20,     19,     18,     12,     11,      5,      0
         };
 
-        public static readonly byte[] silk_NLSF_CB2_SELECT_NB_MB = {
+        internal static readonly byte[] silk_NLSF_CB2_SELECT_NB_MB = {
                 16,      0,      0,      0,      0,     99,     66,     36,
                 36,     34,     36,     34,     34,     34,     34,     83,
                 69,     36,     52,     34,    116,    102,     70,     68,
@@ -306,7 +306,7 @@ namespace Concentus.Silk
                171,    137,    139,    137,    155,    218,    219,    139
         };
 
-        public static readonly byte[] silk_NLSF_CB2_iCDF_NB_MB = {
+        internal static readonly byte[] silk_NLSF_CB2_iCDF_NB_MB = {
                255,    254,    253,    238,     14,      3,      2,      1,
                  0,    255,    254,    252,    218,     35,      3,      2,
                  1,      0,    255,    254,    250,    208,     59,      4,
@@ -318,7 +318,7 @@ namespace Concentus.Silk
                254,    236,    173,     95,     37,      7,      1,      0
         };
 
-        public static readonly byte[] silk_NLSF_CB2_BITS_NB_MB_Q5 = {
+        internal static readonly byte[] silk_NLSF_CB2_BITS_NB_MB_Q5 = {
                255,    255,    255,    131,      6,    145,    255,    255,
                255,    255,    255,    236,     93,     15,     96,    255,
                255,    255,    255,    255,    194,     83,     25,     71,
@@ -330,23 +330,23 @@ namespace Concentus.Silk
                251,    123,     65,     55,     68,    100,    171,    255
         };
 
-        public static readonly byte[] silk_NLSF_PRED_NB_MB_Q8 = {
+        internal static readonly byte[] silk_NLSF_PRED_NB_MB_Q8 = {
                179,    138,    140,    148,    151,    149,    153,    151,
                163,    116,     67,     82,     59,     92,     72,    100,
                 89,     92
         };
 
-        public static readonly short[] silk_NLSF_DELTA_MIN_NB_MB_Q15 = {
+        internal static readonly short[] silk_NLSF_DELTA_MIN_NB_MB_Q15 = {
                250,      3,      6,      3,      3,      3,      4,      3,
                  3,      3,    461
         };
 
-        public static readonly silk_NLSF_CB_struct silk_NLSF_CB_NB_MB = new silk_NLSF_CB_struct()
+        internal static readonly NLSFCodebook silk_NLSF_CB_NB_MB = new NLSFCodebook()
         {
             nVectors = 32,
             order = 10,
-            quantStepSize_Q16 = Inlines.CHOP16(Inlines.SILK_FIX_CONST(0.18f, 16)),
-            invQuantStepSize_Q6 = Inlines.CHOP16(Inlines.SILK_FIX_CONST(1.0f / 0.18f, 6)),
+            quantStepSize_Q16 = Inlines.CHOP16(Inlines.SILK_CONST(0.18f, 16)),
+            invQuantStepSize_Q6 = Inlines.CHOP16(Inlines.SILK_CONST(1.0f / 0.18f, 6)),
             CB1_NLSF_Q8 = silk_NLSF_CB1_NB_MB_Q8.GetPointer(),
             CB1_iCDF = silk_NLSF_CB1_iCDF_NB_MB.GetPointer(),
             pred_Q8 = silk_NLSF_PRED_NB_MB_Q8.GetPointer(),
@@ -356,7 +356,7 @@ namespace Concentus.Silk
             deltaMin_Q15 = silk_NLSF_DELTA_MIN_NB_MB_Q15.GetPointer(),
         };
 
-        public static readonly byte[] silk_NLSF_CB1_WB_Q8 = {
+        internal static readonly byte[] silk_NLSF_CB1_WB_Q8 = {
                  7,     23,     38,     54,     69,     85,    100,    116,
                131,    147,    162,    178,    193,    208,    223,    239,
                 13,     25,     41,     55,     69,     83,     98,    112,
@@ -423,7 +423,7 @@ namespace Concentus.Silk
                110,    119,    129,    141,    175,    198,    218,    237
         };
 
-        public static readonly byte[] silk_NLSF_CB1_iCDF_WB = {
+        internal static readonly byte[] silk_NLSF_CB1_iCDF_WB = {
                225,    204,    201,    184,    183,    175,    158,    154,
                153,    135,    119,    115,    113,    110,    109,     99,
                 98,     95,     79,     68,     52,     50,     48,     45,
@@ -434,7 +434,7 @@ namespace Concentus.Silk
                 24,     21,     11,      6,      5,      4,      3,      0
         };
 
-        public static readonly byte[] silk_NLSF_CB2_SELECT_WB = {
+        internal static readonly byte[] silk_NLSF_CB2_SELECT_WB = {
                  0,      0,      0,      0,      0,      0,      0,      1,
                100,    102,    102,     68,     68,     36,     34,     96,
                164,    107,    158,    185,    180,    185,    139,    102,
@@ -469,7 +469,7 @@ namespace Concentus.Silk
                100,    107,    120,    119,     36,    197,     24,      0
         };
 
-        public static readonly byte[] silk_NLSF_CB2_iCDF_WB = {
+        internal static readonly byte[] silk_NLSF_CB2_iCDF_WB = {
                255,    254,    253,    244,     12,      3,      2,      1,
                  0,    255,    254,    252,    224,     38,      3,      2,
                  1,      0,    255,    254,    251,    209,     57,      4,
@@ -481,7 +481,7 @@ namespace Concentus.Silk
                248,    227,    177,    100,     19,      2,      1,      0
         };
 
-        public static readonly byte[] silk_NLSF_CB2_BITS_WB_Q5 = {
+        internal static readonly byte[] silk_NLSF_CB2_BITS_WB_Q5 = {
                255,    255,    255,    156,      4,    154,    255,    255,
                255,    255,    255,    227,    102,     15,     92,    255,
                255,    255,    255,    255,    213,     83,     24,     72,
@@ -493,25 +493,25 @@ namespace Concentus.Silk
                166,    116,     76,     55,     53,    125,    255,    255
         };
 
-        public static readonly byte[] silk_NLSF_PRED_WB_Q8 = {
+        internal static readonly byte[] silk_NLSF_PRED_WB_Q8 = {
                175,    148,    160,    176,    178,    173,    174,    164,
                177,    174,    196,    182,    198,    192,    182,     68,
                 62,     66,     60,     72,    117,     85,     90,    118,
                136,    151,    142,    160,    142,    155
         };
 
-        public static readonly short[] silk_NLSF_DELTA_MIN_WB_Q15 = {
+        internal static readonly short[] silk_NLSF_DELTA_MIN_WB_Q15 = {
                100,      3,     40,      3,      3,      3,      5,     14,
                 14,     10,     11,      3,      8,      9,      7,      3,
                347
         };
 
-        public static readonly silk_NLSF_CB_struct silk_NLSF_CB_WB = new silk_NLSF_CB_struct()
+        internal static readonly NLSFCodebook silk_NLSF_CB_WB = new NLSFCodebook()
         {
             nVectors = 32,
             order = 16,
-            quantStepSize_Q16 = Inlines.CHOP16(Inlines.SILK_FIX_CONST(0.15f, 16)),
-            invQuantStepSize_Q6 = Inlines.CHOP16(Inlines.SILK_FIX_CONST(1.0f / 0.15f, 6)),
+            quantStepSize_Q16 = Inlines.CHOP16(Inlines.SILK_CONST(0.15f, 16)),
+            invQuantStepSize_Q6 = Inlines.CHOP16(Inlines.SILK_CONST(1.0f / 0.15f, 6)),
             CB1_NLSF_Q8 = silk_NLSF_CB1_WB_Q8.GetPointer(),
             CB1_iCDF = silk_NLSF_CB1_iCDF_WB.GetPointer(),
             pred_Q8 = silk_NLSF_PRED_WB_Q8.GetPointer(),
@@ -522,83 +522,83 @@ namespace Concentus.Silk
         };
 
         /* Piece-wise linear mapping from bitrate in kbps to coding quality in dB SNR */
-        public static readonly int[] silk_TargetRate_table_NB = {
+        internal static readonly int[] silk_TargetRate_table_NB = {
             0,      8000,   9400,   11500,  13500,  17500,  25000,  SilkConstants.MAX_TARGET_RATE_BPS
         };
-        public static readonly int[] silk_TargetRate_table_MB = {
+        internal static readonly int[] silk_TargetRate_table_MB = {
             0,      9000,   12000,  14500,  18500,  24500,  35500,  SilkConstants.MAX_TARGET_RATE_BPS
         };
-        public static readonly int[] silk_TargetRate_table_WB = {
+        internal static readonly int[] silk_TargetRate_table_WB = {
             0,      10500,  14000,  17000,  21500,  28500,  42000,  SilkConstants.MAX_TARGET_RATE_BPS
         };
-        public static readonly short[] silk_SNR_table_Q1 = {
+        internal static readonly short[] silk_SNR_table_Q1 = {
             18,     29,     38,     40,     46,     52,     62,     84
         };
 
         /* Tables for stereo predictor coding */
-        public static readonly short[] silk_stereo_pred_quant_Q13 = {
+        internal static readonly short[] silk_stereo_pred_quant_Q13 = {
             -13732, -10050, -8266, -7526, -6500, -5000, -2950,  -820,
                820,   2950,  5000,  6500,  7526,  8266, 10050, 13732
         };
 
-        public static readonly byte[] silk_stereo_pred_joint_iCDF = {
+        internal static readonly byte[] silk_stereo_pred_joint_iCDF = {
             249, 247, 246, 245, 244,
             234, 210, 202, 201, 200,
             197, 174,  82,  59,  56,
              55,  54,  46,  22,  12,
              11,  10,   9,   7,   0
         };
-        public static readonly byte[] silk_stereo_only_code_mid_iCDF = { 64, 0 };
+        internal static readonly byte[] silk_stereo_only_code_mid_iCDF = { 64, 0 };
 
         /* Tables for LBRR flags */
-        public static readonly byte[] silk_LBRR_flags_2_iCDF = { 203, 150, 0 };
-        public static readonly byte[] silk_LBRR_flags_3_iCDF = { 215, 195, 166, 125, 110, 82, 0 };
-        public static readonly byte[][] silk_LBRR_flags_iCDF_ptr = {
+        internal static readonly byte[] silk_LBRR_flags_2_iCDF = { 203, 150, 0 };
+        internal static readonly byte[] silk_LBRR_flags_3_iCDF = { 215, 195, 166, 125, 110, 82, 0 };
+        internal static readonly byte[][] silk_LBRR_flags_iCDF_ptr = {
             silk_LBRR_flags_2_iCDF,
             silk_LBRR_flags_3_iCDF
         };
 
         /* Table for LSB coding */
-        public static readonly byte[] silk_lsb_iCDF = { 120, 0 };
+        internal static readonly byte[] silk_lsb_iCDF = { 120, 0 };
 
         /* Tables for LTPScale */
-        public static readonly byte[] silk_LTPscale_iCDF = { 128, 64, 0 };
+        internal static readonly byte[] silk_LTPscale_iCDF = { 128, 64, 0 };
 
         /* Tables for signal type and offset coding */
-        public static readonly byte[] silk_type_offset_VAD_iCDF = {
+        internal static readonly byte[] silk_type_offset_VAD_iCDF = {
                232,    158,    10,      0
         };
-        public static readonly byte[] silk_type_offset_no_VAD_iCDF = {
+        internal static readonly byte[] silk_type_offset_no_VAD_iCDF = {
                230,      0
         };
 
         /* Tables for NLSF interpolation factor */
-        public static readonly byte[] silk_NLSF_interpolation_factor_iCDF = { 243, 221, 192, 181, 0 };
+        internal static readonly byte[] silk_NLSF_interpolation_factor_iCDF = { 243, 221, 192, 181, 0 };
 
         /* Quantization offsets */
-        public static readonly short[][] silk_Quantization_Offsets_Q10 = {
+        internal static readonly short[][] silk_Quantization_Offsets_Q10 = {
             new short[] { SilkConstants.OFFSET_UVL_Q10, SilkConstants.OFFSET_UVH_Q10 },
             new short[]{ SilkConstants.OFFSET_VL_Q10, SilkConstants.OFFSET_VH_Q10 }
         };
 
         /* Table for LTPScale */
-        public static readonly short[] silk_LTPScales_table_Q14 = { 15565, 12288, 8192 };
+        internal static readonly short[] silk_LTPScales_table_Q14 = { 15565, 12288, 8192 };
 
         /* Uniform entropy tables */
-        public static readonly byte[] silk_uniform3_iCDF = { 171, 85, 0 };
-        public static readonly byte[] silk_uniform4_iCDF = { 192, 128, 64, 0 };
-        public static readonly byte[] silk_uniform5_iCDF = { 205, 154, 102, 51, 0 };
-        public static readonly byte[] silk_uniform6_iCDF = { 213, 171, 128, 85, 43, 0 };
-        public static readonly byte[] silk_uniform8_iCDF = { 224, 192, 160, 128, 96, 64, 32, 0 };
+        internal static readonly byte[] silk_uniform3_iCDF = { 171, 85, 0 };
+        internal static readonly byte[] silk_uniform4_iCDF = { 192, 128, 64, 0 };
+        internal static readonly byte[] silk_uniform5_iCDF = { 205, 154, 102, 51, 0 };
+        internal static readonly byte[] silk_uniform6_iCDF = { 213, 171, 128, 85, 43, 0 };
+        internal static readonly byte[] silk_uniform8_iCDF = { 224, 192, 160, 128, 96, 64, 32, 0 };
 
-        public static readonly byte[] silk_NLSF_EXT_iCDF = { 100, 40, 16, 7, 3, 1, 0 };
+        internal static readonly byte[] silk_NLSF_EXT_iCDF = { 100, 40, 16, 7, 3, 1, 0 };
 
         /*  Elliptic/Cauer filters designed with 0.1 dB passband ripple,
                 80 dB minimum stopband attenuation, and
                 [0.95 : 0.15 : 0.35] normalized cut off frequencies. */
 
         /* Interpolation points for filter coefficients used in the bandwidth transition smoother */
-        public static readonly int[][] silk_Transition_LP_B_Q28 =
+        internal static readonly int[][] silk_Transition_LP_B_Q28 =
         {
             new int[] {    250767114,  501534038,  250767114  },
             new int[] {    209867381,  419732057,  209867381  },
@@ -608,7 +608,7 @@ namespace Concentus.Silk
         };
 
         /* Interpolation points for filter coefficients used in the bandwidth transition smoother */
-        public static readonly int[][] silk_Transition_LP_A_Q28 =
+        internal static readonly int[][] silk_Transition_LP_A_Q28 =
         {
             new int[] {    506393414,  239854379  },
             new int[] {    411067935,  169683996  },
@@ -617,20 +617,20 @@ namespace Concentus.Silk
             new int[] {     35497197,   57401098  }
         };
 
-        public static readonly byte[] silk_pitch_lag_iCDF = {
+        internal static readonly byte[] silk_pitch_lag_iCDF = {
                253,    250,    244,    233,    212,    182,    150,    131,
                120,    110,     98,     85,     72,     60,     49,     40,
                 32,     25,     19,     15,     13,     11,      9,      8,
                  7,      6,      5,      4,      3,      2,      1,      0
         };
 
-        public static readonly byte[] silk_pitch_delta_iCDF = {
+        internal static readonly byte[] silk_pitch_delta_iCDF = {
                210,    208,    206,    203,    199,    193,    183,    168,
                142,    104,     74,     52,     37,     27,     20,     14,
                 10,      6,      4,      2,      0
         };
 
-        public static readonly byte[] silk_pitch_contour_iCDF = {
+        internal static readonly byte[] silk_pitch_contour_iCDF = {
                223,    201,    183,    167,    152,    138,    124,    111,
                 98,     88,     79,     70,     62,     56,     50,     44,
                 39,     35,     31,     27,     24,     21,     18,     16,
@@ -638,25 +638,25 @@ namespace Concentus.Silk
                  1,      0
         };
 
-        public static readonly byte[] silk_pitch_contour_NB_iCDF = {
+        internal static readonly byte[] silk_pitch_contour_NB_iCDF = {
                188,    176,    155,    138,    119,     97,     67,     43,
                 26,     10,      0
         };
 
-        public static readonly byte[] silk_pitch_contour_10_ms_iCDF = {
+        internal static readonly byte[] silk_pitch_contour_10_ms_iCDF = {
                165,    119,     80,     61,     47,     35,     27,     20,
                 14,      9,      4,      0
         };
 
-        public static readonly byte[] silk_pitch_contour_10_ms_NB_iCDF = {
+        internal static readonly byte[] silk_pitch_contour_10_ms_NB_iCDF = {
                113,     63,      0
         };
 
-        public static readonly byte[] silk_max_pulses_table = {
+        internal static readonly byte[] silk_max_pulses_table = {
                  8,     10,     12,     16
         };
 
-        public static readonly byte[][] silk_pulses_per_block_iCDF = {
+        internal static readonly byte[][] silk_pulses_per_block_iCDF = {
         new byte[] {
                125,     51,     26,     18,     15,     12,     11,     10,
                  9,      8,      7,      6,      5,      4,      3,      2,
@@ -709,7 +709,7 @@ namespace Concentus.Silk
         }
         };
 
-        public static readonly byte[][] silk_pulses_per_block_BITS_Q5 = {
+        internal static readonly byte[][] silk_pulses_per_block_BITS_Q5 = {
         new byte[] {
                 31,     57,    107,    160,    205,    205,    255,    255,
                255,    255,    255,    255,    255,    255,    255,    255,
@@ -757,7 +757,7 @@ namespace Concentus.Silk
         }
         };
 
-        public static readonly byte[][] silk_rate_levels_iCDF =
+        internal static readonly byte[][] silk_rate_levels_iCDF =
         {
         new byte[] {
                241,    190,    178,    132,     87,     74,     41,     14,
@@ -769,7 +769,7 @@ namespace Concentus.Silk
         }
         };
 
-        public static readonly byte[][] silk_rate_levels_BITS_Q5 =
+        internal static readonly byte[][] silk_rate_levels_BITS_Q5 =
         {
         new byte[] {
                131,     74,    141,     79,     80,    138,     95,    104,
@@ -781,7 +781,7 @@ namespace Concentus.Silk
         }
         };
 
-        public static readonly byte[] silk_shell_code_table0 = {
+        internal static readonly byte[] silk_shell_code_table0 = {
                128,      0,    214,     42,      0,    235,    128,     21,
                  0,    244,    184,     72,     11,      0,    248,    214,
                128,     42,      7,      0,    248,    225,    170,     80,
@@ -803,7 +803,7 @@ namespace Concentus.Silk
                 76,     48,     27,     14,      7,      3,      1,      0
         };
 
-        public static readonly byte[] silk_shell_code_table1 = {
+        internal static readonly byte[] silk_shell_code_table1 = {
                129,      0,    207,     50,      0,    236,    129,     20,
                  0,    245,    185,     72,     10,      0,    249,    213,
                129,     42,      6,      0,    250,    226,    169,     87,
@@ -825,7 +825,7 @@ namespace Concentus.Silk
                 79,     51,     30,     15,      6,      2,      1,      0
         };
 
-        public static readonly byte[] silk_shell_code_table2 = {
+        internal static readonly byte[] silk_shell_code_table2 = {
                129,      0,    203,     54,      0,    234,    129,     23,
                  0,    245,    184,     73,     10,      0,    250,    215,
                129,     41,      5,      0,    252,    232,    173,     86,
@@ -847,7 +847,7 @@ namespace Concentus.Silk
                 73,     43,     22,     10,      4,      2,      1,      0
         };
 
-        public static readonly byte[] silk_shell_code_table3 = {
+        internal static readonly byte[] silk_shell_code_table3 = {
                130,      0,    200,     58,      0,    231,    130,     26,
                  0,    244,    184,     76,     12,      0,    249,    214,
                130,     43,      6,      0,    252,    232,    173,     87,
@@ -869,13 +869,13 @@ namespace Concentus.Silk
                 76,     42,     18,      4,      3,      2,      1,      0
         };
 
-        public static readonly byte[] silk_shell_code_table_offsets = {
+        internal static readonly byte[] silk_shell_code_table_offsets = {
                  0,      0,      2,      5,      9,     14,     20,     27,
                 35,     44,     54,     65,     77,     90,    104,    119,
                135
         };
 
-        public static readonly byte[] silk_sign_iCDF = {
+        internal static readonly byte[] silk_sign_iCDF = {
                254,     49,     67,     77,     82,     93,     99,
                198,     11,     18,     24,     31,     36,     45,
                255,     46,     66,     78,     87,     94,    104,
@@ -887,7 +887,7 @@ namespace Concentus.Silk
         // Resampler tables
 
         /* Tables with delay compensation values to equalize total delay for different modes */
-        public static readonly sbyte[,] delay_matrix_enc = {
+        internal static readonly sbyte[,] delay_matrix_enc = {
             /* in  \ out  8  12  16 */
             /*  8 */   {  6,  0,  3 },
             /* 12 */   {  0,  7,  3 },
@@ -896,7 +896,7 @@ namespace Concentus.Silk
             /* 48 */   { 18, 10, 12 }
             };
 
-        public static readonly sbyte[,] delay_matrix_dec = {
+        internal static readonly sbyte[,] delay_matrix_dec = {
             /* in  \ out  8  12  16  24  48 */
             /*  8 */   {  4,  0,  2,  0,  0 },
             /* 12 */   {  0,  9,  4,  7,  4 },
@@ -905,47 +905,47 @@ namespace Concentus.Silk
 
 
         /* Tables with IIR and FIR coefficients for fractional downsamplers (123 Words) */
-        public static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_3_4_COEFS/*[2 + 3 * RESAMPLER_DOWN_ORDER_FIR0 / 2]*/ = {
+        internal static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_3_4_COEFS/*[2 + 3 * RESAMPLER_DOWN_ORDER_FIR0 / 2]*/ = {
             -20694, -13867,
                -49,     64,     17,   -157,    353,   -496,    163,  11047,  22205,
                -39,      6,     91,   -170,    186,     23,   -896,   6336,  19928,
                -19,    -36,    102,    -89,    -24,    328,   -951,   2568,  15909,
         };
 
-        public static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_2_3_COEFS/*[2 + 2 * RESAMPLER_DOWN_ORDER_FIR0 / 2]*/ = {
+        internal static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_2_3_COEFS/*[2 + 2 * RESAMPLER_DOWN_ORDER_FIR0 / 2]*/ = {
             -14457, -14019,
                 64,    128,   -122,     36,    310,   -768,    584,   9267,  17733,
                 12,    128,     18,   -142,    288,   -117,   -865,   4123,  14459,
         };
 
-        public static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_1_2_COEFS/*[2 + RESAMPLER_DOWN_ORDER_FIR1 / 2]*/ = {
+        internal static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_1_2_COEFS/*[2 + RESAMPLER_DOWN_ORDER_FIR1 / 2]*/ = {
                616, -14323,
                -10,     39,     58,    -46,    -84,    120,    184,   -315,   -541,   1284,   5380,   9024,
         };
 
-        public static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_1_3_COEFS/*[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2]*/ = {
+        internal static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_1_3_COEFS/*[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2]*/ = {
              16102, -15162,
                -13,      0,     20,     26,      5,    -31,    -43,     -4,     65,     90,      7,   -157,   -248,    -44,    593,   1583,   2612,   3271,
         };
 
-        public static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_1_4_COEFS/*[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2]*/ = {
+        internal static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_1_4_COEFS/*[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2]*/ = {
              22500, -15099,
                  3,    -14,    -20,    -15,      2,     25,     37,     25,    -16,    -71,   -107,    -79,     50,    292,    623,    982,   1288,   1464,
         };
 
-        public static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_1_6_COEFS/*[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2]*/ = {
+        internal static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_1_6_COEFS/*[2 + RESAMPLER_DOWN_ORDER_FIR2 / 2]*/ = {
              27540, -15257,
                 17,     12,      8,      1,    -10,    -22,    -30,    -32,    -22,      3,     44,    100,    168,    243,    317,    381,    429,    455,
         };
 
-        public static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_2_3_COEFS_LQ/*[2 + 2 * 2]*/ = {
+        internal static readonly /*silk_DWORD_ALIGN*/ short[] silk_Resampler_2_3_COEFS_LQ/*[2 + 2 * 2]*/ = {
              -2797,  -6507,
               4697,  10739,
               1567,   8276,
         };
 
         /* Table with interplation fractions of 1/24, 3/24, 5/24, ... , 23/24 : 23/24 (46 Words) */
-        public static readonly /*silk_DWORD_ALIGN*/ short[,] silk_resampler_frac_FIR_12/*[12][RESAMPLER_ORDER_FIR_12 / 2 ]*/ = {
+        internal static readonly /*silk_DWORD_ALIGN*/ short[,] silk_resampler_frac_FIR_12/*[12][RESAMPLER_ORDER_FIR_12 / 2 ]*/ = {
             {  189,  -600,   617, 30567 },
             {  117,  -159, -1070, 29704 },
             {   52,   221, -2392, 28276 },
@@ -965,35 +965,35 @@ namespace Concentus.Silk
         public const short silk_resampler_down2_1 = 39809 - 65536;
 
         /* Tables for 2x upsampler, high quality */
-        public static readonly short[] silk_resampler_up2_hq_0 = { 1746, 14986, 39083 - 65536 };
-        public static readonly short[] silk_resampler_up2_hq_1 = { 6854, 25769, 55542 - 65536 };
+        internal static readonly short[] silk_resampler_up2_hq_0 = { 1746, 14986, 39083 - 65536 };
+        internal static readonly short[] silk_resampler_up2_hq_1 = { 6854, 25769, 55542 - 65536 };
 
 
         // from pitch_estimation_tables.c
 
         //[Porting note] originally represented as a 2D matrix, here it is linearized
-        public static readonly sbyte[] silk_CB_lags_stage2_10_ms =
+        internal static readonly sbyte[] silk_CB_lags_stage2_10_ms =
         {
             0, 1, 0,
             0, 0, 1
         };
 
         //[Porting note] originally represented as a 2D matrix, here it is linearized
-        public static readonly sbyte[] silk_CB_lags_stage3_10_ms =
+        internal static readonly sbyte[] silk_CB_lags_stage3_10_ms =
         {
              0, 0, 1,-1, 1,-1, 2,-2, 2,-2, 3,-3,
              0, 1, 0, 1,-1, 2,-1, 2,-2, 3,-2, 3
         };
 
         //[Porting note] originally represented as a 2D matrix, here it is linearized
-        public static readonly sbyte[] silk_Lag_range_stage3_10_ms =
+        internal static readonly sbyte[] silk_Lag_range_stage3_10_ms =
         {
             -3, 7,
             -2, 7
         };
 
         //[Porting note] originally represented as a 2D matrix, here it is linearized
-        public static readonly sbyte[] silk_CB_lags_stage2 /*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ]*/ =
+        internal static readonly sbyte[] silk_CB_lags_stage2 /*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ]*/ =
         {
             0, 2,-1,-1,-1, 0, 0, 1, 1, 0, 1,
             0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
@@ -1002,7 +1002,7 @@ namespace Concentus.Silk
         };
 
         //[Porting note] originally represented as a 2D matrix, here it is linearized
-        public static readonly sbyte[] silk_CB_lags_stage3/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ]*/ =
+        internal static readonly sbyte[] silk_CB_lags_stage3/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ]*/ =
         {
             0, 0, 1,-1, 0, 1,-1, 0,-1, 1,-2, 2,-2,-2, 2,-3, 2, 3,-3,-4, 3,-4, 4, 4,-5, 5,-6,-5, 6,-7, 6, 5, 8,-9,
             0, 0, 1, 0, 0, 0, 0, 0, 0, 0,-1, 1, 0, 0, 1,-1, 0, 1,-1,-1, 1,-1, 2, 1,-1, 2,-2,-2, 2,-2, 2, 2, 3,-3,
@@ -1011,7 +1011,7 @@ namespace Concentus.Silk
         };
 
         //[Porting note] Similar to the tables above, I have linearized the last 2 dimensions of this table into 1 dimension
-        public static readonly sbyte[][] silk_Lag_range_stage3 =
+        internal static readonly sbyte[][] silk_Lag_range_stage3 =
         {
             /* Lags to search for low number of stage3 cbks */
             new sbyte[] {
@@ -1036,7 +1036,7 @@ namespace Concentus.Silk
             }
         };
 
-        public static readonly sbyte[] silk_nb_cbk_searchs_stage3 =
+        internal static readonly sbyte[] silk_nb_cbk_searchs_stage3 =
         {
             SilkConstants.PE_NB_CBKS_STAGE3_MIN,
             SilkConstants.PE_NB_CBKS_STAGE3_MID,

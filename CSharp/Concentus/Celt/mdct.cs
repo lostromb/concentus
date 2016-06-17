@@ -12,19 +12,19 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class mdct
+    internal static class MDCT
     {
         private const bool TRACE_FILE = false;
         
         /* Forward MDCT trashes the input array */
-        public static void clt_mdct_forward_c(mdct_lookup l, Pointer<int> input, Pointer<int> output,
+        internal static void clt_mdct_forward(MDCTLookup l, Pointer<int> input, Pointer<int> output,
             Pointer<int> window, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;
             Pointer<int> f;
             Pointer<int> f2;
-            kiss_fft_state st = l.kfft[shift];
+            FFTState st = l.kfft[shift];
             Pointer<short> trig;
             int scale;
             
@@ -155,7 +155,7 @@ namespace Concentus.Celt
 
         }
 
-        public static void clt_mdct_backward_c(mdct_lookup l, Pointer<int> input, Pointer<int> output,
+        internal static void clt_mdct_backward(MDCTLookup l, Pointer<int> input, Pointer<int> output,
               Pointer<int> window, int overlap, int shift, int stride)
         {
             int i;

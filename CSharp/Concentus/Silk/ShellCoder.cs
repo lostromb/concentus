@@ -13,14 +13,14 @@ namespace Concentus.Silk
     /// <summary>
     /// shell coder; pulse-subframe length is hardcoded
     /// </summary>
-    public static class ShellCoder
+    internal static class ShellCoder
     {
         /// <summary>
         /// </summary>
         /// <param name="output">O    combined pulses vector [len]</param>
         /// <param name="input">I    input vector       [2 * len]</param>
         /// <param name="len">I    number of OUTPUT samples</param>
-        public static void combine_pulses(
+        internal static void combine_pulses(
             Pointer<int> output,
             Pointer<int> input,
             int len)
@@ -32,7 +32,7 @@ namespace Concentus.Silk
             }
         }
 
-        public static void encode_split(
+        internal static void encode_split(
             ec_ctx psRangeEnc,    /* I/O  compressor data structure                   */
             int p_child1,       /* I    pulse amplitude of first child subframe     */
             int p,              /* I    pulse amplitude of current subframe         */
@@ -53,7 +53,7 @@ namespace Concentus.Silk
         /// <param name="psRangeDec">I/O  Compressor data structure</param>
         /// <param name="p">I    pulse amplitude of current subframe</param>
         /// <param name="shell_table">I    table of shell cdfs</param>
-        public static void decode_split(
+        internal static void decode_split(
             Pointer<short> p_child1,
             Pointer<short> p_child2,
             ec_ctx psRangeDec,
@@ -77,7 +77,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  compressor data structure</param>
         /// <param name="pulses0">I    data: nonnegative pulse amplitudes</param>
-        public static void silk_shell_encoder(ec_ctx psRangeEnc, Pointer<int> pulses0)
+        internal static void silk_shell_encoder(ec_ctx psRangeEnc, Pointer<int> pulses0)
         {
             Pointer<int> pulses1 = Pointer.Malloc<int>(8);
             Pointer<int> pulses2 = Pointer.Malloc<int>(4);
@@ -118,7 +118,7 @@ namespace Concentus.Silk
 
 
         /* Shell decoder, operates on one shell code frame of 16 pulses */
-        public static void silk_shell_decoder(
+        internal static void silk_shell_decoder(
             Pointer<short> pulses0,                       /* O    data: nonnegative pulse amplitudes          */
             ec_ctx psRangeDec,                    /* I/O  Compressor data structure                   */
             int pulses4                         /* I    number of pulses per pulse-subframe         */

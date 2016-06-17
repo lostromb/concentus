@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class laplace
+    internal static class Laplace
     {
         /* The minimum probability of an energy delta (out of 32768). */
         private const int LAPLACE_LOG_MINP = 0;
@@ -20,14 +20,14 @@ namespace Concentus.Celt
         private const int LAPLACE_NMIN = 16;
 
         /* When called, decay is positive and at most 11456. */
-        public static uint ec_laplace_get_freq1(uint fs0, int decay)
+        internal static uint ec_laplace_get_freq1(uint fs0, int decay)
         {
             uint ft;
             ft = 32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0;
             return Inlines.CHOP32U((ft * (int)(16384 - decay)) >> 15);
         }
 
-        public static void ec_laplace_encode(ec_ctx enc, BoxedValue<int> value, uint fs, int decay)
+        internal static void ec_laplace_encode(ec_ctx enc, BoxedValue<int> value, uint fs, int decay)
         {
             uint fl;
             int val = value.Val;
@@ -73,7 +73,7 @@ namespace Concentus.Celt
             EntropyCoder.ec_encode_bin(enc, fl, fl + fs, 15);
         }
 
-        public static int ec_laplace_decode(ec_ctx dec, uint fs, int decay)
+        internal static int ec_laplace_decode(ec_ctx dec, uint fs, int decay)
         {
             int val = 0;
             uint fl;

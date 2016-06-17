@@ -11,27 +11,27 @@ namespace Concentus.Silk
     /// <summary>
     /// Routines for managing packet loss concealment
     /// </summary>
-    public static class PLC
+    internal static class PLC
     {
         private const int NB_ATT = 2;
         private static readonly short[] HARM_ATT_Q15 = { 32440, 31130 }; /* 0.99, 0.95 */
         private static readonly short[] PLC_RAND_ATTENUATE_V_Q15 = { 31130, 26214 }; /* 0.95, 0.8 */
         private static readonly short[] PLC_RAND_ATTENUATE_UV_Q15 = { 32440, 29491 }; /* 0.99, 0.9 */
 
-        public static void silk_PLC_Reset(
-            silk_decoder_state psDec              /* I/O Decoder state        */
+        internal static void silk_PLC_Reset(
+            SilkChannelDecoder psDec              /* I/O Decoder state        */
         )
         {
             psDec.sPLC.pitchL_Q8 = Inlines.silk_LSHIFT(psDec.frame_length, 8 - 1);
-            psDec.sPLC.prevGain_Q16[0] = Inlines.SILK_FIX_CONST(1, 16);
-            psDec.sPLC.prevGain_Q16[1] = Inlines.SILK_FIX_CONST(1, 16);
+            psDec.sPLC.prevGain_Q16[0] = Inlines.SILK_CONST(1, 16);
+            psDec.sPLC.prevGain_Q16[1] = Inlines.SILK_CONST(1, 16);
             psDec.sPLC.subfr_length = 20;
             psDec.sPLC.nb_subfr = 2;
         }
 
-        public static void silk_PLC(
-            silk_decoder_state psDec,             /* I/O Decoder state        */
-            silk_decoder_control psDecCtrl,         /* I/O Decoder control      */
+        internal static void silk_PLC(
+            SilkChannelDecoder psDec,             /* I/O Decoder state        */
+            SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
             Pointer<short> frame,            /* I/O  signal              */
             int lost               /* I Loss flag              */
         )
@@ -63,14 +63,14 @@ namespace Concentus.Silk
         /**************************************************/
         /* Update state of PLC                            */
         /**************************************************/
-        public static void silk_PLC_update(
-            silk_decoder_state psDec,             /* I/O Decoder state        */
-            silk_decoder_control psDecCtrl          /* I/O Decoder control      */
+        internal static void silk_PLC_update(
+            SilkChannelDecoder psDec,             /* I/O Decoder state        */
+            SilkDecoderControl psDecCtrl          /* I/O Decoder control      */
         )
         {
             int LTP_Gain_Q14, temp_LTP_Gain_Q14;
             int i, j;
-            silk_PLC_struct psPLC = psDec.sPLC; // [porting note] pointer on the stack
+            PLCStruct psPLC = psDec.sPLC; // [porting note] pointer on the stack
 
             /* Update parameters used in case of packet loss */
             psDec.prevSignalType = psDec.indices.signalType;
@@ -155,7 +155,7 @@ namespace Concentus.Silk
         /// <param name="prevGain_Q10">I</param>
         /// <param name="subfr_length">I</param>
         /// <param name="nb_subfr">I</param>
-        public static void silk_PLC_energy(
+        internal static void silk_PLC_energy(
             BoxedValue<int> energy1,
             BoxedValue<int> shift1,
             BoxedValue<int> energy2,
@@ -187,9 +187,9 @@ namespace Concentus.Silk
             SumSqrShift.silk_sum_sqr_shift(energy2, shift2, exc_buf.Point(subfr_length), subfr_length);
         }
 
-        public static void silk_PLC_conceal(
-            silk_decoder_state psDec,             /* I/O Decoder state        */
-            silk_decoder_control psDecCtrl,         /* I/O Decoder control      */
+        internal static void silk_PLC_conceal(
+            SilkChannelDecoder psDec,             /* I/O Decoder state        */
+            SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
             Pointer<short> frame            /* O LPC residual signal    */
         )
         {
@@ -209,7 +209,7 @@ namespace Concentus.Silk
             Pointer<short> A_Q12 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
             Pointer<short> sLTP = Pointer.Malloc<short>(psDec.ltp_mem_length);
             Pointer<int> sLTP_Q14 = Pointer.Malloc<int>(psDec.ltp_mem_length + psDec.frame_length);
-            silk_PLC_struct psPLC = psDec.sPLC;
+            PLCStruct psPLC = psDec.sPLC;
             Pointer<int> prevGain_Q10 = Pointer.Malloc<int>(2);
 
             prevGain_Q10[0] = Inlines.silk_RSHIFT(psPLC.prevGain_Q16[0], 6);
@@ -247,7 +247,7 @@ namespace Concentus.Silk
             }
 
             /* LPC concealment. Apply BWE to previous LPC */
-            bwexpander.silk_bwexpander(psPLC.prevLPC_Q12, psDec.LPC_order, Inlines.SILK_FIX_CONST(SilkConstants.BWE_COEF, 16));
+            BWExpander.silk_bwexpander(psPLC.prevLPC_Q12, psDec.LPC_order, Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16));
 
             /* Preload LPC coeficients to array on stack. Gives small performance gain FIXME no it doesn't */
             psPLC.prevLPC_Q12.MemCopyTo(A_Q12, psDec.LPC_order);
@@ -272,7 +272,7 @@ namespace Concentus.Silk
                     /* Reduce random noise for unvoiced frames with high LPC gain */
                     int invGain_Q30, down_scale_Q30;
 
-                    invGain_Q30 = LPC_inv_pred_gain.silk_LPC_inverse_pred_gain(psPLC.prevLPC_Q12, psDec.LPC_order);
+                    invGain_Q30 = LPCInversePredGain.silk_LPC_inverse_pred_gain(psPLC.prevLPC_Q12, psDec.LPC_order);
 
                     down_scale_Q30 = Inlines.silk_min_32(Inlines.silk_RSHIFT((int)1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_HIGH_THRES), invGain_Q30);
                     down_scale_Q30 = Inlines.silk_max_32(Inlines.silk_RSHIFT((int)1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_LOW_THRES), down_scale_Q30);
@@ -389,8 +389,8 @@ namespace Concentus.Silk
         }
 
         /* Glues concealed frames with new good received frames */
-        public static void silk_PLC_glue_frames(
-            silk_decoder_state psDec,             /* I/O decoder state        */
+        internal static void silk_PLC_glue_frames(
+            SilkChannelDecoder psDec,             /* I/O decoder state        */
             Pointer<short> frame,            /* I/O signal               */
             int length              /* I length of signal       */
         )
@@ -398,7 +398,7 @@ namespace Concentus.Silk
             int i;
             BoxedValue<int> energy_shift = new BoxedValue<int>();
             BoxedValue<int> energy = new BoxedValue<int>();
-            silk_PLC_struct psPLC = psDec.sPLC;
+            PLCStruct psPLC = psDec.sPLC;
 
             if (psDec.lossCnt != 0)
             {

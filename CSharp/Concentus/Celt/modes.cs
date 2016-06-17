@@ -13,9 +13,9 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class modes
+    internal static class Modes
     {
-        public static readonly CELTMode mode48000_960_120 = new CELTMode
+        internal static readonly CeltMode mode48000_960_120 = new CeltMode
         {
             Fs = 48000,
             overlap = 120,
@@ -30,11 +30,11 @@ namespace Concentus.Celt
             allocVectors = Tables.band_allocation.GetPointer(),
             logN = Tables.logN400.GetPointer(),
             window = Tables.window120.GetPointer(),
-            mdct = new mdct_lookup()
+            mdct = new MDCTLookup()
             {
                 n = 1920,
                 maxshift = 3,
-                kfft = new kiss_fft_state[]
+                kfft = new FFTState[]
                 {
                     Tables.fft_state48000_960_0,
                     Tables.fft_state48000_960_1,
@@ -52,11 +52,11 @@ namespace Concentus.Celt
             }
         };
 
-        private static readonly CELTMode[] static_mode_list = new CELTMode[] {
+        private static readonly CeltMode[] static_mode_list = new CeltMode[] {
             mode48000_960_120,
         };
 
-        public static CELTMode opus_custom_mode_create(int Fs, int frame_size, BoxedValue<int> error)
+        internal static CeltMode opus_custom_mode_create(int Fs, int frame_size, BoxedValue<int> error)
         {
             int i;
 

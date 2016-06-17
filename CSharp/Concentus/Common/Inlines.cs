@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Concentus.Common
 {
-    public static class Inlines
+    internal static class Inlines
     {
-        public static void OpusAssert(bool condition, string message = "Unknown error")
+        internal static void OpusAssert(bool condition, string message = "Unknown error")
         {
 #if DEBUG
             Debug.Assert(condition, message);
@@ -28,162 +28,162 @@ namespace Concentus.Common
 
         //        /** Multiply a 16-bit signed value by a 16-bit unsigned value. The result is a 32-bit signed value */
         //#define MULT16_16SU(a,b) ((opus_val32)(opus_val16)(a)*(opus_val32)(opus_uint16)(b))
-        public static int MULT16_16SU(int a, int b)
+        internal static int MULT16_16SU(int a, int b)
         {
             return ((int)(short)(a) * (int)(ushort)(b));
         }
 
-        public static int MULT16_16SU(short a, ushort b)
+        internal static int MULT16_16SU(short a, ushort b)
         {
             return ((int)(short)(a) * (int)(ushort)(b));
         }
 
-        public static int MULT16_16SU(int a, uint b)
+        internal static int MULT16_16SU(int a, uint b)
         {
             return ((a) * (int)(b));
         }
 
         //        /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
         //#define MULT16_32_Q16(a,b) ADD32(MULT16_16((a),SHR((b),16)), SHR(MULT16_16SU((a),((b)&0x0000ffff)),16))
-        public static int MULT16_32_Q16(short a, int b)
+        internal static int MULT16_32_Q16(short a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
-        public static int MULT16_32_Q16(int a, int b)
+        internal static int MULT16_32_Q16(int a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
         //        /** 16x32 multiplication, followed by a 16-bit shift right (round-to-nearest). Results fits in 32 bits */
         //#define MULT16_32_P16(a,b) ADD32(MULT16_16((a),SHR((b),16)), PSHR(MULT16_16SU((a),((b)&0x0000ffff)),16))
-        public static int MULT16_32_P16(short a, int b)
+        internal static int MULT16_32_P16(short a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), PSHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
-        public static int MULT16_32_P16(int a, int b)
+        internal static int MULT16_32_P16(int a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), PSHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
         //        /** 16x32 multiplication, followed by a 15-bit shift right. Results fits in 32 bits */
         //#define MULT16_32_Q15(a,b) ADD32(SHL(MULT16_16((a),SHR((b),16)),1), SHR(MULT16_16SU((a),((b)&0x0000ffff)),15))
-        public static int MULT16_32_Q15(short a, int b)
+        internal static int MULT16_32_Q15(short a, int b)
         {
             return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (ushort)((b) & 0x0000ffff)), 15));
         }
 
-        public static int MULT16_32_Q15(int a, int b)
+        internal static int MULT16_32_Q15(int a, int b)
         {
             return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (uint)((b) & 0x0000ffff)), 15));
         }
 
         //        /** 32x32 multiplication, followed by a 31-bit shift right. Results fits in 32 bits */
         //#define MULT32_32_Q31(a,b) ADD32(ADD32(SHL(MULT16_16(SHR((a),16),SHR((b),16)),1), SHR(MULT16_16SU(SHR((a),16),((b)&0x0000ffff)),15)), SHR(MULT16_16SU(SHR((b),16),((a)&0x0000ffff)),15))
-        public static int MULT32_32_Q31(int a, int b)
+        internal static int MULT32_32_Q31(int a, int b)
         {
             return ADD32(ADD32(SHL(MULT16_16(SHR((a), 16), SHR((b), 16)), 1), SHR(MULT16_16SU(SHR((a), 16), ((b) & 0x0000ffff)), 15)), SHR(MULT16_16SU(SHR((b), 16), ((a) & 0x0000ffff)), 15));
         }
 
         //        /** Compile-time conversion of float constant to 16-bit value */
-        public static short QCONST16(float x, int bits)
+        internal static short QCONST16(float x, int bits)
         {
             return ((short)(0.5 + (x) * (((int)1) << (bits))));
         }
 
         //        /** Compile-time conversion of float constant to 32-bit value */
-        public static int QCONST32(float x, int bits)
+        internal static int QCONST32(float x, int bits)
         {
             return ((int)(0.5 + (x) * (((int)1) << (bits))));
         }
 
         //        /** Negate a 16-bit value */
-        public static short NEG16(short x)
+        internal static short NEG16(short x)
         {
             return (short)(0 - x);
         }
 
-        public static int NEG16(int x)
+        internal static int NEG16(int x)
         {
             return 0 - x;
         }
 
         //        /** Negate a 32-bit value */
-        public static int NEG32(int x)
+        internal static int NEG32(int x)
         {
             return 0 - x;
         }
 
         //        /** Change a 32-bit value into a 16-bit value. The value is assumed to fit in 16-bit, otherwise the result is undefined */
-        public static short EXTRACT16(int x)
+        internal static short EXTRACT16(int x)
         {
             return unchecked((short)x);
         }
 
         //        /** Change a 16-bit value into a 32-bit value */
-        public static int EXTEND32(short x)
+        internal static int EXTEND32(short x)
         {
             return (int)x;
         }
 
-        public static int EXTEND32(int x)
+        internal static int EXTEND32(int x)
         {
             return x;
         }
 
         //        /** Arithmetic shift-right of a 16-bit value */
-        public static short SHR16(short a, int shift)
+        internal static short SHR16(short a, int shift)
         {
             return (short)((a) >> (shift));
         }
 
-        public static int SHR16(int a, int shift)
+        internal static int SHR16(int a, int shift)
         {
             return ((a) >> (shift));
         }
 
         //        /** Arithmetic shift-left of a 16-bit value */
-        public static short SHL16(short a, int shift)
+        internal static short SHL16(short a, int shift)
         {
             return unchecked((short)(unchecked((ushort)a) << shift));
         }
 
-        public static int SHL16(int a, int shift)
+        internal static int SHL16(int a, int shift)
         {
             return unchecked(((int)(unchecked((unchecked((uint)(a)) << (shift))))));
         }
 
         //        /** Arithmetic shift-right of a 32-bit value */
-        public static int SHR32(int a, int shift)
+        internal static int SHR32(int a, int shift)
         {
             return a >> shift;
         }
 
         //        /** Arithmetic shift-left of a 32-bit value */
-        public static int SHL32(int a, int shift)
+        internal static int SHL32(int a, int shift)
         {
             return unchecked(((int)(unchecked((unchecked((uint)(a)) << (shift))))));
         }
 
         //        /** 32-bit arithmetic shift right with rounding-to-nearest instead of rounding down */
-        public static int PSHR32(int a, int shift)
+        internal static int PSHR32(int a, int shift)
         {
             return (SHR32((a) + ((EXTEND32(1) << ((shift)) >> 1)), shift));
         }
 
-        public static short PSHR16(short a, int shift)
+        internal static short PSHR16(short a, int shift)
         {
             return SHR16((short)(a + (1 << (shift) >> 1)), shift);
         }
 
-        public static int PSHR16(int a, int shift)
+        internal static int PSHR16(int a, int shift)
         {
             return SHR32((a + (1 << (shift) >> 1)), shift);
         }
 
         //        /** 32-bit arithmetic shift right where the argument can be negative */
-        public static int VSHR32(int a, int shift)
+        internal static int VSHR32(int a, int shift)
         {
             return (((shift) > 0) ? SHR32(a, shift) : SHL32(a, -(shift)));
         }
@@ -214,85 +214,85 @@ namespace Concentus.Common
             return (SHR((a) + ((EXTEND32(1) << ((shift)) >> 1)), shift));
         }
 
-        public static int SATURATE(int x, int a)
+        internal static int SATURATE(int x, int a)
         {
             return (((x) > (a) ? (a) : (x) < -(a) ? -(a) : (x)));
         }
 
-        public static short SATURATE16(int x)
+        internal static short SATURATE16(int x)
         {
             return (EXTRACT16((x) > 32767 ? 32767 : (x) < -32768 ? -32768 : (x)));
         }
 
         //        /** Shift by a and round-to-neareast 32-bit value. Result is a 16-bit value */
-        public static short ROUND16(short x, short a)
+        internal static short ROUND16(short x, short a)
         {
             return (EXTRACT16(PSHR32((x), (a))));
         }
 
-        public static int ROUND16(int x, int a)
+        internal static int ROUND16(int x, int a)
         {
             return PSHR32((x), (a));
         }
 
         //        /** Divide by two */
-        public static short HALF16(short x)
+        internal static short HALF16(short x)
         {
             return (SHR16(x, 1));
         }
 
-        public static int HALF16(int x)
+        internal static int HALF16(int x)
         {
             return (SHR32(x, 1));
         }
 
-        public static int HALF32(int x)
+        internal static int HALF32(int x)
         {
             return (SHR32(x, 1));
         }
 
         //        /** Add two 16-bit values */
-        public static short ADD16(short a, short b)
+        internal static short ADD16(short a, short b)
         {
             return ((short)((short)(a) + (short)(b)));
         }
 
-        public static int ADD16(int a, int b)
+        internal static int ADD16(int a, int b)
         {
             return (a + b);
         }
 
         //        /** Subtract two 16-bit values */
-        public static short SUB16(short a, short b)
+        internal static short SUB16(short a, short b)
         {
             return ((short)((short)(a) - (short)(b)));
         }
 
-        public static int SUB16(int a, int b)
+        internal static int SUB16(int a, int b)
         {
             return (a - b);
         }
 
         //        /** Add two 32-bit values */
-        public static int ADD32(int a, int b)
+        internal static int ADD32(int a, int b)
         {
             return ((int)(a) + (int)(b));
         }
 
         //        /** Subtract two 32-bit values */
-        public static int SUB32(int a, int b)
+        internal static int SUB32(int a, int b)
         {
             return ((int)(a) - (int)(b));
         }
 
         //        /** 16x16 multiplication where the result fits in 16 bits */
         //#define MULT16_16_16(a,b)     ((((opus_val16)(a))*((opus_val16)(b))))
-        public static short MULT16_16_16(short a, short b)
+        internal static short MULT16_16_16(short a, short b)
         {
             return CHOP16(((((short)(a)) * ((short)(b)))));
         }
 
-        public static int MULT16_16_16(int a, int b)
+        internal static int MULT16_16_16(int a, int b)
         {
             return (a * b);
         }
@@ -300,29 +300,29 @@ namespace Concentus.Common
         //        /* (opus_val32)(opus_val16) gives TI compiler a hint that it's 16x16->32 multiply */
         //        /** 16x16 multiplication where the result fits in 32 bits */
         //#define MULT16_16(a,b)     (((opus_val32)(opus_val16)(a))*((opus_val32)(opus_val16)(b)))
-        public static int MULT16_16(int a, int b)
+        internal static int MULT16_16(int a, int b)
         {
             return a * b;
         }
 
-        public static int MULT16_16(short a, short b)
+        internal static int MULT16_16(short a, short b)
         {
             return a * b;
         }
 
         //        /** 16x16 multiply-add where the result fits in 32 bits */
         //#define MAC16_16(c,a,b) (ADD32((c),MULT16_16((a),(b))))
-        public static int MAC16_16(short c, short a, short b)
+        internal static int MAC16_16(short c, short a, short b)
         {
             return (ADD32((c), MULT16_16((a), (b))));
         }
 
-        public static int MAC16_16(int c, short a, short b)
+        internal static int MAC16_16(int c, short a, short b)
         {
             return (ADD32((c), MULT16_16((a), (b))));
         }
 
-        public static int MAC16_16(int c, int a, int b)
+        internal static int MAC16_16(int c, int a, int b)
         {
             return (ADD32((c), MULT16_16((a), (b))));
         }
@@ -331,12 +331,12 @@ namespace Concentus.Common
         //            b must fit in 31 bits.
         //            Result fits in 32 bits. */
         //#define MAC16_32_Q15(c,a,b) ADD32((c),ADD32(MULT16_16((a),SHR((b),15)), SHR(MULT16_16((a),((b)&0x00007fff)),15)))
-        public static int MAC16_32_Q15(int c, short a, short b)
+        internal static int MAC16_32_Q15(int c, short a, short b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 15)), SHR(MULT16_16((a), ((b) & 0x00007fff)), 15)));
         }
 
-        public static int MAC16_32_Q15(int c, int a, int b)
+        internal static int MAC16_32_Q15(int c, int a, int b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 15)), SHR(MULT16_16((a), ((b) & 0x00007fff)), 15)));
         }
@@ -344,130 +344,130 @@ namespace Concentus.Common
         //        /** 16x32 multiplication, followed by a 16-bit shift right and 32-bit add.
         //            Results fits in 32 bits */
         //#define MAC16_32_Q16(c,a,b) ADD32((c),ADD32(MULT16_16((a),SHR((b),16)), SHR(MULT16_16SU((a),((b)&0x0000ffff)),16)))
-        public static int MAC16_32_Q16(int c, short a, short b)
+        internal static int MAC16_32_Q16(int c, short a, short b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16)));
         }
 
-        public static int MAC16_32_Q16(int c, int a, int b)
+        internal static int MAC16_32_Q16(int c, int a, int b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16)));
         }
 
         //#define MULT16_16_Q11_32(a,b) (SHR(MULT16_16((a),(b)),11))
-        public static int MULT16_16_Q11_32(short a, short b)
+        internal static int MULT16_16_Q11_32(short a, short b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
-        public static int MULT16_16_Q11_32(int a, int b)
+        internal static int MULT16_16_Q11_32(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
         //#define MULT16_16_Q11(a,b) (SHR(MULT16_16((a),(b)),11))
-        public static short MULT16_16_Q11(short a, short b)
+        internal static short MULT16_16_Q11(short a, short b)
         {
             return CHOP16((SHR(MULT16_16((a), (b)), 11)));
         }
 
-        public static int MULT16_16_Q11(int a, int b)
+        internal static int MULT16_16_Q11(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
         //#define MULT16_16_Q13(a,b) (SHR(MULT16_16((a),(b)),13))
-        public static short MULT16_16_Q13(short a, short b)
+        internal static short MULT16_16_Q13(short a, short b)
         {
             return CHOP16((SHR(MULT16_16((a), (b)), 13)));
         }
 
-        public static int MULT16_16_Q13(int a, int b)
+        internal static int MULT16_16_Q13(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 13));
         }
 
         //#define MULT16_16_Q14(a,b) (SHR(MULT16_16((a),(b)),14))
-        public static short MULT16_16_Q14(short a, short b)
+        internal static short MULT16_16_Q14(short a, short b)
         {
             return CHOP16((SHR(MULT16_16((a), (b)), 14)));
         }
 
-        public static int MULT16_16_Q14(int a, int b)
+        internal static int MULT16_16_Q14(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 14));
         }
 
         //#define MULT16_16_Q15(a,b) (SHR(MULT16_16((a),(b)),15))
-        public static short MULT16_16_Q15(short a, short b)
+        internal static short MULT16_16_Q15(short a, short b)
         {
             return CHOP16((SHR(MULT16_16((a), (b)), 15)));
         }
 
-        public static int MULT16_16_Q15(int a, int b)
+        internal static int MULT16_16_Q15(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 15));
         }
 
         //#define MULT16_16_P13(a,b) (SHR(ADD32(4096,MULT16_16((a),(b))),13))
-        public static short MULT16_16_P13(short a, short b)
+        internal static short MULT16_16_P13(short a, short b)
         {
             return CHOP16((SHR(ADD32(4096, MULT16_16((a), (b))), 13)));
         }
 
-        public static int MULT16_16_P13(int a, int b)
+        internal static int MULT16_16_P13(int a, int b)
         {
             return (SHR(ADD32(4096, MULT16_16((a), (b))), 13));
         }
 
         //#define MULT16_16_P14(a,b) (SHR(ADD32(8192,MULT16_16((a),(b))),14))
-        public static short MULT16_16_P14(short a, short b)
+        internal static short MULT16_16_P14(short a, short b)
         {
             return CHOP16((SHR(ADD32(8192, MULT16_16((a), (b))), 14)));
         }
 
-        public static int MULT16_16_P14(int a, int b)
+        internal static int MULT16_16_P14(int a, int b)
         {
             return (SHR(ADD32(8192, MULT16_16((a), (b))), 14));
         }
 
         //#define MULT16_16_P15(a,b) (SHR(ADD32(16384,MULT16_16((a),(b))),15))
-        public static short MULT16_16_P15(short a, short b)
+        internal static short MULT16_16_P15(short a, short b)
         {
             return CHOP16((SHR(ADD32(16384, MULT16_16((a), (b))), 15)));
         }
 
-        public static int MULT16_16_P15(int a, int b)
+        internal static int MULT16_16_P15(int a, int b)
         {
             return (SHR(ADD32(16384, MULT16_16((a), (b))), 15));
         }
 
         //        /** Divide a 32-bit value by a 16-bit value. Result fits in 16 bits */
         //#define DIV32_16(a,b) ((opus_val16)(((opus_val32)(a))/((opus_val16)(b))))
-        public static short DIV32_16(int a, short b)
+        internal static short DIV32_16(int a, short b)
         {
             return CHOP16(((short)(((int)(a)) / ((short)(b)))));
         }
 
-        public static int DIV32_16(int a, int b)
+        internal static int DIV32_16(int a, int b)
         {
             return a / b;
         }
 
         //        /** Divide a 32-bit value by a 32-bit value. Result fits in 32 bits */
         //#define DIV32(a,b) (((opus_val32)(a))/((opus_val32)(b)))
-        public static int DIV32(int a, int b)
+        internal static int DIV32(int a, int b)
         {
             return a / b;
         }
 
         // identical to silk_SAT16 - saturate operation
-        public static short SAT16(int x)
+        internal static short SAT16(int x)
         {
             return (short)(x > 32767 ? 32767 : x < -32768 ? -32768 : (short)x);
         }
 
-        public static short SIG2WORD16(int x)
+        internal static short SIG2WORD16(int x)
         {
             x = PSHR32(x, 12);
             x = MAX32(x, -32768);
@@ -475,161 +475,161 @@ namespace Concentus.Common
             return EXTRACT16(x);
         }
 
-        public static short MIN(short a, short b)
+        internal static short MIN(short a, short b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static short MAX(short a, short b)
+        internal static short MAX(short a, short b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        public static short MIN16(short a, short b)
+        internal static short MIN16(short a, short b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static short MAX16(short a, short b)
+        internal static short MAX16(short a, short b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        public static int MIN16(int a, int b)
+        internal static int MIN16(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static int MAX16(int a, int b)
+        internal static int MAX16(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        public static float MIN16(float a, float b)
+        internal static float MIN16(float a, float b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static float MAX16(float a, float b)
+        internal static float MAX16(float a, float b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        public static int MIN(int a, int b)
+        internal static int MIN(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static int MAX(int a, int b)
+        internal static int MAX(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        public static int IMIN(int a, int b)
+        internal static int IMIN(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static uint IMIN(uint a, uint b)
+        internal static uint IMIN(uint a, uint b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static int IMAX(int a, int b)
+        internal static int IMAX(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        public static int MIN32(int a, int b)
+        internal static int MIN32(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static int MAX32(int a, int b)
+        internal static int MAX32(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        public static float MIN32(float a, float b)
+        internal static float MIN32(float a, float b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        public static float MAX32(float a, float b)
+        internal static float MAX32(float a, float b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        public static int ABS16(int x)
+        internal static int ABS16(int x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
-        public static float ABS16(float x)
+        internal static float ABS16(float x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
-        public static short ABS16(short x)
+        internal static short ABS16(short x)
         {
             return CHOP16(((x) < 0 ? (-(x)) : (x)));
         }
 
-        public static int ABS32(int x)
+        internal static int ABS32(int x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
         [Obsolete("x")]
-        public static int SCALEIN(int a)
+        internal static int SCALEIN(int a)
         {
             return a;
         }
 
         [Obsolete("x")]
-        public static int SCALEOUT(int a)
+        internal static int SCALEOUT(int a)
         {
             return a;
         }
 
         [Obsolete("x")]
-        public static short SCALEIN(short a)
+        internal static short SCALEIN(short a)
         {
             return a;
         }
 
         [Obsolete("x")]
-        public static short SCALEOUT(short a)
+        internal static short SCALEOUT(short a)
         {
             return a;
         }
 
-        public static uint celt_udiv(uint n, uint d)
+        internal static uint celt_udiv(uint n, uint d)
         {
             Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
-        public static int celt_udiv(int n, int d)
+        internal static int celt_udiv(int n, int d)
         {
             Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
-        public static int celt_sudiv(int n, int d)
+        internal static int celt_sudiv(int n, int d)
         {
             Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
         //#define celt_div(a,b) MULT32_32_Q31((opus_val32)(a),celt_rcp(b))
-        public static int celt_div(int a, int b)
+        internal static int celt_div(int a, int b)
         {
             return MULT32_32_Q31((int)(a), celt_rcp(b));
         }
 
         /** Integer log in base2. Undefined for zero and negative numbers */
-        public static int celt_ilog2(int x)
+        internal static int celt_ilog2(int x)
         {
             Inlines.OpusAssert(x > 0, "celt_ilog2() only defined for strictly positive numbers");
             //if (x <= 0)
@@ -638,12 +638,12 @@ namespace Concentus.Common
         }
 
         /** Integer log in base2. Defined for zero, but not for negative numbers */
-        public static int celt_zlog2(int x)
+        internal static int celt_zlog2(int x)
         {
             return x <= 0 ? 0 : celt_ilog2(x);
         }
 
-        public static int celt_maxabs16(Pointer<int> x, int len)
+        internal static int celt_maxabs16(Pointer<int> x, int len)
         {
             int i;
             int maxval = 0;
@@ -656,7 +656,7 @@ namespace Concentus.Common
             return MAX32(EXTEND32(maxval), -EXTEND32(minval));
         }
 
-        public static int celt_maxabs32(Pointer<int> x, int len)
+        internal static int celt_maxabs32(Pointer<int> x, int len)
         {
             int i;
             int maxval = 0;
@@ -676,7 +676,7 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static int FRAC_MUL16(int a, int b)
+        internal static int FRAC_MUL16(int a, int b)
         {
             return ((16384 + ((int)((short)a * (short)b))) >> 15);
         }
@@ -687,7 +687,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_val"></param>
         /// <returns></returns>
-        public static uint isqrt32(uint _val)
+        internal static uint isqrt32(uint _val)
         {
             uint b;
             uint g;
@@ -718,7 +718,7 @@ namespace Concentus.Common
         private static readonly short[] sqrt_C = { 23175, 11561, -3011, 1699, -664 };
 
         /** Sqrt approximation (QX input, QX/2 output) */
-        public static int celt_sqrt(int x)
+        internal static int celt_sqrt(int x)
         {
             int k;
             short n;
@@ -738,7 +738,7 @@ namespace Concentus.Common
         }
 
         /** Reciprocal approximation (Q15 input, Q16 output) */
-        public static int celt_rcp(int x)
+        internal static int celt_rcp(int x)
         {
             int i;
             int n;
@@ -767,7 +767,7 @@ namespace Concentus.Common
         }
 
         /** Reciprocal sqrt approximation in the range [0.25,1) (Q16 in, Q14 out) */
-        public static int celt_rsqrt_norm(int x)
+        internal static int celt_rsqrt_norm(int x)
         {
             int n;
             int r;
@@ -794,7 +794,7 @@ namespace Concentus.Common
                        SUB16(MULT16_16_Q15(y, 12288), 16384))));
         }
 
-        public static int frac_div32(int a, int b)
+        internal static int frac_div32(int a, int b)
         {
             int rcp;
             int result, rem;
@@ -818,7 +818,7 @@ namespace Concentus.Common
             { -6801 + (1 << (3)), 15746, -5217, 2545, -1401 };
 
         /** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
-        public static int celt_log2(int x)
+        internal static int celt_log2(int x)
         {
             int i;
             int n, frac;
@@ -843,7 +843,7 @@ namespace Concentus.Common
         private const int D2 = 14819;
         private const int D3 = 10204;
 
-        public static int celt_exp2_frac(int x)
+        internal static int celt_exp2_frac(int x)
         {
             int frac;
             frac = SHL16(x, 4);
@@ -851,7 +851,7 @@ namespace Concentus.Common
         }
 
         /** Base-2 exponential approximation (2^x). (Q10 input, Q16 output) */
-        public static int celt_exp2(int x)
+        internal static int celt_exp2(int x)
         {
             int integer;
             int frac;
@@ -871,13 +871,13 @@ namespace Concentus.Common
 
         /* Atan approximation using a 4th order polynomial. Input is in Q15 format
            and normalized by pi/4. Output is in Q15 format */
-        public static int celt_atan01(int x)
+        internal static int celt_atan01(int x)
         {
             return MULT16_16_P15(x, ADD32(M1, MULT16_16_P15(x, ADD32(M2, MULT16_16_P15(x, ADD32(M3, MULT16_16_P15(M4, x)))))));
         }
 
         /* atan2() approximation valid for positive input values */
-        public static int celt_atan2p(int y, int x)
+        internal static int celt_atan2p(int y, int x)
         {
             if (y < x)
             {
@@ -896,7 +896,7 @@ namespace Concentus.Common
             }
         }
 
-        public static int celt_cos_norm(int x)
+        internal static int celt_cos_norm(int x)
         {
             x = x & 0x0001ffff;
             if (x > SHL32(EXTEND32(1), 16))
@@ -921,12 +921,12 @@ namespace Concentus.Common
             }
         }
 
-        public static int L1 = 32767;
-        public static int L2 = -7651;
-        public static int L3 = 8277;
-        public static int L4 = -626;
+        internal static int L1 = 32767;
+        internal static int L2 = -7651;
+        internal static int L3 = 8277;
+        internal static int L4 = -626;
 
-        public static int _celt_cos_pi_2(int x)
+        internal static int _celt_cos_pi_2(int x)
         {
             int x2;
 
@@ -935,7 +935,7 @@ namespace Concentus.Common
                                                                                          ))))))));
         }
 
-        public static int FLOAT2INT16(float x)
+        internal static int FLOAT2INT16(float x)
         {
             x = x * CeltConstants.CELT_SIG_SCALE;
             x = Math.Max(x, -32768);
@@ -956,7 +956,7 @@ namespace Concentus.Common
         /// <param name="a32"></param>
         /// <param name="rot"></param>
         /// <returns></returns>
-        public static int silk_ROR32(int a32, int rot)
+        internal static int silk_ROR32(int a32, int rot)
         {
             return unchecked((int)silk_ROR32(unchecked((uint)a32), rot));
         }
@@ -968,7 +968,7 @@ namespace Concentus.Common
         /// <param name="a32"></param>
         /// <param name="rot"></param>
         /// <returns></returns>
-        public static uint silk_ROR32(uint a32, int rot)
+        internal static uint silk_ROR32(uint a32, int rot)
         {
             int m = (0 - rot);
             if (rot == 0)
@@ -984,7 +984,7 @@ namespace Concentus.Common
             }
         }
 
-        public static int silk_MUL(int a32, int b32)
+        internal static int silk_MUL(int a32, int b32)
         {
             int ret = a32 * b32;
 #if DEBUG_MACROS
@@ -994,14 +994,14 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static uint silk_MUL_uint(uint a32, uint b32)
+        internal static uint silk_MUL_uint(uint a32, uint b32)
         {
             uint ret = a32 * b32;
             Inlines.OpusAssert((ulong)ret == (ulong)a32 * (ulong)b32);
             return ret;
         }
 
-        public static int silk_MLA(int a32, int b32, int c32)
+        internal static int silk_MLA(int a32, int b32, int c32)
         {
             int ret = silk_ADD32((a32), ((b32) * (c32)));
             Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
@@ -1009,7 +1009,7 @@ namespace Concentus.Common
         }
 
 
-        public static int silk_MLA_uint(uint a32, uint b32, uint c32)
+        internal static int silk_MLA_uint(uint a32, uint b32, uint c32)
         {
             uint ret = silk_ADD32((a32), ((b32) * (c32)));
             Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
@@ -1023,25 +1023,25 @@ namespace Concentus.Common
         /// <param name="b32"></param>
         /// <returns></returns>
 
-        public static int silk_SMULTT(int a32, int b32)
+        internal static int silk_SMULTT(int a32, int b32)
         {
             return ((a32 >> 16) * (b32 >> 16));
         }
 
 
-        public static int silk_SMLATT(int a32, int b32, int c32)
+        internal static int silk_SMLATT(int a32, int b32, int c32)
         {
             return silk_ADD32((a32), ((b32) >> 16) * ((c32) >> 16));
         }
 
 
-        public static long silk_SMLALBB(long a64, short b16, short c16)
+        internal static long silk_SMLALBB(long a64, short b16, short c16)
         {
             return silk_ADD64((a64), (long)((int)(b16) * (int)(c16)));
         }
 
 
-        public static long silk_SMULL(int a32, int b32)
+        internal static long silk_SMULL(int a32, int b32)
         {
             return (long)a32 * (long)b32;
         }
@@ -1054,12 +1054,12 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
 
-        public static int silk_ADD32_ovflw(int a, int b)
+        internal static int silk_ADD32_ovflw(int a, int b)
         {
             return unchecked((int)((uint)a + (uint)b));
         }
 
-        public static int silk_ADD32_ovflw(uint a, uint b)
+        internal static int silk_ADD32_ovflw(uint a, uint b)
         {
             return unchecked((int)(a + b));
         }
@@ -1072,7 +1072,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
 
-        public static int silk_SUB32_ovflw(int a, int b)
+        internal static int silk_SUB32_ovflw(int a, int b)
         {
             return unchecked((int)((uint)a - (uint)b));
         }
@@ -1085,19 +1085,19 @@ namespace Concentus.Common
         /// <param name="c32"></param>
         /// <returns></returns>
 
-        public static int silk_MLA_ovflw(int a32, int b32, int c32)
+        internal static int silk_MLA_ovflw(int a32, int b32, int c32)
         {
             return unchecked(silk_ADD32_ovflw((uint)(a32), (uint)(b32) * (uint)(c32)));
         }
 
 
-        public static int silk_SMLABB_ovflw(int a32, int b32, int c32)
+        internal static int silk_SMLABB_ovflw(int a32, int b32, int c32)
         {
             return unchecked((silk_ADD32_ovflw((a32), ((int)((short)(b32))) * (int)((short)(c32)))));
         }
 
 
-        public static int silk_SMULBB(int a32, int b32)
+        internal static int silk_SMULBB(int a32, int b32)
         {
             return ((int)unchecked((short)a32) * (int)unchecked((short)b32));
         }
@@ -1109,7 +1109,7 @@ namespace Concentus.Common
         /// <param name="b32"></param>
         /// <returns></returns>
 
-        public static int silk_SMULWB(int a32, int b32)
+        internal static int silk_SMULWB(int a32, int b32)
         {
 #if DEBUG_MACROS
             int ret;
@@ -1125,12 +1125,12 @@ namespace Concentus.Common
         }
 
 
-        public static int silk_SMLABB(int a32, int b32, int c32)
+        internal static int silk_SMLABB(int a32, int b32, int c32)
         {
             return ((a32) + ((int)unchecked((short)b32)) * (int)unchecked((short)c32));
         }
 
-        public static int silk_DIV32_16(int a32, int b32)
+        internal static int silk_DIV32_16(int a32, int b32)
         {
 #if DEBUG_MACROS
             bool fail = false;
@@ -1142,13 +1142,13 @@ namespace Concentus.Common
             return a32 / b32;
         }
 
-        public static int silk_DIV32(int a32, int b32)
+        internal static int silk_DIV32(int a32, int b32)
         {
             return a32 / b32;
         }
 
 
-        public static short silk_ADD16(short a, short b)
+        internal static short silk_ADD16(short a, short b)
         {
             short ret = (short)(a + b);
 #if DEBUG_MACROS
@@ -1161,7 +1161,7 @@ namespace Concentus.Common
         }
 
 
-        public static int silk_ADD32(int a, int b)
+        internal static int silk_ADD32(int a, int b)
         {
             int ret = a + b;
 #if DEBUG_MACROS
@@ -1173,13 +1173,13 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static uint silk_ADD32(uint a, uint b)
+        internal static uint silk_ADD32(uint a, uint b)
         {
             uint ret = a + b;
             return ret;
         }
 
-        public static long silk_ADD64(long a, long b)
+        internal static long silk_ADD64(long a, long b)
         {
             long ret = a + b;
             Inlines.OpusAssert(ret == silk_ADD_SAT64(a, b));
@@ -1187,7 +1187,7 @@ namespace Concentus.Common
         }
 
 
-        public static short silk_SUB16(short a, short b)
+        internal static short silk_SUB16(short a, short b)
         {
             short ret = (short)(a - b);
             Inlines.OpusAssert(ret == silk_SUB_SAT16(a, b));
@@ -1195,7 +1195,7 @@ namespace Concentus.Common
         }
 
 
-        public static int silk_SUB32(int a, int b)
+        internal static int silk_SUB32(int a, int b)
         {
             int ret = a - b;
             Inlines.OpusAssert(ret == silk_SUB_SAT32(a, b));
@@ -1203,7 +1203,7 @@ namespace Concentus.Common
         }
 
 
-        public static long silk_SUB64(long a, long b)
+        internal static long silk_SUB64(long a, long b)
         {
             long ret = a - b;
             Inlines.OpusAssert(ret == silk_SUB_SAT64(a, b));
@@ -1211,37 +1211,37 @@ namespace Concentus.Common
         }
 
 
-        public static int silk_SAT8(int a)
+        internal static int silk_SAT8(int a)
         {
             return a > byte.MaxValue ? byte.MaxValue : ((a) < byte.MinValue ? byte.MinValue : (a));
         }
 
 
-        public static int silk_SAT16(int a)
+        internal static int silk_SAT16(int a)
         {
             return a > short.MaxValue ? short.MaxValue : ((a) < short.MinValue ? short.MinValue : (a));
         }
         
-        public static int silk_SAT32(long a)
+        internal static int silk_SAT32(long a)
         {
             return a > int.MaxValue ? int.MaxValue : ((a) < int.MinValue ? int.MinValue : (int)(a));
         }
 
         // fixme: these are for debug assertions only; either implement the assertions or remove these macros
 
-        public static long silk_CHECK_FIT8(long a)
+        internal static long silk_CHECK_FIT8(long a)
         {
             return a;
         }
 
 
-        public static long silk_CHECK_FIT16(long a)
+        internal static long silk_CHECK_FIT16(long a)
         {
             return a;
         }
 
 
-        public static long silk_CHECK_FIT32(long a)
+        internal static long silk_CHECK_FIT32(long a)
         {
             return a;
         }
@@ -1249,7 +1249,7 @@ namespace Concentus.Common
 
         // Truncation macros defined for safety while porting //
 
-        public static sbyte CHOP8(int a)
+        internal static sbyte CHOP8(int a)
         {
             //if (a > sbyte.MaxValue)
             //    a = sbyte.MaxValue;
@@ -1258,7 +1258,7 @@ namespace Concentus.Common
             return checked((sbyte)a);
         }
 
-        public static byte CHOP8U(int a)
+        internal static byte CHOP8U(int a)
         {
             //if (a > byte.MaxValue)
             //    a = byte.MaxValue;
@@ -1267,7 +1267,7 @@ namespace Concentus.Common
             return checked((byte)a);
         }
 
-        public static sbyte CHOP8(long a)
+        internal static sbyte CHOP8(long a)
         {
             //if (a > sbyte.MaxValue)
             //    a = sbyte.MaxValue;
@@ -1276,7 +1276,7 @@ namespace Concentus.Common
             return checked((sbyte)a);
         }
 
-        public static short CHOP16(int a)
+        internal static short CHOP16(int a)
         {
             //if (a > short.MaxValue)
             //    a = short.MaxValue;
@@ -1285,7 +1285,7 @@ namespace Concentus.Common
             return checked((short)a);
         }
 
-        public static short CHOP16(long a)
+        internal static short CHOP16(long a)
         {
             //if (a > short.MaxValue)
             //    a = short.MaxValue;
@@ -1294,7 +1294,7 @@ namespace Concentus.Common
             return checked((short)a);
         }
 
-        public static int CHOP32(long a)
+        internal static int CHOP32(long a)
         {
             //if (a > int.MaxValue)
             //    a = int.MaxValue;
@@ -1303,7 +1303,7 @@ namespace Concentus.Common
             return checked((int)a);
         }
 
-        public static uint CHOP32U(long a)
+        internal static uint CHOP32U(long a)
         {
             //if (a > uint.MaxValue)
             //    a = uint.MaxValue;
@@ -1319,14 +1319,14 @@ namespace Concentus.Common
         /// <param name="b16"></param>
         /// <returns></returns>
 
-        public static short silk_ADD_SAT16(short a16, short b16)
+        internal static short silk_ADD_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_ADD32((int)(a16), (b16)));
             Inlines.OpusAssert(res == silk_SAT16((int)a16 + (int)b16));
             return res;
         }
 
-        public static int silk_ADD_SAT32(int a32, int b32)
+        internal static int silk_ADD_SAT32(int a32, int b32)
         {
             int res = (unchecked(((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
                 ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
@@ -1335,7 +1335,7 @@ namespace Concentus.Common
             return res;
         }
 
-        public static long silk_ADD_SAT64(long a64, long b64)
+        internal static long silk_ADD_SAT64(long a64, long b64)
         {
             long res;
             res = (unchecked((ulong)(a64 + b64) & 0x8000000000000000UL) == 0 ?
@@ -1362,14 +1362,14 @@ namespace Concentus.Common
             return res;
         }
 
-        public static short silk_SUB_SAT16(short a16, short b16)
+        internal static short silk_SUB_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_SUB32((int)(a16), (b16)));
             Inlines.OpusAssert(res == silk_SAT16((int)a16 - (int)b16));
             return res;
         }
 
-        public static int silk_SUB_SAT32(int a32, int b32)
+        internal static int silk_SUB_SAT32(int a32, int b32)
         {
             int res = (unchecked(((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
                 (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
@@ -1378,7 +1378,7 @@ namespace Concentus.Common
             return res;
         }
 
-        public static long silk_SUB_SAT64(long a64, long b64)
+        internal static long silk_SUB_SAT64(long a64, long b64)
         {
             long res;
             res = (unchecked((ulong)((a64) - (b64)) & 0x8000000000000000UL) == 0 ?
@@ -1415,7 +1415,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
 
-        public static sbyte silk_ADD_POS_SAT8(sbyte a, sbyte b)
+        internal static sbyte silk_ADD_POS_SAT8(sbyte a, sbyte b)
         {
             return (sbyte)((((a + b) & 0x80) != 0) ? sbyte.MaxValue : (a + b));
         }
@@ -1427,7 +1427,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
 
-        public static short silk_ADD_POS_SAT16(short a, short b)
+        internal static short silk_ADD_POS_SAT16(short a, short b)
         {
             return (short)(unchecked(((a + b) & 0x8000) != 0) ? short.MaxValue : (a + b));
         }
@@ -1439,7 +1439,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
 
-        public static int silk_ADD_POS_SAT32(int a, int b)
+        internal static int silk_ADD_POS_SAT32(int a, int b)
         {
             return (unchecked(((a + b) & 0x80000000) != 0) ? int.MaxValue : (a + b));
         }
@@ -1451,12 +1451,12 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
 
-        public static long silk_ADD_POS_SAT64(long a, long b)
+        internal static long silk_ADD_POS_SAT64(long a, long b)
         {
             return ((unchecked((ulong)(a + b) & 0x8000000000000000L) != 0) ? long.MaxValue : (a + b));
         }
 
-        public static sbyte silk_LSHIFT8(sbyte a, int shift)
+        internal static sbyte silk_LSHIFT8(sbyte a, int shift)
         {
             sbyte ret = (sbyte)(a << shift);
 #if DEBUG_MACROS
@@ -1469,7 +1469,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static short silk_LSHIFT16(short a, int shift)
+        internal static short silk_LSHIFT16(short a, int shift)
         {
             short ret = (short)(a << shift);
 #if DEBUG_MACROS
@@ -1482,7 +1482,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static int silk_LSHIFT32(int a, int shift)
+        internal static int silk_LSHIFT32(int a, int shift)
         {
             int ret = a << shift;
 #if DEBUG_MACROS
@@ -1495,7 +1495,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static long silk_LSHIFT64(long a, int shift)
+        internal static long silk_LSHIFT64(long a, int shift)
         {
             long ret = a << shift;
 #if DEBUG_MACROS
@@ -1508,7 +1508,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static int silk_LSHIFT(int a, int shift)
+        internal static int silk_LSHIFT(int a, int shift)
         {
             int ret = a << shift;
 #if DEBUG_MACROS
@@ -1521,7 +1521,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static int silk_LSHIFT_ovflw(int a, int shift)
+        internal static int silk_LSHIFT_ovflw(int a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32)) /* no check for overflow */
@@ -1532,7 +1532,7 @@ namespace Concentus.Common
             return a << shift;
         }
 
-        public static uint silk_LSHIFT_uint(uint a, int shift)
+        internal static uint silk_LSHIFT_uint(uint a, int shift)
         {
             uint ret = a << shift;
 #if DEBUG_MACROS
@@ -1550,12 +1550,12 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="shift"></param>
         /// <returns></returns>
-        public static int silk_LSHIFT_SAT32(int a, int shift)
+        internal static int silk_LSHIFT_SAT32(int a, int shift)
         {
             return (silk_LSHIFT32(silk_LIMIT((a), silk_RSHIFT32(int.MinValue, (shift)), silk_RSHIFT32(int.MaxValue, (shift))), (shift)));
         }
 
-        public static sbyte silk_RSHIFT8(sbyte a, int shift)
+        internal static sbyte silk_RSHIFT8(sbyte a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 8))
@@ -1566,7 +1566,7 @@ namespace Concentus.Common
             return (sbyte)(a >> shift);
         }
 
-        public static short silk_RSHIFT16(short a, int shift)
+        internal static short silk_RSHIFT16(short a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 16))
@@ -1577,7 +1577,7 @@ namespace Concentus.Common
             return (short)(a >> shift);
         }
 
-        public static int silk_RSHIFT32(int a, int shift)
+        internal static int silk_RSHIFT32(int a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32))
@@ -1588,7 +1588,7 @@ namespace Concentus.Common
             return a >> shift;
         }
 
-        public static int silk_RSHIFT(int a, int shift)
+        internal static int silk_RSHIFT(int a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32))
@@ -1599,7 +1599,7 @@ namespace Concentus.Common
             return a >> shift;
         }
 
-        public static long silk_RSHIFT64(long a, int shift)
+        internal static long silk_RSHIFT64(long a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 64))
@@ -1610,7 +1610,7 @@ namespace Concentus.Common
             return a >> shift;
         }
 
-        public static uint silk_RSHIFT_uint(uint a, int shift)
+        internal static uint silk_RSHIFT_uint(uint a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 32))
@@ -1621,7 +1621,7 @@ namespace Concentus.Common
             return a >> shift;
         }
 
-        public static int silk_ADD_LSHIFT(int a, int b, int shift)
+        internal static int silk_ADD_LSHIFT(int a, int b, int shift)
         {
             int ret = a + (b << shift);
 #if DEBUG_MACROS
@@ -1633,7 +1633,7 @@ namespace Concentus.Common
             return ret;                /* shift >= 0 */
         }
 
-        public static int silk_ADD_LSHIFT32(int a, int b, int shift)
+        internal static int silk_ADD_LSHIFT32(int a, int b, int shift)
         {
             int ret = a + (b << shift);
 #if DEBUG_MACROS
@@ -1645,7 +1645,7 @@ namespace Concentus.Common
             return ret;                /* shift >= 0 */
         }
 
-        public static uint silk_ADD_LSHIFT_uint(uint a, uint b, int shift)
+        internal static uint silk_ADD_LSHIFT_uint(uint a, uint b, int shift)
         {
             uint ret;
             ret = a + (b << shift);
@@ -1658,7 +1658,7 @@ namespace Concentus.Common
             return ret;                /* shift >= 0 */
         }
 
-        public static int silk_ADD_RSHIFT(int a, int b, int shift)
+        internal static int silk_ADD_RSHIFT(int a, int b, int shift)
         {
             int ret = a + (b >> shift);
 #if DEBUG_MACROS
@@ -1670,7 +1670,7 @@ namespace Concentus.Common
             return ret;                /* shift  > 0 */
         }
 
-        public static int silk_ADD_RSHIFT32(int a, int b, int shift)
+        internal static int silk_ADD_RSHIFT32(int a, int b, int shift)
         {
             int ret = a + (b >> shift);
 #if DEBUG_MACROS
@@ -1682,7 +1682,7 @@ namespace Concentus.Common
             return ret;                /* shift  > 0 */
         }
 
-        public static uint silk_ADD_RSHIFT_uint(uint a, uint b, int shift)
+        internal static uint silk_ADD_RSHIFT_uint(uint a, uint b, int shift)
         {
             uint ret;
             ret = a + (b >> shift);
@@ -1695,7 +1695,7 @@ namespace Concentus.Common
             return ret;                /* shift  > 0 */
         }
 
-        public static int silk_SUB_LSHIFT32(int a, int b, int shift)
+        internal static int silk_SUB_LSHIFT32(int a, int b, int shift)
         {
             int ret;
             ret = a - (b << shift);
@@ -1708,7 +1708,7 @@ namespace Concentus.Common
             return ret;                /* shift >= 0 */
         }
 
-        public static int silk_SUB_RSHIFT32(int a, int b, int shift)
+        internal static int silk_SUB_RSHIFT32(int a, int b, int shift)
         {
             int ret;
             ret = a - (b >> shift);
@@ -1721,7 +1721,7 @@ namespace Concentus.Common
             return ret;                /* shift  > 0 */
         }
 
-        public static int silk_RSHIFT_ROUND(int a, int shift)
+        internal static int silk_RSHIFT_ROUND(int a, int shift)
         {
             int ret;
             ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
@@ -1735,7 +1735,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        public static long silk_RSHIFT_ROUND64(long a, int shift)
+        internal static long silk_RSHIFT_ROUND64(long a, int shift)
         {
             long ret;
 #if DEBUG_MACROS
@@ -1754,24 +1754,24 @@ namespace Concentus.Common
         //#define silk_NSHIFT_MUL_16_16(a, b)         ( -(15- (16-silk_CLZ16(silk_abs(a)) + (16-silk_CLZ16(silk_abs(b))))) )
 
 
-        public static int silk_min(int a, int b)
+        internal static int silk_min(int a, int b)
         {
             return ((a) < (b)) ? (a) : (b);
         }
 
 
-        public static int silk_max(int a, int b)
+        internal static int silk_max(int a, int b)
         {
             return ((a) > (b)) ? (a) : (b);
         }
 
-        public static float silk_min(float a, float b)
+        internal static float silk_min(float a, float b)
         {
             return ((a) < (b)) ? (a) : (b);
         }
 
 
-        public static float silk_max(float a, float b)
+        internal static float silk_max(float a, float b)
         {
             return ((a) > (b)) ? (a) : (b);
         }
@@ -1780,117 +1780,117 @@ namespace Concentus.Common
         /// Macro to convert floating-point constants to fixed-point by applying a scalar factor
         /// </summary>
 
-        public static int SILK_FIX_CONST(float number, int scale)
+        internal static int SILK_CONST(float number, int scale)
         {
             return ((int)((number) * ((long)1 << (scale)) + 0.5));
         }
 
         /* silk_min() versions with typecast in the function call */
 
-        public static int silk_min_int(int a, int b)
+        internal static int silk_min_int(int a, int b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
 
-        public static short silk_min_16(short a, short b)
+        internal static short silk_min_16(short a, short b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
 
-        public static int silk_min_32(int a, int b)
+        internal static int silk_min_32(int a, int b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
 
-        public static long silk_min_64(long a, long b)
+        internal static long silk_min_64(long a, long b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
         /* silk_min() versions with typecast in the function call */
 
-        public static int silk_max_int(int a, int b)
+        internal static int silk_max_int(int a, int b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
 
-        public static short silk_max_16(short a, short b)
+        internal static short silk_max_16(short a, short b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
 
-        public static int silk_max_32(int a, int b)
+        internal static int silk_max_32(int a, int b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
 
-        public static long silk_max_64(long a, long b)
+        internal static long silk_max_64(long a, long b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
-        public static float silk_LIMIT(float a, float limit1, float limit2)
+        internal static float silk_LIMIT(float a, float limit1, float limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
-        public static int silk_LIMIT(int a, int limit1, int limit2)
+        internal static int silk_LIMIT(int a, int limit1, int limit2)
         {
             return silk_LIMIT_32(a, limit1, limit2);
         }
 
 
-        public static int silk_LIMIT_int(int a, int limit1, int limit2)
+        internal static int silk_LIMIT_int(int a, int limit1, int limit2)
         {
             return silk_LIMIT_32(a, limit1, limit2);
         }
 
 
-        public static short silk_LIMIT_16(short a, short limit1, short limit2)
+        internal static short silk_LIMIT_16(short a, short limit1, short limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
 
-        public static int silk_LIMIT_32(int a, int limit1, int limit2)
+        internal static int silk_LIMIT_32(int a, int limit1, int limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
 
-        public static int silk_abs(int a)
+        internal static int silk_abs(int a)
         {
             // Be careful, silk_abs returns wrong when input equals to silk_intXX_MIN
             return ((a) > 0) ? (a) : -(a);
         }
 
 
-        public static int silk_abs_int16(int a)
+        internal static int silk_abs_int16(int a)
         {
             return (a ^ (a >> 15)) - (a >> 15);
         }
 
 
-        public static int silk_abs_int32(int a)
+        internal static int silk_abs_int32(int a)
         {
 
             return (a ^ (a >> 31)) - (a >> 31);
         }
 
 
-        public static long silk_abs_int64(long a)
+        internal static long silk_abs_int64(long a)
         {
             return ((a) > 0) ? (a) : -(a);
         }
 
 
-        public static long silk_sign(int a)
+        internal static long silk_sign(int a)
         {
             return (a) > 0 ? 1 : ((a) < 0 ? -1 : 0);
         }
@@ -1902,7 +1902,7 @@ namespace Concentus.Common
         /// bits, take the most significant bits by right-shifting.
         /// </summary>
 
-        public static int silk_RAND(int seed)
+        internal static int silk_RAND(int seed)
         {
             return silk_MLA_ovflw(907633515, seed, 196314165);
         }
@@ -1914,13 +1914,13 @@ namespace Concentus.Common
         /// <param name="b32"></param>
         /// <returns></returns>
 
-        public static int silk_SMMUL(int a32, int b32)
+        internal static int silk_SMMUL(int a32, int b32)
         {
             return (int)silk_RSHIFT64(silk_SMULL((a32), (b32)), 32);
         }
 
         /* a32 + (b32 * (c32 >> 16)) >> 16 */
-        public static int silk_SMLAWT(int a32, int b32, int c32)
+        internal static int silk_SMLAWT(int a32, int b32, int c32)
         {
             int ret;
             ret = a32 + ((b32 >> 16) * (c32 >> 16)) + (((b32 & 0x0000FFFF) * ((c32 >> 16)) >> 16));
@@ -1940,7 +1940,7 @@ namespace Concentus.Common
         /// <param name="b32">I    denominator (Q0)</param>
         /// <param name="Qres">I    Q-domain of result (>= 0)</param>
         /// <returns>O    returns a good approximation of "(a32 << Qres) / b32"</returns>
-        public static int silk_DIV32_varQ(int a32, int b32, int Qres)
+        internal static int silk_DIV32_varQ(int a32, int b32, int Qres)
         {
             int a_headrm, b_headrm, lshift;
             int b32_inv, a32_nrm, b32_nrm, result;
@@ -1994,7 +1994,7 @@ namespace Concentus.Common
         /// <param name="Qres">I    Q-domain of result (> 0)</param>
         /// <returns>a good approximation of "(1 << Qres) / b32"</returns>
 
-        public static int silk_INVERSE32_varQ(int b32, int Qres)
+        internal static int silk_INVERSE32_varQ(int b32, int Qres)
         {
             int b_headrm, lshift;
             int b32_inv, b32_nrm, err_Q32, result;
@@ -2044,7 +2044,7 @@ namespace Concentus.Common
         /// a32 + (b32 * (int)((short)(c32))) >> 16 output have to be 32bit int
         /// </summary>
 
-        public static int silk_SMLAWB(int a32, int b32, int c32)
+        internal static int silk_SMLAWB(int a32, int b32, int c32)
         {
             //return (int)(a32 + ((b32 * (long)((short)c32)) >> 16));
             int ret;
@@ -2059,61 +2059,61 @@ namespace Concentus.Common
         }
 
         ///* (a32 * (b32 >> 16)) >> 16 */
-        public static int silk_SMULWT(int a32, int b32)
+        internal static int silk_SMULWT(int a32, int b32)
         {
             return (((a32) >> 16) * ((b32) >> 16) + ((((a32) & 0x0000FFFF) * ((b32) >> 16)) >> 16));
         }
 
         ///* (int)((short)(a32)) * (b32 >> 16) */
-        public static int silk_SMULBT(int a32, int b32)
+        internal static int silk_SMULBT(int a32, int b32)
         {
             return ((int)((short)(a32)) * ((b32) >> 16));
         }
 
         ///* a32 + (int)((short)(b32)) * (c32 >> 16) */
-        public static int silk_SMLABT(int a32, int b32, int c32)
+        internal static int silk_SMLABT(int a32, int b32, int c32)
         {
             return ((a32) + ((int)((short)(b32))) * ((c32) >> 16));
         }
 
         ///* a64 + (b32 * c32) */
-        public static long silk_SMLAL(long a64, int b32, int c32)
+        internal static long silk_SMLAL(long a64, int b32, int c32)
         {
             return (silk_ADD64((a64), ((long)(b32) * (long)(c32))));
         }
 
-        public static T matrix_ptr<T>(T[] Matrix_base_adr, int row, int column, int N)
+        internal static T matrix_ptr<T>(T[] Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr[((row) * (N)) + (column)];
         }
 
-        public static Pointer<T> matrix_adr<T>(T[] Matrix_base_adr, int row, int column, int N)
+        internal static Pointer<T> matrix_adr<T>(T[] Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr.GetPointer(((row) * (N)) + (column));
         }
 
-        public static T matrix_c_ptr<T>(T[] Matrix_base_adr, int row, int column, int M)
+        internal static T matrix_c_ptr<T>(T[] Matrix_base_adr, int row, int column, int M)
         {
             return Matrix_base_adr[(row) + ((M) * (column))];
         }
 
-        public static T matrix_ptr<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
+        internal static T matrix_ptr<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr[((row) * (N)) + (column)];
         }
 
         // FIXME this should be replaced by a "SetMatrix" macro or something
-        public static Pointer<T> matrix_adr<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
+        internal static Pointer<T> matrix_adr<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr.Point(((row) * (N)) + (column));
         }
 
-        public static T matrix_c_ptr<T>(Pointer<T> Matrix_base_adr, int row, int column, int M)
+        internal static T matrix_c_ptr<T>(Pointer<T> Matrix_base_adr, int row, int column, int M)
         {
             return Matrix_base_adr[(row) + ((M) * (column))];
         }
 
-        public static Pointer<T> matrix_c_adr<T>(Pointer<T> Matrix_base_adr, int row, int column, int M)
+        internal static Pointer<T> matrix_c_adr<T>(Pointer<T> Matrix_base_adr, int row, int column, int M)
         {
             return Matrix_base_adr.Point((row) + ((M) * (column)));
         }
@@ -2121,7 +2121,7 @@ namespace Concentus.Common
         /// <summary>
         /// (a32 * b32) >> 16
         /// </summary>
-        public static int silk_SMULWW(int a32, int b32)
+        internal static int silk_SMULWW(int a32, int b32)
         {
 #if DEBUG_MACROS
             int ret, tmp1, tmp2;
@@ -2156,7 +2156,7 @@ namespace Concentus.Common
         /// <summary>
         /// a32 + ((b32 * c32) >> 16)
         /// </summary>
-        public static int silk_SMLAWW(int a32, int b32, int c32)
+        internal static int silk_SMLAWW(int a32, int b32, int c32)
         {
 #if DEBUG_MACROS
             int ret, tmp;
@@ -2175,7 +2175,7 @@ namespace Concentus.Common
         }
 
         /* count leading zeros of opus_int64 */
-        public static int silk_CLZ64(long input)
+        internal static int silk_CLZ64(long input)
         {
             int in_upper;
 
@@ -2191,7 +2191,7 @@ namespace Concentus.Common
             }
         }
 
-        public static int silk_CLZ32(int in32)
+        internal static int silk_CLZ32(int in32)
         {
             return in32 == 0 ? 32 : 32 - EC_ILOG(unchecked((uint)in32));
         }
@@ -2203,7 +2203,7 @@ namespace Concentus.Common
         /// <param name="lz">number of leading zeros</param>
         /// <param name="frac_Q7">the 7 bits right after the leading one</param>
 
-        public static void silk_CLZ_FRAC(int input, out int lz, out int frac_Q7)
+        internal static void silk_CLZ_FRAC(int input, out int lz, out int frac_Q7)
         {
             int lzeros = silk_CLZ32(input);
 
@@ -2219,7 +2219,7 @@ namespace Concentus.Common
         /// <param name="x"></param>
         /// <returns></returns>
 
-        public static int silk_SQRT_APPROX(int x)
+        internal static int silk_SQRT_APPROX(int x)
         {
             // FIXME This is 10x faster
             // return (int)(Math.Sqrt(x));
@@ -2251,7 +2251,7 @@ namespace Concentus.Common
             return y;
         }
 
-        public static int MUL32_FRAC_Q(int a32, int b32, int Q)
+        internal static int MUL32_FRAC_Q(int a32, int b32, int Q)
         {
             return ((int)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)));
         }
@@ -2263,7 +2263,7 @@ namespace Concentus.Common
         /// <param name="inLin">(I) input in linear scale</param>
         /// <returns></returns>
 
-        public static int silk_lin2log(int inLin)
+        internal static int silk_lin2log(int inLin)
         {
             int lz, frac_Q7;
 
@@ -2279,7 +2279,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="inLog_Q7">input on log scale</param>
         /// <returns>Linearized value</returns>
-        public static int silk_log2lin(int inLog_Q7)
+        internal static int silk_log2lin(int inLog_Q7)
         {
             int output, frac_Q7;
 
@@ -2318,7 +2318,7 @@ namespace Concentus.Common
         /// <param name="ifact_Q2">(I) interp. factor, weight on 2nd vector</param>
         /// <param name="d">(I) number of parameters</param>
 
-        public static void silk_interpolate(
+        internal static void silk_interpolate(
             Pointer<short> xi,
             Pointer<short> x0,
             Pointer<short> x1,
@@ -2345,7 +2345,7 @@ namespace Concentus.Common
         /// <param name="len">I vector lengths</param>
         /// <returns></returns>
 
-        public static int silk_inner_prod_aligned_scale(
+        internal static int silk_inner_prod_aligned_scale(
             Pointer<short> inVec1,
             Pointer<short> inVec2,
             int scale,
@@ -2361,7 +2361,7 @@ namespace Concentus.Common
         }
 
         /* Copy and multiply a vector by a constant */
-        public static void silk_scale_copy_vector16(
+        internal static void silk_scale_copy_vector16(
             Pointer<short> data_out,
         Pointer<short> data_in,
         int gain_Q16,           /* I    Gain in Q16                                                 */
@@ -2379,7 +2379,7 @@ namespace Concentus.Common
         }
 
         /* Multiply a vector by a constant */
-        public static void silk_scale_vector32_Q26_lshift_18(
+        internal static void silk_scale_vector32_Q26_lshift_18(
             Pointer<int> data1,             /* I/O  Q0/Q18                                                      */
             int gain_Q26,           /* I    Q26                                                         */
             int dataSize            /* I    length                                                      */
@@ -2394,16 +2394,16 @@ namespace Concentus.Common
         }
 
         /* sum = for(i=0;i<len;i++)inVec1[i]*inVec2[i];      ---        inner product   */
-        public static int silk_inner_prod_aligned(
+        internal static int silk_inner_prod_aligned(
             Pointer<short> inVec1,             /*    I input vector 1                                              */
             Pointer<short> inVec2,             /*    I input vector 2                                              */
             int len                /*    I vector lengths                                              */
         )
         {
-            return celt_inner_prod.celt_inner_prod_c(inVec1, inVec2, len);
+            return Kernels.celt_inner_prod(inVec1, inVec2, len);
         }
 
-        public static long silk_inner_prod16_aligned_64_c(
+        internal static long silk_inner_prod16_aligned_64(
             Pointer<short> inVec1,            /*    I input vector 1                                              */
             Pointer<short> inVec2,            /*    I input vector 2                                              */
             int len                 /*    I vector lengths                                              */
@@ -2429,7 +2429,7 @@ namespace Concentus.Common
         /// <param name="index"></param>
         /// <param name="mask"></param>
         /// <returns></returns>
-        public static byte BitScanReverse(out ulong index, ulong mask)
+        internal static byte BitScanReverse(out ulong index, ulong mask)
         {
             if ((mask & 0xFFFFFFFF) == 0)
             {
@@ -2453,7 +2453,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_x"></param>
         /// <returns></returns>
-        public static int ec_bsr(ulong _x)
+        internal static int ec_bsr(ulong _x)
         {
             ulong ret;
             BitScanReverse(out ret, _x);
@@ -2466,7 +2466,7 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static uint EC_MINI(uint a, uint b)
+        internal static uint EC_MINI(uint a, uint b)
         {
             return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
         }
@@ -2476,7 +2476,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_x"></param>
         /// <returns></returns>
-        public static int EC_CLZ(uint _x)
+        internal static int EC_CLZ(uint _x)
         {
             return 0 - ec_bsr((ulong)_x);
         }
@@ -2486,12 +2486,12 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_x"></param>
         /// <returns></returns>
-        public static int EC_ILOG(uint _x)
+        internal static int EC_ILOG(uint _x)
         {
             return 1 - EC_CLZ(_x);
         }
 
-        /*public static int ec_ilog_fast(uint _v)
+        /*internal static int ec_ilog_fast(uint _v)
         {
             // On a Pentium M, this branchless version tested as the fastest on
             // 1,000,000,000 random 32-bit integers, edging out a similar version with
@@ -2523,7 +2523,7 @@ namespace Concentus.Common
         /*[DllImport("CMath.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern double pow_wrapper_d_d(double a, double b);*/
 
-        public static int abs(int a)
+        internal static int abs(int a)
         {
             if (a < 0)
                 return 0 - a;

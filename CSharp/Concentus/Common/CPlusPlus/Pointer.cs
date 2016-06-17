@@ -498,7 +498,7 @@ namespace Concentus.Common.CPlusPlus
         /// <param name="arg"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        /*public static Pointer<T> operator +(Pointer<T> arg, int offset)
+        /*internal static Pointer<T> operator +(Pointer<T> arg, int offset)
         {
             return new Pointer<T>(arg._array, arg._offset + offset);
         }*/

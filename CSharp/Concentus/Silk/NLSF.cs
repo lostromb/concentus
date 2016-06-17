@@ -36,7 +36,7 @@ namespace Concentus.Silk
     /// <summary>
     /// Normalized line spectrum frequency processor
     /// </summary>
-    public static class NLSF
+    internal static class NLSF
     {
         private const int MAX_STABILIZE_LOOPS = 20;
 
@@ -45,9 +45,9 @@ namespace Concentus.Silk
         /// <summary>
         /// Number of binary divisions, when not in low complexity mode
         /// </summary>
-        private const int BIN_DIV_STEPS_A2NLSF_FIX = 3; /* must be no higher than 16 - log2( LSF_COS_TAB_SZ_FIX ) */
+        private const int BIN_DIV_STEPS_A2NLSF = 3; /* must be no higher than 16 - log2( LSF_COS_TAB_SZ ) */
 
-        private const int MAX_ITERATIONS_A2NLSF_FIX = 30;
+        private const int MAX_ITERATIONS_A2NLSF = 30;
 
         /// <summary>
         /// Compute quantization errors for an LPC_order element input vector for a VQ codebook
@@ -57,7 +57,7 @@ namespace Concentus.Silk
         /// <param name="pCB_Q8">(I) Codebook vectors [K*LPC_order]</param>
         /// <param name="K">(I) Number of codebook vectors</param>
         /// <param name="LPC_order">(I) Number of LPCs</param>
-        public static void silk_NLSF_VQ(Pointer<int> err_Q26, Pointer<short> in_Q15, Pointer<byte> pCB_Q8, int K, int LPC_order)
+        internal static void silk_NLSF_VQ(Pointer<int> err_Q26, Pointer<short> in_Q15, Pointer<byte> pCB_Q8, int K, int LPC_order)
         {
             int diff_Q15, sum_error_Q30, sum_error_Q26;
             int pCB_idx = 0;
@@ -97,7 +97,7 @@ namespace Concentus.Silk
         /// <param name="pNLSFW_Q_OUT">(O) Pointer to input vector weights [D]</param>
         /// <param name="pNLSF_Q15">(I) Pointer to input vector [D]</param>
         /// <param param name="D">(I) Input vector dimension (even)</param>
-        public static void silk_NLSF_VQ_weights_laroia(Pointer<short> pNLSFW_Q_OUT, Pointer<short> pNLSF_Q15, int D)
+        internal static void silk_NLSF_VQ_weights_laroia(Pointer<short> pNLSFW_Q_OUT, Pointer<short> pNLSF_Q15, int D)
         {
             int k;
             int tmp1_int, tmp2_int;
@@ -145,7 +145,7 @@ namespace Concentus.Silk
         /// <param name="pred_coef_Q8">(I) Backward predictor coefs [ order ]</param>
         /// <param name="quant_step_size_Q16">(I) Quantization step size</param>
         /// <param name="order">(I) Number of input values</param>
-        public static void silk_NLSF_residual_dequant(
+        internal static void silk_NLSF_residual_dequant(
                 Pointer<short> x_Q10,
                 Pointer<sbyte> indices,
                 Pointer<byte> pred_coef_Q8,
@@ -162,11 +162,11 @@ namespace Concentus.Silk
                 out_Q10 = Inlines.silk_LSHIFT16((short)indices[i], 10);
                 if (out_Q10 > 0)
                 {
-                    out_Q10 = Inlines.silk_SUB16(out_Q10, Inlines.CHOP16(Inlines.SILK_FIX_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out_Q10 = Inlines.silk_SUB16(out_Q10, Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
                 }
                 else if (out_Q10 < 0)
                 {
-                    out_Q10 = Inlines.silk_ADD16(out_Q10, Inlines.CHOP16(Inlines.SILK_FIX_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out_Q10 = Inlines.silk_ADD16(out_Q10, Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
                 }
                 out_Q10 = Inlines.CHOP16(Inlines.silk_SMLAWB(pred_Q10, (int)out_Q10, quant_step_size_Q16));
                 x_Q10[i] = out_Q10;
@@ -180,7 +180,7 @@ namespace Concentus.Silk
         /// <param name="pred_Q8">(O) LSF predictor [ LPC_ORDER ]</param>
         /// <param name="psNLSF_CB">(I) Codebook object</param>
         /// <param name="CB1_index">(I) Index of vector in first LSF codebook</param>
-        public static void silk_NLSF_unpack(Pointer<short> ec_ix, Pointer<byte> pred_Q8, silk_NLSF_CB_struct psNLSF_CB, int CB1_index)
+        internal static void silk_NLSF_unpack(Pointer<short> ec_ix, Pointer<byte> pred_Q8, NLSFCodebook psNLSF_CB, int CB1_index)
         {
             int i;
             byte entry;
@@ -204,7 +204,7 @@ namespace Concentus.Silk
         /// <param name="NLSF_Q15">(I/O) Unstable/stabilized normalized LSF vector in Q15 [L]</param>
         /// <param name="NDeltaMin_Q15">(I) Min distance vector, NDeltaMin_Q15[L] must be >= 1 [L+1]</param>
         /// <param name="L">(I) Number of NLSF parameters in the input vector</param>
-        public static void silk_NLSF_stabilize(Pointer<short> NLSF_Q15, Pointer<short> NDeltaMin_Q15, int L)
+        internal static void silk_NLSF_stabilize(Pointer<short> NLSF_Q15, Pointer<short> NDeltaMin_Q15, int L)
         {
             int i, I = 0, k, loops;
             short center_freq_Q15;
@@ -318,7 +318,7 @@ namespace Concentus.Silk
         /// <param name="pNLSF_Q15">(O) Quantized NLSF vector [ LPC_ORDER ]</param>
         /// <param name="NLSFIndices">(I) Codebook path vector [ LPC_ORDER + 1 ]</param>
         /// <param name="psNLSF_CB">(I) Codebook object</param>
-        public static void silk_NLSF_decode(Pointer<short> pNLSF_Q15, Pointer<sbyte> NLSFIndices, silk_NLSF_CB_struct psNLSF_CB)
+        internal static void silk_NLSF_decode(Pointer<short> pNLSF_Q15, Pointer<sbyte> NLSFIndices, NLSFCodebook psNLSF_CB)
         {
             int i;
             Pointer<byte> pred_Q8 = Pointer.Malloc<byte>(SilkConstants.MAX_LPC_ORDER);
@@ -374,7 +374,7 @@ namespace Concentus.Silk
         /// <param name="mu_Q20">(I) R/D tradeoff</param>
         /// <param name="order">(I) Number of input values</param>
         /// <returns>RD value in Q25</returns>
-        public static int silk_NLSF_del_dec_quant(
+        internal static int silk_NLSF_del_dec_quant(
             Pointer<sbyte> indices,
             Pointer<short> x_Q10,
             Pointer<short> w_Q5,
@@ -412,21 +412,21 @@ namespace Concentus.Silk
 
                 if (i > 0)
                 {
-                    out0_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_FIX_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
-                    out1_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_FIX_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out0_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out1_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
                 }
                 else if (i == 0)
                 {
-                    out1_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_FIX_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out1_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
                 }
                 else if (i == -1)
                 {
-                    out0_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_FIX_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out0_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
                 }
                 else
                 {
-                    out0_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_FIX_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
-                    out1_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_FIX_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out0_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out1_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
                 }
 
                 out0_Q10_table[i + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT] = Inlines.silk_SMULWB((int)out0_Q10, quant_step_size_Q16);
@@ -629,10 +629,10 @@ namespace Concentus.Silk
         /// <param name="nSurvivors">(I) Max survivors after first stage</param>
         /// <param name="signalType">(I) Signal type: 0/1/2</param>
         /// <returns>RD value in Q25</returns>
-        public static int silk_NLSF_encode(
+        internal static int silk_NLSF_encode(
             Pointer<sbyte> NLSFIndices,
             Pointer<short> pNLSF_Q15,
-            silk_NLSF_CB_struct psNLSF_CB,
+            NLSFCodebook psNLSF_CB,
             Pointer<short> pW_QW,
             int NLSF_mu_Q20,
             int nSurvivors,
@@ -751,7 +751,7 @@ namespace Concentus.Silk
         /// <param name="o">(O) intermediate polynomial, QA [dd+1]</param>
         /// <param name="cLSF">(I) vector of interleaved 2*cos(LSFs), QA [d]</param>
         /// <param name="dd">(I) polynomial order (= 1/2 * filter order)</param>
-        public static void silk_NLSF2A_find_poly(
+        internal static void silk_NLSF2A_find_poly(
             Pointer<int> o,
             Pointer<int> cLSF,
             int dd)
@@ -778,7 +778,7 @@ namespace Concentus.Silk
         /// <param name="a_Q12">(O) monic whitening filter coefficients in Q12,  [ d ]</param>
         /// <param name="NLSF">(I) normalized line spectral frequencies in Q15, [ d ]</param>
         /// <param name="d">(I) filter order (should be even)</param>
-        public static void silk_NLSF2A(
+        internal static void silk_NLSF2A(
             Pointer<short> a_Q12,
             Pointer<short> NLSF,
             int d)
@@ -798,7 +798,7 @@ namespace Concentus.Silk
             int Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
             int maxabs, absval, idx = 0, sc_Q16;
 
-            Inlines.OpusAssert (SilkConstants.LSF_COS_TAB_SZ_FIX == 128);
+            Inlines.OpusAssert (SilkConstants.LSF_COS_TAB_SZ == 128);
             Inlines.OpusAssert (d == 10 || d == 16);
 
             /* convert LSFs to 2*cos(LSF), using piecewise linear curve from table */
@@ -815,11 +815,11 @@ namespace Concentus.Silk
                 f_frac = NLSF[k] - Inlines.silk_LSHIFT(f_int, 15 - 7);
 
                 Inlines.OpusAssert(f_int >= 0);
-                Inlines.OpusAssert(f_int < SilkConstants.LSF_COS_TAB_SZ_FIX);
+                Inlines.OpusAssert(f_int < SilkConstants.LSF_COS_TAB_SZ);
 
                 /* Read start and end value from table */
-                cos_val = Tables.silk_LSFCosTab_FIX_Q12[f_int];                /* Q12 */
-                delta = Tables.silk_LSFCosTab_FIX_Q12[f_int + 1] - cos_val;  /* Q12, with a range of 0..200 */
+                cos_val = Tables.silk_LSFCosTab_Q12[f_int];                /* Q12 */
+                delta = Tables.silk_LSFCosTab_Q12[f_int + 1] - cos_val;  /* Q12, with a range of 0..200 */
 
                 /* Linear interpolation */
                 cos_LSF_QA[ordering[k]] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_LSHIFT(cos_val, 8) + Inlines.silk_MUL(delta, f_frac), 20 - QA); /* QA */
@@ -863,7 +863,7 @@ namespace Concentus.Silk
                 {
                     /* Reduce magnitude of prediction coefficients */
                     maxabs = Inlines.silk_min(maxabs, 163838);  /* ( silk_int32_MAX >> 14 ) + silk_int16_MAX = 163838 */
-                    sc_Q16 = Inlines.SILK_FIX_CONST(0.999f, 16) - Inlines.silk_DIV32(Inlines.silk_LSHIFT(maxabs - short.MaxValue, 14),
+                    sc_Q16 = Inlines.SILK_CONST(0.999f, 16) - Inlines.silk_DIV32(Inlines.silk_LSHIFT(maxabs - short.MaxValue, 14),
                                                 Inlines.silk_RSHIFT32(Inlines.silk_MUL(maxabs, idx + 1), 2));
                     Filters.silk_bwexpander_32(a32_QA1, d, sc_Q16);
                 }
@@ -892,7 +892,7 @@ namespace Concentus.Silk
 
             for (i = 0; i < SilkConstants.MAX_LPC_STABILIZE_ITERATIONS; i++)
             {
-                if (Filters.silk_LPC_inverse_pred_gain(a_Q12, d) < Inlines.SILK_FIX_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN, 30))
+                if (Filters.silk_LPC_inverse_pred_gain(a_Q12, d) < Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN, 30))
                 {
                     /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
                     /* on the unscaled coefficients, convert to Q12 and measure again                   */
@@ -915,7 +915,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="p">(I/O) Polynomial</param>
         /// <param name="dd">(I) Polynomial order (= filter order / 2 )</param>
-        public static void silk_A2NLSF_trans_poly(Pointer<int> p, int dd)
+        internal static void silk_A2NLSF_trans_poly(Pointer<int> p, int dd)
         {
             int k, n;
 
@@ -936,7 +936,7 @@ namespace Concentus.Silk
         /// <param name="x">(I) Evaluation point, Q12</param>
         /// <param name="dd">(I) Order</param>
         /// <returns>the polynomial evaluation, in Q16</returns>
-        public static int silk_A2NLSF_eval_poly(Pointer<int> p, int x, int dd)
+        internal static int silk_A2NLSF_eval_poly(Pointer<int> p, int x, int dd)
         {
             int n;
             int x_Q16, y32;
@@ -966,7 +966,7 @@ namespace Concentus.Silk
             return y32;
         }
 
-        public static void silk_A2NLSF_init(
+        internal static void silk_A2NLSF_init(
              Pointer<int> a_Q16,
              Pointer<int> P,
              Pointer<int> Q,
@@ -1004,7 +1004,7 @@ namespace Concentus.Silk
         /// <param name="NLSF">(O) Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d]</param>
         /// <param name="a_Q16">(I/O) Monic whitening filter coefficients in Q16 [d]</param>
         /// <param name="d">(I) Filter order (must be even)</param>
-        public static void silk_A2NLSF(Pointer<short> NLSF, Pointer<int> a_Q16, int d)
+        internal static void silk_A2NLSF(Pointer<short> NLSF, Pointer<int> a_Q16, int d)
         {
             int i, k, m, dd, root_ix, ffrac;
             int xlo, xhi, xmid;
@@ -1026,7 +1026,7 @@ namespace Concentus.Silk
             /* Find roots, alternating between P and Q */
             p = P;                          /* Pointer to polynomial */
 
-            xlo = Tables.silk_LSFCosTab_FIX_Q12[0]; /* Q12*/
+            xlo = Tables.silk_LSFCosTab_Q12[0]; /* Q12*/
             ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
 
             if (ylo < 0)
@@ -1046,7 +1046,7 @@ namespace Concentus.Silk
             while (true)
             {
                 /* Evaluate polynomial */
-                xhi = Tables.silk_LSFCosTab_FIX_Q12[k]; /* Q12 */
+                xhi = Tables.silk_LSFCosTab_Q12[k]; /* Q12 */
                 yhi = silk_A2NLSF_eval_poly(p, xhi, dd);
 
                 /* Detect zero crossing */
@@ -1063,7 +1063,7 @@ namespace Concentus.Silk
                     }
                     /* Binary division */
                     ffrac = -256;
-                    for (m = 0; m < BIN_DIV_STEPS_A2NLSF_FIX; m++)
+                    for (m = 0; m < BIN_DIV_STEPS_A2NLSF; m++)
                     {
                         /* Evaluate polynomial */
                         xmid = Inlines.silk_RSHIFT_ROUND(xlo + xhi, 1);
@@ -1089,7 +1089,7 @@ namespace Concentus.Silk
                     {
                         /* Avoid dividing by zero */
                         den = ylo - yhi;
-                        nom = Inlines.silk_LSHIFT(ylo, 8 - BIN_DIV_STEPS_A2NLSF_FIX) + Inlines.silk_RSHIFT(den, 1);
+                        nom = Inlines.silk_LSHIFT(ylo, 8 - BIN_DIV_STEPS_A2NLSF) + Inlines.silk_RSHIFT(den, 1);
                         if (den != 0)
                         {
                             ffrac += Inlines.silk_DIV32(nom, den);
@@ -1098,7 +1098,7 @@ namespace Concentus.Silk
                     else
                     {
                         /* No risk of dividing by zero because abs(ylo - yhi) >= abs(ylo) >= 65536 */
-                        ffrac += Inlines.silk_DIV32(ylo, Inlines.silk_RSHIFT(ylo - yhi, 8 - BIN_DIV_STEPS_A2NLSF_FIX));
+                        ffrac += Inlines.silk_DIV32(ylo, Inlines.silk_RSHIFT(ylo - yhi, 8 - BIN_DIV_STEPS_A2NLSF));
                     }
                     NLSF[root_ix] = (short)Inlines.silk_min_32(Inlines.silk_LSHIFT((int)k, 8) + ffrac, short.MaxValue);
 
@@ -1115,7 +1115,7 @@ namespace Concentus.Silk
                     p = PQ[root_ix & 1];
 
                     /* Evaluate polynomial */
-                    xlo = Tables.silk_LSFCosTab_FIX_Q12[k - 1]; /* Q12*/
+                    xlo = Tables.silk_LSFCosTab_Q12[k - 1]; /* Q12*/
                     ylo = Inlines.silk_LSHIFT(1 - (root_ix & 2), 12);
                 }
                 else
@@ -1126,10 +1126,10 @@ namespace Concentus.Silk
                     ylo = yhi;
                     thr = 0;
 
-                    if (k > SilkConstants.LSF_COS_TAB_SZ_FIX)
+                    if (k > SilkConstants.LSF_COS_TAB_SZ)
                     {
                         i++;
-                        if (i > MAX_ITERATIONS_A2NLSF_FIX)
+                        if (i > MAX_ITERATIONS_A2NLSF)
                         {
                             /* Set NLSFs to white spectrum and exit */
                             NLSF[0] = (short)Inlines.silk_DIV32_16(1 << 15, Inlines.CHOP16(d + 1));
@@ -1145,7 +1145,7 @@ namespace Concentus.Silk
 
                         silk_A2NLSF_init(a_Q16, P, Q, dd);
                         p = P;                            /* Pointer to polynomial */
-                        xlo = Tables.silk_LSFCosTab_FIX_Q12[0]; /* Q12*/
+                        xlo = Tables.silk_LSFCosTab_Q12[0]; /* Q12*/
                         ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
                         if (ylo < 0)
                         {
@@ -1171,8 +1171,8 @@ namespace Concentus.Silk
         /// <param name="PredCoef_Q12">O    Prediction coefficients [ 2 ][MAX_LPC_ORDER]</param>
         /// <param name="pNLSF_Q15">I/O  Normalized LSFs (quant out) (0 - (2^15-1)) [MAX_LPC_ORDER]</param>
         /// <param name="prev_NLSFq_Q15">I    Previous Normalized LSFs (0 - (2^15-1)) [MAX_LPC_ORDER]</param>
-        public static void silk_process_NLSFs(
-            silk_encoder_state psEncC,
+        internal static void silk_process_NLSFs(
+            SilkChannelEncoder psEncC,
             Pointer<short> PredCoef_Q12,
             Pointer<short> pNLSF_Q15,
             Pointer<short> prev_NLSFq_Q15)
@@ -1186,14 +1186,14 @@ namespace Concentus.Silk
             Pointer<short> pNLSFW0_temp_QW = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
 
             Inlines.OpusAssert(psEncC.speech_activity_Q8 >= 0);
-            Inlines.OpusAssert(psEncC.speech_activity_Q8 <= Inlines.SILK_FIX_CONST(1.0f, 8));
+            Inlines.OpusAssert(psEncC.speech_activity_Q8 <= Inlines.SILK_CONST(1.0f, 8));
             Inlines.OpusAssert(psEncC.useInterpolatedNLSFs == 1 || psEncC.indices.NLSFInterpCoef_Q2 == (1 << 2));
 
             /***********************/
             /* Calculate mu values */
             /***********************/
             /* NLSF_mu  = 0.003 - 0.0015 * psEnc.speech_activity; */
-            NLSF_mu_Q20 = Inlines.silk_SMLAWB(Inlines.SILK_FIX_CONST(0.003f, 20), Inlines.SILK_FIX_CONST(-0.001f, 28), psEncC.speech_activity_Q8);
+            NLSF_mu_Q20 = Inlines.silk_SMLAWB(Inlines.SILK_CONST(0.003f, 20), Inlines.SILK_CONST(-0.001f, 28), psEncC.speech_activity_Q8);
             if (psEncC.nb_subfr == 2)
             {
                 /* Multiply by 1.5 for 10 ms packets */
@@ -1201,7 +1201,7 @@ namespace Concentus.Silk
             }
 
             Inlines.OpusAssert(NLSF_mu_Q20 > 0);
-            Inlines.OpusAssert(NLSF_mu_Q20 <= Inlines.SILK_FIX_CONST(0.005f, 20));
+            Inlines.OpusAssert(NLSF_mu_Q20 <= Inlines.SILK_CONST(0.005f, 20));
 
             /* Calculate NLSF weights */
             // fixme: potential errors here//////////////////////////////////////////////

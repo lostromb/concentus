@@ -33,7 +33,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk
 {
-    public static class SilkConstants
+    internal static class SilkConstants
     {
         /* Max number of encoder channels (1/2) */
         public const int ENCODER_NUM_CHANNELS = 2;
@@ -174,7 +174,7 @@ namespace Concentus.Silk
 
         public const int MAX_MATRIX_SIZE = MAX_LPC_ORDER; /* Max of LPC Order and LTP order */
 
-        public static readonly int NSQ_LPC_BUF_LENGTH = Math.Max(MAX_LPC_ORDER, DECISION_DELAY);
+        internal static readonly int NSQ_LPC_BUF_LENGTH = Math.Max(MAX_LPC_ORDER, DECISION_DELAY);
 
         /***************************/
         /* Voice activity detector */
@@ -195,7 +195,7 @@ namespace Concentus.Silk
         public const int VAD_SNR_SMOOTH_COEF_Q18 = 4096;
 
         /* Size of the piecewise linear cosine approximation table for the LSFs */
-        public const int LSF_COS_TAB_SZ_FIX = 128;
+        public const int LSF_COS_TAB_SZ = 128;
 
         /******************/
         /* NLSF quantizer */

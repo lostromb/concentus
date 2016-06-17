@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Enums
 {
-    public static class Spread
+    internal static class Spread
     {
         public const int SPREAD_NONE = 0;
         public const int SPREAD_LIGHT = 1;

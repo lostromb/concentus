@@ -6,10 +6,10 @@ using System.Diagnostics;
 
 namespace Concentus.Silk
 {
-    public static class k2a
+    internal static class K2A
     {
         /* Step up function, converts reflection coefficients to prediction coefficients */
-        public static void silk_k2a(
+        internal static void silk_k2a(
             Pointer<int> A_Q24,             /* O    Prediction coefficients [order] Q24                         */
             Pointer<short> rc_Q15,            /* I    Reflection coefficients [order] Q15                         */
             int order               /* I    Prediction order                                            */
@@ -33,7 +33,7 @@ namespace Concentus.Silk
         }
 
         /* Step up function, converts reflection coefficients to prediction coefficients */
-        public static void silk_k2a_Q16(
+        internal static void silk_k2a_Q16(
             Pointer<int> A_Q24,             /* O    Prediction coefficients [order] Q24                         */
             Pointer<int> rc_Q16,            /* I    Reflection coefficients [order] Q16                         */
             int order               /* I    Prediction order                                            */

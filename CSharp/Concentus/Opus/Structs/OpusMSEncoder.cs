@@ -35,7 +35,7 @@ namespace Concentus.Opus.Structs
         }
 
         // fixme: don't think this is used
-        internal void Reset()
+        public void Reset()
         {
             layout.Reset();
             lfe_stream = 0;

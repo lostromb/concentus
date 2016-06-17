@@ -30,8 +30,8 @@ namespace Concentus
   */
         public static int opus_decoder_init(OpusDecoder st, int Fs, int channels)
         {
-            silk_decoder silk_dec;
-            CELTDecoder celt_dec;
+            SilkDecoder silk_dec;
+            CeltDecoder celt_dec;
             int ret;
 
             if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000)
@@ -49,7 +49,7 @@ namespace Concentus
             st.DecControl.nChannelsAPI = st.channels;
 
             /* Reset decoder */
-            ret = dec_API.silk_InitDecoder(silk_dec);
+            ret = DecodeAPI.silk_InitDecoder(silk_dec);
             if (ret != 0) return OpusError.OPUS_INTERNAL_ERROR;
 
             /* Initialize CELT decoder */
@@ -107,7 +107,7 @@ namespace Concentus
             return st;
         }
 
-        public static void smooth_fade(Pointer<short> in1, Pointer<short> in2,
+        internal static void smooth_fade(Pointer<short> in1, Pointer<short> in2,
               Pointer<short> output, int overlap, int channels,
       Pointer<int> window, int Fs)
         {
@@ -123,29 +123,12 @@ namespace Concentus
                 }
             }
         }
-
-        public static int opus_packet_get_mode(Pointer<byte> data)
-        {
-            int mode;
-            if ((data[0] & 0x80) != 0)
-            {
-                mode = OpusMode.MODE_CELT_ONLY;
-            }
-            else if ((data[0] & 0x60) == 0x60)
-            {
-                mode = OpusMode.MODE_HYBRID;
-            }
-            else {
-                mode = OpusMode.MODE_SILK_ONLY;
-            }
-            return mode;
-        }
-
-        public static int opus_decode_frame(OpusDecoder st, Pointer<byte> data,
+        
+        internal static int opus_decode_frame(OpusDecoder st, Pointer<byte> data,
       int len, Pointer<short> pcm, int frame_size, int decode_fec)
         {
-            silk_decoder silk_dec;
-            CELTDecoder celt_dec;
+            SilkDecoder silk_dec;
+            CeltDecoder celt_dec;
             int i, silk_ret = 0, celt_ret = 0;
             ec_ctx dec = new ec_ctx(); // porting note: stack var
             int silk_frame_size;
@@ -288,7 +271,7 @@ namespace Concentus
                     pcm_ptr = pcm_silk;
 
                 if (st.prev_mode == OpusMode.MODE_CELT_ONLY)
-                    dec_API.silk_InitDecoder(silk_dec);
+                    DecodeAPI.silk_InitDecoder(silk_dec);
 
                 /* The SILK PLC cannot produce frames of less than 10 ms */
                 st.DecControl.payloadSize_ms = Inlines.IMAX(10, 1000 * audiosize / st.Fs);
@@ -328,7 +311,7 @@ namespace Concentus
                     /* Call SILK decoder */
                     int first_frame = (decoded_samples == 0) ? 1 : 0;
                     BoxedValue<int> boxed_frame_size = new BoxedValue<int>();
-                    silk_ret = dec_API.silk_Decode(silk_dec, st.DecControl,
+                    silk_ret = DecodeAPI.silk_Decode(silk_dec, st.DecControl,
                                             lost_flag, first_frame, dec, pcm_ptr, boxed_frame_size);
                     silk_frame_size = boxed_frame_size.Val;
                     if (silk_ret != 0)
@@ -473,7 +456,7 @@ namespace Concentus
             }
 
             {
-                BoxedValue<CELTMode> celt_mode = new BoxedValue<CELTMode>();
+                BoxedValue<CeltMode> celt_mode = new BoxedValue<CeltMode>();
                 celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_GET_MODE_REQUEST, celt_mode);
                 window = celt_mode.Val.window;
             }
@@ -546,7 +529,7 @@ namespace Concentus
             return celt_ret < 0 ? celt_ret : audiosize;
         }
 
-        public static int opus_decode_native(OpusDecoder st, Pointer<byte> data,
+        internal static int opus_decode_native(OpusDecoder st, Pointer<byte> data,
           int len, Pointer<short> pcm, int frame_size, int decode_fec,
           int self_delimited, BoxedValue<int> packet_offset, int soft_clip)
         {
@@ -580,14 +563,14 @@ namespace Concentus
             else if (len < 0)
                 return OpusError.OPUS_BAD_ARG;
 
-            packet_mode = opus_packet_get_mode(data);
-            packet_bandwidth = opus_packet_get_bandwidth(data);
-            packet_frame_size = opus.opus_packet_get_samples_per_frame(data, st.Fs);
-            packet_stream_channels = opus_packet_get_nb_channels(data);
+            packet_mode = OpusPacket.opus_packet_get_mode(data);
+            packet_bandwidth = OpusPacket.opus_packet_get_bandwidth(data);
+            packet_frame_size = OpusPacket.opus_packet_get_samples_per_frame(data, st.Fs);
+            packet_stream_channels = OpusPacket.opus_packet_get_nb_channels(data);
 
             BoxedValue<byte> boxed_toc = new BoxedValue<byte>();
             BoxedValue<int> boxed_offset = new BoxedValue<int>();
-            count = opus.opus_packet_parse_impl(data, len, self_delimited, boxed_toc, null,
+            count = OpusPacket.opus_packet_parse_impl(data, len, self_delimited, boxed_toc, null,
                                            size.GetPointer(), boxed_offset, packet_offset);
             toc = boxed_toc.Val;
             offset = boxed_offset.Val;
@@ -693,7 +676,7 @@ namespace Concentus
             }
             if (data != null && len > 0 && decode_fec == 0)
             {
-                nb_samples = opus_decoder_get_nb_samples(st, data, len);
+                nb_samples = OpusPacket.opus_decoder_get_nb_samples(st, data, len);
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else
@@ -710,109 +693,6 @@ namespace Concentus
             }
 
             return ret;
-        }
-
-        /** Gets the bandwidth of an Opus packet.
-        * @param [in] data <tt>char*</tt>: Opus packet
-        * @retval OPUS_BANDWIDTH_NARROWBAND Narrowband (4kHz bandpass)
-        * @retval OPUS_BANDWIDTH_MEDIUMBAND Mediumband (6kHz bandpass)
-        * @retval OPUS_BANDWIDTH_WIDEBAND Wideband (8kHz bandpass)
-        * @retval OPUS_BANDWIDTH_SUPERWIDEBAND Superwideband (12kHz bandpass)
-        * @retval OPUS_BANDWIDTH_FULLBAND Fullband (20kHz bandpass)
-        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
-*/
-        public static int opus_packet_get_bandwidth(Pointer<byte> data)
-        {
-            int bandwidth;
-            if ((data[0] & 0x80) != 0)
-            {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((data[0] >> 5) & 0x3);
-                if (bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
-                    bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
-            }
-            else if ((data[0] & 0x60) == 0x60)
-            {
-                bandwidth = ((data[0] & 0x10) != 0) ? OpusBandwidth.OPUS_BANDWIDTH_FULLBAND :
-                                             OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-            }
-            else {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + ((data[0] >> 5) & 0x3);
-            }
-            return bandwidth;
-        }
-
-        /** Gets the number of channels from an Opus packet.
-        * @param [in] data <tt>char*</tt>: Opus packet
-        * @returns Number of channels
-        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
-*/
-        public static int opus_packet_get_nb_channels(Pointer<byte> data)
-        {
-            return ((data[0] & 0x4) != 0) ? 2 : 1;
-        }
-
-        /** Gets the number of frames in an Opus packet.
-        * @param [in] packet <tt>char*</tt>: Opus packet
-        * @param [in] len <tt>opus_int32</tt>: Length of packet
-        * @returns Number of frames
-        * @retval OPUS_BAD_ARG Insufficient data was passed to the function
-        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
-*/
-        public static int opus_packet_get_nb_frames(Pointer<byte> packet, int len)
-        {
-            int count;
-            if (len < 1)
-                return OpusError.OPUS_BAD_ARG;
-            count = packet[0] & 0x3;
-            if (count == 0)
-                return 1;
-            else if (count != 3)
-                return 2;
-            else if (len < 2)
-                return OpusError.OPUS_INVALID_PACKET;
-            else
-                return packet[1] & 0x3F;
-        }
-
-        /** Gets the number of samples of an Opus packet.
-        * @param [in] packet <tt>char*</tt>: Opus packet
-        * @param [in] len <tt>opus_int32</tt>: Length of packet
-        * @param [in] Fs <tt>opus_int32</tt>: Sampling rate in Hz.
-        *                                     This must be a multiple of 400, or
-        *                                     inaccurate results will be returned.
-        * @returns Number of samples
-        * @retval OPUS_BAD_ARG Insufficient data was passed to the function
-        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
-*/
-        public static int opus_packet_get_nb_samples(Pointer<byte> packet, int len,
-              int Fs)
-        {
-            int samples;
-            int count = opus_packet_get_nb_frames(packet, len);
-
-            if (count < 0)
-                return count;
-
-            samples = count * opus.opus_packet_get_samples_per_frame(packet, Fs);
-            /* Can't have more than 120 ms */
-            if (samples * 25 > Fs * 3)
-                return OpusError.OPUS_INVALID_PACKET;
-            else
-                return samples;
-        }
-
-        /** Gets the number of samples of an Opus packet.
-        * @param [in] dec <tt>OpusDecoder*</tt>: Decoder state
-        * @param [in] packet <tt>char*</tt>: Opus packet
-        * @param [in] len <tt>opus_int32</tt>: Length of packet
-        * @returns Number of samples
-        * @retval OPUS_BAD_ARG Insufficient data was passed to the function
-        * @retval OPUS_INVALID_PACKET The compressed data passed is corrupted or of an unsupported type
-*/
-        public static int opus_decoder_get_nb_samples(OpusDecoder dec,
-              Pointer<byte> packet, int len)
-        {
-            return opus_packet_get_nb_samples(packet, len, dec.Fs);
         }
     }
 }

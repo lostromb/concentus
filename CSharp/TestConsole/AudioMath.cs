@@ -10,7 +10,7 @@ namespace TestConsole
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static short[] BytesToShorts(byte[] input)
+        internal static short[] BytesToShorts(byte[] input)
         {
             return BytesToShorts(input, 0, input.Length);
         }
@@ -21,7 +21,7 @@ namespace TestConsole
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static short[] BytesToShorts(byte[] input, int offset, int length)
+        internal static short[] BytesToShorts(byte[] input, int offset, int length)
         {
             short[] processedValues = new short[length / 2];
             for (int c = 0; c < processedValues.Length; c++)
@@ -38,7 +38,7 @@ namespace TestConsole
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static byte[] ShortsToBytes(short[] input)
+        internal static byte[] ShortsToBytes(short[] input)
         {
             return ShortsToBytes(input, 0, input.Length);
         }
@@ -48,7 +48,7 @@ namespace TestConsole
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static byte[] ShortsToBytes(short[] input, int offset, int length)
+        internal static byte[] ShortsToBytes(short[] input, int offset, int length)
         {
             byte[] processedValues = new byte[length * 2];
             for (int c = 0; c < length; c++)
@@ -66,7 +66,7 @@ namespace TestConsole
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public static int NPOT(int val)
+        internal static int NPOT(int val)
         {
             double logBase = Math.Log((double)val, 2);
             double upperBound = Math.Ceiling(logBase);
@@ -114,13 +114,13 @@ namespace TestConsole
             }
         }
 
-        public static float GaussianWindow(float x)
+        internal static float GaussianWindow(float x)
         {
             float x1 = (x - 0.5f) * 2f;
             return (float)Math.Exp(0 - (x1 * x1) / 0.15);
         }
 
-        public static double BlackmanWindow(double x)
+        internal static double BlackmanWindow(double x)
         {
             int idx = (int)(x * _blackmanWindow.Length);
             if (idx < 0 || idx >= _blackmanWindow.Length)
@@ -128,7 +128,7 @@ namespace TestConsole
             return _blackmanWindow[idx];
         }
 
-        public static double NuttallWindow(double x)
+        internal static double NuttallWindow(double x)
         {
             int idx = (int)(x * _nuttallWindow.Length);
             if (idx < 0 || idx >= _nuttallWindow.Length)
@@ -143,7 +143,7 @@ namespace TestConsole
         /// </summary>
         /// <param name="x">The portion of the curve to return</param>
         /// <returns>The smoothed curve at that x-value</returns>
-        public static double SmoothStep(double x)
+        internal static double SmoothStep(double x)
         {
             int idx = (int)(x * _smoothStepTable.Length);
             if (idx < 0)
@@ -158,7 +158,7 @@ namespace TestConsole
         /// </summary>
         /// <param name="curve"></param>
         /// <returns></returns>
-        public static double[] NormalizeCurveByPeak(double[] curve)
+        internal static double[] NormalizeCurveByPeak(double[] curve)
         {
             double[] returnVal = new double[curve.Length];
             double peak = 0.0001;
@@ -179,7 +179,7 @@ namespace TestConsole
         /// </summary>
         /// <param name="curve"></param>
         /// <returns></returns>
-        public static double[] NormalizeCurveByMass(double[] curve)
+        internal static double[] NormalizeCurveByMass(double[] curve)
         {
             double[] returnVal = new double[curve.Length];
             double mass = 0.00001;
@@ -194,7 +194,7 @@ namespace TestConsole
             return returnVal;
         }
 
-        public static double HermitianLowpassWindow(double band, double cutoffFreq, double width)
+        internal static double HermitianLowpassWindow(double band, double cutoffFreq, double width)
         {
             double start = cutoffFreq - width;
             double end = cutoffFreq + width;
@@ -206,7 +206,7 @@ namespace TestConsole
             return SmoothStep(1 - x);
         }
 
-        public static double HermitianHighpassWindow(double band, double cutoffFreq, double width)
+        internal static double HermitianHighpassWindow(double band, double cutoffFreq, double width)
         {
             double start = cutoffFreq - width;
             double end = cutoffFreq + width;

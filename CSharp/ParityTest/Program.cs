@@ -14,7 +14,7 @@ namespace ParityTest
     {
         private static IDictionary<string, short[]> testSamples = new Dictionary<string, short[]>();
 
-        public static void Main(string[] args)
+        internal static void Main(string[] args)
         {
             LoadTestFile(8, false);
             LoadTestFile(16, false);

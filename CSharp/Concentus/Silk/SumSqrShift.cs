@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk
 {
-    public static class SumSqrShift
+    internal static class SumSqrShift
     {
         /// <summary>
         /// Compute number of bits to right shift the sum of squares of a vector
@@ -18,7 +18,7 @@ namespace Concentus.Silk
         /// <param name="shift">O   Number of bits right shift applied to energy</param>
         /// <param name="x">I   Input vector</param>
         /// <param name="len">I   Length of input vector</param>
-        public static void silk_sum_sqr_shift(
+        internal static void silk_sum_sqr_shift(
             BoxedValue<int> energy,
             BoxedValue<int> shift,
             Pointer<short> x,

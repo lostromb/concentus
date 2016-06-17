@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class rate
+    internal static class Rate
     {
 
         private static readonly byte[] LOG2_FRAC_TABLE ={
@@ -25,12 +25,12 @@ namespace Concentus.Celt
 
         private const int ALLOC_STEPS = 6;
 
-        public static int get_pulses(int i)
+        internal static int get_pulses(int i)
         {
             return i < 8 ? i : (8 + (i & 7)) << ((i >> 3) - 1);
         }
 
-        public static int bits2pulses(CELTMode m, int band, int LM, int bits)
+        internal static int bits2pulses(CeltMode m, int band, int LM, int bits)
         {
             int i;
             int lo, hi;
@@ -57,7 +57,7 @@ namespace Concentus.Celt
                 return hi;
         }
 
-        public static int pulses2bits(CELTMode m, int band, int LM, int pulses)
+        internal static int pulses2bits(CeltMode m, int band, int LM, int pulses)
         {
             Pointer<byte> cache;
 
@@ -66,7 +66,7 @@ namespace Concentus.Celt
             return pulses == 0 ? 0 : cache[pulses] + 1;
         }
 
-        public static int interp_bits2pulses(CELTMode m, int start, int end, int skip_start,
+        internal static int interp_bits2pulses(CeltMode m, int start, int end, int skip_start,
               Pointer<int> bits1, Pointer<int> bits2, Pointer<int> thresh, Pointer<int> cap, int total, BoxedValue<int> _balance,
               int skip_rsv, BoxedValue<int> intensity, int intensity_rsv, BoxedValue<int> dual_stereo, int dual_stereo_rsv, Pointer<int> bits,
               Pointer<int> ebits, Pointer<int> fine_priority, int C, int LM, ec_ctx ec, int encode, int prev, int signalBandwidth)
@@ -367,7 +367,7 @@ namespace Concentus.Celt
             return codedBands;
         }
 
-        public static int compute_allocation(CELTMode m, int start, int end, Pointer<int> offsets, Pointer<int> cap, int alloc_trim, BoxedValue<int> intensity, BoxedValue<int> dual_stereo,
+        internal static int compute_allocation(CeltMode m, int start, int end, Pointer<int> offsets, Pointer<int> cap, int alloc_trim, BoxedValue<int> intensity, BoxedValue<int> dual_stereo,
               int total, BoxedValue<int> balance, Pointer<int> pulses, Pointer<int> ebits, Pointer<int> fine_priority, int C, int LM, ec_ctx ec, int encode, int prev, int signalBandwidth)
         {
             int lo, hi, len, j;

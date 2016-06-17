@@ -10,7 +10,7 @@ namespace Concentus.Silk
     /// <summary>
     /// Approximate sigmoid function
     /// </summary>
-    public static class Sigmoid
+    internal static class Sigmoid
     {
         private static readonly int[] sigm_LUT_slope_Q10 = {
             237, 153, 73, 30, 12, 7
@@ -24,7 +24,7 @@ namespace Concentus.Silk
             16384, 8812, 3906, 1554, 589, 219
         };
 
-        public static int silk_sigm_Q15(int in_Q5)
+        internal static int silk_sigm_Q15(int in_Q5)
         {
             int ind;
 

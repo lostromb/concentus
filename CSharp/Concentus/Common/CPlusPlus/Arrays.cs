@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Concentus.Common.CPlusPlus
 {
-    public static class Arrays
+    internal static class Arrays
     {
-        public static T[][] InitTwoDimensionalArray<T>(int x, int y)
+        internal static T[][] InitTwoDimensionalArray<T>(int x, int y)
         {
             T[][] returnVal = new T[x][];
             for (int c = 0; c < x; c++)
@@ -19,7 +19,7 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        public static Pointer<Pointer<T>> InitTwoDimensionalArrayPointer<T>(int x, int y)
+        internal static Pointer<Pointer<T>> InitTwoDimensionalArrayPointer<T>(int x, int y)
         {
             Pointer<Pointer<T>> returnVal = Pointer.Malloc<Pointer<T>>(x);
             for (int c = 0; c < x; c++)
@@ -29,7 +29,7 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        public static T[][][] InitThreeDimensionalArray<T>(int x, int y, int z)
+        internal static T[][][] InitThreeDimensionalArray<T>(int x, int y, int z)
         {
             T[][][] returnVal = new T[x][][];
             for (int c = 0; c < x; c++)
@@ -43,7 +43,7 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        public static Pointer<Pointer<Pointer<T>>> InitThreeDimensionalArrayPointer<T>(int x, int y, int z)
+        internal static Pointer<Pointer<Pointer<T>>> InitThreeDimensionalArrayPointer<T>(int x, int y, int z)
         {
             Pointer<Pointer<Pointer<T>>> returnVal = Pointer.Malloc<Pointer<Pointer<T>>>(x);
             for (int c = 0; c < x; c++)
@@ -57,14 +57,14 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        public static T[] CloneArray<T>(T[] inArray)
+        internal static T[] CloneArray<T>(T[] inArray)
         {
             T[] returnVal = new T[inArray.Length];
             Array.Copy(inArray, returnVal, inArray.Length);
             return returnVal;
         }
 
-        public static T[][] CloneArray<T>(T[][] inArray)
+        internal static T[][] CloneArray<T>(T[][] inArray)
         {
             T[][] returnVal = new T[inArray.Length][];
             for (int c = 0; c < inArray.Length; c++)
@@ -75,7 +75,7 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        public static T[][][] CloneArray<T>(T[][][] inArray)
+        internal static T[][][] CloneArray<T>(T[][][] inArray)
         {
             T[][][] returnVal = new T[inArray.Length][][];
             for (int c = 0; c < inArray.Length; c++)
@@ -90,7 +90,7 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        public static Pointer<T> CloneArray<T>(Pointer<T> inArray, int arrayLength)
+        internal static Pointer<T> CloneArray<T>(Pointer<T> inArray, int arrayLength)
         {
             Pointer<T> returnVal = Pointer.Malloc<T>(arrayLength);
             inArray.MemCopyTo(returnVal, arrayLength);
@@ -98,7 +98,7 @@ namespace Concentus.Common.CPlusPlus
         }
 
         //FIXME: For the most part this method is used to zero-out arrays, which is usually already done by the runtime.
-        public static void MemSet<T>(T[] array, T value)
+        internal static void MemSet<T>(T[] array, T value)
         {
             for (int c = 0; c < array.Length; c++)
             {
@@ -106,7 +106,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
-        public static void MemSet<T>(T[] array, T value, int length)
+        internal static void MemSet<T>(T[] array, T value, int length)
         {
             for (int c = 0; c < length; c++)
             {

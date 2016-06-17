@@ -11,14 +11,14 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk
 {
-    public static class Stereo
+    internal static class Stereo
     {
         /// <summary>
         /// Decode mid/side predictors
         /// </summary>
         /// <param name="psRangeDec">I/O  Compressor data structure</param>
         /// <param name="pred_Q13">O Predictors</param>
-        public static void silk_stereo_decode_pred(
+        internal static void silk_stereo_decode_pred(
             ec_ctx psRangeDec,
             Pointer<int> pred_Q13)
         {
@@ -42,7 +42,7 @@ namespace Concentus.Silk
                 ix[n][0] += 3 * ix[n][2];
                 low_Q13 = Tables.silk_stereo_pred_quant_Q13[ix[n][0]];
                 step_Q13 = Inlines.silk_SMULWB(Tables.silk_stereo_pred_quant_Q13[ix[n][0] + 1] - low_Q13,
-                    Inlines.SILK_FIX_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16));
+                    Inlines.SILK_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16));
                 pred_Q13[n] = Inlines.silk_SMLABB(low_Q13, step_Q13, 2 * ix[n][1] + 1);
             }
 
@@ -55,7 +55,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeDec">I/O  Compressor data structure</param>
         /// <param name="decode_only_mid">O    Flag that only mid channel has been coded</param>
-        public static void silk_stereo_decode_mid_only(
+        internal static void silk_stereo_decode_mid_only(
             ec_ctx psRangeDec,
             BoxedValue<int> decode_only_mid
         )
@@ -69,7 +69,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="ix">I    Quantization indices [ 2 ][ 3 ]</param>
-        public static void silk_stereo_encode_pred(ec_ctx psRangeEnc, Pointer<Pointer<sbyte>> ix)
+        internal static void silk_stereo_encode_pred(ec_ctx psRangeEnc, Pointer<Pointer<sbyte>> ix)
         {
             int n;
 
@@ -91,7 +91,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="mid_only_flag"></param>
-        public static void silk_stereo_encode_mid_only(ec_ctx psRangeEnc, sbyte mid_only_flag)
+        internal static void silk_stereo_encode_mid_only(ec_ctx psRangeEnc, sbyte mid_only_flag)
         {
             /* Encode flag that only mid channel is coded */
             EntropyCoder.ec_enc_icdf(psRangeEnc, mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
@@ -107,7 +107,7 @@ namespace Concentus.Silk
         /// <param name="length">I    Number of samples</param>
         /// <param name="smooth_coef_Q16">I    Smoothing coefficient</param>
         /// <returns>O    Returns predictor in Q13</returns>
-        public static int silk_stereo_find_predictor(
+        internal static int silk_stereo_find_predictor(
             BoxedValue<int> ratio_Q14,
             Pointer<short> x,
             Pointer<short> y,
@@ -170,8 +170,8 @@ namespace Concentus.Silk
         /// <param name="toMono">I    Last frame before a stereo.mono transition</param>
         /// <param name="fs_kHz">I    Sample rate (kHz)</param>
         /// <param name="frame_length">I    Number of samples</param>
-        public static void silk_stereo_LR_to_MS(
-            stereo_enc_state state,
+        internal static void silk_stereo_LR_to_MS(
+            StereoEncodeState state,
             Pointer<short> x1,
             Pointer<short> x2,
             Pointer<Pointer<sbyte>> ix,
@@ -236,8 +236,8 @@ namespace Concentus.Silk
             /* Find energies and predictors */
             is10msFrame = (frame_length == 10 * fs_kHz ? 1 : 0);
             smooth_coef_Q16 = is10msFrame != 0 ?
-                Inlines.SILK_FIX_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF / 2, 16) :
-                Inlines.SILK_FIX_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF, 16);
+                Inlines.SILK_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF / 2, 16) :
+                Inlines.SILK_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF, 16);
             smooth_coef_Q16 = Inlines.silk_SMULWB(Inlines.silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
             pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0.Point(0), frame_length, smooth_coef_Q16);
@@ -245,7 +245,7 @@ namespace Concentus.Silk
             
             /* Ratio of the norms of residual and mid signals */
             frac_Q16 = Inlines.silk_SMLABB(HP_ratio_Q14.Val, LP_ratio_Q14.Val, 3);
-            frac_Q16 = Inlines.silk_min(frac_Q16, Inlines.SILK_FIX_CONST(1, 16));
+            frac_Q16 = Inlines.silk_min(frac_Q16, Inlines.SILK_CONST(1, 16));
 
             /* Determine bitrate distribution between mid and side, and possibly reduce stereo width */
             total_rate_bps -= is10msFrame != 0 ? 1200 : 600;      /* Subtract approximate bitrate for coding stereo parameters */
@@ -257,7 +257,7 @@ namespace Concentus.Silk
             Inlines.OpusAssert(min_mid_rate_bps < 32767);
             /* Default bitrate distribution: 8 parts for Mid and (5+3*frac) parts for Side. so: mid_rate = ( 8 / ( 13 + 3 * frac ) ) * total_ rate */
             frac_3_Q16 = Inlines.silk_MUL(3, frac_Q16);
-            mid_side_rates_bps[0] = Inlines.silk_DIV32_varQ(total_rate_bps, Inlines.SILK_FIX_CONST(8 + 5, 16) + frac_3_Q16, 16 + 3);
+            mid_side_rates_bps[0] = Inlines.silk_DIV32_varQ(total_rate_bps, Inlines.SILK_CONST(8 + 5, 16) + frac_3_Q16, 16 + 3);
             /* If Mid bitrate below minimum, reduce stereo width */
             if (mid_side_rates_bps[0] < min_mid_rate_bps)
             {
@@ -265,12 +265,12 @@ namespace Concentus.Silk
                 mid_side_rates_bps[1] = total_rate_bps - mid_side_rates_bps[0];
                 /* width = 4 * ( 2 * side_rate - min_rate ) / ( ( 1 + 3 * frac ) * min_rate ) */
                 width_Q14 = Inlines.silk_DIV32_varQ(Inlines.silk_LSHIFT(mid_side_rates_bps[1], 1) - min_mid_rate_bps,
-                    Inlines.silk_SMULWB(Inlines.SILK_FIX_CONST(1, 16) + frac_3_Q16, min_mid_rate_bps), 14 + 2);
-                width_Q14 = Inlines.silk_LIMIT(width_Q14, 0, Inlines.SILK_FIX_CONST(1, 14));
+                    Inlines.silk_SMULWB(Inlines.SILK_CONST(1, 16) + frac_3_Q16, min_mid_rate_bps), 14 + 2);
+                width_Q14 = Inlines.silk_LIMIT(width_Q14, 0, Inlines.SILK_CONST(1, 14));
             }
             else {
                 mid_side_rates_bps[1] = total_rate_bps - mid_side_rates_bps[0];
-                width_Q14 = Inlines.SILK_FIX_CONST(1, 14);
+                width_Q14 = Inlines.SILK_CONST(1, 14);
             }
 
             /* Smoother */
@@ -287,7 +287,7 @@ namespace Concentus.Silk
                 silk_stereo_quant_pred(pred_Q13.GetPointer(), ix);
             }
             else if (state.width_prev_Q14 == 0 &&
-              (8 * total_rate_bps < 13 * min_mid_rate_bps || Inlines.silk_SMULWB(frac_Q16, state.smth_width_Q14) < Inlines.SILK_FIX_CONST(0.05f, 14)))
+              (8 * total_rate_bps < 13 * min_mid_rate_bps || Inlines.silk_SMULWB(frac_Q16, state.smth_width_Q14) < Inlines.SILK_CONST(0.05f, 14)))
             {
                 /* Code as panned-mono; previous frame already had zero width */
                 /* Scale down and quantize predictors */
@@ -303,7 +303,7 @@ namespace Concentus.Silk
                 mid_only_flag.Val = 1;
             }
             else if (state.width_prev_Q14 != 0 &&
-              (8 * total_rate_bps < 11 * min_mid_rate_bps || Inlines.silk_SMULWB(frac_Q16, state.smth_width_Q14) < Inlines.SILK_FIX_CONST(0.02f, 14)))
+              (8 * total_rate_bps < 11 * min_mid_rate_bps || Inlines.silk_SMULWB(frac_Q16, state.smth_width_Q14) < Inlines.SILK_CONST(0.02f, 14)))
             {
                 /* Transition to zero-width stereo */
                 /* Scale down and quantize predictors */
@@ -315,11 +315,11 @@ namespace Concentus.Silk
                 pred_Q13[0] = 0;
                 pred_Q13[1] = 0;
             }
-            else if (state.smth_width_Q14 > Inlines.SILK_FIX_CONST(0.95f, 14))
+            else if (state.smth_width_Q14 > Inlines.SILK_CONST(0.95f, 14))
             {
                 /* Full-width stereo coding */
                 silk_stereo_quant_pred(pred_Q13.GetPointer(), ix);
-                width_Q14 = Inlines.SILK_FIX_CONST(1, 14);
+                width_Q14 = Inlines.SILK_CONST(1, 14);
             }
             else
             {
@@ -396,8 +396,8 @@ namespace Concentus.Silk
         /// <param name="pred_Q13">I    Predictors</param>
         /// <param name="fs_kHz">I    Samples rate (kHz)</param>
         /// <param name="frame_length">I    Number of samples</param>
-        public static void silk_stereo_MS_to_LR(
-            stereo_dec_state state,
+        internal static void silk_stereo_MS_to_LR(
+            StereoDecodeState state,
             Pointer<short> x1,
             Pointer<short> x2,
             Pointer<int> pred_Q13,
@@ -459,7 +459,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="pred_Q13">I/O  Predictors (out: quantized)</param>
         /// <param name="ix">O    Quantization indices [ 2 ][ 3 ]</param>
-        public static void silk_stereo_quant_pred(
+        internal static void silk_stereo_quant_pred(
                             Pointer<int> pred_Q13,
                             Pointer<Pointer<sbyte>> ix)
         {
@@ -482,7 +482,7 @@ namespace Concentus.Silk
                 {
                     low_Q13 = Tables.silk_stereo_pred_quant_Q13[i];
                     step_Q13 = Inlines.silk_SMULWB(Tables.silk_stereo_pred_quant_Q13[i + 1] - low_Q13,
-                        Inlines.SILK_FIX_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16));
+                        Inlines.SILK_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16));
 
                     for (j = 0; j < SilkConstants.STEREO_QUANT_SUB_STEPS; j++)
                     {

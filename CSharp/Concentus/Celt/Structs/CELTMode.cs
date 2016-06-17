@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt.Structs
 {
-    public class CELTMode
+    public class CeltMode
     {
         public int Fs = 0;
         public int overlap = 0;
@@ -37,10 +37,10 @@ namespace Concentus.Celt.Structs
         public Pointer<short> logN = null;
 
         public Pointer<int> window = null;
-        public mdct_lookup mdct = new mdct_lookup();
+        public MDCTLookup mdct = new MDCTLookup();
         public PulseCache cache = new PulseCache();
 
-        public CELTMode()
+        public CeltMode()
         {
         }
 

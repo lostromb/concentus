@@ -6,11 +6,11 @@ using System.Diagnostics;
 
 namespace Concentus.Silk
 {
-    public static class schur
+    internal static class Schur
     {
         /* Faster than schur64(), but much less accurate.                       */
         /* uses SMLAWB(), requiring armv5E and higher.                          */
-        public static int silk_schur(                              /* O    Returns residual energy                                     */
+        internal static int silk_schur(                              /* O    Returns residual energy                                     */
             Pointer<short> rc_Q15,            /* O    reflection coefficients [order] Q15                         */
     Pointer<int> c,                 /* I    correlations [order+1]                                      */
     int order               /* I    prediction order                                            */
@@ -58,10 +58,10 @@ namespace Concentus.Silk
                 {
                     if (C[k + 1][0] > 0)
                     {
-                        rc_Q15[k] = Inlines.CHOP16(0 - Inlines.SILK_FIX_CONST(.99f, 15));
+                        rc_Q15[k] = Inlines.CHOP16(0 - Inlines.SILK_CONST(.99f, 15));
                     }
                     else {
-                        rc_Q15[k] = Inlines.CHOP16(Inlines.SILK_FIX_CONST(.99f, 15));
+                        rc_Q15[k] = Inlines.CHOP16(Inlines.SILK_CONST(.99f, 15));
                     }
                     k++;
                     break;
@@ -97,7 +97,7 @@ namespace Concentus.Silk
 
         /* Slower than schur(), but more accurate.                              */
         /* Uses SMULL(), available on armv4                                     */
-        public static int silk_schur64(                            /* O    returns residual energy                                     */
+        internal static int silk_schur64(                            /* O    returns residual energy                                     */
             Pointer<int> rc_Q16,           /* O    Reflection coefficients [order] Q16                         */
             Pointer<int> c,                /* I    Correlations [order+1]                                      */
             int order               /* I    Prediction order                                            */
@@ -128,10 +128,10 @@ namespace Concentus.Silk
                 {
                     if (C[k + 1][0] > 0)
                     {
-                        rc_Q16[k] = -Inlines.SILK_FIX_CONST(.99f, 16);
+                        rc_Q16[k] = -Inlines.SILK_CONST(.99f, 16);
                     }
                     else {
-                        rc_Q16[k] = Inlines.SILK_FIX_CONST(.99f, 16);
+                        rc_Q16[k] = Inlines.SILK_CONST(.99f, 16);
                     }
                     k++;
                     break;

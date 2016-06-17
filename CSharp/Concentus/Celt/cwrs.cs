@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class cwrs
+    internal static class CWRS
     {
         /*Although derived separately, the pulse vector coding scheme is equivalent to
    a Pyramid Vector Quantizer \cite{Fis86}.
@@ -132,7 +132,7 @@ namespace Concentus.Celt
     year=1986
   }*/
 
-        public static readonly Pointer<uint>[] CELT_PVQ_U_ROW =
+        internal static readonly Pointer<uint>[] CELT_PVQ_U_ROW =
         {
             Tables.CELT_PVQ_U_DATA.GetPointer(0),Tables.CELT_PVQ_U_DATA.GetPointer(176),Tables.CELT_PVQ_U_DATA.GetPointer(351),
             Tables.CELT_PVQ_U_DATA.GetPointer(525),Tables.CELT_PVQ_U_DATA.GetPointer(698),Tables.CELT_PVQ_U_DATA.GetPointer(870),
@@ -155,7 +155,7 @@ namespace Concentus.Celt
             return (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1));
         }
 
-        public static uint icwrs(int _n, Pointer<int> _y)
+        internal static uint icwrs(int _n, Pointer<int> _y)
         {
             uint i;
             int j;
@@ -175,13 +175,13 @@ namespace Concentus.Celt
             return i;
         }
 
-        public static void encode_pulses(Pointer<int> _y, int _n, int _k, ec_ctx _enc)
+        internal static void encode_pulses(Pointer<int> _y, int _n, int _k, ec_ctx _enc)
         {
             Inlines.OpusAssert(_k > 0);
             EntropyCoder.ec_enc_uint(_enc, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
         }
 
-        public static int cwrsi(int _n, int _k, uint _i, Pointer<int> _y)
+        internal static int cwrsi(int _n, int _k, uint _i, Pointer<int> _y)
         {
             uint p;
             int s;
@@ -288,7 +288,7 @@ namespace Concentus.Celt
             return yy;
         }
 
-        public static int decode_pulses(Pointer<int> _y, int _n, int _k, ec_ctx _dec)
+        internal static int decode_pulses(Pointer<int> _y, int _n, int _k, ec_ctx _dec)
         {
             return cwrsi(_n, _k, EntropyCoder.ec_dec_uint(_dec, CELT_PVQ_V(_n, _k)), _y);
         }

@@ -23,7 +23,7 @@ namespace TestOpusEncode
 
         private static uint iseed;
 
-        public static void deb2_impl(Pointer<byte>_t, BoxedValue<Pointer<byte>> _p, int _k, int _x, int _y)
+        internal static void deb2_impl(Pointer<byte>_t, BoxedValue<Pointer<byte>> _p, int _k, int _x, int _y)
         {
             int i;
             if (_x > 2)
@@ -50,7 +50,7 @@ namespace TestOpusEncode
         }
 
         /*Generates a De Bruijn sequence (k,2) with length k^2*/
-        public static void debruijn2(int _k, Pointer<byte> _res)
+        internal static void debruijn2(int _k, Pointer<byte> _res)
         {
             BoxedValue<Pointer<byte>> p;
             Pointer<byte> t;
@@ -62,14 +62,14 @@ namespace TestOpusEncode
 
         /*MWC RNG of George Marsaglia*/
         private static uint Rz, Rw;
-        public static uint fast_rand()
+        internal static uint fast_rand()
         {
             Rz = 36969 * (Rz & 65535) + (Rz >> 16);
             Rw = 18000 * (Rw & 65535) + (Rw >> 16);
             return (Rz << 16) + Rw;
         }
 
-        public static void generate_music(Pointer<short> buf, int len)
+        internal static void generate_music(Pointer<short> buf, int len)
         {
             int a1, b1, a2, b2;
             int c1, c2, d1, d2;
@@ -102,7 +102,7 @@ namespace TestOpusEncode
             }
         }
 
-        public static void test_failed()
+        internal static void test_failed()
         {
             Console.WriteLine("Test FAILED!");
             if (Debugger.IsAttached)
@@ -111,10 +111,10 @@ namespace TestOpusEncode
             }
         }
 
-        public static readonly int[] fsizes = { 960 * 3, 960 * 2, 120, 240, 480, 960 };
-        public static readonly string[] mstrings = { "    LP", "Hybrid", "  MDCT" };
+        internal static readonly int[] fsizes = { 960 * 3, 960 * 2, 120, 240, 480, 960 };
+        internal static readonly string[] mstrings = { "    LP", "Hybrid", "  MDCT" };
 
-        public static int run_test1(bool no_fuzz)
+        internal static int run_test1(bool no_fuzz)
         {
             
             byte[] mapping/*[256]*/ = { 0, 1, 255 };
@@ -310,17 +310,17 @@ namespace TestOpusEncode
                         enc_final_range = enc.GetFinalRange();
                         if ((fast_rand() & 3) == 0)
                         {
-                            if (repacketizer.opus_packet_pad(packet, len, len + 1) != OpusError.OPUS_OK) test_failed();
+                            if (Repacketizer.opus_packet_pad(packet, len, len + 1) != OpusError.OPUS_OK) test_failed();
                             len++;
                         }
                         if ((fast_rand() & 7) == 0)
                         {
-                            if (repacketizer.opus_packet_pad(packet, len, len + 256) != OpusError.OPUS_OK) test_failed();
+                            if (Repacketizer.opus_packet_pad(packet, len, len + 256) != OpusError.OPUS_OK) test_failed();
                             len += 256;
                         }
                         if ((fast_rand() & 3) == 0)
                         {
-                            len = repacketizer.opus_packet_unpad(packet, len);
+                            len = Repacketizer.opus_packet_unpad(packet, len);
                             if (len < 1) test_failed();
                         }
                         out_samples = opus_decoder.opus_decode(dec, packet, len, outbuf.Point(i << 1), MAX_FRAME_SAMP, 0);
@@ -495,13 +495,13 @@ namespace TestOpusEncode
             return 0;
         }
 
-        public static void Main(string[] args)
+        internal static void Main(string[] args)
         {
             iseed = (uint)new Random().Next();
 
             Rw = Rz = iseed;
 
-            string oversion = celt.opus_get_version_string();
+            string oversion = OpusPacket.opus_get_version_string();
 
             Console.WriteLine("Testing {0} encoder. Random seed: {1}", oversion, iseed);
             run_test1(true);

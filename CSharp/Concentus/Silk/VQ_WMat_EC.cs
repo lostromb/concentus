@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk
 {
-    public static class VQ_WMat_EC
+    internal static class VQ_WMat_EC
     {
         /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
-        public static void silk_VQ_WMat_EC_c(
+        internal static void silk_VQ_WMat_EC(
             BoxedValue<sbyte> ind,                           /* O    index of best codebook vector               */
             BoxedValue<int> rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
             BoxedValue<int> gain_Q7,                       /* O    sum of absolute LTP coefficients            */

@@ -33,8 +33,8 @@ namespace Concentus
   */
         public static int opus_encoder_init(OpusEncoder st, int Fs, int channels, int application)
         {
-            silk_encoder silk_enc;
-            CELTEncoder celt_enc;
+            SilkEncoder silk_enc;
+            CeltEncoder celt_enc;
             int err;
             int ret;
 
@@ -52,7 +52,7 @@ namespace Concentus
 
             st.Fs = Fs;
 
-            ret = enc_API.silk_InitEncoder(silk_enc, st.silk_mode);
+            ret = EncodeAPI.silk_InitEncoder(silk_enc, st.silk_mode);
             if (ret != 0) return OpusError.OPUS_INTERNAL_ERROR;
 
             /* default SILK parameters */
@@ -113,7 +113,7 @@ namespace Concentus
             return OpusError.OPUS_OK;
         }
 
-        public static byte gen_toc(int mode, int framerate, int bandwidth, int channels)
+        internal static byte gen_toc(int mode, int framerate, int bandwidth, int channels)
         {
             int period;
             byte toc;
@@ -147,17 +147,17 @@ namespace Concentus
             return toc;
         }
 
-        public static void hp_cutoff(Pointer<int> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
+        internal static void hp_cutoff(Pointer<int> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
         {
             Pointer<int> B_Q28 = Pointer.Malloc<int>(3);
             Pointer<int> A_Q28 = Pointer.Malloc<int>(2);
             int Fc_Q19, r_Q28, r_Q22;
 
-            Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / Inlines.SILK_FIX_CONST(1.5f * 3.14159f / 1000, 19));
-            Fc_Q19 = Inlines.silk_DIV32_16(Inlines.silk_SMULBB(Inlines.SILK_FIX_CONST(1.5f * 3.14159f / 1000, 19), cutoff_Hz), Fs / 1000);
+            Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19));
+            Fc_Q19 = Inlines.silk_DIV32_16(Inlines.silk_SMULBB(Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19), cutoff_Hz), Fs / 1000);
             Inlines.OpusAssert(Fc_Q19 > 0 && Fc_Q19 < 32768);
 
-            r_Q28 = Inlines.SILK_FIX_CONST(1.0f, 28) - Inlines.silk_MUL(Inlines.SILK_FIX_CONST(0.92f, 9), Fc_Q19);
+            r_Q28 = Inlines.SILK_CONST(1.0f, 28) - Inlines.silk_MUL(Inlines.SILK_CONST(0.92f, 9), Fc_Q19);
 
             /* b = r * [ 1; -2; 1 ]; */
             /* a = [ 1; -2 * r * ( 1 - 0.5 * Fc^2 ); r^2 ]; */
@@ -167,7 +167,7 @@ namespace Concentus
 
             /* -r * ( 2 - Fc * Fc ); */
             r_Q22 = Inlines.silk_RSHIFT(r_Q28, 6);
-            A_Q28[0] = Inlines.silk_SMULWW(r_Q22, Inlines.silk_SMULWW(Fc_Q19, Fc_Q19) - Inlines.SILK_FIX_CONST(2.0f, 22));
+            A_Q28[0] = Inlines.silk_SMULWW(r_Q22, Inlines.silk_SMULWW(Fc_Q19, Fc_Q19) - Inlines.SILK_CONST(2.0f, 22));
             A_Q28[1] = Inlines.silk_SMULWW(r_Q22, r_Q22);
 
             Filters.silk_biquad_alt(input, B_Q28, A_Q28, hp_mem, output, len, channels);
@@ -177,7 +177,7 @@ namespace Concentus
             }
         }
 
-        public static void dc_reject(Pointer<int> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
+        internal static void dc_reject(Pointer<int> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
         {
             int c, i;
             int shift;
@@ -201,7 +201,7 @@ namespace Concentus
             }
         }
 
-        public static void stereo_fade(Pointer<int> input, Pointer<int> output, int g1, int g2,
+        internal static void stereo_fade(Pointer<int> input, Pointer<int> output, int g1, int g2,
                 int overlap48, int frame_size, int channels, Pointer<int> window, int Fs)
         {
             int i;
@@ -233,7 +233,7 @@ namespace Concentus
             }
         }
 
-        public static void gain_fade(Pointer<int> input, Pointer<int> output, int g1, int g2,
+        internal static void gain_fade(Pointer<int> input, Pointer<int> output, int g1, int g2,
                 int overlap48, int frame_size, int channels, Pointer<int> window, int Fs)
         {
             int i;
@@ -335,7 +335,7 @@ namespace Concentus
             return st;
         }
 
-        public static int user_bitrate_to_bitrate(OpusEncoder st, int frame_size, int max_data_bytes)
+        internal static int user_bitrate_to_bitrate(OpusEncoder st, int frame_size, int max_data_bytes)
         {
             if (frame_size == 0)
             {
@@ -353,7 +353,7 @@ namespace Concentus
         private const int MAX_DYNAMIC_FRAMESIZE = 24;
 
         /* Estimates how much the bitrate will be boosted based on the sub-frame energy */
-        public static float transient_boost(Pointer<float> E, Pointer<float> E_1, int LM, int maxM)
+        internal static float transient_boost(Pointer<float> E, Pointer<float> E_1, int LM, int maxM)
         {
             int i;
             int M;
@@ -394,7 +394,7 @@ namespace Concentus
            14: 20 ms (#7)
            15: 20 ms (#8)
         */
-        public static int transient_viterbi(Pointer<float> E, Pointer<float> E_1, int N, int frame_cost, int rate)
+        internal static int transient_viterbi(Pointer<float> E, Pointer<float> E_1, int N, int frame_cost, int rate)
         {
             int i;
             Pointer<Pointer<float>> cost = Arrays.InitTwoDimensionalArrayPointer<float>(MAX_DYNAMIC_FRAMESIZE, 16);
@@ -483,9 +483,9 @@ namespace Concentus
             return best_state;
         }
 
-        public static int optimize_framesize<T>(Pointer<T> x, int len, int C, int Fs,
+        internal static int optimize_framesize<T>(Pointer<T> x, int len, int C, int Fs,
                         int bitrate, int tonality, Pointer<float> mem, int buffering,
-                        downmix_func_def.downmix_func<T> downmix)
+                        Downmix.downmix_func<T> downmix)
         {
             int N;
             int i;
@@ -556,66 +556,8 @@ namespace Concentus
             }
             return bestLM;
         }
-
-        public static void downmix_float(Pointer<float> x, Pointer<int> sub, int subframe, int offset, int c1, int c2, int C)
-        {
-            int scale;
-            int j;
-            for (j = 0; j < subframe; j++)
-                sub[j] = Inlines.FLOAT2INT16(x[(j + offset) * C + c1]);
-            if (c2 > -1)
-            {
-                for (j = 0; j < subframe; j++)
-                    sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c2]);
-            }
-            else if (c2 == -2)
-            {
-                int c;
-                for (c = 1; c < C; c++)
-                {
-                    for (j = 0; j < subframe; j++)
-                        sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c]);
-                }
-            }
-            scale = (1 << CeltConstants.SIG_SHIFT);
-            if (C == -2)
-                scale /= C;
-            else
-                scale /= 2;
-            for (j = 0; j < subframe; j++)
-                sub[j] *= scale;
-        }
-
-        public static void downmix_int(Pointer<short> x, Pointer<int> sub, int subframe, int offset, int c1, int c2, int C)
-        {
-            int scale;
-            int j;
-            for (j = 0; j < subframe; j++)
-                sub[j] = x[(j + offset) * C + c1];
-            if (c2 > -1)
-            {
-                for (j = 0; j < subframe; j++)
-                    sub[j] += x[(j + offset) * C + c2];
-            }
-            else if (c2 == -2)
-            {
-                int c;
-                for (c = 1; c < C; c++)
-                {
-                    for (j = 0; j < subframe; j++)
-                        sub[j] += x[(j + offset) * C + c];
-                }
-            }
-            scale = (1 << CeltConstants.SIG_SHIFT);
-            if (C == -2)
-                scale /= C;
-            else
-                scale /= 2;
-            for (j = 0; j < subframe; j++)
-                sub[j] *= scale;
-        }
-
-        public static int frame_size_select(int frame_size, int variable_duration, int Fs)
+        
+        internal static int frame_size_select(int frame_size, int variable_duration, int Fs)
         {
             int new_size;
             if (frame_size < Fs / 400)
@@ -636,9 +578,9 @@ namespace Concentus
             return new_size;
         }
 
-        public static int compute_frame_size<T>(Pointer<T> analysis_pcm, int frame_size,
+        internal static int compute_frame_size<T>(Pointer<T> analysis_pcm, int frame_size,
               int variable_duration, int C, int Fs, int bitrate_bps,
-              int delay_compensation, downmix_func_def.downmix_func<T> downmix
+              int delay_compensation, Downmix.downmix_func<T> downmix
 #if ENABLE_ANALYSIS
               , Pointer<float> subframe_mem
 #endif
@@ -665,7 +607,7 @@ namespace Concentus
             return frame_size;
         }
 
-        public static int compute_stereo_width(Pointer<int> pcm, int frame_size, int Fs, StereoWidthState mem)
+        internal static int compute_stereo_width(Pointer<int> pcm, int frame_size, int Fs, StereoWidthState mem)
         {
             int corr;
             int ldiff;
@@ -763,13 +705,13 @@ namespace Concentus
         /// <param name="downmix"></param>
         /// <param name="float_api"></param>
         /// <returns></returns>
-        public static int opus_encode_native<T>(OpusEncoder st, Pointer<int> pcm, int frame_size,
+        internal static int opus_encode_native<T>(OpusEncoder st, Pointer<int> pcm, int frame_size,
                         Pointer<byte> data, int out_data_bytes, int lsb_depth,
                         Pointer<T> analysis_pcm, int analysis_size, int c1, int c2,
-                        int analysis_channels, downmix_func_def.downmix_func<T> downmix, int float_api)
+                        int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
         {
-            silk_encoder silk_enc; // porting note: pointer
-            CELTEncoder celt_enc; // porting note: pointer
+            SilkEncoder silk_enc; // porting note: pointer
+            CeltEncoder celt_enc; // porting note: pointer
             int i;
             int ret = 0;
             int nBytes;
@@ -795,7 +737,7 @@ namespace Concentus
             int max_data_bytes; /* Max number of bytes we're allowed to use */
             int total_buffer;
             int stereo_width;
-            CELTMode celt_mode; // porting note: pointer
+            CeltMode celt_mode; // porting note: pointer
 #if ENABLE_ANALYSIS
             AnalysisInfo analysis_info = new AnalysisInfo(); // porting note: stack var
             int analysis_read_pos_bak = -1;
@@ -823,7 +765,7 @@ namespace Concentus
                 delay_compensation = st.delay_compensation;
 
             lsb_depth = Inlines.IMIN(lsb_depth, st.lsb_depth);
-            BoxedValue<CELTMode> boxedMode = new BoxedValue<CELTMode>();
+            BoxedValue<CeltMode> boxedMode = new BoxedValue<CeltMode>();
             celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_GET_MODE_REQUEST, boxedMode);
             celt_mode = boxedMode.Val;
 #if ENABLE_ANALYSIS
@@ -1065,8 +1007,8 @@ namespace Concentus
 
             if (st.mode != OpusMode.MODE_CELT_ONLY && st.prev_mode == OpusMode.MODE_CELT_ONLY)
             {
-                silk_EncControlStruct dummy = new silk_EncControlStruct();
-                enc_API.silk_InitEncoder(silk_enc, dummy);
+                EncControlState dummy = new EncControlState();
+                EncodeAPI.silk_InitEncoder(silk_enc, dummy);
                 prefill = 1;
             }
 
@@ -1201,7 +1143,7 @@ namespace Concentus
                 tmp_data = Pointer.Malloc<byte>(nb_frames * bytes_per_frame);
 
                 rp = new OpusRepacketizer();
-                repacketizer.opus_repacketizer_init(rp);
+                Repacketizer.opus_repacketizer_init(rp);
 
                 bak_mode = st.user_forced_mode;
                 bak_bandwidth = st.user_bandwidth;
@@ -1231,7 +1173,7 @@ namespace Concentus
 
                         return OpusError.OPUS_INTERNAL_ERROR;
                     }
-                    ret = repacketizer.opus_repacketizer_cat(rp, tmp_data.Point(i * bytes_per_frame), tmp_len);
+                    ret = Repacketizer.opus_repacketizer_cat(rp, tmp_data.Point(i * bytes_per_frame), tmp_len);
                     if (ret < 0)
                     {
 
@@ -1242,7 +1184,7 @@ namespace Concentus
                     repacketize_len = out_data_bytes;
                 else
                     repacketize_len = Inlines.IMIN(3 * st.bitrate_bps / (3 * 8 * 50 / nb_frames), out_data_bytes);
-                ret = repacketizer.opus_repacketizer_out_range_impl(rp, 0, nb_frames, data, repacketize_len, 0, (st.use_vbr == 0) ? 1 : 0);
+                ret = Repacketizer.opus_repacketizer_out_range_impl(rp, 0, nb_frames, data, repacketize_len, 0, (st.use_vbr == 0) ? 1 : 0);
                 if (ret < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1279,7 +1221,7 @@ namespace Concentus
                 hp_freq_smth1 = silk_enc.state_Fxx[0].variable_HP_smth1_Q15;
 
             st.variable_HP_smth2_Q15 = Inlines.silk_SMLAWB(st.variable_HP_smth2_Q15,
-                  hp_freq_smth1 - st.variable_HP_smth2_Q15, Inlines.SILK_FIX_CONST(TuningParameters.VARIABLE_HP_SMTH_COEF2, 16));
+                  hp_freq_smth1 - st.variable_HP_smth2_Q15, Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_SMTH_COEF2, 16));
 
             /* convert from log scale to Hertz */
             cutoff_Hz = Inlines.silk_log2lin(Inlines.silk_RSHIFT(st.variable_HP_smth2_Q15, 8));
@@ -1461,7 +1403,7 @@ namespace Concentus
                         pcm_silk[i] = (short)(st.delay_buffer[i]);
                     }
 
-                    enc_API.silk_Encode(silk_enc, st.silk_mode, pcm_silk, st.encoder_buffer, null, zero, 1);
+                    EncodeAPI.silk_Encode(silk_enc, st.silk_mode, pcm_silk, st.encoder_buffer, null, zero, 1);
                 }
 
                 for (i = 0; i < frame_size * st.channels; i++)
@@ -1470,7 +1412,7 @@ namespace Concentus
                 }
 
                 BoxedValue<int> boxed_silkBytes = new BoxedValue<int>(nBytes);
-                ret = enc_API.silk_Encode(silk_enc, st.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
+                ret = EncodeAPI.silk_Encode(silk_enc, st.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
                 nBytes = boxed_silkBytes.Val;
 
                 if (ret != 0)
@@ -1487,7 +1429,7 @@ namespace Concentus
 
                     return 1;
                 }
-                /* Extract SILK internal bandwidth for signaling in first byte */
+                /* Extract SILK public bandwidth for signaling in first byte */
                 if (st.mode == OpusMode.MODE_SILK_ONLY)
                 {
                     if (st.silk_mode.internalSampleRate == 8000)
@@ -1794,7 +1736,7 @@ namespace Concentus
             ret += 1 + redundancy_bytes;
             if (st.use_vbr == 0)
             {
-                if (repacketizer.opus_packet_pad(data, ret, max_data_bytes) != OpusError.OPUS_OK)
+                if (Repacketizer.opus_packet_pad(data, ret, max_data_bytes) != OpusError.OPUS_OK)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
@@ -1845,7 +1787,7 @@ namespace Concentus
 
             frame_size = compute_frame_size(pcm, analysis_frame_size,
                   st.variable_duration, st.channels, st.Fs, st.bitrate_bps,
-                  delay_compensation, downmix_int
+                  delay_compensation, Downmix.downmix_int
 #if ENABLE_ANALYSIS
                   , st.analysis.subframe_mem
 #endif
@@ -1857,7 +1799,7 @@ namespace Concentus
                 input[i] = (int)pcm[i];
 
             return opus_encode_native<short>(st, input, frame_size, data, out_data_bytes, 16,
-                                     pcm, analysis_frame_size, 0, -2, st.channels, downmix_int, 0);
+                                     pcm, analysis_frame_size, 0, -2, st.channels, Downmix.downmix_int, 0);
         }
 
         /** Encodes an Opus frame from floating point input.
@@ -1908,7 +1850,7 @@ namespace Concentus
 
             frame_size = compute_frame_size(pcm, analysis_frame_size,
                   st.variable_duration, st.channels, st.Fs, st.bitrate_bps,
-                  delay_compensation, downmix_float
+                  delay_compensation, Downmix.downmix_float
 #if ENABLE_ANALYSIS
                   , st.analysis.subframe_mem
 #endif
@@ -1920,7 +1862,7 @@ namespace Concentus
                 input[i] = Inlines.FLOAT2INT16(pcm[i]);
 
             ret = opus_encode_native(st, input, frame_size, data, max_data_bytes, 16,
-                                     pcm, analysis_frame_size, 0, -2, st.channels, downmix_float, 1);
+                                     pcm, analysis_frame_size, 0, -2, st.channels, Downmix.downmix_float, 1);
             return ret;
         }
     }

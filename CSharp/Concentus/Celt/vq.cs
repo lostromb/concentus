@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace Concentus.Celt
 {
-    public static class vq
+    internal static class VQ
     {
-        public static void exp_rotation1(Pointer<int> X, int len, int stride, int c, int s)
+        internal static void exp_rotation1(Pointer<int> X, int len, int stride, int c, int s)
         {
             int i;
             int ms;
@@ -43,7 +43,7 @@ namespace Concentus.Celt
 
         private static int[] SPREAD_FACTOR = { 15, 10, 5 };
 
-        public static void exp_rotation(Pointer<int> X, int len, int dir, int stride, int K, int spread)
+        internal static void exp_rotation(Pointer<int> X, int len, int dir, int stride, int K, int spread)
         {
             int i;
             int c, s;
@@ -103,7 +103,7 @@ namespace Concentus.Celt
 
         /** Takes the pitch vector and the decoded residual vector, computes the gain
             that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-        public static void normalise_residual(Pointer<int> iy, Pointer<int> X,
+        internal static void normalise_residual(Pointer<int> iy, Pointer<int> X,
               int N, int Ryy, int gain)
         {
             int i;
@@ -121,7 +121,7 @@ namespace Concentus.Celt
             while (++i < N);
         }
 
-        public static uint extract_collapse_mask(Pointer<int> iy, int N, int B)
+        internal static uint extract_collapse_mask(Pointer<int> iy, int N, int B)
         {
             uint collapse_mask;
             int N0;
@@ -149,7 +149,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        public static uint alg_quant(Pointer<int> X, int N, int K, int spread, int B, ec_ctx enc
+        internal static uint alg_quant(Pointer<int> X, int N, int K, int spread, int B, ec_ctx enc
            )
         {
             Pointer<int> y = Pointer.Malloc<int>(N);
@@ -297,7 +297,7 @@ namespace Concentus.Celt
                     iy[j] = -iy[j];
             } while (++j < N);
 
-            cwrs.encode_pulses(iy, N, K, enc);
+            CWRS.encode_pulses(iy, N, K, enc);
 
             collapse_mask = extract_collapse_mask(iy, N, B);
 
@@ -306,7 +306,7 @@ namespace Concentus.Celt
 
         /** Decode pulse vector and combine the result with the pitch vector to produce
             the final normalised signal in the current band. */
-        public static uint alg_unquant(Pointer<int> X, int N, int K, int spread, int B,
+        internal static uint alg_unquant(Pointer<int> X, int N, int K, int spread, int B,
               ec_ctx dec, int gain)
         {
             int Ryy;
@@ -314,7 +314,7 @@ namespace Concentus.Celt
             Pointer<int> iy = Pointer.Malloc<int>(N);
             Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
-            Ryy = cwrs.decode_pulses(iy, N, K, dec);
+            Ryy = CWRS.decode_pulses(iy, N, K, dec);
             normalise_residual(iy, X, N, Ryy, gain);
             exp_rotation(X, N, -1, B, K, spread);
             collapse_mask = extract_collapse_mask(iy, N, B);
@@ -322,7 +322,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        public static void renormalise_vector(Pointer<int> X, int N, int gain)
+        internal static void renormalise_vector(Pointer<int> X, int N, int gain)
         {
             int i;
             int k;
@@ -330,7 +330,7 @@ namespace Concentus.Celt
             int g;
             int t;
             Pointer<int> xptr;
-            E = CeltConstants.EPSILON + celt_inner_prod.celt_inner_prod_c(X, X, N);
+            E = CeltConstants.EPSILON + Kernels.celt_inner_prod(X, X, N);
             k = Inlines.celt_ilog2(E) >> 1;
             t = Inlines.VSHR32(E, 2 * (k - 7));
             g = Inlines.MULT16_16_P15(Inlines.celt_rsqrt_norm(t), gain);
@@ -344,7 +344,7 @@ namespace Concentus.Celt
             /*return celt_sqrt(E);*/
         }
 
-        public static int stereo_itheta(Pointer<int> X, Pointer<int> Y, int stereo, int N)
+        internal static int stereo_itheta(Pointer<int> X, Pointer<int> Y, int stereo, int N)
         {
             int i;
             int itheta;
@@ -364,8 +364,8 @@ namespace Concentus.Celt
                 }
             }
             else {
-                Emid += celt_inner_prod.celt_inner_prod_c(X, X, N);
-                Eside += celt_inner_prod.celt_inner_prod_c(Y, Y, N);
+                Emid += Kernels.celt_inner_prod(X, X, N);
+                Eside += Kernels.celt_inner_prod(Y, Y, N);
             }
             mid = (Inlines.celt_sqrt(Emid));
             side = (Inlines.celt_sqrt(Eside));

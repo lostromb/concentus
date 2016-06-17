@@ -10,9 +10,9 @@ namespace Concentus.Celt.Structs
     /// <summary>
     /// Decoder state
     /// </summary>
-    public class CELTDecoder
+    public class CeltDecoder
     {
-        public CELTMode mode = new CELTMode();
+        public CeltMode mode = new CeltMode();
         public int overlap = 0;
         public int channels = 0;
         public int stream_channels = 0;

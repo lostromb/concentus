@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Concentus.Silk.Enums
 {
-    public static class DecoderAPIFlag
+    internal static class DecoderAPIFlag
     {
         public const int FLAG_DECODE_NORMAL = 0;
         public const int FLAG_PACKET_LOST = 1;

@@ -13,7 +13,7 @@ namespace Concentus.Silk
     /// <summary>
     /// Comfort noise generation and estimation
     /// </summary>
-    public static class CNG
+    internal static class CNG
     {
         /// <summary>
         /// Generates excitation for CNG LPC synthesis
@@ -23,7 +23,7 @@ namespace Concentus.Silk
         /// <param name="Gain_Q16">I    Gain to apply</param>
         /// <param name="length">I    Length</param>
         /// <param name="rand_seed">I/O  Seed to random index generator</param>
-        public static void silk_CNG_exc(
+        internal static void silk_CNG_exc(
             Pointer<int> exc_Q10,
             Pointer<int> exc_buf_Q14,
             int Gain_Q16,
@@ -57,7 +57,7 @@ namespace Concentus.Silk
         /// Resets CNG state
         /// </summary>
         /// <param name="psDec">I/O  Decoder state</param>
-        public static void silk_CNG_Reset(silk_decoder_state psDec)
+        internal static void silk_CNG_Reset(SilkChannelDecoder psDec)
         {
             int i, NLSF_step_Q15, NLSF_acc_Q15;
 
@@ -79,16 +79,16 @@ namespace Concentus.Silk
         /// <param name="psDecCtrl">I/O  Decoder control</param>
         /// <param name="frame">I/O  Signal</param>
         /// <param name="length">I    Length of residual</param>
-        public static void silk_CNG(
-            silk_decoder_state psDec,
-            silk_decoder_control psDecCtrl,
+        internal static void silk_CNG(
+            SilkChannelDecoder psDec,
+            SilkDecoderControl psDecCtrl,
             Pointer<short> frame,
             int length)
         {
             int i, subfr;
             int sum_Q6, max_Gain_Q16, gain_Q16;
             Pointer<short> A_Q12 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
-            silk_CNG_struct psCNG = psDec.sCNG;
+            CNGState psCNG = psDec.sCNG;
 
             if (psDec.fs_kHz != psCNG.fs_kHz)
             {
