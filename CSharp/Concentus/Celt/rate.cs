@@ -184,12 +184,12 @@ namespace Concentus.Celt
                         if (codedBands <= start + 2 || (band_bits > ((j < prev ? 7 : 9) * band_width << LM << EntropyCoder.BITRES) >> 4 && j <= signalBandwidth))
 #endif
                         {
-                            ec.ec_enc_bit_logp(1, 1);
+                            ec.enc_bit_logp(1, 1);
                             break;
                         }
-                        ec.ec_enc_bit_logp(0, 1);
+                        ec.enc_bit_logp(0, 1);
                     }
-                    else if (ec.ec_dec_bit_logp(1) != 0)
+                    else if (ec.dec_bit_logp(1) != 0)
                     {
                         break;
                     }
@@ -221,11 +221,11 @@ namespace Concentus.Celt
                 if (encode != 0)
                 {
                     intensity.Val = Inlines.IMIN(intensity.Val, codedBands);
-                    ec.ec_enc_uint((uint)(intensity.Val - start), (uint)(codedBands + 1 - start));
+                    ec.enc_uint((uint)(intensity.Val - start), (uint)(codedBands + 1 - start));
                 }
                 else
                 {
-                    intensity.Val = start + (int)ec.ec_dec_uint((uint)(codedBands + 1 - start));
+                    intensity.Val = start + (int)ec.dec_uint((uint)(codedBands + 1 - start));
                 }
             }
             else
@@ -242,11 +242,11 @@ namespace Concentus.Celt
             {
                 if (encode != 0)
                 {
-                    ec.ec_enc_bit_logp(dual_stereo.Val, 1);
+                    ec.enc_bit_logp(dual_stereo.Val, 1);
                 }
                 else
                 {
-                    dual_stereo.Val = ec.ec_dec_bit_logp(1);
+                    dual_stereo.Val = ec.dec_bit_logp(1);
                 }
             }
             else

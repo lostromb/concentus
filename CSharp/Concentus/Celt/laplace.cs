@@ -70,7 +70,7 @@ namespace Concentus.Celt
                 Inlines.OpusAssert(fs > 0);
             }
 
-            enc.ec_encode_bin(fl, fl + fs, 15);
+            enc.encode_bin(fl, fl + fs, 15);
         }
 
         internal static int ec_laplace_decode(EntropyCoder dec, uint fs, int decay)
@@ -78,7 +78,7 @@ namespace Concentus.Celt
             int val = 0;
             uint fl;
             uint fm;
-            fm = dec.ec_decode_bin(15);
+            fm = dec.decode_bin(15);
             fl = 0;
 
             if (fm >= fs)
@@ -114,7 +114,7 @@ namespace Concentus.Celt
             Inlines.OpusAssert(fl <= fm);
             Inlines.OpusAssert(fm < Inlines.IMIN(fl + fs, 32768));
 
-            dec.ec_dec_update(fl, Inlines.IMIN(fl + fs, 32768), 32768);
+            dec.dec_update(fl, Inlines.IMIN(fl + fs, 32768), 32768);
             return val;
         }
 

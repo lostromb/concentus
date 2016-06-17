@@ -220,7 +220,7 @@ namespace Concentus.Celt
             uint tell;
 
             budget = dec.storage * 8;
-            tell = (uint)dec.ec_tell();
+            tell = (uint)dec.tell();
             logp = isTransient != 0 ? 2 : 4;
             tf_select_rsv = (LM > 0 && tell + logp + 1 <= budget) ? 1 : 0;
             budget -= (uint)tf_select_rsv;
@@ -229,8 +229,8 @@ namespace Concentus.Celt
             {
                 if (tell + logp <= budget)
                 {
-                    curr ^= dec.ec_dec_bit_logp((uint)logp);
-                    tell = (uint)dec.ec_tell();
+                    curr ^= dec.dec_bit_logp((uint)logp);
+                    tell = (uint)dec.tell();
                     tf_changed |= curr;
                 }
                 tf_res[i] = curr;
@@ -241,7 +241,7 @@ namespace Concentus.Celt
               Tables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
               Tables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
             {
-                tf_select = dec.ec_dec_bit_logp(1);
+                tf_select = dec.dec_bit_logp(1);
             }
             for (i = start; i < end; i++)
             {
@@ -644,7 +644,7 @@ namespace Concentus.Celt
                 // If no entropy decoder was passed into this function, we need to create
                 // a new one here for local use only. It only exists in this function scope.
                 dec = new EntropyCoder();
-                dec.ec_dec_init(data, (uint)len);
+                dec.dec_init(data, (uint)len);
             }
 
             if (C == 1)
@@ -654,12 +654,12 @@ namespace Concentus.Celt
             }
 
             total_bits = len * 8;
-            tell = dec.ec_tell();
+            tell = dec.tell();
 
             if (tell >= total_bits)
                 silence = 1;
             else if (tell == 1)
-                silence = dec.ec_dec_bit_logp(15);
+                silence = dec.dec_bit_logp(15);
             else
                 silence = 0;
 
@@ -667,7 +667,7 @@ namespace Concentus.Celt
             {
                 /* Pretend we've read all the remaining bits */
                 tell = len * 8;
-                dec.nbits_total += tell - dec.ec_tell();
+                dec.nbits_total += tell - dec.tell();
             }
 
             postfilter_gain = 0;
@@ -675,23 +675,23 @@ namespace Concentus.Celt
             postfilter_tapset = 0;
             if (start == 0 && tell + 16 <= total_bits)
             {
-                if (dec.ec_dec_bit_logp(1) != 0)
+                if (dec.dec_bit_logp(1) != 0)
                 {
                     int qg, octave;
-                    octave = (int)dec.ec_dec_uint(6);
-                    postfilter_pitch = (16 << octave) + (int)dec.ec_dec_bits(4 + (uint)octave) - 1;
-                    qg = (int)dec.ec_dec_bits(3);
-                    if (dec.ec_tell() + 2 <= total_bits)
-                        postfilter_tapset = dec.ec_dec_icdf(Tables.tapset_icdf.GetPointer(), 2);
+                    octave = (int)dec.dec_uint(6);
+                    postfilter_pitch = (16 << octave) + (int)dec.dec_bits(4 + (uint)octave) - 1;
+                    qg = (int)dec.dec_bits(3);
+                    if (dec.tell() + 2 <= total_bits)
+                        postfilter_tapset = dec.dec_icdf(Tables.tapset_icdf.GetPointer(), 2);
                     postfilter_gain = Inlines.QCONST16(.09375f, 15) * (qg + 1);
                 }
-                tell = dec.ec_tell();
+                tell = dec.tell();
             }
 
             if (LM > 0 && tell + 3 <= total_bits)
             {
-                isTransient = dec.ec_dec_bit_logp(3);
-                tell = dec.ec_tell();
+                isTransient = dec.dec_bit_logp(3);
+                tell = dec.tell();
             }
             else
                 isTransient = 0;
@@ -702,7 +702,7 @@ namespace Concentus.Celt
                 shortBlocks = 0;
 
             /* Decode the global flags (first symbols in the stream) */
-            intra_ener = tell + 3 <= total_bits ? dec.ec_dec_bit_logp(3) : 0;
+            intra_ener = tell + 3 <= total_bits ? dec.dec_bit_logp(3) : 0;
             /* Get band energies */
             QuantizeBands.unquant_coarse_energy(mode, start, end, oldBandE,
                   intra_ener, dec, C, LM);
@@ -710,10 +710,10 @@ namespace Concentus.Celt
             tf_res = Pointer.Malloc<int>(nbEBands);
             tf_decode(start, end, isTransient, tf_res, LM, dec);
 
-            tell = dec.ec_tell();
+            tell = dec.tell();
             spread_decision = Spread.SPREAD_NORMAL;
             if (tell + 4 <= total_bits)
-                spread_decision = dec.ec_dec_icdf(Tables.spread_icdf.GetPointer(), 5);
+                spread_decision = dec.dec_icdf(Tables.spread_icdf.GetPointer(), 5);
 
             cap = Pointer.Malloc<int>(nbEBands);
 
@@ -723,7 +723,7 @@ namespace Concentus.Celt
 
             dynalloc_logp = 6;
             total_bits <<= EntropyCoder.BITRES;
-            tell = (int)dec.ec_tell_frac();
+            tell = (int)dec.tell_frac();
             for (i = start; i < end; i++)
             {
                 int width, quanta;
@@ -738,8 +738,8 @@ namespace Concentus.Celt
                 while (tell + (dynalloc_loop_logp << EntropyCoder.BITRES) < total_bits && boost < cap[i])
                 {
                     int flag;
-                    flag = dec.ec_dec_bit_logp((uint)dynalloc_loop_logp);
-                    tell = (int)dec.ec_tell_frac();
+                    flag = dec.dec_bit_logp((uint)dynalloc_loop_logp);
+                    tell = (int)dec.tell_frac();
                     if (flag == 0)
                         break;
                     boost += quanta;
@@ -754,9 +754,9 @@ namespace Concentus.Celt
 
            fine_quant = Pointer.Malloc<int>(nbEBands);
             alloc_trim = tell + (6 << EntropyCoder.BITRES) <= total_bits ?
-                  dec.ec_dec_icdf(Tables.trim_icdf.GetPointer(), 7) : 5;
+                  dec.dec_icdf(Tables.trim_icdf.GetPointer(), 7) : 5;
 
-            bits = (((int)len * 8) << EntropyCoder.BITRES) - (int)dec.ec_tell_frac() - 1;
+            bits = (((int)len * 8) << EntropyCoder.BITRES) - (int)dec.tell_frac() - 1;
             anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;
             bits -= anti_collapse_rsv;
 
@@ -794,11 +794,11 @@ namespace Concentus.Celt
 
             if (anti_collapse_rsv > 0)
             {
-                anti_collapse_on = (int)dec.ec_dec_bits(1);
+                anti_collapse_on = (int)dec.dec_bits(1);
             }
 
             QuantizeBands.unquant_energy_finalise(mode, start, end, oldBandE,
-                  fine_quant, fine_priority, len * 8 - dec.ec_tell(), dec, C);
+                  fine_quant, fine_priority, len * 8 - dec.tell(), dec, C);
 
             if (anti_collapse_on != 0)
                 Bands.anti_collapse(mode, X, collapse_masks, LM, C, N,
@@ -884,9 +884,9 @@ namespace Concentus.Celt
             deemphasis(out_syn, pcm, N, CC, st.downsample, mode.preemph.GetPointer(), st.preemph_memD, accum);
             st.loss_count = 0;
 
-            if (dec.ec_tell() > 8 * len)
+            if (dec.tell() > 8 * len)
                 return OpusError.OPUS_INTERNAL_ERROR;
-            if (dec.ec_get_error() != 0)
+            if (dec.get_error() != 0)
                 st.error = 1;
             return frame_size / st.downsample;
         }

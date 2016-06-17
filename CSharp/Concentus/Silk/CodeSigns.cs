@@ -59,7 +59,7 @@ namespace Concentus.Silk
                     {
                         if (q_ptr[j] != 0)
                         {
-                            psRangeEnc.ec_enc_icdf( silk_enc_map(q_ptr[j]), icdf, 8);
+                            psRangeEnc.enc_icdf( silk_enc_map(q_ptr[j]), icdf, 8);
                         }
                     }
                 }
@@ -108,7 +108,7 @@ namespace Concentus.Silk
                         if (q_ptr[j] > 0)
                         {
                             /* attach sign */
-                            q_ptr[j] *= Inlines.CHOP16(silk_dec_map(psRangeDec.ec_dec_icdf(icdf, 8)));
+                            q_ptr[j] *= Inlines.CHOP16(silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
                         }
                     }
                 }

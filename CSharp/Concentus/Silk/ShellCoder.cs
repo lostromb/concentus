@@ -41,7 +41,7 @@ namespace Concentus.Silk
         {
             if (p > 0)
             {
-                psRangeEnc.ec_enc_icdf( p_child1, shell_table.Point(Tables.silk_shell_code_table_offsets[p]), 8);
+                psRangeEnc.enc_icdf( p_child1, shell_table.Point(Tables.silk_shell_code_table_offsets[p]), 8);
             }
         }
 
@@ -62,7 +62,7 @@ namespace Concentus.Silk
         {
             if (p > 0)
             {
-                p_child1[0] = Inlines.CHOP16(psRangeDec.ec_dec_icdf(shell_table.Point(Tables.silk_shell_code_table_offsets[p]), 8));
+                p_child1[0] = Inlines.CHOP16(psRangeDec.dec_icdf(shell_table.Point(Tables.silk_shell_code_table_offsets[p]), 8));
                 p_child2[0] = Inlines.CHOP16(p - p_child1[0]);
             }
             else

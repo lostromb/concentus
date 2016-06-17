@@ -104,19 +104,13 @@
     <Compile Include="Silk\BWExpander.cs" />
     <Compile Include="Silk\CNG.cs" />
     <Compile Include="Silk\CodeSigns.cs" />
-    <Compile Include="Silk\ControlAudioBandwidth.cs" />
-    <Compile Include="Silk\ControlCodec.cs" />
-    <Compile Include="Silk\ControlSNR.cs" />
     <Compile Include="Silk\CorrelateMatrix.cs" />
-    <Compile Include="Silk\DecoderSetFs.cs" />
     <Compile Include="Silk\DecodeCore.cs" />
-    <Compile Include="Silk\DecodeFrame.cs" />
     <Compile Include="Silk\DecodeIndices.cs" />
     <Compile Include="Silk\DecodeParameters.cs" />
     <Compile Include="Silk\DecodePitch.cs" />
     <Compile Include="Silk\DecodePulses.cs" />
     <Compile Include="Silk\DecodeAPI.cs" />
-    <Compile Include="Silk\EncodeFrame.cs" />
     <Compile Include="Silk\EncodeIndices.cs" />
     <Compile Include="Silk\EncodePulses.cs" />
     <Compile Include="Silk\EncodeAPI.cs" />
@@ -135,7 +129,6 @@
     <Compile Include="Silk\LTPScaleControl.cs" />
     <Compile Include="Silk\NLSF.cs" />
     <Compile Include="Silk\NoiseShapeAnalysis.cs" />
-    <Compile Include="Silk\NSQ.cs" />
     <Compile Include="Silk\PitchAnalysisCore.cs" />
     <Compile Include="Silk\PLC.cs" />
     <Compile Include="Silk\ProcessGains.cs" />

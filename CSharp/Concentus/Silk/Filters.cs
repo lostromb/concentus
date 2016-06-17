@@ -448,48 +448,7 @@ namespace Concentus.Silk
                 A_Q28.MemCopyFrom(Tables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, SilkConstants.TRANSITION_NA);
             }
         }
-
-        /* Low-pass filter with variable cutoff frequency based on  */
-        /* piece-wise linear interpolation between elliptic filters */
-        /* Start by setting psEncC.mode <> 0;                      */
-        /* Deactivate by setting psEncC.mode = 0;                  */
-        internal static void silk_LP_variable_cutoff(
-            SilkLPState psLP,                          /* I/O  LP filter state                             */
-            Pointer<short> frame,                         /* I/O  Low-pass filtered output signal             */
-            int frame_length                    /* I    Frame length                                */
-            )
-        {
-            Pointer<int> B_Q28 = Pointer.Malloc<int>(SilkConstants.TRANSITION_NB);
-            Pointer<int> A_Q28 = Pointer.Malloc<int>(SilkConstants.TRANSITION_NA);
-            int fac_Q16 = 0;
-            int ind = 0;
-
-            Inlines.OpusAssert(psLP.transition_frame_no >= 0 && psLP.transition_frame_no <= SilkConstants.TRANSITION_FRAMES);
-
-            /* Run filter if needed */
-            if (psLP.mode != 0)
-            {
-                /* Calculate index and interpolation factor for interpolation */
-                fac_Q16 = Inlines.silk_LSHIFT(SilkConstants.TRANSITION_FRAMES - psLP.transition_frame_no, 16 - 6);
-
-                ind = Inlines.silk_RSHIFT(fac_Q16, 16);
-                fac_Q16 -= Inlines.silk_LSHIFT(ind, 16);
-
-                Inlines.OpusAssert(ind >= 0);
-                Inlines.OpusAssert(ind < SilkConstants.TRANSITION_INT_NUM);
-
-                /* Interpolate filter coefficients */
-                silk_LP_interpolate_filter_taps(B_Q28, A_Q28, ind, fac_Q16);
-
-                /* Update transition frame number for next frame */
-                psLP.transition_frame_no = Inlines.silk_LIMIT(psLP.transition_frame_no + psLP.mode, 0, SilkConstants.TRANSITION_FRAMES);
-
-                /* ARMA low-pass filtering */
-                Inlines.OpusAssert(SilkConstants.TRANSITION_NB == 3 && SilkConstants.TRANSITION_NA == 2);
-                silk_biquad_alt(frame, B_Q28, A_Q28, psLP.In_LP_State, frame, frame_length, 1);
-            }
-        }
-
+        
         /// <summary>
         /// LPC analysis filter
         /// NB! State is kept internally and the

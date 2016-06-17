@@ -27,13 +27,13 @@ namespace Concentus.Silk
             int low_Q13, step_Q13;
 
             // Entropy decoding
-            n = psRangeDec.ec_dec_icdf(Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
+            n = psRangeDec.dec_icdf(Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
             ix[0][2] = Inlines.silk_DIV32_16(n, 5);
             ix[1][2] = n - 5 * ix[0][2];
             for (n = 0; n < 2; n++)
             {
-                ix[n][0] = psRangeDec.ec_dec_icdf(Tables.silk_uniform3_iCDF.GetPointer(), 8);
-                ix[n][1] = psRangeDec.ec_dec_icdf(Tables.silk_uniform5_iCDF.GetPointer(), 8);
+                ix[n][0] = psRangeDec.dec_icdf(Tables.silk_uniform3_iCDF.GetPointer(), 8);
+                ix[n][1] = psRangeDec.dec_icdf(Tables.silk_uniform5_iCDF.GetPointer(), 8);
             }
 
             // Dequantize
@@ -61,7 +61,7 @@ namespace Concentus.Silk
         )
         {
             /* Decode flag that only mid channel is coded */
-            decode_only_mid.Val = psRangeDec.ec_dec_icdf(Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
+            decode_only_mid.Val = psRangeDec.dec_icdf(Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
         }
 
         /// <summary>
@@ -76,13 +76,13 @@ namespace Concentus.Silk
             /* Entropy coding */
             n = 5 * ix[0][2] + ix[1][2];
             Inlines.OpusAssert(n < 25);
-            psRangeEnc.ec_enc_icdf( n, Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
+            psRangeEnc.enc_icdf( n, Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
             for (n = 0; n < 2; n++)
             {
                 Inlines.OpusAssert(ix[n][0] < 3);
                 Inlines.OpusAssert(ix[n][1] < SilkConstants.STEREO_QUANT_SUB_STEPS);
-                psRangeEnc.ec_enc_icdf( ix[n][0], Tables.silk_uniform3_iCDF.GetPointer(), 8);
-                psRangeEnc.ec_enc_icdf( ix[n][1], Tables.silk_uniform5_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( ix[n][0], Tables.silk_uniform3_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( ix[n][1], Tables.silk_uniform5_iCDF.GetPointer(), 8);
             }
         }
 
@@ -94,7 +94,7 @@ namespace Concentus.Silk
         internal static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, sbyte mid_only_flag)
         {
             /* Encode flag that only mid channel is coded */
-            psRangeEnc.ec_enc_icdf( mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
+            psRangeEnc.enc_icdf( mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
         }
 
         /// <summary>

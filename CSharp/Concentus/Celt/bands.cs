@@ -707,7 +707,7 @@ namespace Concentus.Celt
                 itheta = VQ.stereo_itheta(X, Y, stereo, N);
             }
 
-            tell = (int)ec.ec_tell_frac();
+            tell = (int)ec.tell_frac();
 
             if (qn != 1)
             {
@@ -727,7 +727,7 @@ namespace Concentus.Celt
                     /* Use a probability of p0 up to itheta=8192 and then use 1 after */
                     if (encode != 0)
                     {
-                        ec.ec_encode(
+                        ec.encode(
                             (uint)(x <= x0 ?
                                 (p0 * x) :
                                 ((x - 1 - x0) + (x0 + 1) * p0)),
@@ -739,7 +739,7 @@ namespace Concentus.Celt
                     else
                     {
                         int fs;
-                        fs = (int)ec.ec_decode(ft);
+                        fs = (int)ec.decode(ft);
                         if (fs < (x0 + 1) * p0)
                         {
                             x = fs / p0;
@@ -749,7 +749,7 @@ namespace Concentus.Celt
                             x = x0 + 1 + (fs - (x0 + 1) * p0);
                         }
 
-                        ec.ec_dec_update(
+                        ec.dec_update(
                             (uint)(x <= x0 ?
                                 p0 * x :
                                 (x - 1 - x0) + (x0 + 1) * p0),
@@ -765,11 +765,11 @@ namespace Concentus.Celt
                     /* Uniform pdf */
                     if (encode != 0)
                     {
-                        ec.ec_enc_uint((uint)itheta, (uint)qn + 1);
+                        ec.enc_uint((uint)itheta, (uint)qn + 1);
                     }
                     else
                     {
-                        itheta = (int)ec.ec_dec_uint((uint)qn + 1);
+                        itheta = (int)ec.dec_uint((uint)qn + 1);
                     }
                 }
                 else
@@ -784,14 +784,14 @@ namespace Concentus.Celt
                         fl = itheta <= (qn >> 1) ? itheta * (itheta + 1) >> 1 :
                          ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
 
-                        ec.ec_encode((uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec.encode((uint)fl, (uint)(fl + fs), (uint)ft);
                     }
                     else
                     {
                         /* Triangular pdf */
                         int fl = 0;
                         int fm;
-                        fm = (int)ec.ec_decode((uint)ft);
+                        fm = (int)ec.decode((uint)ft);
 
                         if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
                         {
@@ -806,7 +806,7 @@ namespace Concentus.Celt
                             fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
                         }
 
-                        ec.ec_dec_update((uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec.dec_update((uint)fl, (uint)(fl + fs), (uint)ft);
                     }
                 }
                 Inlines.OpusAssert(itheta >= 0);
@@ -840,18 +840,18 @@ namespace Concentus.Celt
                 {
                     if (encode != 0)
                     {
-                        ec.ec_enc_bit_logp(inv, 2);
+                        ec.enc_bit_logp(inv, 2);
                     }
                     else
                     {
-                        inv = ec.ec_dec_bit_logp(2);
+                        inv = ec.dec_bit_logp(2);
                     }
                 }
                 else
                     inv = 0;
                 itheta = 0;
             }
-            qalloc = (int)ec.ec_tell_frac() - tell;
+            qalloc = (int)ec.tell_frac() - tell;
             b.Val -= qalloc;
 
             if (itheta == 0)
@@ -907,11 +907,11 @@ namespace Concentus.Celt
                     if (encode != 0)
                     {
                         sign = x[0] < 0 ? 1 : 0;
-                        ec.ec_enc_bits((uint)sign, 1);
+                        ec.enc_bits((uint)sign, 1);
                     }
                     else
                     {
-                        sign = (int)ec.ec_dec_bits(1);
+                        sign = (int)ec.dec_bits(1);
                     }
                     ctx.remaining_bits -= 1 << EntropyCoder.BITRES;
                     b -= 1 << EntropyCoder.BITRES;
@@ -1319,11 +1319,11 @@ namespace Concentus.Celt
                     {
                         /* Here we only need to encode a sign for the side. */
                         sign = (x2[0] * y2[1] - x2[1] * y2[0] < 0) ? 1 : 0;
-                        ec.ec_enc_bits((uint)sign, 1);
+                        ec.enc_bits((uint)sign, 1);
                     }
                     else
                     {
-                        sign = (int)ec.ec_dec_bits(1);
+                        sign = (int)ec.dec_bits(1);
                     }
                 }
                 sign = 1 - 2 * sign;
@@ -1486,7 +1486,7 @@ namespace Concentus.Celt
                     Y = null;
                 }
                 N = M * eBands[i + 1] - M * eBands[i];
-                tell = (int)ec.ec_tell_frac();
+                tell = (int)ec.tell_frac();
 
                 /* Compute how many bits we want to allocate to this band */
                 if (i != start)

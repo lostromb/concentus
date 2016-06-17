@@ -50,11 +50,11 @@ namespace Concentus.Silk
             Inlines.OpusAssert(encode_LBRR == 0 || typeOffset >= 2);
             if (encode_LBRR != 0 || typeOffset >= 2)
             {
-                psRangeEnc.ec_enc_icdf( typeOffset - 2, Tables.silk_type_offset_VAD_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( typeOffset - 2, Tables.silk_type_offset_VAD_iCDF.GetPointer(), 8);
             }
             else
             {
-                psRangeEnc.ec_enc_icdf( typeOffset, Tables.silk_type_offset_no_VAD_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( typeOffset, Tables.silk_type_offset_no_VAD_iCDF.GetPointer(), 8);
             }
 
             /****************/
@@ -65,27 +65,27 @@ namespace Concentus.Silk
             {
                 /* conditional coding */
                 Inlines.OpusAssert(psIndices.GainsIndices[0] >= 0 && psIndices.GainsIndices[0] < SilkConstants.MAX_DELTA_GAIN_QUANT - SilkConstants.MIN_DELTA_GAIN_QUANT + 1);
-                psRangeEnc.ec_enc_icdf( psIndices.GainsIndices[0], Tables.silk_delta_gain_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( psIndices.GainsIndices[0], Tables.silk_delta_gain_iCDF.GetPointer(), 8);
             }
             else
             {
                 /* independent coding, in two stages: MSB bits followed by 3 LSBs */
                 Inlines.OpusAssert(psIndices.GainsIndices[0] >= 0 && psIndices.GainsIndices[0] < SilkConstants.N_LEVELS_QGAIN);
-                psRangeEnc.ec_enc_icdf( Inlines.silk_RSHIFT(psIndices.GainsIndices[0], 3), Tables.silk_gain_iCDF[psIndices.signalType].GetPointer(), 8);
-                psRangeEnc.ec_enc_icdf( psIndices.GainsIndices[0] & 7, Tables.silk_uniform8_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( Inlines.silk_RSHIFT(psIndices.GainsIndices[0], 3), Tables.silk_gain_iCDF[psIndices.signalType].GetPointer(), 8);
+                psRangeEnc.enc_icdf( psIndices.GainsIndices[0] & 7, Tables.silk_uniform8_iCDF.GetPointer(), 8);
             }
 
             /* remaining subframes */
             for (i = 1; i < psEncC.nb_subfr; i++)
             {
                 Inlines.OpusAssert(psIndices.GainsIndices[i] >= 0 && psIndices.GainsIndices[i] < SilkConstants.MAX_DELTA_GAIN_QUANT - SilkConstants.MIN_DELTA_GAIN_QUANT + 1);
-                psRangeEnc.ec_enc_icdf( psIndices.GainsIndices[i], Tables.silk_delta_gain_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( psIndices.GainsIndices[i], Tables.silk_delta_gain_iCDF.GetPointer(), 8);
             }
 
             /****************/
             /* Encode NLSFs */
             /****************/
-            psRangeEnc.ec_enc_icdf( psIndices.NLSFIndices[0], psEncC.psNLSF_CB.CB1_iCDF.Point((psIndices.signalType >> 1) * psEncC.psNLSF_CB.nVectors), 8);
+            psRangeEnc.enc_icdf( psIndices.NLSFIndices[0], psEncC.psNLSF_CB.CB1_iCDF.Point((psIndices.signalType >> 1) * psEncC.psNLSF_CB.nVectors), 8);
             NLSF.silk_NLSF_unpack(ec_ix.GetPointer(), pred_Q8.GetPointer(), psEncC.psNLSF_CB, psIndices.NLSFIndices[0]);
             Inlines.OpusAssert(psEncC.psNLSF_CB.order == psEncC.predictLPCOrder);
 
@@ -93,17 +93,17 @@ namespace Concentus.Silk
             {
                 if (psIndices.NLSFIndices[i + 1] >= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE)
                 {
-                    psRangeEnc.ec_enc_icdf( 2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
-                    psRangeEnc.ec_enc_icdf( psIndices.NLSFIndices[i + 1] - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, Tables.silk_NLSF_EXT_iCDF.GetPointer(), 8);
+                    psRangeEnc.enc_icdf( 2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
+                    psRangeEnc.enc_icdf( psIndices.NLSFIndices[i + 1] - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, Tables.silk_NLSF_EXT_iCDF.GetPointer(), 8);
                 }
                 else if (psIndices.NLSFIndices[i + 1] <= 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE)
                 {
-                    psRangeEnc.ec_enc_icdf( 0, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
-                    psRangeEnc.ec_enc_icdf( -psIndices.NLSFIndices[i + 1] - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, Tables.silk_NLSF_EXT_iCDF.GetPointer(), 8);
+                    psRangeEnc.enc_icdf( 0, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
+                    psRangeEnc.enc_icdf( -psIndices.NLSFIndices[i + 1] - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, Tables.silk_NLSF_EXT_iCDF.GetPointer(), 8);
                 }
                 else
                 {
-                    psRangeEnc.ec_enc_icdf( psIndices.NLSFIndices[i + 1] + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
+                    psRangeEnc.enc_icdf( psIndices.NLSFIndices[i + 1] + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
                 }
             }
 
@@ -111,7 +111,7 @@ namespace Concentus.Silk
             if (psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR)
             {
                 Inlines.OpusAssert(psIndices.NLSFInterpCoef_Q2 >= 0 && psIndices.NLSFInterpCoef_Q2 < 5);
-                psRangeEnc.ec_enc_icdf( psIndices.NLSFInterpCoef_Q2, Tables.silk_NLSF_interpolation_factor_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( psIndices.NLSFInterpCoef_Q2, Tables.silk_NLSF_interpolation_factor_iCDF.GetPointer(), 8);
             }
 
             if (psIndices.signalType == SilkConstants.TYPE_VOICED)
@@ -137,7 +137,7 @@ namespace Concentus.Silk
                     }
 
                     Inlines.OpusAssert(delta_lagIndex >= 0 && delta_lagIndex < 21);
-                    psRangeEnc.ec_enc_icdf( delta_lagIndex, Tables.silk_pitch_delta_iCDF.GetPointer(), 8);
+                    psRangeEnc.enc_icdf( delta_lagIndex, Tables.silk_pitch_delta_iCDF.GetPointer(), 8);
                 }
 
                 if (encode_absolute_lagIndex != 0)
@@ -148,8 +148,8 @@ namespace Concentus.Silk
                     pitch_low_bits = psIndices.lagIndex - Inlines.silk_SMULBB(pitch_high_bits, Inlines.silk_RSHIFT(psEncC.fs_kHz, 1));
                     Inlines.OpusAssert(pitch_low_bits < psEncC.fs_kHz / 2);
                     Inlines.OpusAssert(pitch_high_bits < 32);
-                    psRangeEnc.ec_enc_icdf( pitch_high_bits, Tables.silk_pitch_lag_iCDF.GetPointer(), 8);
-                    psRangeEnc.ec_enc_icdf( pitch_low_bits, psEncC.pitch_lag_low_bits_iCDF, 8);
+                    psRangeEnc.enc_icdf( pitch_high_bits, Tables.silk_pitch_lag_iCDF.GetPointer(), 8);
+                    psRangeEnc.enc_icdf( pitch_low_bits, psEncC.pitch_lag_low_bits_iCDF, 8);
                 }
                 psEncC.ec_prevLagIndex = psIndices.lagIndex;
 
@@ -159,20 +159,20 @@ namespace Concentus.Silk
                             (psIndices.contourIndex < 11 && psEncC.fs_kHz == 8 && psEncC.nb_subfr == 4) ||
                             (psIndices.contourIndex < 12 && psEncC.fs_kHz > 8 && psEncC.nb_subfr == 2) ||
                             (psIndices.contourIndex < 3 && psEncC.fs_kHz == 8 && psEncC.nb_subfr == 2));
-                psRangeEnc.ec_enc_icdf( psIndices.contourIndex, psEncC.pitch_contour_iCDF, 8);
+                psRangeEnc.enc_icdf( psIndices.contourIndex, psEncC.pitch_contour_iCDF, 8);
 
                 /********************/
                 /* Encode LTP gains */
                 /********************/
                 /* PERIndex value */
                 Inlines.OpusAssert(psIndices.PERIndex >= 0 && psIndices.PERIndex < 3);
-                psRangeEnc.ec_enc_icdf( psIndices.PERIndex, Tables.silk_LTP_per_index_iCDF.GetPointer(), 8);
+                psRangeEnc.enc_icdf( psIndices.PERIndex, Tables.silk_LTP_per_index_iCDF.GetPointer(), 8);
 
                 /* Codebook Indices */
                 for (k = 0; k < psEncC.nb_subfr; k++)
                 {
                     Inlines.OpusAssert(psIndices.LTPIndex[k] >= 0 && psIndices.LTPIndex[k] < (8 << psIndices.PERIndex));
-                    psRangeEnc.ec_enc_icdf( psIndices.LTPIndex[k], Tables.silk_LTP_gain_iCDF_ptrs[psIndices.PERIndex].GetPointer(), 8);
+                    psRangeEnc.enc_icdf( psIndices.LTPIndex[k], Tables.silk_LTP_gain_iCDF_ptrs[psIndices.PERIndex].GetPointer(), 8);
                 }
 
                 /**********************/
@@ -181,7 +181,7 @@ namespace Concentus.Silk
                 if (condCoding == SilkConstants.CODE_INDEPENDENTLY)
                 {
                     Inlines.OpusAssert(psIndices.LTP_scaleIndex >= 0 && psIndices.LTP_scaleIndex < 3);
-                    psRangeEnc.ec_enc_icdf( psIndices.LTP_scaleIndex, Tables.silk_LTPscale_iCDF.GetPointer(), 8);
+                    psRangeEnc.enc_icdf( psIndices.LTP_scaleIndex, Tables.silk_LTPscale_iCDF.GetPointer(), 8);
                 }
 
                 Inlines.OpusAssert(condCoding == 0 || psIndices.LTP_scaleIndex == 0);
@@ -193,7 +193,7 @@ namespace Concentus.Silk
             /* Encode seed */
             /***************/
             Inlines.OpusAssert(psIndices.Seed >= 0 && psIndices.Seed < 4);
-            psRangeEnc.ec_enc_icdf( psIndices.Seed, Tables.silk_uniform4_iCDF.GetPointer(), 8);
+            psRangeEnc.enc_icdf( psIndices.Seed, Tables.silk_uniform4_iCDF.GetPointer(), 8);
         }
     }
 }

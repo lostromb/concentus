@@ -52,7 +52,7 @@ namespace Concentus.Celt
 
             if (tell + 3 <= budget)
             {
-                enc.ec_enc_bit_logp(intra, 3);
+                enc.enc_bit_logp(intra, 3);
             }
 
             if (intra != 0)
@@ -101,7 +101,7 @@ namespace Concentus.Celt
                     qi0 = qi;
                     /* If we don't have enough bits to encode all the energy, just assume
                         something safe. */
-                    tell = enc.ec_tell();
+                    tell = enc.tell();
                     bits_left = budget - tell - 3 * C * (end - i);
                     if (i != start && bits_left < 30)
                     {
@@ -124,12 +124,12 @@ namespace Concentus.Celt
                     else if (budget - tell >= 2)
                     {
                         qi = Inlines.IMAX(-1, Inlines.IMIN(qi, 1));
-                        enc.ec_enc_icdf(2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf.GetPointer(), 2);
+                        enc.enc_icdf(2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf.GetPointer(), 2);
                     }
                     else if (budget - tell >= 1)
                     {
                         qi = Inlines.IMIN(0, qi);
-                        enc.ec_enc_bit_logp(-qi, 1);
+                        enc.enc_bit_logp(-qi, 1);
                     }
                     else
                         qi = -1;
@@ -166,7 +166,7 @@ namespace Concentus.Celt
             intra_bias = (int)((budget * delayedIntra.Val * loss_rate) / (C * 512));
             new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
 
-            tell = (uint)enc.ec_tell();
+            tell = (uint)enc.tell();
             if (tell + 3 > budget)
                 two_pass = intra = 0;
 
@@ -202,13 +202,13 @@ namespace Concentus.Celt
                 int badness2;
                 Pointer<byte> intra_bits = null;
 
-                tell_intra = (int)enc.ec_tell_frac();
+                tell_intra = (int)enc.tell_frac();
 
                 enc_intra_state.Assign(enc);
 
-                nstart_bytes = enc_start_state.ec_range_bytes();
-                nintra_bytes = enc_intra_state.ec_range_bytes();
-                intra_buf = enc_intra_state.ec_get_buffer().Point(nstart_bytes);
+                nstart_bytes = enc_start_state.range_bytes();
+                nintra_bytes = enc_intra_state.range_bytes();
+                intra_buf = enc_intra_state.get_buffer().Point(nstart_bytes);
                 save_bytes = nintra_bytes - nstart_bytes;
 
                 if (save_bytes != 0)
@@ -223,7 +223,7 @@ namespace Concentus.Celt
                 badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, (int)budget,
                       (int)tell, Tables.e_prob_model[LM][intra].GetPointer(), error, enc, C, LM, 0, max_decay, lfe);
 
-                if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && ((int)enc.ec_tell_frac()) + intra_bias > tell_intra)))
+                if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && ((int)enc.tell_frac()) + intra_bias > tell_intra)))
                 {
                     enc.Assign(enc_intra_state);
                     /* Copy intra bits to bit-stream */
@@ -274,7 +274,7 @@ namespace Concentus.Celt
                         q2 = frac - 1;
                     if (q2 < 0)
                         q2 = 0;
-                    enc.ec_enc_bits((uint)q2, (uint)fine_quant[i]);
+                    enc.enc_bits((uint)q2, (uint)fine_quant[i]);
                     offset = Inlines.SUB16(
                         (Inlines.SHR32(
                             Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT),
@@ -306,7 +306,7 @@ namespace Concentus.Celt
                         int q2;
                         int offset;
                         q2 = error[i + c * m.nbEBands] < 0 ? 0 : 1;
-                        enc.ec_enc_bits((uint)q2, 1);
+                        enc.enc_bits((uint)q2, 1);
                         offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)), fine_quant[i] + 1);
                         oldEBands[i + c * m.nbEBands] += offset;
                         bits_left--;
@@ -350,7 +350,7 @@ namespace Concentus.Celt
                        test on C at function entry, but that isn't enough
                        to make the static analyzer happy. */
                     Inlines.OpusAssert(c < 2);
-                    tell = dec.ec_tell();
+                    tell = dec.tell();
                     if (budget - tell >= 15)
                     {
                         int pi;
@@ -360,12 +360,12 @@ namespace Concentus.Celt
                     }
                     else if (budget - tell >= 2)
                     {
-                        qi = dec.ec_dec_icdf(small_energy_icdf.GetPointer(), 2);
+                        qi = dec.dec_icdf(small_energy_icdf.GetPointer(), 2);
                         qi = (qi >> 1) ^ -(qi & 1);
                     }
                     else if (budget - tell >= 1)
                     {
-                        qi = 0 - dec.ec_dec_bit_logp(1);
+                        qi = 0 - dec.dec_bit_logp(1);
                     }
                     else
                     {
@@ -395,7 +395,7 @@ namespace Concentus.Celt
                 {
                     int q2;
                     int offset;
-                    q2 = (int)dec.ec_dec_bits((uint)fine_quant[i]);
+                    q2 = (int)dec.dec_bits((uint)fine_quant[i]);
                     offset = Inlines.SUB16((Inlines.SHR32(
                         Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + 
                         Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT), fine_quant[i])),
@@ -421,7 +421,7 @@ namespace Concentus.Celt
                     {
                         int q2;
                         int offset;
-                        q2 = (int)dec.ec_dec_bits(1);
+                        q2 = (int)dec.dec_bits(1);
                         offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)), fine_quant[i] + 1);
                         oldEBands[i + c * m.nbEBands] += offset;
                         bits_left--;

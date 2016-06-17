@@ -198,7 +198,7 @@ namespace Concentus.Silk
             {
                 /* Force the side channel to the same rate as the mid */
                 int force_fs_kHz = (n == 1) ? psEnc.state_Fxx[0].fs_kHz : 0;
-                ret += ControlCodec.silk_control_encoder(psEnc.state_Fxx[n], encControl, TargetRate_bps, psEnc.allowBandwidthSwitch, n, force_fs_kHz);
+                ret += psEnc.state_Fxx[n].silk_control_encoder(encControl, TargetRate_bps, psEnc.allowBandwidthSwitch, n, force_fs_kHz);
 
                 if (ret != SilkError.SILK_NO_ERROR)
                 {
@@ -338,7 +338,7 @@ namespace Concentus.Silk
                         /* Create space at start of payload for VAD and FEC flags */
                         byte[] iCDF = { 0, 0 };
                         iCDF[0] = Inlines.CHOP8U(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
-                        psRangeEnc.ec_enc_icdf( 0, iCDF.GetPointer(), 8);
+                        psRangeEnc.enc_icdf( 0, iCDF.GetPointer(), 8);
 
                         /* Encode any LBRR data from previous packet */
                         /* Encode LBRR flags */
@@ -353,7 +353,7 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[n].LBRR_flag = (sbyte)(LBRR_symbol > 0 ? 1 : 0);
                             if (LBRR_symbol != 0 && psEnc.state_Fxx[n].nFramesPerPacket > 1)
                             {
-                                psRangeEnc.ec_enc_icdf( LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2].GetPointer(), 8);
+                                psRangeEnc.enc_icdf( LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2].GetPointer(), 8);
                             }
                         }
 
@@ -399,7 +399,7 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[n].LBRR_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
                         }
 
-                        psEnc.nBitsUsedLBRR = psRangeEnc.ec_tell();
+                        psEnc.nBitsUsedLBRR = psRangeEnc.tell();
                     }
 
                     HPVariableCutoff.silk_HP_variable_cutoff(psEnc.state_Fxx);
@@ -432,7 +432,7 @@ namespace Concentus.Silk
                     if (prefillFlag == 0 && psEnc.state_Fxx[0].nFramesEncoded > 0)
                     {
                         /* Compare actual vs target bits so far in this packet */
-                        int bitsBalance = psRangeEnc.ec_tell() - psEnc.nBitsUsedLBRR - nBits * psEnc.state_Fxx[0].nFramesEncoded;
+                        int bitsBalance = psRangeEnc.tell() - psEnc.nBitsUsedLBRR - nBits * psEnc.state_Fxx[0].nFramesEncoded;
                         TargetRate_bps -= Inlines.silk_DIV32_16(Inlines.silk_MUL(bitsBalance, 1000), TuningParameters.BITRESERVOIR_DECAY_TIME_MS);
                     }
 
@@ -481,7 +481,7 @@ namespace Concentus.Silk
                                 psEnc.state_Fxx[1].first_frame_after_reset = 1;
                             }
 
-                            EncodeFrame.silk_encode_do_VAD(psEnc.state_Fxx[1]);
+                            psEnc.state_Fxx[1].silk_encode_do_VAD();
                         }
                         else
                         {
@@ -504,7 +504,7 @@ namespace Concentus.Silk
                         psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].frame_length).MemCopyTo(psEnc.sStereo.sMid, 2);
                     }
 
-                    EncodeFrame.silk_encode_do_VAD(psEnc.state_Fxx[0]);
+                    psEnc.state_Fxx[0].silk_encode_do_VAD();
 
                     /* Encode */
                     for (n = 0; n < encControl.nChannelsInternal; n++)
@@ -551,7 +551,7 @@ namespace Concentus.Silk
                         {
                             int condCoding;
 
-                            ControlSNR.silk_control_SNR(psEnc.state_Fxx[n], channelRate_bps);
+                            psEnc.state_Fxx[n].silk_control_SNR(channelRate_bps);
 
                             /* Use independent coding if no previous frame available */
                             if (psEnc.state_Fxx[0].nFramesEncoded - n <= 0)
@@ -569,7 +569,7 @@ namespace Concentus.Silk
                                 condCoding = SilkConstants.CODE_CONDITIONALLY;
                             }
 
-                            ret += EncodeFrame.silk_encode_frame(psEnc.state_Fxx[n], nBytesOut, psRangeEnc, condCoding, maxBits, useCBR);
+                            ret += psEnc.state_Fxx[n].silk_encode_frame(nBytesOut, psRangeEnc, condCoding, maxBits, useCBR);
                             Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
                         }
 
@@ -597,7 +597,7 @@ namespace Concentus.Silk
 
                         if (prefillFlag == 0)
                         {
-                            psRangeEnc.ec_enc_patch_initial_bits((uint)flags, (uint)((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
+                            psRangeEnc.enc_patch_initial_bits((uint)flags, (uint)((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         }
 
                         /* Return zero bytes if all channels DTXed */

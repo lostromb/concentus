@@ -161,7 +161,7 @@ namespace Concentus.Silk
                 }
             }
 
-            psRangeEnc.ec_enc_icdf( RateLevelIndex, Tables.silk_rate_levels_iCDF[signalType >> 1].GetPointer(), 8);
+            psRangeEnc.enc_icdf( RateLevelIndex, Tables.silk_rate_levels_iCDF[signalType >> 1].GetPointer(), 8);
 
             /***************************************************/
             /* Sum-Weighted-Pulses Encoding                    */
@@ -171,17 +171,17 @@ namespace Concentus.Silk
             {
                 if (nRshifts[i] == 0)
                 {
-                    psRangeEnc.ec_enc_icdf( sum_pulses[i], cdf_ptr, 8);
+                    psRangeEnc.enc_icdf( sum_pulses[i], cdf_ptr, 8);
                 }
                 else
                 {
-                    psRangeEnc.ec_enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, cdf_ptr, 8);
+                    psRangeEnc.enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, cdf_ptr, 8);
                     for (k = 0; k < nRshifts[i] - 1; k++)
                     {
-                        psRangeEnc.ec_enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1].GetPointer(), 8);
+                        psRangeEnc.enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1].GetPointer(), 8);
                     }
 
-                    psRangeEnc.ec_enc_icdf( sum_pulses[i], Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1].GetPointer(), 8);
+                    psRangeEnc.enc_icdf( sum_pulses[i], Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1].GetPointer(), 8);
                 }
             }
 
@@ -211,10 +211,10 @@ namespace Concentus.Silk
                         for (j = nLS; j > 0; j--)
                         {
                             bit = Inlines.silk_RSHIFT(abs_q, j) & 1;
-                            psRangeEnc.ec_enc_icdf( bit, Tables.silk_lsb_iCDF.GetPointer(), 8);
+                            psRangeEnc.enc_icdf( bit, Tables.silk_lsb_iCDF.GetPointer(), 8);
                         }
                         bit = abs_q & 1;
-                        psRangeEnc.ec_enc_icdf( bit, Tables.silk_lsb_iCDF.GetPointer(), 8);
+                        psRangeEnc.enc_icdf( bit, Tables.silk_lsb_iCDF.GetPointer(), 8);
                     }
                 }
             }
