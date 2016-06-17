@@ -15,12 +15,11 @@ namespace Concentus.Silk
             BoxedValue<int> scale,             /* O    Scaling of the correlation vector                           */
             Pointer<short> inputData,         /* I    Input data to correlate                                     */
             int inputDataSize,      /* I    Length of input                                             */
-            int correlationCount,   /* I    Number of correlation taps to compute                       */
-            int arch                /* I    Run-time architecture                                       */
+            int correlationCount   /* I    Number of correlation taps to compute                       */
         )
         {
             int corrCount = Inlines.silk_min_int(inputDataSize, correlationCount);
-            scale.Val = celt_autocorr._celt_autocorr(inputData, results, null, 0, corrCount - 1, inputDataSize, arch);
+            scale.Val = celt_autocorr._celt_autocorr(inputData, results, null, 0, corrCount - 1, inputDataSize);
         }
     }
 }

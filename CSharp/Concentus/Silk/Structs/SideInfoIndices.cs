@@ -9,9 +9,9 @@ namespace Concentus.Silk.Structs
 {
     public class SideInfoIndices
     {
-        public /*readonly*/ Pointer<sbyte> GainsIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
-        public /*readonly*/ Pointer<sbyte> LTPIndex = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
-        public /*readonly*/ Pointer<sbyte> NLSFIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_LPC_ORDER + 1);
+        public readonly Pointer<sbyte> GainsIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<sbyte> LTPIndex = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<sbyte> NLSFIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_LPC_ORDER + 1);
         public short lagIndex = 0;
         public sbyte contourIndex = 0;
         public sbyte signalType = 0;

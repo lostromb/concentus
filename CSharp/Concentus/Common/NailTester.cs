@@ -1019,7 +1019,6 @@ namespace Concentus.Common
             NailTestPrintMemberVarIntArray(varName, "LBRR_flags", state.LBRR_flags, 3);
             NailTesterPrint_SideInfoIndices(concatenate(varName, ".indices"), state.indices);
             NailTestPrintMemberVarSbyteArray(varName, "pulses", state.pulses, SilkConstants.MAX_FRAME_LENGTH);
-            NailTestPrintMemberVarInt(varName, "arch", state.arch);
             NailTestPrintMemberVarShortArray(varName, "inputBuf", state.inputBuf, SilkConstants.MAX_FRAME_LENGTH + 2);
             NailTestPrintMemberVarInt(varName, "inputBufIx", state.inputBufIx);
             NailTestPrintMemberVarInt(varName, "nFramesPerPacket", state.nFramesPerPacket);
@@ -1086,10 +1085,10 @@ namespace Concentus.Common
         }
 
         // PRINT silk_encoder_state_FLP
-        public static void NailTesterPrint_silk_encoder_state_FIX(string varName, silk_encoder_state_fix enc_state)
+        public static void NailTesterPrint_silk_encoder_state_FIX(string varName, silk_encoder_state enc_state)
         {
             printf("{0} = new silk_encoder_state_fix();\n", varName);
-            NailTesterPrint_silk_encoder_state(concatenate(varName, ".sCmn"), enc_state.sCmn);
+            NailTesterPrint_silk_encoder_state(concatenate(varName, ""), enc_state);
             NailTesterPrint_silk_shape_state_FIX(concatenate(varName, ".sShape"), enc_state.sShape);
             NailTesterPrint_silk_prefilter_state_FIX(concatenate(varName, ".sPrefilt"), enc_state.sPrefilt);
             NailTestPrintMemberVarShortArray(varName, "x_buf", enc_state.x_buf, 720);

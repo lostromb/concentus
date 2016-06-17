@@ -118,7 +118,6 @@ namespace Concentus.Structs
         public int lsb_depth;
         public int encoder_buffer;
         public int lfe;
-        public int arch;
         public readonly TonalityAnalysisState analysis = new TonalityAnalysisState();
 
         // partial reset happens below this line
@@ -126,7 +125,7 @@ namespace Concentus.Structs
         public short hybrid_stereo_width_Q14;
         public int variable_HP_smth2_Q15;
         public int prev_HB_gain;
-        public /*readonly*/ Pointer<int> hp_mem = Pointer.Malloc<int>(4);
+        public readonly Pointer<int> hp_mem = Pointer.Malloc<int>(4);
         public int mode;
         public int prev_mode;
         public int prev_channels;
@@ -137,7 +136,7 @@ namespace Concentus.Structs
         public int first;
         public Pointer<int> energy_masking;
         public readonly StereoWidthState width_mem = new StereoWidthState();
-        public /*readonly*/ Pointer<int> delay_buffer = Pointer.Malloc<int>(OpusConstants.MAX_ENCODER_BUFFER * 2);
+        public readonly Pointer<int> delay_buffer = Pointer.Malloc<int>(OpusConstants.MAX_ENCODER_BUFFER * 2);
         public int detected_bandwidth;
         public uint rangeFinal;
 
@@ -168,7 +167,6 @@ namespace Concentus.Structs
             lsb_depth = 0;
             encoder_buffer = 0;
             lfe = 0;
-            arch = 0;
             analysis.Reset();
             PartialReset();
         }
@@ -209,7 +207,7 @@ namespace Concentus.Structs
             PartialReset();
 
             celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_RESET_STATE);
-            enc_API.silk_InitEncoder(SilkEncoder, arch, dummy);
+            enc_API.silk_InitEncoder(SilkEncoder, dummy);
             stream_channels = channels;
             hybrid_stereo_width_Q14 = 1 << 14;
             prev_HB_gain = CeltConstants.Q15ONE;

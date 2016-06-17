@@ -130,11 +130,10 @@ namespace Concentus.Silk
         /* Compute noise shaping coefficients and initial gain values */
         /**************************************************************/
         public static void silk_noise_shape_analysis_FIX(
-            silk_encoder_state_fix psEnc,                                 /* I/O  Encoder state FIX                                                           */
+            silk_encoder_state psEnc,                                 /* I/O  Encoder state FIX                                                           */
             silk_encoder_control psEncCtrl,                             /* I/O  Encoder control FIX                                                         */
             Pointer<short> pitch_res,                             /* I    LPC residual from pitch analysis                                            */
-            Pointer<short> x,                                     /* I    Input signal [ frame_length + la_shape ]                                    */
-            int arch                                   /* I    Run-time architecture                                                       */
+            Pointer<short> x                                     /* I    Input signal [ frame_length + la_shape ]                                    */
         )
         {
             silk_shape_state psShapeSt = psEnc.sShape;
@@ -151,32 +150,32 @@ namespace Concentus.Silk
 
 
             /* Point to start of first LPC analysis block */
-            x_ptr = x.Point(0 - psEnc.sCmn.la_shape);
+            x_ptr = x.Point(0 - psEnc.la_shape);
 
             /****************/
             /* GAIN CONTROL */
             /****************/
-            SNR_adj_dB_Q7 = psEnc.sCmn.SNR_dB_Q7;
+            SNR_adj_dB_Q7 = psEnc.SNR_dB_Q7;
 
             /* Input quality is the average of the quality in the lowest two VAD bands */
-            psEncCtrl.input_quality_Q14 = (int)Inlines.silk_RSHIFT((int)psEnc.sCmn.input_quality_bands_Q15[0]
-                + psEnc.sCmn.input_quality_bands_Q15[1], 2);
+            psEncCtrl.input_quality_Q14 = (int)Inlines.silk_RSHIFT((int)psEnc.input_quality_bands_Q15[0]
+                + psEnc.input_quality_bands_Q15[1], 2);
             
             /* Coding quality level, between 0.0_Q0 and 1.0_Q0, but in Q14 */
             psEncCtrl.coding_quality_Q14 = Inlines.silk_RSHIFT(Sigmoid.silk_sigm_Q15(Inlines.silk_RSHIFT_ROUND(SNR_adj_dB_Q7 -
                 Inlines.SILK_FIX_CONST(20.0f, 7), 4)), 1);
 
             /* Reduce coding SNR during low speech activity */
-            if (psEnc.sCmn.useCBR == 0)
+            if (psEnc.useCBR == 0)
             {
-                b_Q8 = Inlines.SILK_FIX_CONST(1.0f, 8) - psEnc.sCmn.speech_activity_Q8;
+                b_Q8 = Inlines.SILK_FIX_CONST(1.0f, 8) - psEnc.speech_activity_Q8;
                 b_Q8 = Inlines.silk_SMULWB(Inlines.silk_LSHIFT(b_Q8, 8), b_Q8);
                 SNR_adj_dB_Q7 = Inlines.silk_SMLAWB(SNR_adj_dB_Q7,
                     Inlines.silk_SMULBB(Inlines.SILK_FIX_CONST(0 - TuningParameters.BG_SNR_DECR_dB, 7) >> (4 + 1), b_Q8),                                       /* Q11*/
                     Inlines.silk_SMULWB(Inlines.SILK_FIX_CONST(1.0f, 14) + psEncCtrl.input_quality_Q14, psEncCtrl.coding_quality_Q14));     /* Q12*/
             }
 
-            if (psEnc.sCmn.indices.signalType == SilkConstants.TYPE_VOICED)
+            if (psEnc.indices.signalType == SilkConstants.TYPE_VOICED)
             {
                 /* Reduce gains for periodic signals */
                 SNR_adj_dB_Q7 = Inlines.silk_SMLAWB(SNR_adj_dB_Q7, Inlines.SILK_FIX_CONST(TuningParameters.HARM_SNR_INCR_dB, 8), psEnc.LTPCorr_Q15);
@@ -184,7 +183,7 @@ namespace Concentus.Silk
             else {
                 /* For unvoiced signals and low-quality input, adjust the quality slower than SNR_dB setting */
                 SNR_adj_dB_Q7 = Inlines.silk_SMLAWB(SNR_adj_dB_Q7,
-                    Inlines.silk_SMLAWB(Inlines.SILK_FIX_CONST(6.0f, 9), -Inlines.SILK_FIX_CONST(0.4f, 18), psEnc.sCmn.SNR_dB_Q7),
+                    Inlines.silk_SMLAWB(Inlines.SILK_FIX_CONST(6.0f, 9), -Inlines.SILK_FIX_CONST(0.4f, 18), psEnc.SNR_dB_Q7),
                     Inlines.SILK_FIX_CONST(1.0f, 14) - psEncCtrl.input_quality_Q14);
             }
 
@@ -192,19 +191,19 @@ namespace Concentus.Silk
             /* SPARSENESS PROCESSING */
             /*************************/
             /* Set quantizer offset */
-            if (psEnc.sCmn.indices.signalType == SilkConstants.TYPE_VOICED)
+            if (psEnc.indices.signalType == SilkConstants.TYPE_VOICED)
             {
                 /* Initially set to 0; may be overruled in process_gains(..) */
-                psEnc.sCmn.indices.quantOffsetType = 0;
+                psEnc.indices.quantOffsetType = 0;
                 psEncCtrl.sparseness_Q8 = 0;
             }
             else {
                 /* Sparseness measure, based on relative fluctuations of energy per 2 milliseconds */
-                nSamples = Inlines.silk_LSHIFT(psEnc.sCmn.fs_kHz, 1);
+                nSamples = Inlines.silk_LSHIFT(psEnc.fs_kHz, 1);
                 energy_variation_Q7 = 0;
                 log_energy_prev_Q7 = 0;
                 pitch_res_ptr = pitch_res;
-                for (k = 0; k < Inlines.silk_SMULBB(SilkConstants.SUB_FRAME_LENGTH_MS, psEnc.sCmn.nb_subfr) / 2; k++)
+                for (k = 0; k < Inlines.silk_SMULBB(SilkConstants.SUB_FRAME_LENGTH_MS, psEnc.nb_subfr) / 2; k++)
                 {
                     BoxedValue<int> nrg_boxed = new BoxedValue<int>();
                     BoxedValue<int> scale_boxed = new BoxedValue<int>(scale);
@@ -228,10 +227,10 @@ namespace Concentus.Silk
                 /* Set quantization offset depending on sparseness measure */
                 if (psEncCtrl.sparseness_Q8 > Inlines.SILK_FIX_CONST(TuningParameters.SPARSENESS_THRESHOLD_QNT_OFFSET, 8))
                 {
-                    psEnc.sCmn.indices.quantOffsetType = 0;
+                    psEnc.indices.quantOffsetType = 0;
                 }
                 else {
-                    psEnc.sCmn.indices.quantOffsetType = 1;
+                    psEnc.indices.quantOffsetType = 1;
                 }
 
                 /* Increase coding SNR for sparse signals */
@@ -252,10 +251,10 @@ namespace Concentus.Silk
             /* BWExp1 will be applied after BWExp2, so make it relative */
             BWExp1_Q16 = Inlines.silk_DIV32_16(Inlines.silk_LSHIFT(BWExp1_Q16, 14), Inlines.silk_RSHIFT(BWExp2_Q16, 2));
             
-            if (psEnc.sCmn.warping_Q16 > 0)
+            if (psEnc.warping_Q16 > 0)
             {
                 /* Slightly more warping in analysis will move quantization noise up in frequency, where it's better masked */
-                warping_Q16 = Inlines.silk_SMLAWB(psEnc.sCmn.warping_Q16, (int)psEncCtrl.coding_quality_Q14, Inlines.SILK_FIX_CONST(0.01f, 18));
+                warping_Q16 = Inlines.silk_SMLAWB(psEnc.warping_Q16, (int)psEncCtrl.coding_quality_Q14, Inlines.SILK_FIX_CONST(0.01f, 18));
             }
             else {
                 warping_Q16 = 0;
@@ -264,13 +263,13 @@ namespace Concentus.Silk
             /********************************************/
             /* Compute noise shaping AR coefs and gains */
             /********************************************/
-            x_windowed = Pointer.Malloc<short>(psEnc.sCmn.shapeWinLength);
-            for (k = 0; k < psEnc.sCmn.nb_subfr; k++)
+            x_windowed = Pointer.Malloc<short>(psEnc.shapeWinLength);
+            for (k = 0; k < psEnc.nb_subfr; k++)
             {
                 /* Apply window: sine slope followed by flat part followed by cosine slope */
                 int shift, slope_part, flat_part;
-                flat_part = psEnc.sCmn.fs_kHz * 3;
-                slope_part = Inlines.silk_RSHIFT(psEnc.sCmn.shapeWinLength - flat_part, 1);
+                flat_part = psEnc.fs_kHz * 3;
+                slope_part = Inlines.silk_RSHIFT(psEnc.shapeWinLength - flat_part, 1);
                 
                 apply_sine_window.silk_apply_sine_window(x_windowed, x_ptr, 1, slope_part);
                 shift = slope_part;
@@ -279,16 +278,16 @@ namespace Concentus.Silk
                 apply_sine_window.silk_apply_sine_window(x_windowed.Point(shift), x_ptr.Point(shift), 2, slope_part);
                 
                 /* Update pointer: next LPC analysis block */
-                x_ptr = x_ptr.Point(psEnc.sCmn.subfr_length);
+                x_ptr = x_ptr.Point(psEnc.subfr_length);
                 BoxedValue<int> scale_boxed = new BoxedValue<int>(scale);
-                if (psEnc.sCmn.warping_Q16 > 0)
+                if (psEnc.warping_Q16 > 0)
                 {
                     /* Calculate warped auto correlation */
-                    warped_autocorrelation.silk_warped_autocorrelation_FIX(auto_corr, scale_boxed, x_windowed, warping_Q16, psEnc.sCmn.shapeWinLength, psEnc.sCmn.shapingLPCOrder);
+                    warped_autocorrelation.silk_warped_autocorrelation_FIX(auto_corr, scale_boxed, x_windowed, warping_Q16, psEnc.shapeWinLength, psEnc.shapingLPCOrder);
                 }
                 else {
                     /* Calculate regular auto correlation */
-                    autocorr.silk_autocorr(auto_corr, scale_boxed, x_windowed, psEnc.sCmn.shapeWinLength, psEnc.sCmn.shapingLPCOrder + 1, arch);
+                    autocorr.silk_autocorr(auto_corr, scale_boxed, x_windowed, psEnc.shapeWinLength, psEnc.shapingLPCOrder + 1);
                 }
                 scale = scale_boxed.Val;
 
@@ -297,11 +296,11 @@ namespace Concentus.Silk
                     Inlines.SILK_FIX_CONST(TuningParameters.SHAPE_WHITE_NOISE_FRACTION, 20)), 1));
 
                 /* Calculate the reflection coefficients using schur */
-                nrg = schur.silk_schur64(refl_coef_Q16, auto_corr, psEnc.sCmn.shapingLPCOrder);
+                nrg = schur.silk_schur64(refl_coef_Q16, auto_corr, psEnc.shapingLPCOrder);
                 Inlines.OpusAssert(nrg >= 0);
 
                 /* Convert reflection coefficients to prediction coefficients */
-                k2a.silk_k2a_Q16(AR2_Q24, refl_coef_Q16, psEnc.sCmn.shapingLPCOrder);
+                k2a.silk_k2a_Q16(AR2_Q24, refl_coef_Q16, psEnc.shapingLPCOrder);
 
                 Qnrg = -scale;          /* range: -12...30*/
                 Inlines.OpusAssert(Qnrg >= -12);
@@ -319,10 +318,10 @@ namespace Concentus.Silk
 
                 psEncCtrl.Gains_Q16[k] = Inlines.silk_LSHIFT_SAT32(tmp32, 16 - Qnrg);
 
-                if (psEnc.sCmn.warping_Q16 > 0)
+                if (psEnc.warping_Q16 > 0)
                 {
                     /* Adjust gain for warping */
-                    gain_mult_Q16 = warped_gain(AR2_Q24, warping_Q16, psEnc.sCmn.shapingLPCOrder);
+                    gain_mult_Q16 = warped_gain(AR2_Q24, warping_Q16, psEnc.shapingLPCOrder);
                     Inlines.OpusAssert(psEncCtrl.Gains_Q16[k] >= 0);
                     if (Inlines.silk_SMULWW(Inlines.silk_RSHIFT_ROUND(psEncCtrl.Gains_Q16[k], 1), gain_mult_Q16) >= (int.MaxValue >> 1))
                     {
@@ -334,28 +333,28 @@ namespace Concentus.Silk
                 }
 
                 /* Bandwidth expansion for synthesis filter shaping */
-                bwexpander.silk_bwexpander_32(AR2_Q24, psEnc.sCmn.shapingLPCOrder, BWExp2_Q16);
+                bwexpander.silk_bwexpander_32(AR2_Q24, psEnc.shapingLPCOrder, BWExp2_Q16);
                 
                 /* Compute noise shaping filter coefficients */
-                AR2_Q24.MemCopyTo(AR1_Q24, psEnc.sCmn.shapingLPCOrder);
+                AR2_Q24.MemCopyTo(AR1_Q24, psEnc.shapingLPCOrder);
 
                 /* Bandwidth expansion for analysis filter shaping */
                 Inlines.OpusAssert(BWExp1_Q16 <= Inlines.SILK_FIX_CONST(1.0f, 16));
-                bwexpander.silk_bwexpander_32(AR1_Q24, psEnc.sCmn.shapingLPCOrder, BWExp1_Q16);
+                bwexpander.silk_bwexpander_32(AR1_Q24, psEnc.shapingLPCOrder, BWExp1_Q16);
                 
                 /* Ratio of prediction gains, in energy domain */
-                pre_nrg_Q30 = LPC_inv_pred_gain.silk_LPC_inverse_pred_gain_Q24(AR2_Q24, psEnc.sCmn.shapingLPCOrder);
-                nrg = LPC_inv_pred_gain.silk_LPC_inverse_pred_gain_Q24(AR1_Q24, psEnc.sCmn.shapingLPCOrder);
+                pre_nrg_Q30 = LPC_inv_pred_gain.silk_LPC_inverse_pred_gain_Q24(AR2_Q24, psEnc.shapingLPCOrder);
+                nrg = LPC_inv_pred_gain.silk_LPC_inverse_pred_gain_Q24(AR1_Q24, psEnc.shapingLPCOrder);
 
                 /*psEncCtrl.GainsPre[ k ] = 1.0f - 0.7f * ( 1.0f - pre_nrg / nrg ) = 0.3f + 0.7f * pre_nrg / nrg;*/
                 pre_nrg_Q30 = Inlines.silk_LSHIFT32(Inlines.silk_SMULWB(pre_nrg_Q30, Inlines.SILK_FIX_CONST(0.7f, 15)), 1);
                 psEncCtrl.GainsPre_Q14[k] = (int)Inlines.SILK_FIX_CONST(0.3f, 14) + Inlines.silk_DIV32_varQ(pre_nrg_Q30, nrg, 14);
 
                 /* Convert to monic warped prediction coefficients and limit absolute values */
-                limit_warped_coefs(AR2_Q24, AR1_Q24, warping_Q16, Inlines.SILK_FIX_CONST(3.999f, 24), psEnc.sCmn.shapingLPCOrder);
+                limit_warped_coefs(AR2_Q24, AR1_Q24, warping_Q16, Inlines.SILK_FIX_CONST(3.999f, 24), psEnc.shapingLPCOrder);
 
                 /* Convert from Q24 to Q13 and store in int16 */
-                for (i = 0; i < psEnc.sCmn.shapingLPCOrder; i++)
+                for (i = 0; i < psEnc.shapingLPCOrder; i++)
                 {
                     psEncCtrl.AR1_Q13[k * SilkConstants.MAX_SHAPE_LPC_ORDER + i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(AR1_Q24[i], 11));
                     psEncCtrl.AR2_Q13[k * SilkConstants.MAX_SHAPE_LPC_ORDER + i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(AR2_Q24[i], 11));
@@ -369,7 +368,7 @@ namespace Concentus.Silk
             gain_mult_Q16 = Inlines.silk_log2lin(-Inlines.silk_SMLAWB(-Inlines.SILK_FIX_CONST(16.0f, 7), SNR_adj_dB_Q7, Inlines.SILK_FIX_CONST(0.16f, 16)));
             gain_add_Q16 = Inlines.silk_log2lin(Inlines.silk_SMLAWB(Inlines.SILK_FIX_CONST(16.0f, 7), Inlines.SILK_FIX_CONST(SilkConstants.MIN_QGAIN_DB, 7), Inlines.SILK_FIX_CONST(0.16f, 16)));
             Inlines.OpusAssert(gain_mult_Q16 > 0);
-            for (k = 0; k < psEnc.sCmn.nb_subfr; k++)
+            for (k = 0; k < psEnc.nb_subfr; k++)
             {
                 psEncCtrl.Gains_Q16[k] = Inlines.silk_SMULWW(psEncCtrl.Gains_Q16[k], gain_mult_Q16);
                 Inlines.OpusAssert(psEncCtrl.Gains_Q16[k] >= 0);
@@ -378,7 +377,7 @@ namespace Concentus.Silk
 
             gain_mult_Q16 = Inlines.SILK_FIX_CONST(1.0f, 16) + Inlines.silk_RSHIFT_ROUND(Inlines.silk_MLA(Inlines.SILK_FIX_CONST(TuningParameters.INPUT_TILT, 26),
                 psEncCtrl.coding_quality_Q14, Inlines.SILK_FIX_CONST(TuningParameters.HIGH_RATE_INPUT_TILT, 12)), 10);
-            for (k = 0; k < psEnc.sCmn.nb_subfr; k++)
+            for (k = 0; k < psEnc.nb_subfr; k++)
             {
                 psEncCtrl.GainsPre_Q14[k] = Inlines.silk_SMULWB(gain_mult_Q16, psEncCtrl.GainsPre_Q14[k]);
             }
@@ -388,14 +387,14 @@ namespace Concentus.Silk
             /************************************************/
             /* Less low frequency shaping for noisy inputs */
             strength_Q16 = Inlines.silk_MUL(Inlines.SILK_FIX_CONST(TuningParameters.LOW_FREQ_SHAPING, 4), Inlines.silk_SMLAWB(Inlines.SILK_FIX_CONST(1.0f, 12),
-                Inlines.SILK_FIX_CONST(TuningParameters.LOW_QUALITY_LOW_FREQ_SHAPING_DECR, 13), psEnc.sCmn.input_quality_bands_Q15[0] - Inlines.SILK_FIX_CONST(1.0f, 15)));
-            strength_Q16 = Inlines.silk_RSHIFT(Inlines.silk_MUL(strength_Q16, psEnc.sCmn.speech_activity_Q8), 8);
-            if (psEnc.sCmn.indices.signalType == SilkConstants.TYPE_VOICED)
+                Inlines.SILK_FIX_CONST(TuningParameters.LOW_QUALITY_LOW_FREQ_SHAPING_DECR, 13), psEnc.input_quality_bands_Q15[0] - Inlines.SILK_FIX_CONST(1.0f, 15)));
+            strength_Q16 = Inlines.silk_RSHIFT(Inlines.silk_MUL(strength_Q16, psEnc.speech_activity_Q8), 8);
+            if (psEnc.indices.signalType == SilkConstants.TYPE_VOICED)
             {
                 /* Reduce low frequencies quantization noise for periodic signals, depending on pitch lag */
                 /*f = 400; freqz([1, -0.98 + 2e-4 * f], [1, -0.97 + 7e-4 * f], 2^12, Fs); axis([0, 1000, -10, 1])*/
-                int fs_kHz_inv = Inlines.silk_DIV32_16(Inlines.SILK_FIX_CONST(0.2f, 14), psEnc.sCmn.fs_kHz);
-                for (k = 0; k < psEnc.sCmn.nb_subfr; k++)
+                int fs_kHz_inv = Inlines.silk_DIV32_16(Inlines.SILK_FIX_CONST(0.2f, 14), psEnc.fs_kHz);
+                for (k = 0; k < psEnc.nb_subfr; k++)
                 {
                     b_Q14 = fs_kHz_inv + Inlines.silk_DIV32_16(Inlines.SILK_FIX_CONST(3.0f, 14), psEncCtrl.pitchL[k]);
                     /* Pack two coefficients in one int32 */
@@ -405,15 +404,15 @@ namespace Concentus.Silk
                 Inlines.OpusAssert(Inlines.SILK_FIX_CONST(TuningParameters.HARM_HP_NOISE_COEF, 24) < Inlines.SILK_FIX_CONST(0.5f, 24)); /* Guarantees that second argument to SMULWB() is within range of an short*/
                 Tilt_Q16 = -Inlines.SILK_FIX_CONST(TuningParameters.HP_NOISE_COEF, 16) -
                     Inlines.silk_SMULWB(Inlines.SILK_FIX_CONST(1.0f, 16) - Inlines.SILK_FIX_CONST(TuningParameters.HP_NOISE_COEF, 16),
-                        Inlines.silk_SMULWB(Inlines.SILK_FIX_CONST(TuningParameters.HARM_HP_NOISE_COEF, 24), psEnc.sCmn.speech_activity_Q8));
+                        Inlines.silk_SMULWB(Inlines.SILK_FIX_CONST(TuningParameters.HARM_HP_NOISE_COEF, 24), psEnc.speech_activity_Q8));
             }
             else {
-                b_Q14 = Inlines.silk_DIV32_16(21299, psEnc.sCmn.fs_kHz); /* 1.3_Q0 = 21299_Q14*/
+                b_Q14 = Inlines.silk_DIV32_16(21299, psEnc.fs_kHz); /* 1.3_Q0 = 21299_Q14*/
                                                                                  /* Pack two coefficients in one int32 */
                 psEncCtrl.LF_shp_Q14[0] = Inlines.silk_LSHIFT(Inlines.SILK_FIX_CONST(1.0f, 14) - b_Q14 -
                     Inlines.silk_SMULWB(strength_Q16, Inlines.silk_SMULWB(Inlines.SILK_FIX_CONST(0.6f, 16), b_Q14)), 16);
                 psEncCtrl.LF_shp_Q14[0] |= (b_Q14 - Inlines.SILK_FIX_CONST(1.0f, 14)) & 0xFFFF; // opus bug: cast to ushort is better expressed as a bitwise operator, otherwise runtime analysis might flag it as an overflow error
-                for (k = 1; k < psEnc.sCmn.nb_subfr; k++)
+                for (k = 1; k < psEnc.nb_subfr; k++)
                 {
                     psEncCtrl.LF_shp_Q14[k] = psEncCtrl.LF_shp_Q14[0];
                 }
@@ -431,7 +430,7 @@ namespace Concentus.Silk
             HarmBoost_Q16 = Inlines.silk_SMLAWB(HarmBoost_Q16,
                 Inlines.SILK_FIX_CONST(1.0f, 16) - Inlines.silk_LSHIFT(psEncCtrl.input_quality_Q14, 2), Inlines.SILK_FIX_CONST(TuningParameters.LOW_INPUT_QUALITY_HARMONIC_BOOST, 16));
 
-            if (SilkConstants.USE_HARM_SHAPING != 0 && psEnc.sCmn.indices.signalType == SilkConstants.TYPE_VOICED)
+            if (SilkConstants.USE_HARM_SHAPING != 0 && psEnc.indices.signalType == SilkConstants.TYPE_VOICED)
             {
                 /* More harmonic noise shaping for high bitrates or noisy input */
                 HarmShapeGain_Q16 = Inlines.silk_SMLAWB(Inlines.SILK_FIX_CONST(TuningParameters.HARMONIC_SHAPING, 16),

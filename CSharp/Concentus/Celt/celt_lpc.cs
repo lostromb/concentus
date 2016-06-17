@@ -73,8 +73,7 @@ namespace Concentus.Celt
                  Pointer<int> _y,
                  int N,
                  int ord,
-                 Pointer<int> mem,
-                 int arch)
+                 Pointer<int> mem)
         {
             int i, j;
             Pointer<int> rden = Pointer.Malloc<int>(ord);
@@ -133,9 +132,7 @@ namespace Concentus.Celt
                            Pointer<int> window,
                            int overlap,
                            int lag,
-                           int n,
-                           int arch
-                          )
+                           int n)
         {
             int d;
             int i, k;

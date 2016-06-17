@@ -14,7 +14,7 @@ namespace Concentus.Silk.Structs
     /// </summary>
     public class silk_encoder
     {
-        public readonly Pointer<silk_encoder_state_fix> state_Fxx = Pointer.Malloc<silk_encoder_state_fix>(SilkConstants.ENCODER_NUM_CHANNELS);
+        public readonly Pointer<silk_encoder_state> state_Fxx = Pointer.Malloc<silk_encoder_state>(SilkConstants.ENCODER_NUM_CHANNELS);
         public readonly stereo_enc_state sStereo = new stereo_enc_state();
         public int nBitsUsedLBRR = 0;
         public int nBitsExceeded = 0;
@@ -29,7 +29,7 @@ namespace Concentus.Silk.Structs
         {
             for (int c = 0; c < SilkConstants.ENCODER_NUM_CHANNELS; c++)
             {
-                state_Fxx[c] = new silk_encoder_state_fix();
+                state_Fxx[c] = new silk_encoder_state();
             }
         }
 
@@ -57,23 +57,21 @@ namespace Concentus.Silk.Structs
         /// <param name="psEnc">I/O  Pointer to Silk FIX encoder state</param>
         /// <param name="arch">I    Run-time architecture</param>
         /// <returns></returns>
-        public static int silk_init_encoder(silk_encoder_state_fix psEnc, int arch)
+        public static int silk_init_encoder(silk_encoder_state psEnc)
         {
             int ret = 0;
 
             // Clear the entire encoder state
             psEnc.Reset();
 
-            psEnc.sCmn.arch = arch;
-
-            psEnc.sCmn.variable_HP_smth1_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(Inlines.SILK_FIX_CONST(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ, 16)) - (16 << 7), 8);
-            psEnc.sCmn.variable_HP_smth2_Q15 = psEnc.sCmn.variable_HP_smth1_Q15;
+            psEnc.variable_HP_smth1_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(Inlines.SILK_FIX_CONST(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ, 16)) - (16 << 7), 8);
+            psEnc.variable_HP_smth2_Q15 = psEnc.variable_HP_smth1_Q15;
 
             // Used to deactivate LSF interpolation, pitch prediction
-            psEnc.sCmn.first_frame_after_reset = 1;
+            psEnc.first_frame_after_reset = 1;
 
             // Initialize Silk VAD
-            ret += VAD.silk_VAD_Init(psEnc.sCmn.sVAD);
+            ret += VAD.silk_VAD_Init(psEnc.sVAD);
 
             return ret;
         }

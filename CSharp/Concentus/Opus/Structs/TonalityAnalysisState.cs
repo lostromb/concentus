@@ -12,21 +12,20 @@ namespace Concentus.Structs
 {
     public class TonalityAnalysisState
     {
-        public int arch;
-        public /*readonly*/ Pointer<float> angle = Pointer.Malloc<float>(240);
-        public /*readonly*/ Pointer<float> d_angle = Pointer.Malloc<float>(240);
-        public /*readonly*/ Pointer<float> d2_angle = Pointer.Malloc<float>(240);
-        public /*readonly*/ Pointer<int> inmem = Pointer.Malloc<int>(OpusConstants.ANALYSIS_BUF_SIZE);
+        public readonly Pointer<float> angle = Pointer.Malloc<float>(240);
+        public readonly Pointer<float> d_angle = Pointer.Malloc<float>(240);
+        public readonly Pointer<float> d2_angle = Pointer.Malloc<float>(240);
+        public readonly Pointer<int> inmem = Pointer.Malloc<int>(OpusConstants.ANALYSIS_BUF_SIZE);
         public int mem_fill;                      /* number of usable samples in the buffer */
-        public /*readonly*/ Pointer<float> prev_band_tonality = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
+        public readonly Pointer<float> prev_band_tonality = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
         public float prev_tonality;
-        public /*readonly*/ Pointer<Pointer<float>> E = Arrays.InitTwoDimensionalArrayPointer<float>(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
-        public /*readonly*/ Pointer<float> lowE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-        public /*readonly*/ Pointer<float> highE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-        public /*readonly*/ Pointer<float> meanE = Pointer.Malloc<float>(OpusConstants.NB_TOT_BANDS);
-        public /*readonly*/ Pointer<float> mem = Pointer.Malloc<float>(32);
-        public /*readonly*/ Pointer<float> cmean = Pointer.Malloc<float>(8);
-        public /*readonly*/ Pointer<float> std = Pointer.Malloc<float>(9);
+        public readonly Pointer<Pointer<float>> E = Arrays.InitTwoDimensionalArrayPointer<float>(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
+        public readonly Pointer<float> lowE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
+        public readonly Pointer<float> highE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
+        public readonly Pointer<float> meanE = Pointer.Malloc<float>(OpusConstants.NB_TOT_BANDS);
+        public readonly Pointer<float> mem = Pointer.Malloc<float>(32);
+        public readonly Pointer<float> cmean = Pointer.Malloc<float>(8);
+        public readonly Pointer<float> std = Pointer.Malloc<float>(9);
         public float music_prob;
         public float Etracker;
         public float lowECount;
@@ -34,14 +33,14 @@ namespace Concentus.Structs
         public int last_music;
         public int last_transition;
         public int count;
-        public /*readonly*/ Pointer<float> subframe_mem = Pointer.Malloc<float>(3);
+        public readonly Pointer<float> subframe_mem = Pointer.Malloc<float>(3);
         public int analysis_offset;
         /** Probability of having speech for time i to DETECT_SIZE-1 (and music before).
             pspeech[0] is the probability that all frames in the window are speech. */
-        public /*readonly*/ Pointer<float> pspeech = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
+        public readonly Pointer<float> pspeech = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
         /** Probability of having music for time i to DETECT_SIZE-1 (and speech before).
             pmusic[0] is the probability that all frames in the window are music. */
-        public /*readonly*/ Pointer<float> pmusic = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
+        public readonly Pointer<float> pmusic = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
         public float speech_confidence;
         public float music_confidence;
         public int speech_confidence_count;
@@ -49,7 +48,7 @@ namespace Concentus.Structs
         public int write_pos;
         public int read_pos;
         public int read_subframe;
-        public /*readonly*/ AnalysisInfo[] info = new AnalysisInfo[OpusConstants.DETECT_SIZE];
+        public readonly AnalysisInfo[] info = new AnalysisInfo[OpusConstants.DETECT_SIZE];
 
         public TonalityAnalysisState()
         {
@@ -61,7 +60,6 @@ namespace Concentus.Structs
 
         public void Reset()
         {
-            arch = 0;
             angle.MemSet(0, 240);
             d_angle.MemSet(0, 240);
             d2_angle.MemSet(0, 240);

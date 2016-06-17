@@ -12,8 +12,8 @@ namespace Concentus.Silk.Structs
     /// </summary>
     public class silk_prefilter_state
     {
-        public /*readonly*/ Pointer<short> sLTP_shp = Pointer.Malloc<short>(SilkConstants.LTP_BUF_LENGTH);
-        public /*readonly*/ Pointer<int> sAR_shp = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
+        public readonly Pointer<short> sLTP_shp = Pointer.Malloc<short>(SilkConstants.LTP_BUF_LENGTH);
+        public readonly Pointer<int> sAR_shp = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
         public int sLTP_shp_buf_idx = 0;
         public int sLF_AR_shp_Q12 = 0;
         public int sLF_MA_shp_Q12 = 0;

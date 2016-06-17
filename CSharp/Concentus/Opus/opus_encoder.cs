@@ -52,9 +52,7 @@ namespace Concentus
 
             st.Fs = Fs;
 
-            st.arch = 0;
-
-            ret = enc_API.silk_InitEncoder(silk_enc, st.arch, st.silk_mode);
+            ret = enc_API.silk_InitEncoder(silk_enc, st.silk_mode);
             if (ret != 0) return OpusError.OPUS_INTERNAL_ERROR;
 
             /* default SILK parameters */
@@ -75,7 +73,7 @@ namespace Concentus
 
             /* Create CELT encoder */
             /* Initialize CELT encoder */
-            err = celt_encoder.celt_encoder_init(celt_enc, Fs, channels, st.arch);
+            err = celt_encoder.celt_encoder_init(celt_enc, Fs, channels);
             if (err != OpusError.OPUS_OK) return OpusError.OPUS_INTERNAL_ERROR;
 
             celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_SIGNALLING_REQUEST, 0);
@@ -1068,7 +1066,7 @@ namespace Concentus
             if (st.mode != OpusMode.MODE_CELT_ONLY && st.prev_mode == OpusMode.MODE_CELT_ONLY)
             {
                 silk_EncControlStruct dummy = new silk_EncControlStruct();
-                enc_API.silk_InitEncoder(silk_enc, st.arch, dummy);
+                enc_API.silk_InitEncoder(silk_enc, dummy);
                 prefill = 1;
             }
 
@@ -1278,7 +1276,7 @@ namespace Concentus
             if (st.mode == OpusMode.MODE_CELT_ONLY)
                 hp_freq_smth1 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
             else
-                hp_freq_smth1 = silk_enc.state_Fxx[0].sCmn.variable_HP_smth1_Q15;
+                hp_freq_smth1 = silk_enc.state_Fxx[0].variable_HP_smth1_Q15;
 
             st.variable_HP_smth2_Q15 = Inlines.silk_SMLAWB(st.variable_HP_smth2_Q15,
                   hp_freq_smth1 - st.variable_HP_smth2_Q15, Inlines.SILK_FIX_CONST(TuningParameters.VARIABLE_HP_SMTH_COEF2, 16));

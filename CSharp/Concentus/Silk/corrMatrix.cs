@@ -18,8 +18,7 @@ namespace Concentus.Silk
             int L,                                      /* I    Length of vectors                                                           */
             int order,                                  /* I    Max lag for correlation                                                     */
             Pointer<int> Xt,                                    /* O    Pointer to X'*t correlation vector [order]                                  */
-            int rshifts,                                /* I    Right shifts of correlations                                                */
-            int arch                                    /* I    Run-time architecture                                                       */
+            int rshifts                                /* I    Right shifts of correlations                                                */
         )
         {
             int lag, i;
@@ -47,7 +46,7 @@ namespace Concentus.Silk
                 Inlines.OpusAssert(rshifts == 0);
                 for (lag = 0; lag < order; lag++)
                 {
-                    Xt[lag] = Inlines.silk_inner_prod_aligned(ptr1, ptr2, L, arch); /* X[:,lag]'*t */
+                    Xt[lag] = Inlines.silk_inner_prod_aligned(ptr1, ptr2, L); /* X[:,lag]'*t */
                     ptr1 = ptr1.Point(-1); /* Go to next column of X */
                 }
             }
@@ -60,8 +59,7 @@ namespace Concentus.Silk
             int order,                                  /* I    Max lag for correlation                                                     */
             int head_room,                              /* I    Desired headroom                                                            */
             Pointer<int> XX,                                    /* O    Pointer to X'*X correlation matrix [ order x order ]                        */
-            BoxedValue<int> rshifts,                               /* I/O  Right shifts of correlations                                                */
-            int arch                                    /* I    Run-time architecture                                                       */
+            BoxedValue<int> rshifts                               /* I/O  Right shifts of correlations                                                */
         )
         {
             int i, j, lag, head_room_rshifts;
@@ -134,7 +132,7 @@ namespace Concentus.Silk
                 for (lag = 1; lag < order; lag++)
                 {
                     /* Inner product of column 0 and column lag: X[:,0]'*X[:,lag] */
-                    energy = Inlines.silk_inner_prod_aligned(ptr1, ptr2, L, arch);
+                    energy = Inlines.silk_inner_prod_aligned(ptr1, ptr2, L);
                     Inlines.matrix_adr(XX, lag, 0, order)[0] = energy;
                     Inlines.matrix_adr(XX, 0, lag, order)[0] = energy;
                     /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */

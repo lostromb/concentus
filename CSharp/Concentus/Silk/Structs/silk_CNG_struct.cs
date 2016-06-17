@@ -12,9 +12,9 @@ namespace Concentus.Silk.Structs
     /// </summary>
     public class silk_CNG_struct
     {
-        public /*readonly*/ Pointer<int> CNG_exc_buf_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_FRAME_LENGTH);
-        public /*readonly*/ Pointer<short> CNG_smth_NLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
-        public /*readonly*/ Pointer<int> CNG_synth_state = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
+        public readonly Pointer<int> CNG_exc_buf_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_FRAME_LENGTH);
+        public readonly Pointer<short> CNG_smth_NLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
+        public readonly Pointer<int> CNG_synth_state = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
         public int CNG_smth_Gain_Q16 = 0;
         public int rand_seed = 0;
         public int fs_kHz = 0;

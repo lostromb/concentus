@@ -21,8 +21,7 @@ namespace Concentus.Silk
                 silk_decoder_state psDec,                         /* I/O  Decoder state                               */
                 silk_decoder_control psDecCtrl,                     /* I    Decoder control                             */
                 Pointer<short> xq,                           /* O    Decoded speech                              */
-                Pointer<short> pulses,     /* I    Pulse signal [MAX_FRAME_LENGTH]                               */
-                int arch                            /* I    Run-time architecture                       */
+                Pointer<short> pulses     /* I    Pulse signal [MAX_FRAME_LENGTH]                               */
             )
         {
             int i, k, lag = 0, start_idx, sLTP_buf_idx, NLSF_interpolation_flag, signalType;
@@ -149,7 +148,7 @@ namespace Concentus.Silk
                         }
 
                         Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), psDec.outBuf.Point(start_idx + k * psDec.subfr_length),
-                            A_Q12, psDec.ltp_mem_length - start_idx, psDec.LPC_order, arch);
+                            A_Q12, psDec.ltp_mem_length - start_idx, psDec.LPC_order);
 
                         /* After rewhitening the LTP state is unscaled */
                         if (k == 0)

@@ -18,8 +18,7 @@ namespace Concentus.Silk
             Pointer<int> W_Q18,  /* I    Error Weights in Q18 [MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER]           */
             int mu_Q9,                                      /* I    Mu value (R/D tradeoff)         */
             int lowComplexity,                              /* I    Flag for low complexity         */
-            int nb_subfr,                                   /* I    number of subframes             */
-            int arch                                        /* I    Run-time architecture           */
+            int nb_subfr                                   /* I    number of subframes             */
             )
         {
             int j, k, cbk_size;

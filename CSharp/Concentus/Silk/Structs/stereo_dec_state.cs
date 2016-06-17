@@ -9,9 +9,9 @@ namespace Concentus.Silk.Structs
 {
     public class stereo_dec_state
     {
-        public /*readonly*/ Pointer<short> pred_prev_Q13 = Pointer.Malloc<short>(2);
-        public /*readonly*/ Pointer<short> sMid = Pointer.Malloc<short>(2);
-        public /*readonly*/ Pointer<short> sSide = Pointer.Malloc<short>(2);
+        public readonly Pointer<short> pred_prev_Q13 = Pointer.Malloc<short>(2);
+        public readonly Pointer<short> sMid = Pointer.Malloc<short>(2);
+        public readonly Pointer<short> sSide = Pointer.Malloc<short>(2);
 
         public void Reset()
         {

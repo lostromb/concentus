@@ -53,7 +53,7 @@ namespace Concentus.Silk
         }
 
         public static void silk_prefilter_FIX(
-            silk_encoder_state_fix psEnc,                                 /* I/O  Encoder state                                                               */
+            silk_encoder_state psEnc,                                 /* I/O  Encoder state                                                               */
             silk_encoder_control psEncCtrl,                             /* I    Encoder control                                                             */
             Pointer<int> xw_Q3,                                /* O    Weighted signal                                                             */
             Pointer<short> x                                     /* I    Speech signal                                                               */
@@ -75,12 +75,12 @@ namespace Concentus.Silk
             px = x;
             pxw_Q3 = xw_Q3;
             lag = P.lagPrev;
-            x_filt_Q12 = Pointer.Malloc<int>(psEnc.sCmn.subfr_length);
-            st_res_Q2 = Pointer.Malloc<int>(psEnc.sCmn.subfr_length);
-            for (k = 0; k < psEnc.sCmn.nb_subfr; k++)
+            x_filt_Q12 = Pointer.Malloc<int>(psEnc.subfr_length);
+            st_res_Q2 = Pointer.Malloc<int>(psEnc.subfr_length);
+            for (k = 0; k < psEnc.nb_subfr; k++)
             {
                 /* Update Variables that change per sub frame */
-                if (psEnc.sCmn.indices.signalType == SilkConstants.TYPE_VOICED)
+                if (psEnc.indices.signalType == SilkConstants.TYPE_VOICED)
                 {
                     lag = psEncCtrl.pitchL[k];
                 }
@@ -96,7 +96,7 @@ namespace Concentus.Silk
 
                 /* Short term FIR filtering*/
                 silk_warped_LPC_analysis_filter_FIX_c(P.sAR_shp, st_res_Q2, AR1_shp_Q13, px,
-                    Inlines.CHOP16(psEnc.sCmn.warping_Q16), psEnc.sCmn.subfr_length, psEnc.sCmn.shapingLPCOrder);
+                    Inlines.CHOP16(psEnc.warping_Q16), psEnc.subfr_length, psEnc.shapingLPCOrder);
 
                 /* Reduce (mainly) low frequencies during harmonic emphasis */
                 B_Q10[0] = Inlines.CHOP16(Inlines.silk_RSHIFT_ROUND(psEncCtrl.GainsPre_Q14[k], 4));
@@ -106,19 +106,19 @@ namespace Concentus.Silk
                 tmp_32 = Inlines.silk_RSHIFT_ROUND(tmp_32, 14);                                                                     /* Q10 */
                 B_Q10[1] = Inlines.CHOP16(Inlines.silk_SAT16(tmp_32));
                 x_filt_Q12[0] = Inlines.silk_MLA(Inlines.silk_MUL(st_res_Q2[0], B_Q10[0]), P.sHarmHP_Q2, B_Q10[1]);
-                for (j = 1; j < psEnc.sCmn.subfr_length; j++)
+                for (j = 1; j < psEnc.subfr_length; j++)
                 {
                     x_filt_Q12[j] = Inlines.silk_MLA(Inlines.silk_MUL(st_res_Q2[j], B_Q10[0]), st_res_Q2[j - 1], B_Q10[1]);
                 }
-                P.sHarmHP_Q2 = st_res_Q2[psEnc.sCmn.subfr_length - 1];
+                P.sHarmHP_Q2 = st_res_Q2[psEnc.subfr_length - 1];
 
-                silk_prefilt_FIX(P, x_filt_Q12, pxw_Q3, HarmShapeFIRPacked_Q12, Tilt_Q14, LF_shp_Q14, lag, psEnc.sCmn.subfr_length);
+                silk_prefilt_FIX(P, x_filt_Q12, pxw_Q3, HarmShapeFIRPacked_Q12, Tilt_Q14, LF_shp_Q14, lag, psEnc.subfr_length);
 
-                px = px.Point(psEnc.sCmn.subfr_length);
-                pxw_Q3 = pxw_Q3.Point(psEnc.sCmn.subfr_length);
+                px = px.Point(psEnc.subfr_length);
+                pxw_Q3 = pxw_Q3.Point(psEnc.subfr_length);
             }
 
-            P.lagPrev = psEncCtrl.pitchL[psEnc.sCmn.nb_subfr - 1];
+            P.lagPrev = psEncCtrl.pitchL[psEnc.nb_subfr - 1];
 
         }
         

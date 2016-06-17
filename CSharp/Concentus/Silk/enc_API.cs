@@ -15,7 +15,7 @@ namespace Concentus.Silk
         /// <param name="arch">I    Run-time architecture</param>
         /// <param name="encStatus">O    Encoder Status</param>
         /// <returns>O    Returns error code</returns>
-        public static int silk_InitEncoder(silk_encoder encState, int arch, silk_EncControlStruct encStatus)
+        public static int silk_InitEncoder(silk_encoder encState, silk_EncControlStruct encStatus)
         {
             int ret = SilkError.SILK_NO_ERROR;
 
@@ -24,7 +24,7 @@ namespace Concentus.Silk
 
             for (int n = 0; n < SilkConstants.ENCODER_NUM_CHANNELS; n++)
             {
-                ret += silk_encoder.silk_init_encoder(encState.state_Fxx[n], arch);
+                ret += silk_encoder.silk_init_encoder(encState.state_Fxx[n]);
                 Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
             }
 
@@ -47,26 +47,26 @@ namespace Concentus.Silk
         public static int silk_QueryEncoder(silk_encoder encState, silk_EncControlStruct encStatus)
         {
             int ret = SilkError.SILK_NO_ERROR;
-            silk_encoder_state_fix state_Fxx = encState.state_Fxx[0];
+            silk_encoder_state state_Fxx = encState.state_Fxx[0];
             
             encStatus.Reset();
 
             encStatus.nChannelsAPI = encState.nChannelsAPI;
             encStatus.nChannelsInternal = encState.nChannelsInternal;
-            encStatus.API_sampleRate = state_Fxx.sCmn.API_fs_Hz;
-            encStatus.maxInternalSampleRate = state_Fxx.sCmn.maxInternal_fs_Hz;
-            encStatus.minInternalSampleRate = state_Fxx.sCmn.minInternal_fs_Hz;
-            encStatus.desiredInternalSampleRate = state_Fxx.sCmn.desiredInternal_fs_Hz;
-            encStatus.payloadSize_ms = state_Fxx.sCmn.PacketSize_ms;
-            encStatus.bitRate = state_Fxx.sCmn.TargetRate_bps;
-            encStatus.packetLossPercentage = state_Fxx.sCmn.PacketLoss_perc;
-            encStatus.complexity = state_Fxx.sCmn.Complexity;
-            encStatus.useInBandFEC = state_Fxx.sCmn.useInBandFEC;
-            encStatus.useDTX = state_Fxx.sCmn.useDTX;
-            encStatus.useCBR = state_Fxx.sCmn.useCBR;
-            encStatus.internalSampleRate = Inlines.silk_SMULBB(state_Fxx.sCmn.fs_kHz, 1000);
-            encStatus.allowBandwidthSwitch = state_Fxx.sCmn.allow_bandwidth_switch;
-            encStatus.inWBmodeWithoutVariableLP = (state_Fxx.sCmn.fs_kHz == 16 && state_Fxx.sCmn.sLP.mode == 0) ? 1 : 0;
+            encStatus.API_sampleRate = state_Fxx.API_fs_Hz;
+            encStatus.maxInternalSampleRate = state_Fxx.maxInternal_fs_Hz;
+            encStatus.minInternalSampleRate = state_Fxx.minInternal_fs_Hz;
+            encStatus.desiredInternalSampleRate = state_Fxx.desiredInternal_fs_Hz;
+            encStatus.payloadSize_ms = state_Fxx.PacketSize_ms;
+            encStatus.bitRate = state_Fxx.TargetRate_bps;
+            encStatus.packetLossPercentage = state_Fxx.PacketLoss_perc;
+            encStatus.complexity = state_Fxx.Complexity;
+            encStatus.useInBandFEC = state_Fxx.useInBandFEC;
+            encStatus.useDTX = state_Fxx.useDTX;
+            encStatus.useCBR = state_Fxx.useCBR;
+            encStatus.internalSampleRate = Inlines.silk_SMULBB(state_Fxx.fs_kHz, 1000);
+            encStatus.allowBandwidthSwitch = state_Fxx.allow_bandwidth_switch;
+            encStatus.inWBmodeWithoutVariableLP = (state_Fxx.fs_kHz == 16 && state_Fxx.sLP.mode == 0) ? 1 : 0;
 
             return ret;
         }
@@ -106,10 +106,10 @@ namespace Concentus.Silk
 
             if (encControl.reducedDependency != 0)
             {
-                psEnc.state_Fxx[0].sCmn.first_frame_after_reset = 1;
-                psEnc.state_Fxx[1].sCmn.first_frame_after_reset = 1;
+                psEnc.state_Fxx[0].first_frame_after_reset = 1;
+                psEnc.state_Fxx[1].first_frame_after_reset = 1;
             }
-            psEnc.state_Fxx[0].sCmn.nFramesEncoded = psEnc.state_Fxx[1].sCmn.nFramesEncoded = 0;
+            psEnc.state_Fxx[0].nFramesEncoded = psEnc.state_Fxx[1].nFramesEncoded = 0;
 
             /* Check values in encoder control structure */
             ret += encControl.check_control_input();
@@ -124,7 +124,7 @@ namespace Concentus.Silk
             if (encControl.nChannelsInternal > psEnc.nChannelsInternal)
             {
                 /* Mono . Stereo transition: init state of second channel and stereo state */
-                ret += silk_encoder.silk_init_encoder(psEnc.state_Fxx[1], psEnc.state_Fxx[0].sCmn.arch);
+                ret += silk_encoder.silk_init_encoder(psEnc.state_Fxx[1]);
 
                 psEnc.sStereo.pred_prev_Q13.MemSet(0, 2);
                 psEnc.sStereo.sSide.MemSet(0, 2);
@@ -136,15 +136,15 @@ namespace Concentus.Silk
                 psEnc.sStereo.smth_width_Q14 = Inlines.CHOP16(Inlines.SILK_FIX_CONST(1.0f, 14));
                 if (psEnc.nChannelsAPI == 2)
                 {
-                    // silk_memcpy(&psEnc.state_Fxx[1].sCmn.resampler_state, &psEnc.state_Fxx[0].sCmn.resampler_state, sizeof(silk_resampler_state_struct));
-                    psEnc.state_Fxx[1].sCmn.resampler_state.Assign(psEnc.state_Fxx[0].sCmn.resampler_state);
+                    // silk_memcpy(&psEnc.state_Fxx[1].resampler_state, &psEnc.state_Fxx[0].resampler_state, sizeof(silk_resampler_state_struct));
+                    psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
 
-                    //silk_memcpy(&psEnc.state_Fxx[1].sCmn.In_HP_State, &psEnc.state_Fxx[0].sCmn.In_HP_State, sizeof(psEnc.state_Fxx[1].sCmn.In_HP_State) );
-                    psEnc.state_Fxx[0].sCmn.In_HP_State.MemCopyTo(psEnc.state_Fxx[1].sCmn.In_HP_State, 2);
+                    //silk_memcpy(&psEnc.state_Fxx[1].In_HP_State, &psEnc.state_Fxx[0].In_HP_State, sizeof(psEnc.state_Fxx[1].In_HP_State) );
+                    psEnc.state_Fxx[0].In_HP_State.MemCopyTo(psEnc.state_Fxx[1].In_HP_State, 2);
                 }
             }
 
-            transition = ((encControl.payloadSize_ms != psEnc.state_Fxx[0].sCmn.PacketSize_ms) || (psEnc.nChannelsInternal != encControl.nChannelsInternal)) ? 1 : 0;
+            transition = ((encControl.payloadSize_ms != psEnc.state_Fxx[0].PacketSize_ms) || (psEnc.nChannelsInternal != encControl.nChannelsInternal)) ? 1 : 0;
 
             psEnc.nChannelsAPI = encControl.nChannelsAPI;
             psEnc.nChannelsInternal = encControl.nChannelsInternal;
@@ -163,7 +163,7 @@ namespace Concentus.Silk
                 /* Reset Encoder */
                 for (n = 0; n < encControl.nChannelsInternal; n++)
                 {
-                    ret += silk_encoder.silk_init_encoder(psEnc.state_Fxx[n], psEnc.state_Fxx[n].sCmn.arch);
+                    ret += silk_encoder.silk_init_encoder(psEnc.state_Fxx[n]);
                     Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
                 }
                 tmp_payloadSize_ms = encControl.payloadSize_ms;
@@ -172,8 +172,8 @@ namespace Concentus.Silk
                 encControl.complexity = 0;
                 for (n = 0; n < encControl.nChannelsInternal; n++)
                 {
-                    psEnc.state_Fxx[n].sCmn.controlled_since_last_payload = 0;
-                    psEnc.state_Fxx[n].sCmn.prefillFlag = 1;
+                    psEnc.state_Fxx[n].controlled_since_last_payload = 0;
+                    psEnc.state_Fxx[n].prefillFlag = 1;
                 }
             }
             else
@@ -197,7 +197,7 @@ namespace Concentus.Silk
             for (n = 0; n < encControl.nChannelsInternal; n++)
             {
                 /* Force the side channel to the same rate as the mid */
-                int force_fs_kHz = (n == 1) ? psEnc.state_Fxx[0].sCmn.fs_kHz : 0;
+                int force_fs_kHz = (n == 1) ? psEnc.state_Fxx[0].fs_kHz : 0;
                 ret += control_codec.silk_control_encoder(psEnc.state_Fxx[n], encControl, TargetRate_bps, psEnc.allowBandwidthSwitch, n, force_fs_kHz);
 
                 if (ret != SilkError.SILK_NO_ERROR)
@@ -206,38 +206,38 @@ namespace Concentus.Silk
                     return ret;
                 }
 
-                if (psEnc.state_Fxx[n].sCmn.first_frame_after_reset != 0 || transition != 0)
+                if (psEnc.state_Fxx[n].first_frame_after_reset != 0 || transition != 0)
                 {
-                    for (i = 0; i < psEnc.state_Fxx[0].sCmn.nFramesPerPacket; i++)
+                    for (i = 0; i < psEnc.state_Fxx[0].nFramesPerPacket; i++)
                     {
-                        psEnc.state_Fxx[n].sCmn.LBRR_flags[i] = 0;
+                        psEnc.state_Fxx[n].LBRR_flags[i] = 0;
                     }
                 }
 
-                psEnc.state_Fxx[n].sCmn.inDTX = psEnc.state_Fxx[n].sCmn.useDTX;
+                psEnc.state_Fxx[n].inDTX = psEnc.state_Fxx[n].useDTX;
             }
 
-            Inlines.OpusAssert(encControl.nChannelsInternal == 1 || psEnc.state_Fxx[0].sCmn.fs_kHz == psEnc.state_Fxx[1].sCmn.fs_kHz);
+            Inlines.OpusAssert(encControl.nChannelsInternal == 1 || psEnc.state_Fxx[0].fs_kHz == psEnc.state_Fxx[1].fs_kHz);
 
             /* Input buffering/resampling and encoding */
-            nSamplesToBufferMax = 10 * nBlocksOf10ms * psEnc.state_Fxx[0].sCmn.fs_kHz;
+            nSamplesToBufferMax = 10 * nBlocksOf10ms * psEnc.state_Fxx[0].fs_kHz;
             nSamplesFromInputMax =
                     Inlines.silk_DIV32_16(nSamplesToBufferMax *
-                                       psEnc.state_Fxx[0].sCmn.API_fs_Hz,
-                                   Inlines.CHOP16(psEnc.state_Fxx[0].sCmn.fs_kHz * 1000));
+                                       psEnc.state_Fxx[0].API_fs_Hz,
+                                   Inlines.CHOP16(psEnc.state_Fxx[0].fs_kHz * 1000));
 
             buf = Pointer.Malloc<short>(nSamplesFromInputMax);
 
             while (true)
             {
-                nSamplesToBuffer = psEnc.state_Fxx[0].sCmn.frame_length - psEnc.state_Fxx[0].sCmn.inputBufIx;
+                nSamplesToBuffer = psEnc.state_Fxx[0].frame_length - psEnc.state_Fxx[0].inputBufIx;
                 nSamplesToBuffer = Inlines.silk_min(nSamplesToBuffer, nSamplesToBufferMax);
-                nSamplesFromInput = Inlines.silk_DIV32_16(nSamplesToBuffer * psEnc.state_Fxx[0].sCmn.API_fs_Hz, psEnc.state_Fxx[0].sCmn.fs_kHz * 1000);
+                nSamplesFromInput = Inlines.silk_DIV32_16(nSamplesToBuffer * psEnc.state_Fxx[0].API_fs_Hz, psEnc.state_Fxx[0].fs_kHz * 1000);
 
                 /* Resample and write to buffer */
                 if (encControl.nChannelsAPI == 2 && encControl.nChannelsInternal == 2)
                 {
-                    int id = psEnc.state_Fxx[0].sCmn.nFramesEncoded;
+                    int id = psEnc.state_Fxx[0].nFramesEncoded;
                     for (n = 0; n < nSamplesFromInput; n++)
                     {
                         buf[n] = samplesIn[2 * n];
@@ -246,31 +246,31 @@ namespace Concentus.Silk
                     /* Making sure to start both resamplers from the same state when switching from mono to stereo */
                     if (psEnc.nPrevChannelsInternal == 1 && id == 0)
                     {
-                        //silk_memcpy(&psEnc.state_Fxx[1].sCmn.resampler_state, &psEnc.state_Fxx[0].sCmn.resampler_state, sizeof(psEnc.state_Fxx[1].sCmn.resampler_state));
-                        psEnc.state_Fxx[1].sCmn.resampler_state.Assign(psEnc.state_Fxx[0].sCmn.resampler_state);
+                        //silk_memcpy(&psEnc.state_Fxx[1].resampler_state, &psEnc.state_Fxx[0].resampler_state, sizeof(psEnc.state_Fxx[1].resampler_state));
+                        psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
                     }
 
                     ret += Resampler.silk_resampler(
-                        psEnc.state_Fxx[0].sCmn.resampler_state,
-                        psEnc.state_Fxx[0].sCmn.inputBuf.Point(psEnc.state_Fxx[0].sCmn.inputBufIx + 2),
+                        psEnc.state_Fxx[0].resampler_state,
+                        psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].inputBufIx + 2),
                         buf,
                         nSamplesFromInput);
 
-                    psEnc.state_Fxx[0].sCmn.inputBufIx += nSamplesToBuffer;
+                    psEnc.state_Fxx[0].inputBufIx += nSamplesToBuffer;
 
-                    nSamplesToBuffer = psEnc.state_Fxx[1].sCmn.frame_length - psEnc.state_Fxx[1].sCmn.inputBufIx;
-                    nSamplesToBuffer = Inlines.silk_min(nSamplesToBuffer, 10 * nBlocksOf10ms * psEnc.state_Fxx[1].sCmn.fs_kHz);
+                    nSamplesToBuffer = psEnc.state_Fxx[1].frame_length - psEnc.state_Fxx[1].inputBufIx;
+                    nSamplesToBuffer = Inlines.silk_min(nSamplesToBuffer, 10 * nBlocksOf10ms * psEnc.state_Fxx[1].fs_kHz);
                     for (n = 0; n < nSamplesFromInput; n++)
                     {
                         buf[n] = samplesIn[2 * n + 1];
                     }
                     ret += Resampler.silk_resampler(
-                        psEnc.state_Fxx[1].sCmn.resampler_state,
-                        psEnc.state_Fxx[1].sCmn.inputBuf.Point(psEnc.state_Fxx[1].sCmn.inputBufIx + 2),
+                        psEnc.state_Fxx[1].resampler_state,
+                        psEnc.state_Fxx[1].inputBuf.Point(psEnc.state_Fxx[1].inputBufIx + 2),
                         buf,
                         nSamplesFromInput);
 
-                    psEnc.state_Fxx[1].sCmn.inputBufIx += nSamplesToBuffer;
+                    psEnc.state_Fxx[1].inputBufIx += nSamplesToBuffer;
                 }
                 else if (encControl.nChannelsAPI == 2 && encControl.nChannelsInternal == 1)
                 {
@@ -282,41 +282,41 @@ namespace Concentus.Silk
                     }
 
                     ret += Resampler.silk_resampler(
-                        psEnc.state_Fxx[0].sCmn.resampler_state,
-                        psEnc.state_Fxx[0].sCmn.inputBuf.Point(psEnc.state_Fxx[0].sCmn.inputBufIx + 2),
+                        psEnc.state_Fxx[0].resampler_state,
+                        psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].inputBufIx + 2),
                         buf,
                         nSamplesFromInput);
 
                     /* On the first mono frame, average the results for the two resampler states  */
-                    if (psEnc.nPrevChannelsInternal == 2 && psEnc.state_Fxx[0].sCmn.nFramesEncoded == 0)
+                    if (psEnc.nPrevChannelsInternal == 2 && psEnc.state_Fxx[0].nFramesEncoded == 0)
                     {
                         ret += Resampler.silk_resampler(
-                            psEnc.state_Fxx[1].sCmn.resampler_state,
-                            psEnc.state_Fxx[1].sCmn.inputBuf.Point(psEnc.state_Fxx[1].sCmn.inputBufIx + 2),
+                            psEnc.state_Fxx[1].resampler_state,
+                            psEnc.state_Fxx[1].inputBuf.Point(psEnc.state_Fxx[1].inputBufIx + 2),
                             buf,
                             nSamplesFromInput);
 
-                        for (n = 0; n < psEnc.state_Fxx[0].sCmn.frame_length; n++)
+                        for (n = 0; n < psEnc.state_Fxx[0].frame_length; n++)
                         {
-                            psEnc.state_Fxx[0].sCmn.inputBuf[psEnc.state_Fxx[0].sCmn.inputBufIx + n + 2] =
-                                  Inlines.CHOP16(Inlines.silk_RSHIFT(psEnc.state_Fxx[0].sCmn.inputBuf[psEnc.state_Fxx[0].sCmn.inputBufIx + n + 2]
-                                            + psEnc.state_Fxx[1].sCmn.inputBuf[psEnc.state_Fxx[1].sCmn.inputBufIx + n + 2], 1));
+                            psEnc.state_Fxx[0].inputBuf[psEnc.state_Fxx[0].inputBufIx + n + 2] =
+                                  Inlines.CHOP16(Inlines.silk_RSHIFT(psEnc.state_Fxx[0].inputBuf[psEnc.state_Fxx[0].inputBufIx + n + 2]
+                                            + psEnc.state_Fxx[1].inputBuf[psEnc.state_Fxx[1].inputBufIx + n + 2], 1));
                         }
                     }
 
-                    psEnc.state_Fxx[0].sCmn.inputBufIx += nSamplesToBuffer;
+                    psEnc.state_Fxx[0].inputBufIx += nSamplesToBuffer;
                 }
                 else
                 {
                     Inlines.OpusAssert(encControl.nChannelsAPI == 1 && encControl.nChannelsInternal == 1);
                     samplesIn.MemCopyTo(buf, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
-                        psEnc.state_Fxx[0].sCmn.resampler_state,
-                        psEnc.state_Fxx[0].sCmn.inputBuf.Point(psEnc.state_Fxx[0].sCmn.inputBufIx + 2),
+                        psEnc.state_Fxx[0].resampler_state,
+                        psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].inputBufIx + 2),
                         buf,
                         nSamplesFromInput);
 
-                    psEnc.state_Fxx[0].sCmn.inputBufIx += nSamplesToBuffer;
+                    psEnc.state_Fxx[0].inputBufIx += nSamplesToBuffer;
                 }
 
                 samplesIn = samplesIn.Point(nSamplesFromInput * encControl.nChannelsAPI);
@@ -326,18 +326,18 @@ namespace Concentus.Silk
                 psEnc.allowBandwidthSwitch = 0;
 
                 /* Silk encoder */
-                if (psEnc.state_Fxx[0].sCmn.inputBufIx >= psEnc.state_Fxx[0].sCmn.frame_length)
+                if (psEnc.state_Fxx[0].inputBufIx >= psEnc.state_Fxx[0].frame_length)
                 {
                     /* Enough data in input buffer, so encode */
-                    Inlines.OpusAssert(psEnc.state_Fxx[0].sCmn.inputBufIx == psEnc.state_Fxx[0].sCmn.frame_length);
-                    Inlines.OpusAssert(encControl.nChannelsInternal == 1 || psEnc.state_Fxx[1].sCmn.inputBufIx == psEnc.state_Fxx[1].sCmn.frame_length);
+                    Inlines.OpusAssert(psEnc.state_Fxx[0].inputBufIx == psEnc.state_Fxx[0].frame_length);
+                    Inlines.OpusAssert(encControl.nChannelsInternal == 1 || psEnc.state_Fxx[1].inputBufIx == psEnc.state_Fxx[1].frame_length);
 
                     /* Deal with LBRR data */
-                    if (psEnc.state_Fxx[0].sCmn.nFramesEncoded == 0 && prefillFlag == 0)
+                    if (psEnc.state_Fxx[0].nFramesEncoded == 0 && prefillFlag == 0)
                     {
                         /* Create space at start of payload for VAD and FEC flags */
                         byte[] iCDF = { 0, 0 };
-                        iCDF[0] = Inlines.CHOP8U(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].sCmn.nFramesPerPacket + 1) * encControl.nChannelsInternal));
+                        iCDF[0] = Inlines.CHOP8U(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         EntropyCoder.ec_enc_icdf(psRangeEnc, 0, iCDF.GetPointer(), 8);
 
                         /* Encode any LBRR data from previous packet */
@@ -345,24 +345,24 @@ namespace Concentus.Silk
                         for (n = 0; n < encControl.nChannelsInternal; n++)
                         {
                             LBRR_symbol = 0;
-                            for (i = 0; i < psEnc.state_Fxx[n].sCmn.nFramesPerPacket; i++)
+                            for (i = 0; i < psEnc.state_Fxx[n].nFramesPerPacket; i++)
                             {
-                                LBRR_symbol |= Inlines.silk_LSHIFT(psEnc.state_Fxx[n].sCmn.LBRR_flags[i], i);
+                                LBRR_symbol |= Inlines.silk_LSHIFT(psEnc.state_Fxx[n].LBRR_flags[i], i);
                             }
 
-                            psEnc.state_Fxx[n].sCmn.LBRR_flag = (sbyte)(LBRR_symbol > 0 ? 1 : 0);
-                            if (LBRR_symbol != 0 && psEnc.state_Fxx[n].sCmn.nFramesPerPacket > 1)
+                            psEnc.state_Fxx[n].LBRR_flag = (sbyte)(LBRR_symbol > 0 ? 1 : 0);
+                            if (LBRR_symbol != 0 && psEnc.state_Fxx[n].nFramesPerPacket > 1)
                             {
-                                EntropyCoder.ec_enc_icdf(psRangeEnc, LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].sCmn.nFramesPerPacket - 2].GetPointer(), 8);
+                                EntropyCoder.ec_enc_icdf(psRangeEnc, LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2].GetPointer(), 8);
                             }
                         }
 
                         /* Code LBRR indices and excitation signals */
-                        for (i = 0; i < psEnc.state_Fxx[0].sCmn.nFramesPerPacket; i++)
+                        for (i = 0; i < psEnc.state_Fxx[0].nFramesPerPacket; i++)
                         {
                             for (n = 0; n < encControl.nChannelsInternal; n++)
                             {
-                                if (psEnc.state_Fxx[n].sCmn.LBRR_flags[i] != 0)
+                                if (psEnc.state_Fxx[n].LBRR_flags[i] != 0)
                                 {
                                     int condCoding;
 
@@ -370,14 +370,14 @@ namespace Concentus.Silk
                                     {
                                         Stereo.silk_stereo_encode_pred(psRangeEnc, psEnc.sStereo.predIx[i]);
                                         /* For LBRR data there's no need to code the mid-only flag if the side-channel LBRR flag is set */
-                                        if (psEnc.state_Fxx[1].sCmn.LBRR_flags[i] == 0)
+                                        if (psEnc.state_Fxx[1].LBRR_flags[i] == 0)
                                         {
                                             Stereo.silk_stereo_encode_mid_only(psRangeEnc, psEnc.sStereo.mid_only_flags[i]);
                                         }
                                     }
 
                                     /* Use conditional coding if previous frame available */
-                                    if (i > 0 && psEnc.state_Fxx[n].sCmn.LBRR_flags[i - 1] != 0)
+                                    if (i > 0 && psEnc.state_Fxx[n].LBRR_flags[i - 1] != 0)
                                     {
                                         condCoding = SilkConstants.CODE_CONDITIONALLY;
                                     }
@@ -386,9 +386,9 @@ namespace Concentus.Silk
                                         condCoding = SilkConstants.CODE_INDEPENDENTLY;
                                     }
 
-                                    encode_indices.silk_encode_indices(psEnc.state_Fxx[n].sCmn, psRangeEnc, i, 1, condCoding);
-                                    encode_pulses.silk_encode_pulses(psRangeEnc, psEnc.state_Fxx[n].sCmn.indices_LBRR[i].signalType, psEnc.state_Fxx[n].sCmn.indices_LBRR[i].quantOffsetType,
-                                        psEnc.state_Fxx[n].sCmn.pulses_LBRR[i], psEnc.state_Fxx[n].sCmn.frame_length);
+                                    encode_indices.silk_encode_indices(psEnc.state_Fxx[n], psRangeEnc, i, 1, condCoding);
+                                    encode_pulses.silk_encode_pulses(psRangeEnc, psEnc.state_Fxx[n].indices_LBRR[i].signalType, psEnc.state_Fxx[n].indices_LBRR[i].quantOffsetType,
+                                        psEnc.state_Fxx[n].pulses_LBRR[i], psEnc.state_Fxx[n].frame_length);
                                 }
                             }
                         }
@@ -396,7 +396,7 @@ namespace Concentus.Silk
                         /* Reset LBRR flags */
                         for (n = 0; n < encControl.nChannelsInternal; n++)
                         {
-                            psEnc.state_Fxx[n].sCmn.LBRR_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
+                            psEnc.state_Fxx[n].LBRR_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
                         }
 
                         psEnc.nBitsUsedLBRR = EntropyCoder.ec_tell(psRangeEnc);
@@ -414,7 +414,7 @@ namespace Concentus.Silk
                     }
 
                     /* Divide by number of uncoded frames left in packet */
-                    nBits = Inlines.silk_DIV32_16(nBits, psEnc.state_Fxx[0].sCmn.nFramesPerPacket);
+                    nBits = Inlines.silk_DIV32_16(nBits, psEnc.state_Fxx[0].nFramesPerPacket);
 
                     /* Convert to bits/second */
                     if (encControl.payloadSize_ms == 10)
@@ -429,10 +429,10 @@ namespace Concentus.Silk
                     /* Subtract fraction of bits in excess of target in previous frames and packets */
                     TargetRate_bps -= Inlines.silk_DIV32_16(Inlines.silk_MUL(psEnc.nBitsExceeded, 1000), TuningParameters.BITRESERVOIR_DECAY_TIME_MS);
 
-                    if (prefillFlag == 0 && psEnc.state_Fxx[0].sCmn.nFramesEncoded > 0)
+                    if (prefillFlag == 0 && psEnc.state_Fxx[0].nFramesEncoded > 0)
                     {
                         /* Compare actual vs target bits so far in this packet */
-                        int bitsBalance = EntropyCoder.ec_tell(psRangeEnc) - psEnc.nBitsUsedLBRR - nBits * psEnc.state_Fxx[0].sCmn.nFramesEncoded;
+                        int bitsBalance = EntropyCoder.ec_tell(psRangeEnc) - psEnc.nBitsUsedLBRR - nBits * psEnc.state_Fxx[0].nFramesEncoded;
                         TargetRate_bps -= Inlines.silk_DIV32_16(Inlines.silk_MUL(bitsBalance, 1000), TuningParameters.BITRESERVOIR_DECAY_TIME_MS);
                     }
 
@@ -442,20 +442,20 @@ namespace Concentus.Silk
                     /* Convert Left/Right to Mid/Side */
                     if (encControl.nChannelsInternal == 2)
                     {
-                        BoxedValue<sbyte> midOnlyFlagBoxed = new BoxedValue<sbyte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].sCmn.nFramesEncoded]);
+                        BoxedValue<sbyte> midOnlyFlagBoxed = new BoxedValue<sbyte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                         Stereo.silk_stereo_LR_to_MS(psEnc.sStereo,
-                            psEnc.state_Fxx[0].sCmn.inputBuf.Point(2),
-                            psEnc.state_Fxx[1].sCmn.inputBuf.Point(2),
-                            psEnc.sStereo.predIx[psEnc.state_Fxx[0].sCmn.nFramesEncoded],
+                            psEnc.state_Fxx[0].inputBuf.Point(2),
+                            psEnc.state_Fxx[1].inputBuf.Point(2),
+                            psEnc.sStereo.predIx[psEnc.state_Fxx[0].nFramesEncoded],
                             midOnlyFlagBoxed,
                             MStargetRates_bps.GetPointer(),
                             TargetRate_bps,
-                            psEnc.state_Fxx[0].sCmn.speech_activity_Q8,
+                            psEnc.state_Fxx[0].speech_activity_Q8,
                             encControl.toMono,
-                            psEnc.state_Fxx[0].sCmn.fs_kHz,
-                            psEnc.state_Fxx[0].sCmn.frame_length);
+                            psEnc.state_Fxx[0].fs_kHz,
+                            psEnc.state_Fxx[0].frame_length);
 
-                        psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].sCmn.nFramesEncoded] = midOnlyFlagBoxed.Val;
+                        psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded] = midOnlyFlagBoxed.Val;
 
                         if (midOnlyFlagBoxed.Val == 0)
                         {
@@ -466,42 +466,42 @@ namespace Concentus.Silk
                                 psEnc.state_Fxx[1].sShape.Reset();
                                 // silk_memset(&psEnc.state_Fxx[1].sPrefilt, 0, sizeof(psEnc.state_Fxx[1].sPrefilt) );
                                 psEnc.state_Fxx[1].sPrefilt.Reset();
-                                // silk_memset(&psEnc.state_Fxx[1].sCmn.sNSQ, 0, sizeof(psEnc.state_Fxx[1].sCmn.sNSQ) );
-                                psEnc.state_Fxx[1].sCmn.sNSQ.Reset();
-                                // silk_memset(psEnc.state_Fxx[1].sCmn.prev_NLSFq_Q15, 0, sizeof(psEnc.state_Fxx[1].sCmn.prev_NLSFq_Q15) );
-                                psEnc.state_Fxx[1].sCmn.prev_NLSFq_Q15.MemSet(0, SilkConstants.MAX_LPC_ORDER);
-                                //silk_memset(&psEnc.state_Fxx[1].sCmn.sLP.In_LP_State, 0, sizeof(psEnc.state_Fxx[1].sCmn.sLP.In_LP_State) );
-                                psEnc.state_Fxx[1].sCmn.sLP.In_LP_State.MemSet(0, 2);
+                                // silk_memset(&psEnc.state_Fxx[1].sNSQ, 0, sizeof(psEnc.state_Fxx[1].sNSQ) );
+                                psEnc.state_Fxx[1].sNSQ.Reset();
+                                // silk_memset(psEnc.state_Fxx[1].prev_NLSFq_Q15, 0, sizeof(psEnc.state_Fxx[1].prev_NLSFq_Q15) );
+                                psEnc.state_Fxx[1].prev_NLSFq_Q15.MemSet(0, SilkConstants.MAX_LPC_ORDER);
+                                //silk_memset(&psEnc.state_Fxx[1].sLP.In_LP_State, 0, sizeof(psEnc.state_Fxx[1].sLP.In_LP_State) );
+                                psEnc.state_Fxx[1].sLP.In_LP_State.MemSet(0, 2);
 
-                                psEnc.state_Fxx[1].sCmn.prevLag = 100;
-                                psEnc.state_Fxx[1].sCmn.sNSQ.lagPrev = 100;
+                                psEnc.state_Fxx[1].prevLag = 100;
+                                psEnc.state_Fxx[1].sNSQ.lagPrev = 100;
                                 psEnc.state_Fxx[1].sShape.LastGainIndex = 10;
-                                psEnc.state_Fxx[1].sCmn.prevSignalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
-                                psEnc.state_Fxx[1].sCmn.sNSQ.prev_gain_Q16 = 65536;
-                                psEnc.state_Fxx[1].sCmn.first_frame_after_reset = 1;
+                                psEnc.state_Fxx[1].prevSignalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
+                                psEnc.state_Fxx[1].sNSQ.prev_gain_Q16 = 65536;
+                                psEnc.state_Fxx[1].first_frame_after_reset = 1;
                             }
 
                             encode_frame.silk_encode_do_VAD_FIX(psEnc.state_Fxx[1]);
                         }
                         else
                         {
-                            psEnc.state_Fxx[1].sCmn.VAD_flags[psEnc.state_Fxx[0].sCmn.nFramesEncoded] = 0;
+                            psEnc.state_Fxx[1].VAD_flags[psEnc.state_Fxx[0].nFramesEncoded] = 0;
                         }
 
                         if (prefillFlag == 0)
                         {
-                            Stereo.silk_stereo_encode_pred(psRangeEnc, psEnc.sStereo.predIx[psEnc.state_Fxx[0].sCmn.nFramesEncoded]);
-                            if (psEnc.state_Fxx[1].sCmn.VAD_flags[psEnc.state_Fxx[0].sCmn.nFramesEncoded] == 0)
+                            Stereo.silk_stereo_encode_pred(psRangeEnc, psEnc.sStereo.predIx[psEnc.state_Fxx[0].nFramesEncoded]);
+                            if (psEnc.state_Fxx[1].VAD_flags[psEnc.state_Fxx[0].nFramesEncoded] == 0)
                             {
-                                Stereo.silk_stereo_encode_mid_only(psRangeEnc, psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].sCmn.nFramesEncoded]);
+                                Stereo.silk_stereo_encode_mid_only(psRangeEnc, psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                             }
                         }
                     }
                     else
                     {
                         /* Buffering */
-                        psEnc.sStereo.sMid.MemCopyTo(psEnc.state_Fxx[0].sCmn.inputBuf, 2);
-                        psEnc.state_Fxx[0].sCmn.inputBuf.Point(psEnc.state_Fxx[0].sCmn.frame_length).MemCopyTo(psEnc.sStereo.sMid, 2);
+                        psEnc.sStereo.sMid.MemCopyTo(psEnc.state_Fxx[0].inputBuf, 2);
+                        psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].frame_length).MemCopyTo(psEnc.sStereo.sMid, 2);
                     }
 
                     encode_frame.silk_encode_do_VAD_FIX(psEnc.state_Fxx[0]);
@@ -551,10 +551,10 @@ namespace Concentus.Silk
                         {
                             int condCoding;
 
-                            control_SNR.silk_control_SNR(psEnc.state_Fxx[n].sCmn, channelRate_bps);
+                            control_SNR.silk_control_SNR(psEnc.state_Fxx[n], channelRate_bps);
 
                             /* Use independent coding if no previous frame available */
-                            if (psEnc.state_Fxx[0].sCmn.nFramesEncoded - n <= 0)
+                            if (psEnc.state_Fxx[0].nFramesEncoded - n <= 0)
                             {
                                 condCoding = SilkConstants.CODE_INDEPENDENTLY;
                             }
@@ -573,35 +573,35 @@ namespace Concentus.Silk
                             Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
                         }
 
-                        psEnc.state_Fxx[n].sCmn.controlled_since_last_payload = 0;
-                        psEnc.state_Fxx[n].sCmn.inputBufIx = 0;
-                        psEnc.state_Fxx[n].sCmn.nFramesEncoded++;
+                        psEnc.state_Fxx[n].controlled_since_last_payload = 0;
+                        psEnc.state_Fxx[n].inputBufIx = 0;
+                        psEnc.state_Fxx[n].nFramesEncoded++;
                     }
 
-                    psEnc.prev_decode_only_middle = psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].sCmn.nFramesEncoded - 1];
+                    psEnc.prev_decode_only_middle = psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded - 1];
 
                     /* Insert VAD and FEC flags at beginning of bitstream */
-                    if (nBytesOut.Val > 0 && psEnc.state_Fxx[0].sCmn.nFramesEncoded == psEnc.state_Fxx[0].sCmn.nFramesPerPacket)
+                    if (nBytesOut.Val > 0 && psEnc.state_Fxx[0].nFramesEncoded == psEnc.state_Fxx[0].nFramesPerPacket)
                     {
                         flags = 0;
                         for (n = 0; n < encControl.nChannelsInternal; n++)
                         {
-                            for (i = 0; i < psEnc.state_Fxx[n].sCmn.nFramesPerPacket; i++)
+                            for (i = 0; i < psEnc.state_Fxx[n].nFramesPerPacket; i++)
                             {
                                 flags = Inlines.silk_LSHIFT(flags, 1);
-                                flags |= psEnc.state_Fxx[n].sCmn.VAD_flags[i];
+                                flags |= psEnc.state_Fxx[n].VAD_flags[i];
                             }
                             flags = Inlines.silk_LSHIFT(flags, 1);
-                            flags |= psEnc.state_Fxx[n].sCmn.LBRR_flag;
+                            flags |= psEnc.state_Fxx[n].LBRR_flag;
                         }
 
                         if (prefillFlag == 0)
                         {
-                            EntropyCoder.ec_enc_patch_initial_bits(psRangeEnc, (uint)flags, (uint)((psEnc.state_Fxx[0].sCmn.nFramesPerPacket + 1) * encControl.nChannelsInternal));
+                            EntropyCoder.ec_enc_patch_initial_bits(psRangeEnc, (uint)flags, (uint)((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         }
 
                         /* Return zero bytes if all channels DTXed */
-                        if (psEnc.state_Fxx[0].sCmn.inDTX != 0 && (encControl.nChannelsInternal == 1 || psEnc.state_Fxx[1].sCmn.inDTX != 0))
+                        if (psEnc.state_Fxx[0].inDTX != 0 && (encControl.nChannelsInternal == 1 || psEnc.state_Fxx[1].inDTX != 0))
                         {
                             nBytesOut.Val = 0;
                         }
@@ -614,7 +614,7 @@ namespace Concentus.Silk
                         speech_act_thr_for_switch_Q8 = Inlines.silk_SMLAWB(Inlines.SILK_FIX_CONST(TuningParameters.SPEECH_ACTIVITY_DTX_THRES, 8),
                                             Inlines.SILK_FIX_CONST((1 - TuningParameters.SPEECH_ACTIVITY_DTX_THRES) / TuningParameters.MAX_BANDWIDTH_SWITCH_DELAY_MS, 16 + 8),
                                                 psEnc.timeSinceSwitchAllowed_ms);
-                        if (psEnc.state_Fxx[0].sCmn.speech_activity_Q8 < speech_act_thr_for_switch_Q8)
+                        if (psEnc.state_Fxx[0].speech_activity_Q8 < speech_act_thr_for_switch_Q8)
                         {
                             psEnc.allowBandwidthSwitch = 1;
                             psEnc.timeSinceSwitchAllowed_ms = 0;
@@ -642,8 +642,8 @@ namespace Concentus.Silk
             psEnc.nPrevChannelsInternal = encControl.nChannelsInternal;
 
             encControl.allowBandwidthSwitch = psEnc.allowBandwidthSwitch;
-            encControl.inWBmodeWithoutVariableLP = (psEnc.state_Fxx[0].sCmn.fs_kHz == 16 && psEnc.state_Fxx[0].sCmn.sLP.mode == 0) ? 1 : 0;
-            encControl.internalSampleRate = Inlines.silk_SMULBB(psEnc.state_Fxx[0].sCmn.fs_kHz, 1000);
+            encControl.inWBmodeWithoutVariableLP = (psEnc.state_Fxx[0].fs_kHz == 16 && psEnc.state_Fxx[0].sLP.mode == 0) ? 1 : 0;
+            encControl.internalSampleRate = Inlines.silk_SMULBB(psEnc.state_Fxx[0].fs_kHz, 1000);
             encControl.stereoWidth_Q14 = encControl.toMono != 0 ? 0 : psEnc.sStereo.smth_width_Q14;
 
             if (prefillFlag != 0)
@@ -653,8 +653,8 @@ namespace Concentus.Silk
 
                 for (n = 0; n < encControl.nChannelsInternal; n++)
                 {
-                    psEnc.state_Fxx[n].sCmn.controlled_since_last_payload = 0;
-                    psEnc.state_Fxx[n].sCmn.prefillFlag = 0;
+                    psEnc.state_Fxx[n].controlled_since_last_payload = 0;
+                    psEnc.state_Fxx[n].prefillFlag = 0;
                 }
             }
 

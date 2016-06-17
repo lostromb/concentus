@@ -14,9 +14,9 @@ namespace Concentus.Silk.Structs
     public class silk_decoder_state
     {
         public int prev_gain_Q16 = 0;
-        public /*readonly*/ Pointer<int> exc_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_FRAME_LENGTH);
-        public /*readonly*/ Pointer<int> sLPC_Q14_buf = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
-        public /*readonly*/ Pointer<short> outBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);  /* Buffer for output signal                     */
+        public readonly Pointer<int> exc_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_FRAME_LENGTH);
+        public readonly Pointer<int> sLPC_Q14_buf = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
+        public readonly Pointer<short> outBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);  /* Buffer for output signal                     */
         public int lagPrev = 0;                            /* Previous Lag                                                     */
         public sbyte LastGainIndex = 0;                      /* Previous gain index                                              */
         public int fs_kHz = 0;                             /* Sampling frequency in kHz                                        */
@@ -26,7 +26,7 @@ namespace Concentus.Silk.Structs
         public int subfr_length = 0;                       /* Subframe length (samples)                                        */
         public int ltp_mem_length = 0;                     /* Length of LTP memory                                             */
         public int LPC_order = 0;                          /* LPC order                                                        */
-        public /*readonly*/ Pointer<short> prevNLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);      /* Used to interpolate LSFs                                         */
+        public readonly Pointer<short> prevNLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);      /* Used to interpolate LSFs                                         */
         public int first_frame_after_reset = 0;            /* Flag for deactivating NLSF interpolation                         */
         public Pointer<byte> pitch_lag_low_bits_iCDF;           /* Pointer to iCDF table for low bits of pitch lag index            */
         public Pointer<byte> pitch_contour_iCDF;                /* Pointer to iCDF table for pitch contour index                    */
@@ -39,25 +39,25 @@ namespace Concentus.Silk.Structs
         public int ec_prevSignalType = 0;
         public short ec_prevLagIndex = 0;
 
-        public /*readonly*/ Pointer<int> VAD_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        public readonly Pointer<int> VAD_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
         public int LBRR_flag = 0;
-        public /*readonly*/ Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        public readonly Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
 
-        public /*readonly*/ silk_resampler_state_struct resampler_state = new silk_resampler_state_struct();
+        public readonly silk_resampler_state_struct resampler_state = new silk_resampler_state_struct();
 
         public silk_NLSF_CB_struct psNLSF_CB = null;                         /* Pointer to NLSF codebook                                         */
 
         /* Quantization indices */
-        public /*readonly*/ SideInfoIndices indices = new SideInfoIndices();
+        public readonly SideInfoIndices indices = new SideInfoIndices();
 
         /* CNG state */
-        public /*readonly*/ silk_CNG_struct sCNG = new silk_CNG_struct();
+        public readonly silk_CNG_struct sCNG = new silk_CNG_struct();
 
         /* Stuff used for PLC */
         public int lossCnt = 0;
         public int prevSignalType = 0;
 
-        public /*readonly*/ silk_PLC_struct sPLC = new silk_PLC_struct();
+        public readonly silk_PLC_struct sPLC = new silk_PLC_struct();
         
         public void Reset()
         {

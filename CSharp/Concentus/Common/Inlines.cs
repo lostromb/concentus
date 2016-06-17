@@ -2397,8 +2397,7 @@ namespace Concentus.Common
         public static int silk_inner_prod_aligned(
             Pointer<short> inVec1,             /*    I input vector 1                                              */
             Pointer<short> inVec2,             /*    I input vector 2                                              */
-            int len,                /*    I vector lengths                                              */
-            int arch = 0                /*    I Run-time architecture                                       */
+            int len                /*    I vector lengths                                              */
         )
         {
             return celt_inner_prod.celt_inner_prod_c(inVec1, inVec2, len);

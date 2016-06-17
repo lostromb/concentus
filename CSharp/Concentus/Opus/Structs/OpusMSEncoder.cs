@@ -11,7 +11,6 @@ namespace Concentus.Opus.Structs
     public class OpusMSEncoder
     {
         public readonly ChannelLayout layout = new ChannelLayout();
-        public int arch = 0;
         public int lfe_stream = 0;
         public int application = 0;
         public int variable_duration = 0;
@@ -39,7 +38,6 @@ namespace Concentus.Opus.Structs
         internal void Reset()
         {
             layout.Reset();
-            arch = 0;
             lfe_stream = 0;
             application = 0;
             variable_duration = 0;

@@ -48,8 +48,7 @@ namespace Concentus.Silk
             int newPacketFlag,      /* I    Indicates first decoder call for this packet    */
             ec_ctx psRangeDec,        /* I/O  Compressor data structure                       */
             Pointer<short> samplesOut,        /* O    Decoded output speech vector                    */
-            BoxedValue<int> nSamplesOut,       /* O    Number of samples decoded                       */
-            int arch                /* I    Run-time architecture                           */
+            BoxedValue<int> nSamplesOut       /* O    Number of samples decoded                       */
         )
         {
             int i, n, decode_only_middle = 0, ret = SilkError.SILK_NO_ERROR;
@@ -317,7 +316,7 @@ namespace Concentus.Silk
                     {
                         condCoding = SilkConstants.CODE_CONDITIONALLY;
                     }
-                    ret += decode_frame.silk_decode_frame(channel_state[n], psRangeDec, samplesOut1_tmp[n].Point(2), nSamplesOutDec, lostFlag, condCoding, arch);
+                    ret += decode_frame.silk_decode_frame(channel_state[n], psRangeDec, samplesOut1_tmp[n].Point(2), nSamplesOutDec, lostFlag, condCoding);
                 }
                 else
                 {

@@ -11,37 +11,37 @@ namespace Concentus.Silk
         private const bool TRACE_FILE = false;
 
         public static void silk_encode_do_VAD_FIX(
-            silk_encoder_state_fix psEnc                                  /* I/O  Pointer to Silk FIX encoder state                                           */
+            silk_encoder_state psEnc                                  /* I/O  Pointer to Silk FIX encoder state                                           */
         )
         {
             /****************************/
             /* Voice Activity Detection */
             /****************************/
-            VAD.silk_VAD_GetSA_Q8_c(psEnc.sCmn, psEnc.sCmn.inputBuf.Point(1));
+            VAD.silk_VAD_GetSA_Q8_c(psEnc, psEnc.inputBuf.Point(1));
 
             /**************************************************/
             /* Convert speech activity into VAD and DTX flags */
             /**************************************************/
-            if (psEnc.sCmn.speech_activity_Q8 < Inlines.SILK_FIX_CONST(TuningParameters.SPEECH_ACTIVITY_DTX_THRES, 8))
+            if (psEnc.speech_activity_Q8 < Inlines.SILK_FIX_CONST(TuningParameters.SPEECH_ACTIVITY_DTX_THRES, 8))
             {
-                psEnc.sCmn.indices.signalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
-                psEnc.sCmn.noSpeechCounter++;
-                if (psEnc.sCmn.noSpeechCounter < SilkConstants.NB_SPEECH_FRAMES_BEFORE_DTX)
+                psEnc.indices.signalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
+                psEnc.noSpeechCounter++;
+                if (psEnc.noSpeechCounter < SilkConstants.NB_SPEECH_FRAMES_BEFORE_DTX)
                 {
-                    psEnc.sCmn.inDTX = 0;
+                    psEnc.inDTX = 0;
                 }
-                else if (psEnc.sCmn.noSpeechCounter > SilkConstants.MAX_CONSECUTIVE_DTX + SilkConstants.NB_SPEECH_FRAMES_BEFORE_DTX)
+                else if (psEnc.noSpeechCounter > SilkConstants.MAX_CONSECUTIVE_DTX + SilkConstants.NB_SPEECH_FRAMES_BEFORE_DTX)
                 {
-                    psEnc.sCmn.noSpeechCounter = SilkConstants.NB_SPEECH_FRAMES_BEFORE_DTX;
-                    psEnc.sCmn.inDTX = 0;
+                    psEnc.noSpeechCounter = SilkConstants.NB_SPEECH_FRAMES_BEFORE_DTX;
+                    psEnc.inDTX = 0;
                 }
-                psEnc.sCmn.VAD_flags[psEnc.sCmn.nFramesEncoded] = 0;
+                psEnc.VAD_flags[psEnc.nFramesEncoded] = 0;
             }
             else {
-                psEnc.sCmn.noSpeechCounter = 0;
-                psEnc.sCmn.inDTX = 0;
-                psEnc.sCmn.indices.signalType = SilkConstants.TYPE_UNVOICED;
-                psEnc.sCmn.VAD_flags[psEnc.sCmn.nFramesEncoded] = 1;
+                psEnc.noSpeechCounter = 0;
+                psEnc.inDTX = 0;
+                psEnc.indices.signalType = SilkConstants.TYPE_UNVOICED;
+                psEnc.VAD_flags[psEnc.nFramesEncoded] = 1;
             }
         }
 
@@ -49,7 +49,7 @@ namespace Concentus.Silk
         /* Encode frame */
         /****************/
         public static int silk_encode_frame_FIX(
-            silk_encoder_state_fix psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
+            silk_encoder_state psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
             BoxedValue<int> pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
             ec_ctx psRangeEnc,                            /* I/O  compressor data structure                                                   */
             int condCoding,                             /* I    The type of conditional coding to use                                       */
@@ -79,46 +79,46 @@ namespace Concentus.Silk
             LastGainIndex_copy2 = 0;
             nBits_lower = nBits_upper = gainMult_lower = gainMult_upper = 0;
 
-            psEnc.sCmn.indices.Seed = Inlines.CHOP8(psEnc.sCmn.frameCounter++ & 3);
+            psEnc.indices.Seed = Inlines.CHOP8(psEnc.frameCounter++ & 3);
 
             /**************************************************************/
             /* Set up Input Pointers, and insert frame in input buffer   */
             /*************************************************************/
             /* start of frame to encode */
-            x_frame = psEnc.x_buf.Point(psEnc.sCmn.ltp_mem_length);
+            x_frame = psEnc.x_buf.Point(psEnc.ltp_mem_length);
 
             /***************************************/
             /* Ensure smooth bandwidth transitions */
             /***************************************/
-            Filters.silk_LP_variable_cutoff(psEnc.sCmn.sLP, psEnc.sCmn.inputBuf.Point(1), psEnc.sCmn.frame_length);
+            Filters.silk_LP_variable_cutoff(psEnc.sLP, psEnc.inputBuf.Point(1), psEnc.frame_length);
 
             /*******************************************/
             /* Copy new frame to front of input buffer */
             /*******************************************/
-            psEnc.sCmn.inputBuf.Point(1).MemCopyTo(x_frame.Point(SilkConstants.LA_SHAPE_MS * psEnc.sCmn.fs_kHz), psEnc.sCmn.frame_length);
+            psEnc.inputBuf.Point(1).MemCopyTo(x_frame.Point(SilkConstants.LA_SHAPE_MS * psEnc.fs_kHz), psEnc.frame_length);
 
-            if (psEnc.sCmn.prefillFlag == 0)
+            if (psEnc.prefillFlag == 0)
             {
                 Pointer<int> xfw_Q3;
                 Pointer<short> res_pitch;
                 Pointer<byte> ec_buf_copy;
                 Pointer<short> res_pitch_frame;
 
-                res_pitch = Pointer.Malloc<short>(psEnc.sCmn.la_pitch + psEnc.sCmn.frame_length + psEnc.sCmn.ltp_mem_length);
+                res_pitch = Pointer.Malloc<short>(psEnc.la_pitch + psEnc.frame_length + psEnc.ltp_mem_length);
                 /* start of pitch LPC residual frame */
-                res_pitch_frame = res_pitch.Point(psEnc.sCmn.ltp_mem_length);
+                res_pitch_frame = res_pitch.Point(psEnc.ltp_mem_length);
 
                 /*****************************************/
                 /* Find pitch lags, initial LPC analysis */
                 /*****************************************/
-                find_pitch_lags.silk_find_pitch_lags_FIX(psEnc, sEncCtrl, res_pitch, x_frame, psEnc.sCmn.arch);
+                find_pitch_lags.silk_find_pitch_lags_FIX(psEnc, sEncCtrl, res_pitch, x_frame);
 
                 if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state2", psEnc);
 
                 /************************/
                 /* Noise shape analysis */
                 /************************/
-                noise_shape_analysis.silk_noise_shape_analysis_FIX(psEnc, sEncCtrl, res_pitch_frame, x_frame, psEnc.sCmn.arch);
+                noise_shape_analysis.silk_noise_shape_analysis_FIX(psEnc, sEncCtrl, res_pitch_frame, x_frame);
 
                 if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state3", psEnc);
 
@@ -139,7 +139,7 @@ namespace Concentus.Silk
                 /*****************************************/
                 /* Prefiltering for noise shaper         */
                 /*****************************************/
-                xfw_Q3 = Pointer.Malloc<int>(psEnc.sCmn.frame_length);
+                xfw_Q3 = Pointer.Malloc<int>(psEnc.frame_length);
                 prefilter.silk_prefilter_FIX(psEnc, sEncCtrl, xfw_Q3, x_frame);
 
                 if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state6", psEnc);
@@ -156,15 +156,15 @@ namespace Concentus.Silk
                 gainMult_Q8 = (short)(Inlines.SILK_FIX_CONST(1, 8));
                 found_lower = 0;
                 found_upper = 0;
-                gainsID = GainQuantization.silk_gains_ID(psEnc.sCmn.indices.GainsIndices, psEnc.sCmn.nb_subfr);
+                gainsID = GainQuantization.silk_gains_ID(psEnc.indices.GainsIndices, psEnc.nb_subfr);
                 gainsID_lower = -1;
                 gainsID_upper = -1;
                 /* Copy part of the input state */
                 sRangeEnc_copy.Assign(psRangeEnc);
-                sNSQ_copy.Assign(psEnc.sCmn.sNSQ);
-                seed_copy = psEnc.sCmn.indices.Seed;
-                ec_prevLagIndex_copy = psEnc.sCmn.ec_prevLagIndex;
-                ec_prevSignalType_copy = psEnc.sCmn.ec_prevSignalType;
+                sNSQ_copy.Assign(psEnc.sNSQ);
+                seed_copy = psEnc.indices.Seed;
+                ec_prevLagIndex_copy = psEnc.ec_prevLagIndex;
+                ec_prevSignalType_copy = psEnc.ec_prevSignalType;
                 ec_buf_copy = Pointer.Malloc<byte>(1275);
                 for (iter = 0; ; iter++)
                 {
@@ -181,23 +181,23 @@ namespace Concentus.Silk
                         if (iter > 0)
                         {
                             psRangeEnc.Assign(sRangeEnc_copy);
-                            psEnc.sCmn.sNSQ.Assign(sNSQ_copy);
-                            psEnc.sCmn.indices.Seed = seed_copy;
-                            psEnc.sCmn.ec_prevLagIndex = ec_prevLagIndex_copy;
-                            psEnc.sCmn.ec_prevSignalType = ec_prevSignalType_copy;
+                            psEnc.sNSQ.Assign(sNSQ_copy);
+                            psEnc.indices.Seed = seed_copy;
+                            psEnc.ec_prevLagIndex = ec_prevLagIndex_copy;
+                            psEnc.ec_prevSignalType = ec_prevSignalType_copy;
                         }
 
                         /*****************************************/
                         /* Noise shaping quantization            */
                         /*****************************************/
-                        if (psEnc.sCmn.nStatesDelayedDecision > 1 || psEnc.sCmn.warping_Q16 > 0)
+                        if (psEnc.nStatesDelayedDecision > 1 || psEnc.warping_Q16 > 0)
                         {
-                            NSQ.silk_NSQ_del_dec_c(psEnc.sCmn, psEnc.sCmn.sNSQ, psEnc.sCmn.indices, xfw_Q3, psEnc.sCmn.pulses,
+                            NSQ.silk_NSQ_del_dec_c(psEnc, psEnc.sNSQ, psEnc.indices, xfw_Q3, psEnc.pulses,
                                    sEncCtrl.PredCoef_Q12, sEncCtrl.LTPCoef_Q14, sEncCtrl.AR2_Q13, sEncCtrl.HarmShapeGain_Q14,
                                    sEncCtrl.Tilt_Q14, sEncCtrl.LF_shp_Q14, sEncCtrl.Gains_Q16, sEncCtrl.pitchL, sEncCtrl.Lambda_Q10, sEncCtrl.LTP_scale_Q14);
                         }
                         else {
-                            NSQ.silk_NSQ_c(psEnc.sCmn, psEnc.sCmn.sNSQ, psEnc.sCmn.indices, xfw_Q3, psEnc.sCmn.pulses,
+                            NSQ.silk_NSQ_c(psEnc, psEnc.sNSQ, psEnc.indices, xfw_Q3, psEnc.pulses,
                                     sEncCtrl.PredCoef_Q12, sEncCtrl.LTPCoef_Q14, sEncCtrl.AR2_Q13, sEncCtrl.HarmShapeGain_Q14,
                                     sEncCtrl.Tilt_Q14, sEncCtrl.LF_shp_Q14, sEncCtrl.Gains_Q16, sEncCtrl.pitchL, sEncCtrl.Lambda_Q10, sEncCtrl.LTP_scale_Q14);
                         }
@@ -207,15 +207,15 @@ namespace Concentus.Silk
                         /****************************************/
                         /* Encode Parameters                    */
                         /****************************************/
-                        encode_indices.silk_encode_indices(psEnc.sCmn, psRangeEnc, psEnc.sCmn.nFramesEncoded, 0, condCoding);
+                        encode_indices.silk_encode_indices(psEnc, psRangeEnc, psEnc.nFramesEncoded, 0, condCoding);
 
                         if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state9", psEnc);
 
                         /****************************************/
                         /* Encode Excitation Signal             */
                         /****************************************/
-                        encode_pulses.silk_encode_pulses(psRangeEnc, psEnc.sCmn.indices.signalType, psEnc.sCmn.indices.quantOffsetType,
-                            psEnc.sCmn.pulses, psEnc.sCmn.frame_length);
+                        encode_pulses.silk_encode_pulses(psRangeEnc, psEnc.indices.signalType, psEnc.indices.quantOffsetType,
+                            psEnc.pulses, psEnc.frame_length);
 
                         if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state10", psEnc);
 
@@ -235,7 +235,7 @@ namespace Concentus.Silk
                             psRangeEnc.Assign(sRangeEnc_copy2);
                             Inlines.OpusAssert(sRangeEnc_copy2.offs <= 1275);
                             ec_buf_copy.MemCopyTo(psRangeEnc.buf, (int)sRangeEnc_copy2.offs);
-                            psEnc.sCmn.sNSQ.Assign(sNSQ_copy2);
+                            psEnc.sNSQ.Assign(sNSQ_copy2);
                             psEnc.sShape.LastGainIndex = LastGainIndex_copy2;
                         }
                         break;
@@ -269,7 +269,7 @@ namespace Concentus.Silk
                             sRangeEnc_copy2.Assign(psRangeEnc);
                             Inlines.OpusAssert(psRangeEnc.offs <= 1275);
                             psRangeEnc.buf.MemCopyTo(ec_buf_copy, (int)psRangeEnc.offs);
-                            sNSQ_copy2.Assign(psEnc.sCmn.sNSQ);
+                            sNSQ_copy2.Assign(psEnc.sNSQ);
                             LastGainIndex_copy2 = psEnc.sShape.LastGainIndex;
                         }
                     }
@@ -282,7 +282,7 @@ namespace Concentus.Silk
                     {
                         /* Adjust gain according to high-rate rate/distortion curve */
                         int gain_factor_Q16;
-                        gain_factor_Q16 = Inlines.silk_log2lin(Inlines.silk_LSHIFT(nBits - maxBits, 7) / psEnc.sCmn.frame_length + Inlines.SILK_FIX_CONST(16, 7));
+                        gain_factor_Q16 = Inlines.silk_log2lin(Inlines.silk_LSHIFT(nBits - maxBits, 7) / psEnc.frame_length + Inlines.SILK_FIX_CONST(16, 7));
                         gain_factor_Q16 = Inlines.silk_min_32(gain_factor_Q16, Inlines.SILK_FIX_CONST(2, 16));
                         if (nBits > maxBits)
                         {
@@ -306,7 +306,7 @@ namespace Concentus.Silk
                         }
                     }
 
-                    for (i = 0; i < psEnc.sCmn.nb_subfr; i++)
+                    for (i = 0; i < psEnc.nb_subfr; i++)
                     {
                         sEncCtrl.Gains_Q16[i] = Inlines.silk_LSHIFT_SAT32(Inlines.silk_SMULWB(sEncCtrl.GainsUnq_Q16[i], gainMult_Q8), 8);
                     }
@@ -314,22 +314,22 @@ namespace Concentus.Silk
                     /* Quantize gains */
                     psEnc.sShape.LastGainIndex = sEncCtrl.lastGainIndexPrev;
                     BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(psEnc.sShape.LastGainIndex);
-                    GainQuantization.silk_gains_quant(psEnc.sCmn.indices.GainsIndices, sEncCtrl.Gains_Q16,
-                          boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.sCmn.nb_subfr);
+                    GainQuantization.silk_gains_quant(psEnc.indices.GainsIndices, sEncCtrl.Gains_Q16,
+                          boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.nb_subfr);
                     psEnc.sShape.LastGainIndex = boxed_gainIndex.Val;
 
                     if (TRACE_FILE) NailTester.NailTesterPrint_silk_encoder_state_FIX("state11", psEnc);
 
                     /* Unique identifier of gains vector */
-                    gainsID = GainQuantization.silk_gains_ID(psEnc.sCmn.indices.GainsIndices, psEnc.sCmn.nb_subfr);
+                    gainsID = GainQuantization.silk_gains_ID(psEnc.indices.GainsIndices, psEnc.nb_subfr);
                 }
             }
 
             /* Update input buffer */
-            psEnc.x_buf.Point(psEnc.sCmn.frame_length).MemMoveTo(psEnc.x_buf, psEnc.sCmn.ltp_mem_length + SilkConstants.LA_SHAPE_MS * psEnc.sCmn.fs_kHz);
+            psEnc.x_buf.Point(psEnc.frame_length).MemMoveTo(psEnc.x_buf, psEnc.ltp_mem_length + SilkConstants.LA_SHAPE_MS * psEnc.fs_kHz);
 
             /* Exit without entropy coding */
-            if (psEnc.sCmn.prefillFlag != 0)
+            if (psEnc.prefillFlag != 0)
             {
                 /* No payload */
                 pnBytesOut.Val = 0;
@@ -338,13 +338,13 @@ namespace Concentus.Silk
             }
 
             /* Parameters needed for next frame */
-            psEnc.sCmn.prevLag = sEncCtrl.pitchL[psEnc.sCmn.nb_subfr - 1];
-            psEnc.sCmn.prevSignalType = psEnc.sCmn.indices.signalType;
+            psEnc.prevLag = sEncCtrl.pitchL[psEnc.nb_subfr - 1];
+            psEnc.prevSignalType = psEnc.indices.signalType;
 
             /****************************************/
             /* Finalize payload                     */
             /****************************************/
-            psEnc.sCmn.first_frame_after_reset = 0;
+            psEnc.first_frame_after_reset = 0;
             /* Payload size */
             pnBytesOut.Val = Inlines.silk_RSHIFT(EntropyCoder.ec_tell(psRangeEnc) + 7, 3);
 
@@ -356,66 +356,66 @@ namespace Concentus.Silk
 
         /* Low-Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode excitation at lower bitrate  */
         public static void silk_LBRR_encode_FIX(
-            silk_encoder_state_fix psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
+            silk_encoder_state psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
             silk_encoder_control psEncCtrl,                             /* I/O  Pointer to Silk FIX encoder control struct                                  */
             Pointer<int> xfw_Q3,                               /* I    Input signal                                                                */
             int condCoding                              /* I    The type of conditional coding used so far for this frame                   */
         )
         {
             Pointer<int> TempGains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
-            SideInfoIndices psIndices_LBRR = psEnc.sCmn.indices_LBRR[psEnc.sCmn.nFramesEncoded];
+            SideInfoIndices psIndices_LBRR = psEnc.indices_LBRR[psEnc.nFramesEncoded];
             silk_nsq_state sNSQ_LBRR = new silk_nsq_state();
 
             /*******************************************/
             /* Control use of inband LBRR              */
             /*******************************************/
-            if (psEnc.sCmn.LBRR_enabled != 0 && psEnc.sCmn.speech_activity_Q8 > Inlines.SILK_FIX_CONST(TuningParameters.LBRR_SPEECH_ACTIVITY_THRES, 8))
+            if (psEnc.LBRR_enabled != 0 && psEnc.speech_activity_Q8 > Inlines.SILK_FIX_CONST(TuningParameters.LBRR_SPEECH_ACTIVITY_THRES, 8))
             {
-                psEnc.sCmn.LBRR_flags[psEnc.sCmn.nFramesEncoded] = 1;
+                psEnc.LBRR_flags[psEnc.nFramesEncoded] = 1;
 
                 /* Copy noise shaping quantizer state and quantization indices from regular encoding */
-                sNSQ_LBRR.Assign(psEnc.sCmn.sNSQ);
-                psIndices_LBRR.Assign(psEnc.sCmn.indices);
+                sNSQ_LBRR.Assign(psEnc.sNSQ);
+                psIndices_LBRR.Assign(psEnc.indices);
 
                 /* Save original gains */
-                psEncCtrl.Gains_Q16.MemCopyTo(TempGains_Q16, psEnc.sCmn.nb_subfr);
+                psEncCtrl.Gains_Q16.MemCopyTo(TempGains_Q16, psEnc.nb_subfr);
 
-                if (psEnc.sCmn.nFramesEncoded == 0 || psEnc.sCmn.LBRR_flags[psEnc.sCmn.nFramesEncoded - 1] == 0)
+                if (psEnc.nFramesEncoded == 0 || psEnc.LBRR_flags[psEnc.nFramesEncoded - 1] == 0)
                 {
                     /* First frame in packet or previous frame not LBRR coded */
-                    psEnc.sCmn.LBRRprevLastGainIndex = psEnc.sShape.LastGainIndex;
+                    psEnc.LBRRprevLastGainIndex = psEnc.sShape.LastGainIndex;
 
                     /* Increase Gains to get target LBRR rate */
-                    psIndices_LBRR.GainsIndices[0] = Inlines.CHOP8(psIndices_LBRR.GainsIndices[0] + psEnc.sCmn.LBRR_GainIncreases);
+                    psIndices_LBRR.GainsIndices[0] = Inlines.CHOP8(psIndices_LBRR.GainsIndices[0] + psEnc.LBRR_GainIncreases);
                     psIndices_LBRR.GainsIndices[0] = Inlines.CHOP8(Inlines.silk_min_int(psIndices_LBRR.GainsIndices[0], SilkConstants.N_LEVELS_QGAIN - 1));
                 }
 
                 /* Decode to get gains in sync with decoder         */
                 /* Overwrite unquantized gains with quantized gains */
-                BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(psEnc.sCmn.LBRRprevLastGainIndex);
+                BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(psEnc.LBRRprevLastGainIndex);
                 GainQuantization.silk_gains_dequant(psEncCtrl.Gains_Q16, psIndices_LBRR.GainsIndices,
-                    boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.sCmn.nb_subfr);
-                psEnc.sCmn.LBRRprevLastGainIndex = boxed_gainIndex.Val;
+                    boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.nb_subfr);
+                psEnc.LBRRprevLastGainIndex = boxed_gainIndex.Val;
 
                 /*****************************************/
                 /* Noise shaping quantization            */
                 /*****************************************/
-                if (psEnc.sCmn.nStatesDelayedDecision > 1 || psEnc.sCmn.warping_Q16 > 0)
+                if (psEnc.nStatesDelayedDecision > 1 || psEnc.warping_Q16 > 0)
                 {
-                    NSQ.silk_NSQ_del_dec_c(psEnc.sCmn, sNSQ_LBRR, psIndices_LBRR, xfw_Q3,
-                        psEnc.sCmn.pulses_LBRR[psEnc.sCmn.nFramesEncoded], psEncCtrl.PredCoef_Q12, psEncCtrl.LTPCoef_Q14,
+                    NSQ.silk_NSQ_del_dec_c(psEnc, sNSQ_LBRR, psIndices_LBRR, xfw_Q3,
+                        psEnc.pulses_LBRR[psEnc.nFramesEncoded], psEncCtrl.PredCoef_Q12, psEncCtrl.LTPCoef_Q14,
                         psEncCtrl.AR2_Q13, psEncCtrl.HarmShapeGain_Q14, psEncCtrl.Tilt_Q14, psEncCtrl.LF_shp_Q14,
                         psEncCtrl.Gains_Q16, psEncCtrl.pitchL, psEncCtrl.Lambda_Q10, psEncCtrl.LTP_scale_Q14);
                 }
                 else {
-                    NSQ.silk_NSQ_c(psEnc.sCmn, sNSQ_LBRR, psIndices_LBRR, xfw_Q3,
-                        psEnc.sCmn.pulses_LBRR[psEnc.sCmn.nFramesEncoded], psEncCtrl.PredCoef_Q12, psEncCtrl.LTPCoef_Q14,
+                    NSQ.silk_NSQ_c(psEnc, sNSQ_LBRR, psIndices_LBRR, xfw_Q3,
+                        psEnc.pulses_LBRR[psEnc.nFramesEncoded], psEncCtrl.PredCoef_Q12, psEncCtrl.LTPCoef_Q14,
                         psEncCtrl.AR2_Q13, psEncCtrl.HarmShapeGain_Q14, psEncCtrl.Tilt_Q14, psEncCtrl.LF_shp_Q14,
                         psEncCtrl.Gains_Q16, psEncCtrl.pitchL, psEncCtrl.Lambda_Q10, psEncCtrl.LTP_scale_Q14);
                 }
 
                 /* Restore original gains */
-                TempGains_Q16.MemCopyTo(psEncCtrl.Gains_Q16, psEnc.sCmn.nb_subfr);
+                TempGains_Q16.MemCopyTo(psEncCtrl.Gains_Q16, psEnc.nb_subfr);
             }
         }
 

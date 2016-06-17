@@ -25,8 +25,7 @@ namespace Concentus.Silk
             int minInvGain_Q30,     /* I    Inverse of max prediction gain                              */
             int subfr_length,       /* I    Input signal subframe length (incl. D preceding samples)    */
             int nb_subfr,           /* I    Number of subframes stacked in x                            */
-            int D,                  /* I    Order                                                       */
-            int arch                /* I    Run-time architecture                                       */
+            int D                  /* I    Order                                                       */
         )
         {
             int k, n, s, lz, rshifts, reached_max_gain;
@@ -262,7 +261,7 @@ namespace Concentus.Silk
                     for (s = 0; s < nb_subfr; s++)
                     {
                         x_ptr = x.Point(s * subfr_length);
-                        C0 -= Inlines.silk_LSHIFT32(Inlines.silk_inner_prod_aligned(x_ptr, x_ptr, D, arch), -rshifts);
+                        C0 -= Inlines.silk_LSHIFT32(Inlines.silk_inner_prod_aligned(x_ptr, x_ptr, D), -rshifts);
                     }
                 }
                 /* Approximate residual energy */

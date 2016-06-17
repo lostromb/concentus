@@ -107,7 +107,7 @@ namespace Concentus.Celt
         }
 
 
-        public static void pitch_downsample(Pointer<Pointer<int>> x, Pointer<int> x_lp, int len, int C, int arch)
+        public static void pitch_downsample(Pointer<Pointer<int>> x, Pointer<int> x_lp, int len, int C)
         {
             int i;
             int[] ac = new int[5];
@@ -147,7 +147,7 @@ namespace Concentus.Celt
             }
 
             celt_lpc._celt_autocorr(x_lp, ac.GetPointer(), null, 0,
-                           4, len >> 1, arch);
+                           4, len >> 1);
 
             /* Noise floor -40 dB */
             ac[0] += Inlines.SHR32(ac[0], 13);
@@ -175,7 +175,7 @@ namespace Concentus.Celt
         }
 
         public static void pitch_search(Pointer<int> x_lp, Pointer<int> y,
-                  int len, int max_pitch, BoxedValue<int> pitch, int arch)
+                  int len, int max_pitch, BoxedValue<int> pitch)
         {
             int i, j;
             int lag;
@@ -270,7 +270,7 @@ namespace Concentus.Celt
         private static readonly int[] second_check = { 0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2 };
 
         public static int remove_doubling(Pointer<int> x, int maxperiod, int minperiod,
-            int N, BoxedValue<int> T0_, int prev_period, int prev_gain, int arch)
+            int N, BoxedValue<int> T0_, int prev_period, int prev_gain)
         {
             int k, i, T, T0;
             int g, g0;

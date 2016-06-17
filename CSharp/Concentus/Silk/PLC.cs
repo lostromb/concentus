@@ -33,8 +33,7 @@ namespace Concentus.Silk
             silk_decoder_state psDec,             /* I/O Decoder state        */
             silk_decoder_control psDecCtrl,         /* I/O Decoder control      */
             Pointer<short> frame,            /* I/O  signal              */
-            int lost,               /* I Loss flag              */
-            int arch                /* I Run-time architecture  */
+            int lost               /* I Loss flag              */
         )
         {
             /* PLC control function */
@@ -49,7 +48,7 @@ namespace Concentus.Silk
                 /****************************/
                 /* Generate Signal          */
                 /****************************/
-                silk_PLC_conceal(psDec, psDecCtrl, frame, arch);
+                silk_PLC_conceal(psDec, psDecCtrl, frame);
 
                 psDec.lossCnt++;
             }
@@ -191,8 +190,7 @@ namespace Concentus.Silk
         public static void silk_PLC_conceal(
             silk_decoder_state psDec,             /* I/O Decoder state        */
             silk_decoder_control psDecCtrl,         /* I/O Decoder control      */
-            Pointer<short> frame,            /* O LPC residual signal    */
-            int arch                /* I Run-time architecture  */
+            Pointer<short> frame            /* O LPC residual signal    */
         )
         {
             int i, j, k;
@@ -291,7 +289,7 @@ namespace Concentus.Silk
             /* Rewhiten LTP state */
             idx = psDec.ltp_mem_length - lag - psDec.LPC_order - SilkConstants.LTP_ORDER / 2;
             Inlines.OpusAssert(idx > 0);
-            Filters.silk_LPC_analysis_filter(sLTP.Point(idx), psDec.outBuf.Point(idx), A_Q12, psDec.ltp_mem_length - idx, psDec.LPC_order, arch);
+            Filters.silk_LPC_analysis_filter(sLTP.Point(idx), psDec.outBuf.Point(idx), A_Q12, psDec.ltp_mem_length - idx, psDec.LPC_order);
             /* Scale LTP state */
             inv_gain_Q30 = Inlines.silk_INVERSE32_varQ(psPLC.prevGain_Q16[1], 46);
             inv_gain_Q30 = Inlines.silk_min(inv_gain_Q30, int.MaxValue >> 1);

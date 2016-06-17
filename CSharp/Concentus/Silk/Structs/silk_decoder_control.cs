@@ -13,13 +13,13 @@ namespace Concentus.Silk.Structs
     public class silk_decoder_control
     {
         /* Prediction and coding parameters */
-        public /*readonly*/ Pointer<int> pitchL = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
-        public /*readonly*/ Pointer<int> Gains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> pitchL = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> Gains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
 
         /* Holds interpolated and final coefficients, 4-byte aligned */
         // FIXME check alignment
-        public /*silk_DWORD_ALIGN*/ /*readonly*/ Pointer<Pointer<short>> PredCoef_Q12 = Arrays.InitTwoDimensionalArrayPointer<short>(2, SilkConstants.MAX_LPC_ORDER);
-        public /*readonly*/ Pointer<short> LTPCoef_Q14 = Pointer.Malloc<short>(SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
+        public /*silk_DWORD_ALIGN*/ readonly Pointer<Pointer<short>> PredCoef_Q12 = Arrays.InitTwoDimensionalArrayPointer<short>(2, SilkConstants.MAX_LPC_ORDER);
+        public readonly Pointer<short> LTPCoef_Q14 = Pointer.Malloc<short>(SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
         public int LTP_scale_Q14 = 0;
 
         public void Reset()

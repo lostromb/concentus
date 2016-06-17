@@ -13,21 +13,21 @@ namespace Concentus.Silk.Structs
     public class silk_encoder_control
     {
         /* Prediction and coding parameters */
-        public /*readonly*/ Pointer<int> Gains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> Gains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
         // [porting note] originally a 2D array of [2][MAX_LPC_ORDER], now linearized
-        public /*readonly*/ Pointer<short> PredCoef_Q12 = Pointer.Malloc<short>(2 * SilkConstants.MAX_LPC_ORDER);     /* holds interpolated and final coefficients */
-        public /*readonly*/ Pointer<short> LTPCoef_Q14 = Pointer.Malloc<short>(SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<short> PredCoef_Q12 = Pointer.Malloc<short>(2 * SilkConstants.MAX_LPC_ORDER);     /* holds interpolated and final coefficients */
+        public readonly Pointer<short> LTPCoef_Q14 = Pointer.Malloc<short>(SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
         public int LTP_scale_Q14 = 0;
-        public /*readonly*/ Pointer<int> pitchL = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> pitchL = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
 
         /* Noise shaping parameters */
-        public /*readonly*/ Pointer<short> AR1_Q13 = Pointer.Malloc<short>(SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
-        public /*readonly*/ Pointer<short> AR2_Q13 = Pointer.Malloc<short>(SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
-        public /*readonly*/ Pointer<int> LF_shp_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR); /* Packs two int16 coefficients per int32 value         */
-        public /*readonly*/ Pointer<int> GainsPre_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
-        public /*readonly*/ Pointer<int> HarmBoost_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
-        public /*readonly*/ Pointer<int> Tilt_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
-        public /*readonly*/ Pointer<int> HarmShapeGain_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<short> AR1_Q13 = Pointer.Malloc<short>(SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
+        public readonly Pointer<short> AR2_Q13 = Pointer.Malloc<short>(SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
+        public readonly Pointer<int> LF_shp_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR); /* Packs two int16 coefficients per int32 value         */
+        public readonly Pointer<int> GainsPre_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> HarmBoost_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> Tilt_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> HarmShapeGain_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
         public int Lambda_Q10 = 0;
         public int input_quality_Q14 = 0;
         public int coding_quality_Q14 = 0;
@@ -38,13 +38,13 @@ namespace Concentus.Silk.Structs
         public int LTPredCodGain_Q7 = 0;
 
         /* Residual energy per subframe */
-        public /*readonly*/ Pointer<int> ResNrg = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> ResNrg = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
 
         /* Q domain for the residual energy > 0                 */
-        public /*readonly*/ Pointer<int> ResNrgQ = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> ResNrgQ = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
 
         /* Parameters for CBR mode */
-        public /*readonly*/ Pointer<int> GainsUnq_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+        public readonly Pointer<int> GainsUnq_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
         public sbyte lastGainIndexPrev = 0;
 
         public void Reset()

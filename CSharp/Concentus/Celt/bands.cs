@@ -238,7 +238,7 @@ namespace Concentus.Celt
         /* This prevents energy collapse for transients with multiple short MDCTs */
         public static void anti_collapse(CELTMode m, Pointer<int> X_, Pointer<byte> collapse_masks, int LM, int C, int size,
               int start, int end, Pointer<int> logE, Pointer<int> prev1logE,
-              Pointer<int> prev2logE, Pointer<int> pulses, uint seed, int arch)
+              Pointer<int> prev2logE, Pointer<int> pulses, uint seed)
         {
             int c, i, j, k;
             for (i = start; i < end; i++)
@@ -313,7 +313,7 @@ namespace Concentus.Celt
                     /* We just added some energy, so we need to renormalise */
                     if (renormalize != 0)
                     {
-                        vq.renormalise_vector(X, N0 << LM, CeltConstants.Q15ONE, arch);
+                        vq.renormalise_vector(X, N0 << LM, CeltConstants.Q15ONE);
                     }
                 } while (++c < C);
             }
@@ -355,7 +355,7 @@ namespace Concentus.Celt
             }
         }
 
-        static void stereo_merge(Pointer<int> X, Pointer<int> Y, int mid, int N, int arch)
+        static void stereo_merge(Pointer<int> X, Pointer<int> Y, int mid, int N)
         {
             int j;
             BoxedValue<int> xp = new BoxedValue<int>();
@@ -649,26 +649,6 @@ namespace Concentus.Celt
             public int remaining_bits;
             public Pointer<int> bandE;
             public uint seed;
-            public int arch;
-
-            // simulates copy constructor
-            //public band_ctx Clone()
-            //{
-            //    return new band_ctx()
-            //    {
-            //        encode = this.encode,
-            //        m = this.m,
-            //        i = this.i,
-            //        intensity = this.intensity,
-            //        spread = this.spread,
-            //        tf_change = this.tf_change,
-            //        ec = this.ec,
-            //        remaining_bits = this.remaining_bits,
-            //        bandE = this.bandE,
-            //        seed = this.seed,
-            //        arch = this.arch
-            //    };
-            //}
         };
 
         public class split_ctx
@@ -679,19 +659,6 @@ namespace Concentus.Celt
             public int delta;
             public int itheta;
             public int qalloc;
-
-            //public split_ctx Clone()
-            //{
-            //    return new split_ctx()
-            //    {
-            //        inv = this.inv,
-            //        imid = this.imid,
-            //        iside = this.iside,
-            //        delta = this.delta,
-            //        itheta = this.itheta,
-            //        qalloc = this.qalloc
-            //    };
-            //}
         };
 
         public static void compute_theta(band_ctx ctx, split_ctx sctx,
@@ -737,7 +704,7 @@ namespace Concentus.Celt
                    side and mid. With just that parameter, we can re-scale both
                    mid and side because we know that 1) they have unit norm and
                    2) they are orthogonal. */
-                itheta = vq.stereo_itheta(X, Y, stereo, N, ctx.arch);
+                itheta = vq.stereo_itheta(X, Y, stereo, N);
             }
 
             tell = (int)EntropyCoder.ec_tell_frac(ec);
@@ -1142,7 +1109,7 @@ namespace Concentus.Celt
                                 cm = (uint)fill;
                             }
 
-                            vq.renormalise_vector(X, N, gain, ctx.arch);
+                            vq.renormalise_vector(X, N, gain);
                         }
                     }
                 }
@@ -1435,7 +1402,7 @@ namespace Concentus.Celt
             {
                 if (N != 2)
                 {
-                    stereo_merge(X, Y, mid, N, ctx.arch);
+                    stereo_merge(X, Y, mid, N);
                 }
                 if (inv != 0)
                 {
@@ -1454,7 +1421,7 @@ namespace Concentus.Celt
               Pointer<int> bandE, Pointer<int> pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, Pointer<int> tf_res, int total_bits,
               int balance, ec_ctx ec, int LM, int codedBands,
-              BoxedValue<uint> seed, int arch)
+              BoxedValue<uint> seed)
         {
             int i;
             int remaining_bits;
@@ -1493,7 +1460,6 @@ namespace Concentus.Celt
             ctx.m = m;
             ctx.seed = seed.Val;
             ctx.spread = spread;
-            ctx.arch = arch;
             for (i = start; i < end; i++)
             {
                 int tell;

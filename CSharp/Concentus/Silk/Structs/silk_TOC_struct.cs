@@ -20,7 +20,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Voice activity for each frame in packet
         /// </summary>
-        public /*readonly*/ Pointer<int> VADFlags = Pointer.Malloc<int>(SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
+        public readonly Pointer<int> VADFlags = Pointer.Malloc<int>(SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
 
         /// <summary>
         /// Flag indicating if packet contains in-band FEC

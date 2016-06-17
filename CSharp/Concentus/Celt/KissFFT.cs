@@ -175,10 +175,10 @@ namespace Concentus.Celt
             int m1 = 2 * m;
             int m2 = 4 * m;
             int tw1, tw2;
-            int[] scratch = new int[8]; //opus bug  fixme: #5 was never used
+            int[] scratch = new int[8]; //opus bug: #5 was never used
            
             int Fout_beg = fout_ptr;
-            //epi3.r = -16384; // opus bug fixme: never used
+            //epi3.r = -16384; // opus bug: never used
 
             for (i = 0; i < N; i++)
             {

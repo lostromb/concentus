@@ -23,6 +23,7 @@ namespace Concentus.Silk
         private const int D_COMP_STRIDE = (D_COMP_MAX - D_COMP_MIN);
 
         // typedef int silk_pe_stage3_vals[SilkConstants.PE_NB_STAGE3_LAGS];
+        // fixme can I linearize this?
         private class silk_pe_stage3_vals
         {
             public readonly int[] Values = new int[SilkConstants.PE_NB_STAGE3_LAGS];
@@ -42,8 +43,7 @@ namespace Concentus.Silk
             int search_thres2_Q13,  /* I    Final threshold for lag candidates 0 - 1                    */
             int Fs_kHz,             /* I    Sample frequency (kHz)                                      */
             int complexity,         /* I    Complexity setting, 0-2, where 2 is highest                 */
-            int nb_subfr,           /* I    number of 5 ms subframes                                    */
-            int arch                /* I    Run-time architecture                                       */
+            int nb_subfr           /* I    number of 5 ms subframes                                    */
         )
         {
             Pointer<short> frame_8kHz;
@@ -162,8 +162,8 @@ namespace Concentus.Silk
 
                 /* Calculate first vector products before loop */
                 cross_corr = xcorr32[MAX_LAG_4KHZ - MIN_LAG_4KHZ];
-                normalizer = Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, SF_LENGTH_8KHZ, arch);
-                normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, SF_LENGTH_8KHZ, arch));
+                normalizer = Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, SF_LENGTH_8KHZ);
+                normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, SF_LENGTH_8KHZ));
                 normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_SMULBB(SF_LENGTH_8KHZ, 4000));
 
                 Inlines.matrix_adr(C, k, 0, CSTRIDE_4KHZ)[0] =
@@ -323,7 +323,7 @@ namespace Concentus.Silk
                 Inlines.OpusAssert(target_ptr.Offset >= frame_8kHz.Offset);
                 Inlines.OpusAssert(target_ptr.Offset + SF_LENGTH_8KHZ <= frame_8kHz.Offset + frame_length_8kHz);
 
-                energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, SF_LENGTH_8KHZ, arch), 1);
+                energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, SF_LENGTH_8KHZ), 1);
                 for (j = 0; j < length_d_comp; j++)
                 {
                     d = d_comp[j];
@@ -333,10 +333,10 @@ namespace Concentus.Silk
                     Inlines.OpusAssert(basis_ptr.Offset >= frame_8kHz.Offset);
                     Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_8kHz.Offset + frame_length_8kHz);
 
-                    cross_corr = Inlines.silk_inner_prod_aligned(target_ptr, basis_ptr, SF_LENGTH_8KHZ, arch);
+                    cross_corr = Inlines.silk_inner_prod_aligned(target_ptr, basis_ptr, SF_LENGTH_8KHZ);
                     if (cross_corr > 0)
                     {
-                        energy_basis = Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, SF_LENGTH_8KHZ, arch);
+                        energy_basis = Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, SF_LENGTH_8KHZ);
                         Inlines.matrix_adr(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ)[0] =
                             (short)Inlines.silk_DIV32_varQ(cross_corr,
                                                          Inlines.silk_ADD32(energy_target,
@@ -544,15 +544,15 @@ namespace Concentus.Silk
                     energies_st3[c] = new silk_pe_stage3_vals(); // fixme: these can be replaced with a linearized array probably, or at least a struct
                     cross_corr_st3[c] = new silk_pe_stage3_vals();
                 }
-                silk_P_Ana_calc_corr_st3(cross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity, arch);
-                silk_P_Ana_calc_energy_st3(energies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity, arch);
+                silk_P_Ana_calc_corr_st3(cross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
+                silk_P_Ana_calc_energy_st3(energies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
 
                 lag_counter = 0;
                 Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
                 contour_bias_Q15 = Inlines.silk_DIV32_16(Inlines.SILK_FIX_CONST(SilkConstants.PE_FLATCONTOUR_BIAS, 15), lag);
 
                 target_ptr = input_frame_ptr.Point(SilkConstants.PE_LTP_MEM_LENGTH_MS * Fs_kHz);
-                energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, nb_subfr * sf_length, arch), 1);
+                energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, nb_subfr * sf_length), 1);
                 for (d = start_lag; d <= end_lag; d++)
                 {
                     for (j = 0; j < nb_cbk_search; j++)
@@ -634,8 +634,7 @@ namespace Concentus.Silk
             int start_lag,                       /* I lag offset to search around */
             int sf_length,                       /* I length of a 5 ms subframe   */
             int nb_subfr,                        /* I number of subframes         */
-            int complexity,                      /* I Complexity setting          */
-            int arch                             /* I Run-time architecture       */
+            int complexity                      /* I Complexity setting          */
         )
         {
             Pointer<short> target_ptr;
@@ -711,8 +710,7 @@ namespace Concentus.Silk
             int start_lag,                        /* I lag offset to search around */
             int sf_length,                        /* I length of one 5 ms subframe */
             int nb_subfr,                         /* I number of subframes         */
-            int complexity,                       /* I Complexity setting          */
-            int arch                              /* I Run-time architecture       */
+            int complexity                       /* I Complexity setting          */
         )
         {
             Pointer<short> target_ptr, basis_ptr;
@@ -749,7 +747,7 @@ namespace Concentus.Silk
 
                 /* Calculate the energy for first lag */
                 basis_ptr = target_ptr.Point(0 - (start_lag + Inlines.matrix_ptr(Lag_range_ptr, k, 0, 2)));
-                energy = Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, sf_length, arch);
+                energy = Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, sf_length);
                 Inlines.OpusAssert(energy >= 0);
                 scratch_mem[lag_counter] = energy;
                 lag_counter++;

@@ -21,7 +21,6 @@ namespace Concentus.Celt.Structs
         public int start = 0;
         public int end = 0;
         public int signalling = 0;
-        public int arch = 0;
 
         /* Everything beyond this point gets cleared on a reset */
         public uint rng = 0;
@@ -49,12 +48,12 @@ namespace Concentus.Celt.Structs
         /// val16 oldLogE2[],       Size = 2*mode.nbEBands
         /// val16 backgroundLogE[], Size = 2*mode.nbEBands
         /// </summary>
-        public /*readonly*/ Pointer<int> decode_mem = null;
-        public /*readonly*/ Pointer<int> lpc = null;
-        public /*readonly*/ Pointer<int> oldEBands = null;
-        public /*readonly*/ Pointer<int> oldLogE = null;
-        public /*readonly*/ Pointer<int> oldLogE2 = null;
-        public /*readonly*/ Pointer<int> backgroundLogE = null;
+        public Pointer<int> decode_mem = null;
+        public Pointer<int> lpc = null;
+        public Pointer<int> oldEBands = null;
+        public Pointer<int> oldLogE = null;
+        public Pointer<int> oldLogE2 = null;
+        public Pointer<int> backgroundLogE = null;
 
         public void Reset()
         {
@@ -66,7 +65,6 @@ namespace Concentus.Celt.Structs
             start = 0;
             end = 0;
             signalling = 0;
-            arch = 0;
             PartialReset();
         }
 

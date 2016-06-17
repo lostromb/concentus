@@ -80,7 +80,6 @@ namespace Concentus.Structs
         public int Fs;          /** Sampling rate (at the API level) */
         public readonly silk_DecControlStruct DecControl = new silk_DecControlStruct();
         public int decode_gain;
-        public int arch;
 
         /* Everything beyond this point gets cleared on a reset */
         public int stream_channels;
@@ -100,7 +99,6 @@ namespace Concentus.Structs
             Fs = 0;          /** Sampling rate (at the API level) */
             DecControl.Reset();
             decode_gain = 0;
-            arch = 0;
             PartialReset();
         }
 
@@ -110,7 +108,6 @@ namespace Concentus.Structs
         internal void PartialReset()
         {
             stream_channels = 0;
-
             bandwidth = 0;
             mode = 0;
             prev_mode = 0;

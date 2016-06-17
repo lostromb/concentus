@@ -35,8 +35,7 @@ namespace Concentus.Silk
              int subfr_length,                           /* I    subframe length                                                             */
              int nb_subfr,                               /* I    number of subframes                                                         */
              int mem_offset,                             /* I    number of samples in LTP memory                                             */
-              Pointer<int> corr_rshifts,           /* O    right shifts applied to correlations  [SilkConstants.MAX_NB_SUBFR]                                      */
-             int arch                                    /* I    Run-time architecture                                                       */
+              Pointer<int> corr_rshifts           /* O    right shifts applied to correlations  [SilkConstants.MAX_NB_SUBFR]                                      */
          )
         {
             int i, k, lshift;
@@ -83,11 +82,11 @@ namespace Concentus.Silk
                 }
                 corr_rshifts[k] = rr_shifts;
                 boxed_shifts.Val = corr_rshifts[k];
-                corrMatrix.silk_corrMatrix_FIX(lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP_ptr, boxed_shifts, arch);  /* WLTP_fix_ptr in Q( -corr_rshifts[ k ] ) */
+                corrMatrix.silk_corrMatrix_FIX(lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP_ptr, boxed_shifts);  /* WLTP_fix_ptr in Q( -corr_rshifts[ k ] ) */
                 corr_rshifts[k] = boxed_shifts.Val;
 
                 /* The correlation vector always has lower max abs value than rr and/or RR so head room is assured */
-                corrMatrix.silk_corrVector_FIX(lag_ptr, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k], arch);  /* Rr_fix_ptr   in Q( -corr_rshifts[ k ] ) */
+                corrMatrix.silk_corrVector_FIX(lag_ptr, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k]);  /* Rr_fix_ptr   in Q( -corr_rshifts[ k ] ) */
                 if (corr_rshifts[k] > rr_shifts)
                 {
                     rr[k] = Inlines.silk_RSHIFT(rr[k], corr_rshifts[k] - rr_shifts); /* rr[ k ] in Q( -corr_rshifts[ k ] ) */

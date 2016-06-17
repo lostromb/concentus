@@ -61,7 +61,6 @@ namespace Concentus
 
             st.prev_mode = 0;
             st.frame_size = Fs / 400;
-            st.arch = 0;
             return OpusError.OPUS_OK;
         }
 
@@ -330,7 +329,7 @@ namespace Concentus
                     int first_frame = (decoded_samples == 0) ? 1 : 0;
                     BoxedValue<int> boxed_frame_size = new BoxedValue<int>();
                     silk_ret = dec_API.silk_Decode(silk_dec, st.DecControl,
-                                            lost_flag, first_frame, dec, pcm_ptr, boxed_frame_size, st.arch);
+                                            lost_flag, first_frame, dec, pcm_ptr, boxed_frame_size);
                     silk_frame_size = boxed_frame_size.Val;
                     if (silk_ret != 0)
                     {

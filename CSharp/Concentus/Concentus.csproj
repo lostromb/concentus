@@ -166,7 +166,6 @@
     <Compile Include="Silk\Structs\silk_encoder.cs" />
     <Compile Include="Silk\Structs\silk_encoder_control.cs" />
     <Compile Include="Silk\Structs\silk_encoder_state.cs" />
-    <Compile Include="Silk\Structs\silk_encoder_state_fix.cs" />
     <Compile Include="Silk\Structs\silk_LP_state.cs" />
     <Compile Include="Silk\Structs\silk_NLSF_CB_struct.cs" />
     <Compile Include="Silk\Structs\silk_nsq_state.cs" />

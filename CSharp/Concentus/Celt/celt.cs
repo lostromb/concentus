@@ -68,7 +68,7 @@ namespace Concentus.Celt
 
         public static void comb_filter(Pointer<int> y, Pointer<int> x, int T0, int T1, int N,
               int g0, int g1, int tapset0, int tapset1,
-            Pointer<int> window, int overlap, int arch)
+            Pointer<int> window, int overlap)
         {
             int i;
             /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */

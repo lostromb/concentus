@@ -322,7 +322,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        public static void renormalise_vector(Pointer<int> X, int N, int gain, int arch)
+        public static void renormalise_vector(Pointer<int> X, int N, int gain)
         {
             int i;
             int k;
@@ -344,7 +344,7 @@ namespace Concentus.Celt
             /*return celt_sqrt(E);*/
         }
 
-        public static int stereo_itheta(Pointer<int> X, Pointer<int> Y, int stereo, int N, int arch)
+        public static int stereo_itheta(Pointer<int> X, Pointer<int> Y, int stereo, int N)
         {
             int i;
             int itheta;

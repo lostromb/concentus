@@ -23,8 +23,7 @@ namespace Concentus.Silk
             Pointer<short> pOut,                         /* O    Pointer to output speech frame              */
             BoxedValue<int> pN,                            /* O    Pointer to size of output frame             */
             int lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
-            int condCoding,                     /* I    The type of conditional coding to use       */
-            int arch                            /* I    Run-time architecture                       */
+            int condCoding                     /* I    The type of conditional coding to use       */
         )
         {
             // [porting note] this is a pointer to a heap struct, not a stack variable
@@ -60,12 +59,12 @@ namespace Concentus.Silk
                 /********************************************************/
                 /* Run inverse NSQ                                      */
                 /********************************************************/
-                decode_core.silk_decode_core(psDec, psDecCtrl, pOut, pulses, arch);
+                decode_core.silk_decode_core(psDec, psDecCtrl, pOut, pulses);
 
                 /********************************************************/
                 /* Update PLC state                                     */
                 /********************************************************/
-                PLC.silk_PLC(psDec, psDecCtrl, pOut, 0, arch);
+                PLC.silk_PLC(psDec, psDecCtrl, pOut, 0);
 
                 psDec.lossCnt = 0;
                 psDec.prevSignalType = psDec.indices.signalType;
@@ -77,7 +76,7 @@ namespace Concentus.Silk
             else
             {
                 /* Handle packet loss by extrapolation */
-                PLC.silk_PLC(psDec, psDecCtrl, pOut, 1, arch);
+                PLC.silk_PLC(psDec, psDecCtrl, pOut, 1);
             }
 
             /*************************/

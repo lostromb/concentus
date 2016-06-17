@@ -15,7 +15,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Low pass filter state
         /// </summary>
-        public /*readonly*/ Pointer<int> In_LP_State = Pointer.Malloc<int>(2);
+        public readonly Pointer<int> In_LP_State = Pointer.Malloc<int>(2);
 
         /// <summary>
         /// Counter which is mapped to a cut-off frequency

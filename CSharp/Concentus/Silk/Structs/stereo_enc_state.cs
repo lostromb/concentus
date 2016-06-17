@@ -9,15 +9,15 @@ namespace Concentus.Silk.Structs
 {
     public class stereo_enc_state
     {
-        public /*readonly*/ Pointer<short> pred_prev_Q13 = Pointer.Malloc<short>(2);
-        public /*readonly*/ Pointer<short> sMid = Pointer.Malloc<short>(2);
-        public /*readonly*/ Pointer<short> sSide = Pointer.Malloc<short>(2);
-        public /*readonly*/ Pointer<int> mid_side_amp_Q0 = Pointer.Malloc<int>(4);
+        public readonly Pointer<short> pred_prev_Q13 = Pointer.Malloc<short>(2);
+        public readonly Pointer<short> sMid = Pointer.Malloc<short>(2);
+        public readonly Pointer<short> sSide = Pointer.Malloc<short>(2);
+        public readonly Pointer<int> mid_side_amp_Q0 = Pointer.Malloc<int>(4);
         public short smth_width_Q14 = 0;
         public short width_prev_Q14 = 0;
         public short silent_side_len = 0;
-        public /*readonly*/ Pointer<Pointer<Pointer<sbyte>>> predIx = Arrays.InitThreeDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
-        public /*readonly*/ Pointer<sbyte> mid_only_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        public readonly Pointer<Pointer<Pointer<sbyte>>> predIx = Arrays.InitThreeDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
+        public readonly Pointer<sbyte> mid_only_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
         
         public void Reset()
         {

@@ -31,7 +31,6 @@ namespace Concentus.Celt.Structs
         public int lsb_depth = 0;
         public int variable_duration = 0;
         public int lfe = 0;
-        public int arch = 0;
 
         /* Everything beyond this point gets cleared on a reset */
 
@@ -49,8 +48,8 @@ namespace Concentus.Celt.Structs
         public int consec_transient = 0;
         public AnalysisInfo analysis = new AnalysisInfo(); // fixme is this necessary? Huh?
 
-        public /*readonly*/ Pointer<int> preemph_memE = Pointer.Malloc<int>(2);
-        public /*readonly*/ Pointer<int> preemph_memD = Pointer.Malloc<int>(2);
+        public readonly Pointer<int> preemph_memE = Pointer.Malloc<int>(2);
+        public readonly Pointer<int> preemph_memD = Pointer.Malloc<int>(2);
 
         /* VBR-related parameters */
         public int vbr_reservoir = 0;
@@ -100,7 +99,6 @@ namespace Concentus.Celt.Structs
             lsb_depth = 0;
             variable_duration = 0;
             lfe = 0;
-            arch = 0;
             PartialReset();
         }
 

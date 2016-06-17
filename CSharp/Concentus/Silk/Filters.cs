@@ -337,8 +337,7 @@ namespace Concentus.Silk
                     Pointer<short> input,
                     Pointer<short> B,
                     int len,
-                    int d,
-                    int arch)
+                    int d)
         {
             int j;
 
@@ -358,7 +357,7 @@ namespace Concentus.Silk
             {
                 mem[j] = input[d - j - 1];
             }
-            celt_fir.celt_fir_c(input.Point(d), num, output.Point(d), len - d, d, mem, arch);
+            celt_fir.celt_fir_c(input.Point(d), num, output.Point(d), len - d, d, mem);
             for (j = 0; j < d; j++)
             {
                 output[j] = 0;

@@ -12,13 +12,13 @@ namespace Concentus.Silk.Structs
     /// </summary>
     public class silk_encoder_state
     {
-        public /*readonly*/ Pointer<int> In_HP_State = Pointer.Malloc<int>(2);                  /* High pass filter state                                           */
+        public readonly Pointer<int> In_HP_State = Pointer.Malloc<int>(2);                  /* High pass filter state                                           */
         public int variable_HP_smth1_Q15 = 0;             /* State of first smoother                                          */
         public int variable_HP_smth2_Q15 = 0;             /* State of second smoother                                         */
-        public /*readonly*/ silk_LP_state sLP = new silk_LP_state();                               /* Low pass filter state                                            */
-        public /*readonly*/ silk_VAD_state sVAD = new silk_VAD_state();                              /* Voice activity detector state                                    */
-        public /*readonly*/ silk_nsq_state sNSQ = new silk_nsq_state();                              /* Noise Shape Quantizer State                                      */
-        public /*readonly*/ Pointer<short> prev_NLSFq_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);   /* Previously quantized NLSF vector                                 */
+        public readonly silk_LP_state sLP = new silk_LP_state();                               /* Low pass filter state                                            */
+        public readonly silk_VAD_state sVAD = new silk_VAD_state();                              /* Voice activity detector state                                    */
+        public readonly silk_nsq_state sNSQ = new silk_nsq_state();                              /* Noise Shape Quantizer State                                      */
+        public readonly Pointer<short> prev_NLSFq_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);   /* Previously quantized NLSF vector                                 */
         public int speech_activity_Q8 = 0;                /* Speech activity                                                  */
         public int allow_bandwidth_switch = 0;            /* Flag indicating that switching of internal bandwidth is allowed  */
         public sbyte LBRRprevLastGainIndex = 0;
@@ -63,21 +63,19 @@ namespace Concentus.Silk.Structs
         public Pointer<byte> pitch_lag_low_bits_iCDF = null;          /* Pointer to iCDF table for low bits of pitch lag index            */
         public Pointer<byte> pitch_contour_iCDF = null;               /* Pointer to iCDF table for pitch contour index                    */
         public silk_NLSF_CB_struct psNLSF_CB = null;                        /* Pointer to NLSF codebook                                         */
-        public /*readonly*/ Pointer<int> input_quality_bands_Q15 = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
+        public readonly Pointer<int> input_quality_bands_Q15 = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
         public int input_tilt_Q15 = 0;
         public int SNR_dB_Q7 = 0;                         /* Quality setting                                                  */
 
-        public /*readonly*/ Pointer<sbyte> VAD_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        public readonly Pointer<sbyte> VAD_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
         public sbyte LBRR_flag = 0;
-        public /*readonly*/ Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        public readonly Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
 
-        public /*readonly*/ SideInfoIndices indices = new SideInfoIndices();
-        public /*readonly*/ Pointer<sbyte> pulses = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAME_LENGTH);
-
-        public int arch = 0;
+        public readonly SideInfoIndices indices = new SideInfoIndices();
+        public readonly Pointer<sbyte> pulses = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAME_LENGTH);
 
         /* Input/output buffering */
-        public /*readonly*/ Pointer<short> inputBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2);  /* Buffer containing input signal                                   */
+        public readonly Pointer<short> inputBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2);  /* Buffer containing input signal                                   */
         public int inputBufIx = 0;
         public int nFramesPerPacket = 0;
         public int nFramesEncoded = 0;                    /* Number of frames analyzed in current packet                      */
@@ -93,7 +91,7 @@ namespace Concentus.Silk.Structs
         public int ec_prevSignalType = 0;
         public short ec_prevLagIndex = 0;
 
-        public /*readonly*/ silk_resampler_state_struct resampler_state = new silk_resampler_state_struct();
+        public readonly silk_resampler_state_struct resampler_state = new silk_resampler_state_struct();
 
         /* DTX */
         public int useDTX = 0;                            /* Flag to enable DTX                                               */
@@ -104,8 +102,20 @@ namespace Concentus.Silk.Structs
         public int useInBandFEC = 0;                      /* Saves the API setting for query                                  */
         public int LBRR_enabled = 0;                      /* Depends on useInBandFRC, bitrate and packet loss rate            */
         public int LBRR_GainIncreases = 0;                /* Gains increment for coding LBRR frames                           */
-        public /*readonly*/ Pointer<SideInfoIndices> indices_LBRR = Pointer.Malloc<SideInfoIndices>(SilkConstants.MAX_FRAMES_PER_PACKET);
-        public /*readonly*/ Pointer<Pointer<sbyte>> pulses_LBRR = Arrays.InitTwoDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
+        public readonly Pointer<SideInfoIndices> indices_LBRR = Pointer.Malloc<SideInfoIndices>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        public readonly Pointer<Pointer<sbyte>> pulses_LBRR = Arrays.InitTwoDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
+
+        /* Noise shaping state */
+        public readonly silk_shape_state sShape = new silk_shape_state();
+
+        /* Prefilter State */
+        public readonly silk_prefilter_state sPrefilt = new silk_prefilter_state();
+
+        /* Buffer for find pitch and noise shape analysis */
+        public readonly Pointer<short> x_buf = Pointer.Malloc<short>(2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
+
+        /* Normalized correlation from pitch lag estimator */
+        public int LTPCorr_Q15 = 0;
 
         public silk_encoder_state()
         {
@@ -176,7 +186,6 @@ namespace Concentus.Silk.Structs
             LBRR_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
             indices.Reset();
             pulses.MemSet(0, SilkConstants.MAX_FRAME_LENGTH);
-            arch = 0;
             inputBuf.MemSet(0, SilkConstants.MAX_FRAME_LENGTH + 2);
             inputBufIx = 0;
             nFramesPerPacket = 0;
@@ -199,6 +208,10 @@ namespace Concentus.Silk.Structs
                 indices_LBRR[c].Reset();
                 pulses_LBRR[c].MemSet(0, SilkConstants.MAX_FRAME_LENGTH);
             }
+            sShape.Reset();
+            sPrefilt.Reset();
+            x_buf.MemSet(0, 2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
+            LTPCorr_Q15 = 0;
         }
     }
 }

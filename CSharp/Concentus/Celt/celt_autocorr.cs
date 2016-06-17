@@ -12,8 +12,7 @@ namespace Concentus.Celt
                    Pointer<short> window,
                    int overlap,
                    int lag,
-                   int n,
-                   int arch
+                   int n
                   )
         {
             int d;

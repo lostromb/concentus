@@ -15,11 +15,11 @@ namespace Concentus.Silk
         /// High-pass filter with cutoff frequency adaptation based on pitch lag statistics
         /// </summary>
         /// <param name="state_Fxx">I/O  Encoder states</param>
-        public static void silk_HP_variable_cutoff(Pointer<silk_encoder_state_fix> state_Fxx)
+        public static void silk_HP_variable_cutoff(Pointer<silk_encoder_state> state_Fxx)
         {
             int quality_Q15;
             int pitch_freq_Hz_Q16, pitch_freq_log_Q7, delta_freq_Q7;
-            silk_encoder_state psEncC1 = state_Fxx[0].sCmn;
+            silk_encoder_state psEncC1 = state_Fxx[0];
 
             /* Adaptive cutoff frequency: estimate low end of pitch frequency range */
             if (psEncC1.prevSignalType == SilkConstants.TYPE_VOICED)

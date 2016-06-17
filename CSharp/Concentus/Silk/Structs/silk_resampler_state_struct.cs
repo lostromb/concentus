@@ -9,11 +9,11 @@ namespace Concentus.Silk.Structs
 {
     public class silk_resampler_state_struct
     {
-        public /*readonly*/ Pointer<int> sIIR = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER); /* this must be the first element of this struct FIXME why? */
-        public /*readonly*/ Pointer<int> sFIR_i32 = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-        public /*readonly*/ Pointer<short> sFIR_i16 = Pointer.Malloc<short>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+        public readonly Pointer<int> sIIR = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER); /* this must be the first element of this struct FIXME why? */
+        public readonly Pointer<int> sFIR_i32 = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+        public readonly Pointer<short> sFIR_i16 = Pointer.Malloc<short>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
 
-        public /*readonly*/ Pointer<short> delayBuf = Pointer.Malloc<short>(48);
+        public readonly Pointer<short> delayBuf = Pointer.Malloc<short>(48);
         public int resampler_function = 0;
         public int batchSize = 0;
         public int invRatio_Q16 = 0;

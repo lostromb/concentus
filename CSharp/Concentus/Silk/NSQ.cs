@@ -89,7 +89,7 @@ namespace Concentus.Silk
                         Inlines.OpusAssert(start_idx > 0);
 
                         Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), NSQ.xq.Point(start_idx + k * psEncC.subfr_length),
-                            A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder, psEncC.arch);
+                            A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
 
                         NSQ.rewhite_flag = 1;
                         NSQ.sLTP_buf_idx = psEncC.ltp_mem_length;
@@ -584,7 +584,7 @@ namespace Concentus.Silk
                         Inlines.OpusAssert(start_idx > 0);
 
                         Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), NSQ.xq.Point(start_idx + k * psEncC.subfr_length),
-                            A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder, psEncC.arch);
+                            A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
 
                         NSQ.sLTP_buf_idx = psEncC.ltp_mem_length;
                         NSQ.rewhite_flag = 1;

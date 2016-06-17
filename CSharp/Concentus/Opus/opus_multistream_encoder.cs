@@ -169,7 +169,7 @@ namespace Concentus.Opus
 
         public static void surround_analysis<T>(CELTMode celt_mode, Pointer<T> pcm,
             Pointer<int> bandLogE, Pointer<int> mem, Pointer<int> preemph_mem,
-          int len, int overlap, int channels, int rate, opus_copy_channel_in_func<T> copy_channel_in, int arch
+          int len, int overlap, int channels, int rate, opus_copy_channel_in_func<T> copy_channel_in
     )
         {
             int c;
@@ -212,7 +212,7 @@ namespace Concentus.Opus
                 preemph_mem[c] = boxed_preemph.Val;
 
                 mdct.clt_mdct_forward_c(celt_mode.mdct, input, freq, celt_mode.window,
-                      overlap, celt_mode.maxLM - LM, 1, arch);
+                      overlap, celt_mode.maxLM - LM, 1);
                 if (upsample != 1)
                 {
                     int bound = len;
@@ -291,8 +291,7 @@ namespace Concentus.Opus
             if ((channels > 255) || (channels < 1) || (coupled_streams > streams) ||
                 (streams < 1) || (coupled_streams < 0) || (streams > 255 - coupled_streams))
                 return OpusError.OPUS_BAD_ARG;
-
-            st.arch = 0;
+            
             st.layout.nb_channels = channels;
             st.layout.nb_streams = streams;
             st.layout.nb_coupled_streams = coupled_streams;
@@ -646,7 +645,7 @@ namespace Concentus.Opus
             bandSMR = Pointer.Malloc<int>(21 * st.layout.nb_channels);
             if (st.surround != 0)
             {
-                surround_analysis(celt_mode, pcm, bandSMR, mem, preemph_mem, frame_size, 120, st.layout.nb_channels, Fs, copy_channel_in, st.arch);
+                surround_analysis(celt_mode, pcm, bandSMR, mem, preemph_mem, frame_size, 120, st.layout.nb_channels, Fs, copy_channel_in);
             }
 
             /* Compute bitrate allocation between streams (this could be a lot better) */

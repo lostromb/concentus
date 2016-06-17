@@ -15,27 +15,27 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Analysis filterbank state: 0-8 kHz
         /// </summary>
-        public /*readonly*/ Pointer<int> AnaState = Pointer.Malloc<int>(2);
+        public readonly Pointer<int> AnaState = Pointer.Malloc<int>(2);
 
         /// <summary>
         /// Analysis filterbank state: 0-4 kHz
         /// </summary>
-        public /*readonly*/ Pointer<int> AnaState1 = Pointer.Malloc<int>(2);
+        public readonly Pointer<int> AnaState1 = Pointer.Malloc<int>(2);
 
         /// <summary>
         /// Analysis filterbank state: 0-2 kHz
         /// </summary>
-        public /*readonly*/ Pointer<int> AnaState2 = Pointer.Malloc<int>(2);
+        public readonly Pointer<int> AnaState2 = Pointer.Malloc<int>(2);
 
         /// <summary>
         /// Subframe energies
         /// </summary>
-        public /*readonly*/ Pointer<int> XnrgSubfr = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
+        public readonly Pointer<int> XnrgSubfr = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
 
         /// <summary>
         /// Smoothed energy level in each band
         /// </summary>
-        public /*readonly*/ Pointer<int> NrgRatioSmth_Q8 = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
+        public readonly Pointer<int> NrgRatioSmth_Q8 = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
 
         /// <summary>
         /// State of differentiator in the lowest band
@@ -45,17 +45,17 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Noise energy level in each band
         /// </summary>
-        public /*readonly*/ Pointer<int> NL = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
+        public readonly Pointer<int> NL = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
 
         /// <summary>
         /// Inverse noise energy level in each band
         /// </summary>
-        public /*readonly*/ Pointer<int> inv_NL = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
+        public readonly Pointer<int> inv_NL = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
 
         /// <summary>
         /// Noise level estimator bias/offset
         /// </summary>
-        public /*readonly*/ Pointer<int> NoiseLevelBias = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
+        public readonly Pointer<int> NoiseLevelBias = Pointer.Malloc<int>(SilkConstants.VAD_N_BANDS);
 
         /// <summary>
         /// Frame counter used in the initial phase

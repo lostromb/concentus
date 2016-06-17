@@ -11,8 +11,8 @@ namespace Concentus.Celt
              Pointer<short> _y,
              int N,
              int ord,
-             Pointer<short> mem,
-             int arch)
+             Pointer<short> mem
+             )
         {
             int i, j;
             Pointer<short> rnum = Pointer.Malloc<short>(ord);
@@ -67,8 +67,8 @@ namespace Concentus.Celt
              Pointer<int> _y,
              int N,
              int ord,
-             Pointer<int> mem,
-             int arch)
+             Pointer<int> mem
+             )
         {
             int i, j;
             Pointer<int> rnum = Pointer.Malloc<int>(ord);

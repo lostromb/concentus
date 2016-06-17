@@ -15,10 +15,10 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Buffer for quantized output signal
         /// </summary>
-        public /*readonly*/ Pointer<short> xq = Pointer.Malloc<short>(2 * SilkConstants.MAX_FRAME_LENGTH);
-        public /*readonly*/ Pointer<int> sLTP_shp_Q14 = Pointer.Malloc<int>(2 * SilkConstants.MAX_FRAME_LENGTH);
-        public /*readonly*/ Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-        public /*readonly*/ Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
+        public readonly Pointer<short> xq = Pointer.Malloc<short>(2 * SilkConstants.MAX_FRAME_LENGTH);
+        public readonly Pointer<int> sLTP_shp_Q14 = Pointer.Malloc<int>(2 * SilkConstants.MAX_FRAME_LENGTH);
+        public readonly Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+        public readonly Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
         public int sLF_AR_shp_Q14 = 0;
         public int lagPrev = 0;
         public int sLTP_buf_idx = 0;

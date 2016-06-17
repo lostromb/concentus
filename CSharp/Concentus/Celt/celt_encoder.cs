@@ -19,7 +19,7 @@ namespace Concentus.Celt
         private const bool TRACE_FILE = false;
 
         public static int opus_custom_encoder_init_arch(CELTEncoder st, CELTMode mode,
-                                                 int channels, int arch)
+                                                 int channels)
         {
             if (channels < 0 || channels > 2)
                 return OpusError.OPUS_BAD_ARG;
@@ -36,8 +36,6 @@ namespace Concentus.Celt
             st.start = 0;
             st.end = st.mode.effEBands;
             st.signalling = 1;
-
-            st.arch = arch;
 
             st.constrained_vbr = 1;
             st.clip = 1;
@@ -60,11 +58,10 @@ namespace Concentus.Celt
             return OpusError.OPUS_OK;
         }
 
-        public static int celt_encoder_init(CELTEncoder st, int sampling_rate, int channels,
-                              int arch)
+        public static int celt_encoder_init(CELTEncoder st, int sampling_rate, int channels)
         {
             int ret;
-            ret = opus_custom_encoder_init_arch(st, modes.opus_custom_mode_create(48000, 960, null), channels, arch);
+            ret = opus_custom_encoder_init_arch(st, modes.opus_custom_mode_create(48000, 960, null), channels);
             if (ret != OpusError.OPUS_OK)
                 return ret;
             st.upsample = celt.resampling_factor(sampling_rate);
@@ -242,8 +239,7 @@ namespace Concentus.Celt
         /** Apply window and compute the MDCT for all sub-frames and
             all channels in a frame */
         public static void compute_mdcts(CELTMode mode, int shortBlocks, Pointer<int> input,
-                                  Pointer<int> output, int C, int CC, int LM, int upsample,
-                                  int arch)
+                                  Pointer<int> output, int C, int CC, int LM, int upsample)
         {
             int overlap = mode.overlap;
             int N;
@@ -269,13 +265,12 @@ namespace Concentus.Celt
                     /* Interleaving the sub-frames while doing the MDCTs */
                     mdct.clt_mdct_forward_c(
                         mode.mdct,
-                        input.Point(c * (B * N + overlap) + b * N), // fixme: ghetto order of ops
+                        input.Point((c * ((B * N) + overlap)) + (b * N)),
                         output.Point(b + c * N * B),
                         mode.window,
                         overlap,
                         shift,
-                        B,
-                        arch);
+                        B);
                 }
             } while (++c < CC);
 
@@ -574,7 +569,7 @@ namespace Concentus.Celt
         public static int alloc_trim_analysis(CELTMode m, Pointer<int> X,
               Pointer<int> bandLogE, int end, int LM, int C, int N0,
               AnalysisInfo analysis, BoxedValue<int> stereo_saving, int tf_estimate,
-              int intensity, int surround_trim, int arch)
+              int intensity, int surround_trim)
         {
             int i;
             int diff = 0;
@@ -917,15 +912,14 @@ namespace Concentus.Celt
             {
                 Pointer<int> pitch_buf = Pointer.Malloc<int>((CeltConstants.COMBFILTER_MAXPERIOD + N) >> 1);
 
-                Concentus.Celt.pitch.pitch_downsample(pre, pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD + N, CC, st.arch);
+                Concentus.Celt.pitch.pitch_downsample(pre, pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
                 /* Don't search for the fir last 1.5 octave of the range because
                    there's too many false-positives due to short-term correlation */
                 Concentus.Celt.pitch.pitch_search(pitch_buf.Point(CeltConstants.COMBFILTER_MAXPERIOD >> 1), pitch_buf, N,
-                      CeltConstants.COMBFILTER_MAXPERIOD - 3 * CeltConstants.COMBFILTER_MINPERIOD, pitch_index,
-                      st.arch);
+                      CeltConstants.COMBFILTER_MAXPERIOD - 3 * CeltConstants.COMBFILTER_MINPERIOD, pitch_index);
                 pitch_index.Val = CeltConstants.COMBFILTER_MAXPERIOD - pitch_index.Val;
                 gain1 = Concentus.Celt.pitch.remove_doubling(pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MINPERIOD,
-                      N, pitch_index, st.prefilter_period, st.prefilter_gain, st.arch);
+                      N, pitch_index, st.prefilter_period, st.prefilter_gain);
                 if (pitch_index.Val > CeltConstants.COMBFILTER_MAXPERIOD - 2)
                     pitch_index.Val = CeltConstants.COMBFILTER_MAXPERIOD - 2;
                 gain1 = Inlines.MULT16_16_Q15(Inlines.QCONST16(.7f, 15), gain1);
@@ -990,12 +984,12 @@ namespace Concentus.Celt
                 {
                     celt.comb_filter(input.Point(c * (N + overlap) + overlap), pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD),
                           st.prefilter_period, st.prefilter_period, offset, -st.prefilter_gain, -st.prefilter_gain,
-                          st.prefilter_tapset, st.prefilter_tapset, null, 0, st.arch);
+                          st.prefilter_tapset, st.prefilter_tapset, null, 0);
                 }
 
                 celt.comb_filter(input.Point(c * (N + overlap) + overlap + offset), pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       st.prefilter_period, pitch_index.Val, N - offset, -st.prefilter_gain, -gain1,
-                      st.prefilter_tapset, prefilter_tapset, mode.window, overlap, st.arch);
+                      st.prefilter_tapset, prefilter_tapset, mode.window, overlap);
                 input.Point(c * (N + overlap) + N).MemCopyTo(st.in_mem.Point(c * overlap), overlap);
 
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
@@ -1403,7 +1397,7 @@ namespace Concentus.Celt
             bandLogE2.MemSet(0, C * nbEBands); // FIXME: TEMPORARY
             if (secondMdct != 0)
             {
-                compute_mdcts(mode, 0, input, freq, C, CC, LM, st.upsample, st.arch);
+                compute_mdcts(mode, 0, input, freq, C, CC, LM, st.upsample);
                 bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
                 quant_bands.amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
                 for (i = 0; i < C * nbEBands; i++)
@@ -1412,7 +1406,7 @@ namespace Concentus.Celt
                 }
             }
 
-            compute_mdcts(mode, shortBlocks, input, freq, C, CC, LM, st.upsample, st.arch);
+            compute_mdcts(mode, shortBlocks, input, freq, C, CC, LM, st.upsample);
             if (CC == 2 && C == 1)
                 tf_chan = 0;
             bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
@@ -1540,7 +1534,7 @@ namespace Concentus.Celt
                 {
                     isTransient = 1;
                     shortBlocks = M;
-                    compute_mdcts(mode, shortBlocks, input, freq, C, CC, LM, st.upsample, st.arch);
+                    compute_mdcts(mode, shortBlocks, input, freq, C, CC, LM, st.upsample);
                     bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
                     quant_bands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
                     /* Compensate for the scaling of short vs long mdcts */
@@ -1709,7 +1703,7 @@ namespace Concentus.Celt
                     BoxedValue<int> boxed_stereo_saving = new BoxedValue<int>(st.stereo_saving);
                     alloc_trim = alloc_trim_analysis(mode, X, bandLogE,
                        end, LM, C, N, st.analysis, boxed_stereo_saving, tf_estimate,
-                       st.intensity, surround_trim, st.arch);
+                       st.intensity, surround_trim);
                     st.stereo_saving = boxed_stereo_saving.Val;
                 }
                 EntropyCoder.ec_enc_icdf(enc, alloc_trim, Tables.trim_icdf.GetPointer(), 7);
@@ -1862,7 +1856,7 @@ namespace Concentus.Celt
             bands.quant_all_bands(1, mode, start, end, X, C == 2 ? X.Point(N) : null, collapse_masks,
                   bandE, pulses, shortBlocks, st.spread_decision,
                   dual_stereo, st.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
-                  balance, enc, LM, codedBands, boxed_rng, st.arch);
+                  balance, enc, LM, codedBands, boxed_rng);
             st.rng = boxed_rng.Val;
 
             if (anti_collapse_rsv > 0)
