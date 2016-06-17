@@ -357,8 +357,8 @@ namespace Concentus.Celt
             204, 204, 204, 204, 204, 201, 201, 201, 201, 198, 198, 198, 187, 187, 175,
             140, 66, 40, };
 
-        public static readonly kiss_twiddle_cpx[] fft_twiddles48000_960 =
-            kiss_twiddle_cpx.ConvertInterleavedShortArray(new short[] {
+        public static readonly short[] fft_twiddles48000_960 =
+            new short[] {
             32767, 0, 32766, -429,
             32757, -858, 32743, -1287,
             32724, -1715, 32698, -2143,
@@ -599,7 +599,7 @@ namespace Concentus.Celt
             32667, 2572, 32698, 2144,
             32724, 1716, 32742, 1287,
             32757, 860, 32766, 430
-            }.GetPointer(), 480);
+            };
 
         public static readonly short[] fft_bitrev480 = {
             0, 96, 192, 288, 384, 32, 128, 224, 320, 416, 64, 160, 256, 352, 448,
@@ -682,7 +682,7 @@ namespace Concentus.Celt
             shift = -1,
             factors = new short[] { 5, 96, 3, 32, 4, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, },
             bitrev = fft_bitrev480.GetPointer(),
-            twiddles = fft_twiddles48000_960.GetPointer(),
+            twiddles = fft_twiddles48000_960
         };
 
         public static readonly kiss_fft_state fft_state48000_960_1 = new kiss_fft_state()
@@ -693,7 +693,7 @@ namespace Concentus.Celt
             shift = 1,
             factors = new short[] { 5, 48, 3, 16, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
             bitrev = fft_bitrev240.GetPointer(),
-            twiddles = fft_twiddles48000_960.GetPointer(),
+            twiddles = fft_twiddles48000_960
         };
 
         public static readonly kiss_fft_state fft_state48000_960_2 = new kiss_fft_state()
@@ -704,7 +704,7 @@ namespace Concentus.Celt
             shift = 2,
             factors = new short[] { 5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
             bitrev = fft_bitrev120.GetPointer(),
-            twiddles = fft_twiddles48000_960.GetPointer(),
+            twiddles = fft_twiddles48000_960
         };
 
         public static readonly kiss_fft_state fft_state48000_960_3 = new kiss_fft_state()
@@ -715,7 +715,7 @@ namespace Concentus.Celt
             shift = 3,
             factors = new short[] { 5, 12, 3, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
             bitrev = fft_bitrev60.GetPointer(),
-            twiddles = fft_twiddles48000_960.GetPointer(),
+            twiddles = fft_twiddles48000_960
         };
 
         public static readonly short[] mdct_twiddles960 /*1800*/ = {

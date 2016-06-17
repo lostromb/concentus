@@ -15,6 +15,6 @@ namespace Concentus.Celt.Structs
         public int shift = 0;
         public short[] factors = new short[2 * KissFFT.MAXFACTORS];
         public Pointer<short> bitrev = null;
-        public Pointer<kiss_twiddle_cpx> twiddles = null;
+        public short[] twiddles = null;
     }
 }
