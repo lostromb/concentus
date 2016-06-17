@@ -47,7 +47,7 @@ namespace Concentus
             return toc;
         }
 
-        internal static void hp_cutoff(Pointer<int> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
+        internal static void hp_cutoff(Pointer<short> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
         {
             Pointer<int> B_Q28 = Pointer.Malloc<int>(3);
             Pointer<int> A_Q28 = Pointer.Malloc<int>(2);
@@ -77,7 +77,7 @@ namespace Concentus
             }
         }
 
-        internal static void dc_reject(Pointer<int> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
+        internal static void dc_reject(Pointer<short> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
         {
             int c, i;
             int shift;
@@ -432,7 +432,7 @@ namespace Concentus
             return frame_size;
         }
 
-        internal static int compute_stereo_width(Pointer<int> pcm, int frame_size, int Fs, StereoWidthState mem)
+        internal static int compute_stereo_width(Pointer<short> pcm, int frame_size, int Fs, StereoWidthState mem)
         {
             int corr;
             int ldiff;

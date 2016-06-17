@@ -409,7 +409,7 @@ namespace Concentus.Structs
         /// <param name="downmix"></param>
         /// <param name="float_api"></param>
         /// <returns></returns>
-        internal int opus_encode_native<T>(Pointer<int> pcm, int frame_size,
+        internal int opus_encode_native<T>(Pointer<short> pcm, int frame_size,
                         Pointer<byte> data, int out_data_bytes, int lsb_depth,
                         Pointer<T> analysis_pcm, int analysis_size, int c1, int c2,
                         int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
@@ -1499,13 +1499,8 @@ namespace Concentus.Structs
                   , st.analysis.subframe_mem
 #endif
                   );
-
-            // fixme: does this belong here?
-            Pointer<int> input = Pointer.Malloc<int>(frame_size * this.channels);
-            for (i = 0; i < frame_size * this.channels; i++)
-                input[i] = (int)pcm[i];
-
-            return opus_encode_native<short>(input, frame_size, data, out_data_bytes, 16,
+            
+            return opus_encode_native<short>(pcm, frame_size, data, out_data_bytes, 16,
                                      pcm, analysis_frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
         }
 
@@ -1548,7 +1543,7 @@ namespace Concentus.Structs
             int i, ret;
             int frame_size;
             int delay_compensation;
-            Pointer<int> input;
+            Pointer<short> input;
 
             if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 delay_compensation = 0;
@@ -1563,7 +1558,7 @@ namespace Concentus.Structs
 #endif
                   );
 
-            input = Pointer.Malloc<int>(frame_size * this.channels);
+            input = Pointer.Malloc<short>(frame_size * this.channels);
 
             for (i = 0; i < frame_size * this.channels; i++)
                 input[i] = Inlines.FLOAT2INT16(pcm[i]);

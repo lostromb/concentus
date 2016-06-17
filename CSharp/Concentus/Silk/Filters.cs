@@ -272,6 +272,44 @@ namespace Concentus.Silk
             }
         }
 
+        internal static void silk_biquad_alt(
+            Pointer<short> input,
+            Pointer<int> B_Q28,
+            Pointer<int> A_Q28,
+            Pointer<int> S,
+            Pointer<int> output,
+            int len,
+            int stride)
+        {
+            /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
+            int k;
+            int inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
+
+            /* Negate A_Q28 values and split in two parts */
+            A0_L_Q28 = (-A_Q28[0]) & 0x00003FFF;        /* lower part */
+            A0_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[0], 14);      /* upper part */
+            A1_L_Q28 = (-A_Q28[1]) & 0x00003FFF;        /* lower part */
+            A1_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[1], 14);      /* upper part */
+
+            for (k = 0; k < len; k++)
+            {
+                /* S[ 0 ], S[ 1 ]: Q12 */
+                inval = input[k * stride];
+                out32_Q14 = Inlines.silk_LSHIFT(Inlines.silk_SMLAWB(S[0], B_Q28[0], inval), 2);
+
+                S[0] = S[1] + Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A0_L_Q28), 14);
+                S[0] = Inlines.silk_SMLAWB(S[0], out32_Q14, A0_U_Q28);
+                S[0] = Inlines.silk_SMLAWB(S[0], B_Q28[1], inval);
+
+                S[1] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A1_L_Q28), 14);
+                S[1] = Inlines.silk_SMLAWB(S[1], out32_Q14, A1_U_Q28);
+                S[1] = Inlines.silk_SMLAWB(S[1], B_Q28[2], inval);
+
+                /* Scale back to Q0 and saturate */
+                output[k * stride] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
+            }
+        }
+
         /* Coefficients for 2-band filter bank based on first-order allpass filters */
         private readonly static short A_fb1_20 = 5394 << 1;
         private readonly static short A_fb1_21 = -24290; /* (opus_int16)(20623 << 1) */

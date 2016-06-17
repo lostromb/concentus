@@ -935,12 +935,12 @@ namespace Concentus.Common
                                                                                          ))))))));
         }
 
-        internal static int FLOAT2INT16(float x)
+        internal static short FLOAT2INT16(float x)
         {
             x = x * CeltConstants.CELT_SIG_SCALE;
-            x = Math.Max(x, -32768);
-            x = Math.Min(x, 32767);
-            return (int)x;
+            x = Math.Max(x, short.MinValue);
+            x = Math.Min(x, short.MaxValue);
+            return (short)x;
         }
 
 #endregion

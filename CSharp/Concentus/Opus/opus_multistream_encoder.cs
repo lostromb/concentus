@@ -67,7 +67,7 @@ namespace Concentus
         };
 
         public delegate void opus_copy_channel_in_func<T>(
-            Pointer<int> dst, int dst_stride, Pointer<T> src, int src_stride, int src_channel, int frame_size);
+            Pointer<short> dst, int dst_stride, Pointer<T> src, int src_stride, int src_channel, int frame_size);
         
         internal static int validate_encoder_layout(ChannelLayout layout)
         {
@@ -182,7 +182,7 @@ namespace Concentus
             int[] bandE = new int[21];
             int[][] maskLogE = Arrays.InitTwoDimensionalArray<int>(3, 21);
             Pointer<int> input;
-            Pointer<int> x;
+            Pointer<short> x;
             Pointer<int> freq;
 
             upsample = Celt.Celt.resampling_factor(rate);
@@ -193,7 +193,7 @@ namespace Concentus
                     break;
 
             input = Pointer.Malloc<int>(frame_size + overlap);
-            x = Pointer.Malloc<int>(len);
+            x = Pointer.Malloc<short>(len);
             freq = Pointer.Malloc<int>(frame_size);
 
             channel_pos(channels, pos);
@@ -580,7 +580,7 @@ namespace Concentus
             int s;
             int encoder_ptr;
             int tot_size;
-            Pointer<int> buf;
+            Pointer<short> buf;
             Pointer<int> bandSMR;
             Pointer<byte> tmp_data = Pointer.Malloc<byte>(MS_FRAME_TMP);
             OpusRepacketizer rp = new OpusRepacketizer();
@@ -640,7 +640,7 @@ namespace Concentus
             {
                 return OpusError.OPUS_BUFFER_TOO_SMALL;
             }
-            buf = Pointer.Malloc<int>(2 * frame_size);
+            buf = Pointer.Malloc<short>(2 * frame_size);
 
             bandSMR = Pointer.Malloc<int>(21 * st.layout.nb_channels);
             if (st.surround != 0)
@@ -772,7 +772,7 @@ namespace Concentus
         }
 
         internal static void opus_copy_channel_in_float(
-          Pointer<int> dst,
+          Pointer<short> dst,
           int dst_stride,
           Pointer<float> src,
           int src_stride,
@@ -786,7 +786,7 @@ namespace Concentus
         }
 
         internal static void opus_copy_channel_in_short(
-          Pointer<int> dst,
+          Pointer<short> dst,
           int dst_stride,
           Pointer<short> src,
           int src_stride,
