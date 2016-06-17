@@ -645,7 +645,7 @@ namespace Concentus.Celt
             public int intensity;
             public int spread;
             public int tf_change;
-            public ec_ctx ec;
+            public EntropyCoder ec;
             public int remaining_bits;
             public Pointer<int> bandE;
             public uint seed;
@@ -679,7 +679,7 @@ namespace Concentus.Celt
             CeltMode m;
             int i;
             int intensity;
-            ec_ctx ec; // porting note: pointer
+            EntropyCoder ec; // porting note: pointer
             Pointer<int> bandE;
 
             encode = ctx.encode;
@@ -707,7 +707,7 @@ namespace Concentus.Celt
                 itheta = VQ.stereo_itheta(X, Y, stereo, N);
             }
 
-            tell = (int)EntropyCoder.ec_tell_frac(ec);
+            tell = (int)ec.ec_tell_frac();
 
             if (qn != 1)
             {
@@ -727,7 +727,7 @@ namespace Concentus.Celt
                     /* Use a probability of p0 up to itheta=8192 and then use 1 after */
                     if (encode != 0)
                     {
-                        EntropyCoder.ec_encode(ec,
+                        ec.ec_encode(
                             (uint)(x <= x0 ?
                                 (p0 * x) :
                                 ((x - 1 - x0) + (x0 + 1) * p0)),
@@ -739,7 +739,7 @@ namespace Concentus.Celt
                     else
                     {
                         int fs;
-                        fs = (int)EntropyCoder.ec_decode(ec, ft);
+                        fs = (int)ec.ec_decode(ft);
                         if (fs < (x0 + 1) * p0)
                         {
                             x = fs / p0;
@@ -749,7 +749,7 @@ namespace Concentus.Celt
                             x = x0 + 1 + (fs - (x0 + 1) * p0);
                         }
 
-                        EntropyCoder.ec_dec_update(ec,
+                        ec.ec_dec_update(
                             (uint)(x <= x0 ?
                                 p0 * x :
                                 (x - 1 - x0) + (x0 + 1) * p0),
@@ -765,11 +765,11 @@ namespace Concentus.Celt
                     /* Uniform pdf */
                     if (encode != 0)
                     {
-                        EntropyCoder.ec_enc_uint(ec, (uint)itheta, (uint)qn + 1);
+                        ec.ec_enc_uint((uint)itheta, (uint)qn + 1);
                     }
                     else
                     {
-                        itheta = (int)EntropyCoder.ec_dec_uint(ec, (uint)qn + 1);
+                        itheta = (int)ec.ec_dec_uint((uint)qn + 1);
                     }
                 }
                 else
@@ -784,14 +784,14 @@ namespace Concentus.Celt
                         fl = itheta <= (qn >> 1) ? itheta * (itheta + 1) >> 1 :
                          ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
 
-                        EntropyCoder.ec_encode(ec, (uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec.ec_encode((uint)fl, (uint)(fl + fs), (uint)ft);
                     }
                     else
                     {
                         /* Triangular pdf */
                         int fl = 0;
                         int fm;
-                        fm = (int)EntropyCoder.ec_decode(ec, (uint)ft);
+                        fm = (int)ec.ec_decode((uint)ft);
 
                         if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
                         {
@@ -806,7 +806,7 @@ namespace Concentus.Celt
                             fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
                         }
 
-                        EntropyCoder.ec_dec_update(ec, (uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec.ec_dec_update((uint)fl, (uint)(fl + fs), (uint)ft);
                     }
                 }
                 Inlines.OpusAssert(itheta >= 0);
@@ -840,18 +840,18 @@ namespace Concentus.Celt
                 {
                     if (encode != 0)
                     {
-                        EntropyCoder.ec_enc_bit_logp(ec, inv, 2);
+                        ec.ec_enc_bit_logp(inv, 2);
                     }
                     else
                     {
-                        inv = EntropyCoder.ec_dec_bit_logp(ec, 2);
+                        inv = ec.ec_dec_bit_logp(2);
                     }
                 }
                 else
                     inv = 0;
                 itheta = 0;
             }
-            qalloc = (int)EntropyCoder.ec_tell_frac(ec) - tell;
+            qalloc = (int)ec.ec_tell_frac() - tell;
             b.Val -= qalloc;
 
             if (itheta == 0)
@@ -892,7 +892,7 @@ namespace Concentus.Celt
             int stereo;
             Pointer<int> x = X;
             int encode;
-            ec_ctx ec; // porting note: pointer
+            EntropyCoder ec; // porting note: pointer
 
             encode = ctx.encode;
             ec = ctx.ec;
@@ -907,11 +907,11 @@ namespace Concentus.Celt
                     if (encode != 0)
                     {
                         sign = x[0] < 0 ? 1 : 0;
-                        EntropyCoder.ec_enc_bits(ec, (uint)sign, 1);
+                        ec.ec_enc_bits((uint)sign, 1);
                     }
                     else
                     {
-                        sign = (int)EntropyCoder.ec_dec_bits(ec, 1);
+                        sign = (int)ec.ec_dec_bits(1);
                     }
                     ctx.remaining_bits -= 1 << EntropyCoder.BITRES;
                     b -= 1 << EntropyCoder.BITRES;
@@ -950,7 +950,7 @@ namespace Concentus.Celt
             CeltMode m; //porting note: pointer
             int i;
             int spread;
-            ec_ctx ec; //porting note: pointer
+            EntropyCoder ec; //porting note: pointer
 
             encode = ctx.encode;
             m = ctx.m;
@@ -1265,7 +1265,7 @@ namespace Concentus.Celt
             split_ctx sctx = new split_ctx(); // porting note: stack var
             int orig_fill;
             int encode;
-            ec_ctx ec; //porting note: pointer
+            EntropyCoder ec; //porting note: pointer
 
             encode = ctx.encode;
             ec = ctx.ec;
@@ -1319,11 +1319,11 @@ namespace Concentus.Celt
                     {
                         /* Here we only need to encode a sign for the side. */
                         sign = (x2[0] * y2[1] - x2[1] * y2[0] < 0) ? 1 : 0;
-                        EntropyCoder.ec_enc_bits(ec, (uint)sign, 1);
+                        ec.ec_enc_bits((uint)sign, 1);
                     }
                     else
                     {
-                        sign = (int)EntropyCoder.ec_dec_bits(ec, 1);
+                        sign = (int)ec.ec_dec_bits(1);
                     }
                 }
                 sign = 1 - 2 * sign;
@@ -1420,7 +1420,7 @@ namespace Concentus.Celt
               Pointer<int> X_, Pointer<int> Y_, Pointer<byte> collapse_masks,
               Pointer<int> bandE, Pointer<int> pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, Pointer<int> tf_res, int total_bits,
-              int balance, ec_ctx ec, int LM, int codedBands,
+              int balance, EntropyCoder ec, int LM, int codedBands,
               BoxedValue<uint> seed)
         {
             int i;
@@ -1486,7 +1486,7 @@ namespace Concentus.Celt
                     Y = null;
                 }
                 N = M * eBands[i + 1] - M * eBands[i];
-                tell = (int)EntropyCoder.ec_tell_frac(ec);
+                tell = (int)ec.ec_tell_frac();
 
                 /* Compute how many bits we want to allocate to this band */
                 if (i != start)

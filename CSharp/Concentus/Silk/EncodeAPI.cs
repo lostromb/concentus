@@ -89,7 +89,7 @@ namespace Concentus.Silk
             EncControlState encControl,
             Pointer<short> samplesIn,
             int nSamplesIn,
-            ec_ctx psRangeEnc,
+            EntropyCoder psRangeEnc,
             BoxedValue<int> nBytesOut,
             int prefillFlag)
         {
@@ -338,7 +338,7 @@ namespace Concentus.Silk
                         /* Create space at start of payload for VAD and FEC flags */
                         byte[] iCDF = { 0, 0 };
                         iCDF[0] = Inlines.CHOP8U(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
-                        EntropyCoder.ec_enc_icdf(psRangeEnc, 0, iCDF.GetPointer(), 8);
+                        psRangeEnc.ec_enc_icdf( 0, iCDF.GetPointer(), 8);
 
                         /* Encode any LBRR data from previous packet */
                         /* Encode LBRR flags */
@@ -353,7 +353,7 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[n].LBRR_flag = (sbyte)(LBRR_symbol > 0 ? 1 : 0);
                             if (LBRR_symbol != 0 && psEnc.state_Fxx[n].nFramesPerPacket > 1)
                             {
-                                EntropyCoder.ec_enc_icdf(psRangeEnc, LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2].GetPointer(), 8);
+                                psRangeEnc.ec_enc_icdf( LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2].GetPointer(), 8);
                             }
                         }
 
@@ -399,7 +399,7 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[n].LBRR_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
                         }
 
-                        psEnc.nBitsUsedLBRR = EntropyCoder.ec_tell(psRangeEnc);
+                        psEnc.nBitsUsedLBRR = psRangeEnc.ec_tell();
                     }
 
                     HPVariableCutoff.silk_HP_variable_cutoff(psEnc.state_Fxx);
@@ -432,7 +432,7 @@ namespace Concentus.Silk
                     if (prefillFlag == 0 && psEnc.state_Fxx[0].nFramesEncoded > 0)
                     {
                         /* Compare actual vs target bits so far in this packet */
-                        int bitsBalance = EntropyCoder.ec_tell(psRangeEnc) - psEnc.nBitsUsedLBRR - nBits * psEnc.state_Fxx[0].nFramesEncoded;
+                        int bitsBalance = psRangeEnc.ec_tell() - psEnc.nBitsUsedLBRR - nBits * psEnc.state_Fxx[0].nFramesEncoded;
                         TargetRate_bps -= Inlines.silk_DIV32_16(Inlines.silk_MUL(bitsBalance, 1000), TuningParameters.BITRESERVOIR_DECAY_TIME_MS);
                     }
 
@@ -597,7 +597,7 @@ namespace Concentus.Silk
 
                         if (prefillFlag == 0)
                         {
-                            EntropyCoder.ec_enc_patch_initial_bits(psRangeEnc, (uint)flags, (uint)((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
+                            psRangeEnc.ec_enc_patch_initial_bits((uint)flags, (uint)((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         }
 
                         /* Return zero bytes if all channels DTXed */

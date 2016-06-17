@@ -69,7 +69,7 @@ namespace Concentus.Celt
         internal static int interp_bits2pulses(CeltMode m, int start, int end, int skip_start,
               Pointer<int> bits1, Pointer<int> bits2, Pointer<int> thresh, Pointer<int> cap, int total, BoxedValue<int> _balance,
               int skip_rsv, BoxedValue<int> intensity, int intensity_rsv, BoxedValue<int> dual_stereo, int dual_stereo_rsv, Pointer<int> bits,
-              Pointer<int> ebits, Pointer<int> fine_priority, int C, int LM, ec_ctx ec, int encode, int prev, int signalBandwidth)
+              Pointer<int> ebits, Pointer<int> fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
         {
             int psum;
             int lo, hi;
@@ -184,12 +184,12 @@ namespace Concentus.Celt
                         if (codedBands <= start + 2 || (band_bits > ((j < prev ? 7 : 9) * band_width << LM << EntropyCoder.BITRES) >> 4 && j <= signalBandwidth))
 #endif
                         {
-                            EntropyCoder.ec_enc_bit_logp(ec, 1, 1);
+                            ec.ec_enc_bit_logp(1, 1);
                             break;
                         }
-                        EntropyCoder.ec_enc_bit_logp(ec, 0, 1);
+                        ec.ec_enc_bit_logp(0, 1);
                     }
-                    else if (EntropyCoder.ec_dec_bit_logp(ec, 1) != 0)
+                    else if (ec.ec_dec_bit_logp(1) != 0)
                     {
                         break;
                     }
@@ -221,11 +221,11 @@ namespace Concentus.Celt
                 if (encode != 0)
                 {
                     intensity.Val = Inlines.IMIN(intensity.Val, codedBands);
-                    EntropyCoder.ec_enc_uint(ec, (uint)(intensity.Val - start), (uint)(codedBands + 1 - start));
+                    ec.ec_enc_uint((uint)(intensity.Val - start), (uint)(codedBands + 1 - start));
                 }
                 else
                 {
-                    intensity.Val = start + (int)EntropyCoder.ec_dec_uint(ec, (uint)(codedBands + 1 - start));
+                    intensity.Val = start + (int)ec.ec_dec_uint((uint)(codedBands + 1 - start));
                 }
             }
             else
@@ -242,11 +242,11 @@ namespace Concentus.Celt
             {
                 if (encode != 0)
                 {
-                    EntropyCoder.ec_enc_bit_logp(ec, dual_stereo.Val, 1);
+                    ec.ec_enc_bit_logp(dual_stereo.Val, 1);
                 }
                 else
                 {
-                    dual_stereo.Val = EntropyCoder.ec_dec_bit_logp(ec, 1);
+                    dual_stereo.Val = ec.ec_dec_bit_logp(1);
                 }
             }
             else
@@ -368,7 +368,7 @@ namespace Concentus.Celt
         }
 
         internal static int compute_allocation(CeltMode m, int start, int end, Pointer<int> offsets, Pointer<int> cap, int alloc_trim, BoxedValue<int> intensity, BoxedValue<int> dual_stereo,
-              int total, BoxedValue<int> balance, Pointer<int> pulses, Pointer<int> ebits, Pointer<int> fine_priority, int C, int LM, ec_ctx ec, int encode, int prev, int signalBandwidth)
+              int total, BoxedValue<int> balance, Pointer<int> pulses, Pointer<int> ebits, Pointer<int> fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
         {
             int lo, hi, len, j;
             int codedBands;

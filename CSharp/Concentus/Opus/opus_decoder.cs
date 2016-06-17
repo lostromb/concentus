@@ -130,7 +130,7 @@ namespace Concentus
             SilkDecoder silk_dec;
             CeltDecoder celt_dec;
             int i, silk_ret = 0, celt_ret = 0;
-            ec_ctx dec = new ec_ctx(); // porting note: stack var
+            EntropyCoder dec = new EntropyCoder(); // porting note: stack var
             int silk_frame_size;
             int pcm_silk_size;
             Pointer<short> pcm_silk;
@@ -179,7 +179,7 @@ namespace Concentus
             {
                 audiosize = st.frame_size;
                 mode = st.mode;
-                EntropyCoder.ec_dec_init(dec, data, (uint)len);
+                dec.ec_dec_init(data, (uint)len);
             }
             else {
                 audiosize = frame_size;
@@ -335,25 +335,25 @@ namespace Concentus
 
             start_band = 0;
             if (decode_fec == 0 && mode != OpusMode.MODE_CELT_ONLY && data != null
-             && EntropyCoder.ec_tell(dec) + 17 + 20 * (st.mode == OpusMode.MODE_HYBRID ? 1 : 0) <= 8 * len)
+             && dec.ec_tell() + 17 + 20 * (st.mode == OpusMode.MODE_HYBRID ? 1 : 0) <= 8 * len)
             {
                 /* Check if we have a redundant 0-8 kHz band */
                 if (mode == OpusMode.MODE_HYBRID)
-                    redundancy = EntropyCoder.ec_dec_bit_logp(dec, 12);
+                    redundancy = dec.ec_dec_bit_logp(12);
                 else
                     redundancy = 1;
                 if (redundancy != 0)
                 {
-                    celt_to_silk = EntropyCoder.ec_dec_bit_logp(dec, 1);
+                    celt_to_silk = dec.ec_dec_bit_logp(1);
                     /* redundancy_bytes will be at least two, in the non-hybrid
                        case due to the ec_tell() check above */
                     redundancy_bytes = mode == OpusMode.MODE_HYBRID ?
-                                      (int)EntropyCoder.ec_dec_uint(dec, 256) + 2 :
-                                      len - ((EntropyCoder.ec_tell(dec) + 7) >> 3);
+                                      (int)dec.ec_dec_uint(256) + 2 :
+                                      len - ((dec.ec_tell() + 7) >> 3);
                     len -= redundancy_bytes;
                     /* This is a sanity check. It should never happen for a valid
                        packet, so the exact behaviour is not normative. */
-                    if (len * 8 < EntropyCoder.ec_tell(dec))
+                    if (len * 8 < dec.ec_tell())
                     {
                         len = 0;
                         redundancy_bytes = 0;

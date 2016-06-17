@@ -49,7 +49,7 @@ namespace Concentus.Silk
         internal static int silk_encode_frame(
             SilkChannelEncoder psEnc,                                 /* I/O  Pointer to Silk FIX encoder state                                           */
             BoxedValue<int> pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
-            ec_ctx psRangeEnc,                            /* I/O  compressor data structure                                                   */
+            EntropyCoder psRangeEnc,                            /* I/O  compressor data structure                                                   */
             int condCoding,                             /* I    The type of conditional coding to use                                       */
             int maxBits,                                /* I    If > 0: maximum number of output bits                                       */
             int useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
@@ -58,8 +58,8 @@ namespace Concentus.Silk
             SilkEncoderControl sEncCtrl = new SilkEncoderControl();
             int i, iter, maxIter, found_upper, found_lower, ret = 0;
             Pointer<short> x_frame;
-            ec_ctx sRangeEnc_copy = new ec_ctx();
-            ec_ctx sRangeEnc_copy2 = new ec_ctx();
+            EntropyCoder sRangeEnc_copy = new EntropyCoder();
+            EntropyCoder sRangeEnc_copy2 = new EntropyCoder();
             SilkNSQState sNSQ_copy = new SilkNSQState();
             SilkNSQState sNSQ_copy2 = new SilkNSQState();
             int nBits, nBits_lower, nBits_upper, gainMult_lower, gainMult_upper;
@@ -196,7 +196,7 @@ namespace Concentus.Silk
                         EncodePulses.silk_encode_pulses(psRangeEnc, psEnc.indices.signalType, psEnc.indices.quantOffsetType,
                             psEnc.pulses, psEnc.frame_length);
                         
-                        nBits = EntropyCoder.ec_tell(psRangeEnc);
+                        nBits = psRangeEnc.ec_tell();
 
                         if (useCBR == 0 && iter == 0 && nBits <= maxBits)
                         {
@@ -321,7 +321,7 @@ namespace Concentus.Silk
             /****************************************/
             psEnc.first_frame_after_reset = 0;
             /* Payload size */
-            pnBytesOut.Val = Inlines.silk_RSHIFT(EntropyCoder.ec_tell(psRangeEnc) + 7, 3);
+            pnBytesOut.Val = Inlines.silk_RSHIFT(psRangeEnc.ec_tell() + 7, 3);
             
             return ret;
         }

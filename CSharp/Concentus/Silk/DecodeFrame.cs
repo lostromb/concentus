@@ -19,7 +19,7 @@ namespace Concentus.Silk
         /****************/
         internal static int silk_decode_frame(
             SilkChannelDecoder psDec,                         /* I/O  Pointer to Silk decoder state               */
-            ec_ctx psRangeDec,                    /* I/O  Compressor data structure                   */
+            EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
             Pointer<short> pOut,                         /* O    Pointer to output speech frame              */
             BoxedValue<int> pN,                            /* O    Pointer to size of output frame             */
             int lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */

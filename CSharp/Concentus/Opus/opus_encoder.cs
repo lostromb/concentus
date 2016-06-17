@@ -715,7 +715,7 @@ namespace Concentus
             int i;
             int ret = 0;
             int nBytes;
-            ec_ctx enc = new ec_ctx(); // porting note: stack var
+            EntropyCoder enc = new EntropyCoder(); // porting note: stack var
             int bytes_target;
             int prefill = 0;
             int start_band = 0;
@@ -1210,7 +1210,7 @@ namespace Concentus
 
             data = data.Point(1);
 
-            EntropyCoder.ec_enc_init(enc, data, (uint)(max_data_bytes - 1));
+            enc.ec_enc_init(data, (uint)(max_data_bytes - 1));
 
             pcm_buf = Pointer.Malloc<int>((total_buffer + frame_size) * st.channels);
             st.delay_buffer.Point((st.encoder_buffer - total_buffer) * st.channels).MemCopyTo(pcm_buf, total_buffer * st.channels);
@@ -1496,7 +1496,7 @@ namespace Concentus
                 {
                     int len;
 
-                    len = (EntropyCoder.ec_tell(enc) + 7) >> 3;
+                    len = (enc.ec_tell() + 7) >> 3;
                     if (redundancy != 0)
                         len += st.mode == OpusMode.MODE_HYBRID ? 3 : 1;
                     if (st.use_vbr != 0)
@@ -1580,25 +1580,25 @@ namespace Concentus
                 }
             }
 
-            if (st.mode != OpusMode.MODE_CELT_ONLY && EntropyCoder.ec_tell(enc) + 17 + 20 * ((st.mode == OpusMode.MODE_HYBRID) ? 1 : 0) <= 8 * (max_data_bytes - 1))
+            if (st.mode != OpusMode.MODE_CELT_ONLY && enc.ec_tell() + 17 + 20 * ((st.mode == OpusMode.MODE_HYBRID) ? 1 : 0) <= 8 * (max_data_bytes - 1))
             {
                 /* For SILK mode, the redundancy is inferred from the length */
-                if (st.mode == OpusMode.MODE_HYBRID && (redundancy != 0 || EntropyCoder.ec_tell(enc) + 37 <= 8 * nb_compr_bytes))
-                    EntropyCoder.ec_enc_bit_logp(enc, redundancy, 12);
+                if (st.mode == OpusMode.MODE_HYBRID && (redundancy != 0 || enc.ec_tell() + 37 <= 8 * nb_compr_bytes))
+                    enc.ec_enc_bit_logp(redundancy, 12);
                 if (redundancy != 0)
                 {
                     int max_redundancy;
-                    EntropyCoder.ec_enc_bit_logp(enc, celt_to_silk, 1);
+                    enc.ec_enc_bit_logp(celt_to_silk, 1);
                     if (st.mode == OpusMode.MODE_HYBRID)
                         max_redundancy = (max_data_bytes - 1) - nb_compr_bytes;
                     else
-                        max_redundancy = (max_data_bytes - 1) - ((EntropyCoder.ec_tell(enc) + 7) >> 3);
+                        max_redundancy = (max_data_bytes - 1) - ((enc.ec_tell() + 7) >> 3);
                     /* Target the same bit-rate for redundancy as for the rest,
                        up to a max of 257 bytes */
                     redundancy_bytes = Inlines.IMIN(max_redundancy, st.bitrate_bps / 1600);
                     redundancy_bytes = Inlines.IMIN(257, Inlines.IMAX(2, redundancy_bytes));
                     if (st.mode == OpusMode.MODE_HYBRID)
-                        EntropyCoder.ec_enc_uint(enc, (uint)(redundancy_bytes - 2), 256);
+                        enc.ec_enc_uint((uint)(redundancy_bytes - 2), 256);
                 }
             }
             else {
@@ -1614,13 +1614,13 @@ namespace Concentus
 
             if (st.mode == OpusMode.MODE_SILK_ONLY)
             {
-                ret = (EntropyCoder.ec_tell(enc) + 7) >> 3;
-                EntropyCoder.ec_enc_done(enc);
+                ret = (enc.ec_tell() + 7) >> 3;
+                enc.ec_enc_done();
                 nb_compr_bytes = ret;
             }
             else {
                 nb_compr_bytes = Inlines.IMIN((max_data_bytes - 1) - redundancy_bytes, nb_compr_bytes);
-                EntropyCoder.ec_enc_shrink(enc, (uint)nb_compr_bytes);
+                enc.ec_enc_shrink((uint)nb_compr_bytes);
             }
 
 #if ENABLE_ANALYSIS
@@ -1659,7 +1659,7 @@ namespace Concentus
                     celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_PREDICTION_REQUEST, (0));
                 }
                 /* If false, we already busted the budget and we'll end up with a "PLC packet" */
-                if (EntropyCoder.ec_tell(enc) <= 8 * nb_compr_bytes)
+                if (enc.ec_tell() <= 8 * nb_compr_bytes)
                 {
                     ret = celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf, frame_size, null, nb_compr_bytes, enc);
                     if (ret < 0)
@@ -1712,7 +1712,7 @@ namespace Concentus
 
             /* In the unlikely case that the SILK encoder busted its target, tell
                the decoder to call the PLC */
-            if (EntropyCoder.ec_tell(enc) > (max_data_bytes - 1) * 8)
+            if (enc.ec_tell() > (max_data_bytes - 1) * 8)
             {
                 if (max_data_bytes < 2)
                 {

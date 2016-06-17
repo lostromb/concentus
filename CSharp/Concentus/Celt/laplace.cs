@@ -27,7 +27,7 @@ namespace Concentus.Celt
             return Inlines.CHOP32U((ft * (int)(16384 - decay)) >> 15);
         }
 
-        internal static void ec_laplace_encode(ec_ctx enc, BoxedValue<int> value, uint fs, int decay)
+        internal static void ec_laplace_encode(EntropyCoder enc, BoxedValue<int> value, uint fs, int decay)
         {
             uint fl;
             int val = value.Val;
@@ -70,15 +70,15 @@ namespace Concentus.Celt
                 Inlines.OpusAssert(fs > 0);
             }
 
-            EntropyCoder.ec_encode_bin(enc, fl, fl + fs, 15);
+            enc.ec_encode_bin(fl, fl + fs, 15);
         }
 
-        internal static int ec_laplace_decode(ec_ctx dec, uint fs, int decay)
+        internal static int ec_laplace_decode(EntropyCoder dec, uint fs, int decay)
         {
             int val = 0;
             uint fl;
             uint fm;
-            fm = EntropyCoder.ec_decode_bin(dec, 15);
+            fm = dec.ec_decode_bin(15);
             fl = 0;
 
             if (fm >= fs)
@@ -114,7 +114,7 @@ namespace Concentus.Celt
             Inlines.OpusAssert(fl <= fm);
             Inlines.OpusAssert(fm < Inlines.IMIN(fl + fs, 32768));
 
-            EntropyCoder.ec_dec_update(dec, fl, Inlines.IMIN(fl + fs, 32768), 32768);
+            dec.ec_dec_update(fl, Inlines.IMIN(fl + fs, 32768), 32768);
             return val;
         }
 

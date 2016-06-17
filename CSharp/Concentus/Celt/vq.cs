@@ -149,7 +149,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        internal static uint alg_quant(Pointer<int> X, int N, int K, int spread, int B, ec_ctx enc
+        internal static uint alg_quant(Pointer<int> X, int N, int K, int spread, int B, EntropyCoder enc
            )
         {
             Pointer<int> y = Pointer.Malloc<int>(N);
@@ -307,7 +307,7 @@ namespace Concentus.Celt
         /** Decode pulse vector and combine the result with the pitch vector to produce
             the final normalised signal in the current band. */
         internal static uint alg_unquant(Pointer<int> X, int N, int K, int spread, int B,
-              ec_ctx dec, int gain)
+              EntropyCoder dec, int gain)
         {
             int Ryy;
             uint collapse_mask;

@@ -32,7 +32,7 @@ namespace Concentus.Silk
         /// <param name="quantOffsetType">I    Quantization offset type</param>
         /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
         internal static void silk_encode_signs(
-            ec_ctx psRangeEnc,
+            EntropyCoder psRangeEnc,
             Pointer<sbyte> pulses,
             int length,
             int signalType,
@@ -59,7 +59,7 @@ namespace Concentus.Silk
                     {
                         if (q_ptr[j] != 0)
                         {
-                            EntropyCoder.ec_enc_icdf(psRangeEnc, silk_enc_map(q_ptr[j]), icdf, 8);
+                            psRangeEnc.ec_enc_icdf( silk_enc_map(q_ptr[j]), icdf, 8);
                         }
                     }
                 }
@@ -78,7 +78,7 @@ namespace Concentus.Silk
         /// <param name="quantOffsetType">I    Quantization offset type</param>
         /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
         internal static void silk_decode_signs(
-            ec_ctx psRangeDec,
+            EntropyCoder psRangeDec,
             Pointer<short> pulses,
             int length,
             int signalType,
@@ -108,7 +108,7 @@ namespace Concentus.Silk
                         if (q_ptr[j] > 0)
                         {
                             /* attach sign */
-                            q_ptr[j] *= Inlines.CHOP16(silk_dec_map(EntropyCoder.ec_dec_icdf(psRangeDec, icdf, 8)));
+                            q_ptr[j] *= Inlines.CHOP16(silk_dec_map(psRangeDec.ec_dec_icdf(icdf, 8)));
                         }
                     }
                 }

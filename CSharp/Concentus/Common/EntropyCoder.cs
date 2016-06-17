@@ -60,10 +60,8 @@ namespace Concentus.Common
    month=Jul,
    URL="http://www.stanford.edu/class/ee398a/handouts/papers/Moffat98ArithmCoding.pdf"
   }*/
-    internal static class EntropyCoder
+    internal class EntropyCoder
     {
-        private const bool EC_DIFF = false;
-
         private const int EC_WINDOW_SIZE = ((int)sizeof(uint) * 8);
 
         ///*The number of bits to use for the range-coded part of uint integers.*/
@@ -94,150 +92,220 @@ namespace Concentus.Common
         /*The number of bits available for the last, partial symbol in the code field.*/
         private const int EC_CODE_EXTRA = ((EC_CODE_BITS - 2) % EC_SYM_BITS + 1);
 
-        internal static int ec_read_byte(ec_ctx _this)
+        //////////////// Coder State //////////////////// 
+
+        /*POINTER to Buffered input/output.*/
+        public Pointer<byte> buf;
+
+        /*The size of the buffer.*/
+        public uint storage;
+
+        /*The offset at which the last byte containing raw bits was read/written.*/
+        public uint end_offs;
+
+        /*Bits that will be read from/written at the end.*/
+        public uint end_window;
+
+        /*Number of valid bits in end_window.*/
+        public int nend_bits;
+
+        /*The total number of whole bits read/written.
+          This does not include partial bits currently in the range coder.*/
+        public int nbits_total;
+
+        /*The offset at which the next range coder byte will be read/written.*/
+        public uint offs;
+
+        /*The number of values in the current range.*/
+        public uint rng;
+
+        /*In the decoder: the difference between the top of the current range and
+           the input value, minus one.
+          In the encoder: the low end of the current range.*/
+        public uint val;
+
+        /*In the decoder: the saved normalization factor from ec_decode().
+          In the encoder: the number of oustanding carry propagating symbols.*/
+        public uint ext;
+
+        /*A buffered input/output symbol, awaiting carry propagation.*/
+        public int rem;
+
+        /*Nonzero if an error occurred.*/
+        public int error;
+
+        public EntropyCoder()
         {
-            return _this.offs < _this.storage ? _this.buf[_this.offs++] : 0;
+            Reset();
         }
 
-        internal static int ec_read_byte_from_end(ec_ctx _this)
+        public void Reset()
         {
-            return _this.end_offs < _this.storage ?
-             _this.buf[(_this.storage - ++(_this.end_offs))] : 0;
+            buf = null;
+            storage = 0;
+            end_offs = 0;
+            end_window = 0;
+            nend_bits = 0;
+            offs = 0;
+            rng = 0;
+            val = 0;
+            ext = 0;
+            rem = 0;
+            error = 0;
         }
 
-        internal static int ec_write_byte(ec_ctx _this, uint _value)
+        public void Assign(EntropyCoder other)
         {
-            if (EC_DIFF) Debug.WriteLine("1a 0x{0:x}", (uint)_value);
-            if (EC_DIFF) Debug.WriteLine("8a 0x{0:x}", (uint)_this.nbits_total);
-            if (_this.offs + _this.end_offs >= _this.storage)
+            this.buf = other.buf;
+            this.storage = other.storage;
+            this.end_offs = other.end_offs;
+            this.end_window = other.end_window;
+            this.nend_bits = other.nend_bits;
+            this.nbits_total = other.nbits_total;
+            this.offs = other.offs;
+            this.rng = other.rng;
+            this.val = other.val;
+            this.ext = other.ext;
+            this.rem = other.rem;
+            this.error = other.error;
+        }
+
+        internal int ec_read_byte()
+        {
+            return this.offs < this.storage ? this.buf[this.offs++] : 0;
+        }
+
+        internal int ec_read_byte_from_end()
+        {
+            return this.end_offs < this.storage ?
+             this.buf[(this.storage - ++(this.end_offs))] : 0;
+        }
+
+        internal int ec_write_byte(uint _value)
+        {
+            if (this.offs + this.end_offs >= this.storage)
             {
                 return -1;
             }
-            _this.buf[_this.offs++] = (byte)_value;
+            this.buf[this.offs++] = (byte)_value;
             return 0;
         }
 
-        internal static int ec_write_byte_at_end(ec_ctx _this, uint _value)
+        internal int ec_write_byte_at_end(uint _value)
         {
-            if (EC_DIFF) Debug.WriteLine("1b 0x{0:x}", (uint)_value);
-            if (EC_DIFF) Debug.WriteLine("8b 0x{0:x}", (uint)_this.nbits_total);
-            if (_this.offs + _this.end_offs >= _this.storage)
+            if (this.offs + this.end_offs >= this.storage)
             {
                 return -1;
             }
 
-            _this.buf[(_this.storage - ++(_this.end_offs))] = (byte)_value;
+            this.buf[(this.storage - ++(this.end_offs))] = (byte)_value;
             return 0;
         }
 
         /// <summary>
         /// Normalizes the contents of val and rng so that rng lies entirely in the high-order symbol.
         /// </summary>
-        /// <param name="_this"></param>
-        internal static void ec_dec_normalize(ec_ctx _this)
+        /// <param name="this"></param>
+        internal void ec_dec_normalize()
         {
             /*If the range is too small, rescale it and input some bits.*/
-            while (_this.rng <= EC_CODE_BOT)
+            while (this.rng <= EC_CODE_BOT)
             {
                 int sym;
-                _this.nbits_total += EC_SYM_BITS;
-                if (EC_DIFF) Debug.WriteLine("1ic 0x{0:x}", (uint)_this.nbits_total);
-                _this.rng <<= EC_SYM_BITS;
+                this.nbits_total += EC_SYM_BITS;
+                this.rng <<= EC_SYM_BITS;
 
                 /*Use up the remaining bits from our last symbol.*/
-                sym = _this.rem;
+                sym = this.rem;
 
                 /*Read the next value from the input.*/
-                _this.rem = ec_read_byte(_this);
-                if (EC_DIFF) Debug.WriteLine("1c 0x{0:x}", (uint)_this.rem);
+                this.rem = ec_read_byte();
 
                 /*Take the rest of the bits we need from this new symbol.*/
-                sym = (sym << EC_SYM_BITS | _this.rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
-                if (EC_DIFF) Debug.WriteLine("1d 0x{0:x}", (uint)sym);
+                sym = (sym << EC_SYM_BITS | this.rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
 
                 /*And subtract them from val, capped to be less than EC_CODE_TOP.*/
-                _this.val = (uint)((_this.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym)) & (EC_CODE_TOP - 1);
+                this.val = (uint)((this.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym)) & (EC_CODE_TOP - 1);
             }
         }
 
-        internal static void ec_dec_init(ec_ctx _this, Pointer<byte> _buf, uint _storage)
+        internal void ec_dec_init(Pointer<byte> _buf, uint _storage)
         {
-            _this.buf = _buf;
-            _this.storage = _storage;
-            _this.end_offs = 0;
-            _this.end_window = 0;
-            _this.nend_bits = 0;
+            this.buf = _buf;
+            this.storage = _storage;
+            this.end_offs = 0;
+            this.end_window = 0;
+            this.nend_bits = 0;
             /*This is the offset from which ec_tell() will subtract partial bits.
               The final value after the ec_dec_normalize() call will be the same as in
                the encoder, but we have to compensate for the bits that are added there.*/
-            _this.nbits_total = EC_CODE_BITS + 1
+            this.nbits_total = EC_CODE_BITS + 1
             - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
-            if (EC_DIFF) Debug.WriteLine("1id 0x{0:x}", (uint)_this.nbits_total);
-            _this.offs = 0;
-            _this.rng = 1U << EC_CODE_EXTRA;
-            _this.rem = ec_read_byte(_this);
-            _this.val = _this.rng - 1 - (uint)(_this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
-            _this.error = 0;
+            this.offs = 0;
+            this.rng = 1U << EC_CODE_EXTRA;
+            this.rem = ec_read_byte();
+            this.val = this.rng - 1 - (uint)(this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
+            this.error = 0;
             /*Normalize the interval.*/
-            ec_dec_normalize(_this);
+            ec_dec_normalize();
         }
 
-        internal static uint ec_decode(ec_ctx _this, uint _ft)
+        internal uint ec_decode(uint _ft)
         {
             uint s;
-            _this.ext = _this.rng / _ft;
-            s = (uint)(_this.val / _this.ext);
+            this.ext = this.rng / _ft;
+            s = (uint)(this.val / this.ext);
             return _ft - Inlines.EC_MINI(s + 1, _ft);
         }
 
-        internal static uint ec_decode_bin(ec_ctx _this, uint _bits)
+        internal uint ec_decode_bin(uint _bits)
         {
             uint s;
-            _this.ext = _this.rng >> (int)_bits;
-            s = (uint)(_this.val / _this.ext);
+            this.ext = this.rng >> (int)_bits;
+            s = (uint)(this.val / this.ext);
             return (1U << (int)_bits) - Inlines.EC_MINI(s + 1U, 1U << (int)_bits);
         }
 
-        internal static void ec_dec_update(ec_ctx _this, uint _fl, uint _fh, uint _ft)
+        internal void ec_dec_update(uint _fl, uint _fh, uint _ft)
         {
             uint s;
-            s = _this.ext * (_ft - _fh);
-            _this.val -= s;
-            _this.rng = _fl > 0 ? _this.ext * (_fh - _fl) : _this.rng - s;
-            ec_dec_normalize(_this);
+            s = this.ext * (_ft - _fh);
+            this.val -= s;
+            this.rng = _fl > 0 ? this.ext * (_fh - _fl) : this.rng - s;
+            ec_dec_normalize();
         }
 
         /// <summary>
         /// The probability of having a "one" is 1/(1<<_logp).
         /// </summary>
-        /// <param name="_this"></param>
+        /// <param name="this"></param>
         /// <param name="_logp"></param>
         /// <returns></returns>
-        internal static int ec_dec_bit_logp(ec_ctx _this, uint _logp)
+        internal int ec_dec_bit_logp(uint _logp)
         {
             uint r;
             uint d;
             uint s;
             int ret;
-            r = _this.rng;
-            d = _this.val;
+            r = this.rng;
+            d = this.val;
             s = r >> (int)_logp;
             ret = d < s ? 1 : 0;
-            if (ret == 0) _this.val = d - s;
-            _this.rng = ret != 0 ? s : r - s;
-            ec_dec_normalize(_this);
+            if (ret == 0) this.val = d - s;
+            this.rng = ret != 0 ? s : r - s;
+            ec_dec_normalize();
             return ret;
         }
 
-        internal static int ec_dec_icdf(ec_ctx _this, Pointer<byte> _icdf, uint _ftb)
+        internal int ec_dec_icdf(Pointer<byte> _icdf, uint _ftb)
         {
             uint r;
             uint d;
             uint s;
             uint t;
             int ret;
-            s = _this.rng;
-            d = _this.val;
+            s = this.rng;
+            d = this.val;
             r = s >> (int)_ftb;
             ret = -1;
             do
@@ -246,13 +314,13 @@ namespace Concentus.Common
                 s = r * _icdf[++ret];
             }
             while (d < s);
-            _this.val = d - s;
-            _this.rng = t - s;
-            ec_dec_normalize(_this);
+            this.val = d - s;
+            this.rng = t - s;
+            ec_dec_normalize();
             return ret;
         }
 
-        internal static uint ec_dec_uint(ec_ctx _this, uint _ft)
+        internal uint ec_dec_uint(uint _ft)
         {
             uint ft;
             uint s;
@@ -266,33 +334,33 @@ namespace Concentus.Common
                 uint t;
                 ftb -= EC_UINT_BITS;
                 ft = (uint)(_ft >> ftb) + 1;
-                s = ec_decode(_this, ft);
-                ec_dec_update(_this, s, s + 1, ft);
-                t = (uint)s << ftb | ec_dec_bits(_this, (uint)ftb);
+                s = ec_decode(ft);
+                ec_dec_update(s, s + 1, ft);
+                t = (uint)s << ftb | ec_dec_bits((uint)ftb);
                 if (t <= _ft) return t;
-                _this.error = 1;
+                this.error = 1;
                 return _ft;
             }
             else {
                 _ft++;
-                s = ec_decode(_this, (uint)_ft);
-                ec_dec_update(_this, s, s + 1, (uint)_ft);
+                s = ec_decode((uint)_ft);
+                ec_dec_update(s, s + 1, (uint)_ft);
                 return s;
             }
         }
 
-        internal static uint ec_dec_bits(ec_ctx _this, uint _bits)
+        internal uint ec_dec_bits(uint _bits)
         {
             uint window;
             int available;
             uint ret;
-            window = _this.end_window;
-            available = _this.nend_bits;
+            window = this.end_window;
+            available = this.nend_bits;
             if ((uint)available < _bits)
             {
                 do
                 {
-                    window |= (uint)ec_read_byte_from_end(_this) << available;
+                    window |= (uint)ec_read_byte_from_end() << available;
                     available += EC_SYM_BITS;
                 }
                 while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
@@ -300,10 +368,9 @@ namespace Concentus.Common
             ret = (uint)window & (((uint)1 << (int)_bits) - 1U);
             window = window >> (int)_bits;
             available = available - (int)_bits;
-            _this.end_window = window;
-            _this.nend_bits = available;
-            _this.nbits_total = _this.nbits_total + (int)_bits;
-            if (EC_DIFF) Debug.WriteLine("1if 0x{0:x}", (uint)_this.nbits_total);
+            this.end_window = window;
+            this.nend_bits = available;
+            this.nbits_total = this.nbits_total + (int)_bits;
             return ret;
         }
 
@@ -319,12 +386,10 @@ namespace Concentus.Common
         /// The alternative is to truncate the range in order to force a carry, but
         /// requires similar carry tracking in the decoder, needlessly slowing it down.
         /// </summary>
-        /// <param name="_this"></param>
+        /// <param name="this"></param>
         /// <param name="_c"></param>
-        internal static void ec_enc_carry_out(ec_ctx _this, int _c)
+        internal void ec_enc_carry_out(int _c)
         {
-            if (EC_DIFF) Debug.WriteLine("1e 0x{0:x}", (uint)_c);
-            if (EC_DIFF) Debug.WriteLine("8c 0x{0:x}", (uint)_this.nbits_total);
             if (_c != EC_SYM_MAX)
             {
                 /*No further carry propagation possible, flush buffer.*/
@@ -333,159 +398,124 @@ namespace Concentus.Common
 
                 /*Don't output a byte on the first write.
                   This compare should be taken care of by branch-prediction thereafter.*/
-                if (_this.rem >= 0)
+                if (this.rem >= 0)
                 {
-                    _this.error |= ec_write_byte(_this, (uint)(_this.rem + carry));
+                    this.error |= ec_write_byte((uint)(this.rem + carry));
                 }
 
-                if (_this.ext > 0)
+                if (this.ext > 0)
                 {
                     uint sym;
                     sym = (EC_SYM_MAX + (uint)carry) & EC_SYM_MAX;
-                    do _this.error |= ec_write_byte(_this, sym);
-                    while (--(_this.ext) > 0);
+                    do this.error |= ec_write_byte(sym);
+                    while (--(this.ext) > 0);
                 }
 
-                _this.rem = (int)((uint)_c & EC_SYM_MAX);
-                if (EC_DIFF) Debug.WriteLine("6a 0x{0:x}", (uint)_this.rem);
+                this.rem = (int)((uint)_c & EC_SYM_MAX);
             }
             else
             {
-                _this.ext++;
+                this.ext++;
             }
-            if (EC_DIFF) Debug.WriteLine("6b 0x{0:x}", (uint)_this.ext);
         }
 
-        internal static void ec_enc_normalize(ec_ctx _this)
+        internal void ec_enc_normalize()
         {
             /*If the range is too small, output some bits and rescale it.*/
-            if (EC_DIFF) Debug.WriteLine("8d 0x{0:x}", (uint)_this.nbits_total);
-            while (_this.rng <= EC_CODE_BOT)
+            while (this.rng <= EC_CODE_BOT)
             {
-                if (EC_DIFF) Debug.WriteLine("8e 0x{0:x}", (uint)_this.nbits_total);
-                ec_enc_carry_out(_this, (int)(_this.val >> (int)EC_CODE_SHIFT));
+                ec_enc_carry_out((int)(this.val >> (int)EC_CODE_SHIFT));
                 /*Move the next-to-high-order symbol into the high-order position.*/
-                _this.val = (_this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
-                if (EC_DIFF) Debug.WriteLine("1i 0x{0:x}", (uint)_this.val);
-                _this.rng = _this.rng << EC_SYM_BITS;
-                if (EC_DIFF) Debug.WriteLine("7a 0x{0:x}", (uint)_this.nbits_total);
-                _this.nbits_total += EC_SYM_BITS;
-                if (EC_DIFF) Debug.WriteLine("1ia 0x{0:x}", (uint)_this.nbits_total);
-                if (EC_DIFF) Debug.WriteLine("6c 0x{0:x}", (uint)_this.rng);
+                this.val = (this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
+                this.rng = this.rng << EC_SYM_BITS;
+                this.nbits_total += EC_SYM_BITS;
             }
         }
 
-        internal static void ec_enc_init(ec_ctx _this, Pointer<byte> _buf, uint _size)
+        internal void ec_enc_init(Pointer<byte> _buf, uint _size)
         {
-            _this.buf = _buf;
-            _this.end_offs = 0;
-            _this.end_window = 0;
-            _this.nend_bits = 0;
+            this.buf = _buf;
+            this.end_offs = 0;
+            this.end_window = 0;
+            this.nend_bits = 0;
             /*This is the offset from which ec_tell() will subtract partial bits.*/
-            _this.nbits_total = EC_CODE_BITS + 1;
-            _this.offs = 0;
-            _this.rng = EC_CODE_TOP;
-            _this.rem = -1;
-            _this.val = 0;
-            _this.ext = 0;
-            _this.storage = _size;
-            _this.error = 0;
+            this.nbits_total = EC_CODE_BITS + 1;
+            this.offs = 0;
+            this.rng = EC_CODE_TOP;
+            this.rem = -1;
+            this.val = 0;
+            this.ext = 0;
+            this.storage = _size;
+            this.error = 0;
         }
 
-        internal static void ec_encode(ec_ctx _this, uint _fl, uint _fh, uint _ft)
+        internal void ec_encode(uint _fl, uint _fh, uint _ft)
         {
-            if (EC_DIFF) Debug.WriteLine("1f 0x{0:x}", (uint)_fl);
-            if (EC_DIFF) Debug.WriteLine("1g 0x{0:x}", (uint)_fh);
-            if (EC_DIFF) Debug.WriteLine("1h 0x{0:x}", (uint)_ft);
-            if (EC_DIFF) Debug.WriteLine("8f 0x{0:x}", (uint)_this.nbits_total);
             uint r;
-            r = _this.rng / _ft;
+            r = this.rng / _ft;
             if (_fl > 0)
             {
-                _this.val += _this.rng - (r * (_ft - _fl));
-                _this.rng = (r * (_fh - _fl));
+                this.val += this.rng - (r * (_ft - _fl));
+                this.rng = (r * (_fh - _fl));
             }
             else
             {
-                _this.rng -= (r * (_ft - _fh));
+                this.rng -= (r * (_ft - _fh));
             }
-
-            if (EC_DIFF) Debug.WriteLine("6d 0x{0:x}", (uint)_this.val);
-            if (EC_DIFF) Debug.WriteLine("6e 0x{0:x}", (uint)_this.rng);
-            ec_enc_normalize(_this);
+            
+            ec_enc_normalize();
         }
 
-        internal static void ec_encode_bin(ec_ctx _this, uint _fl, uint _fh, uint _bits)
+        internal void ec_encode_bin(uint _fl, uint _fh, uint _bits)
         {
-            if (EC_DIFF) Debug.WriteLine("1i 0x{0:x}", (uint)_fl);
-            if (EC_DIFF) Debug.WriteLine("1j 0x{0:x}", (uint)_fh);
-            if (EC_DIFF) Debug.WriteLine("1k 0x{0:x}", (uint)_bits);
-            if (EC_DIFF) Debug.WriteLine("8g 0x{0:x}", (uint)_this.nbits_total);
             uint r;
-            r = _this.rng >> (int)_bits;
+            r = this.rng >> (int)_bits;
             if (_fl > 0)
             {
-                _this.val += _this.rng - (r * ((1U << (int)_bits) - _fl));
-                _this.rng = (r * (_fh - _fl));
+                this.val += this.rng - (r * ((1U << (int)_bits) - _fl));
+                this.rng = (r * (_fh - _fl));
             }
-            else _this.rng -= (r * ((1U << (int)_bits) - _fh));
-            if (EC_DIFF) Debug.WriteLine("6g 0x{0:x}", (uint)_this.val);
-            if (EC_DIFF) Debug.WriteLine("6h 0x{0:x}", (uint)_this.rng);
-            ec_enc_normalize(_this);
+            else this.rng -= (r * ((1U << (int)_bits) - _fh));
+            ec_enc_normalize();
         }
 
         /*The probability of having a "one" is 1/(1<<_logp).*/
-        internal static void ec_enc_bit_logp(ec_ctx _this, int _val, uint _logp)
+        internal void ec_enc_bit_logp(int _val, uint _logp)
         {
-            if (EC_DIFF) Debug.WriteLine("1l 0x{0:x}", (uint)_val);
-            if (EC_DIFF) Debug.WriteLine("1m 0x{0:x}", (uint)_logp);
-            if (EC_DIFF) Debug.WriteLine("8h 0x{0:x}", (uint)_this.nbits_total);
             uint r;
             uint s;
             uint l;
-            r = _this.rng;
-            l = _this.val;
+            r = this.rng;
+            l = this.val;
             s = r >> (int)_logp;
             r -= s;
             if (_val != 0)
             {
-                _this.val = l + r;
+                this.val = l + r;
             }
 
-            _this.rng = _val != 0 ? s : r;
-            if (EC_DIFF) Debug.WriteLine("6j 0x{0:x}", (uint)_this.val);
-            if (EC_DIFF) Debug.WriteLine("6k 0x{0:x}", (uint)_this.rng);
-            ec_enc_normalize(_this);
+            this.rng = _val != 0 ? s : r;
+            ec_enc_normalize();
         }
 
-        internal static void ec_enc_icdf(ec_ctx _this, int _s, Pointer<byte> _icdf, uint _ftb)
+        internal void ec_enc_icdf(int _s, Pointer<byte> _icdf, uint _ftb)
         {
-            if (EC_DIFF) Debug.WriteLine("1n 0x{0:x}", (uint)_s);
-            if (EC_DIFF) Debug.WriteLine("1p 0x{0:x}", (uint)_ftb);
-            if (EC_DIFF) Debug.WriteLine("8i 0x{0:x}", (uint)_this.nbits_total);
             uint r;
-            r = _this.rng >> (int)_ftb;
+            r = this.rng >> (int)_ftb;
             if (_s > 0)
             {
-                _this.val += _this.rng - (r * _icdf[_s - 1]);
-                _this.rng = (r * (uint)(_icdf[_s - 1] - _icdf[_s]));
-                if (EC_DIFF) Debug.WriteLine("1oa 0x{0:x}", (uint)_icdf[_s - 1]);
-                if (EC_DIFF) Debug.WriteLine("1ob 0x{0:x}", (uint)_icdf[_s]);
+                this.val += this.rng - (r * _icdf[_s - 1]);
+                this.rng = (r * (uint)(_icdf[_s - 1] - _icdf[_s]));
             }
             else
             {
-                _this.rng -= (r * _icdf[_s]);
+                this.rng -= (r * _icdf[_s]);
             }
-            if (EC_DIFF) Debug.WriteLine("6l 0x{0:x}", (uint)_this.val);
-            if (EC_DIFF) Debug.WriteLine("6m 0x{0:x}", (uint)_this.rng);
-            ec_enc_normalize(_this);
+            ec_enc_normalize();
         }
 
-        internal static void ec_enc_uint(ec_ctx _this, uint _fl, uint _ft)
+        internal void ec_enc_uint(uint _fl, uint _ft)
         {
-            if (EC_DIFF) Debug.WriteLine("1q 0x{0:x}", (uint)_fl);
-            if (EC_DIFF) Debug.WriteLine("1r 0x{0:x}", (uint)_ft);
-            if (EC_DIFF) Debug.WriteLine("8j 0x{0:x}", (uint)_this.nbits_total);
             uint ft;
             uint fl;
             int ftb;
@@ -498,28 +528,25 @@ namespace Concentus.Common
                 ftb -= EC_UINT_BITS;
                 ft = (_ft >> ftb) + 1;
                 fl = (uint)(_fl >> ftb);
-                ec_encode(_this, fl, fl + 1, ft);
-                ec_enc_bits(_this, _fl & (((uint)1 << ftb) - 1U), (uint)ftb);
+                ec_encode(fl, fl + 1, ft);
+                ec_enc_bits(_fl & (((uint)1 << ftb) - 1U), (uint)ftb);
             }
-            else ec_encode(_this, _fl, _fl + 1, _ft + 1);
+            else ec_encode(_fl, _fl + 1, _ft + 1);
         }
 
-        internal static void ec_enc_bits(ec_ctx _this, uint _fl, uint _bits)
+        internal void ec_enc_bits(uint _fl, uint _bits)
         {
-            if (EC_DIFF) Debug.WriteLine("1s 0x{0:x}", (uint)_fl);
-            if (EC_DIFF) Debug.WriteLine("1t 0x{0:x}", (uint)_bits);
-            if (EC_DIFF) Debug.WriteLine("8k 0x{0:x}", (uint)_this.nbits_total);
             uint window;
             int used;
-            window = _this.end_window;
-            used = _this.nend_bits;
+            window = this.end_window;
+            used = this.nend_bits;
             Inlines.OpusAssert(_bits > 0);
 
             if (used + _bits > EC_WINDOW_SIZE)
             {
                 do
                 {
-                    _this.error |= ec_write_byte_at_end(_this, (uint)window & EC_SYM_MAX);
+                    this.error |= ec_write_byte_at_end((uint)window & EC_SYM_MAX);
                     window >>= EC_SYM_BITS;
                     used -= EC_SYM_BITS;
                 }
@@ -528,77 +555,63 @@ namespace Concentus.Common
 
             window |= (uint)_fl << used;
             used += (int)_bits;
-            _this.end_window = window;
-            _this.nend_bits = used;
-            if (EC_DIFF) Debug.WriteLine("7c 0x{0:x}", (uint)_this.nbits_total);
-            if (EC_DIFF) Debug.WriteLine("7d 0x{0:x}", (uint)_bits);
-            _this.nbits_total += (int)_bits;
-            if (EC_DIFF) Debug.WriteLine("1ta 0x{0:x}", (uint)_this.nbits_total);
-            if (EC_DIFF) Debug.WriteLine("6n 0x{0:x}", (uint)_this.end_window);
-            if (EC_DIFF) Debug.WriteLine("6o 0x{0:x}", (uint)_this.nend_bits);
+            this.end_window = window;
+            this.nend_bits = used;
+            this.nbits_total += (int)_bits;
         }
 
-        internal static void ec_enc_patch_initial_bits(ec_ctx _this, uint _val, uint _nbits)
+        internal void ec_enc_patch_initial_bits(uint _val, uint _nbits)
         {
-            if (EC_DIFF) Debug.WriteLine("1u 0x{0:x}", (uint)_val);
-            if (EC_DIFF) Debug.WriteLine("1v 0x{0:x}", (uint)_nbits);
-            if (EC_DIFF) Debug.WriteLine("8l 0x{0:x}", (uint)_this.nbits_total);
             int shift;
             uint mask;
             Inlines.OpusAssert(_nbits <= EC_SYM_BITS);
             shift = EC_SYM_BITS - (int)_nbits;
             mask = ((1U << (int)_nbits) - 1) << shift;
 
-            if (_this.offs > 0)
+            if (this.offs > 0)
             {
                 /*The first byte has been finalized.*/
-                _this.buf[0] = (byte)((_this.buf[0] & ~mask) | _val << shift);
-                if (EC_DIFF) Debug.WriteLine("6p 0x{0:x}", (uint)_this.buf[0]);
+                this.buf[0] = (byte)((this.buf[0] & ~mask) | _val << shift);
             }
-            else if (_this.rem >= 0)
+            else if (this.rem >= 0)
             {
                 /*The first byte is still awaiting carry propagation.*/
-                _this.rem = (int)(((uint)_this.rem & ~mask) | _val) << shift;
+                this.rem = (int)(((uint)this.rem & ~mask) | _val) << shift;
             }
-            else if (_this.rng <= (EC_CODE_TOP >> (int)_nbits))
+            else if (this.rng <= (EC_CODE_TOP >> (int)_nbits))
             {
                 /*The renormalization loop has never been run.*/
-                _this.val = (_this.val & ~((uint)mask << (int)EC_CODE_SHIFT)) |
+                this.val = (this.val & ~((uint)mask << (int)EC_CODE_SHIFT)) |
                  (uint)_val << (int)(EC_CODE_SHIFT + shift);
             }
             else
             {
                 /*The encoder hasn't even encoded _nbits of data yet.*/
-                _this.error = -1;
+                this.error = -1;
             }
-
-            if (EC_DIFF) Debug.WriteLine("6q 0x{0:x}", (uint)_this.rem);
-            if (EC_DIFF) Debug.WriteLine("6r 0x{0:x}", (uint)_this.val);
         }
 
-        internal static void ec_enc_shrink(ec_ctx _this, uint _size)
+        internal void ec_enc_shrink(uint _size)
         {
-            if (EC_DIFF) Debug.WriteLine("1w 0x{0:x}", (uint)_size);
-            if (EC_DIFF) Debug.WriteLine("8m 0x{0:x}", (uint)_this.nbits_total);
-            Inlines.OpusAssert(_this.offs + _this.end_offs <= _size);
-            //(memmove(_this.buf + _size - _this.end_offs, _this.buf + _this.storage - _this.end_offs, _this.end_offs * sizeof(*(dst))))
-            _this.buf.Point(_this.storage - _this.end_offs).MemMove((int)(_this.storage - _size), (int)_this.end_offs);
-            _this.storage = _size;
+            Inlines.OpusAssert(this.offs + this.end_offs <= _size);
+            //(memmove(this.buf + _size - this.end_offs, this.buf + this.storage - this.end_offs, this.end_offs * sizeof(*(dst))))
+            this.buf.Point(this.storage - this.end_offs).MemMove((int)(this.storage - _size), (int)this.end_offs);
+            this.storage = _size;
         }
 
-        internal static uint ec_range_bytes(ec_ctx _this)
+        internal uint ec_range_bytes()
         {
-            return _this.offs;
+            return this.offs;
         }
 
-        internal static Pointer<byte> ec_get_buffer(ec_ctx _this)
+        internal Pointer<byte> ec_get_buffer()
         {
-            return _this.buf;
+            return this.buf;
         }
 
-        internal static int ec_get_error(ec_ctx _this)
+        internal int ec_get_error()
         {
-            return _this.error;
+            return this.error;
         }
 
         /// <summary>
@@ -608,14 +621,11 @@ namespace Concentus.Common
         /// This will always be slightly larger than the exact value (e.g., all
         /// rounding error is in the positive direction).
         /// </summary>
-        /// <param name="_this"></param>
+        /// <param name="this"></param>
         /// <returns>The number of bits.</returns>
-        internal static int ec_tell(ec_ctx _this)
+        internal int ec_tell()
         {
-            int returnVal = _this.nbits_total - Inlines.EC_ILOG(_this.rng);
-            if (EC_DIFF) Debug.WriteLine("1ya 0x{0:x}", (uint)_this.rng);
-            if (EC_DIFF) Debug.WriteLine("1yb 0x{0:x}", (uint)_this.nbits_total);
-            if (EC_DIFF) Debug.WriteLine("1yc 0x{0:x}", (uint)returnVal);
+            int returnVal = this.nbits_total - Inlines.EC_ILOG(this.rng);
             return returnVal;
         }
 
@@ -627,93 +637,90 @@ namespace Concentus.Common
         /// followed by a lookup to determine the exact transition thresholds.
         /// FIXME: THIS NEEDS TESTING
         /// </summary>
-        /// <param name="_this"></param>
+        /// <param name="this"></param>
         /// <returns></returns>
-        internal static uint ec_tell_frac(ec_ctx _this)
+        internal uint ec_tell_frac()
         {
-            if (EC_DIFF) Debug.WriteLine("8o 0x{0:x}", (uint)_this.nbits_total);
             int nbits;
             int r;
             int l;
             uint b;
-            nbits = _this.nbits_total << BITRES;
-            l = Inlines.EC_ILOG(_this.rng);
-            r = (int)(_this.rng >> (l - 16));
+            nbits = this.nbits_total << EntropyCoder.BITRES;
+            l = Inlines.EC_ILOG(this.rng);
+            r = (int)(this.rng >> (l - 16));
             b = (uint)((r >> 12) - 8);
             b += (r > correction[b] ? 1u : 0);
             l = (int)((l << 3) + b);
-            if (EC_DIFF) Debug.WriteLine("1z 0x{0:x}", (uint)(nbits - l));
             return (uint)(nbits - l);
         }
 
-        internal static void ec_enc_done(ec_ctx _this)
+        internal void ec_enc_done()
         {
             uint window;
             int used;
             uint msk;
             uint end;
             int l;
-            if (EC_DIFF) Debug.WriteLine("8n 0x{0:x}", (uint)_this.nbits_total);
             /*We output the minimum number of bits that ensures that the symbols encoded
                thus far will be decoded correctly regardless of the bits that follow.*/
-            l = EC_CODE_BITS - Inlines.EC_ILOG(_this.rng);
+            l = EC_CODE_BITS - Inlines.EC_ILOG(this.rng);
             msk = (EC_CODE_TOP - 1) >> l;
-            end = (_this.val + msk) & ~msk;
+            end = (this.val + msk) & ~msk;
 
-            if ((end | msk) >= _this.val + _this.rng)
+            if ((end | msk) >= this.val + this.rng)
             {
                 l++;
                 msk >>= 1;
-                end = (_this.val + msk) & ~msk;
+                end = (this.val + msk) & ~msk;
             }
 
             while (l > 0)
             {
-                ec_enc_carry_out(_this, (int)(end >> (int)EC_CODE_SHIFT));
+                ec_enc_carry_out((int)(end >> (int)EC_CODE_SHIFT));
                 end = (end << EC_SYM_BITS) & (EC_CODE_TOP - 1);
                 l -= EC_SYM_BITS;
             }
 
             /*If we have a buffered byte flush it into the output buffer.*/
-            if (_this.rem >= 0 || _this.ext > 0)
+            if (this.rem >= 0 || this.ext > 0)
             {
-                ec_enc_carry_out(_this, 0);
+                ec_enc_carry_out(0);
             }
 
             /*If we have buffered extra bits, flush them as well.*/
-            window = _this.end_window;
-            used = _this.nend_bits;
+            window = this.end_window;
+            used = this.nend_bits;
 
             while (used >= EC_SYM_BITS)
             {
-                _this.error |= ec_write_byte_at_end(_this, (uint)window & EC_SYM_MAX);
+                this.error |= ec_write_byte_at_end((uint)window & EC_SYM_MAX);
                 window >>= EC_SYM_BITS;
                 used -= EC_SYM_BITS;
             }
 
             /*Clear any excess space and add any remaining extra bits to the last byte.*/
-            if (_this.error == 0)
+            if (this.error == 0)
             {
-                _this.buf.Point(_this.offs).MemSet(0, _this.storage - _this.offs - _this.end_offs);
+                this.buf.Point(this.offs).MemSet(0, this.storage - this.offs - this.end_offs);
                 if (used > 0)
                 {
                     /*If there's no range coder data at all, give up.*/
-                    if (_this.end_offs >= _this.storage)
+                    if (this.end_offs >= this.storage)
                     {
-                        _this.error = -1;
+                        this.error = -1;
                     }
                     else
                     {
                         l = -l;
                         /*If we've busted, don't add too many extra bits to the last byte; it
                            would corrupt the range coder data, and that's more important.*/
-                        if (_this.offs + _this.end_offs >= _this.storage && l < used)
+                        if (this.offs + this.end_offs >= this.storage && l < used)
                         {
                             window = window & ((1U << l) - 1);
-                            _this.error = -1;
+                            this.error = -1;
                         }
 
-                        _this.buf[_this.storage - _this.end_offs - 1] |= (byte)window;
+                        this.buf[this.storage - this.end_offs - 1] |= (byte)window;
                     }
                 }
             }

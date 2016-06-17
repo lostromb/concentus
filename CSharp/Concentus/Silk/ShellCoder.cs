@@ -33,7 +33,7 @@ namespace Concentus.Silk
         }
 
         internal static void encode_split(
-            ec_ctx psRangeEnc,    /* I/O  compressor data structure                   */
+            EntropyCoder psRangeEnc,    /* I/O  compressor data structure                   */
             int p_child1,       /* I    pulse amplitude of first child subframe     */
             int p,              /* I    pulse amplitude of current subframe         */
             Pointer<byte> shell_table    /* I    table of shell cdfs                         */
@@ -41,7 +41,7 @@ namespace Concentus.Silk
         {
             if (p > 0)
             {
-                EntropyCoder.ec_enc_icdf(psRangeEnc, p_child1, shell_table.Point(Tables.silk_shell_code_table_offsets[p]), 8);
+                psRangeEnc.ec_enc_icdf( p_child1, shell_table.Point(Tables.silk_shell_code_table_offsets[p]), 8);
             }
         }
 
@@ -56,13 +56,13 @@ namespace Concentus.Silk
         internal static void decode_split(
             Pointer<short> p_child1,
             Pointer<short> p_child2,
-            ec_ctx psRangeDec,
+            EntropyCoder psRangeDec,
             int p,
             Pointer<byte> shell_table)
         {
             if (p > 0)
             {
-                p_child1[0] = Inlines.CHOP16(EntropyCoder.ec_dec_icdf(psRangeDec, shell_table.Point(Tables.silk_shell_code_table_offsets[p]), 8));
+                p_child1[0] = Inlines.CHOP16(psRangeDec.ec_dec_icdf(shell_table.Point(Tables.silk_shell_code_table_offsets[p]), 8));
                 p_child2[0] = Inlines.CHOP16(p - p_child1[0]);
             }
             else
@@ -77,7 +77,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  compressor data structure</param>
         /// <param name="pulses0">I    data: nonnegative pulse amplitudes</param>
-        internal static void silk_shell_encoder(ec_ctx psRangeEnc, Pointer<int> pulses0)
+        internal static void silk_shell_encoder(EntropyCoder psRangeEnc, Pointer<int> pulses0)
         {
             Pointer<int> pulses1 = Pointer.Malloc<int>(8);
             Pointer<int> pulses2 = Pointer.Malloc<int>(4);
@@ -120,7 +120,7 @@ namespace Concentus.Silk
         /* Shell decoder, operates on one shell code frame of 16 pulses */
         internal static void silk_shell_decoder(
             Pointer<short> pulses0,                       /* O    data: nonnegative pulse amplitudes          */
-            ec_ctx psRangeDec,                    /* I/O  Compressor data structure                   */
+            EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
             int pulses4                         /* I    number of pulses per pulse-subframe         */
         )
         {

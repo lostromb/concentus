@@ -19,7 +19,7 @@ namespace Concentus.Silk
         /// <param name="psRangeDec">I/O  Compressor data structure</param>
         /// <param name="pred_Q13">O Predictors</param>
         internal static void silk_stereo_decode_pred(
-            ec_ctx psRangeDec,
+            EntropyCoder psRangeDec,
             Pointer<int> pred_Q13)
         {
             int n;
@@ -27,13 +27,13 @@ namespace Concentus.Silk
             int low_Q13, step_Q13;
 
             // Entropy decoding
-            n = EntropyCoder.ec_dec_icdf(psRangeDec, Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
+            n = psRangeDec.ec_dec_icdf(Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
             ix[0][2] = Inlines.silk_DIV32_16(n, 5);
             ix[1][2] = n - 5 * ix[0][2];
             for (n = 0; n < 2; n++)
             {
-                ix[n][0] = EntropyCoder.ec_dec_icdf(psRangeDec, Tables.silk_uniform3_iCDF.GetPointer(), 8);
-                ix[n][1] = EntropyCoder.ec_dec_icdf(psRangeDec, Tables.silk_uniform5_iCDF.GetPointer(), 8);
+                ix[n][0] = psRangeDec.ec_dec_icdf(Tables.silk_uniform3_iCDF.GetPointer(), 8);
+                ix[n][1] = psRangeDec.ec_dec_icdf(Tables.silk_uniform5_iCDF.GetPointer(), 8);
             }
 
             // Dequantize
@@ -56,12 +56,12 @@ namespace Concentus.Silk
         /// <param name="psRangeDec">I/O  Compressor data structure</param>
         /// <param name="decode_only_mid">O    Flag that only mid channel has been coded</param>
         internal static void silk_stereo_decode_mid_only(
-            ec_ctx psRangeDec,
+            EntropyCoder psRangeDec,
             BoxedValue<int> decode_only_mid
         )
         {
             /* Decode flag that only mid channel is coded */
-            decode_only_mid.Val = EntropyCoder.ec_dec_icdf(psRangeDec, Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
+            decode_only_mid.Val = psRangeDec.ec_dec_icdf(Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
         }
 
         /// <summary>
@@ -69,20 +69,20 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="ix">I    Quantization indices [ 2 ][ 3 ]</param>
-        internal static void silk_stereo_encode_pred(ec_ctx psRangeEnc, Pointer<Pointer<sbyte>> ix)
+        internal static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, Pointer<Pointer<sbyte>> ix)
         {
             int n;
 
             /* Entropy coding */
             n = 5 * ix[0][2] + ix[1][2];
             Inlines.OpusAssert(n < 25);
-            EntropyCoder.ec_enc_icdf(psRangeEnc, n, Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
+            psRangeEnc.ec_enc_icdf( n, Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
             for (n = 0; n < 2; n++)
             {
                 Inlines.OpusAssert(ix[n][0] < 3);
                 Inlines.OpusAssert(ix[n][1] < SilkConstants.STEREO_QUANT_SUB_STEPS);
-                EntropyCoder.ec_enc_icdf(psRangeEnc, ix[n][0], Tables.silk_uniform3_iCDF.GetPointer(), 8);
-                EntropyCoder.ec_enc_icdf(psRangeEnc, ix[n][1], Tables.silk_uniform5_iCDF.GetPointer(), 8);
+                psRangeEnc.ec_enc_icdf( ix[n][0], Tables.silk_uniform3_iCDF.GetPointer(), 8);
+                psRangeEnc.ec_enc_icdf( ix[n][1], Tables.silk_uniform5_iCDF.GetPointer(), 8);
             }
         }
 
@@ -91,10 +91,10 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="mid_only_flag"></param>
-        internal static void silk_stereo_encode_mid_only(ec_ctx psRangeEnc, sbyte mid_only_flag)
+        internal static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, sbyte mid_only_flag)
         {
             /* Encode flag that only mid channel is coded */
-            EntropyCoder.ec_enc_icdf(psRangeEnc, mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
+            psRangeEnc.ec_enc_icdf( mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF.GetPointer(), 8);
         }
 
         /// <summary>

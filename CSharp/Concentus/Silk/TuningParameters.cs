@@ -8,7 +8,7 @@ namespace Concentus.Silk
 {
     public class TuningParameters
     {
-        /* Decay time for bitreservoir */
+        /* Decay time for EntropyCoder.BITREServoir */
         public const int BITRESERVOIR_DECAY_TIME_MS = 500;
 
         /*******************/

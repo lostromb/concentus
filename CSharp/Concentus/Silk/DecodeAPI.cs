@@ -46,7 +46,7 @@ namespace Concentus.Silk
             DecControlState decControl,         /* I/O  Control Structure                               */
             int lostFlag,           /* I    0: no loss, 1 loss, 2 decode fec                */
             int newPacketFlag,      /* I    Indicates first decoder call for this packet    */
-            ec_ctx psRangeDec,        /* I/O  Compressor data structure                       */
+            EntropyCoder psRangeDec,        /* I/O  Compressor data structure                       */
             Pointer<short> samplesOut,        /* O    Decoded output speech vector                    */
             BoxedValue<int> nSamplesOut       /* O    Number of samples decoded                       */
         )
@@ -155,9 +155,9 @@ namespace Concentus.Silk
                 {
                     for (i = 0; i < channel_state[n].nFramesPerPacket; i++)
                     {
-                        channel_state[n].VAD_flags[i] = EntropyCoder.ec_dec_bit_logp(psRangeDec, 1);
+                        channel_state[n].VAD_flags[i] = psRangeDec.ec_dec_bit_logp(1);
                     }
-                    channel_state[n].LBRR_flag = EntropyCoder.ec_dec_bit_logp(psRangeDec, 1);
+                    channel_state[n].LBRR_flag = psRangeDec.ec_dec_bit_logp(1);
                 }
                 /* Decode LBRR flags */
                 for (n = 0; n < decControl.nChannelsInternal; n++)
@@ -170,7 +170,7 @@ namespace Concentus.Silk
                             channel_state[n].LBRR_flags[0] = 1;
                         }
                         else {
-                            LBRR_symbol = EntropyCoder.ec_dec_icdf(psRangeDec, Tables.silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2].GetPointer(), 8) + 1;
+                            LBRR_symbol = psRangeDec.ec_dec_icdf(Tables.silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2].GetPointer(), 8) + 1;
                             for (i = 0; i < channel_state[n].nFramesPerPacket; i++)
                             {
                                 channel_state[n].LBRR_flags[i] = Inlines.silk_RSHIFT(LBRR_symbol, i) & 1;

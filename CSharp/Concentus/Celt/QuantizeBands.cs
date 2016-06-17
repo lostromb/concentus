@@ -41,7 +41,7 @@ namespace Concentus.Celt
         internal static int quant_coarse_energy_impl(CeltMode m, int start, int end,
               Pointer<int> eBands, Pointer<int> oldEBands,
               int budget, int tell,
-              Pointer<byte> prob_model, Pointer<int> error, ec_ctx enc,
+              Pointer<byte> prob_model, Pointer<int> error, EntropyCoder enc,
               int C, int LM, int intra, int max_decay, int lfe)
         {
             int i, c;
@@ -52,7 +52,7 @@ namespace Concentus.Celt
 
             if (tell + 3 <= budget)
             {
-                EntropyCoder.ec_enc_bit_logp(enc, intra, 3);
+                enc.ec_enc_bit_logp(intra, 3);
             }
 
             if (intra != 0)
@@ -101,7 +101,7 @@ namespace Concentus.Celt
                     qi0 = qi;
                     /* If we don't have enough bits to encode all the energy, just assume
                         something safe. */
-                    tell = EntropyCoder.ec_tell(enc);
+                    tell = enc.ec_tell();
                     bits_left = budget - tell - 3 * C * (end - i);
                     if (i != start && bits_left < 30)
                     {
@@ -124,12 +124,12 @@ namespace Concentus.Celt
                     else if (budget - tell >= 2)
                     {
                         qi = Inlines.IMAX(-1, Inlines.IMIN(qi, 1));
-                        EntropyCoder.ec_enc_icdf(enc, 2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf.GetPointer(), 2);
+                        enc.ec_enc_icdf(2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf.GetPointer(), 2);
                     }
                     else if (budget - tell >= 1)
                     {
                         qi = Inlines.IMIN(0, qi);
-                        EntropyCoder.ec_enc_bit_logp(enc, -qi, 1);
+                        enc.ec_enc_bit_logp(-qi, 1);
                     }
                     else
                         qi = -1;
@@ -148,14 +148,14 @@ namespace Concentus.Celt
 
         internal static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
               Pointer<int> eBands, Pointer<int> oldEBands, uint budget,
-              Pointer<int> error, ec_ctx enc, int C, int LM, int nbAvailableBytes,
+              Pointer<int> error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
               int force_intra, BoxedValue<int> delayedIntra, int two_pass, int loss_rate, int lfe)
         {
             int intra;
             int max_decay;
             Pointer<int> oldEBands_intra;
             Pointer<int> error_intra;
-            ec_ctx enc_start_state = new ec_ctx(); // [porting note] stack variable
+            EntropyCoder enc_start_state = new EntropyCoder(); // [porting note] stack variable
             uint tell;
             int badness1 = 0;
             int intra_bias;
@@ -166,7 +166,7 @@ namespace Concentus.Celt
             intra_bias = (int)((budget * delayedIntra.Val * loss_rate) / (C * 512));
             new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
 
-            tell = (uint)EntropyCoder.ec_tell(enc);
+            tell = (uint)enc.ec_tell();
             if (tell + 3 > budget)
                 two_pass = intra = 0;
 
@@ -194,7 +194,7 @@ namespace Concentus.Celt
             if (intra == 0)
             {
                 Pointer<byte> intra_buf;
-                ec_ctx enc_intra_state = new ec_ctx(); // [porting note] stack variable
+                EntropyCoder enc_intra_state = new EntropyCoder(); // [porting note] stack variable
                 int tell_intra;
                 uint nstart_bytes;
                 uint nintra_bytes;
@@ -202,13 +202,13 @@ namespace Concentus.Celt
                 int badness2;
                 Pointer<byte> intra_bits = null;
 
-                tell_intra = (int)EntropyCoder.ec_tell_frac(enc);
+                tell_intra = (int)enc.ec_tell_frac();
 
                 enc_intra_state.Assign(enc);
 
-                nstart_bytes = EntropyCoder.ec_range_bytes(enc_start_state);
-                nintra_bytes = EntropyCoder.ec_range_bytes(enc_intra_state);
-                intra_buf = EntropyCoder.ec_get_buffer(enc_intra_state).Point(nstart_bytes);
+                nstart_bytes = enc_start_state.ec_range_bytes();
+                nintra_bytes = enc_intra_state.ec_range_bytes();
+                intra_buf = enc_intra_state.ec_get_buffer().Point(nstart_bytes);
                 save_bytes = nintra_bytes - nstart_bytes;
 
                 if (save_bytes != 0)
@@ -223,7 +223,7 @@ namespace Concentus.Celt
                 badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, (int)budget,
                       (int)tell, Tables.e_prob_model[LM][intra].GetPointer(), error, enc, C, LM, 0, max_decay, lfe);
 
-                if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && ((int)EntropyCoder.ec_tell_frac(enc)) + intra_bias > tell_intra)))
+                if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && ((int)enc.ec_tell_frac()) + intra_bias > tell_intra)))
                 {
                     enc.Assign(enc_intra_state);
                     /* Copy intra bits to bit-stream */
@@ -253,7 +253,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void quant_fine_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> error, Pointer<int> fine_quant, ec_ctx enc, int C)
+        internal static void quant_fine_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> error, Pointer<int> fine_quant, EntropyCoder enc, int C)
         {
             int i, c;
 
@@ -274,7 +274,7 @@ namespace Concentus.Celt
                         q2 = frac - 1;
                     if (q2 < 0)
                         q2 = 0;
-                    EntropyCoder.ec_enc_bits(enc, (uint)q2, (uint)fine_quant[i]);
+                    enc.ec_enc_bits((uint)q2, (uint)fine_quant[i]);
                     offset = Inlines.SUB16(
                         (Inlines.SHR32(
                             Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT),
@@ -286,7 +286,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void quant_energy_finalise(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> error, Pointer<int> fine_quant, Pointer<int> fine_priority, int bits_left, ec_ctx enc, int C)
+        internal static void quant_energy_finalise(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> error, Pointer<int> fine_quant, Pointer<int> fine_priority, int bits_left, EntropyCoder enc, int C)
         {
             int i, prio, c;
 
@@ -306,7 +306,7 @@ namespace Concentus.Celt
                         int q2;
                         int offset;
                         q2 = error[i + c * m.nbEBands] < 0 ? 0 : 1;
-                        EntropyCoder.ec_enc_bits(enc, (uint)q2, 1);
+                        enc.ec_enc_bits((uint)q2, 1);
                         offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)), fine_quant[i] + 1);
                         oldEBands[i + c * m.nbEBands] += offset;
                         bits_left--;
@@ -315,7 +315,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_coarse_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, int intra, ec_ctx dec, int C, int LM)
+        internal static void unquant_coarse_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, int intra, EntropyCoder dec, int C, int LM)
         {
             Pointer<byte> prob_model = Tables.e_prob_model[LM][intra].GetPointer();
             int i, c;
@@ -350,7 +350,7 @@ namespace Concentus.Celt
                        test on C at function entry, but that isn't enough
                        to make the static analyzer happy. */
                     Inlines.OpusAssert(c < 2);
-                    tell = EntropyCoder.ec_tell(dec);
+                    tell = dec.ec_tell();
                     if (budget - tell >= 15)
                     {
                         int pi;
@@ -360,12 +360,12 @@ namespace Concentus.Celt
                     }
                     else if (budget - tell >= 2)
                     {
-                        qi = EntropyCoder.ec_dec_icdf(dec, small_energy_icdf.GetPointer(), 2);
+                        qi = dec.ec_dec_icdf(small_energy_icdf.GetPointer(), 2);
                         qi = (qi >> 1) ^ -(qi & 1);
                     }
                     else if (budget - tell >= 1)
                     {
-                        qi = 0 - EntropyCoder.ec_dec_bit_logp(dec, 1);
+                        qi = 0 - dec.ec_dec_bit_logp(1);
                     }
                     else
                     {
@@ -382,7 +382,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_fine_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> fine_quant, ec_ctx dec, int C)
+        internal static void unquant_fine_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> fine_quant, EntropyCoder dec, int C)
         {
             int i, c;
             /* Decode finer resolution */
@@ -395,7 +395,7 @@ namespace Concentus.Celt
                 {
                     int q2;
                     int offset;
-                    q2 = (int)EntropyCoder.ec_dec_bits(dec, (uint)fine_quant[i]);
+                    q2 = (int)dec.ec_dec_bits((uint)fine_quant[i]);
                     offset = Inlines.SUB16((Inlines.SHR32(
                         Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + 
                         Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT), fine_quant[i])),
@@ -405,7 +405,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_energy_finalise(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> fine_quant, Pointer<int> fine_priority, int bits_left, ec_ctx dec, int C)
+        internal static void unquant_energy_finalise(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> fine_quant, Pointer<int> fine_priority, int bits_left, EntropyCoder dec, int C)
         {
             int i, prio, c;
 
@@ -421,7 +421,7 @@ namespace Concentus.Celt
                     {
                         int q2;
                         int offset;
-                        q2 = (int)EntropyCoder.ec_dec_bits(dec, 1);
+                        q2 = (int)dec.ec_dec_bits(1);
                         offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)), fine_quant[i] + 1);
                         oldEBands[i + c * m.nbEBands] += offset;
                         bits_left--;
