@@ -185,7 +185,7 @@ namespace TestConsole
                 while (outCursor < outputBuffer.Length - 4000 && _incomingSamples.Available() >= frameSize)
                 {
                     short[] nextFrameData = _incomingSamples.Read(frameSize);
-                    int thisPacketSize = _hEncoder.Encode(nextFrameData.GetPointer(), frameSize, outputBuffer.GetPointer(outCursor + 2), 4000);
+                    int thisPacketSize = _hEncoder.Encode(nextFrameData, 0, frameSize, outputBuffer, outCursor + 2, 4000);
                     byte[] packetSize = BitConverter.GetBytes((ushort)thisPacketSize);
                     outputBuffer[outCursor++] = packetSize[0];
                     outputBuffer[outCursor++] = packetSize[1];
@@ -277,7 +277,7 @@ namespace TestConsole
                 while (_nextPacketSize > 0 && _incomingBytes.Available() >= _nextPacketSize)
                 {
                     byte[] nextPacketData = _incomingBytes.Read(_nextPacketSize);
-                    int thisFrameSize = _hDecoder.Decode(nextPacketData.GetPointer(), _nextPacketSize, outputBuffer.GetPointer(outCursor), frameSize, 0);
+                    int thisFrameSize = _hDecoder.Decode(nextPacketData, 0, _nextPacketSize, outputBuffer, outCursor, frameSize, false);
                     outCursor += thisFrameSize;
 
                     if (_incomingBytes.Available() >= 2)

@@ -743,16 +743,16 @@ namespace Concentus.Structs
   *  decoded. If no such data is available, the frame is decoded as if it were lost.
   * @returns Number of decoded samples or @ref opus_errorcodes
   */
-        public int Decode(Pointer<byte> data,
-             int len, Pointer<short> pcm, int frame_size, int decode_fec)
+        public int Decode(byte[] in_data, int in_data_offset,
+             int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
             if (frame_size <= 0)
                 return OpusError.OPUS_BAD_ARG;
-            return opus_decode_native(data, len, pcm, frame_size, decode_fec, 0, null, 0);
+            return opus_decode_native(in_data.GetPointer(in_data_offset), len, out_pcm.GetPointer(out_pcm_offset), frame_size, decode_fec ? 1 : 0, 0, null, 0);
         }
 
-        public int Decode(Pointer<byte> data,
-            int len, Pointer<float> pcm, int frame_size, int decode_fec)
+        public int Decode(byte[] in_data, int in_data_offset,
+            int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
             Pointer<short> output;
             int ret, i;
@@ -762,9 +762,9 @@ namespace Concentus.Structs
             {
                 return OpusError.OPUS_BAD_ARG;
             }
-            if (data != null && len > 0 && decode_fec == 0)
+            if (in_data != null && len > 0 && !decode_fec)
             {
-                nb_samples = OpusPacket.opus_decoder_get_nb_samples(this, data, len);
+                nb_samples = OpusPacket.opus_decoder_get_nb_samples(this, in_data.GetPointer(in_data_offset), len);
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else
@@ -772,12 +772,12 @@ namespace Concentus.Structs
             }
             output = Pointer.Malloc<short>(frame_size * this.channels);
 
-            ret = opus_decode_native(data, len, output, frame_size, decode_fec, 0, null, 0);
+            ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, output, frame_size, decode_fec ? 1 : 0, 0, null, 0);
 
             if (ret > 0)
             {
                 for (i = 0; i < ret * this.channels; i++)
-                    pcm[i] = (1.0f / 32768.0f) * (output[i]);
+                    out_pcm[out_pcm_offset + i] = (1.0f / 32768.0f) * (output[i]);
             }
 
             return ret;

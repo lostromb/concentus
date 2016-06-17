@@ -1481,8 +1481,8 @@ namespace Concentus.Structs
   * @returns The length of the encoded packet (in bytes) on success or a
   *          negative error code (see @ref opus_errorcodes) on failure.
   */
-        public int Encode(Pointer<short> pcm, int analysis_frame_size,
-              Pointer<byte> data, int out_data_bytes)
+        public int Encode(short[] in_pcm, int pcm_offset, int analysis_frame_size,
+              byte[] out_data, int out_data_offset, int out_data_bytes)
         {
             int i;
             int frame_size;
@@ -1492,7 +1492,7 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            frame_size = CodecHelpers.compute_frame_size(pcm, analysis_frame_size,
+            frame_size = CodecHelpers.compute_frame_size(in_pcm.GetPointer(pcm_offset), analysis_frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_int
 #if ENABLE_ANALYSIS
@@ -1500,8 +1500,8 @@ namespace Concentus.Structs
 #endif
                   );
             
-            return opus_encode_native<short>(pcm, frame_size, data, out_data_bytes, 16,
-                                     pcm, analysis_frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
+            return opus_encode_native<short>(in_pcm.GetPointer(pcm_offset), frame_size, out_data.GetPointer(out_data_offset), out_data_bytes, 16,
+                                     in_pcm.GetPointer(pcm_offset), analysis_frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
         }
 
         /** Encodes an Opus frame from floating point input.
@@ -1537,8 +1537,8 @@ namespace Concentus.Structs
   * @returns The length of the encoded packet (in bytes) on success or a
   *          negative error code (see @ref opus_errorcodes) on failure.
   */
-        public int Encode(Pointer<float> pcm, int analysis_frame_size,
-                              Pointer<byte> data, int max_data_bytes)
+        public int Encode(float[] in_pcm, int pcm_offset, int analysis_frame_size,
+                              byte[] out_data, int out_data_offset, int max_data_bytes)
         {
             int i, ret;
             int frame_size;
@@ -1550,7 +1550,7 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            frame_size = CodecHelpers.compute_frame_size(pcm, analysis_frame_size,
+            frame_size = CodecHelpers.compute_frame_size(in_pcm.GetPointer(pcm_offset), analysis_frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_float
 #if ENABLE_ANALYSIS
@@ -1561,10 +1561,10 @@ namespace Concentus.Structs
             input = Pointer.Malloc<short>(frame_size * this.channels);
 
             for (i = 0; i < frame_size * this.channels; i++)
-                input[i] = Inlines.FLOAT2INT16(pcm[i]);
+                input[i] = Inlines.FLOAT2INT16(in_pcm[pcm_offset + i]);
 
-            ret = opus_encode_native(input, frame_size, data, max_data_bytes, 16,
-                                     pcm, analysis_frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
+            ret = opus_encode_native(input, frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
+                                     in_pcm.GetPointer(pcm_offset), analysis_frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
             return ret;
         }
 

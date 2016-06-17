@@ -127,7 +127,7 @@ namespace ParityTest
 
                     concentusTimer.Start();
                     // Encode with Concentus
-                    int concentusPacketSize = concentusEncoder.Encode(inputPacket.GetPointer(), frameSize, outputBuffer.GetPointer(), 10000);
+                    int concentusPacketSize = concentusEncoder.Encode(inputPacket, 0, frameSize, outputBuffer, 0, 10000);
                     concentusTimer.Stop();
                     if (concentusPacketSize <= 0)
                     {
@@ -175,7 +175,7 @@ namespace ParityTest
                     }
 
                     // Decode with Concentus
-                    int concentusOutputFrameSize = concentusDecoder.Decode(concentusEncoded.GetPointer(), concentusPacketSize, concentusDecoded.GetPointer(), frameSize, 0);
+                    int concentusOutputFrameSize = concentusDecoder.Decode(concentusEncoded, 0, concentusPacketSize, concentusDecoded, 0, frameSize, false);
 
                     // Decode with Opus
                     unsafe
