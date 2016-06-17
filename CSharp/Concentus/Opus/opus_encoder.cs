@@ -31,7 +31,7 @@ namespace Concentus
   * @param [in] application <tt>int</tt>: Coding mode (OPUS_APPLICATION_VOIP/OPUS_APPLICATION_AUDIO/OPUS_APPLICATION_RESTRICTED_LOWDELAY)
   * @retval #OPUS_OK Success or @ref opus_errorcodes
   */
-        public static int opus_encoder_init(OpusEncoder st, int Fs, int channels, int application)
+        public static int opus_encoder_init(OpusEncoder st, int Fs, int channels, OpusApplication application)
         {
             SilkEncoder silk_enc;
             CeltEncoder celt_enc;
@@ -39,8 +39,7 @@ namespace Concentus
             int ret;
 
             if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2) ||
-                 (application != OpusApplication.OPUS_APPLICATION_VOIP && application != OpusApplication.OPUS_APPLICATION_AUDIO
-                 && application != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY))
+                application == OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED)
                 return OpusError.OPUS_BAD_ARG;
 
             st.Reset();
@@ -85,11 +84,11 @@ namespace Concentus
             st.user_bitrate_bps = OpusConstants.OPUS_AUTO;
             st.bitrate_bps = 3000 + Fs * channels;
             st.application = application;
-            st.signal_type = OpusConstants.OPUS_AUTO;
+            st.signal_type = OpusSignal.OPUS_SIGNAL_AUTO;
             st.user_bandwidth = OpusConstants.OPUS_AUTO;
             st.max_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
             st.force_channels = OpusConstants.OPUS_AUTO;
-            st.user_forced_mode = OpusConstants.OPUS_AUTO;
+            st.user_forced_mode = OpusMode.MODE_AUTO;
             st.voice_ratio = -1;
             st.encoder_buffer = st.Fs / 100;
             st.lsb_depth = 24;
@@ -113,7 +112,7 @@ namespace Concentus
             return OpusError.OPUS_OK;
         }
 
-        internal static byte gen_toc(int mode, int framerate, int bandwidth, int channels)
+        internal static byte gen_toc(OpusMode mode, int framerate, int bandwidth, int channels)
         {
             int period;
             byte toc;
@@ -306,13 +305,11 @@ namespace Concentus
  * selected is too low. This also means that it is safe to always use 48 kHz stereo input
  * and let the encoder optimize the encoding.
  */
-        public static OpusEncoder opus_encoder_create(int Fs, int channels, int application, BoxedValue<int> error)
+        public static OpusEncoder opus_encoder_create(int Fs, int channels, OpusApplication application, BoxedValue<int> error)
         {
             int ret;
             OpusEncoder st;
-            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2) ||
-                (application != OpusApplication.OPUS_APPLICATION_VOIP && application != OpusApplication.OPUS_APPLICATION_AUDIO
-                && application != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY))
+            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2))
             {
                 if (error != null)
                     error.Val = OpusError.OPUS_BAD_ARG;
@@ -557,7 +554,7 @@ namespace Concentus
             return bestLM;
         }
         
-        internal static int frame_size_select(int frame_size, int variable_duration, int Fs)
+        internal static int frame_size_select(int frame_size, OpusFramesize variable_duration, int Fs)
         {
             int new_size;
             if (frame_size < Fs / 400)
@@ -579,7 +576,7 @@ namespace Concentus
         }
 
         internal static int compute_frame_size<T>(Pointer<T> analysis_pcm, int frame_size,
-              int variable_duration, int C, int Fs, int bitrate_bps,
+              OpusFramesize variable_duration, int C, int Fs, int bitrate_bps,
               int delay_compensation, Downmix.downmix_func<T> downmix
 #if ENABLE_ANALYSIS
               , Pointer<float> subframe_mem
@@ -816,7 +813,7 @@ namespace Concentus
                || (frame_rate < 50 && (max_data_bytes * frame_rate < 300 || st.bitrate_bps < 2400)))
             {
                 /*If the space is too low to do something useful, emit 'PLC' frames.*/
-                int tocmode = st.mode;
+                OpusMode tocmode = st.mode;
                 int bw = st.bandwidth == 0 ? OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND : st.bandwidth;
                 if (tocmode == 0)
                     tocmode = OpusMode.MODE_SILK_ONLY;
@@ -895,7 +892,7 @@ namespace Concentus
             {
                 st.mode = OpusMode.MODE_CELT_ONLY;
             }
-            else if (st.user_forced_mode == OpusConstants.OPUS_AUTO)
+            else if (st.user_forced_mode == OpusMode.MODE_AUTO)
             {
 #if FUZZING
         /* Random mode switching */
@@ -1124,7 +1121,8 @@ namespace Concentus
             {
                 Pointer<byte> tmp_data;
                 int nb_frames;
-                int bak_mode, bak_bandwidth, bak_channels, bak_to_mono;
+                int bak_bandwidth, bak_channels, bak_to_mono;
+                OpusMode bak_mode;
                 OpusRepacketizer rp; // porting note: pointer
                 int bytes_per_frame;
                 int repacketize_len;

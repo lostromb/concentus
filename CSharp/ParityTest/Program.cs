@@ -23,7 +23,7 @@ namespace ParityTest
             LoadTestFile(16, true);
             LoadTestFile(48, true);
 
-            int[] Applications = new int[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
+            OpusApplication[] Applications = new OpusApplication[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
             int[] Bitrates = new int[] { 8, 16, 32, 64, 256 };
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
@@ -177,7 +177,7 @@ namespace ParityTest
             Console.WriteLine("Speed benchmark was {0:F2}%", (opusTime * 100 / concentusTime));
         }
 
-        private static string PrintApplication(int app)
+        private static string PrintApplication(OpusApplication app)
         {
             if (app == OpusApplication.OPUS_APPLICATION_AUDIO)
                 return "Music   ";

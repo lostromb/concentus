@@ -1,4 +1,5 @@
 ﻿using Concentus.Common.CPlusPlus;
+using Concentus.Opus.Enums;
 using Concentus.Structs;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,8 @@ namespace Concentus.Opus.Structs
     {
         public readonly ChannelLayout layout = new ChannelLayout();
         public int lfe_stream = 0;
-        public int application = 0;
-        public int variable_duration = 0;
+        public OpusApplication application = OpusApplication.OPUS_APPLICATION_AUDIO;
+        public OpusFramesize variable_duration = 0;
         public int surround = 0;
         public int bitrate_bps = 0;
         public float[] subframe_mem = new float[3];
@@ -88,7 +89,7 @@ namespace Concentus.Opus.Structs
             return value;
         }
 
-        public int GetApplication()
+        public OpusApplication GetApplication()
         {
             return encoders[0].GetApplication();
         }
@@ -143,7 +144,7 @@ namespace Concentus.Opus.Structs
             return encoders[0].GetVBRConstraint();
         }
 
-        public int GetSignalType()
+        public OpusSignal GetSignalType()
         {
             return encoders[0].GetSignalType();
         }
@@ -228,7 +229,7 @@ namespace Concentus.Opus.Structs
             }
         }
 
-        public void SetSignalType(int value)
+        public void SetSignalType(OpusSignal value)
         {
             for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
             {
@@ -236,7 +237,7 @@ namespace Concentus.Opus.Structs
             }
         }
 
-        public void SetApplication(int value)
+        public void SetApplication(OpusApplication value)
         {
             for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
             {
@@ -268,7 +269,7 @@ namespace Concentus.Opus.Structs
             }
         }
 
-        public void SetForceMode(int value)
+        public void SetForceMode(OpusMode value)
         {
             for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
             {
@@ -299,12 +300,12 @@ namespace Concentus.Opus.Structs
             return encoders[streamId];
         }
 
-        public void SetExpertFrameDuration(int value)
+        public void SetExpertFrameDuration(OpusFramesize value)
         {
             variable_duration = value;
         }
 
-        public int GetExpertFrameDuration()
+        public OpusFramesize GetExpertFrameDuration()
         {
             return variable_duration;
         }

@@ -84,8 +84,8 @@ namespace Concentus.Structs
         /* Everything beyond this point gets cleared on a reset */
         public int stream_channels;
         public int bandwidth;
-        public int mode;
-        public int prev_mode;
+        public OpusMode mode;
+        public OpusMode prev_mode;
         public int frame_size;
         public int prev_redundancy;
         public int last_packet_duration;

@@ -149,7 +149,7 @@ namespace TestOpusEncode
             for (i = 0; i < 2; i++)
             {
                 BoxedValue<int> ret_err = i != 0 ? null : err;
-                MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 2, 2, 0, mapping.GetPointer(), OpusError.OPUS_UNIMPLEMENTED, ret_err);
+                MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 2, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED, ret_err);
                 if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
 
                 MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 0, 1, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
@@ -237,12 +237,6 @@ namespace TestOpusEncode
             //fclose(foo);*/
 
             enc.SetBandwidth(OpusConstants.OPUS_AUTO);
-            try
-            {
-                enc.SetForceMode(-2);
-                test_failed();
-            }
-            catch (ArgumentException e) { }
 
             for (rc = 0; rc < 3; rc++)
             {

@@ -1014,7 +1014,7 @@ namespace Concentus.Celt
               int LM, int bitrate, int lastCodedBands, int C, int intensity,
               int constrained_vbr, int stereo_saving, int tot_boost,
               int tf_estimate, int pitch_change, int maxDepth,
-              int variable_duration, int lfe, int has_surround_mask, int surround_masking,
+              OpusFramesize variable_duration, int lfe, int has_surround_mask, int surround_masking,
               int temporal_vbr)
         {
             /* The target rate in 8th bits per frame */
@@ -2022,7 +2022,7 @@ namespace Concentus.Celt
                     break;
                 case OpusControl.OPUS_SET_EXPERT_FRAME_DURATION_REQUEST:
                     {
-                        int value = (int)vargs[0];
+                        OpusFramesize value = (OpusFramesize)vargs[0];
                         st.variable_duration = value;
                     }
                     break;

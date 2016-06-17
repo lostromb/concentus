@@ -100,19 +100,19 @@ namespace Concentus.Structs
     public class OpusEncoder
     {
         public readonly EncControlState silk_mode = new EncControlState();
-        public int application;
+        public OpusApplication application;
         public int channels;
         public int delay_compensation;
         public int force_channels;
-        public int signal_type;
+        public OpusSignal signal_type;
         public int user_bandwidth;
         public int max_bandwidth;
-        public int user_forced_mode;
+        public OpusMode user_forced_mode;
         public int voice_ratio;
         public int Fs;
         public int use_vbr;
         public int vbr_constraint;
-        public int variable_duration;
+        public OpusFramesize variable_duration;
         public int bitrate_bps;
         public int user_bitrate_bps;
         public int lsb_depth;
@@ -126,8 +126,8 @@ namespace Concentus.Structs
         public int variable_HP_smth2_Q15;
         public int prev_HB_gain;
         public readonly Pointer<int> hp_mem = Pointer.Malloc<int>(4);
-        public int mode;
-        public int prev_mode;
+        public OpusMode mode;
+        public OpusMode prev_mode;
         public int prev_channels;
         public int prev_framesize;
         public int bandwidth;
@@ -217,11 +217,9 @@ namespace Concentus.Structs
             variable_HP_smth2_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
         }
 
-        public void SetApplication(int value)
+        public void SetApplication(OpusApplication value)
         {
-            if ((value != OpusApplication.OPUS_APPLICATION_VOIP && value != OpusApplication.OPUS_APPLICATION_AUDIO
-                    && value != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-                || (first == 0 && application != value))
+            if (first == 0 && application != value)
             {
                 throw new ArgumentException("Unsupported application");
             }
@@ -229,7 +227,7 @@ namespace Concentus.Structs
             application = value;
         }
 
-        public int GetApplication()
+        public OpusApplication GetApplication()
         {
             return application;
         }
@@ -418,16 +416,12 @@ namespace Concentus.Structs
             return vbr_constraint != 0;
         }
 
-        public void SetSignalType(int value)
+        public void SetSignalType(OpusSignal value)
         {
-            if (value != OpusConstants.OPUS_AUTO && value != OpusSignal.OPUS_SIGNAL_VOICE && value != OpusSignal.OPUS_SIGNAL_MUSIC)
-            {
-                throw new ArgumentException("Invalid signal type");
-            }
             signal_type = value;
         }
 
-        public int GetSignalType()
+        public OpusSignal GetSignalType()
         {
             return signal_type;
         }
@@ -466,20 +460,13 @@ namespace Concentus.Structs
             return lsb_depth;
         }
 
-        public void SetExpertFrameDuration(int value)
+        public void SetExpertFrameDuration(OpusFramesize value)
         {
-            if (value != OpusFramesize.OPUS_FRAMESIZE_ARG && value != OpusFramesize.OPUS_FRAMESIZE_2_5_MS &&
-                            value != OpusFramesize.OPUS_FRAMESIZE_5_MS && value != OpusFramesize.OPUS_FRAMESIZE_10_MS &&
-                            value != OpusFramesize.OPUS_FRAMESIZE_20_MS && value != OpusFramesize.OPUS_FRAMESIZE_40_MS &&
-                            value != OpusFramesize.OPUS_FRAMESIZE_60_MS && value != OpusFramesize.OPUS_FRAMESIZE_VARIABLE)
-            {
-                throw new ArgumentException("Invalid frame size");
-            }
             variable_duration = value;
             celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_SET_EXPERT_FRAME_DURATION_REQUEST, (value));
         }
 
-        public int GetExpertFrameDuration()
+        public OpusFramesize GetExpertFrameDuration()
         {
             return variable_duration;
         }
@@ -494,13 +481,8 @@ namespace Concentus.Structs
             return silk_mode.reducedDependency != 0;
         }
 
-        public void SetForceMode(int value)
+        public void SetForceMode(OpusMode value)
         {
-            if ((value < OpusMode.MODE_SILK_ONLY || value > OpusMode.MODE_CELT_ONLY) && value != OpusConstants.OPUS_AUTO)
-            {
-                throw new ArgumentException("Unsupported mode (must be OpusMode.___ or OPUS_AUTO");
-            }
-            
             user_forced_mode = value;
         }
 

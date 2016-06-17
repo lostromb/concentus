@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Concentus.Opus.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ namespace ParityTest
     {
         public int Bitrate;
         public int Channels;
-        public int Application;
+        public OpusApplication Application;
         public int SampleRate;
         public double FrameSize;
         public int Complexity;

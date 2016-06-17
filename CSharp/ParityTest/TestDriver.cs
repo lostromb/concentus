@@ -50,7 +50,7 @@ namespace ParityTest
             // Create Opus encoder
             IntPtr opusEncoder = IntPtr.Zero;
             IntPtr opusError;
-            opusEncoder = opus_encoder_create(parameters.SampleRate, parameters.Channels, parameters.Application, out opusError);
+            opusEncoder = opus_encoder_create(parameters.SampleRate, parameters.Channels, (int)parameters.Application, out opusError);
             if ((int)opusError != 0)
             {
                 returnVal.Message = "There was an error initializing the Opus encoder";

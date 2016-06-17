@@ -281,7 +281,7 @@ namespace Concentus.Opus
               int streams,
               int coupled_streams,
               Pointer<byte> mapping,
-              int application,
+              OpusApplication application,
               int surround
         )
         {
@@ -341,7 +341,7 @@ namespace Concentus.Opus
               BoxedValue<int> streams,
               BoxedValue<int> coupled_streams,
               Pointer<byte> mapping,
-              int application
+              OpusApplication application
         )
         {
             if ((channels > 255) || (channels < 1))
@@ -395,7 +395,7 @@ namespace Concentus.Opus
               int streams,
               int coupled_streams,
               Pointer<byte> mapping,
-              int application,
+              OpusApplication application,
               BoxedValue<int> error
         )
         {
@@ -457,13 +457,13 @@ namespace Concentus.Opus
               BoxedValue<int> streams,
               BoxedValue<int> coupled_streams,
               Pointer<byte> mapping,
-              int application,
+              OpusApplication application,
               BoxedValue<int> error
         )
         {
             int ret;
             OpusMSEncoder st;
-            if ((channels > 255) || (channels < 1))
+            if ((channels > 255) || (channels < 1) || application == OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED)
             {
                 if (error != null)
                     error.Val = OpusError.OPUS_BAD_ARG;

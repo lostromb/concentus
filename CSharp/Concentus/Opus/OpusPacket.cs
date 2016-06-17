@@ -373,9 +373,9 @@ namespace Concentus
             return opus_packet_get_nb_samples(packet, len, dec.Fs);
         }
 
-        public static int opus_packet_get_mode(Pointer<byte> data)
+        public static OpusMode opus_packet_get_mode(Pointer<byte> data)
         {
-            int mode;
+            OpusMode mode;
             if ((data[0] & 0x80) != 0)
             {
                 mode = OpusMode.MODE_CELT_ONLY;

@@ -143,7 +143,7 @@ namespace Concentus
             Pointer<short> redundant_audio;
 
             int audiosize;
-            int mode;
+            OpusMode mode;
             int transition = 0;
             int start_band;
             int redundancy = 0;
@@ -536,7 +536,8 @@ namespace Concentus
             int i, nb_samples;
             int count, offset;
             byte toc;
-            int packet_frame_size, packet_bandwidth, packet_mode, packet_stream_channels;
+            int packet_frame_size, packet_bandwidth, packet_stream_channels;
+            OpusMode packet_mode;
             /* 48 x 2.5 ms = 120 ms */
             // fixme: make sure these values can fit in an int16
             short[] size = new short[48];

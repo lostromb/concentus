@@ -1,4 +1,5 @@
 ﻿using Concentus.Common.CPlusPlus;
+using Concentus.Opus.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Concentus.Celt.Structs
         public int constrained_vbr = 0;
         public int loss_rate = 0;
         public int lsb_depth = 0;
-        public int variable_duration = 0;
+        public OpusFramesize variable_duration = 0;
         public int lfe = 0;
 
         /* Everything beyond this point gets cleared on a reset */
