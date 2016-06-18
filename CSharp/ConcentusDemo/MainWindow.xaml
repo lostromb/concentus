@@ -1,0 +1,32 @@
+﻿<Window x:Class="ConcentusDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ConcentusDemo"
+        mc:Ignorable="d"
+        Title="Concentus Interactive Demo" Height="344.068" Width="497.563">
+    <StackPanel x:Name="MainStack" Orientation="Vertical">
+        <Grid x:Name="BitratePanel" Margin="0,0,0,0" VerticalAlignment="Center">
+            <Label Content="Bitrate" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Slider x:Name="bitrateSlider" Height="35" Maximum="256" Minimum="8" Value="64" TickPlacement="Both" TickFrequency="8" VerticalAlignment="Center" Margin="100,0" ValueChanged="bitrateSlider_ValueChanged"/>
+            <Label x:Name="bitrateDisplay" Content="96 KBits/s" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
+        </Grid>
+        <Grid x:Name="ComplexityPanel" Margin="0,0,0,0" VerticalAlignment="Center">
+            <Label Content="Complexity" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Slider x:Name="complexitySlider" Height="35" Maximum="10" Minimum="0" Value="5" TickPlacement="Both" TickFrequency="1" VerticalAlignment="Center" Margin="100,0" SmallChange="1" ValueChanged="complexitySlider_ValueChanged"/>
+            <Label x:Name="complexityDisplay" Content="5 (Medium)" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
+        </Grid>
+        <Grid x:Name="LibraryPanel" Margin="0,0,0,0" VerticalAlignment="Center">
+            <Label Content="Implementation" Height="25" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
+            <Grid Margin="0,25,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Concentus" Grid.Column="0" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
+                <Label Content="Opus" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
+            </Grid>
+        </Grid>
+    </StackPanel>
+</Window>
