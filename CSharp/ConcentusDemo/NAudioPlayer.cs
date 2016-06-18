@@ -22,7 +22,7 @@ namespace ConcentusDemo
         public NAudioPlayer()
         {
             _outputDevice = new WaveOutEvent();
-            _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(48000, 1));
+            _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 1));
             _mixer.ReadFully = true;
         }
 
@@ -59,7 +59,7 @@ namespace ConcentusDemo
 
             public StreamedSampleProvider()
             {
-                WaveFormat = new WaveFormat(48000, 1);
+                WaveFormat = new WaveFormat(44100, 1);
             }
 
             public int BufferSizeMs()
@@ -77,7 +77,9 @@ namespace ConcentusDemo
             public void QueueChunk(AudioChunk chunk)
             {
                 _streamLock.WaitOne();
-                _inputChunks.Enqueue(chunk);
+                short[] resampledData = Lanczos.Resample(chunk.Data, chunk.SampleRate, 44100);
+                AudioChunk resampledChunk = new AudioChunk(resampledData, 44100);
+                _inputChunks.Enqueue(resampledChunk);
                 _streamLock.ReleaseMutex();
             }
 
@@ -97,6 +99,7 @@ namespace ConcentusDemo
                     if (_inputChunks.Count != 0)
                     {
                         _nextChunk = _inputChunks.Dequeue();
+                        _streamLock.ReleaseMutex();
                     }
                     else
                     {
@@ -107,9 +110,9 @@ namespace ConcentusDemo
                             buffer[c + offset] = 0.0f;
                         }
 
+                        _streamLock.ReleaseMutex();
                         return count;
                     }
-                    _streamLock.ReleaseMutex();
                 }
 
                 int samplesWritten = 0;
@@ -132,6 +135,7 @@ namespace ConcentusDemo
                         if (_inputChunks.Count != 0)
                         {
                             _nextChunk = _inputChunks.Dequeue();
+                            _streamLock.ReleaseMutex();
                         }
                         else
                         {
@@ -141,9 +145,9 @@ namespace ConcentusDemo
                                 buffer[c + offset] = 0.0f;
                             }
 
+                            _streamLock.ReleaseMutex();
                             return count;
                         }
-                        _streamLock.ReleaseMutex();
                     }
                 }
 

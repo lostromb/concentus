@@ -26,9 +26,9 @@ namespace ConcentusDemo
         // Codec params that can be modified by other threads
         private readonly Mutex _codecParamLock = new Mutex();
         private int _complexity = 5;
-        private int _bitrate = 16;
+        private int _bitrate = 64;
         private bool _codecParamChanged = true;
-
+        
         public AudioWorker()
         {
             _codec = new ConcentusCodec();
@@ -39,13 +39,13 @@ namespace ConcentusDemo
         {
             byte[] inputSamples = new byte[96];
             _running = true;
-            _inputFileStream = new FileStream(@"Henrik Jose - Blunderbuss.wav", FileMode.Open);
+            _inputFileStream = new FileStream(@"Spacecut.Raw", FileMode.Open);
             _player.Start();
 
             while (_running)
             {
                 // Spin until the output buffer has some room
-                while (_player.BufferSizeMs() > 200)
+                while (_player.BufferSizeMs() > BUFFER_LENGTH_MS)
                 {
                     Thread.Sleep(5);
                 }
@@ -66,10 +66,13 @@ namespace ConcentusDemo
 
                 // Run the opus encoder and decoder
                 byte[] compressedFrame = _codec.Compress(inputPcm);
-                AudioChunk decompressed = _codec.Decompress(compressedFrame);
+                if (compressedFrame != null && compressedFrame.Length > 0)
+                {
+                    AudioChunk decompressed = _codec.Decompress(compressedFrame);
 
-                // Pipe the output to the audio device
-                _player.QueueChunk(decompressed);
+                    // Pipe the output to the audio device
+                    _player.QueueChunk(decompressed);
+                }
             }
         }
 

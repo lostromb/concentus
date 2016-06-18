@@ -78,6 +78,7 @@
     <Compile Include="IAudioCompressionStream.cs" />
     <Compile Include="IAudioDecompressionStream.cs" />
     <Compile Include="IOpusCodec.cs" />
+    <Compile Include="Lanczos.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -112,8 +113,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <Content Include="..\..\AudioData\Henrik Jose - Blunderbuss.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="..\..\AudioData\Butterfly.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\AudioData\Blunderbuss.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\AudioData\Spacecut.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

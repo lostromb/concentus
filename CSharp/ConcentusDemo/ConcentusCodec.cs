@@ -12,8 +12,8 @@ namespace ConcentusDemo
 
     public class ConcentusCodec : IOpusCodec
     {
-        private int _bitrate = 16;
-        private int _complexity = 10;
+        private int _bitrate = 64;
+        private int _complexity = 5;
         private double _frameSize = 60;
 
         private BasicBufferShort _incomingSamples;
