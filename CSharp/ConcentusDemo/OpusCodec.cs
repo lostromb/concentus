@@ -36,21 +36,6 @@ namespace ConcentusDemo
             }
         }
 
-        public string GetFormatCode()
-        {
-            return "opus";
-        }
-
-        public string GetDescription()
-        {
-            return "Opus audio codec 1.1.2";
-        }
-
-        public bool Initialize()
-        {
-            return true;
-        }
-
         public byte[] Compress(AudioChunk audio)
         {
             string dummy;

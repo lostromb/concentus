@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ConcentusDemo"
         mc:Ignorable="d"
-        Title="Concentus Interactive Demo" Height="344.068" Width="497.563">
+        Title="Concentus Interactive Demo" Height="344.068" Width="497.563" Initialized="Window_Initialized">
     <StackPanel x:Name="MainStack" Orientation="Vertical">
         <Grid x:Name="BitratePanel" Margin="0,0,0,0" VerticalAlignment="Center">
             <Label Content="Bitrate" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
@@ -24,8 +24,8 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Label Content="Concentus" Grid.Column="0" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
-                <Label Content="Opus" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
+                <Label Content="Concentus (C#)" Grid.Column="0" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
+                <Label Content="Opus (C)" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
             </Grid>
         </Grid>
     </StackPanel>

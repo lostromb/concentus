@@ -30,7 +30,7 @@ namespace Concentus.Celt
             {
                 for (i = start; i < end; i++)
                 {
-                    int d = Inlines.SUB16(Inlines.SHR16(eBands[i + c * len], 3), Inlines.SHR16(oldEBands[i + c * len], 3));
+                    int d = Inlines.SUB16(Inlines.SHR16(eBands[i + c * len], 3), Inlines.SHR16(oldEBands[i + c * len], 3)); // opus bug: this reads from uninitialized memory in oldEBands sometimes(?)
                     dist = Inlines.MAC16_16(dist, d, d);
                 }
             } while (++c < C);
@@ -164,7 +164,7 @@ namespace Concentus.Celt
 
             intra = (force_intra != 0 || (two_pass == 0 && delayedIntra.Val > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
             intra_bias = (int)((budget * delayedIntra.Val * loss_rate) / (C * 512));
-            new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
+            new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C); // opus bug: oldEBands is uninitialized memory on the first call to this function
 
             tell = (uint)enc.tell();
             if (tell + 3 > budget)

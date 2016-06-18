@@ -24,11 +24,11 @@ namespace ParityTest
             LoadTestFile(48, true);
 
             OpusApplication[] Applications = new OpusApplication[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
-            int[] Bitrates = new int[] { 8, 16, 32, 64, 256 };
+            int[] Bitrates = new int[] { 8, 16, 32, 64, 96, 128, 256 };
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
-            double[] FrameSizes = new double[] { 5, 20, 60 };
+            double[] FrameSizes = new double[] { 2.5, 5, /*10,*/ 20, 40, 60 };
             int[] PacketLosses = new int[] { 0, 20 };
             int[] VBRModes = new int[] { 0, 1, 2 };
             bool[] DTXModes = new bool[] { false };

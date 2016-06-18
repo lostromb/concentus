@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace ConcentusDemo
 {
+    using NAudio.Wave;
     using System.IO;
 
     public class AudioChunk
@@ -11,12 +12,12 @@ namespace ConcentusDemo
         public int SampleRate;
 
         /// <summary>
-        /// Creates an empty 44.1khz audio sample
+        /// Creates an empty 48khz audio sample
         /// </summary>
         public AudioChunk()
         {
             Data = new short[0];
-            SampleRate = 44100;
+            SampleRate = 48000;
         }
 
         /// <summary>
@@ -50,40 +51,7 @@ namespace ConcentusDemo
             SampleRate = sampleRate;
         }
 
-        /// <summary>
-        /// Creates a new audio sample from a .WAV file stream
-        /// </summary>
-        /// <param name="wavFileStream"></param>
-        //public AudioChunk(Stream wavFileStream)
-        //{
-        //    List<short[]> buffers = new List<short[]>();
-        //    int length = 0;
-        //    SimpleWaveReader reader = new SimpleWaveReader(wavFileStream);
-        //    SampleRate = reader.SampleRate;
-        //    while (!reader.EndOfStream)
-        //    {
-        //        short[] data = reader.ReadNextSampleFrame();
-        //        if (data == null)
-        //            break;
-        //        if (data.Length == 0)
-        //            continue;
-        //        length += data.Length;
-        //        buffers.Add(data);
-        //    }
-
-        //    Data = new short[length];
-        //    int cursor = 0;
-        //    foreach (short[] chunk in buffers)
-        //    {
-        //        Array.Copy(chunk, 0, Data, cursor, chunk.Length);
-        //        cursor += chunk.Length;
-        //    }
-        //    wavFileStream.Close();
-        //}
-
-        // Old .wav loader code using NAudio wave reader
-        // Dropped because it required all wave files to be well-formed, which isn't always the case
-        /*public AudioChunk(Stream wavFileStream)
+        public AudioChunk(Stream wavFileStream)
         {
             List<float[]> buffers = new List<float[]>();
             int length = 0;
@@ -112,7 +80,7 @@ namespace ConcentusDemo
                 cursor += chunk.Length;
             }
             wavFileStream.Close();
-        }*/
+        }
 
         /// <summary>
         /// Creates a new audio sample from a .WAV file name
@@ -132,23 +100,6 @@ namespace ConcentusDemo
         {
             return Convert.ToBase64String(GetDataAsBytes());
         }
-
-        //public AudioChunk ResampleTo(int targetSampleRate, Resampler algorithm = Resampler.MAGIC)
-        //{
-        //    switch (algorithm)
-        //    {
-        //        case Resampler.LINEAR:
-        //            return new AudioChunk(Linear.Resample(Data, SampleRate, targetSampleRate), targetSampleRate);
-        //        case Resampler.LANCZOS3:
-        //            return new AudioChunk(Lanczos.Resample(Data, SampleRate, targetSampleRate), targetSampleRate);
-        //        case Resampler.HERMITIAN:
-        //            return new AudioChunk(Hermitian.Resample(Data, SampleRate, targetSampleRate), targetSampleRate);
-        //        case Resampler.MAGIC:
-        //            return new AudioChunk(Magic.Resample(Data, SampleRate, targetSampleRate), targetSampleRate);
-        //        default:
-        //            return null;
-        //    }
-        //}
 
         public AudioChunk Amplify(float amount)
         {

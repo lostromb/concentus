@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace ConcentusDemo
 {
-    public interface IAudioDecompressionStream
+    public interface IOpusCodec
     {
+        void SetBitrate(int bitrate);
+        void SetComplexity(int complexity);
+        byte[] Compress(AudioChunk input);
         AudioChunk Decompress(byte[] input);
-        AudioChunk Close();
     }
 }

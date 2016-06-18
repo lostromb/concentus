@@ -67,7 +67,7 @@ namespace Concentus.Silk
             {
                 lag_ptr = r_ptr.Point(0 - (lag[k] + SilkConstants.LTP_ORDER / 2));
 
-                BoxedValue<int> boxed_energy = new BoxedValue<int>(rr[k]); // fixme: this var may not be initialized
+                BoxedValue<int> boxed_energy = new BoxedValue<int>();
                 BoxedValue<int> boxed_shifts = new BoxedValue<int>();
                 SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shifts, r_ptr, subfr_length); /* rr[ k ] in Q( -rr_shifts ) */
                 rr[k] = boxed_energy.Val;
