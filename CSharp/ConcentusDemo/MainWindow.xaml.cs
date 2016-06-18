@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,6 +25,17 @@ namespace ConcentusDemo
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private AudioWorker _worker;
+        private Thread _backgroundThread;
+
+        private void Window_Initialized(object sender, EventArgs e)
+        {
+            _worker = new AudioWorker();
+            _backgroundThread = new Thread(_worker.Run);
+            _backgroundThread.IsBackground = true;
+            _backgroundThread.Start();
         }
 
         private void complexitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -50,7 +62,11 @@ namespace ConcentusDemo
                     qualityMeasure = "Very High";
                 }
 
-                complexityDisplay.Content = string.Format("{0} ({1})", Math.Round(e.NewValue), qualityMeasure);
+                int newComplexity = (int)Math.Round(e.NewValue);
+                _worker.UpdateComplexity(newComplexity);
+
+                complexityDisplay.Content = string.Format("{0} ({1})", newComplexity, qualityMeasure);
+                
             }
         }
 
@@ -58,7 +74,9 @@ namespace ConcentusDemo
         {
             if (bitrateDisplay != null && bitrateDisplay.IsInitialized)
             {
-                bitrateDisplay.Content = string.Format("{0} KBits/s", Math.Round(e.NewValue));
+                int newBitrate = (int)Math.Round(e.NewValue);
+                _worker.UpdateBitrate(newBitrate);
+                bitrateDisplay.Content = string.Format("{0} KBits/s", newBitrate);
             }
         }
     }

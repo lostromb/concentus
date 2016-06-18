@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace TestConsole
+namespace ConcentusDemo
 {
     public class Program
     {
