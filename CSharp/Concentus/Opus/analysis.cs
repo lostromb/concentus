@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Concentus
 {
-    internal static class analysis
+    internal static class Analysis
     {
 #if ENABLE_ANALYSIS
         private const double M_PI = 3.141592653;
@@ -53,9 +53,6 @@ namespace Concentus
 
         internal static void tonality_analysis_init(TonalityAnalysisState tonal)
         {
-            /* Initialize reusable fields. */
-            tonal.arch = 0;
-            /* Clear remaining fields. */
             tonal.Reset();
         }
 
@@ -123,10 +120,10 @@ namespace Concentus
         /// <param name="C"></param>
         /// <param name="lsb_depth"></param>
         /// <param name="downmix"></param>
-        internal static void tonality_analysis<T>(TonalityAnalysisState tonal, CELTMode celt_mode, Pointer<T> x, int len, int offset, int c1, int c2, int C, int lsb_depth, downmix_func_def.downmix_func<T> downmix)
+        internal static void tonality_analysis<T>(TonalityAnalysisState tonal, CeltMode celt_mode, Pointer<T> x, int len, int offset, int c1, int c2, int C, int lsb_depth, Downmix.downmix_func<T> downmix)
         {
             int i, b;
-            kiss_fft_state kfft;
+            FFTState kfft;
             Pointer<kiss_fft_cpx> input;
             Pointer<kiss_fft_cpx> output;
             int N = 480, N2 = 240;
@@ -182,11 +179,11 @@ namespace Concentus
                 tonal.write_pos -= OpusConstants.DETECT_SIZE;
 
             input = Pointer.Malloc<kiss_fft_cpx>(480);
-            output = Pointer.Malloc<kiss_fft_cpx>(480);
+            //output = Pointer.Malloc<kiss_fft_cpx>(480);
             for (int c = 0; c < 480; c++)
             {
                 input[c] = new kiss_fft_cpx();
-                output[c] = new kiss_fft_cpx();
+                //output[c] = new kiss_fft_cpx();
             }
             tonality = Pointer.Malloc<float>(240);
             noisiness = Pointer.Malloc<float>(240);
@@ -204,7 +201,14 @@ namespace Concentus
             remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
             downmix(x, tonal.inmem.Point(240), remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
             tonal.mem_fill = 240 + remaining;
-            KissFFT.opus_fft(kfft, input, output);
+
+            // FIXME: Hack to get FFT working again
+            int[] interleavedFFTIn = new int[960];
+            int[] interleavedFFTOut = new int[960];
+            kiss_fft_cpx.WriteComplexValuesToInterleavedIntArray(input, interleavedFFTIn.GetPointer(), 480);
+            KissFFT.opus_fft(kfft, interleavedFFTIn.GetPointer(), interleavedFFTOut.GetPointer());
+            kiss_fft_cpx[] outputComplex = kiss_fft_cpx.ConvertInterleavedIntArray(interleavedFFTOut.GetPointer(), 480);
+            output = outputComplex.GetPointer();
 
             for (i = 1; i < N2; i++)
             {
@@ -537,9 +541,9 @@ namespace Concentus
             info.valid = 1;
         }
 
-        internal static void run_analysis<T>(TonalityAnalysisState analysis, CELTMode celt_mode, Pointer<T> analysis_pcm,
+        internal static void run_analysis<T>(TonalityAnalysisState analysis, CeltMode celt_mode, Pointer<T> analysis_pcm,
                          int analysis_frame_size, int frame_size, int c1, int c2, int C, int Fs,
-                         int lsb_depth, downmix_func_def.downmix_func<T> downmix, AnalysisInfo analysis_info)
+                         int lsb_depth, Downmix.downmix_func<T> downmix, AnalysisInfo analysis_info)
         {
             int offset;
             int pcm_len;

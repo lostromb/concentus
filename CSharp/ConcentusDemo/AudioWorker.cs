@@ -39,7 +39,7 @@ namespace ConcentusDemo
         {
             byte[] inputSamples = new byte[96];
             _running = true;
-            _inputFileStream = new FileStream(@"Spacecut.Raw", FileMode.Open);
+            _inputFileStream = new FileStream(@"Butterfly.Raw", FileMode.Open);
             _player.Start();
 
             while (_running)

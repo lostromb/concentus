@@ -370,7 +370,7 @@ namespace Concentus.Structs
             this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
 
 #if ENABLE_ANALYSIS
-            analysis.tonality_analysis_init(st.analysis);
+            Analysis.tonality_analysis_init(this.analysis);
 #endif
 
             return OpusError.OPUS_OK;
@@ -474,12 +474,12 @@ namespace Concentus.Structs
             celt_mode = boxedMode.Val;
 #if ENABLE_ANALYSIS
             analysis_info.valid = 0;
-            if (st.silk_mode.complexity >= 7 && st.Fs == 48000)
+            if (this.silk_mode.complexity >= 7 && this.Fs == 48000)
             {
-                analysis_read_pos_bak = st.analysis.read_pos;
-                analysis_read_subframe_bak = st.analysis.read_subframe;
-                analysis.run_analysis<T>(st.analysis, celt_mode, analysis_pcm, analysis_size, frame_size,
-                      c1, c2, analysis_channels, st.Fs,
+                analysis_read_pos_bak = this.analysis.read_pos;
+                analysis_read_subframe_bak = this.analysis.read_subframe;
+                Analysis.run_analysis<T>(this.analysis, celt_mode, analysis_pcm, analysis_size, frame_size,
+                      c1, c2, analysis_channels, this.Fs,
                       lsb_depth, downmix, analysis_info);
             }
 #endif
@@ -487,24 +487,24 @@ namespace Concentus.Structs
             this.voice_ratio = -1;
 
 #if ENABLE_ANALYSIS
-            st.detected_bandwidth = 0;
+            this.detected_bandwidth = 0;
             if (analysis_info.valid != 0)
             {
                 int analysis_bandwidth;
-                if (st.signal_type == OpusConstants.OPUS_AUTO)
-                    st.voice_ratio = (int)Math.Floor(.5f + 100 * (1 - analysis_info.music_prob));
+                if (this.signal_type == OpusSignal.OPUS_SIGNAL_AUTO)
+                    this.voice_ratio = (int)Math.Floor(.5f + 100 * (1 - analysis_info.music_prob));
 
                 analysis_bandwidth = analysis_info.bandwidth;
                 if (analysis_bandwidth <= 12)
-                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
                 else if (analysis_bandwidth <= 14)
-                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
                 else if (analysis_bandwidth <= 16)
-                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
                 else if (analysis_bandwidth <= 18)
-                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
                 else
-                    st.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
             }
 #endif
 
@@ -837,8 +837,8 @@ namespace Concentus.Structs
 #if ENABLE_ANALYSIS
                 if (analysis_read_pos_bak != -1)
                 {
-                    st.analysis.read_pos = analysis_read_pos_bak;
-                    st.analysis.read_subframe = analysis_read_subframe_bak;
+                    this.analysis.read_pos = analysis_read_pos_bak;
+                    this.analysis.read_subframe = analysis_read_subframe_bak;
                 }
 #endif
 
@@ -1218,9 +1218,9 @@ namespace Concentus.Structs
                     {
                         int bonus = 0;
 #if ENABLE_ANALYSIS
-                        if (st.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size != st.Fs / 50)
+                        if (this.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size != this.Fs / 50)
                         {
-                            bonus = (60 * st.stream_channels + 40) * (st.Fs / frame_size - 50);
+                            bonus = (60 * this.stream_channels + 40) * (this.Fs / frame_size - 50);
                             if (analysis_info.valid != 0)
                                 bonus = (int)(bonus * (1.0f + .5f * analysis_info.tonality));
                         }
@@ -1329,7 +1329,7 @@ namespace Concentus.Structs
             }
 
 #if ENABLE_ANALYSIS
-            if (redundancy != 0 || st.mode != OpusMode.MODE_SILK_ONLY)
+            if (redundancy != 0 || this.mode != OpusMode.MODE_SILK_ONLY)
                 celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_ANALYSIS_REQUEST, (analysis_info));
 #endif
             /* 5 ms redundant frame for CELT.SILK */
@@ -1496,7 +1496,7 @@ namespace Concentus.Structs
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_int
 #if ENABLE_ANALYSIS
-                  , st.analysis.subframe_mem
+                  , this.analysis.subframe_mem
 #endif
                   );
             
@@ -1554,7 +1554,7 @@ namespace Concentus.Structs
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_float
 #if ENABLE_ANALYSIS
-                  , st.analysis.subframe_mem
+                  , this.analysis.subframe_mem
 #endif
                   );
 

@@ -9,7 +9,7 @@
     <StackPanel x:Name="MainStack" Orientation="Vertical">
         <Grid x:Name="BitratePanel" Margin="0,0,0,0" VerticalAlignment="Center">
             <Label Content="Bitrate" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
-            <Slider x:Name="bitrateSlider" Height="35" Maximum="128" Minimum="8" Value="64" TickPlacement="Both" TickFrequency="8" VerticalAlignment="Center" Margin="100,0" ValueChanged="bitrateSlider_ValueChanged"/>
+            <Slider x:Name="bitrateSlider" Height="35" Maximum="128" Minimum="6" Value="64" TickPlacement="Both" TickFrequency="8" VerticalAlignment="Center" Margin="100,0" ValueChanged="bitrateSlider_ValueChanged"/>
             <Label x:Name="bitrateDisplay" Content="64 KBits/s" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
         </Grid>
         <Grid x:Name="ComplexityPanel" Margin="0,0,0,0" VerticalAlignment="Center">

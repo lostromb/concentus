@@ -14,7 +14,7 @@ namespace ConcentusDemo
     {
         private int _bitrate = 64;
         private int _complexity = 5;
-        private double _frameSize = 60;
+        private double _frameSize = 20;
 
         private BasicBufferShort _incomingSamples = new BasicBufferShort(48000);
 
@@ -86,17 +86,16 @@ namespace ConcentusDemo
 
             byte[] outputBuffer = new byte[frameSize * 2];
             int outCursor = 0;
-            _encodeTimer.Reset();
-            _encodeTimer.Start();
-
-            // this should only ever encode one frame but the original code was meant to handle more
-            while (outCursor < outputBuffer.Length - 4000 && _incomingSamples.Available() >= frameSize)
+            
+            if (_incomingSamples.Available() >= frameSize)
             {
+                _encodeTimer.Reset();
+                _encodeTimer.Start();
                 short[] nextFrameData = _incomingSamples.Read(frameSize);
                 int thisPacketSize = _encoder.Encode(nextFrameData, 0, frameSize, outputBuffer, outCursor, 4000);
                 outCursor += thisPacketSize;
+                _encodeTimer.Stop();
             }
-            _encodeTimer.Stop();
 
             if (outCursor > 0)
             {

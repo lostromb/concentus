@@ -8,6 +8,8 @@ namespace ConcentusDemo
 {
     public class CodecStatistics
     {
+        private double _avgDecay = 0.01;
+
         private double _averageBitrate = 0;
 
         public double Bitrate
@@ -18,7 +20,7 @@ namespace ConcentusDemo
             }
             set
             {
-                _averageBitrate = (_averageBitrate * 0.9) + (value * 0.1);
+                _averageBitrate = (_averageBitrate * (1 - _avgDecay)) + (value * _avgDecay);
             }
         }
 
@@ -60,7 +62,7 @@ namespace ConcentusDemo
             }
             set
             {
-                _avgEncodeSpeed = (_avgEncodeSpeed * 0.9) + (value * 0.1);
+                _avgEncodeSpeed = (_avgEncodeSpeed * (1 - _avgDecay)) + (value * _avgDecay);
             }
         }
     }
