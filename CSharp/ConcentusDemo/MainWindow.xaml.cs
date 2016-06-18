@@ -29,6 +29,7 @@ namespace ConcentusDemo
 
         private AudioWorker _worker;
         private Thread _backgroundThread;
+        private Timer _statisticsTimer;
 
         private void Window_Initialized(object sender, EventArgs e)
         {
@@ -36,6 +37,7 @@ namespace ConcentusDemo
             _backgroundThread = new Thread(_worker.Run);
             _backgroundThread.IsBackground = true;
             _backgroundThread.Start();
+            _statisticsTimer = new Timer(UpdateStatisticsDisplay, null, 0, 200);
         }
 
         private void complexitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -78,6 +80,19 @@ namespace ConcentusDemo
                 _worker.UpdateBitrate(newBitrate);
                 bitrateDisplay.Content = string.Format("{0} KBits/s", newBitrate);
             }
+        }
+
+        private delegate void StringDelegate(string value);
+
+        private void UpdateStatisticsLabel(string content)
+        {
+            statisticsLabel.Content = content;
+        }
+
+        private void UpdateStatisticsDisplay(object state)
+        {
+            CodecStatistics stats = _worker.GetStatistics();
+            Dispatcher.Invoke(new StringDelegate(UpdateStatisticsLabel), string.Format("{0:F1}x realtime | {1:F1}Kbit/s | {2} mode", stats.EncodeSpeed, stats.Bitrate, stats.Mode));
         }
     }
 }

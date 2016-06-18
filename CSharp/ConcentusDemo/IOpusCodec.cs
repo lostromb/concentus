@@ -12,5 +12,6 @@ namespace ConcentusDemo
         void SetComplexity(int complexity);
         byte[] Compress(AudioChunk input);
         AudioChunk Decompress(byte[] input);
+        CodecStatistics GetStatistics();
     }
 }

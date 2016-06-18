@@ -10,7 +10,7 @@
         <Grid x:Name="BitratePanel" Margin="0,0,0,0" VerticalAlignment="Center">
             <Label Content="Bitrate" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
             <Slider x:Name="bitrateSlider" Height="35" Maximum="128" Minimum="8" Value="64" TickPlacement="Both" TickFrequency="8" VerticalAlignment="Center" Margin="100,0" ValueChanged="bitrateSlider_ValueChanged"/>
-            <Label x:Name="bitrateDisplay" Content="96 KBits/s" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
+            <Label x:Name="bitrateDisplay" Content="64 KBits/s" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
         </Grid>
         <Grid x:Name="ComplexityPanel" Margin="0,0,0,0" VerticalAlignment="Center">
             <Label Content="Complexity" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
@@ -28,5 +28,6 @@
                 <Label Content="Opus (C)" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
             </Grid>
         </Grid>
+        <Label x:Name="statisticsLabel" Content="Statistics will go here"/>
     </StackPanel>
 </Window>

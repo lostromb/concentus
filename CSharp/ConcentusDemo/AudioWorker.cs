@@ -92,6 +92,11 @@ namespace ConcentusDemo
             _codecParamLock.ReleaseMutex();
         }
 
+        public CodecStatistics GetStatistics()
+        {
+            return _codec.GetStatistics();
+        }
+
         public void Stop()
         {
             _running = false;

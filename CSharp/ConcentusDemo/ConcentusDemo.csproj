@@ -74,6 +74,7 @@
     <Compile Include="AudioUtils.cs" />
     <Compile Include="AudioWorker.cs" />
     <Compile Include="BasicBuffer.cs" />
+    <Compile Include="CodecStatistics.cs" />
     <Compile Include="ConcentusCodec.cs" />
     <Compile Include="IAudioCompressionStream.cs" />
     <Compile Include="IAudioDecompressionStream.cs" />

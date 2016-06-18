@@ -15,19 +15,19 @@ namespace ConcentusDemo
 
     public class NAudioPlayer : IDisposable
     {
-        private readonly IWavePlayer _outputDevice;
-        private readonly MixingSampleProvider _mixer;
+        private IWavePlayer _outputDevice;
+        private MixingSampleProvider _mixer;
         private StreamedSampleProvider _activeStream;
 
         public NAudioPlayer()
         {
-            _outputDevice = new WaveOutEvent();
-            _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 1));
-            _mixer.ReadFully = true;
         }
 
         public void Start()
         {
+            _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 1));
+            _mixer.ReadFully = true;
+            _outputDevice = new WaveOutEvent();
             _outputDevice.Init(_mixer);
             _activeStream = new StreamedSampleProvider();
             _mixer.AddMixerInput(_activeStream);

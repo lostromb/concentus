@@ -9,22 +9,22 @@ namespace ConcentusDemo
     using Concentus.Common.CPlusPlus;
     using Concentus.Enums;
     using Concentus.Structs;
-
+    using System.Diagnostics;
     public class ConcentusCodec : IOpusCodec
     {
         private int _bitrate = 64;
         private int _complexity = 5;
         private double _frameSize = 60;
 
-        private BasicBufferShort _incomingSamples;
+        private BasicBufferShort _incomingSamples = new BasicBufferShort(48000);
 
         private OpusEncoder _encoder;
         private OpusDecoder _decoder;
+        private CodecStatistics _statistics = new CodecStatistics();
+        private Stopwatch _encodeTimer = new Stopwatch();
 
         public ConcentusCodec()
         {
-            _incomingSamples = new BasicBufferShort(48000);
-
             BoxedValue<int> error = new BoxedValue<int>();
             _encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO, error);
             if (error.Val != 0)
@@ -59,7 +59,12 @@ namespace ConcentusDemo
         {
             return (int)(48000 * _frameSize / 1000);
         }
-        
+
+        public CodecStatistics GetStatistics()
+        {
+            return _statistics;
+        }
+
         public byte[] Compress(AudioChunk input)
         {
             int frameSize = GetFrameSize();
@@ -81,13 +86,22 @@ namespace ConcentusDemo
 
             byte[] outputBuffer = new byte[frameSize * 2];
             int outCursor = 0;
-                
+            _encodeTimer.Reset();
+            _encodeTimer.Start();
+
+            // this should only ever encode one frame but the original code was meant to handle more
             while (outCursor < outputBuffer.Length - 4000 && _incomingSamples.Available() >= frameSize)
             {
                 short[] nextFrameData = _incomingSamples.Read(frameSize);
                 int thisPacketSize = _encoder.Encode(nextFrameData, 0, frameSize, outputBuffer, outCursor, 4000);
                 outCursor += thisPacketSize;
             }
+            _encodeTimer.Stop();
+
+            if (outCursor > 0)
+            {
+                _statistics.EncodeSpeed = (double)_frameSize / 48 * 100000 / (double)_encodeTimer.ElapsedTicks;
+            } 
 
             byte[] finalOutput = new byte[outCursor];
             Array.Copy(outputBuffer, 0, finalOutput, 0, outCursor);
@@ -104,6 +118,27 @@ namespace ConcentusDemo
             
             short[] finalOutput = new short[frameSize];
             Array.Copy(outputBuffer, finalOutput, finalOutput.Length);
+
+            // Update statistics
+            _statistics.Bitrate = inputPacket.Length * 8 * 48000 / 1024 / frameSize;
+            OpusMode curMode = OpusPacket.opus_packet_get_mode(inputPacket.GetPointer());
+            if (curMode == OpusMode.MODE_CELT_ONLY)
+            {
+                _statistics.Mode = "CELT";
+            }
+            else if (curMode == OpusMode.MODE_HYBRID)
+            {
+                _statistics.Mode = "Hybrid";
+            }
+            else if (curMode == OpusMode.MODE_SILK_ONLY)
+            {
+                _statistics.Mode = "SILK";
+            }
+            else
+            {
+                _statistics.Mode = "Unknown";
+            }
+
             return new AudioChunk(finalOutput, 48000);
         }
     }
