@@ -91,6 +91,16 @@ namespace ParityTest
                                                 {
                                                     continue;
                                                 }
+                                                // No FEC at high bitrates
+                                                if (newParams.PacketLossPercent > 0 && newParams.Bitrate > 40)
+                                                {
+                                                    continue;
+                                                }
+                                                // Constrained VBR only applies to CELT
+                                                if (newParams.ConstrainedVBR && newParams.Bitrate < 40)
+                                                {
+                                                    continue;
+                                                }
 
                                                 allTests.Add(newParams);
                                             }
