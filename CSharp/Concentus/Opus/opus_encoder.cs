@@ -1307,7 +1307,7 @@ namespace Concentus
                 {
                     int HB_gain_ref;
                     /* Base rate for SILK */
-                    st.silk_mode.bitRate = st.stream_channels * (5000 + 1000 * ((st.Fs == 100 ? 1 : 0) * frame_size));
+                    st.silk_mode.bitRate = st.stream_channels * (5000 + ((st.Fs == 100 * frame_size) ? 1000 : 0));
                     if (curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     {
                         /* SILK gets 2/3 of the remaining bits */

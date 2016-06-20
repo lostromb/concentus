@@ -57,7 +57,11 @@ namespace ParityTest
 
             opus_encoder_ctl(opusEncoder, OPUS_SET_BITRATE_REQUEST, parameters.Bitrate * 1024);
             opus_encoder_ctl(opusEncoder, OPUS_SET_COMPLEXITY_REQUEST, parameters.Complexity);
-            opus_encoder_ctl(opusEncoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, parameters.PacketLossPercent);
+            if (parameters.PacketLossPercent > 0)
+            {
+                opus_encoder_ctl(opusEncoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, parameters.PacketLossPercent);
+                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_INBAND_FEC_REQUEST, 1);
+            }
 
             // Create Opus decoder
             IntPtr opusDecoder = IntPtr.Zero;
@@ -81,7 +85,11 @@ namespace ParityTest
 
             concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
             concentusEncoder.SetComplexity(parameters.Complexity);
-            concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
+            if (parameters.PacketLossPercent > 0)
+            {
+                concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
+                concentusEncoder.SetUseInbandFEC(true);
+            }
 
             // Create Concentus decoder
             OpusDecoder concentusDecoder = opus_decoder.opus_decoder_create(parameters.SampleRate, parameters.Channels, concentusError);

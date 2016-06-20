@@ -24,11 +24,11 @@ namespace ParityTest
             LoadTestFile(48, true);
 
             int[] Applications = new int[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
-            int[] Bitrates = new int[] { 8, 16, 32, 64, 256 };
+            int[] Bitrates = new int[] { 6, 16, 20, 32, 64, 256 };
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
-            double[] FrameSizes = new double[] { 5, 20, 60 };
+            double[] FrameSizes = new double[] { 2.5, 5, 10, 20, 40, 60 };
             int[] PacketLosses = new int[] { 0, 20 };
 
             IList<TestParameters> allTests = new List<TestParameters>();
@@ -47,8 +47,7 @@ namespace ParityTest
                                 {
                                     for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
                                     {
-                                        // Todo: validate parameters first (mostly frame size for jumbo or tiny frames)
-                                        allTests.Add(new TestParameters()
+                                        TestParameters newParams = new TestParameters()
                                         {
                                             Application = Applications[app_idx],
                                             Bitrate = Bitrates[bit_idx],
@@ -57,7 +56,14 @@ namespace ParityTest
                                             PacketLossPercent = PacketLosses[plc_idx],
                                             SampleRate = SampleRates[sr_idx],
                                             FrameSize = FrameSizes[fs_idx]
-                                        });
+                                        };
+                                        // Validate params
+                                        if (newParams.Bitrate > 40 && newParams.PacketLossPercent > 0)
+                                        {
+                                            continue;
+                                        }
+                                        
+                                        allTests.Add(newParams);
                                     }
                                 }
                             }
@@ -123,12 +129,12 @@ namespace ParityTest
                     Console.WriteLine("FAIL: " + response.Message);
                     Console.ForegroundColor = ConsoleColor.Gray;
 
-                    if (response.FrameCount == 0)
-                    {
-                        PrintShortArray(response.FailureFrame);
-                        Console.WriteLine(response.FrameLength);
-                        Console.ReadLine();
-                    }
+                    //if (response.FrameCount == 0)
+                    //{
+                    //    PrintShortArray(response.FailureFrame);
+                    //    Console.WriteLine(response.FrameLength);
+                    //    Console.ReadLine();
+                    //}
                 }
             }
 
