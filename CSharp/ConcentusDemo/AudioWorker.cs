@@ -12,6 +12,8 @@ namespace ConcentusDemo
     {
         private const int BUFFER_LENGTH_MS = 200;
 
+        private readonly string INPUT_FILE = @"Spacecut.raw";
+
         private volatile bool _running = false;
 
         // The NAudio waveout device
@@ -37,9 +39,11 @@ namespace ConcentusDemo
 
         public void Run(object dummy)
         {
-            byte[] inputSamples = new byte[96];
+            // Amount to read from the file at a time (this equals 2ms)
+            int readSize = 4 * 48000 / 1000;
+            byte[] inputSamples = new byte[readSize];
             _running = true;
-            _inputFileStream = new FileStream(@"Butterfly.Raw", FileMode.Open);
+            _inputFileStream = new FileStream(INPUT_FILE, FileMode.Open);
             _player.Start();
 
             while (_running)
@@ -61,7 +65,12 @@ namespace ConcentusDemo
                 _codecParamLock.ReleaseMutex();
 
                 // Read from the input file
-                int bytesRead = _inputFileStream.Read(inputSamples, 0, 96);
+                if (_inputFileStream.Position >= _inputFileStream.Length - readSize)
+                {
+                    // Loop if necessary
+                    _inputFileStream.Seek(0, SeekOrigin.Begin);
+                }
+                int bytesRead = _inputFileStream.Read(inputSamples, 0, readSize);
                 AudioChunk inputPcm = new AudioChunk(inputSamples, 48000);
 
                 // Run the opus encoder and decoder

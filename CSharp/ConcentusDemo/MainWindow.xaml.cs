@@ -92,7 +92,7 @@ namespace ConcentusDemo
         private void UpdateStatisticsDisplay(object state)
         {
             CodecStatistics stats = _worker.GetStatistics();
-            Dispatcher.Invoke(new StringDelegate(UpdateStatisticsLabel), string.Format("{0:F1}x realtime | {1:F1}Kbit/s | {2} mode", stats.EncodeSpeed, stats.Bitrate, stats.Mode));
+            Dispatcher.Invoke(new StringDelegate(UpdateStatisticsLabel), string.Format("Encode {0:F1}x realtime | Decode {1:F1}x realtime | {2:F1}Kbit/s | {3} mode", stats.EncodeSpeed, stats.DecodeSpeed, stats.Bitrate, stats.Mode));
         }
     }
 }

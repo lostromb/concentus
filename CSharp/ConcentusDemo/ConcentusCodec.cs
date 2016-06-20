@@ -21,7 +21,7 @@ namespace ConcentusDemo
         private OpusEncoder _encoder;
         private OpusDecoder _decoder;
         private CodecStatistics _statistics = new CodecStatistics();
-        private Stopwatch _encodeTimer = new Stopwatch();
+        private Stopwatch _timer = new Stopwatch();
 
         public ConcentusCodec()
         {
@@ -29,7 +29,7 @@ namespace ConcentusDemo
             _encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO, error);
             if (error.Val != 0)
             {
-                //return false;
+                throw new ApplicationException("Could not initialize Concentus encoder");
             }
 
             // Set the encoder bitrate and complexity
@@ -39,7 +39,7 @@ namespace ConcentusDemo
             _decoder = OpusDecoder.Create(48000, 1, error);
             if (error.Val != 0)
             {
-                //return false;
+                throw new ApplicationException("Could not initialize Concentus decoder");
             }
         }
 
@@ -89,17 +89,17 @@ namespace ConcentusDemo
             
             if (_incomingSamples.Available() >= frameSize)
             {
-                _encodeTimer.Reset();
-                _encodeTimer.Start();
+                _timer.Reset();
+                _timer.Start();
                 short[] nextFrameData = _incomingSamples.Read(frameSize);
                 int thisPacketSize = _encoder.Encode(nextFrameData, 0, frameSize, outputBuffer, outCursor, 4000);
                 outCursor += thisPacketSize;
-                _encodeTimer.Stop();
+                _timer.Stop();
             }
 
             if (outCursor > 0)
             {
-                _statistics.EncodeSpeed = (double)_frameSize / 48 * 100000 / (double)_encodeTimer.ElapsedTicks;
+                _statistics.EncodeSpeed = (double)_frameSize / 48 * 100000 / (double)_timer.ElapsedTicks;
             } 
 
             byte[] finalOutput = new byte[outCursor];
@@ -112,9 +112,12 @@ namespace ConcentusDemo
             int frameSize = GetFrameSize();
             
             short[] outputBuffer = new short[frameSize];
-            
+
+            _timer.Reset();
+            _timer.Start();
             int thisFrameSize = _decoder.Decode(inputPacket, 0, inputPacket.Length, outputBuffer, 0, frameSize, false);
-            
+            _timer.Stop();
+
             short[] finalOutput = new short[frameSize];
             Array.Copy(outputBuffer, finalOutput, finalOutput.Length);
 
@@ -137,6 +140,7 @@ namespace ConcentusDemo
             {
                 _statistics.Mode = "Unknown";
             }
+            _statistics.DecodeSpeed = (double)_frameSize / 48 * 100000 / (double)_timer.ElapsedTicks;
 
             return new AudioChunk(finalOutput, 48000);
         }

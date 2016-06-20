@@ -25,23 +25,36 @@ namespace ConcentusDemo
 
         public void Start()
         {
-            _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 1));
-            _mixer.ReadFully = true;
-            _outputDevice = new WaveOutEvent();
-            _outputDevice.Init(_mixer);
             _activeStream = new StreamedSampleProvider();
-            _mixer.AddMixerInput(_activeStream);
-            _outputDevice.Play();
+            try
+            {
+                _mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 1));
+                _mixer.ReadFully = true;
+                _outputDevice = new WaveOutEvent();
+                _outputDevice.Init(_mixer);
+                _mixer.AddMixerInput(_activeStream);
+                _outputDevice.Play();
+            }
+            catch (NAudio.MmException e)
+            {
+                _outputDevice = null;
+            }
         }
 
         public void Dispose()
         {
-            _outputDevice.Dispose();
+            if (_outputDevice != null)
+            {
+                _outputDevice.Dispose();
+            }
         }
 
         public void QueueChunk(AudioChunk chunk)
         {
-            _activeStream.QueueChunk(chunk);
+            if (_outputDevice != null)
+            {
+                _activeStream.QueueChunk(chunk);
+            }
         }
 
         public int BufferSizeMs()

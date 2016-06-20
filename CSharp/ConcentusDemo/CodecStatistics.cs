@@ -65,5 +65,19 @@ namespace ConcentusDemo
                 _avgEncodeSpeed = (_avgEncodeSpeed * (1 - _avgDecay)) + (value * _avgDecay);
             }
         }
+
+        private double _avgDecodeSpeed = 1;
+
+        public double DecodeSpeed
+        {
+            get
+            {
+                return _avgDecodeSpeed;
+            }
+            set
+            {
+                _avgDecodeSpeed = (_avgDecodeSpeed * (1 - _avgDecay)) + (value * _avgDecay);
+            }
+        }
     }
 }
