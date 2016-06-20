@@ -113,10 +113,10 @@ namespace Concentus.Silk
             /* Save quantized speech and noise shaping signals */
             /* DEBUG_STORE_DATA( enc.pcm, &NSQ.xq[ psEncC.ltp_mem_length ], psEncC.frame_length * sizeof( short ) ) */
             // silk_memmove(NSQ.xq, &NSQ.xq[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(short));
-            NSQ.xq.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.frame_length);
+            NSQ.xq.Point(psEncC.frame_length).MemMoveTo(NSQ.xq, psEncC.ltp_mem_length);
 
             // silk_memmove(NSQ.sLTP_shp_Q14, &NSQ.sLTP_shp_Q14[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(int));
-            NSQ.sLTP_shp_Q14.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
+            NSQ.sLTP_shp_Q14.Point(psEncC.frame_length).MemMoveTo(NSQ.sLTP_shp_Q14, psEncC.ltp_mem_length);
         }
 
         /***********************************/
@@ -641,9 +641,9 @@ namespace Concentus.Silk
             /* Save quantized speech signal */
             /* DEBUG_STORE_DATA( enc.pcm, &NSQ.xq[psEncC.ltp_mem_length], psEncC.frame_length * sizeof( short ) ) */
             // silk_memmove(NSQ.xq, &NSQ.xq[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(short));
-            NSQ.xq.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
+            NSQ.xq.Point(psEncC.frame_length).MemMoveTo(NSQ.xq, psEncC.ltp_mem_length);
             // silk_memmove(NSQ.sLTP_shp_Q14, &NSQ.sLTP_shp_Q14[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(int));
-            NSQ.sLTP_shp_Q14.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
+            NSQ.sLTP_shp_Q14.Point(psEncC.frame_length).MemMoveTo(NSQ.sLTP_shp_Q14, psEncC.ltp_mem_length);
         }
 
         /******************************************/

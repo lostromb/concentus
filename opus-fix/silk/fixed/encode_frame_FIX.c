@@ -33,7 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "stack_alloc.h"
 #include "tuning_parameters.h"
 
-#define TRACE_FILE 0
+#define TRACE_FILE 1
 #if TRACE_FILE
 #include "NailTester.h"
 #else

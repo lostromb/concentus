@@ -28,7 +28,7 @@ namespace ParityTest
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
-            double[] FrameSizes = new double[] { 2.5, 5, 10, 20, 40, 60 };
+            double[] FrameSizes = new double[] { 10 /*2.5, 5, 10, 20, 40, 60*/ };
             int[] PacketLosses = new int[] { 0, 20 };
 
             IList<TestParameters> allTests = new List<TestParameters>();
