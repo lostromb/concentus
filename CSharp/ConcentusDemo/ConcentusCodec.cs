@@ -55,6 +55,11 @@ namespace ConcentusDemo
             _encoder.SetComplexity(_complexity);
         }
 
+        public void SetFrameSize(double frameSize)
+        {
+            _frameSize = frameSize;
+        }
+
         private int GetFrameSize()
         {
             return (int)(48000 * _frameSize / 1000);

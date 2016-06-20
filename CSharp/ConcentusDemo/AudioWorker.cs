@@ -29,6 +29,7 @@ namespace ConcentusDemo
         private readonly Mutex _codecParamLock = new Mutex();
         private int _complexity = 5;
         private int _bitrate = 64;
+        private double _frameSize = 20;
         private bool _codecParamChanged = true;
         
         public AudioWorker()
@@ -60,6 +61,7 @@ namespace ConcentusDemo
                 {
                     _codec.SetBitrate(_bitrate);
                     _codec.SetComplexity(_complexity);
+                    _codec.SetFrameSize(_frameSize);
                     _codecParamChanged = false;
                 }
                 _codecParamLock.ReleaseMutex();
@@ -97,6 +99,14 @@ namespace ConcentusDemo
         {
             _codecParamLock.WaitOne();
             _complexity = complexity;
+            _codecParamChanged = true;
+            _codecParamLock.ReleaseMutex();
+        }
+
+        public void UpdateFrameSize(double frameSize)
+        {
+            _codecParamLock.WaitOne();
+            _frameSize = frameSize;
             _codecParamChanged = true;
             _codecParamLock.ReleaseMutex();
         }

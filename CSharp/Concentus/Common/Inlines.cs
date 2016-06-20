@@ -671,7 +671,6 @@ namespace Concentus.Common
 
         /// <summary>
         /// Multiplies two 16-bit fractional values. Bit-exactness of this macro is important
-        /// fixme: needs testing
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2221,9 +2220,10 @@ namespace Concentus.Common
 
         internal static int silk_SQRT_APPROX(int x)
         {
-            // FIXME This is 10x faster
-            // return (int)(Math.Sqrt(x));
-
+#if ENABLE_ANALYSIS
+            // This is 10x faster
+            return (int)(Math.Sqrt(x));
+#else
             // Original, slower implementation
             int y, lz, frac_Q7;
 
@@ -2249,6 +2249,7 @@ namespace Concentus.Common
             y = silk_SMLAWB(y, y, silk_SMULBB(213, frac_Q7));
 
             return y;
+#endif
         }
 
         internal static int MUL32_FRAC_Q(int a32, int b32, int Q)

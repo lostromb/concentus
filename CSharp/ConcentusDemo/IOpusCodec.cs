@@ -10,6 +10,7 @@ namespace ConcentusDemo
     {
         void SetBitrate(int bitrate);
         void SetComplexity(int complexity);
+        void SetFrameSize(double frameSize);
         byte[] Compress(AudioChunk input);
         AudioChunk Decompress(byte[] input);
         CodecStatistics GetStatistics();

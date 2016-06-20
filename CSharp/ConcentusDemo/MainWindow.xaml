@@ -17,6 +17,11 @@
             <Slider x:Name="complexitySlider" Height="35" Maximum="10" Minimum="0" Value="5" TickPlacement="Both" TickFrequency="1" VerticalAlignment="Center" Margin="100,0" SmallChange="1" ValueChanged="complexitySlider_ValueChanged"/>
             <Label x:Name="complexityDisplay" Content="5 (Medium)" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
         </Grid>
+        <Grid x:Name="FramesizePanel" Margin="0,0,0,0" VerticalAlignment="Center">
+            <Label Content="Frame Size" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Slider x:Name="framesizeSlider" Height="35" Maximum="4" Minimum="0" Value="2" TickPlacement="Both" TickFrequency="1" VerticalAlignment="Center" Margin="100,0" SmallChange="1" ValueChanged="framesizeSlider_ValueChanged"/>
+            <Label x:Name="framesizeDisplay" Content="20.0 ms" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
+        </Grid>
         <Grid x:Name="LibraryPanel" Margin="0,0,0,0" VerticalAlignment="Center">
             <Label Content="Implementation" Height="25" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
             <Grid Margin="0,25,0,0">

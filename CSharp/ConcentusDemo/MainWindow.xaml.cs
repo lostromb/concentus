@@ -30,6 +30,7 @@ namespace ConcentusDemo
         private AudioWorker _worker;
         private Thread _backgroundThread;
         private Timer _statisticsTimer;
+        private readonly double[] _frameSizes = { 2.5, 5, 20, 40, 60 };
 
         private void Window_Initialized(object sender, EventArgs e)
         {
@@ -79,6 +80,23 @@ namespace ConcentusDemo
                 int newBitrate = (int)Math.Round(e.NewValue);
                 _worker.UpdateBitrate(newBitrate);
                 bitrateDisplay.Content = string.Format("{0} KBits/s", newBitrate);
+            }
+        }
+
+        private void framesizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            // Round the value to an int
+            if (Math.Abs(e.NewValue - Math.Round(e.NewValue)) > 0.0001)
+            {
+                framesizeSlider.Value = Math.Round(e.NewValue);
+            }
+            else if (framesizeDisplay != null && framesizeDisplay.IsInitialized)
+            {
+                // Already rounded, display the value
+                double frameSize = _frameSizes[(int)Math.Round(e.NewValue)];
+                _worker.UpdateFrameSize(frameSize);
+
+                framesizeDisplay.Content = string.Format("{0:F1} ms", frameSize);
             }
         }
 
