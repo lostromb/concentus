@@ -257,7 +257,7 @@ namespace Concentus.Silk.Structs
             /* Save quantized speech and noise shaping signals */
             /* DEBUG_STORE_DATA( enc.pcm, &NSQ.xq[ psEncC.ltp_mem_length ], psEncC.frame_length * sizeof( short ) ) */
             // silk_memmove(NSQ.xq, &NSQ.xq[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(short));
-            this.xq.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.frame_length);
+            this.xq.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
 
             // silk_memmove(NSQ.sLTP_shp_Q14, &NSQ.sLTP_shp_Q14[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(int));
             this.sLTP_shp_Q14.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);

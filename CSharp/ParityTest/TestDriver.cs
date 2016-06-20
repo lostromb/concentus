@@ -44,6 +44,8 @@ namespace ParityTest
         private const int OPUS_SET_VBR_CONSTRAINT_REQUEST = 4020;
         private const int OPUS_SET_INBAND_FEC_REQUEST = 4012;
         private const int OPUS_SET_DTX_REQUEST = 4016;
+        private const int OPUS_SET_FORCE_MODE_REQUEST = 11002;
+        private const int OPUS_MODE_SILK_ONLY = 1000;
 
         internal static TestResults RunTest(TestParameters parameters, short[] inputFile)
         {
@@ -65,6 +67,7 @@ namespace ParityTest
             {
                 opus_encoder_ctl(opusEncoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, parameters.PacketLossPercent);
                 opus_encoder_ctl(opusEncoder, OPUS_SET_INBAND_FEC_REQUEST, 1);
+                opus_encoder_ctl(opusEncoder, OPUS_SET_FORCE_MODE_REQUEST, OPUS_MODE_SILK_ONLY);
             }
             opus_encoder_ctl(opusEncoder, OPUS_SET_VBR_REQUEST, parameters.UseVBR ? 1 : 0);
             opus_encoder_ctl(opusEncoder, OPUS_SET_VBR_CONSTRAINT_REQUEST, parameters.ConstrainedVBR ? 1 : 0);
@@ -96,6 +99,7 @@ namespace ParityTest
             {
                 concentusEncoder.SetUseInbandFEC(true);
                 concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
+                concentusEncoder.SetForceMode(OpusMode.MODE_SILK_ONLY);
             }
             concentusEncoder.SetVBR(parameters.UseVBR);
             concentusEncoder.SetVBRConstraint(parameters.ConstrainedVBR);
@@ -116,6 +120,13 @@ namespace ParityTest
             int frameSizeStereo = frameSize * parameters.Channels;
 
             returnVal.FrameLength = frameSize;
+
+            int packetDropInterval = 0;
+            int packetDropCounter = 0;
+            if (parameters.PacketLossPercent > 0)
+            {
+                packetDropInterval = Math.Max(2, 100 / parameters.PacketLossPercent);
+            }
 
             int inputPointer = 0;
             byte[] outputBuffer = new byte[10000];
@@ -183,16 +194,45 @@ namespace ParityTest
                         }
                     }
 
-                    // Decode with Concentus
-                    int concentusOutputFrameSize = concentusDecoder.Decode(concentusEncoded, 0, concentusPacketSize, concentusDecoded, 0, frameSize, false);
-
-                    // Decode with Opus
-                    unsafe
+                    // Should we simulate dropping the packet?
+                    bool droppedPacket = false;
+                    if (packetDropInterval > 0 && ++packetDropCounter >= packetDropInterval)
                     {
-                        fixed (short* bdec = opusDecoded)
+                        packetDropCounter = 0;
+                        droppedPacket = true;
+                    }
+
+                    int concentusOutputFrameSize, opusOutputFrameSize;
+
+                    if (!droppedPacket)
+                    {
+
+                        // Decode with Concentus
+                        concentusOutputFrameSize = concentusDecoder.Decode(concentusEncoded, 0, concentusPacketSize, concentusDecoded, 0, frameSize, false);
+
+                        // Decode with Opus
+                        unsafe
                         {
-                            IntPtr decodedPtr = new IntPtr((void*)(bdec));
-                            int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, frameSize, 0);
+                            fixed (short* bdec = opusDecoded)
+                            {
+                                IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                                opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, frameSize, 0);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Decode with Concentus FEC
+                        concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, frameSize, true);
+
+                        // Decode with Opus FEC
+                        unsafe
+                        {
+                            fixed (short* bdec = opusDecoded)
+                            {
+                                IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                                opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, frameSize, 1);
+                            }
                         }
                     }
 
