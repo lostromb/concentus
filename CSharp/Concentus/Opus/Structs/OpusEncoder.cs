@@ -952,7 +952,7 @@ namespace Concentus.Structs
                 {
                     int HB_gain_ref;
                     /* Base rate for SILK */
-                    this.silk_mode.bitRate = this.stream_channels * (5000 + 1000 * ((this.Fs == 100 ? 1 : 0) * frame_size));
+                    this.silk_mode.bitRate = this.stream_channels * (5000 + ((this.Fs == 100 * frame_size) ? 1000 : 0));
                     if (curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     {
                         /* SILK gets 2/3 of the remaining bits */
