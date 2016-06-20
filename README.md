@@ -4,7 +4,7 @@ This project is an effort to port the Opus reference library to work natively in
 
 ## Project Status
 
-This repo contains a completely functional Opus implementation in portable C#. It it based on libopus master 1.1.2 configured with FIXED_POINT and DISABLE_FLOAT_API. Both the encoder and decoder paths have been tested to be 100% bit-exact with their equivalent C functions, with fairly reasonable confidence.
+This repo contains a completely functional Opus implementation in portable C#. It it based on libopus master 1.1.2 configured with FIXED_POINT and DISABLE_FLOAT_API. Both the encoder and decoder paths have been tested to be bit-exact with their equivalent C functions in _most_ cases (PLC and DTX modes still show hiccups)
 
 Performance-wise, the current build runs about 20-25% as fast as its equivalent libopus build, but there is still huge room for optimization. Keep in mind that these performance enhancements may change the API surface as I remove pointer objects, manually boxed values, etc.
 
