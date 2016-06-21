@@ -23,6 +23,8 @@ namespace ConcentusDemo
         private CodecStatistics _statistics = new CodecStatistics();
         private Stopwatch _timer = new Stopwatch();
 
+        private byte[] scratchBuffer = new byte[10000];
+
         public ConcentusCodec()
         {
             BoxedValue<int> error = new BoxedValue<int>();
@@ -88,8 +90,7 @@ namespace ConcentusDemo
                     _incomingSamples.Write(new short[paddingNeeded]);
                 }
             }
-
-            byte[] outputBuffer = new byte[frameSize * 2];
+            
             int outCursor = 0;
             
             if (_incomingSamples.Available() >= frameSize)
@@ -97,18 +98,18 @@ namespace ConcentusDemo
                 _timer.Reset();
                 _timer.Start();
                 short[] nextFrameData = _incomingSamples.Read(frameSize);
-                int thisPacketSize = _encoder.Encode(nextFrameData, 0, frameSize, outputBuffer, outCursor, 4000);
+                int thisPacketSize = _encoder.Encode(nextFrameData, 0, frameSize, scratchBuffer, outCursor, scratchBuffer.Length);
                 outCursor += thisPacketSize;
                 _timer.Stop();
             }
 
             if (outCursor > 0)
             {
-                _statistics.EncodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / TimeSpan.TicksPerMillisecond);
+                _statistics.EncodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             } 
 
             byte[] finalOutput = new byte[outCursor];
-            Array.Copy(outputBuffer, 0, finalOutput, 0, outCursor);
+            Array.Copy(scratchBuffer, 0, finalOutput, 0, outCursor);
             return finalOutput;
         }
         
@@ -145,7 +146,7 @@ namespace ConcentusDemo
             {
                 _statistics.Mode = "Unknown";
             }
-            _statistics.DecodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / TimeSpan.TicksPerMillisecond);
+            _statistics.DecodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);
 
             return new AudioChunk(finalOutput, 48000);
         }

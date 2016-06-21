@@ -1475,8 +1475,16 @@ namespace Concentus.Structs
   *          negative error code (see @ref opus_errorcodes) on failure.
   */
         public int Encode(short[] in_pcm, int pcm_offset, int analysis_frame_size,
-              byte[] out_data, int out_data_offset, int out_data_bytes)
+              byte[] out_data, int out_data_offset, int max_data_bytes)
         {
+            // Check that the caller is telling the truth about its input buffers
+            if (out_data_offset + max_data_bytes > out_data.Length)
+            {
+                throw new ArgumentException(string.Format(
+                    "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
+                    max_data_bytes, out_data.Length - out_data_offset));
+            }
+
             int frame_size;
             int delay_compensation;
             if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
@@ -1491,8 +1499,10 @@ namespace Concentus.Structs
                   , this.analysis.subframe_mem
 #endif
                   );
+
+            // todo: check that pcm is >= frame_size
             
-            return opus_encode_native<short>(in_pcm.GetPointer(pcm_offset), frame_size, out_data.GetPointer(out_data_offset), out_data_bytes, 16,
+            return opus_encode_native<short>(in_pcm.GetPointer(pcm_offset), frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
                                      in_pcm.GetPointer(pcm_offset), analysis_frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
         }
 
@@ -1532,6 +1542,14 @@ namespace Concentus.Structs
         public int Encode(float[] in_pcm, int pcm_offset, int analysis_frame_size,
                               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
+            // Check that the caller is telling the truth about its input buffers
+            if (out_data_offset + max_data_bytes > out_data.Length)
+            {
+                throw new ArgumentException(string.Format(
+                    "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
+                    max_data_bytes, out_data.Length - out_data_offset));
+            }
+
             int i, ret;
             int frame_size;
             int delay_compensation;
@@ -1549,6 +1567,8 @@ namespace Concentus.Structs
                   , this.analysis.subframe_mem
 #endif
                   );
+
+            // todo: check that pcm is >= frame_size
 
             input = Pointer.Malloc<short>(frame_size * this.channels);
 

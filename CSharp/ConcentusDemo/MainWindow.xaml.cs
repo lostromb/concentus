@@ -30,7 +30,7 @@ namespace ConcentusDemo
         private AudioWorker _worker;
         private Thread _backgroundThread;
         private Timer _statisticsTimer;
-        private readonly double[] _frameSizes = { 2.5, 5, 20, 40, 60 };
+        private readonly double[] _frameSizes = { 2.5, 5, 10, 20, 40, 60 };
 
         private void Window_Initialized(object sender, EventArgs e)
         {

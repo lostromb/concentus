@@ -251,16 +251,17 @@ namespace ParityTest
                     frameCount++;
                 }
             }
-            catch (ArgumentException e)
+            catch (Exception e)
             {
                 returnVal.Message = e.Message;
                 returnVal.Passed = false;
+                returnVal.FailureFrame = inputPacket;
                 return returnVal;
             }
 
             returnVal.Passed = true;
-            returnVal.ConcentusTimeMs = concentusTimer.ElapsedMilliseconds;
-            returnVal.OpusTimeMs = opusTimer.ElapsedMilliseconds;
+            returnVal.ConcentusTimeMs = concentusTimer.ElapsedTicks / Stopwatch.Frequency * 1000;
+            returnVal.OpusTimeMs = opusTimer.ElapsedTicks / Stopwatch.Frequency * 1000;
             returnVal.Message = "Ok!";
 
             return returnVal;

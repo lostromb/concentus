@@ -12,7 +12,7 @@ namespace ConcentusDemo
     {
         private const int BUFFER_LENGTH_MS = 200;
 
-        private readonly string INPUT_FILE = @"Spacecut.raw";
+        private readonly string INPUT_FILE = @"Butterfly.raw";
 
         private volatile bool _running = false;
 
