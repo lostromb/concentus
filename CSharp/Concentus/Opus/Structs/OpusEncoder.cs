@@ -146,7 +146,7 @@ namespace Concentus.Structs
         // of the struct without being explicitly included (since they have a variable size).
         // Here they are just included as an intrinsic variable.
         internal readonly SilkEncoder SilkEncoder = new SilkEncoder();
-        internal readonly CeltEncoder CeltEncoder = new CeltEncoder();
+        internal readonly CeltEncoder Celt_Encoder = new CeltEncoder();
 
         internal void Reset()
         {
@@ -208,7 +208,7 @@ namespace Concentus.Structs
 
             PartialReset();
 
-            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_RESET_STATE);
+            Celt_Encoder.ResetState();
             EncodeAPI.silk_InitEncoder(SilkEncoder, dummy);
             stream_channels = channels;
             hybrid_stereo_width_Q14 = 1 << 14;
@@ -309,7 +309,7 @@ namespace Concentus.Structs
             this.Reset();
             /* Create SILK encoder */
             silk_enc = this.SilkEncoder;
-            celt_enc = this.CeltEncoder;
+            celt_enc = this.Celt_Encoder;
 
             this.stream_channels = this.channels = channels;
 
@@ -336,11 +336,11 @@ namespace Concentus.Structs
 
             /* Create CELT encoder */
             /* Initialize CELT encoder */
-            err = celt_encoder.celt_encoder_init(celt_enc, Fs, channels);
+            err = celt_enc.celt_encoder_init(Fs, channels);
             if (err != OpusError.OPUS_OK) return OpusError.OPUS_INTERNAL_ERROR;
 
-            celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_SIGNALLING_REQUEST, 0);
-            celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_COMPLEXITY_REQUEST, this.silk_mode.complexity);
+            celt_enc.SetSignalling(0);
+            celt_enc.SetComplexity(this.silk_mode.complexity);
 
             this.use_vbr = 1;
             /* Makes constrained VBR the default (safer for real-time use) */
@@ -462,16 +462,14 @@ namespace Concentus.Structs
             }
 
             silk_enc = this.SilkEncoder;
-            celt_enc = this.CeltEncoder;
+            celt_enc = this.Celt_Encoder;
             if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 delay_compensation = 0;
             else
                 delay_compensation = this.delay_compensation;
 
             lsb_depth = Inlines.IMIN(lsb_depth, this.lsb_depth);
-            BoxedValue<CeltMode> boxedMode = new BoxedValue<CeltMode>();
-            celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_GET_MODE_REQUEST, boxedMode);
-            celt_mode = boxedMode.Val;
+            celt_mode = celt_enc.GetMode();
 #if ENABLE_ANALYSIS
             analysis_info.valid = 0;
             if (this.silk_mode.complexity >= 7 && this.Fs == 48000)
@@ -815,7 +813,7 @@ namespace Concentus.Structs
                 this.detected_bandwidth = Inlines.IMAX(this.detected_bandwidth, min_detected_bandwidth);
                 this.bandwidth = Inlines.IMIN(this.bandwidth, this.detected_bandwidth);
             }
-            celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_LSB_DEPTH_REQUEST, lsb_depth);
+            celt_enc.SetLSBDepth(lsb_depth);
 
             /* CELT mode doesn't support mediumband, use wideband instead */
             if (this.mode == OpusMode.MODE_CELT_ONLY && this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
@@ -1184,18 +1182,18 @@ namespace Concentus.Structs
                         endband = 21;
                         break;
                 }
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_END_BAND_REQUEST, endband);
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_CHANNELS_REQUEST, this.stream_channels);
+                celt_enc.SetEndBand(endband);
+                celt_enc.SetChannels(this.stream_channels);
             }
-            celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_BITRATE_REQUEST, OpusConstants.OPUS_BITRATE_MAX);
+            celt_enc.SetBitrate(OpusConstants.OPUS_BITRATE_MAX);
             if (this.mode != OpusMode.MODE_SILK_ONLY)
             {
                 int celt_pred = 2;
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_REQUEST, 0);
+                celt_enc.SetVBR(false);
                 /* We may still decide to disable prediction later */
                 if (this.silk_mode.reducedDependency != 0)
                     celt_pred = 0;
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_PREDICTION_REQUEST, celt_pred);
+                celt_enc.SetPrediction(celt_pred);
 
                 if (this.mode == OpusMode.MODE_HYBRID)
                 {
@@ -1225,9 +1223,9 @@ namespace Concentus.Structs
                                 bonus = (int)(bonus * (1.0f + .5f * analysis_info.tonality));
                         }
 #endif
-                        celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_REQUEST, (1));
-                        celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, (this.vbr_constraint));
-                        celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_BITRATE_REQUEST, (this.bitrate_bps + bonus));
+                        celt_enc.SetVBR(true);
+                        celt_enc.SetVBRConstraint(this.vbr_constraint != 0);
+                        celt_enc.SetBitrate(this.bitrate_bps + bonus);
                         nb_compr_bytes = max_data_bytes - 1 - redundancy_bytes;
                     }
                     else {
@@ -1336,37 +1334,34 @@ namespace Concentus.Structs
             if (redundancy != 0 && celt_to_silk != 0)
             {
                 int err;
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_START_BAND_REQUEST, (0));
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_SET_VBR_REQUEST, (0));
-                err = celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf, this.Fs / 200, data.Point(nb_compr_bytes), redundancy_bytes, null);
+                celt_enc.SetStartBand(0);
+                celt_enc.SetVBR(false);
+                err = celt_enc.celt_encode_with_ec(pcm_buf, this.Fs / 200, data.Point(nb_compr_bytes), redundancy_bytes, null);
                 if (err < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
-
-                BoxedValue<uint> boxed_redundant_rng = new BoxedValue<uint>(redundant_rng);
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_GET_FINAL_RANGE_REQUEST, boxed_redundant_rng);
-                redundant_rng = boxed_redundant_rng.Val;
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_RESET_STATE);
+                redundant_rng = celt_enc.GetFinalRange();
+                celt_enc.ResetState();
             }
 
-            celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_START_BAND_REQUEST, (start_band));
+            celt_enc.SetStartBand(start_band);
 
             if (this.mode != OpusMode.MODE_SILK_ONLY)
             {
                 if (this.mode != this.prev_mode && this.prev_mode > 0)
                 {
                     byte[] dummy = new byte[2];
-                    celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_RESET_STATE);
+                    celt_enc.ResetState();
 
                     /* Prefilling */
-                    celt_encoder.celt_encode_with_ec(celt_enc, tmp_prefill, this.Fs / 400, dummy.GetPointer(), 2, null);
-                    celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_PREDICTION_REQUEST, (0));
+                    celt_enc.celt_encode_with_ec(tmp_prefill, this.Fs / 400, dummy.GetPointer(), 2, null);
+                    celt_enc.SetPrediction(0);
                 }
                 /* If false, we already busted the budget and we'll end up with a "PLC packet" */
                 if (enc.tell() <= 8 * nb_compr_bytes)
                 {
-                    ret = celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf, frame_size, null, nb_compr_bytes, enc);
+                    ret = celt_enc.celt_encode_with_ec(pcm_buf, frame_size, null, nb_compr_bytes, enc);
                     if (ret < 0)
                     {
                         return OpusError.OPUS_INTERNAL_ERROR;
@@ -1383,21 +1378,19 @@ namespace Concentus.Structs
                 N2 = this.Fs / 200;
                 N4 = this.Fs / 400;
 
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_RESET_STATE);
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_START_BAND_REQUEST, (0));
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, CeltControl.CELT_SET_PREDICTION_REQUEST, (0));
+                celt_enc.ResetState();
+                celt_enc.SetStartBand(0);
+                celt_enc.SetPrediction(0);
 
                 /* NOTE: We could speed this up slightly (at the expense of code size) by just adding a function that prefills the buffer */
-                celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf.Point(this.channels * (frame_size - N2 - N4)), N4, dummy.GetPointer(), 2, null);
+                celt_enc.celt_encode_with_ec(pcm_buf.Point(this.channels * (frame_size - N2 - N4)), N4, dummy.GetPointer(), 2, null);
 
-                err = celt_encoder.celt_encode_with_ec(celt_enc, pcm_buf.Point(this.channels * (frame_size - N2)), N2, data.Point(nb_compr_bytes), redundancy_bytes, null);
+                err = celt_enc.celt_encode_with_ec(pcm_buf.Point(this.channels * (frame_size - N2)), N2, data.Point(nb_compr_bytes), redundancy_bytes, null);
                 if (err < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
-                BoxedValue<uint> boxed_redundant_rng = new BoxedValue<uint>(redundant_rng);
-                celt_encoder.opus_custom_encoder_ctl(celt_enc, OpusControl.OPUS_GET_FINAL_RANGE_REQUEST, (boxed_redundant_rng));
-                redundant_rng = boxed_redundant_rng.Val;
+                redundant_rng = celt_enc.GetFinalRange();
             }
 
             /* Signalling the mode in the first byte */
@@ -1484,7 +1477,6 @@ namespace Concentus.Structs
         public int Encode(short[] in_pcm, int pcm_offset, int analysis_frame_size,
               byte[] out_data, int out_data_offset, int out_data_bytes)
         {
-            int i;
             int frame_size;
             int delay_compensation;
             if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
@@ -1689,7 +1681,7 @@ namespace Concentus.Structs
                 throw new ArgumentException("Complexity must be between 0 and 10");
             }
             silk_mode.complexity = value;
-            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_SET_COMPLEXITY_REQUEST, (value));
+            Celt_Encoder.SetComplexity(value);
         }
 
         public int GetComplexity()
@@ -1714,7 +1706,7 @@ namespace Concentus.Structs
                 throw new ArgumentException("Packet loss must be between 0 and 100");
             }
             silk_mode.packetLossPercentage = value;
-            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_SET_PACKET_LOSS_PERC_REQUEST, value);
+            Celt_Encoder.SetPacketLossPercent(value);
         }
 
         public int GetPacketLossPercent()
@@ -1818,7 +1810,7 @@ namespace Concentus.Structs
         public void SetExpertFrameDuration(OpusFramesize value)
         {
             variable_duration = value;
-            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, OpusControl.OPUS_SET_EXPERT_FRAME_DURATION_REQUEST, (value));
+            Celt_Encoder.SetExpertFrameDuration(value);
         }
 
         public OpusFramesize GetExpertFrameDuration()
@@ -1844,20 +1836,18 @@ namespace Concentus.Structs
         public void SetLFE(int value)
         {
             lfe = value;
-            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.OPUS_SET_LFE_REQUEST, (value));
+            Celt_Encoder.SetLFE(value);
         }
 
         public void SetEnergyMask(Pointer<int> value)
         {
             energy_masking = value;
-            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.OPUS_SET_ENERGY_MASK_REQUEST, (value));
+            Celt_Encoder.SetEnergyMask(value);
         }
 
         internal CeltMode GetCeltMode()
         {
-            BoxedValue<CeltMode> value = new BoxedValue<CeltMode>();
-            celt_encoder.opus_custom_encoder_ctl(CeltEncoder, CeltControl.CELT_GET_MODE_REQUEST, (value));
-            return value.Val;
+            return Celt_Encoder.GetMode();
         }
 
         #endregion

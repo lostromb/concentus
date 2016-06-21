@@ -92,7 +92,7 @@ namespace Concentus.Structs
         internal int last_packet_duration;
         internal uint rangeFinal;
         internal SilkDecoder SilkDecoder = new SilkDecoder();
-        internal CeltDecoder CeltDecoder = new CeltDecoder();
+        internal CeltDecoder Celt_Decoder = new CeltDecoder();
 
         internal void Reset()
         {
@@ -145,7 +145,7 @@ namespace Concentus.Structs
 
             /* Initialize SILK encoder */
             silk_dec = this.SilkDecoder;
-            celt_dec = this.CeltDecoder;
+            celt_dec = this.Celt_Decoder;
             this.stream_channels = this.channels = channels;
 
             this.Fs = Fs;
@@ -157,11 +157,11 @@ namespace Concentus.Structs
             if (ret != 0) return OpusError.OPUS_INTERNAL_ERROR;
 
             /* Initialize CELT decoder */
-            ret = celt_decoder.celt_decoder_init(celt_dec, Fs, channels);
+            ret = celt_dec.celt_decoder_init(Fs, channels);
             if (ret != OpusError.OPUS_OK)
                 return OpusError.OPUS_INTERNAL_ERROR;
 
-            celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_SET_SIGNALLING_REQUEST, 0);
+            celt_dec.SetSignalling(0);
 
             this.prev_mode = 0;
             this.frame_size = Fs / 400;
@@ -243,7 +243,7 @@ namespace Concentus.Structs
             int celt_accum;
 
             silk_dec = this.SilkDecoder;
-            celt_dec = this.CeltDecoder;
+            celt_dec = this.Celt_Decoder;
             F20 = this.Fs / 50;
             F10 = F20 >> 1;
             F5 = F10 >> 1;
@@ -472,8 +472,8 @@ namespace Concentus.Structs
                         endband = 21;
                         break;
                 }
-                celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_SET_END_BAND_REQUEST, endband);
-                celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_SET_CHANNELS_REQUEST, this.stream_channels);
+                celt_dec.SetEndBand(endband);
+                celt_dec.SetChannels(this.stream_channels);
             }
 
             if (redundancy != 0)
@@ -497,25 +497,23 @@ namespace Concentus.Structs
             /* 5 ms redundant frame for CELT.SILK*/
             if (redundancy != 0 && celt_to_silk != 0)
             {
-                celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_SET_START_BAND_REQUEST, 0);
-                celt_decoder.celt_decode_with_ec(celt_dec, data.Point(len), redundancy_bytes,
+                celt_dec.SetStartBand(0);
+                celt_dec.celt_decode_with_ec(data.Point(len), redundancy_bytes,
                                     redundant_audio, F5, null, 0);
-                BoxedValue<uint> boxed_finalrange = new BoxedValue<uint>();
-                celt_decoder.opus_custom_decoder_ctl(celt_dec, OpusControl.OPUS_GET_FINAL_RANGE_REQUEST, boxed_finalrange);
-                redundant_rng = boxed_finalrange.Val;
+                redundant_rng = celt_dec.GetFinalRange();
             }
 
             /* MUST be after PLC */
-            celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_SET_START_BAND_REQUEST, start_band);
+            celt_dec.SetStartBand(start_band);
 
             if (mode != OpusMode.MODE_SILK_ONLY)
             {
                 int celt_frame_size = Inlines.IMIN(F20, frame_size);
                 /* Make sure to discard any previous CELT state */
                 if (mode != this.prev_mode && this.prev_mode > 0 && this.prev_redundancy == 0)
-                    celt_decoder.opus_custom_decoder_ctl(celt_dec, OpusControl.OPUS_RESET_STATE);
+                    celt_dec.ResetState();
                 /* Decode CELT */
-                celt_ret = celt_decoder.celt_decode_with_ec(celt_dec, decode_fec != 0 ? null : data,
+                celt_ret = celt_dec.celt_decode_with_ec(decode_fec != 0 ? null : data,
                                                len, pcm, celt_frame_size, dec, celt_accum);
             }
             else
@@ -531,8 +529,8 @@ namespace Concentus.Structs
                    do a fade-out by decoding a silence frame */
                 if (this.prev_mode == OpusMode.MODE_HYBRID && !(redundancy != 0 && celt_to_silk != 0 && this.prev_redundancy != 0))
                 {
-                    celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_SET_START_BAND_REQUEST, 0);
-                    celt_decoder.celt_decode_with_ec(celt_dec, silence.GetPointer(), 2, pcm, F2_5, null, celt_accum);
+                    celt_dec.SetStartBand(0);
+                    celt_dec.celt_decode_with_ec(silence.GetPointer(), 2, pcm, F2_5, null, celt_accum);
                 }
             }
 
@@ -542,22 +540,16 @@ namespace Concentus.Structs
                     pcm[i] = Inlines.SAT16(Inlines.ADD32(pcm[i], pcm_silk[i]));
             }
 
-            {
-                BoxedValue<CeltMode> celt_mode = new BoxedValue<CeltMode>();
-                celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_GET_MODE_REQUEST, celt_mode);
-                window = celt_mode.Val.window;
-            }
+            window = celt_dec.GetMode().window;
 
             /* 5 ms redundant frame for SILK.CELT */
             if (redundancy != 0 && celt_to_silk == 0)
             {
-                celt_decoder.opus_custom_decoder_ctl(celt_dec, OpusControl.OPUS_RESET_STATE);
-                celt_decoder.opus_custom_decoder_ctl(celt_dec, CeltControl.CELT_SET_START_BAND_REQUEST, 0);
+                celt_dec.ResetState();
+                celt_dec.SetStartBand(0);
 
-                celt_decoder.celt_decode_with_ec(celt_dec, data.Point(len), redundancy_bytes, redundant_audio, F5, null, 0);
-                BoxedValue<uint> boxed_range = new BoxedValue<uint>(redundant_rng);
-                celt_decoder.opus_custom_decoder_ctl(celt_dec, OpusControl.OPUS_GET_FINAL_RANGE_REQUEST, boxed_range);
-                redundant_rng = boxed_range.Val;
+                celt_dec.celt_decode_with_ec(data.Point(len), redundancy_bytes, redundant_audio, F5, null, 0);
+                redundant_rng = celt_dec.GetFinalRange();
                 CodecHelpers.smooth_fade(pcm.Point(this.channels * (frame_size - F2_5)), redundant_audio.Point(this.channels * F2_5),
                            pcm.Point(this.channels * (frame_size - F2_5)), F2_5, this.channels, window, this.Fs);
             }
@@ -796,7 +788,7 @@ namespace Concentus.Structs
         public void ResetState()
         {
             PartialReset();
-            celt_decoder.opus_custom_decoder_ctl(CeltDecoder, OpusControl.OPUS_RESET_STATE);
+            Celt_Decoder.ResetState();
             DecodeAPI.silk_InitDecoder(SilkDecoder);
             stream_channels = channels;
             frame_size = Fs / 400;
@@ -811,9 +803,7 @@ namespace Concentus.Structs
         {
             if (prev_mode == OpusMode.MODE_CELT_ONLY)
             {
-                BoxedValue<int> value = new BoxedValue<int>();
-                celt_decoder.opus_custom_decoder_ctl(CeltDecoder, OpusControl.OPUS_GET_PITCH_REQUEST, value);
-                return value.Val;
+                return Celt_Decoder.GetPitch();
             }
             else
                 return DecControl.prevPitchLag;

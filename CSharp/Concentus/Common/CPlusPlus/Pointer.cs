@@ -245,9 +245,9 @@ namespace Concentus.Common.CPlusPlus
             return b.ToString();
         }
 
-        private static void PrintMemCopy<T>(T[] source, int sourceOffset, int length)
+        private static void PrintMemCopy<E>(E[] source, int sourceOffset, int length)
         {
-            if (typeof(T) == typeof(int) || typeof(T) == typeof(uint))
+            if (typeof(E) == typeof(int) || typeof(E) == typeof(uint))
             {
                 Debug.WriteLine("memcpy of {0} bytes", length * 4);
                 string buf = string.Empty;
@@ -257,7 +257,7 @@ namespace Concentus.Common.CPlusPlus
                 }
                 Debug.WriteLine(buf);
             }
-            else if (typeof(T) == typeof(short) || typeof(T) == typeof(ushort))
+            else if (typeof(E) == typeof(short) || typeof(E) == typeof(ushort))
             {
                 Debug.WriteLine("memcpy of {0} bytes", length * 2);
                 string buf = string.Empty;
@@ -267,7 +267,7 @@ namespace Concentus.Common.CPlusPlus
                 }
                 Debug.WriteLine(buf);
             }
-            else if (typeof(T) == typeof(byte) || typeof(T) == typeof(sbyte))
+            else if (typeof(E) == typeof(byte) || typeof(E) == typeof(sbyte))
             {
                 Debug.WriteLine("memcpy of {0} bytes", length);
                 string buf = string.Empty;

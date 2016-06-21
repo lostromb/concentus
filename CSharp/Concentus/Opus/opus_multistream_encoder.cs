@@ -32,7 +32,6 @@ using Concentus.Common;
 using Concentus.Common.CPlusPlus;
 using Concentus.Enums;
 using Concentus.Structs;
-using Concentus.Structs;
 using System;
 using static Concentus.Downmix;
 
@@ -185,7 +184,7 @@ namespace Concentus
             Pointer<short> x;
             Pointer<int> freq;
 
-            upsample = Celt.Celt.resampling_factor(rate);
+            upsample = CeltCommon.resampling_factor(rate);
             frame_size = len * upsample;
 
             for (LM = 0; LM < celt_mode.maxLM; LM++)
@@ -204,11 +203,10 @@ namespace Concentus
 
             for (c = 0; c < channels; c++)
             {
-
                 mem.Point(c * overlap).MemCopyTo(input, overlap);
                 copy_channel_in(x, 1, pcm, channels, c, len);
                 BoxedValue<int> boxed_preemph = new BoxedValue<int>(preemph_mem[c]);
-                celt_encoder.celt_preemphasis(x, input.Point(overlap), frame_size, 1, upsample, celt_mode.preemph.GetPointer(), boxed_preemph, 0);
+                CeltCommon.celt_preemphasis(x, input.Point(overlap), frame_size, 1, upsample, celt_mode.preemph.GetPointer(), boxed_preemph, 0);
                 preemph_mem[c] = boxed_preemph.Val;
 
                 MDCT.clt_mdct_forward(celt_mode.mdct, input, freq, celt_mode.window,
