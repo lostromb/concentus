@@ -14,6 +14,8 @@ namespace ParityTest
 {
     public class TestDriver
     {
+        private const bool ACTUALLY_TEST_PARITY = true;
+
         private const string OPUS_TARGET_DLL = "opus32-fix.dll";
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
@@ -170,7 +172,7 @@ namespace ParityTest
                             opusTimer.Start();
                             int opusPacketSize = opus_encode(opusEncoder, nextFrameBytes, frameSize, encodedPtr, 10000);
                             opusTimer.Stop();
-                            if (opusPacketSize != concentusPacketSize)
+                            if (ACTUALLY_TEST_PARITY && opusPacketSize != concentusPacketSize)
                             {
                                 returnVal.Message = "Output packet sizes do not match (frame " + frameCount + ")";
                                 returnVal.Passed = false;
@@ -185,7 +187,7 @@ namespace ParityTest
                     // Check for encoder parity
                     for (int c = 0; c < concentusPacketSize; c++)
                     {
-                        if (opusEncoded[c] != concentusEncoded[c])
+                        if (ACTUALLY_TEST_PARITY && opusEncoded[c] != concentusEncoded[c])
                         {
                             returnVal.Message = "Encoded packets do not match (frame " + frameCount + ")";
                             returnVal.Passed = false;
@@ -239,7 +241,7 @@ namespace ParityTest
                     // Check for decoder parity
                     for (int c = 0; c < frameSizeStereo; c++)
                     {
-                        if (opusDecoded[c] != concentusDecoded[c])
+                        if (ACTUALLY_TEST_PARITY && opusDecoded[c] != concentusDecoded[c])
                         {
                             returnVal.Message = "Decoded frames do not match (frame " + frameCount + ")";
                             returnVal.Passed = false;
