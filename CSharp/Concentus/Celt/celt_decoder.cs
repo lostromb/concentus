@@ -101,7 +101,7 @@ namespace Concentus.Celt
                         {
                             int tmp = x[j] + m + CeltConstants.VERY_SMALL;
                             m = Inlines.MULT16_32_Q15(coef0, tmp);
-                            y[j * C] = Inlines.SAT16(Inlines.ADD32(y[j * C], Inlines.SCALEOUT(Inlines.SIG2WORD16(tmp))));
+                            y[j * C] = Inlines.SAT16(Inlines.ADD32(y[j * C], Inlines.SIG2WORD16(tmp)));
                         }
                     }
                     else
@@ -118,7 +118,7 @@ namespace Concentus.Celt
                             {
                                 m = Inlines.MULT16_32_Q15(coef0, tmp);
                             }
-                            y[j * C] = Inlines.SCALEOUT(Inlines.SIG2WORD16(tmp));
+                            y[j * C] = Inlines.SIG2WORD16(tmp);
                         }
                     }
                 }
@@ -129,7 +129,7 @@ namespace Concentus.Celt
                     /* Perform down-sampling */
                     {
                         for (j = 0; j < Nd; j++)
-                            y[j * C] = Inlines.SCALEOUT(Inlines.SIG2WORD16(scratch[j * downsample]));
+                            y[j * C] = Inlines.SIG2WORD16(scratch[j * downsample]);
                     }
                 }
             } while (++c < C);

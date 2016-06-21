@@ -310,8 +310,7 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < N; i++)
                 {
-                    int x;
-                    x = Inlines.SCALEIN(pcmp[CC * i]);
+                    int x = pcmp[CC * i];
                     /* Apply pre-emphasis */
                     inp[i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                     m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
@@ -326,7 +325,7 @@ namespace Concentus.Celt
                 inp.MemSet(0, N);
             }
             for (i = 0; i < Nu; i++)
-                inp[i * upsample] = Inlines.SCALEIN(pcmp[CC * i]);
+                inp[i * upsample] = pcmp[CC * i];
 
 
             for (i = 0; i < N; i++)
@@ -358,7 +357,7 @@ namespace Concentus.Celt
                 for (i = 0; i < N; i++)
                 {
                     int x;
-                    x = Inlines.SCALEIN(pcmp[CC * i]);
+                    x = pcmp[CC * i];
                     /* Apply pre-emphasis */
                     inp[i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                     m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
@@ -373,7 +372,7 @@ namespace Concentus.Celt
                 inp.MemSet(0, N);
             }
             for (i = 0; i < Nu; i++)
-                inp[i * upsample] = Inlines.SCALEIN(pcmp[CC * i]);
+                inp[i * upsample] = pcmp[CC * i];
 
 
             for (i = 0; i < N; i++)

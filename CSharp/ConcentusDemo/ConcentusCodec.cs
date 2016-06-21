@@ -104,7 +104,7 @@ namespace ConcentusDemo
 
             if (outCursor > 0)
             {
-                _statistics.EncodeSpeed = (double)_frameSize / 48 * 100000 / (double)_timer.ElapsedTicks;
+                _statistics.EncodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / TimeSpan.TicksPerMillisecond);
             } 
 
             byte[] finalOutput = new byte[outCursor];
@@ -145,7 +145,7 @@ namespace ConcentusDemo
             {
                 _statistics.Mode = "Unknown";
             }
-            _statistics.DecodeSpeed = (double)_frameSize / 48 * 100000 / (double)_timer.ElapsedTicks;
+            _statistics.DecodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / TimeSpan.TicksPerMillisecond);
 
             return new AudioChunk(finalOutput, 48000);
         }
