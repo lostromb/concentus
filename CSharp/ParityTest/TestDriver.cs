@@ -201,10 +201,11 @@ namespace ParityTest
                     frameCount++;
                 }
             }
-            catch (ArgumentException e)
+            catch (Exception e)
             {
-                returnVal.Message = e.Message;
+                returnVal.Message = e.Message + " (frame " + frameCount + ")";
                 returnVal.Passed = false;
+                returnVal.FailureFrame = inputPacket;
                 return returnVal;
             }
 

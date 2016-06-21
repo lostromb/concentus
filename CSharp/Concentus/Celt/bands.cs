@@ -45,7 +45,7 @@ namespace Concentus.Celt
 
         public static uint celt_lcg_rand(uint seed)
         {
-            return 1664525 * seed + 1013904223;
+            return unchecked(1664525 * seed + 1013904223);
         }
 
         /* This is a cos() approximation designed to be bit-exact on any platform. Bit exactness
@@ -1108,7 +1108,7 @@ namespace Concentus.Celt
                         uint cm_mask;
                         /* B can be as large as 16, so this shift might overflow an int on a
                            16-bit platform; use a long to get defined behavior.*/
-                        cm_mask = (uint)(1UL << B) - 1;
+                        cm_mask = unchecked((uint)(1UL << B)) - 1;
                         fill &= (int)cm_mask;
 
                         if (fill == 0)
@@ -1123,7 +1123,7 @@ namespace Concentus.Celt
                                 for (j = 0; j < N; j++)
                                 {
                                     ctx.seed = celt_lcg_rand(ctx.seed);
-                                    X[j] = ((int)ctx.seed >> 20);
+                                    X[j] = (unchecked((int)ctx.seed) >> 20);
                                 }
                                 cm = cm_mask;
                             }
@@ -1139,7 +1139,7 @@ namespace Concentus.Celt
                                     tmp = (((ctx.seed) & 0x8000) != 0 ? tmp : 0 - tmp);
                                     X[j] = (lowband[j] + tmp);
                                 }
-                                cm = (uint)fill;
+                                cm = unchecked((uint)fill);
                             }
 
                             vq.renormalise_vector(X, N, gain, ctx.arch);
@@ -1661,8 +1661,8 @@ namespace Concentus.Celt
                     }
                     y_cm = x_cm;
                 }
-                collapse_masks[i * C + 0] = (byte)x_cm;
-                collapse_masks[i * C + C - 1] = (byte)y_cm;
+                collapse_masks[i * C + 0] = unchecked((byte)x_cm);
+                collapse_masks[i * C + C - 1] = unchecked((byte)y_cm);
                 balance += pulses[i] + tell;
 
                 /* Update the folding position only as long as we have 1 bit/sample depth. */
