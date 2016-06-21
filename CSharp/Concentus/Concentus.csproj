@@ -30,7 +30,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;PARITY</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -38,7 +38,6 @@
     <Compile Include="Celt\Bands.cs" />
     <Compile Include="Celt\CeltCommon.cs" />
     <Compile Include="Celt\CeltConstants.cs" />
-    <Compile Include="Celt\CeltControl.cs" />
     <Compile Include="Celt\Kernels.cs" />
     <Compile Include="Celt\CeltLPC.cs" />
     <Compile Include="Celt\CWRS.cs" />
