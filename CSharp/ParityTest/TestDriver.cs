@@ -260,8 +260,8 @@ namespace ParityTest
             }
 
             returnVal.Passed = true;
-            returnVal.ConcentusTimeMs = concentusTimer.ElapsedTicks / Stopwatch.Frequency * 1000;
-            returnVal.OpusTimeMs = opusTimer.ElapsedTicks / Stopwatch.Frequency * 1000;
+            returnVal.ConcentusTimeMs = (double)concentusTimer.ElapsedTicks / Stopwatch.Frequency * 1000;
+            returnVal.OpusTimeMs = (double)opusTimer.ElapsedTicks / Stopwatch.Frequency * 1000;
             returnVal.Message = "Ok!";
 
             return returnVal;

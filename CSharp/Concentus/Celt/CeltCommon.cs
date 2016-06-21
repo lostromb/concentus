@@ -39,6 +39,7 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using Concentus.Enums;
     using System.Diagnostics;
 
     internal class CeltCommon

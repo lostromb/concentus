@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using Celt;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;

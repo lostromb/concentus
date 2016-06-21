@@ -38,8 +38,10 @@ namespace Concentus.Silk
     using Concentus.Silk.Structs;
     using System.Diagnostics;
 
-    /* Processing of gains */
-    internal static void silk_process_gains(
+    public static class ProcessGains
+    {
+        /* Processing of gains */
+        internal static void silk_process_gains(
             SilkChannelEncoder psEnc,                                 /* I/O  Encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I/O  Encoder control                                                             */
             int condCoding                              /* I    The type of conditional coding to use                                       */

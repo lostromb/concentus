@@ -37,7 +37,7 @@ namespace Concentus.Common
 {
     using Concentus.Celt;
     using Concentus.Common.CPlusPlus;
-    
+    using System;
     public static class Inlines
     {
         public static void OpusAssert(bool condition, string message = "Unknown error")
