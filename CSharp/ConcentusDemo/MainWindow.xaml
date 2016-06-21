@@ -5,34 +5,52 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ConcentusDemo"
         mc:Ignorable="d"
-        Title="Concentus Interactive Demo" Height="344.068" Width="497.563" Initialized="Window_Initialized">
+        Title="Concentus Interactive Demo" Height="344.068" Width="429.041" Initialized="Window_Initialized" Background="#FF252525" Foreground="White">
+    <Window.Resources>
+        <SolidColorBrush x:Key="GreenButtonBg" Color="#FF488B39"/>
+        <SolidColorBrush x:Key="GreyButtonBg" Color="#FF595959"/>
+    </Window.Resources>
     <StackPanel x:Name="MainStack" Orientation="Vertical">
         <Grid x:Name="BitratePanel" Margin="0,0,0,0" VerticalAlignment="Center">
-            <Label Content="Bitrate" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Label Content="Bitrate" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" />
             <Slider x:Name="bitrateSlider" Height="35" Maximum="128" Minimum="6" Value="64" TickPlacement="Both" TickFrequency="8" VerticalAlignment="Center" Margin="100,0" ValueChanged="bitrateSlider_ValueChanged"/>
-            <Label x:Name="bitrateDisplay" Content="64 KBits/s" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
+            <Label x:Name="bitrateDisplay" Content="64 KBits/s" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" Foreground="White" />
         </Grid>
         <Grid x:Name="ComplexityPanel" Margin="0,0,0,0" VerticalAlignment="Center">
-            <Label Content="Complexity" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Label Content="Complexity" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" />
             <Slider x:Name="complexitySlider" Height="35" Maximum="10" Minimum="0" Value="5" TickPlacement="Both" TickFrequency="1" VerticalAlignment="Center" Margin="100,0" SmallChange="1" ValueChanged="complexitySlider_ValueChanged"/>
-            <Label x:Name="complexityDisplay" Content="5 (Medium)" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
+            <Label x:Name="complexityDisplay" Content="5 (Medium)" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" Foreground="White" />
         </Grid>
         <Grid x:Name="FramesizePanel" Margin="0,0,0,0" VerticalAlignment="Center">
-            <Label Content="Frame Size" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Label Content="Frame Size" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" />
             <Slider x:Name="framesizeSlider" Height="35" Maximum="5" Minimum="0" Value="3" TickPlacement="Both" TickFrequency="1" VerticalAlignment="Center" Margin="100,0" SmallChange="1" ValueChanged="framesizeSlider_ValueChanged"/>
-            <Label x:Name="framesizeDisplay" Content="20.0 ms" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" />
+            <Label x:Name="framesizeDisplay" Content="20.0 ms" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" Foreground="White" />
         </Grid>
         <Grid x:Name="LibraryPanel" Margin="0,0,0,0" VerticalAlignment="Center">
-            <Label Content="Implementation" Height="25" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
-            <Grid Margin="0,25,0,0">
+            <Label Content="Library" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" />
+            <Grid Margin="100,0,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Label Content="Concentus (C#)" Grid.Column="0" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
-                <Label Content="Opus (C)" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" />
+                <Button x:Name="libConcentusButton" Content="Concentus (C#)" Grid.Column="0" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="{DynamicResource GreenButtonBg}" Foreground="White" BorderBrush="#FFC5C5C5" Click="libConcentusButton_Click" />
+                <Button x:Name="libOpusButton" Content="Opus (C)" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="White" Background="{DynamicResource GreyButtonBg}" BorderBrush="#FFC5C5C5" Click="libOpusButton_Click" />
             </Grid>
         </Grid>
-        <Label x:Name="statisticsLabel" Content="Statistics will go here"/>
+        <Grid x:Name="InputFilePanel" Margin="0,0,0,0" VerticalAlignment="Center">
+            <Label Content="Audio" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" />
+            <Grid Margin="100,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="sample1Button" Content="Sample 1" Grid.Column="0" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="White" Background="{DynamicResource GreenButtonBg}" BorderBrush="#FFC5C5C5" Click="sample1Button_Click" />
+                <Button x:Name="sample2Button" Content="Sample 2" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="White" Background="{DynamicResource GreyButtonBg}" BorderBrush="#FFC5C5C5" Click="sample2Button_Click" />
+                <Button x:Name="sample3Button" Content="Sample 3" Grid.Column="2" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="White" Background="{DynamicResource GreyButtonBg}" BorderBrush="#FFC5C5C5" Click="sample3Button_Click" />
+            </Grid>
+        </Grid>
+        <Label x:Name="attributionLabel" Content="&quot;Blunderbuss&quot; by Henrik José, Creative Commons license" Foreground="#FFACACAC" FontSize="9" HorizontalContentAlignment="Right" FontStyle="Italic"/>
+        <Label x:Name="statisticsLabel" Content="Statistics go here" Foreground="White"/>
     </StackPanel>
 </Window>
