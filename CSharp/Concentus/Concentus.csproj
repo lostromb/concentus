@@ -35,21 +35,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Celt\Bands_tmp.cs" />
+    <Compile Include="Celt\Bands.cs" />
     <Compile Include="Celt\CeltCommon.cs" />
     <Compile Include="Celt\CeltConstants.cs" />
-    <Compile Include="Celt\CeltControl.cs" />
     <Compile Include="Celt\Kernels.cs" />
     <Compile Include="Celt\CeltLPC.cs" />
-    <Compile Include="Celt\CWRS_tmp.cs" />
+    <Compile Include="Celt\CWRS.cs" />
     <Compile Include="Celt\Enums\Spread.cs" />
     <Compile Include="Celt\KissFFT.cs" />
-    <Compile Include="Celt\Laplace_tmp.cs" />
-    <Compile Include="Celt\MDCT_tmp.cs" />
-    <Compile Include="Celt\Modes_tmp.cs" />
-    <Compile Include="Celt\Pitch_tmp.cs" />
+    <Compile Include="Celt\Laplace.cs" />
+    <Compile Include="Celt\MDCT.cs" />
+    <Compile Include="Celt\Modes.cs" />
+    <Compile Include="Celt\Pitch.cs" />
     <Compile Include="Celt\QuantizeBands.cs" />
-    <Compile Include="Celt\Rate_tmp.cs" />
+    <Compile Include="Celt\Rate.cs" />
     <Compile Include="Celt\Structs\AnalysisInfo.cs" />
     <Compile Include="Celt\Structs\CeltDecoder.cs" />
     <Compile Include="Celt\Structs\CeltEncoder.cs" />
@@ -59,7 +58,7 @@
     <Compile Include="Celt\Structs\MDCTLookup.cs" />
     <Compile Include="Celt\Structs\PulseCache.cs" />
     <Compile Include="Celt\Tables.cs" />
-    <Compile Include="Celt\VQ_tmp.cs" />
+    <Compile Include="Celt\VQ.cs" />
     <Compile Include="Common\Autocorrelation.cs" />
     <Compile Include="Celt\CeltPitchXCorr.cs" />
     <Compile Include="Common\CPlusPlus\Arrays.cs" />
@@ -76,7 +75,7 @@
     <Compile Include="Opus\Enums\OpusSignal.cs" />
     <Compile Include="Common\Inlines.cs" />
     <Compile Include="Opus\OpusConstants.cs" />
-    <Compile Include="Opus\Analysis_tmp.cs" />
+    <Compile Include="Opus\Analysis.cs" />
     <Compile Include="Opus\Downmix.cs" />
     <Compile Include="Opus\MultiLayerPerceptron.cs" />
     <Compile Include="Opus\OpusPacket.cs" />
@@ -84,7 +83,7 @@
     <Compile Include="Opus\OpusMultistream.cs" />
     <Compile Include="Opus\opus_multistream_decoder.cs" />
     <Compile Include="Opus\opus_multistream_encoder.cs" />
-    <Compile Include="Opus\Repacketizer_tmp.cs" />
+    <Compile Include="Opus\Repacketizer.cs" />
     <Compile Include="Opus\Structs\ChannelLayout.cs" />
     <Compile Include="Opus\Structs\MLP.cs" />
     <Compile Include="Opus\Structs\OpusDecoder.cs" />
@@ -98,7 +97,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Silk\ApplySineWindow.cs" />
     <Compile Include="Silk\BurgModified.cs" />
-    <Compile Include="Silk\BWExpander_tmp.cs" />
+    <Compile Include="Silk\BWExpander.cs" />
     <Compile Include="Silk\CNG.cs" />
     <Compile Include="Silk\CodeSigns.cs" />
     <Compile Include="Silk\CorrelateMatrix.cs" />
@@ -120,7 +119,7 @@
     <Compile Include="Silk\FindPredCoefs.cs" />
     <Compile Include="Silk\GainQuantization.cs" />
     <Compile Include="Silk\HPVariableCutoff.cs" />
-    <Compile Include="Silk\K2A_tmp.cs" />
+    <Compile Include="Silk\K2A.cs" />
     <Compile Include="Silk\LPCInversePredGain.cs" />
     <Compile Include="Silk\LTPAnalysisFilter.cs" />
     <Compile Include="Silk\LTPScaleControl.cs" />
@@ -133,7 +132,7 @@
     <Compile Include="Silk\RegularizeCorrelations.cs" />
     <Compile Include="Silk\Resampler.cs" />
     <Compile Include="Silk\ResidualEnergy.cs" />
-    <Compile Include="Silk\Schur_tmp.cs" />
+    <Compile Include="Silk\Schur.cs" />
     <Compile Include="Silk\ShellCoder.cs" />
     <Compile Include="Silk\Sigmoid.cs" />
     <Compile Include="Silk\SilkConstants.cs" />
