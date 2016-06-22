@@ -42,8 +42,6 @@ namespace Concentus.Celt
 
     internal static class MDCT
     {
-        private const bool TRACE_FILE = false;
-        
         /* Forward MDCT trashes the input array */
         internal static void clt_mdct_forward(MDCTLookup l, Pointer<int> input, Pointer<int> output,
             Pointer<int> window, int overlap, int shift, int stride)
@@ -86,10 +84,8 @@ namespace Concentus.Celt
                 {
                     /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
                     yp[0] = Inlines.MULT16_32_Q15(wp2[0], xp1[N2]) + Inlines.MULT16_32_Q15(wp1[0], xp2[0]);
-                    if (TRACE_FILE) Debug.WriteLine("13a 0x{0:x}", (uint)yp[0]);
                     yp = yp.Point(1);
                     yp[0] = Inlines.MULT16_32_Q15(wp1[0], xp1[0]) - Inlines.MULT16_32_Q15(wp2[0], xp2[0 - N2]);
-                    if (TRACE_FILE) Debug.WriteLine("13b 0x{0:x}", (uint)yp[0]);
                     yp = yp.Point(1);
                     xp1 = xp1.Point(2);
                     xp2 = xp2.Point(-2);
@@ -102,10 +98,8 @@ namespace Concentus.Celt
                 {
                     /* Real part arranged as a-bR, Imag part arranged as -c-dR */
                     yp[0] = xp2[0];
-                    if (TRACE_FILE) Debug.WriteLine("13c 0x{0:x}", (uint)yp[0]);
                     yp = yp.Point(1);
                     yp[0] = xp1[0];
-                    if (TRACE_FILE) Debug.WriteLine("13d 0x{0:x}", (uint)yp[0]);
                     yp = yp.Point(1);
                     xp1 = xp1.Point(2);
                     xp2 = xp2.Point(-2);
@@ -114,10 +108,8 @@ namespace Concentus.Celt
                 {
                     /* Real part arranged as a-bR, Imag part arranged as -c-dR */
                     yp[0] = Inlines.MULT16_32_Q15(wp2[0], xp2[0]) - Inlines.MULT16_32_Q15(wp1[0], xp1[0 - N2]);
-                    if (TRACE_FILE) Debug.WriteLine("13e 0x{0:x}", (uint)yp[0]);
                     yp = yp.Point(1);
                     yp[0] = Inlines.MULT16_32_Q15(wp2[0], xp1[0]) + Inlines.MULT16_32_Q15(wp1[0], xp2[N2]);
-                    if (TRACE_FILE) Debug.WriteLine("13f 0x{0:x}", (uint)yp[0]);
                     yp = yp.Point(1);
                     xp1 = xp1.Point(2);
                     xp2 = xp2.Point(-2);
@@ -140,17 +132,12 @@ namespace Concentus.Celt
                     yp = yp.Point(1);
                     im = yp[0];
                     yp = yp.Point(1);
-                    if (TRACE_FILE) Debug.WriteLine("13g 0x{0:x}", (uint)re);
-                    if (TRACE_FILE) Debug.WriteLine("13h 0x{0:x}", (uint)im);
-                    if (TRACE_FILE) Debug.WriteLine("13i 0x{0:x}", (uint)t0);
-                    if (TRACE_FILE) Debug.WriteLine("13j 0x{0:x}", (uint)t1);
                     yr = KissFFT.S_MUL(re, t0) - KissFFT.S_MUL(im, t1);
                     yi = KissFFT.S_MUL(im, t0) + KissFFT.S_MUL(re, t1);
                     yc.r = yr;
                     yc.i = yi;
                     yc.r = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.r), scale_shift);
                     yc.i = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.i), scale_shift);
-                    if (TRACE_FILE) Debug.WriteLine("13k {0} {1}", yc.r, yc.i);
                     f2[2 * st.bitrev[i]] = yc.r;
                     f2[2 * st.bitrev[i] + 1] = yc.i;
                 }
@@ -171,8 +158,6 @@ namespace Concentus.Celt
                     int yr, yi;
                     yr = KissFFT.S_MUL(fp[1], t[N4 + i]) - KissFFT.S_MUL(fp[0], t[i]);
                     yi = KissFFT.S_MUL(fp[0], t[N4 + i]) + KissFFT.S_MUL(fp[1], t[i]);
-                    if (TRACE_FILE) Debug.WriteLine("13i 0x{0:x}", (uint)yr);
-                    if (TRACE_FILE) Debug.WriteLine("13j 0x{0:x}", (uint)yi);
                     yp1[0] = yr;
                     yp2[0] = yi;
                     fp = fp.Point(2);

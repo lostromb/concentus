@@ -621,10 +621,10 @@ namespace Concentus.Silk
                             for (i = 0; i < psEnc.state_Fxx[n].nFramesPerPacket; i++)
                             {
                                 flags = Inlines.silk_LSHIFT(flags, 1);
-                                flags |= psEnc.state_Fxx[n].VAD_flags[i];
+                                flags |= (int)psEnc.state_Fxx[n].VAD_flags[i];
                             }
                             flags = Inlines.silk_LSHIFT(flags, 1);
-                            flags |= psEnc.state_Fxx[n].LBRR_flag;
+                            flags |= (int)psEnc.state_Fxx[n].LBRR_flag;
                         }
 
                         if (prefillFlag == 0)

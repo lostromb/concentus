@@ -286,8 +286,9 @@ namespace ParityTest
                 }
                 else
                 {
+                    bool useFEC = packetLoss.NextDouble() > 0.5;
                     // Decode with Concentus FEC
-                    int concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, decodedFrameSize, true);
+                    int concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, decodedFrameSize, useFEC);
 
                     // Decode with Opus FEC
                     unsafe
@@ -295,7 +296,7 @@ namespace ParityTest
                         fixed (short* bdec = opusDecoded)
                         {
                             IntPtr decodedPtr = new IntPtr((void*)(bdec));
-                            int opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, decodedFrameSize, 1);
+                            int opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, decodedFrameSize, useFEC ? 1 : 0);
                         }
                     }
                 }

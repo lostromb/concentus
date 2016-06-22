@@ -43,8 +43,6 @@ namespace Concentus.Celt
 
     internal static class Bands
     {
-        private const bool TRACE_FILE = false;
-
         internal static int hysteresis_decision(
             int val,
             Pointer<int> thresholds,
@@ -117,23 +115,17 @@ namespace Concentus.Celt
                     int j;
                     int maxval = 0;
                     int sum = 0;
-                    if (TRACE_FILE) Debug.WriteLine("12a 0x{0:x}", (uint)eBands[i]);
                     maxval = Inlines.celt_maxabs32(X.Point(c * N + (eBands[i] << LM)), (eBands[i + 1] - eBands[i]) << LM);
-                    if (TRACE_FILE) Debug.WriteLine("12b 0x{0:x}", (uint)maxval);
                     if (maxval > 0)
                     {
                         int shift = Inlines.celt_ilog2(maxval) - 14 + (((m.logN[i] >> EntropyCoder.BITRES) + LM + 1) >> 1);
                         j = eBands[i] << LM;
-                        if (TRACE_FILE) Debug.WriteLine("12c 0x{0:x}", (uint)j);
-                        if (TRACE_FILE) Debug.WriteLine("12d 0x{0:x}", (uint)shift);
                         if (shift > 0)
                         {
                             do
                             {
                                 sum = Inlines.MAC16_16(sum, Inlines.EXTRACT16(Inlines.SHR32(X[j + c * N], shift)),
                                        Inlines.EXTRACT16(Inlines.SHR32(X[j + c * N], shift)));
-                                if (TRACE_FILE) Debug.WriteLine("12e 0x{0:x}", (uint)X[j + c * N]);
-                                if (TRACE_FILE) Debug.WriteLine("12f 0x{0:x}", (uint)sum);
                             } while (++j < eBands[i + 1] << LM);
                         }
                         else {
@@ -141,13 +133,10 @@ namespace Concentus.Celt
                             {
                                 sum = Inlines.MAC16_16(sum, Inlines.EXTRACT16(Inlines.SHL32(X[j + c * N], -shift)),
                                        Inlines.EXTRACT16(Inlines.SHL32(X[j + c * N], -shift)));
-                                if (TRACE_FILE) Debug.WriteLine("12g 0x{0:x}", (uint)X[j + c * N]);
-                                if (TRACE_FILE) Debug.WriteLine("12h 0x{0:x}", (uint)sum);
                             } while (++j < eBands[i + 1] << LM);
                         }
                         /* We're adding one here to ensure the normalized band isn't larger than unity norm */
                         bandE[i + c * m.nbEBands] = CeltConstants.EPSILON + Inlines.VSHR32(Inlines.celt_sqrt(sum), -shift);
-                        if (TRACE_FILE) Debug.WriteLine("12i 0x{0:x}", (uint)bandE[i + c * m.nbEBands]);
                     }
                     else {
                         bandE[i + c * m.nbEBands] = CeltConstants.EPSILON;

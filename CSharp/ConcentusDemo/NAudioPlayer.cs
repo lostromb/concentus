@@ -35,7 +35,7 @@ namespace ConcentusDemo
                 _mixer.AddMixerInput(_activeStream);
                 _outputDevice.Play();
             }
-            catch (NAudio.MmException e)
+            catch (NAudio.MmException)
             {
                 _outputDevice = null;
             }

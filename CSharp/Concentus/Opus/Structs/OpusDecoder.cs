@@ -711,23 +711,26 @@ namespace Concentus.Structs
 
             return nb_samples;
         }
-
-        /** Decode an Opus packet.
-  * @param [in] st <tt>OpusDecoder*</tt>: Decoder state
-  * @param [in] data <tt>char*</tt>: Input payload. Use a NULL pointer to indicate packet loss
-  * @param [in] len <tt>opus_int32</tt>: Number of bytes in payload*
-  * @param [out] pcm <tt>opus_int16*</tt>: Output signal (interleaved if 2 channels). length
-  *  is frame_size*channels*sizeof(opus_int16)
-  * @param [in] frame_size Number of samples per channel of available space in \a pcm.
-  *  If this is less than the maximum packet duration (120ms; 5760 for 48kHz), this function will
-  *  not be capable of decoding some packets. In the case of PLC (data==NULL) or FEC (decode_fec=1),
-  *  then frame_size needs to be exactly the duration of audio that is missing, otherwise the
-  *  decoder will not be in the optimal state to decode the next incoming packet. For the PLC and
-  *  FEC cases, frame_size <b>must</b> be a multiple of 2.5 ms.
-  * @param [in] decode_fec <tt>int</tt>: Flag (0 or 1) to request that any in-band forward error correction data be
-  *  decoded. If no such data is available, the frame is decoded as if it were lost.
-  * @returns Number of decoded samples or @ref opus_errorcodes
-  */
+        
+        /// <summary>
+        /// Decodes an Opus packet.
+        /// </summary>
+        /// <param name="in_data">The input payload. This may be NULL if that previous packet was lost in transit (when PLC is enabled)</param>
+        /// <param name="in_data_offset">The offset to use when reading the input payload. Usually 0</param>
+        /// <param name="len">The number of bytes in the payload</param>
+        /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
+        /// You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need
+        /// exact sizing.</param>
+        /// <param name="out_pcm_offset">The offset to use when writing to the output buffer</param>
+        /// <param name="frame_size">The number of samples (per channel) of available space in the output PCM buf.
+        /// If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
+        /// not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
+        /// then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
+        /// not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
+        /// be a multiple of 2.5 ms.</param>
+        /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
+        /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
+        /// <returns>The number of decoded samples</returns>
         public int Decode(byte[] in_data, int in_data_offset,
              int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
@@ -754,6 +757,25 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Decodes an Opus packet, putting the output data into a floating-point buffer.
+        /// </summary>
+        /// <param name="in_data">The input payload. This may be NULL if that previous packet was lost in transit (when PLC is enabled)</param>
+        /// <param name="in_data_offset">The offset to use when reading the input payload. Usually 0</param>
+        /// <param name="len">The number of bytes in the payload</param>
+        /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
+        /// You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need
+        /// exact sizing.</param>
+        /// <param name="out_pcm_offset">The offset to use when writing to the output buffer</param>
+        /// <param name="frame_size">The number of samples (per channel) of available space in the output PCM buf.
+        /// If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
+        /// not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
+        /// then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
+        /// not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
+        /// be a multiple of 2.5 ms.</param>
+        /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
+        /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
+        /// <returns>The number of decoded samples</returns>
         public int Decode(byte[] in_data, int in_data_offset,
             int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
@@ -763,7 +785,7 @@ namespace Concentus.Structs
 
             if (frame_size <= 0)
             {
-                return OpusError.OPUS_BAD_ARG;
+                throw new ArgumentException("Frame size must be > 0");
             }
             if (in_data != null && len > 0 && !decode_fec)
             {
@@ -771,7 +793,7 @@ namespace Concentus.Structs
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else
-                    return OpusError.OPUS_INVALID_PACKET;
+                    throw new OpusException("An invalid packet was provided (unable to parse # of samples)");
             }
             output = Pointer.Malloc<short>(frame_size * this.channels);
 

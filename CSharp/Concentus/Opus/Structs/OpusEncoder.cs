@@ -222,39 +222,36 @@ namespace Concentus.Structs
         #endregion
 
         #region Encoder API functions
-
-        /** Allocates and initializes an encoder state.
- * There are three coding modes:
- *
- * @ref OPUS_APPLICATION_VOIP gives best quality at a given bitrate for voice
- *    signals. It enhances the  input signal by high-pass filtering and
- *    emphasizing formants and harmonics. Optionally  it includes in-band
- *    forward error correction to protect against packet loss. Use this
- *    mode for typical VoIP applications. Because of the enhancement,
- *    even at high bitrates the output may sound different from the input.
- *
- * @ref OPUS_APPLICATION_AUDIO gives best quality at a given bitrate for most
- *    non-voice signals like music. Use this mode for music and mixed
- *    (music/voice) content, broadcast, and applications requiring less
- *    than 15 ms of coding delay.
- *
- * @ref OPUS_APPLICATION_RESTRICTED_LOWDELAY configures low-delay mode that
- *    disables the speech-optimized mode in exchange for slightly reduced delay.
- *    This mode can only be set on an newly initialized or freshly reset encoder
- *    because it changes the codec delay.
- *
- * This is useful when the caller knows that the speech-optimized modes will not be needed (use with caution).
- * @param [in] Fs <tt>opus_int32</tt>: Sampling rate of input signal (Hz)
- *                                     This must be one of 8000, 12000, 16000,
- *                                     24000, or 48000.
- * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) in input signal
- * @param [in] application <tt>int</tt>: Coding mode (@ref OPUS_APPLICATION_VOIP/@ref OPUS_APPLICATION_AUDIO/@ref OPUS_APPLICATION_RESTRICTED_LOWDELAY)
- * @param [out] error <tt>int*</tt>: @ref opus_errorcodes
- * @note Regardless of the sampling rate and number channels selected, the Opus encoder
- * can switch to a lower audio bandwidth or number of channels if the bitrate
- * selected is too low. This also means that it is safe to always use 48 kHz stereo input
- * and let the encoder optimize the encoding.
- */
+        
+        /// <summary>
+        /// Allocates and initializes an encoder state.
+        /// Note that regardless of the sampling rate and number channels selected, the Opus encoder
+        /// can switch to a lower audio bandwidth or number of channels if the bitrate
+        /// selected is too low. This also means that it is safe to always use 48 kHz stereo input
+        /// and let the encoder optimize the encoding. The decoder will not be constrained later on
+        /// by the mode that you select here for the encoder.
+        /// </summary>
+        /// <param name="Fs">Sampling rate of input signal (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
+        /// <param name="channels">Number of channels (1 or 2) in input signal</param>
+        /// <param name="application">There are three coding modes:
+        ///
+        /// OPUS_APPLICATION_VOIP gives best quality at a given bitrate for voice
+        /// signals.It enhances the  input signal by high-pass filtering and
+        /// emphasizing formants and harmonics.Optionally it includes in-band
+        /// forward error correction to protect against packet loss.Use this
+        /// mode for typical VoIP applications.Because of the enhancement,
+        /// even at high bitrates the output may sound different from the input.
+        ///
+        /// OPUS_APPLICATION_AUDIO gives best quality at a given bitrate for most
+        /// non-voice signals like music. Use this mode for music and mixed
+        ///    (music/voice) content, broadcast, and applications requiring less
+        ///    than 15 ms of coding delay.
+        ///
+        /// OPUS_APPLICATION_RESTRICTED_LOWDELAY configures low-delay mode that
+        /// disables the speech-optimized mode in exchange for slightly reduced delay.
+        /// This mode can only be set on an newly initialized or freshly reset encoder
+        /// because it changes the codec delay.</param>
+        /// <returns></returns>
         public static OpusEncoder Create(int Fs, int channels, OpusApplication application)
         {
             int ret;
@@ -276,20 +273,7 @@ namespace Concentus.Structs
             }
             return st;
         }
-
-        /** Initializes a previously allocated encoder state
-  * The memory pointed to by st must be at least the size returned by opus_encoder_get_size().
-  * This is intended for applications which use their own allocator instead of malloc.
-  * @see opus_encoder_create(),opus_encoder_get_size()
-  * To reset a previously initialized state, use the #OPUS_RESET_STATE CTL.
-  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
-  * @param [in] Fs <tt>opus_int32</tt>: Sampling rate of input signal (Hz)
- *                                      This must be one of 8000, 12000, 16000,
- *                                      24000, or 48000.
-  * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) in input signal
-  * @param [in] application <tt>int</tt>: Coding mode (OPUS_APPLICATION_VOIP/OPUS_APPLICATION_AUDIO/OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-  * @retval #OPUS_OK Success or @ref opus_errorcodes
-  */
+        
         internal int opus_init_encoder(int Fs, int channels, OpusApplication application)
         {
             SilkEncoder silk_enc;
@@ -1438,38 +1422,22 @@ namespace Concentus.Structs
 
             return ret;
         }
-
-
-
-        /** Encodes an Opus frame.
-  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
-  * @param [in] pcm <tt>opus_int16*</tt>: Input signal (interleaved if 2 channels). length is frame_size*channels*sizeof(opus_int16)
-  * @param [in] frame_size <tt>int</tt>: Number of samples per channel in the
-  *                                      input signal.
-  *                                      This must be an Opus frame size for
-  *                                      the encoder's sampling rate.
-  *                                      For example, at 48 kHz the permitted
-  *                                      values are 120, 240, 480, 960, 1920,
-  *                                      and 2880.
-  *                                      Passing in a duration of less than
-  *                                      10 ms (480 samples at 48 kHz) will
-  *                                      prevent the encoder from using the LPC
-  *                                      or hybrid modes.
-  * @param [out] data <tt>unsigned char*</tt>: Output payload.
-  *                                            This must contain storage for at
-  *                                            least \a max_data_bytes.
-  * @param [in] max_data_bytes <tt>opus_int32</tt>: Size of the allocated
-  *                                                 memory for the output
-  *                                                 payload. This may be
-  *                                                 used to impose an upper limit on
-  *                                                 the instant bitrate, but should
-  *                                                 not be used as the only bitrate
-  *                                                 control. Use #OPUS_SET_BITRATE to
-  *                                                 control the bitrate.
-  * @returns The length of the encoded packet (in bytes) on success or a
-  *          negative error code (see @ref opus_errorcodes) on failure.
-  */
-        public int Encode(short[] in_pcm, int pcm_offset, int analysis_frame_size,
+        
+        /// <summary>
+        /// Encodes an Opus frame.
+        /// </summary>
+        /// <param name="in_pcm">Input signal (Interleaved if stereo). Length should be at least frame_size * channels</param>
+        /// <param name="pcm_offset">Offset to use when reading the in_pcm buffer</param>
+        /// <param name="frame_size">The number of samples per channel in the inpus signal.
+        /// The frame size must be a valid Opus framesize for the given sample rate.
+        /// For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
+        /// (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.</param>
+        /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
+        /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
+        /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
+        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use SetBitrate for that)</param>
+        /// <returns>The length of the encoded packet</returns>
+        public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
@@ -1479,15 +1447,14 @@ namespace Concentus.Structs
                     "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
                     max_data_bytes, out_data.Length - out_data_offset));
             }
-
-            int frame_size;
+            
             int delay_compensation;
             if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 delay_compensation = 0;
             else
                 delay_compensation = this.delay_compensation;
 
-            frame_size = CodecHelpers.compute_frame_size(in_pcm.GetPointer(pcm_offset), analysis_frame_size,
+            int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm.GetPointer(pcm_offset), frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_int
 #if ENABLE_ANALYSIS
@@ -1495,11 +1462,18 @@ namespace Concentus.Structs
 #endif
                   );
 
-            // todo: check that pcm is >= frame_size
+            // Check that input pcm length is >= frame_size
+            if (pcm_offset + internal_frame_size > in_pcm.Length)
+            {
+                throw new ArgumentException(string.Format(
+                    "Not enough samples provided in input signal: Expected {0} samples, found {1}",
+                    internal_frame_size, in_pcm.Length - pcm_offset));
+            }
+
             try
             {
-                int ret = opus_encode_native<short>(in_pcm.GetPointer(pcm_offset), frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
-                                         in_pcm.GetPointer(pcm_offset), analysis_frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
+                int ret = opus_encode_native<short>(in_pcm.GetPointer(pcm_offset), internal_frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
+                                         in_pcm.GetPointer(pcm_offset), frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
 
                 if (ret < 0)
                 {
@@ -1515,40 +1489,22 @@ namespace Concentus.Structs
             }
         }
 
-        /** Encodes an Opus frame from floating point input.
-  * @param [in] st <tt>OpusEncoder*</tt>: Encoder state
-  * @param [in] pcm <tt>float*</tt>: Input in float format (interleaved if 2 channels), with a normal range of +/-1.0.
-  *          Samples with a range beyond +/-1.0 are supported but will
-  *          be clipped by decoders using the integer API and should
-  *          only be used if it is known that the far end supports
-  *          extended dynamic range.
-  *          length is frame_size*channels*sizeof(float)
-  * @param [in] frame_size <tt>int</tt>: Number of samples per channel in the
-  *                                      input signal.
-  *                                      This must be an Opus frame size for
-  *                                      the encoder's sampling rate.
-  *                                      For example, at 48 kHz the permitted
-  *                                      values are 120, 240, 480, 960, 1920,
-  *                                      and 2880.
-  *                                      Passing in a duration of less than
-  *                                      10 ms (480 samples at 48 kHz) will
-  *                                      prevent the encoder from using the LPC
-  *                                      or hybrid modes.
-  * @param [out] data <tt>unsigned char*</tt>: Output payload.
-  *                                            This must contain storage for at
-  *                                            least \a max_data_bytes.
-  * @param [in] max_data_bytes <tt>opus_int32</tt>: Size of the allocated
-  *                                                 memory for the output
-  *                                                 payload. This may be
-  *                                                 used to impose an upper limit on
-  *                                                 the instant bitrate, but should
-  *                                                 not be used as the only bitrate
-  *                                                 control. Use #OPUS_SET_BITRATE to
-  *                                                 control the bitrate.
-  * @returns The length of the encoded packet (in bytes) on success or a
-  *          negative error code (see @ref opus_errorcodes) on failure.
-  */
-        public int Encode(float[] in_pcm, int pcm_offset, int analysis_frame_size,
+        /// <summary>
+        /// Encodes an Opus frame using floating point input.
+        /// </summary>
+        /// <param name="in_pcm">Input signal in float format (Interleaved if stereo). Length should be at least frame_size * channels.
+        /// Value should be normalized to the +/- 1.0 range. Samples with a range beyond +/-1.0 will be clipped.</param>
+        /// <param name="pcm_offset">Offset to use when reading the in_pcm buffer</param>
+        /// <param name="frame_size">The number of samples per channel in the inpus signal.
+        /// The frame size must be a valid Opus framesize for the given sample rate.
+        /// For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
+        /// (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.</param>
+        /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
+        /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
+        /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
+        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use SetBitrate for that)</param>
+        /// <returns>The length of the encoded packet</returns>
+        public int Encode(float[] in_pcm, int pcm_offset, int frame_size,
                               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
@@ -1560,7 +1516,7 @@ namespace Concentus.Structs
             }
 
             int i, ret;
-            int frame_size;
+            int internal_frame_size;
             int delay_compensation;
             Pointer<short> input;
 
@@ -1569,7 +1525,7 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            frame_size = CodecHelpers.compute_frame_size(in_pcm.GetPointer(pcm_offset), analysis_frame_size,
+            internal_frame_size = CodecHelpers.compute_frame_size(in_pcm.GetPointer(pcm_offset), frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_float
 #if ENABLE_ANALYSIS
@@ -1577,17 +1533,23 @@ namespace Concentus.Structs
 #endif
                   );
 
-            // todo: check that pcm is >= frame_size
+            // Check that input pcm length is >= frame_size
+            if (pcm_offset + internal_frame_size > in_pcm.Length)
+            {
+                throw new ArgumentException(string.Format(
+                    "Not enough samples provided in input signal: Expected {0} samples, found {1}",
+                    internal_frame_size, in_pcm.Length - pcm_offset));
+            }
 
-            input = Pointer.Malloc<short>(frame_size * this.channels);
+            input = Pointer.Malloc<short>(internal_frame_size * this.channels);
 
-            for (i = 0; i < frame_size * this.channels; i++)
+            for (i = 0; i < internal_frame_size * this.channels; i++)
                 input[i] = Inlines.FLOAT2INT16(in_pcm[pcm_offset + i]);
 
             try
             {
-                ret = opus_encode_native(input, frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
-                                     in_pcm.GetPointer(pcm_offset), analysis_frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
+                ret = opus_encode_native(input, internal_frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
+                                     in_pcm.GetPointer(pcm_offset), frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
 
                 if (ret < 0)
                 {

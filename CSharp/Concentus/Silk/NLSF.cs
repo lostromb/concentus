@@ -38,12 +38,6 @@ namespace Concentus.Silk
     using Concentus.Silk.Structs;
     using System.Diagnostics;
 
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Common;
-    using Concentus.Silk.Structs;
-    using System;
-    using System.Diagnostics;
-
     /// <summary>
     /// Normalized line spectrum frequency processor
     /// </summary>
