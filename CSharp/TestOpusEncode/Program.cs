@@ -142,7 +142,7 @@ namespace TestOpusEncode
 
             Console.WriteLine("  Encode+Decode tests.");
 
-            enc = OpusEncoder.Create(48000, 2, OpusApplication.OPUS_APPLICATION_VOIP, err);
+            enc = OpusEncoder.Create(48000, 2, OpusApplication.OPUS_APPLICATION_VOIP);
             if (err.Val != OpusError.OPUS_OK || enc == null) test_failed();
 
             for (i = 0; i < 2; i++)
@@ -189,7 +189,7 @@ namespace TestOpusEncode
                 catch (ArgumentException e) { }
             }
 
-            dec = OpusDecoder.Create(48000, 2, err);
+            dec = OpusDecoder.Create(48000, 2);
             if (err.Val != OpusError.OPUS_OK || dec == null) test_failed();
 
             MSdec = opus_multistream_decoder.opus_multistream_decoder_create(48000, 2, 2, 0, mapping.GetPointer(), err);
@@ -201,16 +201,16 @@ namespace TestOpusEncode
             // fixme: this tests assign() performed on a decoder struct, which doesn't exist
             //dec_err[0] = (OpusDecoder*)malloc(OpusDecoder_get_size(2));
             //memcpy(dec_err[0], dec, OpusDecoder_get_size(2));
-            dec_err[0] = OpusDecoder.Create(48000, 2, err);
-            dec_err[1] = OpusDecoder.Create(48000, 1, err);
-            dec_err[2] = OpusDecoder.Create(24000, 2, err);
-            dec_err[3] = OpusDecoder.Create(24000, 1, err);
-            dec_err[4] = OpusDecoder.Create(16000, 2, err);
-            dec_err[5] = OpusDecoder.Create(16000, 1, err);
-            dec_err[6] = OpusDecoder.Create(12000, 2, err);
-            dec_err[7] = OpusDecoder.Create(12000, 1, err);
-            dec_err[8] = OpusDecoder.Create(8000, 2, err);
-            dec_err[9] = OpusDecoder.Create(8000, 1, err);
+            dec_err[0] = OpusDecoder.Create(48000, 2);
+            dec_err[1] = OpusDecoder.Create(48000, 1);
+            dec_err[2] = OpusDecoder.Create(24000, 2);
+            dec_err[3] = OpusDecoder.Create(24000, 1);
+            dec_err[4] = OpusDecoder.Create(16000, 2);
+            dec_err[5] = OpusDecoder.Create(16000, 1);
+            dec_err[6] = OpusDecoder.Create(12000, 2);
+            dec_err[7] = OpusDecoder.Create(12000, 1);
+            dec_err[8] = OpusDecoder.Create(8000, 2);
+            dec_err[9] = OpusDecoder.Create(8000, 1);
             for (i = 1; i < 10; i++) if (dec_err[i] == null) test_failed();
 
             //{
@@ -494,7 +494,7 @@ namespace TestOpusEncode
 
             Rw = Rz = iseed;
 
-            string oversion = OpusPacket.opus_get_version_string();
+            string oversion = CodecHelpers.opus_get_version_string();
 
             Console.WriteLine("Testing {0} encoder. Random seed: {1}", oversion, iseed);
             run_test1(true);

@@ -27,21 +27,12 @@ namespace ConcentusDemo
 
         public ConcentusCodec()
         {
-            BoxedValue<int> error = new BoxedValue<int>();
-            _encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO, error);
-            if (error.Val != 0)
-            {
-                throw new ApplicationException("Could not initialize Concentus encoder");
-            }
+            _encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
 
             SetBitrate(_bitrate);
             SetComplexity(_complexity);
 
-            _decoder = OpusDecoder.Create(48000, 1, error);
-            if (error.Val != 0)
-            {
-                throw new ApplicationException("Could not initialize Concentus decoder");
-            }
+            _decoder = OpusDecoder.Create(48000, 1);
         }
 
         public void SetBitrate(int bitrate)

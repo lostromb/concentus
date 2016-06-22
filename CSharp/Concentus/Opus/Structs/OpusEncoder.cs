@@ -255,29 +255,24 @@ namespace Concentus.Structs
  * selected is too low. This also means that it is safe to always use 48 kHz stereo input
  * and let the encoder optimize the encoding.
  */
-        public static OpusEncoder Create(int Fs, int channels, OpusApplication application, BoxedValue<int> error)
+        public static OpusEncoder Create(int Fs, int channels, OpusApplication application)
         {
             int ret;
             OpusEncoder st;
-            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000) || (channels != 1 && channels != 2))
+            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000))
             {
-                if (error != null)
-                    error.Val = OpusError.OPUS_BAD_ARG;
-                return null;
+                throw new ArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
             }
+            if (channels != 1 && channels != 2)
+            {
+                throw new ArgumentException("Number of channels must be 1 or 2");
+            }
+
             st = new OpusEncoder();
-            if (st == null)
-            {
-                if (error != null)
-                    error.Val = OpusError.OPUS_ALLOC_FAIL;
-                return null;
-            }
             ret = st.opus_init_encoder(Fs, channels, application);
-            if (error != null)
-                error.Val = ret;
             if (ret != OpusError.OPUS_OK)
             {
-                st = null;
+                throw new OpusException("Error while initializing encoder: " + CodecHelpers.opus_strerror(ret));
             }
             return st;
         }
@@ -1501,9 +1496,23 @@ namespace Concentus.Structs
                   );
 
             // todo: check that pcm is >= frame_size
-            
-            return opus_encode_native<short>(in_pcm.GetPointer(pcm_offset), frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
-                                     in_pcm.GetPointer(pcm_offset), analysis_frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
+            try
+            {
+                int ret = opus_encode_native<short>(in_pcm.GetPointer(pcm_offset), frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
+                                         in_pcm.GetPointer(pcm_offset), analysis_frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
+
+                if (ret < 0)
+                {
+                    // An error happened; report it
+                    throw new OpusException("An error occurred during encoding: " + CodecHelpers.opus_strerror(ret));
+                }
+
+                return ret;
+            }
+            catch (Exception e)
+            {
+                throw new OpusException("Internal error during encoding: " + e.Message);
+            }
         }
 
         /** Encodes an Opus frame from floating point input.
@@ -1575,9 +1584,23 @@ namespace Concentus.Structs
             for (i = 0; i < frame_size * this.channels; i++)
                 input[i] = Inlines.FLOAT2INT16(in_pcm[pcm_offset + i]);
 
-            ret = opus_encode_native(input, frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
+            try
+            {
+                ret = opus_encode_native(input, frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
                                      in_pcm.GetPointer(pcm_offset), analysis_frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
-            return ret;
+
+                if (ret < 0)
+                {
+                    // An error happened; report it
+                    throw new OpusException("An error occurred during encoding: " + CodecHelpers.opus_strerror(ret));
+                }
+
+                return ret;
+            }
+            catch (Exception e)
+            {
+                throw new OpusException("Internal error during encoding: " + e.Message);
+            }
         }
 
         #endregion

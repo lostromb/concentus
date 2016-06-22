@@ -167,46 +167,39 @@ namespace Concentus.Structs
             this.frame_size = Fs / 400;
             return OpusError.OPUS_OK;
         }
-
-        /** Allocates and initializes a decoder state.
-  * @param [in] Fs <tt>opus_int32</tt>: Sample rate to decode at (Hz).
-  *                                     This must be one of 8000, 12000, 16000,
-  *                                     24000, or 48000.
-  * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) to decode
-  * @param [out] error <tt>int*</tt>: #OPUS_OK Success or @ref opus_errorcodes
-  *
-  * Internally Opus stores data at 48000 Hz, so that should be the default
-  * value for Fs. However, the decoder can efficiently decode to buffers
-  * at 8, 12, 16, and 24 kHz so if for some reason the caller cannot use
-  * data at the full sample rate, or knows the compressed data doesn't
-  * use the full frequency range, it can request decoding at a reduced
-  * rate. Likewise, the decoder is capable of filling in either mono or
-  * interleaved stereo pcm buffers, at the caller's request.
-  */
-        public static OpusDecoder Create(int Fs, int channels, BoxedValue<int> error)
+        
+        /// <summary>
+        /// Allocates and initializes a decoder state.
+        /// Internally Opus stores data at 48000 Hz, so that should be the default
+        /// value for Fs. However, the decoder can efficiently decode to buffers
+        /// at 8, 12, 16, and 24 kHz so if for some reason the caller cannot use
+        /// data at the full sample rate, or knows the compressed data doesn't
+        /// use the full frequency range, it can request decoding at a reduced
+        /// rate.Likewise, the decoder is capable of filling in either mono or
+        /// interleaved stereo pcm buffers, at the caller's request.
+        /// </summary>
+        /// <param name="Fs">Sample rate to decode at (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
+        /// <param name="channels">Number of channels (1 or 2) to decode</param>
+        /// <returns>The created encoder</returns>
+        public static OpusDecoder Create(int Fs, int channels)
         {
             int ret;
             OpusDecoder st; // porting note: pointer
-            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000)
-             || (channels != 1 && channels != 2))
+            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000))
             {
-                if (error != null)
-                    error.Val = OpusError.OPUS_BAD_ARG;
-                return null;
+                throw new ArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
             }
+            if (channels != 1 && channels != 2)
+            {
+                throw new ArgumentException("Number of channels must be 1 or 2");
+            }
+
             st = new OpusDecoder();
-            if (st == null)
-            {
-                if (error != null)
-                    error.Val = OpusError.OPUS_ALLOC_FAIL;
-                return null;
-            }
+            
             ret = st.opus_decoder_init(Fs, channels);
-            if (error != null)
-                error.Val = ret;
             if (ret != OpusError.OPUS_OK)
             {
-                st = null;
+                throw new OpusException("Error while initializing decoder: " + CodecHelpers.opus_strerror(ret));
             }
             return st;
         }
@@ -739,8 +732,26 @@ namespace Concentus.Structs
              int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
             if (frame_size <= 0)
-                return OpusError.OPUS_BAD_ARG;
-            return opus_decode_native(in_data.GetPointer(in_data_offset), len, out_pcm.GetPointer(out_pcm_offset), frame_size, decode_fec ? 1 : 0, 0, null, 0);
+            {
+                throw new ArgumentException("Frame size must be <= 0");
+            }
+
+            try
+            {
+                int ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, out_pcm.GetPointer(out_pcm_offset), frame_size, decode_fec ? 1 : 0, 0, null, 0);
+
+                if (ret < 0)
+                {
+                    // An error happened; report it
+                    throw new OpusException("An error occurred during decoding: " + CodecHelpers.opus_strerror(ret));
+                }
+
+                return ret;
+            }
+            catch (Exception e)
+            {
+                throw new OpusException("Internal error during decoding: " + e.Message);
+            }
         }
 
         public int Decode(byte[] in_data, int in_data_offset,
@@ -764,15 +775,28 @@ namespace Concentus.Structs
             }
             output = Pointer.Malloc<short>(frame_size * this.channels);
 
-            ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, output, frame_size, decode_fec ? 1 : 0, 0, null, 0);
-
-            if (ret > 0)
+            try
             {
-                for (i = 0; i < ret * this.channels; i++)
-                    out_pcm[out_pcm_offset + i] = (1.0f / 32768.0f) * (output[i]);
-            }
+                ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, output, frame_size, decode_fec ? 1 : 0, 0, null, 0);
 
-            return ret;
+                if (ret < 0)
+                {
+                    // An error happened; report it
+                    throw new OpusException("An error occurred during decoding: " + CodecHelpers.opus_strerror(ret));
+                }
+
+                if (ret > 0)
+                {
+                    for (i = 0; i < ret * this.channels; i++)
+                        out_pcm[out_pcm_offset + i] = (1.0f / 32768.0f) * (output[i]);
+                }
+
+                return ret;
+            }
+            catch (Exception e)
+            {
+                throw new OpusException("Internal error during decoding: " + e.Message);
+            }
         }
 
         public int GetBandwidth()
@@ -814,15 +838,14 @@ namespace Concentus.Structs
             return decode_gain;
         }
 
-        public int SetGain(int gain)
+        public void SetGain(int gain)
         {
             if (gain < -32768 || gain > 32767)
             {
-                return OpusError.OPUS_BAD_ARG;
+                throw new ArgumentException("Gain must be within the range of a signed int16");
             }
 
             decode_gain = gain;
-            return OpusError.OPUS_OK;
         }
 
         public int GetLastPacketDuration()

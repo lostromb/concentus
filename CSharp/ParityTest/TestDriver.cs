@@ -40,14 +40,10 @@ namespace ParityTest
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern int opus_decode(IntPtr st, byte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
 
-        private static OpusEncoder CreateConcentusEncoder(TestParameters parameters, BoxedValue<int> concentusError)
+        private static OpusEncoder CreateConcentusEncoder(TestParameters parameters)
         {
-            OpusEncoder concentusEncoder = OpusEncoder.Create(parameters.SampleRate, parameters.Channels, parameters.Application, concentusError);
-            if (concentusError.Val != 0)
-            {
-                return null;
-            }
-
+            OpusEncoder concentusEncoder = OpusEncoder.Create(parameters.SampleRate, parameters.Channels, parameters.Application);
+            
             concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
             concentusEncoder.SetComplexity(parameters.Complexity);
             concentusEncoder.SetUseDTX(parameters.UseDTX);
@@ -105,33 +101,34 @@ namespace ParityTest
             }
 
             // Create Concentus encoder
-            BoxedValue<int> concentusError = new BoxedValue<int>();
-            OpusEncoder concentusEncoder = CreateConcentusEncoder(parameters, concentusError);
-            if (concentusError.Val != 0)
+            OpusEncoder concentusEncoder = null;
+            OpusEncoder concentusEncoderWithoutFEC = null;
+            try
             {
-                returnVal.Message = "There was an error initializing the Concentus encoder";
+                concentusEncoder = CreateConcentusEncoder(parameters);
+
+                if (parameters.PacketLossPercent > 0)
+                {
+                    concentusEncoderWithoutFEC = CreateConcentusEncoder(parameters);
+                    concentusEncoderWithoutFEC.SetUseInbandFEC(false);
+                }
+            }
+            catch (OpusException e)
+            {
+                returnVal.Message = "There was an error initializing the Concentus encoder: " + e.Message;
                 returnVal.Passed = false;
                 return returnVal;
             }
 
-            OpusEncoder concentusEncoderWithoutFEC = null;
-            if (parameters.PacketLossPercent > 0)
-            {
-                concentusEncoderWithoutFEC = CreateConcentusEncoder(parameters, concentusError);
-                if (concentusError.Val != 0)
-                {
-                    returnVal.Message = "There was an error initializing the Concentus encoder";
-                    returnVal.Passed = false;
-                    return returnVal;
-                }
-                concentusEncoderWithoutFEC.SetUseInbandFEC(false);
-            }
-
             // Create Concentus decoder
-            OpusDecoder concentusDecoder = OpusDecoder.Create(DECODER_FS, DECODER_CHANNELS, concentusError);
-            if (concentusError.Val != 0)
+            OpusDecoder concentusDecoder;
+            try
             {
-                returnVal.Message = "There was an error initializing the Concentus decoder";
+                concentusDecoder = OpusDecoder.Create(DECODER_FS, DECODER_CHANNELS);
+            }
+            catch (OpusException e)
+            {
+                returnVal.Message = "There was an error initializing the Concentus decoder: " + e.Message;
                 returnVal.Passed = false;
                 return returnVal;
             }

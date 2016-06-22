@@ -653,9 +653,12 @@ namespace Concentus
 
         public static string opus_get_version_string()
         {
-            return "concentus 1.0-fixed"
+            return "concentus 1.0a-fixed"
 #if FUZZING
           + "-fuzzing"
+#endif
+#if PARITY
+          + "-parity"
 #endif
           ;
         }
