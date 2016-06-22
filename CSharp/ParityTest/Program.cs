@@ -85,7 +85,7 @@ namespace ParityTest
                                                     }
 
                                                     // Validate params
-                                                    if (newParams.Bitrate > 40)
+                                                    if (newParams.Bitrate > 40 || newParams.FrameSize < 10)
                                                     {
                                                         // No FEC outside of SILK mode
                                                         if (newParams.PacketLossPercent > 0)

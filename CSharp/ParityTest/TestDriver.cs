@@ -40,6 +40,31 @@ namespace ParityTest
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern int opus_decode(IntPtr st, byte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
 
+        private static OpusEncoder CreateConcentusEncoder(TestParameters parameters, BoxedValue<int> concentusError)
+        {
+            OpusEncoder concentusEncoder = OpusEncoder.Create(parameters.SampleRate, parameters.Channels, parameters.Application, concentusError);
+            if (concentusError.Val != 0)
+            {
+                return null;
+            }
+
+            concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
+            concentusEncoder.SetComplexity(parameters.Complexity);
+            concentusEncoder.SetUseDTX(parameters.UseDTX);
+            if (parameters.PacketLossPercent > 0)
+            {
+                concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
+                concentusEncoder.SetUseInbandFEC(true);
+            }
+            if (parameters.ForceMode != OpusMode.MODE_AUTO)
+            {
+                concentusEncoder.SetForceMode(parameters.ForceMode);
+            }
+            concentusEncoder.SetVBR(parameters.UseVBR);
+            concentusEncoder.SetVBRConstraint(parameters.ConstrainedVBR);
+            return concentusEncoder;
+        }
+
         public static TestResults RunTest(TestParameters parameters, short[] inputFile)
         {
             TestResults returnVal = new TestResults();
@@ -81,7 +106,7 @@ namespace ParityTest
 
             // Create Concentus encoder
             BoxedValue<int> concentusError = new BoxedValue<int>();
-            OpusEncoder concentusEncoder = OpusEncoder.Create(parameters.SampleRate, parameters.Channels, parameters.Application, concentusError);
+            OpusEncoder concentusEncoder = CreateConcentusEncoder(parameters, concentusError);
             if (concentusError.Val != 0)
             {
                 returnVal.Message = "There was an error initializing the Concentus encoder";
@@ -89,20 +114,18 @@ namespace ParityTest
                 return returnVal;
             }
 
-            concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
-            concentusEncoder.SetComplexity(parameters.Complexity);
-            concentusEncoder.SetUseDTX(parameters.UseDTX);
+            OpusEncoder concentusEncoderWithoutFEC = null;
             if (parameters.PacketLossPercent > 0)
             {
-                concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
-                concentusEncoder.SetUseInbandFEC(true);
+                concentusEncoderWithoutFEC = CreateConcentusEncoder(parameters, concentusError);
+                if (concentusError.Val != 0)
+                {
+                    returnVal.Message = "There was an error initializing the Concentus encoder";
+                    returnVal.Passed = false;
+                    return returnVal;
+                }
+                concentusEncoderWithoutFEC.SetUseInbandFEC(false);
             }
-            if (parameters.ForceMode != OpusMode.MODE_AUTO)
-            {
-                concentusEncoder.SetForceMode(parameters.ForceMode);
-            }
-            concentusEncoder.SetVBR(parameters.UseVBR);
-            concentusEncoder.SetVBRConstraint(parameters.ConstrainedVBR);
 
             // Create Concentus decoder
             OpusDecoder concentusDecoder = OpusDecoder.Create(DECODER_FS, DECODER_CHANNELS, concentusError);
@@ -188,6 +211,27 @@ namespace ParityTest
                         if (opusEncoded[c] != concentusEncoded[c])
                         {
                             returnVal.Message = "Encoded packets do not match (frame " + frameCount + ")";
+                            returnVal.Passed = false;
+                            returnVal.FailureFrame = inputPacket;
+                            return returnVal;
+                        }
+                    }
+
+                    if (concentusEncoderWithoutFEC != null)
+                    {
+                        // Encode again without FEC and verify that there is a difference
+                        int packetSizeWithoutFEC = concentusEncoderWithoutFEC.Encode(inputPacket, 0, frameSize, outputBuffer, 0, 10000);
+                        bool areEqual = concentusPacketSize == packetSizeWithoutFEC;
+                        if (areEqual)
+                        {
+                            for (int c = 0; c < concentusPacketSize; c++)
+                            {
+                                areEqual = areEqual && outputBuffer[c] == concentusEncoded[c];
+                            }
+                        }
+                        if (areEqual && frameCount > 0)
+                        {
+                            returnVal.Message = "Enabling FEC did not change the output packet (frame " + frameCount + ")";
                             returnVal.Passed = false;
                             returnVal.FailureFrame = inputPacket;
                             return returnVal;

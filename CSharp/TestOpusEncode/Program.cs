@@ -323,7 +323,7 @@ namespace TestOpusEncode
                         /*LBRR decode*/
                         out_samples = dec_err[0].Decode(packet.Data, 0, len, out2buf.Data, 0, frame_size, ((int)fast_rand() & 3) != 0 );
                         if (out_samples != frame_size) test_failed();
-                        out_samples = dec_err[1].Decode(packet.Data, 0, (fast_rand() & 3) == 0 ? 0 : len, out2buf.Data, 0, MAX_FRAME_SAMP, ((int)fast_rand() & 7) != 0);
+                        out_samples = dec_err[1].Decode(packet.Data, 0, (fast_rand() & 3) == 0 ? 0 : len, out2buf.Data, 0, /*MAX_FRAME_SAMP*/ frame_size, ((int)fast_rand() & 7) != 0);
                         if (out_samples < 120) test_failed();
                         i += frame_size;
                         count++;
