@@ -1,5 +1,6 @@
 ﻿using Concentus.Common;
 using Concentus.Common.CPlusPlus;
+using Concentus.Opus;
 using Concentus.Opus.Enums;
 using System;
 using System.Collections.Generic;
@@ -24,12 +25,15 @@ namespace ParityTest
             LoadTestFile(48, true);
 
             int[] Applications = new int[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
-            int[] Bitrates = new int[] { 6, 16, 20, 32, 64, 256 };
+            int[] Bitrates = new int[] { 6, 16, 20, 32, 64 };
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
             double[] FrameSizes = new double[] { 2.5, 5, 10, 20, 40, 60 };
             int[] PacketLosses = new int[] { 0, 20 };
+            int[] ForceModes = new int[] { OpusConstants.OPUS_AUTO, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_SILK_ONLY };
+            bool[] DTXModes = new bool[] { false, true };
+            int[] VBRModes = new int[] { 0, 1, 2 };
 
             IList<TestParameters> allTests = new List<TestParameters>();
 
@@ -47,23 +51,51 @@ namespace ParityTest
                                 {
                                     for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
                                     {
-                                        TestParameters newParams = new TestParameters()
+                                        for (int fm_idx = 0; fm_idx < ForceModes.Length; fm_idx++)
                                         {
-                                            Application = Applications[app_idx],
-                                            Bitrate = Bitrates[bit_idx],
-                                            Channels = Channels[chan_idx],
-                                            Complexity = Complexities[cpx_idx],
-                                            PacketLossPercent = PacketLosses[plc_idx],
-                                            SampleRate = SampleRates[sr_idx],
-                                            FrameSize = FrameSizes[fs_idx]
-                                        };
-                                        // Validate params
-                                        if (newParams.Bitrate > 40 && newParams.PacketLossPercent > 0)
-                                        {
-                                            continue;
+                                            for (int dtx_idx = 0; dtx_idx < DTXModes.Length; dtx_idx++)
+                                            {
+                                                for (int vbr_idx = 0; vbr_idx < VBRModes.Length; vbr_idx++)
+                                                {
+                                                    TestParameters newParams = new TestParameters()
+                                                    {
+                                                        Application = Applications[app_idx],
+                                                        Bitrate = Bitrates[bit_idx],
+                                                        Channels = Channels[chan_idx],
+                                                        Complexity = Complexities[cpx_idx],
+                                                        PacketLossPercent = PacketLosses[plc_idx],
+                                                        SampleRate = SampleRates[sr_idx],
+                                                        FrameSize = FrameSizes[fs_idx],
+                                                        ForceMode = ForceModes[fm_idx],
+                                                        UseDTX = DTXModes[dtx_idx],
+                                                        VBRMode = VBRModes[vbr_idx]
+                                                    };
+                                                    // Validate params
+                                                    if (newParams.Bitrate > 40)
+                                                    {
+                                                        // These are things that can only be done within Silk's bandwidth
+                                                        if (newParams.PacketLossPercent > 0)
+                                                        {
+                                                            continue;
+                                                        }
+                                                        if (newParams.UseDTX)
+                                                        {
+                                                            continue;
+                                                        }
+                                                        if (newParams.ForceMode == OpusMode.MODE_SILK_ONLY)
+                                                        {
+                                                            continue;
+                                                        }
+                                                    }
+                                                    if (newParams.ForceMode == OpusMode.MODE_SILK_ONLY && newParams.VBRMode == 2)
+                                                    {
+                                                        continue;
+                                                    }
+
+                                                    allTests.Add(newParams);
+                                                }
+                                            }
                                         }
-                                        
-                                        allTests.Add(newParams);
                                     }
                                 }
                             }
@@ -102,7 +134,7 @@ namespace ParityTest
             foreach (TestParameters p in allTestsRandom)
             {
                 testsRun++;
-                Console.Write("{0,5} {1} {2} Cpx={3,2} {4,3}Kbps {5,2}Khz {6,2} Ms PLC {7,2}% ... ",
+                Console.Write("{0,5} {1} {2} Cpx={3,2} {4,3}Kbps {5,2}Khz {6,3} Ms PLC {7,2}% {8} {9} {10}... ",
                     testsRun,
                     PrintApplication(p.Application),
                     p.Channels == 1 ? "Mono  " : "Stereo",
@@ -110,7 +142,10 @@ namespace ParityTest
                     p.Bitrate,
                     p.SampleRate / 1000,
                     p.FrameSize,
-                    p.PacketLossPercent);
+                    p.PacketLossPercent,
+                    PrintVBRMode(p.VBRMode),
+                    p.UseDTX ? "DTX" : "   ",
+                    PrintForceMode(p.ForceMode));
 
                 TestResults response = TestDriver.RunTest(p, GetTestSample(p));
 
@@ -150,9 +185,25 @@ namespace ParityTest
                 return "Music   ";
             else if (app == OpusApplication.OPUS_APPLICATION_VOIP)
                 return "Voip    ";
-            else if (app == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-                return "LowDelay";
-            return "???";
+            return "LowDelay";
+        }
+
+        private static string PrintVBRMode(int mode)
+        {
+            if (mode == 0)
+                return "    ";
+            if (mode == 1)
+                return "VBR ";
+            return "CVBR";
+        }
+
+        private static string PrintForceMode(int mode)
+        {
+            if (mode == OpusMode.MODE_CELT_ONLY)
+                return "CELT";
+            if (mode == OpusMode.MODE_SILK_ONLY)
+                return "SILK";
+            return "    ";
         }
 
         private static void PrintShortArray(short[] array)
