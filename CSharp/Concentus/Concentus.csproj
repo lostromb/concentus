@@ -78,6 +78,7 @@
     <Compile Include="Opus\Analysis.cs" />
     <Compile Include="Opus\Downmix.cs" />
     <Compile Include="Opus\MultiLayerPerceptron.cs" />
+    <Compile Include="Opus\OpusException.cs" />
     <Compile Include="Opus\OpusPacket.cs" />
     <Compile Include="Opus\OpusCompare.cs" />
     <Compile Include="Opus\OpusMultistream.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Opus\Structs\OpusEncoder.cs" />
     <Compile Include="Opus\Structs\OpusMSDecoder.cs" />
     <Compile Include="Opus\Structs\OpusMSEncoder.cs" />
+    <Compile Include="Opus\Structs\OpusPacketInfo.cs" />
     <Compile Include="Opus\Structs\OpusRepacketizer.cs" />
     <Compile Include="Opus\Structs\StereoWidthState.cs" />
     <Compile Include="Opus\Structs\TonalityAnalysisState.cs" />

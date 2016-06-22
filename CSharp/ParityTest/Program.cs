@@ -17,17 +17,21 @@ namespace ParityTest
         internal static void Main(string[] args)
         {
             LoadTestFile(8, false);
+            LoadTestFile(12, false);
             LoadTestFile(16, false);
+            LoadTestFile(24, false);
             LoadTestFile(48, false);
             LoadTestFile(8, true);
+            LoadTestFile(12, true);
             LoadTestFile(16, true);
+            LoadTestFile(24, true);
             LoadTestFile(48, true);
 
             OpusApplication[] Applications = new OpusApplication[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
             int[] Bitrates = new int[] { 8, 16, 32, 64, 96, 128, 256 };
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
-            int[] SampleRates = new int[] { 8000, 16000, 48000 };
+            int[] SampleRates = new int[] { 8000, 12000, 16000, 24000, 48000 };
             double[] FrameSizes = new double[] { 2.5, 5, 10, 20, 40, 60 };
             int[] PacketLosses = new int[] { 0 };
             int[] VBRModes = new int[] { 0, 1, 2 };
