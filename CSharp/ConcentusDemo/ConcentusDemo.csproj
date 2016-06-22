@@ -78,6 +78,7 @@
     <Compile Include="ConcentusCodec.cs" />
     <Compile Include="IAudioCompressionStream.cs" />
     <Compile Include="IAudioDecompressionStream.cs" />
+    <Compile Include="InputFileDef.cs" />
     <Compile Include="IOpusCodec.cs" />
     <Compile Include="Lanczos.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -87,7 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NAudioPlayer.cs" />
-    <Compile Include="OpusCodec.cs" />
+    <Compile Include="NativeOpusCodec.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -113,8 +114,11 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="opus32-float-avx.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="App.config" />
-    <Content Include="..\..\AudioData\Butterfly.raw">
+    <Content Include="..\..\AudioData\Jurgen.raw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\..\AudioData\Blunderbuss.raw">

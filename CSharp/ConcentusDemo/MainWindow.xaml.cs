@@ -110,7 +110,48 @@ namespace ConcentusDemo
         private void UpdateStatisticsDisplay(object state)
         {
             CodecStatistics stats = _worker.GetStatistics();
-            Dispatcher.Invoke(new StringDelegate(UpdateStatisticsLabel), string.Format("Encode {0:F1}x realtime | Decode {1:F1}x realtime | {2:F1}Kbit/s | {3} mode", stats.EncodeSpeed, stats.DecodeSpeed, stats.Bitrate, stats.Mode));
+            Dispatcher.Invoke(new StringDelegate(UpdateStatisticsLabel), string.Format("Encoding at {0:F1}x realtime\r\nDecoding at {1:F1}x realtime\r\nActual bitrate {2:F1}Kbit/s\r\n{3} mode", stats.EncodeSpeed, stats.DecodeSpeed, stats.Bitrate, stats.Mode));
+        }
+
+        private void libConcentusButton_Click(object sender, RoutedEventArgs e)
+        {
+            _worker.UpdateCodec(0);
+            libConcentusButton.Background = this.Resources["GreenButtonBg"] as Brush;
+            libOpusButton.Background = this.Resources["GreyButtonBg"] as Brush;
+        }
+
+        private void libOpusButton_Click(object sender, RoutedEventArgs e)
+        {
+            _worker.UpdateCodec(1);
+            libConcentusButton.Background = this.Resources["GreyButtonBg"] as Brush;
+            libOpusButton.Background = this.Resources["GreenButtonBg"] as Brush;
+        }
+
+        private void sample1Button_Click(object sender, RoutedEventArgs e)
+        {
+            InputFileDef newFile = _worker.UpdateInputFile(0);
+            attributionLabel.Content = newFile.Attribution;
+            sample1Button.Background = this.Resources["GreenButtonBg"] as Brush;
+            sample2Button.Background = this.Resources["GreyButtonBg"] as Brush;
+            sample3Button.Background = this.Resources["GreyButtonBg"] as Brush;
+        }
+
+        private void sample2Button_Click(object sender, RoutedEventArgs e)
+        {
+            InputFileDef newFile = _worker.UpdateInputFile(1);
+            attributionLabel.Content = newFile.Attribution;
+            sample1Button.Background = this.Resources["GreyButtonBg"] as Brush;
+            sample2Button.Background = this.Resources["GreenButtonBg"] as Brush;
+            sample3Button.Background = this.Resources["GreyButtonBg"] as Brush;
+        }
+
+        private void sample3Button_Click(object sender, RoutedEventArgs e)
+        {
+            InputFileDef newFile = _worker.UpdateInputFile(2);
+            attributionLabel.Content = newFile.Attribution;
+            sample1Button.Background = this.Resources["GreyButtonBg"] as Brush;
+            sample2Button.Background = this.Resources["GreyButtonBg"] as Brush;
+            sample3Button.Background = this.Resources["GreenButtonBg"] as Brush;
         }
     }
 }

@@ -34,9 +34,8 @@ namespace ConcentusDemo
                 throw new ApplicationException("Could not initialize Concentus encoder");
             }
 
-            // Set the encoder bitrate and complexity
-            _encoder.SetBitrate(_bitrate * 1024);
-            _encoder.SetComplexity(_complexity);
+            SetBitrate(_bitrate);
+            SetComplexity(_complexity);
 
             _decoder = OpusDecoder.Create(48000, 1, error);
             if (error.Val != 0)
