@@ -65,14 +65,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AudioChunk.cs" />
-    <Compile Include="AudioMath.cs" />
-    <Compile Include="AudioUtils.cs" />
-    <Compile Include="BasicBuffer.cs" />
-    <Compile Include="ConcentusCodec.cs" />
-    <Compile Include="IAudioCompressionStream.cs" />
-    <Compile Include="IAudioDecompressionStream.cs" />
-    <Compile Include="OpusCodec.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

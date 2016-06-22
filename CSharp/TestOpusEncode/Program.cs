@@ -1,9 +1,8 @@
 ﻿using Concentus;
 using Concentus.Celt;
 using Concentus.Common.CPlusPlus;
-using Concentus.Opus;
-using Concentus.Opus.Enums;
-using Concentus.Opus.Structs;
+using Concentus.Enums;
+using Concentus.Structs;
 using Concentus.Structs;
 using System;
 using System.Collections.Generic;
@@ -143,7 +142,7 @@ namespace TestOpusEncode
 
             Console.WriteLine("  Encode+Decode tests.");
 
-            enc = opus_encoder.opus_encoder_create(48000, 2, OpusApplication.OPUS_APPLICATION_VOIP, err);
+            enc = OpusEncoder.Create(48000, 2, OpusApplication.OPUS_APPLICATION_VOIP, err);
             if (err.Val != OpusError.OPUS_OK || enc == null) test_failed();
 
             for (i = 0; i < 2; i++)
@@ -190,7 +189,7 @@ namespace TestOpusEncode
                 catch (ArgumentException e) { }
             }
 
-            dec = opus_decoder.opus_decoder_create(48000, 2, err);
+            dec = OpusDecoder.Create(48000, 2, err);
             if (err.Val != OpusError.OPUS_OK || dec == null) test_failed();
 
             MSdec = opus_multistream_decoder.opus_multistream_decoder_create(48000, 2, 2, 0, mapping.GetPointer(), err);
@@ -200,18 +199,18 @@ namespace TestOpusEncode
             if (err.Val != OpusError.OPUS_OK || MSdec_err == null) test_failed();
 
             // fixme: this tests assign() performed on a decoder struct, which doesn't exist
-            //dec_err[0] = (OpusDecoder*)malloc(opus_decoder_get_size(2));
-            //memcpy(dec_err[0], dec, opus_decoder_get_size(2));
-            dec_err[0] = opus_decoder.opus_decoder_create(48000, 2, err);
-            dec_err[1] = opus_decoder.opus_decoder_create(48000, 1, err);
-            dec_err[2] = opus_decoder.opus_decoder_create(24000, 2, err);
-            dec_err[3] = opus_decoder.opus_decoder_create(24000, 1, err);
-            dec_err[4] = opus_decoder.opus_decoder_create(16000, 2, err);
-            dec_err[5] = opus_decoder.opus_decoder_create(16000, 1, err);
-            dec_err[6] = opus_decoder.opus_decoder_create(12000, 2, err);
-            dec_err[7] = opus_decoder.opus_decoder_create(12000, 1, err);
-            dec_err[8] = opus_decoder.opus_decoder_create(8000, 2, err);
-            dec_err[9] = opus_decoder.opus_decoder_create(8000, 1, err);
+            //dec_err[0] = (OpusDecoder*)malloc(OpusDecoder_get_size(2));
+            //memcpy(dec_err[0], dec, OpusDecoder_get_size(2));
+            dec_err[0] = OpusDecoder.Create(48000, 2, err);
+            dec_err[1] = OpusDecoder.Create(48000, 1, err);
+            dec_err[2] = OpusDecoder.Create(24000, 2, err);
+            dec_err[3] = OpusDecoder.Create(24000, 1, err);
+            dec_err[4] = OpusDecoder.Create(16000, 2, err);
+            dec_err[5] = OpusDecoder.Create(16000, 1, err);
+            dec_err[6] = OpusDecoder.Create(12000, 2, err);
+            dec_err[7] = OpusDecoder.Create(12000, 1, err);
+            dec_err[8] = OpusDecoder.Create(8000, 2, err);
+            dec_err[9] = OpusDecoder.Create(8000, 1, err);
             for (i = 1; i < 10; i++) if (dec_err[i] == null) test_failed();
 
             //{
@@ -299,7 +298,7 @@ namespace TestOpusEncode
                         if (modes[j] == 2 && bw == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
                             bw += 3;
                         enc.SetBandwidth(bw);
-                        len = opus_encoder.opus_encode(enc, inbuf.Point(i << 1), frame_size, packet, MAX_PACKET);
+                        len = enc.Encode(inbuf.Data, i << 1, frame_size, packet.Data, 0, MAX_PACKET);
                         if (len < 0 || len > MAX_PACKET) test_failed();
                         enc_final_range = enc.GetFinalRange();
                         if ((fast_rand() & 3) == 0)
@@ -317,14 +316,14 @@ namespace TestOpusEncode
                             len = Repacketizer.opus_packet_unpad(packet, len);
                             if (len < 1) test_failed();
                         }
-                        out_samples = opus_decoder.opus_decode(dec, packet, len, outbuf.Point(i << 1), MAX_FRAME_SAMP, 0);
+                        out_samples = dec.Decode(packet.Data, 0, len, outbuf.Data, i << 1, MAX_FRAME_SAMP, false);
                         if (out_samples != frame_size) test_failed();
                         dec_final_range = dec.GetFinalRange();
                         if (enc_final_range != dec_final_range) test_failed();
                         /*LBRR decode*/
-                        out_samples = opus_decoder.opus_decode(dec_err[0], packet, len, out2buf, frame_size, ((int)fast_rand() & 3) != 0 ? 1 : 0);
+                        out_samples = dec_err[0].Decode(packet.Data, 0, len, out2buf.Data, 0, frame_size, ((int)fast_rand() & 3) != 0 );
                         if (out_samples != frame_size) test_failed();
-                        out_samples = opus_decoder.opus_decode(dec_err[1], packet, (fast_rand() & 3) == 0 ? 0 : len, out2buf, MAX_FRAME_SAMP, ((int)fast_rand() & 7) != 0 ? 1 : 0);
+                        out_samples = dec_err[1].Decode(packet.Data, 0, (fast_rand() & 3) == 0 ? 0 : len, out2buf.Data, 0, MAX_FRAME_SAMP, ((int)fast_rand() & 7) != 0);
                         if (out_samples < 120) test_failed();
                         i += frame_size;
                         count++;
@@ -439,7 +438,7 @@ namespace TestOpusEncode
             //    out_samples = opus_decode(dec, packet, len, &outbuf[offset << 1], MAX_FRAME_SAMP, 0);
             //    if (out_samples != frame_size) test_failed();
 
-            //    opus_decoder_ctl(dec, OPUS_GET_FINAL_RANGE(&dec_final_range));
+            //    OpusDecoder_ctl(dec, OPUS_GET_FINAL_RANGE(&dec_final_range));
 
             //    /* compare final range encoder rng values of encoder and decoder */
             //    if (dec_final_range != enc_final_range) test_failed();
@@ -454,14 +453,14 @@ namespace TestOpusEncode
             //    if (out_samples < 0 || out_samples > MAX_FRAME_SAMP) test_failed();
             //    if ((len > 0 && out_samples != frame_size)) test_failed(); /*FIXME use lastframe*/
 
-            //    opus_decoder_ctl(dec_err[0], OPUS_GET_FINAL_RANGE(&dec_final_range));
+            //    OpusDecoder_ctl(dec_err[0], OPUS_GET_FINAL_RANGE(&dec_final_range));
 
             //    /*randomly select one of the decoders to compare with*/
             //    dec2 = fast_rand() % 9 + 1;
             //    out_samples = opus_decode(dec_err[dec2], len > 0 ? packet : null, len, out2buf, MAX_FRAME_SAMP, 0);
             //    if (out_samples < 0 || out_samples > MAX_FRAME_SAMP) test_failed(); /*FIXME, use factor, lastframe for loss*/
 
-            //    opus_decoder_ctl(dec_err[dec2], OPUS_GET_FINAL_RANGE(&dec_final_range2));
+            //    OpusDecoder_ctl(dec_err[dec2], OPUS_GET_FINAL_RANGE(&dec_final_range2));
             //    if (len > 0 && dec_final_range != dec_final_range2) test_failed();
 
             //    fswitch--;
@@ -482,8 +481,8 @@ namespace TestOpusEncode
             //opus_encoder_destroy(enc);
             //if (opus_multistream_encoder_ctl(MSenc, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
             //opus_multistream_encoder_destroy(MSenc);
-            //if (opus_decoder_ctl(dec, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-            //opus_decoder_destroy(dec);
+            //if (OpusDecoder_ctl(dec, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
+            //OpusDecoder_destroy(dec);
             //if (opus_multistream_decoder_ctl(MSdec, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
 
             return 0;

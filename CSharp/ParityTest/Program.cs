@@ -14,7 +14,7 @@ namespace ParityTest
     {
         private static IDictionary<string, short[]> testSamples = new Dictionary<string, short[]>();
 
-        internal static void Main(string[] args)
+        public static void Main(string[] args)
         {
             LoadTestFile(8, false);
             LoadTestFile(16, false);
@@ -24,14 +24,15 @@ namespace ParityTest
             LoadTestFile(48, true);
 
             OpusApplication[] Applications = new OpusApplication[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
-            int[] Bitrates = new int[] { 8, 16, 32, 64, 96, 128, 256 };
+            int[] Bitrates = new int[] { 6, 16, 20, 32, 64 };
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 16000, 48000 };
             double[] FrameSizes = new double[] { 2.5, 5, 10, 20, 40, 60 };
-            int[] PacketLosses = new int[] { 0 };
+            int[] PacketLosses = new int[] { 0, 20 };
+            OpusMode[] ForceModes = new OpusMode[] { OpusMode.MODE_AUTO, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_SILK_ONLY };
+            bool[] DTXModes = new bool[] { false, true };
             int[] VBRModes = new int[] { 0, 1, 2 };
-            bool[] DTXModes = new bool[] { false };
 
             IList<TestParameters> allTests = new List<TestParameters>();
 
@@ -39,70 +40,76 @@ namespace ParityTest
             {
                 for (int plc_idx = 0; plc_idx < PacketLosses.Length; plc_idx++)
                 {
-                    for (int dtx_idx = 0; dtx_idx < DTXModes.Length; dtx_idx++)
+                    for (int chan_idx = 0; chan_idx < Channels.Length; chan_idx++)
                     {
-                        for (int chan_idx = 0; chan_idx < Channels.Length; chan_idx++)
+                        for (int sr_idx = 0; sr_idx < SampleRates.Length; sr_idx++)
                         {
-                            for (int sr_idx = 0; sr_idx < SampleRates.Length; sr_idx++)
+                            for (int fs_idx = 0; fs_idx < FrameSizes.Length; fs_idx++)
                             {
-                                for (int fs_idx = 0; fs_idx < FrameSizes.Length; fs_idx++)
+                                for (int cpx_idx = 0; cpx_idx < Complexities.Length; cpx_idx++)
                                 {
-                                    for (int cpx_idx = 0; cpx_idx < Complexities.Length; cpx_idx++)
+                                    for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
                                     {
-                                        for (int vbr_idx = 0; vbr_idx < VBRModes.Length; vbr_idx++)
+                                        for (int fm_idx = 0; fm_idx < ForceModes.Length; fm_idx++)
                                         {
-                                            for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
+                                            for (int dtx_idx = 0; dtx_idx < DTXModes.Length; dtx_idx++)
                                             {
-                                                TestParameters newParams = new TestParameters()
+                                                for (int vbr_idx = 0; vbr_idx < VBRModes.Length; vbr_idx++)
                                                 {
-                                                    Application = Applications[app_idx],
-                                                    Bitrate = Bitrates[bit_idx],
-                                                    Channels = Channels[chan_idx],
-                                                    Complexity = Complexities[cpx_idx],
-                                                    PacketLossPercent = PacketLosses[plc_idx],
-                                                    SampleRate = SampleRates[sr_idx],
-                                                    FrameSize = FrameSizes[fs_idx],
-                                                    UseDTX = DTXModes[dtx_idx]
-                                                };
-                                                if (VBRModes[vbr_idx] == 0)
-                                                {
-                                                    newParams.UseVBR = false;
-                                                    newParams.ConstrainedVBR = false;
-                                                }
-                                                else if (VBRModes[vbr_idx] == 1)
-                                                {
-                                                    newParams.UseVBR = true;
-                                                    newParams.ConstrainedVBR = true;
-                                                }
-                                                else if (VBRModes[vbr_idx] == 2)
-                                                {
-                                                    newParams.UseVBR = true;
-                                                    newParams.ConstrainedVBR = false;
-                                                }
+                                                    TestParameters newParams = new TestParameters()
+                                                    {
+                                                        Application = Applications[app_idx],
+                                                        Bitrate = Bitrates[bit_idx],
+                                                        Channels = Channels[chan_idx],
+                                                        Complexity = Complexities[cpx_idx],
+                                                        PacketLossPercent = PacketLosses[plc_idx],
+                                                        SampleRate = SampleRates[sr_idx],
+                                                        FrameSize = FrameSizes[fs_idx],
+                                                        ForceMode = ForceModes[fm_idx],
+                                                        UseDTX = DTXModes[dtx_idx]
+                                                    };
+                                                    if (VBRModes[vbr_idx] == 0)
+                                                    {
+                                                        newParams.UseVBR = false;
+                                                        newParams.ConstrainedVBR = false;
+                                                    }
+                                                    else if (VBRModes[vbr_idx] == 1)
+                                                    {
+                                                        newParams.UseVBR = true;
+                                                        newParams.ConstrainedVBR = false;
+                                                    }
+                                                    else if (VBRModes[vbr_idx] == 2)
+                                                    {
+                                                        newParams.UseVBR = true;
+                                                        newParams.ConstrainedVBR = true;
+                                                    }
 
-                                                // Validate parameters
-                                                // No large frames in lowdelay mode
-                                                if (newParams.Application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY && newParams.FrameSize > 20)
-                                                {
-                                                    continue;
-                                                }
-                                                // No DTX at high bitrates
-                                                if (newParams.UseDTX && newParams.Bitrate > 32)
-                                                {
-                                                    continue;
-                                                }
-                                                // No FEC at high bitrates
-                                                if (newParams.PacketLossPercent > 0 && newParams.Bitrate > 32)
-                                                {
-                                                    continue;
-                                                }
-                                                // Constrained VBR only applies to CELT
-                                                if (newParams.ConstrainedVBR && newParams.Bitrate < 40)
-                                                {
-                                                    continue;
-                                                }
+                                                    // Validate params
+                                                    if (newParams.Bitrate > 40)
+                                                    {
+                                                        // No FEC outside of SILK mode
+                                                        if (newParams.PacketLossPercent > 0)
+                                                        {
+                                                            continue;
+                                                        }
+                                                        // No DTX outside of SILK mode
+                                                        if (newParams.UseDTX)
+                                                        {
+                                                            continue;
+                                                        }
+                                                        if (newParams.ForceMode == OpusMode.MODE_SILK_ONLY)
+                                                        {
+                                                            continue;
+                                                        }
+                                                    }
+                                                    // Constrained VBR only applies to CELT
+                                                    if (newParams.ForceMode == OpusMode.MODE_SILK_ONLY && newParams.ConstrainedVBR)
+                                                    {
+                                                        continue;
+                                                    }
 
-                                                allTests.Add(newParams);
+                                                    allTests.Add(newParams);
+                                                }
                                             }
                                         }
                                     }
@@ -143,7 +150,7 @@ namespace ParityTest
             foreach (TestParameters p in allTestsRandom)
             {
                 testsRun++;
-                Console.Write("{0,5} {1} {2} Cpx={3,2} {4,3}Kbps {5,2}Khz {6,2} Ms PLC {7,2}% {8} {9} ... ",
+                Console.Write("{0,5} {1} {2} Cpx={3,2} {4,3}Kbps {5,2}Khz {6,3} Ms PLC {7,2}% {8} {9} {10}... ",
                     testsRun,
                     PrintApplication(p.Application),
                     p.Channels == 1 ? "Mono  " : "Stereo",
@@ -152,8 +159,9 @@ namespace ParityTest
                     p.SampleRate / 1000,
                     p.FrameSize,
                     p.PacketLossPercent,
-                    PrintVBR(p),
-                    p.UseDTX ? "DTX" : "   ");
+                    PrintVBRMode(p),
+                    p.UseDTX ? "DTX" : "   ",
+                    PrintForceMode(p.ForceMode));
 
                 TestResults response = TestDriver.RunTest(p, GetTestSample(p));
 
@@ -172,12 +180,12 @@ namespace ParityTest
                     Console.WriteLine("FAIL: " + response.Message);
                     Console.ForegroundColor = ConsoleColor.Gray;
 
-                    /*if (response.FrameCount == 0)
-                    {
-                        PrintShortArray(response.FailureFrame);
-                        Console.WriteLine(response.FrameLength);
-                        Console.ReadLine();
-                    }*/
+                    //if (response.FrameCount == 0)
+                    //{
+                    //    PrintShortArray(response.FailureFrame);
+                    //    Console.WriteLine(response.FrameLength);
+                    //    Console.ReadLine();
+                    //}
                 }
             }
 
@@ -193,17 +201,27 @@ namespace ParityTest
                 return "Music   ";
             else if (app == OpusApplication.OPUS_APPLICATION_VOIP)
                 return "Voip    ";
-            else if (app == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-                return "LowDelay";
-            return "???";
+            return "LowDelay";
         }
 
-        private static string PrintVBR(TestParameters p)
+        private static string PrintVBRMode(TestParameters p)
         {
-            if (p.UseVBR && p.ConstrainedVBR)
-                return "CVBR";
             if (p.UseVBR)
-                return " VBR";
+            {
+                if (p.ConstrainedVBR)
+                    return "CVBR";
+                else
+                    return "VBR ";
+            }
+            return "    ";
+        }
+
+        private static string PrintForceMode(OpusMode mode)
+        {
+            if (mode == OpusMode.MODE_CELT_ONLY)
+                return "CELT";
+            if (mode == OpusMode.MODE_SILK_ONLY)
+                return "SILK";
             return "    ";
         }
 
