@@ -16,6 +16,9 @@ namespace ParityTest
     {
         private const string OPUS_TARGET_DLL = "opus32-fix.dll";
 
+        private const int DECODER_CHANNELS = 2;
+        private const int DECODER_FS = 48000;
+
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr opus_encoder_create(int Fs, int channels, int application, out IntPtr error);
 
@@ -68,7 +71,7 @@ namespace ParityTest
 
             // Create Opus decoder
             IntPtr opusDecoder = IntPtr.Zero;
-            opusDecoder = opus_decoder_create(parameters.SampleRate, parameters.Channels, out opusError);
+            opusDecoder = opus_decoder_create(DECODER_FS, DECODER_CHANNELS, out opusError);
             if ((int)opusError != 0)
             {
                 returnVal.Message = "There was an error initializing the Opus decoder";
@@ -102,7 +105,7 @@ namespace ParityTest
             concentusEncoder.SetVBRConstraint(parameters.ConstrainedVBR);
 
             // Create Concentus decoder
-            OpusDecoder concentusDecoder = OpusDecoder.Create(parameters.SampleRate, parameters.Channels, concentusError);
+            OpusDecoder concentusDecoder = OpusDecoder.Create(DECODER_FS, DECODER_CHANNELS, concentusError);
             if (concentusError.Val != 0)
             {
                 returnVal.Message = "There was an error initializing the Concentus decoder";
@@ -114,14 +117,16 @@ namespace ParityTest
             int frameSize = (int)(parameters.FrameSize * parameters.SampleRate / 1000);
             // Number of actual samples in the array (the array length)
             int frameSizeStereo = frameSize * parameters.Channels;
+            int decodedFrameSize = (int)(parameters.FrameSize * DECODER_FS / 1000);
+            int decodedFrameSizeStereo = decodedFrameSize * DECODER_CHANNELS;
 
             returnVal.FrameLength = frameSize;
 
             int inputPointer = 0;
             byte[] outputBuffer = new byte[10000];
             short[] inputPacket = new short[frameSizeStereo];
-            short[] opusDecoded = new short[frameSizeStereo];
-            short[] concentusDecoded = new short[frameSizeStereo];
+            short[] opusDecoded = new short[decodedFrameSizeStereo];
+            short[] concentusDecoded = new short[decodedFrameSizeStereo];
             int frameCount = 0;
             Stopwatch concentusTimer = new Stopwatch();
             Stopwatch opusTimer = new Stopwatch();
@@ -213,7 +218,7 @@ namespace ParityTest
                 if (!droppedPacket)
                 {
                     // Decode with Concentus
-                    int concentusOutputFrameSize = concentusDecoder.Decode(concentusEncoded, 0, concentusPacketSize, concentusDecoded, 0, frameSize, false);
+                    int concentusOutputFrameSize = concentusDecoder.Decode(concentusEncoded, 0, concentusPacketSize, concentusDecoded, 0, decodedFrameSize, false);
 
                     // Decode with Opus
                     unsafe
@@ -221,14 +226,14 @@ namespace ParityTest
                         fixed (short* bdec = opusDecoded)
                         {
                             IntPtr decodedPtr = new IntPtr((void*)(bdec));
-                            int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, frameSize, 0);
+                            int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, decodedFrameSize, 0);
                         }
                     }
                 }
                 else
                 {
                     // Decode with Concentus FEC
-                    int concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, frameSize, true);
+                    int concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, decodedFrameSize, true);
 
                     // Decode with Opus FEC
                     unsafe
@@ -236,13 +241,13 @@ namespace ParityTest
                         fixed (short* bdec = opusDecoded)
                         {
                             IntPtr decodedPtr = new IntPtr((void*)(bdec));
-                            int opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, frameSize, 1);
+                            int opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, decodedFrameSize, 1);
                         }
                     }
                 }
 
                 // Check for decoder parity
-                for (int c = 0; c < frameSizeStereo; c++)
+                for (int c = 0; c < decodedFrameSizeStereo; c++)
                 {
                     if (opusDecoded[c] != concentusDecoded[c])
                     {
