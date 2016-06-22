@@ -67,17 +67,33 @@ namespace ParityTest
                                                         SampleRate = SampleRates[sr_idx],
                                                         FrameSize = FrameSizes[fs_idx],
                                                         ForceMode = ForceModes[fm_idx],
-                                                        UseDTX = DTXModes[dtx_idx],
-                                                        VBRMode = VBRModes[vbr_idx]
+                                                        UseDTX = DTXModes[dtx_idx]
                                                     };
+                                                    if (VBRModes[vbr_idx] == 0)
+                                                    {
+                                                        newParams.UseVBR = false;
+                                                        newParams.ConstrainedVBR = false;
+                                                    }
+                                                    else if (VBRModes[vbr_idx] == 1)
+                                                    {
+                                                        newParams.UseVBR = true;
+                                                        newParams.ConstrainedVBR = false;
+                                                    }
+                                                    else if (VBRModes[vbr_idx] == 2)
+                                                    {
+                                                        newParams.UseVBR = true;
+                                                        newParams.ConstrainedVBR = true;
+                                                    }
+
                                                     // Validate params
                                                     if (newParams.Bitrate > 40)
                                                     {
-                                                        // These are things that can only be done within Silk's bandwidth
+                                                        // No FEC outside of SILK mode
                                                         if (newParams.PacketLossPercent > 0)
                                                         {
                                                             continue;
                                                         }
+                                                        // No DTX outside of SILK mode
                                                         if (newParams.UseDTX)
                                                         {
                                                             continue;
@@ -87,7 +103,8 @@ namespace ParityTest
                                                             continue;
                                                         }
                                                     }
-                                                    if (newParams.ForceMode == OpusMode.MODE_SILK_ONLY && newParams.VBRMode == 2)
+                                                    // Constrained VBR only applies to CELT
+                                                    if (newParams.ForceMode == OpusMode.MODE_SILK_ONLY && newParams.ConstrainedVBR)
                                                     {
                                                         continue;
                                                     }
@@ -143,7 +160,7 @@ namespace ParityTest
                     p.SampleRate / 1000,
                     p.FrameSize,
                     p.PacketLossPercent,
-                    PrintVBRMode(p.VBRMode),
+                    PrintVBRMode(p),
                     p.UseDTX ? "DTX" : "   ",
                     PrintForceMode(p.ForceMode));
 
@@ -188,13 +205,16 @@ namespace ParityTest
             return "LowDelay";
         }
 
-        private static string PrintVBRMode(int mode)
+        private static string PrintVBRMode(TestParameters p)
         {
-            if (mode == 0)
-                return "    ";
-            if (mode == 1)
-                return "VBR ";
-            return "CVBR";
+            if (p.UseVBR)
+            {
+                if (p.ConstrainedVBR)
+                    return "CVBR";
+                else
+                    return "VBR ";
+            }
+            return "    ";
         }
 
         private static string PrintForceMode(int mode)

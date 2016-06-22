@@ -17,6 +17,7 @@ namespace ParityTest
         public int PacketLossPercent;
         public int ForceMode;
         public bool UseDTX;
-        public int VBRMode;
+        public bool UseVBR;
+        public bool ConstrainedVBR;
     }
 }

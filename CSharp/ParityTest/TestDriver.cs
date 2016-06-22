@@ -64,21 +64,8 @@ namespace ParityTest
             {
                 opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, parameters.ForceMode);
             }
-            if (parameters.VBRMode == 0)
-            {
-                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_VBR_REQUEST, 0);
-                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, 0);
-            }
-            else if (parameters.VBRMode == 1)
-            {
-                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_VBR_REQUEST, 1);
-                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, 0);
-            }
-            else if (parameters.VBRMode == 2)
-            {
-                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_VBR_REQUEST, 1);
-                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, 1);
-            }
+            opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_VBR_REQUEST, parameters.UseVBR ? 1 : 0);
+            opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, parameters.ConstrainedVBR ? 1 : 0);
 
             // Create Opus decoder
             IntPtr opusDecoder = IntPtr.Zero;
@@ -112,21 +99,8 @@ namespace ParityTest
             {
                 concentusEncoder.SetForceMode(parameters.ForceMode);
             }
-            if (parameters.VBRMode == 0)
-            {
-                concentusEncoder.SetVBR(false);
-                concentusEncoder.SetVBRConstraint(false);
-            }
-            else if (parameters.VBRMode == 1)
-            {
-                concentusEncoder.SetVBR(true);
-                concentusEncoder.SetVBRConstraint(false);
-            }
-            else if (parameters.VBRMode == 2)
-            {
-                concentusEncoder.SetVBR(true);
-                concentusEncoder.SetVBRConstraint(true);
-            }
+            concentusEncoder.SetVBR(parameters.UseVBR);
+            concentusEncoder.SetVBRConstraint(parameters.ConstrainedVBR);
 
             // Create Concentus decoder
             OpusDecoder concentusDecoder = opus_decoder.opus_decoder_create(parameters.SampleRate, parameters.Channels, concentusError);
@@ -152,6 +126,9 @@ namespace ParityTest
             int frameCount = 0;
             Stopwatch concentusTimer = new Stopwatch();
             Stopwatch opusTimer = new Stopwatch();
+            Random packetLoss = new Random();
+            Queue<string> PacketTransmissionPattern = new Queue<string>();
+            for (int c = 0; c < 5; c++) PacketTransmissionPattern.Enqueue("|");
 
             byte[] concentusEncoded = null;
             int concentusPacketSize = 0;
@@ -224,16 +201,44 @@ namespace ParityTest
 
             try
             {
-                // Decode with Concentus
-                int concentusOutputFrameSize = opus_decoder.opus_decode(concentusDecoder, concentusEncoded.GetPointer(), concentusPacketSize, concentusDecoded.GetPointer(), frameSize, 0);
-
-                // Decode with Opus
-                unsafe
+                // Should we simulate dropping the packet?
+                PacketTransmissionPattern.Dequeue();
+                bool droppedPacket = false;
+                if (packetLoss.Next(0, 100) < parameters.PacketLossPercent)
                 {
-                    fixed (short* bdec = opusDecoded)
+                    droppedPacket = true;
+                    PacketTransmissionPattern.Enqueue("X");
+                }
+                PacketTransmissionPattern.Enqueue("O");
+
+                if (!droppedPacket)
+                {
+                    // Decode with Concentus
+                    int concentusOutputFrameSize = opus_decoder.opus_decode(concentusDecoder, concentusEncoded.GetPointer(), concentusPacketSize, concentusDecoded.GetPointer(), frameSize, 0);
+
+                    // Decode with Opus
+                    unsafe
                     {
-                        IntPtr decodedPtr = new IntPtr((void*)(bdec));
-                        int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, frameSize, 0);
+                        fixed (short* bdec = opusDecoded)
+                        {
+                            IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                            int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, frameSize, 0);
+                        }
+                    }
+                }
+                else
+                {
+                    // Decode with Concentus FEC
+                    int concentusOutputFrameSize = opus_decoder.opus_decode(concentusDecoder, null, 0, concentusDecoded.GetPointer(), frameSize, 1);
+
+                    // Decode with Opus FEC
+                    unsafe
+                    {
+                        fixed (short* bdec = opusDecoded)
+                        {
+                            IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                            int opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, frameSize, 1);
+                        }
                     }
                 }
 
@@ -243,6 +248,13 @@ namespace ParityTest
                     if (opusDecoded[c] != concentusDecoded[c])
                     {
                         returnVal.Message = "Decoded frames do not match (frame " + frameCount + ")";
+                        if (parameters.PacketLossPercent > 0)
+                        {
+                            StringBuilder packetLossPattern = new StringBuilder();
+                            foreach (string x in PacketTransmissionPattern)
+                                packetLossPattern.Append(x);
+                            returnVal.Message += " (Packet loss " + packetLossPattern.ToString() + ")";
+                        }
                         returnVal.Passed = false;
                         returnVal.FailureFrame = inputPacket;
                         return returnVal;
