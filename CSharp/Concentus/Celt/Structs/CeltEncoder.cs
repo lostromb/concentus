@@ -1071,7 +1071,7 @@ namespace Concentus.Celt.Structs
             signalBandwidth = end - 1;
 
 #if ENABLE_ANALYSIS
-            if (st.analysis.valid != 0)
+            if (this.analysis.valid != 0)
             {
                 int min_bandwidth;
                 if (equiv_rate < (int)32000 * C)
@@ -1084,7 +1084,7 @@ namespace Concentus.Celt.Structs
                     min_bandwidth = 19;
                 else
                     min_bandwidth = 20;
-                signalBandwidth = Inlines.IMAX(st.analysis.bandwidth, min_bandwidth);
+                signalBandwidth = Inlines.IMAX(this.analysis.bandwidth, min_bandwidth);
             }
 #endif
 

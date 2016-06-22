@@ -756,7 +756,7 @@ namespace Concentus
                 if (vbr == 0 && s == st.layout.nb_streams - 1)
                     enc.SetBitrate(curr_max * (8 * Fs / frame_size));
                 len = enc.opus_encode_native(buf.Data, buf.Offset, frame_size, tmp_data.Data, tmp_data.Offset, curr_max, lsb_depth,
-                      pcm, analysis_frame_size, c1, c2, st.layout.nb_channels, downmix, float_api);
+                      pcm.Data, pcm.Offset, analysis_frame_size, c1, c2, st.layout.nb_channels, downmix, float_api);
                 if (len < 0)
                 {
                     return len;
