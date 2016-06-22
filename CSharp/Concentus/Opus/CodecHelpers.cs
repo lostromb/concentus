@@ -445,8 +445,7 @@ namespace Concentus
             int short_alpha;
 
             frame_rate = Fs / frame_size;
-            // fixme ghetto order of ops
-            short_alpha = CeltConstants.Q15ONE - 25 * CeltConstants.Q15ONE / Inlines.IMAX(50, frame_rate);
+            short_alpha = CeltConstants.Q15ONE - (25 * CeltConstants.Q15ONE / Inlines.IMAX(50, frame_rate));
             xx = xy = yy = 0;
             for (i = 0; i < frame_size; i += 4)
             {

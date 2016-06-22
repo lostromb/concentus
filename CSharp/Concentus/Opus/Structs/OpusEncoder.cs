@@ -377,7 +377,7 @@ namespace Concentus.Structs
         /// <param name="this"></param>
         /// <param name="pcm"></param>
         /// <param name="frame_size"></param>
-        /// <param name="data"></param>
+        /// <param name="TOKEN"></param>
         /// <param name="out_data_bytes"></param>
         /// <param name="lsb_depth"></param>
         /// <param name="analysis_pcm"></param>
@@ -388,8 +388,8 @@ namespace Concentus.Structs
         /// <param name="downmix"></param>
         /// <param name="float_api"></param>
         /// <returns></returns>
-        internal int opus_encode_native<T>(Pointer<short> pcm, int frame_size,
-                        Pointer<byte> data, int out_data_bytes, int lsb_depth,
+        internal int opus_encode_native<T>(short[] pcm, int pcm_ptr, int frame_size,
+                        byte[] TOKEN, int data_ptr, int out_data_bytes, int lsb_depth,
                         Pointer<T> analysis_pcm, int analysis_size, int c1, int c2,
                         int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
         {
@@ -486,7 +486,7 @@ namespace Concentus.Structs
 #endif
 
             if (this.channels == 2 && this.force_channels != 1)
-                stereo_width = CodecHelpers.compute_stereo_width(pcm, frame_size, this.Fs, this.width_mem);
+                stereo_width = CodecHelpers.compute_stereo_width(pcm.GetPointer(pcm_ptr), frame_size, this.Fs, this.width_mem);
             else
                 stereo_width = 0;
             total_buffer = delay_compensation;
@@ -511,7 +511,7 @@ namespace Concentus.Structs
                     bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
                 else if (bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-                data[0] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
+                TOKEN[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
 
                 return 1;
             }
@@ -847,8 +847,8 @@ namespace Concentus.Structs
                     /* When switching from SILK/Hybrid to CELT, only ask for a switch at the last frame */
                     if (to_celt != 0 && i == nb_frames - 1)
                         this.user_forced_mode = OpusMode.MODE_CELT_ONLY;
-                    tmp_len = opus_encode_native(pcm.Point(i * (this.channels * this.Fs / 50)), this.Fs / 50,
-                          tmp_data.Point(i * bytes_per_frame), bytes_per_frame, lsb_depth,
+                    tmp_len = opus_encode_native(pcm, pcm_ptr + (i * (this.channels * this.Fs / 50)), this.Fs / 50,
+                          tmp_data.Data, tmp_data.Offset + (i * bytes_per_frame), bytes_per_frame, lsb_depth,
                           null, 0, c1, c2, analysis_channels, downmix, float_api);
                     if (tmp_len < 0)
                     {
@@ -866,7 +866,7 @@ namespace Concentus.Structs
                     repacketize_len = out_data_bytes;
                 else
                     repacketize_len = Inlines.IMIN(3 * this.bitrate_bps / (3 * 8 * 50 / nb_frames), out_data_bytes);
-                ret = Repacketizer.opus_repacketizer_out_range_impl(rp, 0, nb_frames, data, repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
+                ret = Repacketizer.opus_repacketizer_out_range_impl(rp, 0, nb_frames, TOKEN.GetPointer(data_ptr), repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
                 if (ret < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -890,9 +890,9 @@ namespace Concentus.Structs
             /* printf("%d %d %d %d\n", st.bitrate_bps, st.stream_channels, st.mode, curr_bandwidth); */
             bytes_target = Inlines.IMIN(max_data_bytes - redundancy_bytes, this.bitrate_bps * frame_size / (this.Fs * 8)) - 1;
 
-            data = data.Point(1);
+            data_ptr += 1;
 
-            enc.enc_init(data, (uint)(max_data_bytes - 1));
+            enc.enc_init(TOKEN.GetPointer(data_ptr), (uint)(max_data_bytes - 1));
 
             pcm_buf = Pointer.Malloc<int>((total_buffer + frame_size) * this.channels);
             this.delay_buffer.Point((this.encoder_buffer - total_buffer) * this.channels).MemCopyTo(pcm_buf, total_buffer * this.channels);
@@ -910,10 +910,10 @@ namespace Concentus.Structs
 
             if (this.application == OpusApplication.OPUS_APPLICATION_VOIP)
             {
-                CodecHelpers.hp_cutoff(pcm, cutoff_Hz, pcm_buf.Point(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
+                CodecHelpers.hp_cutoff(pcm.GetPointer(pcm_ptr), cutoff_Hz, pcm_buf.Point(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
             }
             else {
-                CodecHelpers.dc_reject(pcm, 3, pcm_buf.Point(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
+                CodecHelpers.dc_reject(pcm.GetPointer(pcm_ptr), 3, pcm_buf.Point(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
             }
 
             /* SILK processing */
@@ -1107,7 +1107,7 @@ namespace Concentus.Structs
                 if (nBytes == 0)
                 {
                     this.rangeFinal = 0;
-                    data[-1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+                    TOKEN[data_ptr - 1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
                     return 1;
                 }
@@ -1315,7 +1315,7 @@ namespace Concentus.Structs
                 int err;
                 celt_enc.SetStartBand(0);
                 celt_enc.SetVBR(false);
-                err = celt_enc.celt_encode_with_ec(pcm_buf, this.Fs / 200, data.Point(nb_compr_bytes), redundancy_bytes, null);
+                err = celt_enc.celt_encode_with_ec(pcm_buf, this.Fs / 200, TOKEN.GetPointer(data_ptr + nb_compr_bytes), redundancy_bytes, null);
                 if (err < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1364,7 +1364,7 @@ namespace Concentus.Structs
                 /* NOTE: We could speed this up slightly (at the expense of code size) by just adding a function that prefills the buffer */
                 celt_enc.celt_encode_with_ec(pcm_buf.Point(this.channels * (frame_size - N2 - N4)), N4, dummy.GetPointer(), 2, null);
 
-                err = celt_enc.celt_encode_with_ec(pcm_buf.Point(this.channels * (frame_size - N2)), N2, data.Point(nb_compr_bytes), redundancy_bytes, null);
+                err = celt_enc.celt_encode_with_ec(pcm_buf.Point(this.channels * (frame_size - N2)), N2, TOKEN.GetPointer(data_ptr + nb_compr_bytes), redundancy_bytes, null);
                 if (err < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1373,8 +1373,8 @@ namespace Concentus.Structs
             }
 
             /* Signalling the mode in the first byte */
-            data = data.Point(-1);
-            data[0] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+            data_ptr -= 1;
+            TOKEN[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
             this.rangeFinal = enc.rng ^ redundant_rng;
 
@@ -1395,7 +1395,7 @@ namespace Concentus.Structs
                 {
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
                 }
-                data[1] = 0;
+                TOKEN[data_ptr + 1] = 0;
                 ret = 1;
                 this.rangeFinal = 0;
             }
@@ -1407,13 +1407,13 @@ namespace Concentus.Structs
                   fill these in. This can't be done when the MDCT
                   modes are used because the decoder needs to know
                   the actual length for allocation purposes.*/
-                while (ret > 2 && data[ret] == 0) ret--;
+                while (ret > 2 && TOKEN[data_ptr + ret] == 0) ret--;
             }
             /* Count ToC and redundancy */
             ret += 1 + redundancy_bytes;
             if (this.use_vbr == 0)
             {
-                if (Repacketizer.opus_packet_pad(data, ret, max_data_bytes) != OpusError.OPUS_OK)
+                if (Repacketizer.opus_packet_pad(TOKEN.GetPointer(data_ptr), ret, max_data_bytes) != OpusError.OPUS_OK)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
@@ -1472,7 +1472,7 @@ namespace Concentus.Structs
 
             try
             {
-                int ret = opus_encode_native<short>(in_pcm.GetPointer(pcm_offset), internal_frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
+                int ret = opus_encode_native<short>(in_pcm, pcm_offset, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
                                          in_pcm.GetPointer(pcm_offset), frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
 
                 if (ret < 0)
@@ -1483,7 +1483,7 @@ namespace Concentus.Structs
 
                 return ret;
             }
-            catch (Exception e)
+            catch (ArgumentException e)
             {
                 throw new OpusException("Internal error during encoding: " + e.Message);
             }
@@ -1518,7 +1518,7 @@ namespace Concentus.Structs
             int i, ret;
             int internal_frame_size;
             int delay_compensation;
-            Pointer<short> input;
+            short[] input;
 
             if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 delay_compensation = 0;
@@ -1541,14 +1541,14 @@ namespace Concentus.Structs
                     internal_frame_size, in_pcm.Length - pcm_offset));
             }
 
-            input = Pointer.Malloc<short>(internal_frame_size * this.channels);
+            input = new short[internal_frame_size * this.channels];
 
             for (i = 0; i < internal_frame_size * this.channels; i++)
                 input[i] = Inlines.FLOAT2INT16(in_pcm[pcm_offset + i]);
 
             try
             {
-                ret = opus_encode_native(input, internal_frame_size, out_data.GetPointer(out_data_offset), max_data_bytes, 16,
+                ret = opus_encode_native(input, 0, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
                                      in_pcm.GetPointer(pcm_offset), frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
 
                 if (ret < 0)

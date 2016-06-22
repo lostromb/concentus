@@ -111,6 +111,11 @@ namespace ParityTest
                                                     {
                                                         continue;
                                                     }
+                                                    // 12Khz is only supported by SILK
+                                                    if (newParams.SampleRate == 12000 && (newParams.Bitrate > 40 || newParams.ForceMode == OpusMode.MODE_SILK_ONLY || newParams.FrameSize < 10))
+                                                    {
+                                                        continue;
+                                                    }
 
                                                     allTests.Add(newParams);
                                                 }
