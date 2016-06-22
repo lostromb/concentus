@@ -95,14 +95,14 @@ namespace Concentus
             if (rp.nb_frames == 0)
             {
                 rp.toc = data[0];
-                rp.framesize = OpusPacket.opus_packet_get_samples_per_frame(data, 8000);
+                rp.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data, 8000);
             }
             else if ((rp.toc & 0xFC) != (data[0] & 0xFC))
             {
                 /*fprintf(stderr, "toc mismatch: 0x%x vs 0x%x\n", rp.toc, data[0]);*/
                 return OpusError.OPUS_INVALID_PACKET;
             }
-            curr_nb_frames = OpusPacket.opus_packet_get_nb_frames(data, len);
+            curr_nb_frames = OpusPacketInfo.GetNumFrames(data, len);
             if (curr_nb_frames < 1)
                 return OpusError.OPUS_INVALID_PACKET;
 
@@ -112,7 +112,7 @@ namespace Concentus
                 return OpusError.OPUS_INVALID_PACKET;
             }
 
-            ret = OpusPacket.opus_packet_parse_impl(data, len, self_delimited, tmp_toc, rp.frames.Point(rp.nb_frames), rp.len.Point(rp.nb_frames), null, null);
+            ret = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, tmp_toc, rp.frames.Point(rp.nb_frames), rp.len.Point(rp.nb_frames), null, null);
             if (ret < 1) return ret;
 
             rp.nb_frames += curr_nb_frames;
@@ -238,7 +238,7 @@ namespace Concentus
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
                     ptr[0] = (byte)((rp.toc & 0xFC) | 0x2);
                     ptr = ptr.Point(1);
-                    ptr = ptr.Point(OpusPacket.encode_size(len[0], ptr));
+                    ptr = ptr.Point(OpusPacketInfo.encode_size(len[0], ptr));
                 }
             }
             if (count > 2 || (pad != 0 && tot_size < maxlen))
@@ -308,13 +308,13 @@ namespace Concentus
                 if (vbr != 0)
                 {
                     for (i = 0; i < count - 1; i++)
-                        ptr = ptr.Point(OpusPacket.encode_size(len[i], ptr));
+                        ptr = ptr.Point(OpusPacketInfo.encode_size(len[i], ptr));
                 }
             }
 
             if (self_delimited != 0)
             {
-                int sdlen = OpusPacket.encode_size(len[count - 1], ptr);
+                int sdlen = OpusPacketInfo.encode_size(len[count - 1], ptr);
                 ptr = ptr.Point(sdlen);
             }
 
@@ -511,7 +511,7 @@ namespace Concentus
             {
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
-                count = OpusPacket.opus_packet_parse_impl(data, len, 1, toc, null,
+                count = OpusPacketInfo.opus_packet_parse_impl(data, len, 1, toc, null,
                                                size.GetPointer(), null, packet_offset);
                 if (count < 0)
                     return count;
@@ -556,7 +556,7 @@ namespace Concentus
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
                 opus_repacketizer_init(rp);
-                ret = OpusPacket.opus_packet_parse_impl(data, len, self_delimited, toc, null,
+                ret = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, toc, null,
                                                size.GetPointer(), null, packet_offset);
                 if (ret < 0)
                     return ret;

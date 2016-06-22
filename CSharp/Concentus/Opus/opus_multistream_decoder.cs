@@ -106,12 +106,12 @@ namespace Concentus
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
 
-                count = OpusPacket.opus_packet_parse_impl(data, len, (s != nb_streams - 1) ? 1 : 0, toc, null,
+                count = OpusPacketInfo.opus_packet_parse_impl(data, len, (s != nb_streams - 1) ? 1 : 0, toc, null,
                                                size.GetPointer(), null, packet_offset);
                 if (count < 0)
                     return count;
 
-                tmp_samples = OpusPacket.opus_packet_get_nb_samples(data, packet_offset.Val, Fs);
+                tmp_samples = OpusPacketInfo.GetNumSamples(data, packet_offset.Val, Fs);
                 if (s != 0 && samples != tmp_samples)
                     return OpusError.OPUS_INVALID_PACKET;
                 samples = tmp_samples;

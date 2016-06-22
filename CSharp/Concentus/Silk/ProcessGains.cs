@@ -38,7 +38,7 @@ namespace Concentus.Silk
     using Concentus.Silk.Structs;
     using System.Diagnostics;
 
-    public static class ProcessGains
+    internal static class ProcessGains
     {
         /* Processing of gains */
         internal static void silk_process_gains(

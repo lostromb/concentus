@@ -79,7 +79,6 @@
     <Compile Include="Opus\Downmix.cs" />
     <Compile Include="Opus\MultiLayerPerceptron.cs" />
     <Compile Include="Opus\OpusException.cs" />
-    <Compile Include="Opus\OpusPacket.cs" />
     <Compile Include="Opus\OpusCompare.cs" />
     <Compile Include="Opus\OpusMultistream.cs" />
     <Compile Include="Opus\opus_multistream_decoder.cs" />

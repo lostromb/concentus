@@ -643,14 +643,14 @@ namespace Concentus.Structs
             else if (len < 0)
                 return OpusError.OPUS_BAD_ARG;
 
-            packet_mode = OpusPacket.opus_packet_get_mode(data);
-            packet_bandwidth = OpusPacket.opus_packet_get_bandwidth(data);
-            packet_frame_size = OpusPacket.opus_packet_get_samples_per_frame(data, this.Fs);
-            packet_stream_channels = OpusPacket.opus_packet_get_nb_channels(data);
+            packet_mode = OpusPacketInfo.GetEncoderMode(data);
+            packet_bandwidth = OpusPacketInfo.GetBandwidth(data);
+            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, this.Fs);
+            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data);
 
             BoxedValue<byte> boxed_toc = new BoxedValue<byte>();
             BoxedValue<int> boxed_offset = new BoxedValue<int>();
-            count = OpusPacket.opus_packet_parse_impl(data, len, self_delimited, boxed_toc, null,
+            count = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, boxed_toc, null,
                                            size.GetPointer(), boxed_offset, packet_offset);
             toc = boxed_toc.Val;
             offset = boxed_offset.Val;
@@ -756,7 +756,7 @@ namespace Concentus.Structs
             }
             if (in_data != null && len > 0 && !decode_fec)
             {
-                nb_samples = OpusPacket.opus_decoder_get_nb_samples(this, in_data.GetPointer(in_data_offset), len);
+                nb_samples = OpusPacketInfo.GetNumSamples(this, in_data.GetPointer(in_data_offset), len);
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else

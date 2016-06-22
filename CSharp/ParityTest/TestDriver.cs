@@ -217,6 +217,19 @@ namespace ParityTest
                         }
                     }
 
+                    // Ensure that the packet can be parsed back
+                    try
+                    {
+                        OpusPacketInfo packetInfo = OpusPacketInfo.ParseOpusPacket(concentusEncoded, 0, concentusPacketSize);
+                    }
+                    catch (OpusException e)
+                    {
+                        returnVal.Message = "PACKETINFO: " + e.Message + " (frame " + frameCount + ")";
+                        returnVal.Passed = false;
+                        returnVal.FailureFrame = inputPacket;
+                        return returnVal;
+                    }
+                    
                     if (concentusEncoderWithoutFEC != null)
                     {
                         // Encode again without FEC and verify that there is a difference
