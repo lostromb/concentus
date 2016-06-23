@@ -460,9 +460,18 @@ namespace Concentus.Structs
             {
                 analysis_read_pos_bak = this.analysis.read_pos;
                 analysis_read_subframe_bak = this.analysis.read_subframe;
-                Analysis.run_analysis<T>(this.analysis, celt_mode, analysis_pcm.GetPointer(analysis_pcm_ptr), analysis_size, frame_size,
-                      c1, c2, analysis_channels, this.Fs,
-                      lsb_depth, downmix, analysis_info);
+                Analysis.run_analysis<T>(this.analysis,
+                    celt_mode,
+                    analysis_pcm != null ? analysis_pcm.GetPointer(analysis_pcm_ptr) : null,
+                    analysis_size,
+                    frame_size,
+                    c1,
+                    c2,
+                    analysis_channels,
+                    this.Fs,
+                    lsb_depth,
+                    downmix,
+                    analysis_info);
             }
 #endif
 

@@ -111,8 +111,8 @@ namespace ParityTest
                                                     {
                                                         continue;
                                                     }
-                                                    // 12Khz is only supported by SILK
-                                                    if (newParams.SampleRate == 12000 && (newParams.Bitrate > 40 || newParams.ForceMode == OpusMode.MODE_SILK_ONLY || newParams.FrameSize < 10))
+                                                    // 12Khz + 2.5ms triggers an opus bug for now
+                                                    if (newParams.SampleRate == 12000 && newParams.FrameSize < 5)
                                                     {
                                                         continue;
                                                     }
