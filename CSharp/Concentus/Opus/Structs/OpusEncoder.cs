@@ -272,7 +272,9 @@ namespace Concentus.Structs
             ret = st.opus_init_encoder(Fs, channels, application);
             if (ret != OpusError.OPUS_OK)
             {
-                throw new OpusException("Error while initializing encoder: " + CodecHelpers.opus_strerror(ret));
+                if (ret == OpusError.OPUS_BAD_ARG)
+                    throw new ArgumentException("OPUS_BAD_ARG when creating encoder");
+                throw new OpusException("Error while initializing encoder", ret);
             }
             return st;
         }
@@ -1480,7 +1482,9 @@ namespace Concentus.Structs
                 if (ret < 0)
                 {
                     // An error happened; report it
-                    throw new OpusException("An error occurred during encoding: " + CodecHelpers.opus_strerror(ret));
+                    if (ret == OpusError.OPUS_BAD_ARG)
+                        throw new ArgumentException("OPUS_BAD_ARG while encoding");
+                    throw new OpusException("An error occurred during encoding", ret);
                 }
 
                 return ret;
@@ -1556,7 +1560,9 @@ namespace Concentus.Structs
                 if (ret < 0)
                 {
                     // An error happened; report it
-                    throw new OpusException("An error occurred during encoding: " + CodecHelpers.opus_strerror(ret));
+                    if (ret == OpusError.OPUS_BAD_ARG)
+                        throw new ArgumentException("OPUS_BAD_ARG while decoding");
+                    throw new OpusException("An error occurred during encoding", ret);
                 }
 
                 return ret;

@@ -29,7 +29,7 @@ namespace Concentus.Structs
       int channels,
       int streams,
       int coupled_streams,
-      Pointer<byte> mapping
+      byte[] mapping
 )
         {
             int i, ret;
@@ -63,31 +63,36 @@ namespace Concentus.Structs
             return OpusError.OPUS_OK;
         }
 
+        /// <summary>
+        /// Creates a new MS decoder
+        /// </summary>
+        /// <param name="Fs"></param>
+        /// <param name="channels"></param>
+        /// <param name="streams"></param>
+        /// <param name="coupled_streams"></param>
+        /// <param name="mapping">A mapping family (just use { 0, 1, 255 })</param>
+        /// <returns></returns>
         public static OpusMSDecoder Create(
               int Fs,
               int channels,
               int streams,
               int coupled_streams,
-      Pointer<byte> mapping,
-      BoxedValue<int> error
-)
+              byte[] mapping)
         {
             int ret;
             OpusMSDecoder st;
             if ((channels > 255) || (channels < 1) || (coupled_streams > streams) ||
                 (streams < 1) || (coupled_streams < 0) || (streams > 255 - coupled_streams))
             {
-                if (error != null)
-                    error.Val = OpusError.OPUS_BAD_ARG;
-                return null;
+                throw new ArgumentException("Invalid channel / stream configuration");
             }
             st = new OpusMSDecoder(streams, coupled_streams);
             ret = st.opus_multistream_decoder_init(Fs, channels, streams, coupled_streams, mapping);
-            if (error != null)
-                error.Val = ret;
             if (ret != OpusError.OPUS_OK)
             {
-                st = null;
+                if (ret == OpusError.OPUS_BAD_ARG)
+                    throw new ArgumentException("Bad argument while creating MS decoder");
+                throw new OpusException("Could not create MS decoder", ret);
             }
             return st;
         }
@@ -290,22 +295,24 @@ namespace Concentus.Structs
         }
 
         public int DecodeMultistream(
-              Pointer<byte> data,
+              byte[] data,
+              int data_offset,
               int len,
-              Pointer<short> pcm,
+              short[] out_pcm,
+              int out_pcm_offset,
               int frame_size,
               int decode_fec
         )
         {
-            return opus_multistream_decode_native<short>(data, len,
-                pcm, opus_copy_channel_out_short, frame_size, decode_fec, 0);
+            return opus_multistream_decode_native<short>(data.GetPointer(), len,
+                out_pcm.GetPointer(out_pcm_offset), opus_copy_channel_out_short, frame_size, decode_fec, 0);
         }
 
-        public int DecodeMultistream(Pointer<byte> data,
-          int len, Pointer<float> pcm, int frame_size, int decode_fec)
+        public int DecodeMultistream(byte[] data, int data_offset,
+          int len, float[] out_pcm, int out_pcm_offset, int frame_size, int decode_fec)
         {
-            return opus_multistream_decode_native<float>(data, len,
-                pcm, opus_copy_channel_out_float, frame_size, decode_fec, 0);
+            return opus_multistream_decode_native<float>(data.GetPointer(data_offset), len,
+                out_pcm.GetPointer(out_pcm_offset), opus_copy_channel_out_float, frame_size, decode_fec, 0);
         }
 
         #endregion

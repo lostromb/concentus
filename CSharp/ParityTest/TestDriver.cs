@@ -15,6 +15,7 @@ namespace ParityTest
     public class TestDriver
     {
         private const string OPUS_TARGET_DLL = "opus32-fix.dll";
+        private const bool ACTUALLY_COMPARE = true;
 
         private const int DECODER_CHANNELS = 2;
         private const int DECODER_FS = 48000;
@@ -210,7 +211,7 @@ namespace ParityTest
                             opusTimer.Start();
                             int opusPacketSize = opus_encode(opusEncoder, nextFrameBytes, frameSize, encodedPtr, 10000);
                             opusTimer.Stop();
-                            if (opusPacketSize != concentusPacketSize)
+                            if (ACTUALLY_COMPARE && opusPacketSize != concentusPacketSize)
                             {
                                 returnVal.Message = "Output packet sizes do not match (frame " + frameCount + ")";
                                 returnVal.Passed = false;
@@ -223,7 +224,7 @@ namespace ParityTest
                     }
 
                     // Check for encoder parity
-                    for (int c = 0; c < concentusPacketSize; c++)
+                    for (int c = 0; ACTUALLY_COMPARE && c < concentusPacketSize; c++)
                     {
                         if (opusEncoded[c] != concentusEncoded[c])
                         {
@@ -293,7 +294,17 @@ namespace ParityTest
                 if (!droppedPacket)
                 {
                     // Decode with Concentus
-                    int concentusOutputFrameSize = concentusDecoder.Decode(concentusEncoded, 0, concentusPacketSize, concentusDecoded, 0, decodedFrameSize, false);
+                    Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
+                    Pointer<short> concentusDecodedWithOffset = Pointerize(concentusDecoded);
+                    int concentusOutputFrameSize = concentusDecoder.Decode(
+                        concentusEncodedWithOffset.Data,
+                        concentusEncodedWithOffset.Offset,
+                        concentusPacketSize,
+                        concentusDecodedWithOffset.Data,
+                        concentusDecodedWithOffset.Offset,
+                        decodedFrameSize,
+                        false);
+                    concentusDecoded = Unpointerize(concentusDecodedWithOffset, concentusDecoded.Length);
 
                     // Decode with Opus
                     unsafe
@@ -323,7 +334,7 @@ namespace ParityTest
                 }
 
                 // Check for decoder parity
-                for (int c = 0; c < decodedFrameSizeStereo; c++)
+                for (int c = 0; ACTUALLY_COMPARE && c < decodedFrameSizeStereo; c++)
                 {
                     if (opusDecoded[c] != concentusDecoded[c])
                     {
@@ -423,8 +434,8 @@ namespace ParityTest
 
         public static T[] Unpointerize<T>(Pointer<T> array, int length)
         {
-            T[] newArray = new T[length - BUFFER_OFFSET];
-            array.MemCopyTo(newArray, 0, newArray.Length);
+            T[] newArray = new T[length];
+            array.MemCopyTo(newArray, 0, length);
             return newArray;
         }
     }

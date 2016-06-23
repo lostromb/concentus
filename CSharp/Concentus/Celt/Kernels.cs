@@ -135,7 +135,7 @@ namespace Concentus.Celt
             for (i = 0; i < N - 3; i += 4)
             {
                 int[] sum = { 0, 0, 0, 0 };
-                xcorr_kernel(rnum, x.Point(i), sum.GetPointer(), ord);
+                xcorr_kernel(rnum.Data, 0, x.Data, x.Offset + i, sum, ord);
                 _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
                 _y[i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
                 _y[i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
@@ -231,38 +231,38 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void xcorr_kernel(Pointer<int> x, Pointer<int> y, Pointer<int> sum, int len)
+        internal static void xcorr_kernel(int[] x, int x_ptr, int[] y, int y_ptr, int[] sum, int len)
         {
             int j;
             int y_0, y_1, y_2, y_3;
             Inlines.OpusAssert(len >= 3);
             y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
-            y = y.Iterate(out y_0);
-            y = y.Iterate(out y_1);
-            y = y.Iterate(out y_2);
+            y_0 = y[y_ptr++];
+            y_1 = y[y_ptr++];
+            y_2 = y[y_ptr++];
             for (j = 0; j < len - 3; j += 4)
             {
                 int tmp;
-                x = x.Iterate(out tmp);
-                y = y.Iterate(out y_3);
+                tmp = x[x_ptr++];
+                y_3 = y[y_ptr++];
                 sum[0] = Inlines.MAC16_16(sum[0], tmp, y_0);
                 sum[1] = Inlines.MAC16_16(sum[1], tmp, y_1);
                 sum[2] = Inlines.MAC16_16(sum[2], tmp, y_2);
                 sum[3] = Inlines.MAC16_16(sum[3], tmp, y_3);
-                x = x.Iterate(out tmp);
-                y = y.Iterate(out y_0);
+                tmp = x[x_ptr++];
+                y_0 = y[y_ptr++];
                 sum[0] = Inlines.MAC16_16(sum[0], tmp, y_1);
                 sum[1] = Inlines.MAC16_16(sum[1], tmp, y_2);
                 sum[2] = Inlines.MAC16_16(sum[2], tmp, y_3);
                 sum[3] = Inlines.MAC16_16(sum[3], tmp, y_0);
-                x = x.Iterate(out tmp);
-                y = y.Iterate(out y_1);
+                tmp = x[x_ptr++];
+                y_1 = y[y_ptr++];
                 sum[0] = Inlines.MAC16_16(sum[0], tmp, y_2);
                 sum[1] = Inlines.MAC16_16(sum[1], tmp, y_3);
                 sum[2] = Inlines.MAC16_16(sum[2], tmp, y_0);
                 sum[3] = Inlines.MAC16_16(sum[3], tmp, y_1);
-                x = x.Iterate(out tmp);
-                y = y.Iterate(out y_2);
+                tmp = x[x_ptr++];
+                y_2 = y[y_ptr++];
                 sum[0] = Inlines.MAC16_16(sum[0], tmp, y_3);
                 sum[1] = Inlines.MAC16_16(sum[1], tmp, y_0);
                 sum[2] = Inlines.MAC16_16(sum[2], tmp, y_1);
@@ -271,8 +271,8 @@ namespace Concentus.Celt
             if (j++ < len)
             {
                 int tmp;
-                x = x.Iterate(out tmp);
-                y = y.Iterate(out y_3);
+                tmp = x[x_ptr++];
+                y_3 = y[y_ptr++];
                 sum[0] = Inlines.MAC16_16(sum[0], tmp, y_0);
                 sum[1] = Inlines.MAC16_16(sum[1], tmp, y_1);
                 sum[2] = Inlines.MAC16_16(sum[2], tmp, y_2);
@@ -281,8 +281,8 @@ namespace Concentus.Celt
             if (j++ < len)
             {
                 int tmp;
-                x = x.Iterate(out tmp);
-                y = y.Iterate(out y_0);
+                tmp = x[x_ptr++];
+                y_0 = y[y_ptr++];
                 sum[0] = Inlines.MAC16_16(sum[0], tmp, y_1);
                 sum[1] = Inlines.MAC16_16(sum[1], tmp, y_2);
                 sum[2] = Inlines.MAC16_16(sum[2], tmp, y_3);
@@ -291,8 +291,8 @@ namespace Concentus.Celt
             if (j < len)
             {
                 int tmp;
-                x = x.Iterate(out tmp);
-                y = y.Iterate(out y_1);
+                tmp = x[x_ptr++];
+                y_1 = y[y_ptr++];
                 sum[0] = Inlines.MAC16_16(sum[0], tmp, y_2);
                 sum[1] = Inlines.MAC16_16(sum[1], tmp, y_3);
                 sum[2] = Inlines.MAC16_16(sum[2], tmp, y_0);

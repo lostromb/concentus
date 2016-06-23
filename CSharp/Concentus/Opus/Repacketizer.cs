@@ -67,7 +67,7 @@ namespace Concentus
   *                                       (re)initialize.
   * @returns A pointer to the same repacketizer state that was passed in.
   */
-        public static OpusRepacketizer opus_repacketizer_init(OpusRepacketizer rp)
+        internal static OpusRepacketizer opus_repacketizer_init(OpusRepacketizer rp)
         {
             rp.nb_frames = 0;
             return rp;

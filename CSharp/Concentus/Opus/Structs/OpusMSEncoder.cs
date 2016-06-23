@@ -280,7 +280,7 @@ namespace Concentus.Structs
               int channels,
               int streams,
               int coupled_streams,
-              Pointer<byte> mapping,
+              byte[] mapping,
               OpusApplication application,
               int surround
         )
@@ -339,7 +339,7 @@ namespace Concentus.Structs
               int mapping_family,
               BoxedValue<int> streams,
               BoxedValue<int> coupled_streams,
-              Pointer<byte> mapping,
+              byte[] mapping,
               OpusApplication application
         )
         {
@@ -393,9 +393,8 @@ namespace Concentus.Structs
               int channels,
               int streams,
               int coupled_streams,
-              Pointer<byte> mapping,
-              OpusApplication application,
-              BoxedValue<int> error
+              byte[] mapping,
+              OpusApplication application
         )
         {
             int ret;
@@ -403,18 +402,16 @@ namespace Concentus.Structs
             if ((channels > 255) || (channels < 1) || (coupled_streams > streams) ||
                 (streams < 1) || (coupled_streams < 0) || (streams > 255 - coupled_streams))
             {
-                if (error != null)
-                    error.Val = OpusError.OPUS_BAD_ARG;
-                return null;
+                throw new ArgumentException("Invalid channel / stream configuration");
             }
             st = new OpusMSEncoder(streams, coupled_streams);
             ret = st.opus_multistream_encoder_init(Fs, channels, streams, coupled_streams, mapping, application, 0);
             if (ret != OpusError.OPUS_OK)
             {
-                st = null;
+                if (ret == OpusError.OPUS_BAD_ARG)
+                    throw new ArgumentException("OPUS_BAD_ARG when creating MS encoder");
+                throw new OpusException("Could not create MS encoder", ret);
             }
-            if (error != null)
-                error.Val = ret;
             return st;
         }
 
@@ -455,7 +452,7 @@ namespace Concentus.Structs
               int mapping_family,
               BoxedValue<int> streams,
               BoxedValue<int> coupled_streams,
-              Pointer<byte> mapping,
+              byte[] mapping,
               OpusApplication application,
               BoxedValue<int> error
         )
@@ -797,25 +794,31 @@ namespace Concentus.Structs
         }
 
         public int EncodeMultistream(
-            Pointer<short> pcm,
+            short[] pcm,
+            int pcm_offset,
             int frame_size,
-            Pointer<byte> data,
+            byte[] outputBuffer,
+            int outputBuffer_offset,
             int max_data_bytes
         )
         {
+            // todo: catch error codes here
             return opus_multistream_encode_native<short>(opus_copy_channel_in_short,
-               pcm, frame_size, data, max_data_bytes, 16, Downmix.downmix_int, 0);
+               pcm.GetPointer(pcm_offset), frame_size, outputBuffer.GetPointer(outputBuffer_offset), max_data_bytes, 16, Downmix.downmix_int, 0);
         }
 
         public int EncodeMultistream(
-            Pointer<float> pcm,
+            float[] pcm,
+            int pcm_offset,
             int frame_size,
-            Pointer<byte> data,
+            byte[] outputBuffer,
+            int outputBuffer_offset,
             int max_data_bytes
         )
         {
+            // todo: catch error codes here
             return opus_multistream_encode_native<float>(opus_copy_channel_in_float,
-               pcm, frame_size, data, max_data_bytes, 16, Downmix.downmix_float, 1);
+               pcm.GetPointer(pcm_offset), frame_size, outputBuffer.GetPointer(outputBuffer_offset), max_data_bytes, 16, Downmix.downmix_float, 1);
         }
 
         #endregion

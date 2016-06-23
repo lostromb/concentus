@@ -124,7 +124,7 @@ namespace Concentus.Celt
                 sum[1] = _x[i + 1];
                 sum[2] = _x[i + 2];
                 sum[3] = _x[i + 3];
-                Kernels.xcorr_kernel(rden, y.Point(i), sum.GetPointer(), ord);
+                Kernels.xcorr_kernel(rden.Data, 0, y.Data, y.Offset + i, sum, ord);
 
                 /* Patch up the result to compensate for the fact that this is an IIR */
                 y[i + ord] = (0 - Inlines.ROUND16((sum[0]), CeltConstants.SIG_SHIFT));

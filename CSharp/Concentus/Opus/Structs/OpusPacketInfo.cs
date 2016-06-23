@@ -55,7 +55,7 @@ namespace Concentus.Structs
             int error = opus_packet_parse_impl(data.GetPointer(data_offset), len, 0, out_toc, frames, size, payload_offset, packetOffset);
             if (error < 0)
             {
-                throw new OpusException("An error occurred while parsing the packet: " + CodecHelpers.opus_strerror(error));
+                throw new OpusException("An error occurred while parsing the packet", error);
             }
 
             IList<byte[]> copiedFrames = new List<byte[]>();
