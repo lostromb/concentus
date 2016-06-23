@@ -352,13 +352,13 @@ namespace Concentus.Common.CPlusPlus
         /// <param name="destination"></param>
         /// <param name="length"></param>
 #if DEBUG
-        public void MemCopyTo(T[] destination, int offset, int length)
+        public void MemCopyTo(T[] destination, int destOffset, int length)
         {
             Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
             //PrintMemCopy(_array, _offset, length);
             for (int c = 0; c < length; c++)
             {
-                destination[c] = _array[c + _offset];
+                destination[c + destOffset] = _array[c + _offset];
             }
         }
 #else

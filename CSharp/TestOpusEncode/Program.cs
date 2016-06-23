@@ -114,17 +114,13 @@ namespace TestOpusEncode
 
         internal static int run_test1(bool no_fuzz)
         {
-            
             byte[] mapping/*[256]*/ = { 0, 1, 255 };
             byte[] db62 = new byte[36];
             int i;
             int rc, j;
             BoxedValue<int> err = new BoxedValue<int>();
             OpusEncoder enc;
-            OpusMSEncoder MSenc;
             OpusDecoder dec;
-            OpusMSDecoder MSdec;
-            OpusMSDecoder MSdec_err;
             OpusDecoder[] dec_err = new OpusDecoder[10];
             Pointer<short> inbuf;
             Pointer<short> outbuf;
@@ -136,67 +132,16 @@ namespace TestOpusEncode
             int fswitch;
             int fsize;
             int count;
-
             /*FIXME: encoder api tests, fs!=48k, mono, VBR*/
 
             Console.WriteLine("  Encode+Decode tests.");
 
             enc = OpusEncoder.Create(48000, 2, OpusApplication.OPUS_APPLICATION_VOIP);
             if (err.Val != OpusError.OPUS_OK || enc == null) test_failed();
-
-            for (i = 0; i < 2; i++)
-            {
-                BoxedValue<int> ret_err = i != 0 ? null : err;
-                MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 2, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED, ret_err);
-                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
-
-                MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 0, 1, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
-                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
-
-                MSenc = opus_multistream_encoder.opus_multistream_encoder_create(44100, 2, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
-                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
-
-                MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 2, 2, 3, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
-                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
-
-                MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 2, -1, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
-                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
-
-                MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 256, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
-                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
-            }
-
-            MSenc = opus_multistream_encoder.opus_multistream_encoder_create(8000, 2, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_AUDIO, err);
-            if (err.Val != OpusError.OPUS_OK || MSenc == null) test_failed();
-
-            /*Some multistream encoder API tests*/
-            i = MSenc.GetBitrate();
-            i = MSenc.GetLSBDepth();
-            if (i < 16) test_failed();
-
-            {
-                OpusEncoder tmp_enc;
-                tmp_enc = MSenc.GetMultistreamEncoderState(1);
-                if (tmp_enc == null) test_failed();
-                j = tmp_enc.GetLSBDepth();
-                if (i != j) test_failed();
-                try
-                {
-                    MSenc.GetMultistreamEncoderState(2);
-                    test_failed();
-                }
-                catch (ArgumentException e) { }
-            }
-
+            
             dec = OpusDecoder.Create(48000, 2);
             if (err.Val != OpusError.OPUS_OK || dec == null) test_failed();
-
-            MSdec = opus_multistream_decoder.opus_multistream_decoder_create(48000, 2, 2, 0, mapping.GetPointer(), err);
-            if (err.Val != OpusError.OPUS_OK || MSdec == null) test_failed();
-
-            MSdec_err = opus_multistream_decoder.opus_multistream_decoder_create(48000, 3, 2, 0, mapping.GetPointer(), err);
-            if (err.Val != OpusError.OPUS_OK || MSdec_err == null) test_failed();
-
+            
             // fixme: this tests assign() performed on a decoder struct, which doesn't exist
             //dec_err[0] = (OpusDecoder*)malloc(OpusDecoder_get_size(2));
             //memcpy(dec_err[0], dec, OpusDecoder_get_size(2));
@@ -331,83 +276,171 @@ namespace TestOpusEncode
                 }
             }
 
-            //if (opus_encoder_ctl(enc, OPUS_SET_FORCE_MODE(OPUS_AUTO)) != OpusError.OPUS_OK) test_failed();
-            //if (opus_encoder_ctl(enc, OPUS_SET_FORCE_CHANNELS(OPUS_AUTO)) != OpusError.OPUS_OK) test_failed();
-            //if (opus_encoder_ctl(enc, OPUS_SET_INBAND_FEC(0)) != OpusError.OPUS_OK) test_failed();
-            //if (opus_encoder_ctl(enc, OPUS_SET_DTX(0)) != OpusError.OPUS_OK) test_failed();
+            //if (opus_encoder_ctl(enc, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
+            //opus_encoder_destroy(enc);
+            //if (opus_multistream_encoder_ctl(MSenc, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
+            //opus_multistream_encoder_destroy(MSenc);
+            //if (OpusDecoder_ctl(dec, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
+            //OpusDecoder_destroy(dec);
+            //if (opus_multistream_decoder_ctl(MSdec, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
 
-            //for (rc = 0; rc < 3; rc++)
-            //{
-            //    if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_VBR(rc < 2)) != OpusError.OPUS_OK) test_failed();
-            //    if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_VBR_CONSTRAINT(rc == 1)) != OpusError.OPUS_OK) test_failed();
-            //    if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_VBR_CONSTRAINT(rc == 1)) != OpusError.OPUS_OK) test_failed();
-            //    if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_INBAND_FEC(rc == 0)) != OpusError.OPUS_OK) test_failed();
-            //    for (j = 0; j < 16; j++)
-            //    {
-            //        int rate;
-            //        int modes[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2 };
-            //        int rates[16] = { 4000, 12000, 32000, 8000, 16000, 32000, 48000, 88000, 4000, 12000, 32000, 8000, 16000, 32000, 48000, 88000 };
-            //        int frame[16] = { 160 * 1, 160, 80, 160, 160, 80, 40, 20, 160 * 1, 160, 80, 160, 160, 80, 40, 20 };
-            //        if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_INBAND_FEC(rc == 0 && j == 1)) != OpusError.OPUS_OK) test_failed();
-            //        if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_FORCE_MODE(MODE_SILK_ONLY + modes[j])) != OpusError.OPUS_OK) test_failed();
-            //        rate = rates[j] + fast_rand() % rates[j];
-            //        if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_DTX(fast_rand() & 1)) != OpusError.OPUS_OK) test_failed();
-            //        if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_BITRATE(rate)) != OpusError.OPUS_OK) test_failed();
-            //        count = i = 0;
-            //        do
-            //        {
-            //            int pred, len, out_samples, frame_size, loss;
-            //            if (opus_multistream_encoder_ctl(MSenc, OPUS_GET_PREDICTION_DISABLED(&pred)) != OpusError.OPUS_OK) test_failed();
-            //            if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_PREDICTION_DISABLED((int)(fast_rand() & 15) < (pred ? 11 : 4))) != OpusError.OPUS_OK) test_failed();
-            //            frame_size = frame[j];
-            //            if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_COMPLEXITY((count >> 2) % 11)) != OpusError.OPUS_OK) test_failed();
-            //            if (opus_multistream_encoder_ctl(MSenc, OPUS_SET_PACKET_LOSS_PERC((fast_rand() & 15) & (fast_rand() % 15))) != OpusError.OPUS_OK) test_failed();
-            //            if ((fast_rand() & 255) == 0)
-            //            {
-            //                if (opus_multistream_encoder_ctl(MSenc, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-            //                if (opus_multistream_decoder_ctl(MSdec, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-            //                if ((fast_rand() & 3) != 0)
-            //                {
-            //                    if (opus_multistream_decoder_ctl(MSdec_err, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-            //                }
-            //            }
-            //            if ((fast_rand() & 255) == 0)
-            //            {
-            //                if (opus_multistream_decoder_ctl(MSdec_err, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-            //            }
-            //            len = opus_multistream_encode(MSenc, &inbuf[i << 1], frame_size, packet, MAX_PACKET);
-            //            if (len < 0 || len > MAX_PACKET) test_failed();
-            //            if (opus_multistream_encoder_ctl(MSenc, OPUS_GET_FINAL_RANGE(&enc_final_range)) != OpusError.OPUS_OK) test_failed();
-            //            if ((fast_rand() & 3) == 0)
-            //            {
-            //                if (opus_multistream_packet_pad(packet, len, len + 1, 2) != OpusError.OPUS_OK) test_failed();
-            //                len++;
-            //            }
-            //            if ((fast_rand() & 7) == 0)
-            //            {
-            //                if (opus_multistream_packet_pad(packet, len, len + 256, 2) != OpusError.OPUS_OK) test_failed();
-            //                len += 256;
-            //            }
-            //            if ((fast_rand() & 3) == 0)
-            //            {
-            //                len = opus_multistream_packet_unpad(packet, len, 2);
-            //                if (len < 1) test_failed();
-            //            }
-            //            out_samples = opus_multistream_decode(MSdec, packet, len, out2buf, MAX_FRAME_SAMP, 0);
-            //            if (out_samples != frame_size * 6) test_failed();
-            //            if (opus_multistream_decoder_ctl(MSdec, OPUS_GET_FINAL_RANGE(&dec_final_range)) != OpusError.OPUS_OK) test_failed();
-            //            if (enc_final_range != dec_final_range) test_failed();
-            //            /*LBRR decode*/
-            //            loss = (fast_rand() & 63) == 0;
-            //            out_samples = opus_multistream_decode(MSdec_err, packet, loss ? 0 : len, out2buf, frame_size * 6, (fast_rand() & 3) != 0);
-            //            if (out_samples != (frame_size * 6)) test_failed();
-            //            i += frame_size;
-            //            count++;
-            //        } while (i < (SSAMPLES / 12 - MAX_FRAME_SAMP));
-            //        fprintf(stdout, "    Mode %s NB dual-mono MS encode %s, %6d bps OK.\n", mstrings[modes[j]], rc == 0 ? " VBR" : rc == 1 ? "CVBR" : " CBR", rate);
-            //    }
-            //}
+            return 0;
+        }
 
+        internal static int run_test2(bool no_fuzz)
+        {
+            byte[] mapping/*[256]*/ = { 0, 1, 255 };
+            byte[] db62 = new byte[36];
+            int i;
+            int rc, j;
+            BoxedValue<int> err = new BoxedValue<int>();
+            OpusMSEncoder MSenc;
+            OpusMSDecoder MSdec;
+            OpusMSDecoder MSdec_err;
+            OpusDecoder[] dec_err = new OpusDecoder[10];
+            Pointer<short> inbuf;
+            Pointer<short> outbuf;
+            Pointer<short> out2buf;
+            Pointer<byte> packet = Pointer.Malloc<byte>(MAX_PACKET + 257);
+            uint enc_final_range;
+            uint dec_final_range;
+            int count;
+
+            inbuf = Pointer.Malloc<short>(SAMPLES * 2);
+            outbuf = Pointer.Malloc<short>(SAMPLES * 2);
+            out2buf = Pointer.Malloc<short>(MAX_FRAME_SAMP * 3);
+            if (inbuf == null || outbuf == null || out2buf == null) test_failed();
+
+            generate_music(inbuf, SAMPLES);
+
+            for (i = 0; i < 2; i++)
+            {
+                BoxedValue<int> ret_err = i != 0 ? null : err;
+                MSenc = OpusMSEncoder.Create(8000, 2, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED, ret_err);
+                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
+
+                MSenc = OpusMSEncoder.Create(8000, 0, 1, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
+                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
+
+                MSenc = OpusMSEncoder.Create(44100, 2, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
+                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
+
+                MSenc = OpusMSEncoder.Create(8000, 2, 2, 3, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
+                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
+
+                MSenc = OpusMSEncoder.Create(8000, 2, -1, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
+                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
+
+                MSenc = OpusMSEncoder.Create(8000, 256, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_VOIP, ret_err);
+                if ((ret_err != null && ret_err.Val != OpusError.OPUS_BAD_ARG) || MSenc != null) test_failed();
+            }
+
+            MSenc = OpusMSEncoder.Create(8000, 2, 2, 0, mapping.GetPointer(), OpusApplication.OPUS_APPLICATION_AUDIO, err);
+            if (err.Val != OpusError.OPUS_OK || MSenc == null) test_failed();
+
+            MSdec = OpusMSDecoder.Create(48000, 2, 2, 0, mapping.GetPointer(), err);
+            if (err.Val != OpusError.OPUS_OK || MSdec == null) test_failed();
+
+            MSdec_err = OpusMSDecoder.Create(48000, 3, 2, 0, mapping.GetPointer(), err);
+            if (err.Val != OpusError.OPUS_OK || MSdec_err == null) test_failed();
+
+            /*Some multistream encoder API tests*/
+            i = MSenc.GetBitrate();
+            i = MSenc.GetLSBDepth();
+            if (i < 16) test_failed();
+
+            {
+                OpusEncoder tmp_enc;
+                tmp_enc = MSenc.GetMultistreamEncoderState(1);
+                if (tmp_enc == null) test_failed();
+                j = tmp_enc.GetLSBDepth();
+                if (i != j) test_failed();
+                try
+                {
+                    MSenc.GetMultistreamEncoderState(2);
+                    test_failed();
+                }
+                catch (ArgumentException e) { }
+            }
+
+            OpusMode[] modes = { OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY };
+            int[] rates = { 4000, 12000, 32000, 8000, 16000, 32000, 48000, 88000, 4000, 12000, 32000, 8000, 16000, 32000, 48000, 88000 };
+            int[] frame = { 160 * 1, 160, 80, 160, 160, 80, 40, 20, 160 * 1, 160, 80, 160, 160, 80, 40, 20 };
+
+            for (rc = 0; rc < 3; rc++)
+            {
+                MSenc.SetVBR(rc < 2);
+                MSenc.SetVBRConstraint(rc == 1);
+                MSenc.SetUseInbandFEC(rc == 0);
+                for (j = 0; j < 16; j++)
+                {
+                    int rate;
+                    MSenc.SetUseInbandFEC(rc == 0 && j == 1);
+                    MSenc.SetForceMode(modes[j]);
+                    rate = rates[j] + ((int)fast_rand() % rates[j]);
+                    MSenc.SetUseDTX((fast_rand() & 1U) != 0);
+                    MSenc.SetBitrate(rate);
+                    count = i = 0;
+                    do
+                    {
+                        int len, out_samples, frame_size;
+                        bool loss;
+                        bool pred = MSenc.GetPredictionDisabled();
+                        MSenc.SetPredictionDisabled((int)(fast_rand() & 15) < (pred ? 11 : 4));
+                        frame_size = frame[j];
+                        MSenc.SetComplexity((count >> 2) % 11);
+                        MSenc.SetPacketLossPercent(((int)fast_rand() & 15) & ((int)fast_rand() % 15));
+                        if ((fast_rand() & 255) == 0)
+                        {
+                            MSenc.ResetState();
+                            MSdec.ResetState();
+                            if ((fast_rand() & 3) != 0)
+                            {
+                                MSdec_err.ResetState();
+                            }
+                        }
+                        if ((fast_rand() & 255) == 0)
+                        {
+                            MSdec_err.ResetState();
+                        }
+                        len = MSenc.EncodeMultistream(inbuf.Point(i << 1), frame_size, packet, MAX_PACKET);
+                        if (len < 0 || len > MAX_PACKET) test_failed();
+                        enc_final_range = MSenc.GetFinalRange();
+                        if ((fast_rand() & 3) == 0)
+                        {
+                            if (Repacketizer.opus_multistream_packet_pad(packet, len, len + 1, 2) != OpusError.OPUS_OK) test_failed();
+                            len++;
+                        }
+                        if ((fast_rand() & 7) == 0)
+                        {
+                            if (Repacketizer.opus_multistream_packet_pad(packet, len, len + 256, 2) != OpusError.OPUS_OK) test_failed();
+                            len += 256;
+                        }
+                        //if ((fast_rand() & 3) == 0)
+                        //{
+                        //    len = Repacketizer.opus_multistream_packet_unpad(packet, len, 2);
+                        //    if (len < 1) test_failed();
+                        //}
+                        out_samples = MSdec.DecodeMultistream(packet, len, out2buf, MAX_FRAME_SAMP, 0);
+                        if (out_samples != frame_size * 6) test_failed();
+                        dec_final_range = MSdec.GetFinalRange();
+                        if (enc_final_range != dec_final_range) test_failed();
+                        /*LBRR decode*/
+                        loss = (fast_rand() & 63) == 0;
+                        out_samples = MSdec_err.DecodeMultistream(packet, loss ? 0 : len, out2buf, frame_size * 6, ((fast_rand() & 3) != 0) ? 1 : 0);
+                        if (out_samples != (frame_size * 6)) test_failed();
+                        i += frame_size;
+                        count++;
+                    } while (i < (SSAMPLES / 12 - MAX_FRAME_SAMP));
+                    Console.WriteLine("    Mode {0} NB dual-mono MS encode {1}, {2} bps OK.", mstrings[(int)modes[j] - (int)OpusMode.MODE_SILK_ONLY], rc == 0 ? " VBR" : rc == 1 ? "CVBR" : " CBR", rate);
+                }
+            }
+
+            return 0;
+        }
+
+        internal static int run_test3(bool no_fuzz)
+        {
             //bitrate_bps = 512000;
             //fsize = fast_rand() % 31;
             //fswitch = 100;
@@ -476,14 +509,6 @@ namespace TestOpusEncode
             //} while (i < SAMPLES * 4);
             //fprintf(stdout, "    All framesize pairs switching encode, %d frames OK.\n", count);
 
-            //if (opus_encoder_ctl(enc, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-            //opus_encoder_destroy(enc);
-            //if (opus_multistream_encoder_ctl(MSenc, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-            //opus_multistream_encoder_destroy(MSenc);
-            //if (OpusDecoder_ctl(dec, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-            //OpusDecoder_destroy(dec);
-            //if (opus_multistream_decoder_ctl(MSdec, OPUS_RESET_STATE) != OpusError.OPUS_OK) test_failed();
-
             return 0;
         }
 
@@ -496,7 +521,9 @@ namespace TestOpusEncode
             string oversion = CodecHelpers.opus_get_version_string();
 
             Console.WriteLine("Testing {0} encoder. Random seed: {1}", oversion, iseed);
+            run_test2(true);
             run_test1(true);
+            run_test3(true);
 
             Console.WriteLine("Tests completed successfully.");
         }

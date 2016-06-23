@@ -148,6 +148,9 @@ namespace Concentus.Structs
         internal readonly SilkEncoder SilkEncoder = new SilkEncoder();
         internal readonly CeltEncoder Celt_Encoder = new CeltEncoder();
 
+        // Hide the public constructor
+        internal OpusEncoder() { }
+
         internal void Reset()
         {
             silk_mode.Reset();

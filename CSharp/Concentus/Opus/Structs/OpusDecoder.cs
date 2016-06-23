@@ -94,6 +94,9 @@ namespace Concentus.Structs
         internal SilkDecoder SilkDecoder = new SilkDecoder();
         internal CeltDecoder Celt_Decoder = new CeltDecoder();
 
+        // Hide the public constructor
+        internal OpusDecoder() { }
+
         internal void Reset()
         {
             channels = 0;

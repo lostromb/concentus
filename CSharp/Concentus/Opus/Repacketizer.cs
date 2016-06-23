@@ -521,6 +521,7 @@ namespace Concentus
             return opus_packet_pad(data, len, len + amount);
         }
 
+        // FIXME THIS METHOD FAILS IN TEST_OPUS_ENCODE
         /** Remove all padding from a given Opus multi-stream packet and rewrite the TOC sequence to
   * minimize space usage.
   * @param[in,out] data <tt>const unsigned char*</tt>: The buffer containing the

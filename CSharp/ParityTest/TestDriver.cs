@@ -18,6 +18,7 @@ namespace ParityTest
 
         private const int DECODER_CHANNELS = 2;
         private const int DECODER_FS = 48000;
+        private const int BUFFER_OFFSET = 30;
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr opus_encoder_create(int Fs, int channels, int application, out IntPtr error);
@@ -171,19 +172,23 @@ namespace ParityTest
                         if (random.NextDouble() < 0.5)
                         {
                             concentusEncoder.SetForceMode(OpusMode.MODE_AUTO);
+                            if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.SetForceMode(OpusMode.MODE_AUTO);
                             opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, OpusConstants.OPUS_AUTO);
                         }
                         else
                         {
                             concentusEncoder.SetForceMode(parameters.ForceMode);
+                            if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.SetForceMode(parameters.ForceMode);
                             opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, (int)parameters.ForceMode);
                         }
                     }
 
+                    Pointer<short> inputPacketWithOffset = Pointerize(inputPacket);
                     concentusTimer.Start();
                     // Encode with Concentus
-                    concentusPacketSize = concentusEncoder.Encode(inputPacket, 0, frameSize, outputBuffer, 0, 10000);
+                    concentusPacketSize = concentusEncoder.Encode(inputPacketWithOffset.Data, inputPacketWithOffset.Offset, frameSize, outputBuffer, BUFFER_OFFSET, 10000 - BUFFER_OFFSET);
                     concentusTimer.Stop();
+
                     if (concentusPacketSize <= 0)
                     {
                         returnVal.Message = "Invalid packet produced (" + concentusPacketSize + ") (frame " + frameCount + ")";
@@ -192,7 +197,7 @@ namespace ParityTest
                         return returnVal;
                     }
                     concentusEncoded = new byte[concentusPacketSize];
-                    Array.Copy(outputBuffer, concentusEncoded, concentusPacketSize);
+                    Array.Copy(outputBuffer, BUFFER_OFFSET, concentusEncoded, 0, concentusPacketSize);
 
                     // Encode with Opus
                     byte[] opusEncoded;
@@ -232,7 +237,8 @@ namespace ParityTest
                     // Ensure that the packet can be parsed back
                     try
                     {
-                        OpusPacketInfo packetInfo = OpusPacketInfo.ParseOpusPacket(concentusEncoded, 0, concentusPacketSize);
+                        Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
+                        OpusPacketInfo packetInfo = OpusPacketInfo.ParseOpusPacket(concentusEncodedWithOffset.Data, concentusEncodedWithOffset.Offset, concentusPacketSize);
                     }
                     catch (OpusException e)
                     {
@@ -406,6 +412,20 @@ namespace ParityTest
             }
 
             return processedValues;
+        }
+
+        public static Pointer<T> Pointerize<T>(T[] array)
+        {
+            T[] newArray = new T[array.Length + BUFFER_OFFSET];
+            Array.Copy(array, 0, newArray, BUFFER_OFFSET, array.Length);
+            return newArray.GetPointer(BUFFER_OFFSET);
+        }
+
+        public static T[] Unpointerize<T>(Pointer<T> array, int length)
+        {
+            T[] newArray = new T[length - BUFFER_OFFSET];
+            array.MemCopyTo(newArray, 0, newArray.Length);
+            return newArray;
         }
     }
 }
