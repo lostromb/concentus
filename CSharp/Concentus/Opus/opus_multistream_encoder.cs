@@ -744,7 +744,7 @@ namespace Concentus
                     c2 = -1;
                 }
                 if (st.surround != 0)
-                    enc.SetEnergyMask(bandLogE);
+                    enc.SetEnergyMask(bandLogE.Data);
 
                 /* number of bytes left (+Toc) */
                 curr_max = max_data_bytes - tot_size;

@@ -405,7 +405,7 @@ namespace Concentus.Structs
             int redundancy = 0;
             int redundancy_bytes = 0; /* Number of bytes to use for redundancy frame */
             int celt_to_silk = 0;
-            Pointer<int> pcm_buf;
+            int[] pcm_buf;
             int nb_compr_bytes;
             int to_celt = 0;
             uint redundant_rng = 0;
@@ -426,7 +426,7 @@ namespace Concentus.Structs
             int analysis_read_pos_bak = -1;
             int analysis_read_subframe_bak = -1;
 #endif
-            Pointer<int> tmp_prefill;
+            int[] tmp_prefill;
 
             max_data_bytes = Inlines.IMIN(1276, out_data_bytes);
 
@@ -696,8 +696,8 @@ namespace Concentus.Structs
             /* Automatic (rate-dependent) bandwidth selection */
             if (this.mode == OpusMode.MODE_CELT_ONLY || this.first != 0 || this.silk_mode.allowBandwidthSwitch != 0)
             {
-                Pointer<int> voice_bandwidth_thresholds;
-                Pointer<int> music_bandwidth_thresholds;
+                int[] voice_bandwidth_thresholds;
+                int[] music_bandwidth_thresholds;
                 int[] bandwidth_thresholds = new int[8];
                 int bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
                 int equiv_rate2;
@@ -713,12 +713,12 @@ namespace Concentus.Structs
                 }
                 if (this.channels == 2 && this.force_channels != 1)
                 {
-                    voice_bandwidth_thresholds = Tables.stereo_voice_bandwidth_thresholds.GetPointer();
-                    music_bandwidth_thresholds = Tables.stereo_music_bandwidth_thresholds.GetPointer();
+                    voice_bandwidth_thresholds = Tables.stereo_voice_bandwidth_thresholds;
+                    music_bandwidth_thresholds = Tables.stereo_music_bandwidth_thresholds;
                 }
                 else {
-                    voice_bandwidth_thresholds = Tables.mono_voice_bandwidth_thresholds.GetPointer();
-                    music_bandwidth_thresholds = Tables.mono_music_bandwidth_thresholds.GetPointer();
+                    voice_bandwidth_thresholds = Tables.mono_voice_bandwidth_thresholds;
+                    music_bandwidth_thresholds = Tables.mono_music_bandwidth_thresholds;
                 }
                 /* Interpolate bandwidth thresholds depending on voice estimation */
                 for (i = 0; i < 8; i++)
@@ -803,7 +803,7 @@ namespace Concentus.Structs
             /* Can't support higher than wideband for >20 ms frames */
             if (frame_size > this.Fs / 50 && (this.mode == OpusMode.MODE_CELT_ONLY || this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
             {
-                Pointer<byte> tmp_data;
+                byte[] tmp_data;
                 int nb_frames;
                 int bak_bandwidth, bak_channels, bak_to_mono;
                 OpusMode bak_mode;
@@ -822,7 +822,7 @@ namespace Concentus.Structs
                 nb_frames = frame_size > this.Fs / 25 ? 3 : 2;
                 bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
 
-                tmp_data = Pointer.Malloc<byte>(nb_frames * bytes_per_frame);
+                tmp_data = new byte[nb_frames * bytes_per_frame];
 
                 rp = new OpusRepacketizer();
                 Repacketizer.opus_repacketizer_init(rp);
@@ -848,14 +848,14 @@ namespace Concentus.Structs
                     if (to_celt != 0 && i == nb_frames - 1)
                         this.user_forced_mode = OpusMode.MODE_CELT_ONLY;
                     tmp_len = opus_encode_native(pcm, pcm_ptr + (i * (this.channels * this.Fs / 50)), this.Fs / 50,
-                          tmp_data.Data, tmp_data.Offset + (i * bytes_per_frame), bytes_per_frame, lsb_depth,
+                          tmp_data, i * bytes_per_frame, bytes_per_frame, lsb_depth,
                           null, 0, 0, c1, c2, analysis_channels, downmix, float_api);
                     if (tmp_len < 0)
                     {
 
                         return OpusError.OPUS_INTERNAL_ERROR;
                     }
-                    ret = Repacketizer.opus_repacketizer_cat(rp, tmp_data.Point(i * bytes_per_frame), tmp_len);
+                    ret = Repacketizer.opus_repacketizer_cat(rp, tmp_data.GetPointer(i * bytes_per_frame), tmp_len);
                     if (ret < 0)
                     {
 
@@ -894,8 +894,8 @@ namespace Concentus.Structs
 
             enc.enc_init(data.GetPointer(data_ptr), (uint)(max_data_bytes - 1));
 
-            pcm_buf = Pointer.Malloc<int>((total_buffer + frame_size) * this.channels);
-            this.delay_buffer.Point((this.encoder_buffer - total_buffer) * this.channels).MemCopyTo(pcm_buf, total_buffer * this.channels);
+            pcm_buf = new int[(total_buffer + frame_size) * this.channels];
+            this.delay_buffer.Point((this.encoder_buffer - total_buffer) * this.channels).MemCopyTo(pcm_buf, 0, total_buffer * this.channels);
 
             if (this.mode == OpusMode.MODE_CELT_ONLY)
                 hp_freq_smth1 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
@@ -910,10 +910,10 @@ namespace Concentus.Structs
 
             if (this.application == OpusApplication.OPUS_APPLICATION_VOIP)
             {
-                CodecHelpers.hp_cutoff(pcm.GetPointer(pcm_ptr), cutoff_Hz, pcm_buf.Point(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
+                CodecHelpers.hp_cutoff(pcm.GetPointer(pcm_ptr), cutoff_Hz, pcm_buf.GetPointer(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
             }
             else {
-                CodecHelpers.dc_reject(pcm.GetPointer(pcm_ptr), 3, pcm_buf.Point(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
+                CodecHelpers.dc_reject(pcm.GetPointer(pcm_ptr), 3, pcm_buf.GetPointer(total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
             }
 
             /* SILK processing */
@@ -921,7 +921,7 @@ namespace Concentus.Structs
             if (this.mode != OpusMode.MODE_CELT_ONLY)
             {
                 int total_bitRate, celt_rate;
-                Pointer<short> pcm_silk = Pointer.Malloc<short>(this.channels * frame_size);
+                short[] pcm_silk = new short[this.channels * frame_size];
 
                 /* Distribute bits between SILK and CELT */
                 total_bitRate = 8 * bytes_target * frame_rate;
@@ -1079,13 +1079,13 @@ namespace Concentus.Structs
                           0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
                     this.delay_buffer.MemSet(0, prefill_offset);
 
-                    // fixme: wasteful conversion here; need to normalize the PCM path to use int16 exclusively
+                    // fixme: wasteful conversion here; need to normalize the delay buffer path to use int16 exclusively
                     for (i = 0; i < this.encoder_buffer * this.channels; i++)
                     {
                         pcm_silk[i] = (short)(this.delay_buffer[i]);
                     }
 
-                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, zero, 1);
+                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk.GetPointer(), this.encoder_buffer, null, zero, 1);
                 }
 
                 for (i = 0; i < frame_size * this.channels; i++)
@@ -1094,7 +1094,7 @@ namespace Concentus.Structs
                 }
 
                 BoxedValue<int> boxed_silkBytes = new BoxedValue<int>(nBytes);
-                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
+                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk.GetPointer(), frame_size, enc, boxed_silkBytes, 0);
                 nBytes = boxed_silkBytes.Val;
 
                 if (ret != 0)
@@ -1218,28 +1218,27 @@ namespace Concentus.Structs
             }
 
 
-            tmp_prefill = Pointer.Malloc<int>(this.channels * this.Fs / 400);
+            tmp_prefill = new int[this.channels * this.Fs / 400];
             if (this.mode != OpusMode.MODE_SILK_ONLY && this.mode != this.prev_mode && this.prev_mode > 0)
             {
-                this.delay_buffer.Point((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels).MemCopyTo(tmp_prefill, this.channels * this.Fs / 400);
+                this.delay_buffer.Point((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels).MemCopyTo(tmp_prefill, 0, this.channels * this.Fs / 400);
             }
 
             if (this.channels * (this.encoder_buffer - (frame_size + total_buffer)) > 0)
             {
                 this.delay_buffer.Point(this.channels * frame_size).MemMoveTo(this.delay_buffer, this.channels * (this.encoder_buffer - frame_size - total_buffer));
-
-                pcm_buf.MemCopyTo(this.delay_buffer.Point(this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
+                this.delay_buffer.Point(this.channels * (this.encoder_buffer - frame_size - total_buffer)).MemCopyFrom(pcm_buf, 0, (frame_size + total_buffer) * this.channels);
             }
             else
             {
-                pcm_buf.Point((frame_size + total_buffer - this.encoder_buffer) * this.channels).MemCopyTo(this.delay_buffer, this.encoder_buffer * this.channels);
+                this.delay_buffer.MemCopyFrom(pcm_buf, (frame_size + total_buffer - this.encoder_buffer) * this.channels, this.encoder_buffer * this.channels);
             }
 
             /* gain_fade() and stereo_fade() need to be after the buffer copying
                because we don't want any of this to affect the SILK part */
             if (this.prev_HB_gain < CeltConstants.Q15ONE || HB_gain < CeltConstants.Q15ONE)
             {
-                CodecHelpers.gain_fade(pcm_buf, pcm_buf,
+                CodecHelpers.gain_fade(pcm_buf.GetPointer(), pcm_buf.GetPointer(),
                       this.prev_HB_gain, HB_gain, celt_mode.overlap, frame_size, this.channels, celt_mode.window, this.Fs);
             }
 
@@ -1256,7 +1255,7 @@ namespace Concentus.Structs
                     g2 = (int)(this.silk_mode.stereoWidth_Q14);
                     g1 = g1 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g1, 1);
                     g2 = g2 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g2, 1);
-                    CodecHelpers.stereo_fade(pcm_buf, pcm_buf, g1, g2, celt_mode.overlap,
+                    CodecHelpers.stereo_fade(pcm_buf.GetPointer(), pcm_buf.GetPointer(), g1, g2, celt_mode.overlap,
                           frame_size, this.channels, celt_mode.window, this.Fs);
                     this.hybrid_stereo_width_Q14 = Inlines.CHOP16(this.silk_mode.stereoWidth_Q14);
                 }
@@ -1315,7 +1314,7 @@ namespace Concentus.Structs
                 int err;
                 celt_enc.SetStartBand(0);
                 celt_enc.SetVBR(false);
-                err = celt_enc.celt_encode_with_ec(pcm_buf, this.Fs / 200, data.GetPointer(data_ptr + nb_compr_bytes), redundancy_bytes, null);
+                err = celt_enc.celt_encode_with_ec(pcm_buf.GetPointer(), this.Fs / 200, data.GetPointer(data_ptr + nb_compr_bytes), redundancy_bytes, null);
                 if (err < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1334,13 +1333,13 @@ namespace Concentus.Structs
                     celt_enc.ResetState();
 
                     /* Prefilling */
-                    celt_enc.celt_encode_with_ec(tmp_prefill, this.Fs / 400, dummy.GetPointer(), 2, null);
+                    celt_enc.celt_encode_with_ec(tmp_prefill.GetPointer(), this.Fs / 400, dummy.GetPointer(), 2, null);
                     celt_enc.SetPrediction(0);
                 }
                 /* If false, we already busted the budget and we'll end up with a "PLC packet" */
                 if (enc.tell() <= 8 * nb_compr_bytes)
                 {
-                    ret = celt_enc.celt_encode_with_ec(pcm_buf, frame_size, null, nb_compr_bytes, enc);
+                    ret = celt_enc.celt_encode_with_ec(pcm_buf.GetPointer(), frame_size, null, nb_compr_bytes, enc);
                     if (ret < 0)
                     {
                         return OpusError.OPUS_INTERNAL_ERROR;
@@ -1362,9 +1361,9 @@ namespace Concentus.Structs
                 celt_enc.SetPrediction(0);
 
                 /* NOTE: We could speed this up slightly (at the expense of code size) by just adding a function that prefills the buffer */
-                celt_enc.celt_encode_with_ec(pcm_buf.Point(this.channels * (frame_size - N2 - N4)), N4, dummy.GetPointer(), 2, null);
+                celt_enc.celt_encode_with_ec(pcm_buf.GetPointer(this.channels * (frame_size - N2 - N4)), N4, dummy.GetPointer(), 2, null);
 
-                err = celt_enc.celt_encode_with_ec(pcm_buf.Point(this.channels * (frame_size - N2)), N2, data.GetPointer(data_ptr + nb_compr_bytes), redundancy_bytes, null);
+                err = celt_enc.celt_encode_with_ec(pcm_buf.GetPointer(this.channels * (frame_size - N2)), N2, data.GetPointer(data_ptr + nb_compr_bytes), redundancy_bytes, null);
                 if (err < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1844,10 +1843,10 @@ namespace Concentus.Structs
             Celt_Encoder.SetLFE(value);
         }
 
-        public void SetEnergyMask(Pointer<int> value)
+        public void SetEnergyMask(int[] value)
         {
-            energy_masking = value;
-            Celt_Encoder.SetEnergyMask(value);
+            energy_masking = value.GetPointer();
+            Celt_Encoder.SetEnergyMask(value.GetPointer());
         }
 
         internal CeltMode GetCeltMode()

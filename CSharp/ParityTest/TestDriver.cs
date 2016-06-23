@@ -150,7 +150,7 @@ namespace ParityTest
             int frameCount = 0;
             Stopwatch concentusTimer = new Stopwatch();
             Stopwatch opusTimer = new Stopwatch();
-            Random packetLoss = new Random();
+            Random random = new Random();
             Queue<string> PacketTransmissionPattern = new Queue<string>();
             for (int c = 0; c < 5; c++) PacketTransmissionPattern.Enqueue("|");
 
@@ -164,6 +164,21 @@ namespace ParityTest
                     returnVal.FrameCount = frameCount;
                     Array.Copy(inputFile, inputPointer, inputPacket, 0, frameSizeStereo);
                     inputPointer += frameSizeStereo;
+
+                    // Should we randomly switch modes?
+                    if (parameters.ForceMode != OpusMode.MODE_AUTO && random.NextDouble() < 0.2)
+                    {
+                        if (random.NextDouble() < 0.5)
+                        {
+                            concentusEncoder.SetForceMode(OpusMode.MODE_AUTO);
+                            opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, OpusConstants.OPUS_AUTO);
+                        }
+                        else
+                        {
+                            concentusEncoder.SetForceMode(parameters.ForceMode);
+                            opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, (int)parameters.ForceMode);
+                        }
+                    }
 
                     concentusTimer.Start();
                     // Encode with Concentus
@@ -262,7 +277,7 @@ namespace ParityTest
                 // Should we simulate dropping the packet?
                 PacketTransmissionPattern.Dequeue();
                 bool droppedPacket = false;
-                if (packetLoss.Next(0, 100) < parameters.PacketLossPercent)
+                if (random.Next(0, 100) < parameters.PacketLossPercent)
                 {
                     droppedPacket = true;
                     PacketTransmissionPattern.Enqueue("X");
@@ -286,7 +301,7 @@ namespace ParityTest
                 }
                 else
                 {
-                    bool useFEC = packetLoss.NextDouble() > 0.5;
+                    bool useFEC = random.NextDouble() > 0.5;
                     // Decode with Concentus FEC
                     int concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, decodedFrameSize, useFEC);
 
