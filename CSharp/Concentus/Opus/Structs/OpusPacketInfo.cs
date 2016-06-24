@@ -104,9 +104,9 @@ namespace Concentus.Structs
         /// </summary>
         /// <param name="data">An Opus packet (must be at least 1 byte)</param>
         /// <returns>An OpusBandwidth value</returns>
-        public static int GetBandwidth(byte[] packet, int packet_offset)
+        public static OpusBandwidth GetBandwidth(byte[] packet, int packet_offset)
         {
-            int bandwidth;
+            OpusBandwidth bandwidth;
             if ((packet[packet_offset] & 0x80) != 0)
             {
                 bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((packet[packet_offset] >> 5) & 0x3);

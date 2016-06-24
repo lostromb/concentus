@@ -13,7 +13,7 @@ namespace Concentus
 {
     public static class CodecHelpers
     {
-        internal static byte gen_toc(OpusMode mode, int framerate, int bandwidth, int channels)
+        internal static byte gen_toc(OpusMode mode, int framerate, OpusBandwidth bandwidth, int channels)
         {
             int period;
             byte toc;

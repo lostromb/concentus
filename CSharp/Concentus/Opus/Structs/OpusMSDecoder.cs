@@ -326,10 +326,10 @@ namespace Concentus.Structs
 
         #region Getters and setters
 
-        public int GetBandwidth()
+        public OpusBandwidth GetBandwidth()
         {
             if (decoders == null || decoders.Length == 0)
-                return OpusError.OPUS_INVALID_STATE;
+                throw new InvalidOperationException("Decoder not initialized");
             return decoders[0].GetBandwidth();
         }
 

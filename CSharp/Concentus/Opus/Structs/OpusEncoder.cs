@@ -107,8 +107,8 @@ namespace Concentus.Structs
         internal int delay_compensation;
         internal int force_channels;
         internal OpusSignal signal_type;
-        internal int user_bandwidth;
-        internal int max_bandwidth;
+        internal OpusBandwidth user_bandwidth;
+        internal OpusBandwidth max_bandwidth;
         internal OpusMode user_forced_mode;
         internal int voice_ratio;
         internal int Fs;
@@ -132,14 +132,14 @@ namespace Concentus.Structs
         internal OpusMode prev_mode;
         internal int prev_channels;
         internal int prev_framesize;
-        internal int bandwidth;
+        internal OpusBandwidth bandwidth;
         internal int silk_bw_switch;
         /* Sampling rate (at the API level) */
         internal int first;
         internal Pointer<int> energy_masking;
         internal readonly StereoWidthState width_mem = new StereoWidthState();
         internal readonly Pointer<int> delay_buffer = Pointer.Malloc<int>(OpusConstants.MAX_ENCODER_BUFFER * 2);
-        internal int detected_bandwidth;
+        internal OpusBandwidth detected_bandwidth;
         internal uint rangeFinal;
 
         // [Porting Note] There were originally "cabooses" that were tacked onto the end
@@ -333,7 +333,7 @@ namespace Concentus.Structs
             this.bitrate_bps = 3000 + Fs * channels;
             this.application = application;
             this.signal_type = OpusSignal.OPUS_SIGNAL_AUTO;
-            this.user_bandwidth = OpusConstants.OPUS_AUTO;
+            this.user_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_AUTO;
             this.max_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
             this.force_channels = OpusConstants.OPUS_AUTO;
             this.user_forced_mode = OpusMode.MODE_AUTO;
@@ -420,7 +420,7 @@ namespace Concentus.Structs
             int delay_compensation;
             int frame_rate;
             int max_rate; /* Max bitrate we're allowed to use */
-            int curr_bandwidth;
+            OpusBandwidth curr_bandwidth;
             int HB_gain;
             int max_data_bytes; /* Max number of bytes we're allowed to use */
             int total_buffer;
@@ -512,7 +512,7 @@ namespace Concentus.Structs
             {
                 /*If the space is too low to do something useful, emit 'PLC' frames.*/
                 OpusMode tocmode = this.mode;
-                int bw = this.bandwidth == 0 ? OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND : this.bandwidth;
+                OpusBandwidth bw = this.bandwidth == 0 ? OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND : this.bandwidth;
                 if (tocmode == 0)
                     tocmode = OpusMode.MODE_SILK_ONLY;
                 if (frame_rate > 100)
@@ -713,7 +713,7 @@ namespace Concentus.Structs
                 int[] voice_bandwidth_thresholds;
                 int[] music_bandwidth_thresholds;
                 int[] bandwidth_thresholds = new int[8];
-                int bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+                OpusBandwidth bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
                 int equiv_rate2;
 
                 equiv_rate2 = equiv_rate;
@@ -765,13 +765,13 @@ namespace Concentus.Structs
             if (this.bandwidth > this.max_bandwidth)
                 this.bandwidth = this.max_bandwidth;
 
-            if (this.user_bandwidth != OpusConstants.OPUS_AUTO)
+            if (this.user_bandwidth != OpusBandwidth.OPUS_BANDWIDTH_AUTO)
                 this.bandwidth = this.user_bandwidth;
 
             /* This prevents us from using hybrid at unsafe CBR/max rates */
             if (this.mode != OpusMode.MODE_CELT_ONLY && max_rate < 15000)
             {
-                this.bandwidth = Inlines.IMIN(this.bandwidth, OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
+                this.bandwidth = OpusBandwidthHelpers.MIN(this.bandwidth, OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
             }
 
             /* Prevents Opus from wasting bits on frequencies that are above
@@ -785,9 +785,9 @@ namespace Concentus.Structs
             if (this.Fs <= 8000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
                 this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
             /* Use detected bandwidth to reduce the encoded bandwidth. */
-            if (this.detected_bandwidth != 0 && this.user_bandwidth == OpusConstants.OPUS_AUTO)
+            if (this.detected_bandwidth != 0 && this.user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_AUTO)
             {
-                int min_detected_bandwidth;
+                OpusBandwidth min_detected_bandwidth;
                 /* Makes bandwidth detection more conservative just in case the detector
                    gets it wrong when we could have coded a high bandwidth transparently.
                    When operating in SILK/hybrid mode, we don't go below wideband to avoid
@@ -803,8 +803,8 @@ namespace Concentus.Structs
                 else
                     min_detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
 
-                this.detected_bandwidth = Inlines.IMAX(this.detected_bandwidth, min_detected_bandwidth);
-                this.bandwidth = Inlines.IMIN(this.bandwidth, this.detected_bandwidth);
+                this.detected_bandwidth = OpusBandwidthHelpers.MAX(this.detected_bandwidth, min_detected_bandwidth);
+                this.bandwidth = OpusBandwidthHelpers.MIN(this.bandwidth, this.detected_bandwidth);
             }
             celt_enc.SetLSBDepth(lsb_depth);
 
@@ -819,7 +819,8 @@ namespace Concentus.Structs
             {
                 byte[] tmp_data;
                 int nb_frames;
-                int bak_bandwidth, bak_channels, bak_to_mono;
+                OpusBandwidth bak_bandwidth;
+                int bak_channels, bak_to_mono;
                 OpusMode bak_mode;
                 OpusRepacketizer rp; // porting note: pointer
                 int bytes_per_frame;
@@ -1635,12 +1636,8 @@ namespace Concentus.Structs
             return force_channels;
         }
 
-        public void SetMaxBandwidth(int value)
+        public void SetMaxBandwidth(OpusBandwidth value)
         {
-            if (value < OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND || value > OpusBandwidth.OPUS_BANDWIDTH_FULLBAND)
-            {
-                throw new ArgumentException("Max bandwidth must be within acceptable range");
-            }
             max_bandwidth = value;
             if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
             {
@@ -1655,17 +1652,13 @@ namespace Concentus.Structs
             }
         }
 
-        public int GetMaxBandwidth()
+        public OpusBandwidth GetMaxBandwidth()
         {
             return max_bandwidth;
         }
 
-        public void SetBandwidth(int value)
+        public void SetBandwidth(OpusBandwidth value)
         {
-            if ((value < OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND || value > OpusBandwidth.OPUS_BANDWIDTH_FULLBAND) && value != OpusConstants.OPUS_AUTO)
-            {
-                throw new ArgumentException("Bandwidth must be within acceptable range");
-            }
             user_bandwidth = value;
             if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
             {
@@ -1680,7 +1673,7 @@ namespace Concentus.Structs
             }
         }
 
-        public int GetBandwidth()
+        public OpusBandwidth GetBandwidth()
         {
             return bandwidth;
         }

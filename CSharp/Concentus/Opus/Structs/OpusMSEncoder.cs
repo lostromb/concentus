@@ -840,12 +840,12 @@ namespace Concentus.Structs
             return encoders[0].GetForceChannels();
         }
 
-        public int GetMaxBandwidth()
+        public OpusBandwidth GetMaxBandwidth()
         {
             return encoders[0].GetMaxBandwidth();
         }
 
-        public int GetBandwidth()
+        public OpusBandwidth GetBandwidth()
         {
             return encoders[0].GetBandwidth();
         }
@@ -954,7 +954,7 @@ namespace Concentus.Structs
             }
         }
 
-        public void SetMaxBandwidth(int value)
+        public void SetMaxBandwidth(OpusBandwidth value)
         {
             for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
             {
@@ -962,7 +962,7 @@ namespace Concentus.Structs
             }
         }
 
-        public void SetBandwidth(int value)
+        public void SetBandwidth(OpusBandwidth value)
         {
             for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
             {

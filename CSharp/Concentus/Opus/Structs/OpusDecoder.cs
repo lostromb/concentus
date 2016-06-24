@@ -84,7 +84,7 @@ namespace Concentus.Structs
 
         /* Everything beyond this point gets cleared on a reset */
         internal int stream_channels;
-        internal int bandwidth;
+        internal OpusBandwidth bandwidth;
         internal OpusMode mode;
         internal OpusMode prev_mode;
         internal int frame_size;
@@ -613,7 +613,8 @@ namespace Concentus.Structs
             int i, nb_samples;
             int count, offset;
             byte toc;
-            int packet_frame_size, packet_bandwidth, packet_stream_channels;
+            int packet_frame_size, packet_stream_channels;
+            OpusBandwidth packet_bandwidth;
             OpusMode packet_mode;
             /* 48 x 2.5 ms = 120 ms */
             // fixme: make sure these values can fit in an int16
@@ -830,7 +831,7 @@ namespace Concentus.Structs
             }
         }
 
-        public int GetBandwidth()
+        public OpusBandwidth GetBandwidth()
         {
             return bandwidth;
         }

@@ -179,7 +179,7 @@ namespace TestOpusEncode
             //fwrite(inbuf, 1, SAMPLES*2*2, foo);
             //fclose(foo);*/
 
-            enc.SetBandwidth(OpusConstants.OPUS_AUTO);
+            enc.SetBandwidth(OpusBandwidth.OPUS_BANDWIDTH_AUTO);
 
             for (rc = 0; rc < 3; rc++)
             {
@@ -198,7 +198,8 @@ namespace TestOpusEncode
                     count = i = 0;
                     do
                     {
-                        int bw, len, out_samples, frame_size;
+                        OpusBandwidth bw;
+                        int len, out_samples, frame_size;
                         frame_size = frame[j];
                         if ((fast_rand() & 255) == 0)
                         {
@@ -226,7 +227,7 @@ namespace TestOpusEncode
                         {
                             dec.ResetState();
                         }
-
+                        
                         enc.SetUseInbandFEC(rc == 0);
                         enc.SetForceMode(OpusMode.MODE_SILK_ONLY + modes[j]);
                         enc.SetUseDTX((fast_rand() & 1) != 0);
