@@ -556,7 +556,7 @@ namespace Concentus.Structs
             short[] buf;
             int[] bandSMR;
             byte[] tmp_data = new byte[MS_FRAME_TMP];
-            OpusRepacketizer rp = new OpusRepacketizer();
+            OpusRepacketizer rp = OpusRepacketizer.Create();
             int vbr;
             CeltMode celt_mode;
             int[] bitrates = new int[256];
@@ -675,7 +675,7 @@ namespace Concentus.Structs
                 int curr_max;
                 int c1, c2;
 
-                Repacketizer.opus_repacketizer_init(rp);
+                rp.Reset();
                 enc = this.encoders[encoder_ptr];
                 if (s < this.layout.nb_coupled_streams)
                 {
@@ -734,8 +734,8 @@ namespace Concentus.Structs
                 /* We need to use the repacketizer to add the self-delimiting lengths
                    while taking into account the fact that the encoder can now return
                    more than one frame at a time (e.g. 60 ms CELT-only) */
-                Repacketizer.opus_repacketizer_cat(rp, tmp_data.GetPointer(), len);
-                len = Repacketizer.opus_repacketizer_out_range_impl(rp, 0, Repacketizer.opus_repacketizer_get_nb_frames(rp),
+                rp.AddPacket(tmp_data.GetPointer(), len);
+                len = rp.opus_repacketizer_out_range_impl(0, rp.GetNumFrames(),
                                                   data.GetPointer(data_ptr), max_data_bytes - tot_size, (s != this.layout.nb_streams - 1) ? 1 : 0, (vbr == 0 && s == this.layout.nb_streams - 1) ? 1 : 0);
                 data_ptr += len;
                 tot_size += len;

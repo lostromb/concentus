@@ -343,17 +343,17 @@ namespace Concentus.Common
         //#define MAC16_16(c,a,b) (ADD32((c),MULT16_16((a),(b))))
         public static int MAC16_16(short c, short a, short b)
         {
-            return (ADD32((c), MULT16_16((a), (b))));
+            return c + (a * b);
         }
 
         public static int MAC16_16(int c, short a, short b)
         {
-            return (ADD32((c), MULT16_16((a), (b))));
+            return c + (a * b);
         }
 
         public static int MAC16_16(int c, int a, int b)
         {
-            return (ADD32((c), MULT16_16((a), (b))));
+            return c + (a * b);
         }
 
         //        /** 16x32 multiply, followed by a 15-bit shift right and 32-bit add.

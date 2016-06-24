@@ -838,8 +838,7 @@ namespace Concentus.Structs
 
                 tmp_data = new byte[nb_frames * bytes_per_frame];
 
-                rp = new OpusRepacketizer();
-                Repacketizer.opus_repacketizer_init(rp);
+                rp = OpusRepacketizer.Create();
 
                 bak_mode = this.user_forced_mode;
                 bak_bandwidth = this.user_bandwidth;
@@ -869,7 +868,7 @@ namespace Concentus.Structs
 
                         return OpusError.OPUS_INTERNAL_ERROR;
                     }
-                    ret = Repacketizer.opus_repacketizer_cat(rp, tmp_data.GetPointer(i * bytes_per_frame), tmp_len);
+                    ret = rp.AddPacket(tmp_data.GetPointer(i * bytes_per_frame), tmp_len);
                     if (ret < 0)
                     {
 
@@ -880,7 +879,7 @@ namespace Concentus.Structs
                     repacketize_len = out_data_bytes;
                 else
                     repacketize_len = Inlines.IMIN(3 * this.bitrate_bps / (3 * 8 * 50 / nb_frames), out_data_bytes);
-                ret = Repacketizer.opus_repacketizer_out_range_impl(rp, 0, nb_frames, data.GetPointer(data_ptr), repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
+                ret = rp.opus_repacketizer_out_range_impl(0, nb_frames, data.GetPointer(data_ptr), repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
                 if (ret < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1426,7 +1425,7 @@ namespace Concentus.Structs
             ret += 1 + redundancy_bytes;
             if (this.use_vbr == 0)
             {
-                if (Repacketizer.opus_packet_pad(data.GetPointer(data_ptr), ret, max_data_bytes) != OpusError.OPUS_OK)
+                if (OpusRepacketizer.PadPacket(data.GetPointer(data_ptr), ret, max_data_bytes) != OpusError.OPUS_OK)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }

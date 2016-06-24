@@ -641,10 +641,10 @@ namespace Concentus.Structs
             else if (len < 0)
                 return OpusError.OPUS_BAD_ARG;
 
-            packet_mode = OpusPacketInfo.GetEncoderMode(data);
-            packet_bandwidth = OpusPacketInfo.GetBandwidth(data);
-            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, this.Fs);
-            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data);
+            packet_mode = OpusPacketInfo.GetEncoderMode(data.Data, data.Offset);
+            packet_bandwidth = OpusPacketInfo.GetBandwidth(data.Data, data.Offset);
+            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data.Data, data.Offset, this.Fs);
+            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data.Data, data.Offset);
 
             BoxedValue<byte> boxed_toc = new BoxedValue<byte>();
             BoxedValue<int> boxed_offset = new BoxedValue<int>();
@@ -796,7 +796,7 @@ namespace Concentus.Structs
             }
             if (in_data != null && len > 0 && !decode_fec)
             {
-                nb_samples = OpusPacketInfo.GetNumSamples(this, in_data.GetPointer(in_data_offset), len);
+                nb_samples = OpusPacketInfo.GetNumSamples(this, in_data, in_data_offset, len);
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else

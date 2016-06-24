@@ -13,7 +13,7 @@ namespace Concentus.Structs
     internal class MLP
     {
         internal int layers;
-        internal Pointer<int> topo;
-        internal Pointer<float> weights;
+        internal int[] topo;
+        internal float[] weights;
     }
 }

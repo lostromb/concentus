@@ -172,8 +172,8 @@ namespace Concentus
         internal static readonly MLP net = new MLP()
         {
             layers = 3,
-            topo = topo.GetPointer(),
-            weights = weights.GetPointer()
+            topo = topo,
+            weights = weights
         };
 
         internal static readonly float[] tansig_table/*[201]*/ = {

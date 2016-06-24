@@ -184,7 +184,7 @@ namespace ConcentusDemo
 
             // Update statistics
             _statistics.Bitrate = inputPacket.Length * 8 * 48000 / 1024 / frameSize;
-            OpusMode curMode = OpusPacketInfo.GetEncoderMode(inputPacket.GetPointer());
+            OpusMode curMode = OpusPacketInfo.GetEncoderMode(inputPacket, 0);
             if (curMode == OpusMode.MODE_CELT_ONLY)
             {
                 _statistics.Mode = "CELT";

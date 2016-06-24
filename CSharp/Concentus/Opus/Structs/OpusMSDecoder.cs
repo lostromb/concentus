@@ -129,7 +129,7 @@ namespace Concentus.Structs
                 if (count < 0)
                     return count;
 
-                tmp_samples = OpusPacketInfo.GetNumSamples(data, packet_offset.Val, Fs);
+                tmp_samples = OpusPacketInfo.GetNumSamples(data.Data, data.Offset, packet_offset.Val, Fs);
                 if (s != 0 && samples != tmp_samples)
                     return OpusError.OPUS_INVALID_PACKET;
                 samples = tmp_samples;

@@ -43,19 +43,20 @@ namespace Concentus
         {
             int j;
             float[] hidden = new float[MAX_NEURONS];
-            Pointer<float> W = m.weights;
+            float[] W = m.weights;
+            int W_ptr = 0;
 
             /* Copy to tmp_in */
 
             for (j = 0; j < m.topo[1]; j++)
             {
                 int k;
-                float sum = W[0];
-                W = W.Point(1);
+                float sum = W[W_ptr];
+                W_ptr++;
                 for (k = 0; k < m.topo[0]; k++)
                 {
-                    sum = sum + input[k] * W[0];
-                    W = W.Point(1);
+                    sum = sum + input[k] * W[W_ptr];
+                    W_ptr++;
                 }
                 hidden[j] = tansig_approx(sum);
             }
@@ -63,12 +64,12 @@ namespace Concentus
             for (j = 0; j < m.topo[2]; j++)
             {
                 int k;
-                float sum = W[0];
-                W = W.Point(1);
+                float sum = W[W_ptr];
+                W_ptr++;
                 for (k = 0; k < m.topo[1]; k++)
                 {
-                    sum = sum + hidden[k] * W[0];
-                    W = W.Point(1);
+                    sum = sum + hidden[k] * W[W_ptr];
+                    W_ptr++;
                 }
                 output[j] = tansig_approx(sum);
             }

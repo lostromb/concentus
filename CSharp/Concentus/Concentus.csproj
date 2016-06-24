@@ -81,7 +81,6 @@
     <Compile Include="Opus\OpusException.cs" />
     <Compile Include="Opus\OpusCompare.cs" />
     <Compile Include="Opus\OpusMultistream.cs" />
-    <Compile Include="Opus\Repacketizer.cs" />
     <Compile Include="Opus\Structs\ChannelLayout.cs" />
     <Compile Include="Opus\Structs\MLP.cs" />
     <Compile Include="Opus\Structs\OpusDecoder.cs" />
