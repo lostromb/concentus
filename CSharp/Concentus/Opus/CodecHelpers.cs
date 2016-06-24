@@ -650,9 +650,12 @@ namespace Concentus
                 return error_strings[-error];
         }
 
-        public static string opus_get_version_string()
+        public static string GetVersionString()
         {
             return "concentus 1.0a-fixed"
+#if DEBUG
+          + "-debug"
+#endif
 #if FUZZING
           + "-fuzzing"
 #endif

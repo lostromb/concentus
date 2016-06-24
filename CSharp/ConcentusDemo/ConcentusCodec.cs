@@ -93,7 +93,7 @@ namespace ConcentusDemo
                 outCursor += thisPacketSize;
                 _timer.Stop();
             }
-
+            
             if (outCursor > 0)
             {
                 _statistics.EncodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);

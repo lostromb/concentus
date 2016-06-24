@@ -528,7 +528,7 @@ namespace TestOpusEncode
 
             Rw = Rz = iseed;
 
-            string oversion = CodecHelpers.opus_get_version_string();
+            string oversion = CodecHelpers.GetVersionString();
 
             Console.WriteLine("Testing {0} encoder. Random seed: {1}", oversion, iseed);
             run_test2(true);

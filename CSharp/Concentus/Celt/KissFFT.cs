@@ -46,12 +46,12 @@ namespace Concentus.Celt
 
     internal static class KissFFT
     {
-        public const int SAMP_MAX = 2147483647;
-        public const int SAMP_MIN = 0 - SAMP_MAX;
-        public const int TWID_MAX = 32767;
-        public const int TRIG_UPSCALE = 1;
+        //public const int SAMP_MAX = 2147483647;
+        //public const int SAMP_MIN = 0 - SAMP_MAX;
+        //public const int TWID_MAX = 32767;
+        //public const int TRIG_UPSCALE = 1;
 
-        public const int MAXFACTORS = 8;
+        internal const int MAXFACTORS = 8;
         
         internal static int S_MUL(int a, int b)
         {
@@ -215,10 +215,9 @@ namespace Concentus.Celt
             int m1 = 2 * m;
             int m2 = 4 * m;
             int tw1, tw2;
-            int[] scratch = new int[8]; //opus bug: #5 was never used
+            int[] scratch = new int[8];
            
             int Fout_beg = fout_ptr;
-            //epi3.r = -16384; // opus bug: never used
 
             for (i = 0; i < N; i++)
             {
