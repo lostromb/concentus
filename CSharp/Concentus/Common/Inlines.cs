@@ -2407,7 +2407,7 @@ namespace Concentus.Common
             int len                /*    I vector lengths                                              */
         )
         {
-            return Kernels.celt_inner_prod(inVec1, inVec2, len);
+            return Kernels.celt_inner_prod(inVec1.Data, inVec1.Offset, inVec2.Data, inVec2.Offset, len);
         }
 
         public static long silk_inner_prod16_aligned_64(

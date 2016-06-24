@@ -715,7 +715,7 @@ namespace Concentus.Celt
                 for (i = 0; i < 8; i++)
                 {
                     int partial;
-                    partial = Kernels.celt_inner_prod(X.Point(m.eBands[i] << LM), X.Point(N0 + (m.eBands[i] << LM)),
+                    partial = Kernels.celt_inner_prod(X.Data, X.Offset + (m.eBands[i] << LM), X.Data, X.Offset + (N0 + (m.eBands[i] << LM)),
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     sum = Inlines.ADD16(sum, Inlines.EXTRACT16(Inlines.SHR32(partial, 18)));
                 }
@@ -725,7 +725,7 @@ namespace Concentus.Celt
                 for (i = 8; i < intensity; i++)
                 {
                     int partial;
-                    partial = Kernels.celt_inner_prod(X.Point(m.eBands[i] << LM), X.Point(N0 + (m.eBands[i] << LM)),
+                    partial = Kernels.celt_inner_prod(X.Data, X.Offset + (m.eBands[i] << LM), X.Data, X.Offset + (N0 + (m.eBands[i] << LM)),
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     minXC = Inlines.MIN16(minXC, Inlines.ABS16(Inlines.EXTRACT16(Inlines.SHR32(partial, 18))));
                 }

@@ -323,7 +323,7 @@ namespace Concentus.Celt
 
             T = T0 = T0_.Val;
             Pointer<int> yy_lookup = Pointer.Malloc<int>(maxperiod + 1);
-            Kernels.dual_inner_prod(x, x, x.Point(0 - T0), N, xx, xy);
+            Kernels.dual_inner_prod(x.Data, x.Offset, x.Data, x.Offset, x.Data, x.Offset - T0, N, xx, xy);
             yy_lookup[0] = xx.Val;
             yy = xx.Val;
             for (i = 1; i <= maxperiod; i++)
@@ -371,7 +371,7 @@ namespace Concentus.Celt
                     T1b = Inlines.celt_udiv(2 * second_check[k] * T0 + k, 2 * k);
                 }
                 
-                Kernels.dual_inner_prod(x, x.Point(0 -T1), x.Point(-T1b), N, xy, xy2);
+                Kernels.dual_inner_prod(x.Data, x.Offset, x.Data, x.Offset - T1, x.Data, x.Offset - T1b, N, xy, xy2);
 
                 xy.Val += xy2.Val;
                 yy = yy_lookup[T1] + yy_lookup[T1b];
@@ -428,7 +428,7 @@ namespace Concentus.Celt
 
             for (k = 0; k < 3; k++)
             {
-                xcorr[k] = Kernels.celt_inner_prod(x, x.Point(0 - (T + k - 1)), N);
+                xcorr[k] = Kernels.celt_inner_prod(x.Data, x.Offset, x.Data, x.Offset - (T + k - 1), N);
             }
 
             if ((xcorr[2] - xcorr[0]) > Inlines.MULT16_32_Q15(Inlines.QCONST16(.7f, 15), xcorr[1] - xcorr[0]))

@@ -384,7 +384,7 @@ namespace Concentus.Celt
             int t, lgain, rgain;
 
             /* Compute the norm of X+Y and X-Y as |X|^2 + |Y|^2 +/- sum(xy) */
-            Kernels.dual_inner_prod(Y, X, Y, N, xp, side);
+            Kernels.dual_inner_prod(Y.Data, Y.Offset, X.Data, X.Offset, Y.Data, Y.Offset, N, xp, side);
             /* Compensating for the mid normalization */
             xp.Val = Inlines.MULT16_32_Q15(mid, xp.Val);
             /* mid and side are in Q15, not Q14 like X and Y */

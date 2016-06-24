@@ -536,8 +536,8 @@ namespace Concentus.Silk
         {
             int j;
 
-            Pointer<short> mem = Pointer.Malloc<short>(SilkConstants.SILK_MAX_ORDER_LPC);
-            Pointer<short> num = Pointer.Malloc<short>(SilkConstants.SILK_MAX_ORDER_LPC);
+            short[] mem = new short[SilkConstants.SILK_MAX_ORDER_LPC];
+            short[] num = new short[SilkConstants.SILK_MAX_ORDER_LPC];
 
             Inlines.OpusAssert(d >= 6);
             Inlines.OpusAssert((d & 1) == 0);
@@ -552,7 +552,7 @@ namespace Concentus.Silk
             {
                 mem[j] = input[d - j - 1];
             }
-            Kernels.celt_fir(input.Point(d), num, output.Point(d), len - d, d, mem);
+            Kernels.celt_fir(input.Data, input.Offset + d, num, output.Data, output.Offset + d, len - d, d, mem);
             for (j = 0; j < d; j++)
             {
                 output[j] = 0;

@@ -44,17 +44,19 @@ namespace Concentus.Celt
     internal static class Kernels
     {
         internal static void celt_fir(
-             Pointer<short> _x,
-             Pointer<short> num,
-             Pointer<short> _y,
+             short[] x,
+             int x_ptr,
+             short[] num,
+             short[] y,
+             int y_ptr,
              int N,
              int ord,
-             Pointer<short> mem
+             short[] mem
              )
         {
             int i, j;
-            Pointer<short> rnum = Pointer.Malloc<short>(ord);
-            Pointer<short> x = Pointer.Malloc<short>(N + ord);
+            short[] rnum = new short[ord];
+            short[] local_x = new short[N + ord];
 
             for (i = 0; i < ord; i++)
             {
@@ -63,27 +65,27 @@ namespace Concentus.Celt
 
             for (i = 0; i < ord; i++)
             {
-                x[i] = mem[ord - i - 1];
+                local_x[i] = mem[ord - i - 1];
             }
 
             for (i = 0; i < N; i++)
             {
-                x[i + ord] = _x[i];
+                local_x[i + ord] = x[x_ptr + i];
             }
 
             for (i = 0; i < ord; i++)
             {
-                mem[i] = _x[N - i - 1];
+                mem[i] = x[x_ptr + N - i - 1];
             }
 
             for (i = 0; i < N - 3; i += 4)
             {
                 int[] sum = { 0, 0, 0, 0 };
-                xcorr_kernel(rnum.Data, rnum.Offset, x.Data, x.Offset + i, sum, ord);
-                _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
-                _y[i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
-                _y[i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
-                _y[i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 3]), Inlines.PSHR32(sum[3], CeltConstants.SIG_SHIFT))));
+                xcorr_kernel(rnum, 0, local_x, i, sum, ord);
+                y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
+                y[y_ptr + i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
+                y[y_ptr + i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
+                y[y_ptr + i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 3]), Inlines.PSHR32(sum[3], CeltConstants.SIG_SHIFT))));
             }
 
             for (; i < N; i++)
@@ -92,54 +94,57 @@ namespace Concentus.Celt
 
                 for (j = 0; j < ord; j++)
                 {
-                    sum = Inlines.MAC16_16(sum, rnum[j], x[i + j]);
+                    sum = Inlines.MAC16_16(sum, rnum[j], local_x[i + j]);
                 }
 
-                _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
+                y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
             }
         }
 
         internal static void celt_fir(
-             Pointer<int> _x,
-             Pointer<int> num,
-             Pointer<int> _y,
+             int[] x,
+             int x_ptr,
+             int[] num,
+             int num_ptr,
+             int[] y,
+             int y_ptr,
              int N,
              int ord,
-             Pointer<int> mem
+             int[] mem
              )
         {
             int i, j;
-            Pointer<int> rnum = Pointer.Malloc<int>(ord);
-            Pointer<int> x = Pointer.Malloc<int>(N + ord);
+            int[] rnum = new int[ord];
+            int[] local_x = new int[N + ord];
 
             for (i = 0; i < ord; i++)
             {
-                rnum[i] = num[ord - i - 1];
+                rnum[i] = num[num_ptr + ord - i - 1];
             }
 
             for (i = 0; i < ord; i++)
             {
-                x[i] = mem[ord - i - 1];
+                local_x[i] = mem[ord - i - 1];
             }
 
             for (i = 0; i < N; i++)
             {
-                x[i + ord] = _x[i];
+                local_x[i + ord] = x[x_ptr + i];
             }
 
             for (i = 0; i < ord; i++)
             {
-                mem[i] = _x[N - i - 1];
+                mem[i] = x[x_ptr + N - i - 1];
             }
 
             for (i = 0; i < N - 3; i += 4)
             {
                 int[] sum = { 0, 0, 0, 0 };
-                xcorr_kernel(rnum.Data, 0, x.Data, x.Offset + i, sum, ord);
-                _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
-                _y[i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
-                _y[i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
-                _y[i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i + 3]), Inlines.PSHR32(sum[3], CeltConstants.SIG_SHIFT))));
+                xcorr_kernel(rnum, 0, local_x, i, sum, ord);
+                y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
+                y[y_ptr + i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
+                y[y_ptr + i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
+                y[y_ptr + i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 3]), Inlines.PSHR32(sum[3], CeltConstants.SIG_SHIFT))));
             }
 
             for (; i < N; i++)
@@ -148,10 +153,10 @@ namespace Concentus.Celt
 
                 for (j = 0; j < ord; j++)
                 {
-                    sum = Inlines.MAC16_16(sum, rnum[j], x[i + j]);
+                    sum = Inlines.MAC16_16(sum, rnum[j], local_x[i + j]);
                 }
 
-                _y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(_x[i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
+                y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
             }
         }
 
@@ -300,47 +305,33 @@ namespace Concentus.Celt
             }
         }
 
-        internal static int celt_inner_prod(Pointer<short> x, Pointer<short> y, int N)
+        internal static int celt_inner_prod(short[] x, int x_ptr, short[] y, int y_ptr, int N)
         {
             int i;
             int xy = 0;
             for (i = 0; i < N; i++)
-                xy = Inlines.MAC16_16(xy, x[i], y[i]);
+                xy = Inlines.MAC16_16(xy, x[x_ptr + i], y[y_ptr + i]);
             return xy;
         }
 
-        internal static int celt_inner_prod(Pointer<int> x, Pointer<int> y, int N)
+        internal static int celt_inner_prod(int[] x, int x_ptr, int[] y, int y_ptr, int N)
         {
             int i;
             int xy = 0;
             for (i = 0; i < N; i++)
-                xy = Inlines.MAC16_16(xy, x[i], y[i]);
+                xy = Inlines.MAC16_16(xy, x[x_ptr + i], y[y_ptr + i]);
             return xy;
         }
-
-        internal static void dual_inner_prod(Pointer<short> x, Pointer<short> y01, Pointer<short> y02, int N, BoxedValue<int> xy1, BoxedValue<int> xy2)
+        
+        internal static void dual_inner_prod(int[] x, int x_ptr, int[] y01,int y01_ptr, int[] y02, int y02_ptr, int N, BoxedValue<int> xy1, BoxedValue<int> xy2)
         {
             int i;
             int xy01 = 0;
             int xy02 = 0;
             for (i = 0; i < N; i++)
             {
-                xy01 = Inlines.MAC16_16(xy01, x[i], y01[i]);
-                xy02 = Inlines.MAC16_16(xy02, x[i], y02[i]);
-            }
-            xy1.Val = xy01;
-            xy2.Val = xy02;
-        }
-
-        internal static void dual_inner_prod(Pointer<int> x, Pointer<int> y01, Pointer<int> y02, int N, BoxedValue<int> xy1, BoxedValue<int> xy2)
-        {
-            int i;
-            int xy01 = 0;
-            int xy02 = 0;
-            for (i = 0; i < N; i++)
-            {
-                xy01 = Inlines.MAC16_16(xy01, x[i], y01[i]);
-                xy02 = Inlines.MAC16_16(xy02, x[i], y02[i]);
+                xy01 = Inlines.MAC16_16(xy01, x[x_ptr + i], y01[y01_ptr + i]);
+                xy02 = Inlines.MAC16_16(xy02, x[x_ptr + i], y02[y02_ptr + i]);
             }
             xy1.Val = xy01;
             xy2.Val = xy02;

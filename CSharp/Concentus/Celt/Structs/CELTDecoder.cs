@@ -337,7 +337,7 @@ namespace Concentus.Celt.Structs
                     /* Initialize the LPC history with the samples just before the start
                        of the region for which we're computing the excitation. */
                     {
-                        Pointer<int> lpc_mem = Pointer.Malloc<int>(CeltConstants.LPC_ORDER);
+                        int[] lpc_mem = new int[CeltConstants.LPC_ORDER];
                         for (i = 0; i < CeltConstants.LPC_ORDER; i++)
                         {
                             lpc_mem[i] =
@@ -345,8 +345,8 @@ namespace Concentus.Celt.Structs
                         }
 
                         /* Compute the excitation for exc_length samples before the loss. */
-                        Kernels.celt_fir(exc.Point(CeltConstants.MAX_PERIOD - exc_length), lpc.Point(c * CeltConstants.LPC_ORDER),
-                              exc.Point(CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
+                        Kernels.celt_fir(exc.Data, exc.Offset + (CeltConstants.MAX_PERIOD - exc_length), lpc.Data, lpc.Offset + (c * CeltConstants.LPC_ORDER),
+                              exc.Data, exc.Offset + (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
                     }
 
                     /* Check if the waveform is decaying, and if so how fast.

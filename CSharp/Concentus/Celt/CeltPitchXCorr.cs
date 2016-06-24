@@ -70,7 +70,7 @@ namespace Concentus.Celt
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
             {
-                int sum = Kernels.celt_inner_prod(_x, _y.Point(i), len);
+                int sum = Kernels.celt_inner_prod(_x.Data, _x.Offset, _y.Data, _y.Offset + i, len);
                 xcorr[i] = sum;
                 maxcorr = Inlines.MAX32(maxcorr, sum);
             }
@@ -106,7 +106,7 @@ namespace Concentus.Celt
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
             {
-                int sum = Kernels.celt_inner_prod(_x, _y.Point(i), len);
+                int sum = Kernels.celt_inner_prod(_x.Data, _x.Offset, _y.Data, _y.Offset + i, len);
                 xcorr[i] = sum;
                 maxcorr = Inlines.MAX32(maxcorr, sum);
             }
