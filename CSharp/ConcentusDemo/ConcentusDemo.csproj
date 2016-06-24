@@ -124,7 +124,7 @@
     <Content Include="..\..\AudioData\Blunderbuss.raw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\AudioData\Spacecut.raw">
+    <Content Include="..\..\AudioData\Ichiba.raw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

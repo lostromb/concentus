@@ -15,7 +15,7 @@ namespace ConcentusDemo
         private readonly InputFileDef[] InputFiles = new InputFileDef[]
         {
             new InputFileDef("Blunderbuss.raw", "\"Blunderbuss\" by Henrik José, Creative Commons license"),
-            new InputFileDef("Spacecut.raw", "\"Spacecut\" by Ercola/Fairlight, Creative Commons license"),
+            new InputFileDef("Ichiba.raw", "\"Ichiba\" by Sim Gretina, Creative Commons license"),
             new InputFileDef("Jurgen.raw", "\"Jurgen: A Comedy of Justice\". Librivox recording"),
         };
 

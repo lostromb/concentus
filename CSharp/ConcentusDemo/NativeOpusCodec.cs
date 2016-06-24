@@ -76,6 +76,7 @@ namespace ConcentusDemo
             
             SetBitrate(_bitrate);
             SetComplexity(_complexity);
+            opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_VBR_REQUEST, 1);
 
             _decoder = opus_decoder_create(48000, 1, out error);
             if ((int)error != 0)
