@@ -177,13 +177,6 @@ namespace Concentus.Silk.Structs
             }
         }
 
-        // fixme: linearize this
-        private class NSQ_sample_pair
-        {
-            internal NSQ_sample_struct left = new NSQ_sample_struct();
-            internal NSQ_sample_struct right = new NSQ_sample_struct();
-        }
-
         internal void silk_NSQ
             (
                 SilkChannelEncoder psEncC,                                    /* I/O  Encoder State                   */
@@ -317,14 +310,16 @@ namespace Concentus.Silk.Structs
             int n_LF_Q12, r_Q10, rr_Q10, q1_Q0, q1_Q10, q2_Q10, rd1_Q20, rd2_Q20;
             int exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
             int tmp1, tmp2, sLF_AR_shp_Q14;
-            Pointer<int> psLPC_Q14, shp_lag_ptr, pred_lag_ptr;
+            int psLPC_Q14;
+            int shp_lag_ptr;
+            Pointer<int> pred_lag_ptr;
 
-            shp_lag_ptr = this.sLTP_shp_Q14.GetPointer(this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2);
+            shp_lag_ptr = this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2;
             pred_lag_ptr = sLTP_Q15.Point(this.sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2);
             Gain_Q10 = Inlines.silk_RSHIFT(Gain_Q16, 6);
 
             /* Set up short term AR state */
-            psLPC_Q14 = this.sLPC_Q14.GetPointer(SilkConstants.NSQ_LPC_BUF_LENGTH - 1);
+            psLPC_Q14 = SilkConstants.NSQ_LPC_BUF_LENGTH - 1;
 
             for (i = 0; i < length; i++)
             {
@@ -335,24 +330,24 @@ namespace Concentus.Silk.Structs
                 Inlines.OpusAssert(predictLPCOrder == 10 || predictLPCOrder == 16);
                 /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                 LPC_pred_Q10 = Inlines.silk_RSHIFT(predictLPCOrder, 1);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[0], a_Q12[0]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-1], a_Q12[1]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-2], a_Q12[2]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-3], a_Q12[3]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-4], a_Q12[4]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-5], a_Q12[5]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-6], a_Q12[6]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-7], a_Q12[7]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-8], a_Q12[8]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-9], a_Q12[9]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 0], a_Q12[0]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 1], a_Q12[1]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 2], a_Q12[2]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 3], a_Q12[3]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 4], a_Q12[4]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 5], a_Q12[5]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 6], a_Q12[6]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 7], a_Q12[7]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 8], a_Q12[8]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 9], a_Q12[9]);
                 if (predictLPCOrder == 16)
                 {
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-10], a_Q12[10]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-11], a_Q12[11]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-12], a_Q12[12]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-13], a_Q12[13]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-14], a_Q12[14]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, psLPC_Q14[-15], a_Q12[15]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 10], a_Q12[10]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 11], a_Q12[11]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 12], a_Q12[12]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 13], a_Q12[13]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 14], a_Q12[14]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 15], a_Q12[15]);
                 }
 
                 /* Long-term prediction */
@@ -374,7 +369,7 @@ namespace Concentus.Silk.Structs
 
                 /* Noise shape feedback */
                 Inlines.OpusAssert((shapingLPCOrder & 1) == 0);   /* check that order is even */
-                tmp2 = psLPC_Q14[0];
+                tmp2 = this.sLPC_Q14[psLPC_Q14];
                 tmp1 = this.sAR2_Q14[0];
                 this.sAR2_Q14[0] = tmp2;
                 n_AR_Q12 = Inlines.silk_RSHIFT(shapingLPCOrder, 1);
@@ -405,10 +400,10 @@ namespace Concentus.Silk.Structs
                 if (lag > 0)
                 {
                     /* Symmetric, packed FIR coefficients */
-                    n_LTP_Q13 = Inlines.silk_SMULWB(Inlines.silk_ADD32(shp_lag_ptr[0], shp_lag_ptr[-2]), HarmShapeFIRPacked_Q14);
-                    n_LTP_Q13 = Inlines.silk_SMLAWT(n_LTP_Q13, shp_lag_ptr[-1], HarmShapeFIRPacked_Q14);
+                    n_LTP_Q13 = Inlines.silk_SMULWB(Inlines.silk_ADD32(this.sLTP_shp_Q14[shp_lag_ptr], this.sLTP_shp_Q14[shp_lag_ptr - 2]), HarmShapeFIRPacked_Q14);
+                    n_LTP_Q13 = Inlines.silk_SMLAWT(n_LTP_Q13, this.sLTP_shp_Q14[shp_lag_ptr - 1], HarmShapeFIRPacked_Q14);
                     n_LTP_Q13 = Inlines.silk_LSHIFT(n_LTP_Q13, 1);
-                    shp_lag_ptr = shp_lag_ptr.Point(1);
+                    shp_lag_ptr += 1;
 
                     tmp2 = Inlines.silk_SUB32(LTP_pred_Q13, n_LTP_Q13);                       /* Q13 */
                     tmp1 = Inlines.silk_ADD_LSHIFT32(tmp2, tmp1, 1);                          /* Q13 */
@@ -486,8 +481,8 @@ namespace Concentus.Silk.Structs
                 xq[i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(xq_Q14, Gain_Q10), 8));
 
                 /* Update states */
-                psLPC_Q14 = psLPC_Q14.Point(1);
-                psLPC_Q14[0] = xq_Q14;
+                psLPC_Q14 += 1;
+                this.sLPC_Q14[psLPC_Q14] = xq_Q14;
                 sLF_AR_shp_Q14 = Inlines.silk_SUB_LSHIFT32(xq_Q14, n_AR_Q12, 2);
                 this.sLF_AR_shp_Q14 = sLF_AR_shp_Q14;
 
@@ -845,16 +840,17 @@ namespace Concentus.Silk.Structs
             int q1_Q0, q1_Q10, q2_Q10, exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
             int tmp1, tmp2, sLF_AR_shp_Q14;
             Pointer<int> pred_lag_ptr, shp_lag_ptr, psLPC_Q14;
-            NSQ_sample_pair[] psSampleState;
+            NSQ_sample_struct[] sampleStates;
             NSQ_del_dec_struct psDD;
-            NSQ_sample_pair psSS;
+            int SS_left;
+            int SS_right;
 
             Inlines.OpusAssert(nStatesDelayedDecision > 0);
-            psSampleState = new NSQ_sample_pair[nStatesDelayedDecision];
+            sampleStates = new NSQ_sample_struct[2 * nStatesDelayedDecision];
             // [porting note] structs must be initialized manually here
-            for (int c = 0; c < nStatesDelayedDecision; c++)
+            for (int c = 0; c < 2 * nStatesDelayedDecision; c++)
             {
-                psSampleState[c] = new NSQ_sample_pair();
+                sampleStates[c] = new NSQ_sample_struct();
             }
 
             shp_lag_ptr = this.sLTP_shp_Q14.GetPointer(this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2);
@@ -902,7 +898,8 @@ namespace Concentus.Silk.Structs
                     psDD = psDelDec[k];
 
                     /* Sample state */
-                    psSS = psSampleState[k];
+                    SS_left = 2 * k;
+                    SS_right = SS_left + 1;
 
                     /* Generate dither */
                     psDD.Seed = Inlines.silk_RAND(psDD.Seed);
@@ -1022,22 +1019,22 @@ namespace Concentus.Silk.Structs
 
                     if (rd1_Q10 < rd2_Q10)
                     {
-                        psSS.left.RD_Q10 = Inlines.silk_ADD32(psDD.RD_Q10, rd1_Q10);
-                        psSS.right.RD_Q10 = Inlines.silk_ADD32(psDD.RD_Q10, rd2_Q10);
-                        psSS.left.Q_Q10 = q1_Q10;
-                        psSS.right.Q_Q10 = q2_Q10;
+                        sampleStates[SS_left].RD_Q10 = Inlines.silk_ADD32(psDD.RD_Q10, rd1_Q10);
+                        sampleStates[SS_right].RD_Q10 = Inlines.silk_ADD32(psDD.RD_Q10, rd2_Q10);
+                        sampleStates[SS_left].Q_Q10 = q1_Q10;
+                        sampleStates[SS_right].Q_Q10 = q2_Q10;
                     }
                     else {
-                        psSS.left.RD_Q10 = Inlines.silk_ADD32(psDD.RD_Q10, rd2_Q10);
-                        psSS.right.RD_Q10 = Inlines.silk_ADD32(psDD.RD_Q10, rd1_Q10);
-                        psSS.left.Q_Q10 = q2_Q10;
-                        psSS.right.Q_Q10 = q1_Q10;
+                        sampleStates[SS_left].RD_Q10 = Inlines.silk_ADD32(psDD.RD_Q10, rd2_Q10);
+                        sampleStates[SS_right].RD_Q10 = Inlines.silk_ADD32(psDD.RD_Q10, rd1_Q10);
+                        sampleStates[SS_left].Q_Q10 = q2_Q10;
+                        sampleStates[SS_right].Q_Q10 = q1_Q10;
                     }
 
                     /* Update states for best quantization */
 
                     /* Quantized excitation */
-                    exc_Q14 = Inlines.silk_LSHIFT32(psSS.left.Q_Q10, 4);
+                    exc_Q14 = Inlines.silk_LSHIFT32(sampleStates[SS_left].Q_Q10, 4);
                     if (psDD.Seed < 0)
                     {
                         exc_Q14 = -exc_Q14;
@@ -1049,15 +1046,15 @@ namespace Concentus.Silk.Structs
 
                     /* Update states */
                     sLF_AR_shp_Q14 = Inlines.silk_SUB32(xq_Q14, n_AR_Q14);
-                    psSS.left.sLTP_shp_Q14 = Inlines.silk_SUB32(sLF_AR_shp_Q14, n_LF_Q14);
-                    psSS.left.LF_AR_Q14 = sLF_AR_shp_Q14;
-                    psSS.left.LPC_exc_Q14 = LPC_exc_Q14;
-                    psSS.left.xq_Q14 = xq_Q14;
+                    sampleStates[SS_left].sLTP_shp_Q14 = Inlines.silk_SUB32(sLF_AR_shp_Q14, n_LF_Q14);
+                    sampleStates[SS_left].LF_AR_Q14 = sLF_AR_shp_Q14;
+                    sampleStates[SS_left].LPC_exc_Q14 = LPC_exc_Q14;
+                    sampleStates[SS_left].xq_Q14 = xq_Q14;
 
                     /* Update states for second best quantization */
 
                     /* Quantized excitation */
-                    exc_Q14 = Inlines.silk_LSHIFT32(psSS.right.Q_Q10, 4);
+                    exc_Q14 = Inlines.silk_LSHIFT32(sampleStates[SS_right].Q_Q10, 4);
                     if (psDD.Seed < 0)
                     {
                         exc_Q14 = -exc_Q14;
@@ -1070,23 +1067,23 @@ namespace Concentus.Silk.Structs
 
                     /* Update states */
                     sLF_AR_shp_Q14 = Inlines.silk_SUB32(xq_Q14, n_AR_Q14);
-                    psSS.right.sLTP_shp_Q14 = Inlines.silk_SUB32(sLF_AR_shp_Q14, n_LF_Q14);
-                    psSS.right.LF_AR_Q14 = sLF_AR_shp_Q14;
-                    psSS.right.LPC_exc_Q14 = LPC_exc_Q14;
-                    psSS.right.xq_Q14 = xq_Q14;
+                    sampleStates[SS_right].sLTP_shp_Q14 = Inlines.silk_SUB32(sLF_AR_shp_Q14, n_LF_Q14);
+                    sampleStates[SS_right].LF_AR_Q14 = sLF_AR_shp_Q14;
+                    sampleStates[SS_right].LPC_exc_Q14 = LPC_exc_Q14;
+                    sampleStates[SS_right].xq_Q14 = xq_Q14;
                 }
 
                 smpl_buf_idx.Val = (smpl_buf_idx.Val - 1) & SilkConstants.DECISION_DELAY_MASK;                   /* Index to newest samples              */
                 last_smple_idx = (smpl_buf_idx.Val + decisionDelay) & SilkConstants.DECISION_DELAY_MASK;       /* Index to decisionDelay old samples   */
 
                 /* Find winner */
-                RDmin_Q10 = psSampleState[0].left.RD_Q10;
+                RDmin_Q10 = sampleStates[0].RD_Q10;
                 Winner_ind = 0;
                 for (k = 1; k < nStatesDelayedDecision; k++)
                 {
-                    if (psSampleState[k].left.RD_Q10 < RDmin_Q10)
+                    if (sampleStates[k * 2].RD_Q10 < RDmin_Q10)
                     {
-                        RDmin_Q10 = psSampleState[k].left.RD_Q10;
+                        RDmin_Q10 = sampleStates[k * 2].RD_Q10;
                         Winner_ind = k;
                     }
                 }
@@ -1097,29 +1094,31 @@ namespace Concentus.Silk.Structs
                 {
                     if (psDelDec[k].RandState[last_smple_idx] != Winner_rand_state)
                     {
-                        psSampleState[k].left.RD_Q10 = Inlines.silk_ADD32(psSampleState[k].left.RD_Q10, int.MaxValue >> 4);
-                        psSampleState[k].right.RD_Q10 = Inlines.silk_ADD32(psSampleState[k].right.RD_Q10, int.MaxValue >> 4);
-                        Inlines.OpusAssert(psSampleState[k].left.RD_Q10 >= 0);
+                        int k2 = k * 2;
+                        sampleStates[k2].RD_Q10 = Inlines.silk_ADD32(sampleStates[k2].RD_Q10, int.MaxValue >> 4);
+                        sampleStates[k2 + 1].RD_Q10 = Inlines.silk_ADD32(sampleStates[k2 + 1].RD_Q10, int.MaxValue >> 4);
+                        Inlines.OpusAssert(sampleStates[k2].RD_Q10 >= 0);
                     }
                 }
 
                 /* Find worst in first set and best in second set */
-                RDmax_Q10 = psSampleState[0].left.RD_Q10;
-                RDmin_Q10 = psSampleState[0].right.RD_Q10;
+                RDmax_Q10 = sampleStates[0].RD_Q10;
+                RDmin_Q10 = sampleStates[1].RD_Q10;
                 RDmax_ind = 0;
                 RDmin_ind = 0;
                 for (k = 1; k < nStatesDelayedDecision; k++)
                 {
+                    int k2 = k * 2;
                     /* find worst in first set */
-                    if (psSampleState[k].left.RD_Q10 > RDmax_Q10)
+                    if (sampleStates[k2].RD_Q10 > RDmax_Q10)
                     {
-                        RDmax_Q10 = psSampleState[k].left.RD_Q10;
+                        RDmax_Q10 = sampleStates[k2].RD_Q10;
                         RDmax_ind = k;
                     }
                     /* find best in second set */
-                    if (psSampleState[k].right.RD_Q10 < RDmin_Q10)
+                    if (sampleStates[k2 + 1].RD_Q10 < RDmin_Q10)
                     {
-                        RDmin_Q10 = psSampleState[k].right.RD_Q10;
+                        RDmin_Q10 = sampleStates[k2 + 1].RD_Q10;
                         RDmin_ind = k;
                     }
                 }
@@ -1127,12 +1126,8 @@ namespace Concentus.Silk.Structs
                 /* Replace a state if best from second set outperforms worst in first set */
                 if (RDmin_Q10 < RDmax_Q10)
                 {
-                    // FIXME this original code only copied the last portion of the struct over starting at (i * 4 bytes). Verify that still works
-                    //silk_memcpy(((int*)&psDelDec[RDmax_ind]) + i, ((int*)&psDelDec[RDmin_ind]) + i, sizeof(NSQ_del_dec_struct) - i * sizeof(int));
                     psDelDec[RDmax_ind].PartialCopyFrom(psDelDec[RDmin_ind], i);
-
-                    //silk_memcpy(&psSampleState[RDmax_ind][0], &psSampleState[RDmin_ind][1], sizeof(NSQ_sample_struct));
-                    psSampleState[RDmax_ind].left.Assign(psSampleState[RDmin_ind].right);
+                    sampleStates[RDmax_ind * 2].Assign(sampleStates[RDmin_ind * 2 + 1]);
                 }
 
                 /* Write samples from winner to output and long-term filter states */
@@ -1152,16 +1147,16 @@ namespace Concentus.Silk.Structs
                 for (k = 0; k < nStatesDelayedDecision; k++)
                 {
                     psDD = psDelDec[k];
-                    psSS = psSampleState[k];
-                    psDD.LF_AR_Q14 = psSS.left.LF_AR_Q14;
-                    psDD.sLPC_Q14[SilkConstants.NSQ_LPC_BUF_LENGTH + i] = psSS.left.xq_Q14;
-                    psDD.Xq_Q14[smpl_buf_idx.Val] = psSS.left.xq_Q14;
-                    psDD.Q_Q10[smpl_buf_idx.Val] = psSS.left.Q_Q10;
-                    psDD.Pred_Q15[smpl_buf_idx.Val] = Inlines.silk_LSHIFT32(psSS.left.LPC_exc_Q14, 1);
-                    psDD.Shape_Q14[smpl_buf_idx.Val] = psSS.left.sLTP_shp_Q14;
-                    psDD.Seed = Inlines.silk_ADD32_ovflw(psDD.Seed, Inlines.silk_RSHIFT_ROUND(psSS.left.Q_Q10, 10));
+                    SS_left = k * 2;
+                    psDD.LF_AR_Q14 = sampleStates[SS_left].LF_AR_Q14;
+                    psDD.sLPC_Q14[SilkConstants.NSQ_LPC_BUF_LENGTH + i] = sampleStates[SS_left].xq_Q14;
+                    psDD.Xq_Q14[smpl_buf_idx.Val] = sampleStates[SS_left].xq_Q14;
+                    psDD.Q_Q10[smpl_buf_idx.Val] = sampleStates[SS_left].Q_Q10;
+                    psDD.Pred_Q15[smpl_buf_idx.Val] = Inlines.silk_LSHIFT32(sampleStates[SS_left].LPC_exc_Q14, 1);
+                    psDD.Shape_Q14[smpl_buf_idx.Val] = sampleStates[SS_left].sLTP_shp_Q14;
+                    psDD.Seed = Inlines.silk_ADD32_ovflw(psDD.Seed, Inlines.silk_RSHIFT_ROUND(sampleStates[SS_left].Q_Q10, 10));
                     psDD.RandState[smpl_buf_idx.Val] = psDD.Seed;
-                    psDD.RD_Q10 = psSS.left.RD_Q10;
+                    psDD.RD_Q10 = sampleStates[SS_left].RD_Q10;
                 }
                 delayedGain_Q10[smpl_buf_idx.Val] = Gain_Q10;
             }
