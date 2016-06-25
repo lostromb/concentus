@@ -35,7 +35,7 @@ namespace Concentus.Silk.Structs
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
-
+    using System;
     /// <summary>
     /// Noise shaping quantization state
     /// </summary>
@@ -44,7 +44,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Buffer for quantized output signal
         /// </summary>
-        internal readonly Pointer<short> xq = Pointer.Malloc<short>(2 * SilkConstants.MAX_FRAME_LENGTH);
+        internal readonly short[] xq = new short[2 * SilkConstants.MAX_FRAME_LENGTH];
         internal readonly Pointer<int> sLTP_shp_Q14 = Pointer.Malloc<int>(2 * SilkConstants.MAX_FRAME_LENGTH);
         internal readonly Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
         internal readonly Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
@@ -58,7 +58,7 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            xq.MemSet(0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet<short>(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
             sLTP_shp_Q14.MemSet(0, 2 * SilkConstants.MAX_FRAME_LENGTH);
             sLPC_Q14.MemSet(0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
             sAR2_Q14.MemSet(0, SilkConstants.MAX_SHAPE_LPC_ORDER);
@@ -81,7 +81,7 @@ namespace Concentus.Silk.Structs
             this.rand_seed = other.rand_seed;
             this.prev_gain_Q16 = other.prev_gain_Q16;
             this.rewhite_flag = other.rewhite_flag;
-            other.xq.MemCopyTo(this.xq, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Array.Copy(other.xq, this.xq, 2 * SilkConstants.MAX_FRAME_LENGTH);
             other.sLTP_shp_Q14.MemCopyTo(this.sLTP_shp_Q14, 2 * SilkConstants.MAX_FRAME_LENGTH);
             other.sLPC_Q14.MemCopyTo(this.sLPC_Q14, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
             other.sAR2_Q14.MemCopyTo(this.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
@@ -235,7 +235,7 @@ namespace Concentus.Silk.Structs
             /* Set up pointers to start of sub frame */
             this.sLTP_shp_buf_idx = psEncC.ltp_mem_length;
             this.sLTP_buf_idx = psEncC.ltp_mem_length;
-            pxq = this.xq.Point(psEncC.ltp_mem_length);
+            pxq = this.xq.GetPointer(psEncC.ltp_mem_length);
             for (k = 0; k < psEncC.nb_subfr; k++)
             {
                 A_Q12 = PredCoef_Q12.Point(((k >> 1) | (1 - LSF_interpolation_flag)) * SilkConstants.MAX_LPC_ORDER);
@@ -260,7 +260,7 @@ namespace Concentus.Silk.Structs
                         start_idx = psEncC.ltp_mem_length - lag - psEncC.predictLPCOrder - SilkConstants.LTP_ORDER / 2;
                         Inlines.OpusAssert(start_idx > 0);
 
-                        Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), this.xq.Point(start_idx + k * psEncC.subfr_length),
+                        Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), this.xq.GetPointer(start_idx + k * psEncC.subfr_length),
                             A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
 
                         this.rewhite_flag = 1;
@@ -283,11 +283,7 @@ namespace Concentus.Silk.Structs
             this.lagPrev = pitchL[psEncC.nb_subfr - 1];
 
             /* Save quantized speech and noise shaping signals */
-            /* DEBUG_STORE_DATA( enc.pcm, &NSQ.xq[ psEncC.ltp_mem_length ], psEncC.frame_length * sizeof( short ) ) */
-            // silk_memmove(NSQ.xq, &NSQ.xq[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(short));
-            this.xq.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
-
-            // silk_memmove(NSQ.sLTP_shp_Q14, &NSQ.sLTP_shp_Q14[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(int));
+            this.xq.GetPointer(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
             this.sLTP_shp_Q14.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
         }
 
@@ -686,7 +682,7 @@ namespace Concentus.Silk.Structs
             delayedGain_Q10 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
 
             /* Set up pointers to start of sub frame */
-            pxq = this.xq.Point(psEncC.ltp_mem_length);
+            pxq = this.xq.GetPointer(psEncC.ltp_mem_length);
             this.sLTP_shp_buf_idx = psEncC.ltp_mem_length;
             this.sLTP_buf_idx = psEncC.ltp_mem_length;
             subfr = 0;
@@ -752,7 +748,7 @@ namespace Concentus.Silk.Structs
                         start_idx = psEncC.ltp_mem_length - lag - psEncC.predictLPCOrder - SilkConstants.LTP_ORDER / 2;
                         Inlines.OpusAssert(start_idx > 0);
 
-                        Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), this.xq.Point(start_idx + k * psEncC.subfr_length),
+                        Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), this.xq.GetPointer(start_idx + k * psEncC.subfr_length),
                             A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
 
                         this.sLTP_buf_idx = psEncC.ltp_mem_length;
@@ -808,10 +804,7 @@ namespace Concentus.Silk.Structs
             this.lagPrev = pitchL[psEncC.nb_subfr - 1];
 
             /* Save quantized speech signal */
-            /* DEBUG_STORE_DATA( enc.pcm, &NSQ.xq[psEncC.ltp_mem_length], psEncC.frame_length * sizeof( short ) ) */
-            // silk_memmove(NSQ.xq, &NSQ.xq[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(short));
-            this.xq.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
-            // silk_memmove(NSQ.sLTP_shp_Q14, &NSQ.sLTP_shp_Q14[psEncC.frame_length], psEncC.ltp_mem_length * sizeof(int));
+            this.xq.GetPointer(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
             this.sLTP_shp_Q14.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
         }
 

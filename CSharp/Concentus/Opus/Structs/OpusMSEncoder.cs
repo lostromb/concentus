@@ -197,8 +197,17 @@ namespace Concentus.Structs
                 CeltCommon.celt_preemphasis(x.GetPointer(), input.GetPointer(overlap), frame_size, 1, upsample, celt_mode.preemph.GetPointer(), boxed_preemph, 0);
                 preemph_mem[c] = boxed_preemph.Val;
 
-                MDCT.clt_mdct_forward(celt_mode.mdct, input.GetPointer(), freq.GetPointer(), celt_mode.window,
-                      overlap, celt_mode.maxLM - LM, 1);
+                MDCT.clt_mdct_forward(
+                    celt_mode.mdct,
+                    input,
+                    0,
+                    freq,
+                    0,
+                    celt_mode.window.Data,
+                    celt_mode.window.Offset,
+                    overlap,
+                    celt_mode.maxLM - LM,
+                    1);
                 if (upsample != 1)
                 {
                     int bound = len;

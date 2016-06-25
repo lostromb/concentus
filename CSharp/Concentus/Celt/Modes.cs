@@ -69,7 +69,7 @@ namespace Concentus.Celt
                     Tables.fft_state48000_960_2,
                     Tables.fft_state48000_960_3,
                 },
-                trig = Tables.mdct_twiddles960.GetPointer()
+                trig = Tables.mdct_twiddles960
             },
             cache = new PulseCache()
             {

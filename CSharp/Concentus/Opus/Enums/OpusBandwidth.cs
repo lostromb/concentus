@@ -16,6 +16,7 @@ namespace Concentus.Enums
         OPUS_BANDWIDTH_FULLBAND = 1105
     }
 
+    // FIXME: We should remove all cases where bandwidth is cast to int, it's.....improper
     internal static class OpusBandwidthHelpers
     {
         internal static int GetOrdinal(OpusBandwidth bw)

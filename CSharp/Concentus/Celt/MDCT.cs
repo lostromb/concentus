@@ -43,15 +43,16 @@ namespace Concentus.Celt
     internal static class MDCT
     {
         /* Forward MDCT trashes the input array */
-        internal static void clt_mdct_forward(MDCTLookup l, Pointer<int> input, Pointer<int> output,
-            Pointer<int> window, int overlap, int shift, int stride)
+        internal static void clt_mdct_forward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
+            int[] window, int window_ptr, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;
-            Pointer<int> f;
-            Pointer<int> f2;
+            int[] f;
+            int[] f2;
             FFTState st = l.kfft[shift];
-            Pointer<short> trig;
+            short[] trig;
+            int trig_ptr = 0;
             int scale;
             
             int scale_shift = st.scale_shift - 1;
@@ -62,76 +63,68 @@ namespace Concentus.Celt
             for (i = 0; i < shift; i++)
             {
                 N = N >> 1;
-                trig = trig.Point(N);
+                trig_ptr += N;
             }
             N2 = N >> 1;
             N4 = N >> 2;
 
-            f = Pointer.Malloc<int>(N2);
-            f2 = Pointer.Malloc<int>(N4 * 2);
+            f = new int[N2];
+            f2 = new int[N4 * 2];
 
             /* Consider the input to be composed of four blocks: [a, b, c, d] */
             /* Window, shuffle, fold */
             {
                 /* Temp pointers to make it really clear to the compiler what we're doing */
                 // fixme: can these be boxed? or just removed
-                Pointer<int> xp1 = input.Point(overlap >> 1);
-                Pointer<int> xp2 = input.Point(N2 - 1 + (overlap >> 1));
-                Pointer<int> yp = f;
-                Pointer<int> wp1 = window.Point(overlap >> 1);
-                Pointer<int> wp2 = window.Point((overlap >> 1) - 1);
+                int xp1 = input_ptr + (overlap >> 1);
+                int xp2 = input_ptr + N2 - 1 + (overlap >> 1);
+                int yp = 0;
+                int wp1 = window_ptr + (overlap >> 1);
+                int wp2 = window_ptr + ((overlap >> 1) - 1);
                 for (i = 0; i < ((overlap + 3) >> 2); i++)
                 {
                     /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
-                    yp[0] = Inlines.MULT16_32_Q15(wp2[0], xp1[N2]) + Inlines.MULT16_32_Q15(wp1[0], xp2[0]);
-                    yp = yp.Point(1);
-                    yp[0] = Inlines.MULT16_32_Q15(wp1[0], xp1[0]) - Inlines.MULT16_32_Q15(wp2[0], xp2[0 - N2]);
-                    yp = yp.Point(1);
-                    xp1 = xp1.Point(2);
-                    xp2 = xp2.Point(-2);
-                    wp1 = wp1.Point(2);
-                    wp2 = wp2.Point(-2);
+                    f[yp++] = Inlines.MULT16_32_Q15(window[wp2], input[xp1 + N2]) + Inlines.MULT16_32_Q15(window[wp1], input[xp2]);
+                    f[yp++] = Inlines.MULT16_32_Q15(window[wp1], input[xp1]) - Inlines.MULT16_32_Q15(window[wp2], input[xp2 - N2]);
+                    xp1 += 2;
+                    xp2 -= 2;
+                    wp1 += 2;
+                    wp2 -= 2;
                 }
-                wp1 = window;
-                wp2 = window.Point(overlap - 1);
+                wp1 = window_ptr;
+                wp2 = window_ptr + (overlap - 1);
                 for (; i < N4 - ((overlap + 3) >> 2); i++)
                 {
                     /* Real part arranged as a-bR, Imag part arranged as -c-dR */
-                    yp[0] = xp2[0];
-                    yp = yp.Point(1);
-                    yp[0] = xp1[0];
-                    yp = yp.Point(1);
-                    xp1 = xp1.Point(2);
-                    xp2 = xp2.Point(-2);
+                    f[yp++] = input[xp2];
+                    f[yp++] = input[xp1];
+                    xp1 += 2;
+                    xp2 -= 2;
                 }
                 for (; i < N4; i++)
                 {
                     /* Real part arranged as a-bR, Imag part arranged as -c-dR */
-                    yp[0] = Inlines.MULT16_32_Q15(wp2[0], xp2[0]) - Inlines.MULT16_32_Q15(wp1[0], xp1[0 - N2]);
-                    yp = yp.Point(1);
-                    yp[0] = Inlines.MULT16_32_Q15(wp2[0], xp1[0]) + Inlines.MULT16_32_Q15(wp1[0], xp2[N2]);
-                    yp = yp.Point(1);
-                    xp1 = xp1.Point(2);
-                    xp2 = xp2.Point(-2);
-                    wp1 = wp1.Point(2);
-                    wp2 = wp2.Point(-2);
+                    f[yp++] = Inlines.MULT16_32_Q15(window[wp2], input[xp2]) - Inlines.MULT16_32_Q15(window[wp1], input[xp1 - N2]);
+                    f[yp++] = Inlines.MULT16_32_Q15(window[wp2], input[xp1]) + Inlines.MULT16_32_Q15(window[wp1], input[xp2 + N2]);
+                    xp1 += 2;
+                    xp2 -= 2;
+                    wp1 += 2;
+                    wp2 -= 2;
                 }
             }
             /* Pre-rotation */
             {
-                Pointer<int> yp = f;
-                Pointer<short> t = trig;
+                int yp = 0;
+                int t = trig_ptr;
                 for (i = 0; i < N4; i++)
                 {
                     kiss_fft_cpx yc = new kiss_fft_cpx(); // [porting note] stack variable
                     short t0, t1;
                     int re, im, yr, yi;
-                    t0 = t[i];
-                    t1 = t[N4 + i];
-                    re = yp[0];
-                    yp = yp.Point(1);
-                    im = yp[0];
-                    yp = yp.Point(1);
+                    t0 = trig[t + i];
+                    t1 = trig[t + N4 + i];
+                    re = f[yp++];
+                    im = f[yp++];
                     yr = KissFFT.S_MUL(re, t0) - KissFFT.S_MUL(im, t1);
                     yi = KissFFT.S_MUL(im, t0) + KissFFT.S_MUL(re, t1);
                     yc.r = yr;
@@ -144,28 +137,27 @@ namespace Concentus.Celt
             }
 
             /* N/4 complex FFT, does not downscale anymore */
-            KissFFT.opus_fft_impl(st, f2.Data, f2.Offset);
+            KissFFT.opus_fft_impl(st, f2, 0);
 
             /* Post-rotate */
             {
                 /* Temp pointers to make it really clear to the compiler what we're doing */
-                Pointer<int> fp = f2;
-                Pointer<int> yp1 = output;
-                Pointer<int> yp2 = output.Point(stride * (N2 - 1));
-                Pointer<short> t = trig;
+                int fp = 0;
+                int yp1 = output_ptr;
+                int yp2 = output_ptr + (stride * (N2 - 1));
+                int t = trig_ptr;
                 for (i = 0; i < N4; i++)
                 {
                     int yr, yi;
-                    yr = KissFFT.S_MUL(fp[1], t[N4 + i]) - KissFFT.S_MUL(fp[0], t[i]);
-                    yi = KissFFT.S_MUL(fp[0], t[N4 + i]) + KissFFT.S_MUL(fp[1], t[i]);
-                    yp1[0] = yr;
-                    yp2[0] = yi;
-                    fp = fp.Point(2);
-                    yp1 = yp1.Point(2 * stride);
-                    yp2 = yp2.Point(0 - (2 * stride));
+                    yr = KissFFT.S_MUL(f2[fp + 1], trig[t + N4 + i]) - KissFFT.S_MUL(f2[fp], trig[t + i]);
+                    yi = KissFFT.S_MUL(f2[fp], trig[t + N4 + i]) + KissFFT.S_MUL(f2[fp + 1], trig[t + i]);
+                    output[yp1] = yr;
+                    output[yp2] = yi;
+                    fp += 2;
+                    yp1 += (2 * stride);
+                    yp2 -= (2 * stride);
                 }
             }
-
         }
 
         internal static void clt_mdct_backward(MDCTLookup l, Pointer<int> input, Pointer<int> output,
@@ -176,7 +168,7 @@ namespace Concentus.Celt
             Pointer<short> trig;
 
             N = l.n;
-            trig = l.trig;
+            trig = l.trig.GetPointer();
             for (i = 0; i < shift; i++)
             {
                 N >>= 1;

@@ -349,9 +349,11 @@ namespace Concentus.Celt
                     /* Interleaving the sub-frames while doing the MDCTs */
                     MDCT.clt_mdct_forward(
                         mode.mdct,
-                        input.Point((c * ((B * N) + overlap)) + (b * N)),
-                        output.Point(b + c * N * B),
-                        mode.window,
+                        input.Data, input.Offset + ((c * ((B * N) + overlap)) + (b * N)),
+                        output.Data,
+                        output.Offset + (b + c * N * B),
+                        mode.window.Data,
+                        mode.window.Offset,
                         overlap,
                         shift,
                         B);

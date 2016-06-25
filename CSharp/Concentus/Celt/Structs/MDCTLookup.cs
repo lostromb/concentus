@@ -49,7 +49,7 @@ namespace Concentus.Celt.Structs
         // [porting note] these are pointers to static states defined in tables.cs
         internal FFTState[] kfft = new FFTState[4];
 
-        internal Pointer<short> trig = null;
+        internal short[] trig = null;
 
         internal MDCTLookup()
         {
