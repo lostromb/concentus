@@ -115,11 +115,11 @@ namespace Concentus.Silk
             for (k = 0; k < psDec.nb_subfr; k++)
             {
                 pres_Q14 = res_Q14;
-                A_Q12 = psDecCtrl.PredCoef_Q12[k >> 1];
+                A_Q12 = psDecCtrl.PredCoef_Q12[k >> 1].GetPointer();
 
                 /* Preload LPC coeficients to array on stack. Gives small performance gain. FIXME no it doesn't anymore */
                 A_Q12.MemCopyTo(A_Q12_tmp, psDec.LPC_order);
-                B_Q14 = psDecCtrl.LTPCoef_Q14.Point(k * SilkConstants.LTP_ORDER);
+                B_Q14 = psDecCtrl.LTPCoef_Q14.GetPointer(k * SilkConstants.LTP_ORDER);
                 signalType = psDec.indices.signalType;
 
                 Gain_Q10 = Inlines.silk_RSHIFT(psDecCtrl.Gains_Q16[k], 6);

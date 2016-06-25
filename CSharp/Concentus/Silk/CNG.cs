@@ -150,7 +150,7 @@ namespace Concentus.Silk
 
                 /* Update CNG excitation buffer with excitation from this subframe */
                 // FIXME this pointer can be cached for performance
-                psCNG.CNG_exc_buf_Q14.MemMove(psDec.subfr_length, (psDec.nb_subfr - 1) * psDec.subfr_length);
+                psCNG.CNG_exc_buf_Q14.GetPointer().MemMove(psDec.subfr_length, (psDec.nb_subfr - 1) * psDec.subfr_length);
 
                 /* Smooth gains */
                 for (i = 0; i < psDec.nb_subfr; i++)
@@ -178,13 +178,13 @@ namespace Concentus.Silk
                     gain_Q16 = Inlines.silk_SUB_LSHIFT32(Inlines.silk_SMULWW(psCNG.CNG_smth_Gain_Q16, psCNG.CNG_smth_Gain_Q16), gain_Q16, 5);
                     gain_Q16 = Inlines.silk_LSHIFT32(Inlines.silk_SQRT_APPROX(gain_Q16), 8);
                 }
-                silk_CNG_exc(CNG_sig_Q10.Point(SilkConstants.MAX_LPC_ORDER), psCNG.CNG_exc_buf_Q14, gain_Q16, length, ref psCNG.rand_seed);
+                silk_CNG_exc(CNG_sig_Q10.Point(SilkConstants.MAX_LPC_ORDER), psCNG.CNG_exc_buf_Q14.GetPointer(), gain_Q16, length, ref psCNG.rand_seed);
 
                 /* Convert CNG NLSF to filter representation */
-                NLSF.silk_NLSF2A(A_Q12, psCNG.CNG_smth_NLSF_Q15, psDec.LPC_order);
+                NLSF.silk_NLSF2A(A_Q12, psCNG.CNG_smth_NLSF_Q15.GetPointer(), psDec.LPC_order);
 
                 /* Generate CNG signal, by synthesis filtering */
-                psCNG.CNG_synth_state.MemCopyTo(CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);
+                psCNG.CNG_synth_state.GetPointer().MemCopyTo(CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);
 
                 for (i = 0; i < length; i++)
                 {
@@ -218,11 +218,11 @@ namespace Concentus.Silk
                     frame[i] = Inlines.silk_ADD_SAT16(frame[i], Inlines.CHOP16(Inlines.silk_RSHIFT_ROUND(CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i], 10)));
                 }
 
-                CNG_sig_Q10.Point(length).MemCopyTo(psCNG.CNG_synth_state, SilkConstants.MAX_LPC_ORDER);
+                CNG_sig_Q10.Point(length).MemCopyTo(psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
             }
             else
             {
-                psCNG.CNG_synth_state.MemSet(0, psDec.LPC_order);
+                Arrays.MemSet<int>(psCNG.CNG_synth_state, 0, psDec.LPC_order);
             }
         }
     }

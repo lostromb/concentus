@@ -1235,7 +1235,7 @@ namespace Concentus.Silk
 
              //////////////////////////////////////////////////////////////////////////
 
-            silk_NLSF_encode(psEncC.indices.NLSFIndices, pNLSF_Q15, psEncC.psNLSF_CB, pNLSFW_QW,
+            silk_NLSF_encode(psEncC.indices.NLSFIndices.GetPointer(), pNLSF_Q15, psEncC.psNLSF_CB, pNLSFW_QW,
                 NLSF_mu_Q20, psEncC.NLSF_MSVQ_Survivors, psEncC.indices.signalType);
 
             /* Convert quantized NLSFs back to LPC coefficients */

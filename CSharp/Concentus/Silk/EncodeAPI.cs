@@ -494,16 +494,11 @@ namespace Concentus.Silk
                             /* Reset side channel encoder memory for first frame with side coding */
                             if (psEnc.prev_decode_only_middle == 1)
                             {
-                                // silk_memset(&psEnc.state_Fxx[1].sShape, 0, sizeof(psEnc.state_Fxx[1].sShape) );
                                 psEnc.state_Fxx[1].sShape.Reset();
-                                // silk_memset(&psEnc.state_Fxx[1].sPrefilt, 0, sizeof(psEnc.state_Fxx[1].sPrefilt) );
                                 psEnc.state_Fxx[1].sPrefilt.Reset();
-                                // silk_memset(&psEnc.state_Fxx[1].sNSQ, 0, sizeof(psEnc.state_Fxx[1].sNSQ) );
                                 psEnc.state_Fxx[1].sNSQ.Reset();
-                                // silk_memset(psEnc.state_Fxx[1].prev_NLSFq_Q15, 0, sizeof(psEnc.state_Fxx[1].prev_NLSFq_Q15) );
                                 psEnc.state_Fxx[1].prev_NLSFq_Q15.MemSet(0, SilkConstants.MAX_LPC_ORDER);
-                                //silk_memset(&psEnc.state_Fxx[1].sLP.In_LP_State, 0, sizeof(psEnc.state_Fxx[1].sLP.In_LP_State) );
-                                psEnc.state_Fxx[1].sLP.In_LP_State.MemSet(0, 2);
+                                Arrays.MemSet(psEnc.state_Fxx[1].sLP.In_LP_State, 0, 2);
 
                                 psEnc.state_Fxx[1].prevLag = 100;
                                 psEnc.state_Fxx[1].sNSQ.lagPrev = 100;

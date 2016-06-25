@@ -108,7 +108,7 @@ namespace Concentus.Silk
                 /* Quantize LTP gain parameters */
                 BoxedValue<sbyte> boxed_periodicity = new BoxedValue<sbyte>(psEnc.indices.PERIndex);
                 BoxedValue<int> boxed_gain = new BoxedValue<int>(psEnc.sum_log_gain_Q7);
-                QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex, boxed_periodicity,
+                QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex.GetPointer(), boxed_periodicity,
                     boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr
                     );
                 psEnc.indices.PERIndex = boxed_periodicity.Val;

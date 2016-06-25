@@ -444,7 +444,7 @@ namespace Concentus.Silk.Structs
                 this.sPrefilt.Reset();
                 this.sNSQ.Reset();
                 this.prev_NLSFq_Q15.MemSet(0, SilkConstants.MAX_LPC_ORDER);
-                this.sLP.In_LP_State.MemSet(0, 2);
+                Arrays.MemSet(this.sLP.In_LP_State, 0, 2);
                 this.inputBufIx = 0;
                 this.nFramesEncoded = 0;
                 this.TargetRate_bps = 0;     /* trigger new SNR computation */
@@ -721,7 +721,7 @@ namespace Concentus.Silk.Structs
                             this.sLP.transition_frame_no = SilkConstants.TRANSITION_FRAMES;
 
                             /* Reset transition filter state */
-                            this.sLP.In_LP_State.MemSet(0, 2);
+                            Arrays.MemSet(this.sLP.In_LP_State, 0, 2);
                         }
 
                         if (encControl.opusCanSwitch != 0)
@@ -762,7 +762,7 @@ namespace Concentus.Silk.Structs
                                 this.sLP.transition_frame_no = 0;
 
                                 /* Reset transition filter state */
-                                this.sLP.In_LP_State.MemSet(0, 2);
+                                Arrays.MemSet(this.sLP.In_LP_State, 0, 2);
 
                                 /* Direction: up */
                                 this.sLP.mode = 1;
@@ -974,7 +974,7 @@ namespace Concentus.Silk.Structs
                 gainMult_Q8 = (short)(Inlines.SILK_CONST(1, 8));
                 found_lower = 0;
                 found_upper = 0;
-                gainsID = GainQuantization.silk_gains_ID(this.indices.GainsIndices, this.nb_subfr);
+                gainsID = GainQuantization.silk_gains_ID(this.indices.GainsIndices.GetPointer(), this.nb_subfr);
                 gainsID_lower = -1;
                 gainsID_upper = -1;
                 /* Copy part of the input state */
@@ -1126,12 +1126,12 @@ namespace Concentus.Silk.Structs
                     /* Quantize gains */
                     this.sShape.LastGainIndex = sEncCtrl.lastGainIndexPrev;
                     BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(this.sShape.LastGainIndex);
-                    GainQuantization.silk_gains_quant(this.indices.GainsIndices, sEncCtrl.Gains_Q16,
+                    GainQuantization.silk_gains_quant(this.indices.GainsIndices.GetPointer(), sEncCtrl.Gains_Q16,
                           boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                     this.sShape.LastGainIndex = boxed_gainIndex.Val;
 
                     /* Unique identifier of gains vector */
-                    gainsID = GainQuantization.silk_gains_ID(this.indices.GainsIndices, this.nb_subfr);
+                    gainsID = GainQuantization.silk_gains_ID(this.indices.GainsIndices.GetPointer(), this.nb_subfr);
                 }
             }
 
@@ -1199,7 +1199,7 @@ namespace Concentus.Silk.Structs
                 /* Decode to get gains in sync with decoder         */
                 /* Overwrite unquantized gains with quantized gains */
                 BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(this.LBRRprevLastGainIndex);
-                GainQuantization.silk_gains_dequant(thisCtrl.Gains_Q16, psIndices_LBRR.GainsIndices,
+                GainQuantization.silk_gains_dequant(thisCtrl.Gains_Q16, psIndices_LBRR.GainsIndices.GetPointer(),
                     boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                 this.LBRRprevLastGainIndex = boxed_gainIndex.Val;
 

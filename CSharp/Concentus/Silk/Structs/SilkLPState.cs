@@ -44,7 +44,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Low pass filter state
         /// </summary>
-        internal readonly Pointer<int> In_LP_State = Pointer.Malloc<int>(2);
+        internal readonly int[] In_LP_State = new int[2];
 
         /// <summary>
         /// Counter which is mapped to a cut-off frequency
@@ -58,7 +58,8 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            In_LP_State.MemSet(0, 2);
+            In_LP_State[0] = 0;
+            In_LP_State[1] = 0;
             transition_frame_no = 0;
             mode = 0;
         }
@@ -99,7 +100,7 @@ namespace Concentus.Silk.Structs
 
                 /* ARMA low-pass filtering */
                 Inlines.OpusAssert(SilkConstants.TRANSITION_NB == 3 && SilkConstants.TRANSITION_NA == 2);
-                Filters.silk_biquad_alt(frame, B_Q28, A_Q28, this.In_LP_State, frame, frame_length, 1);
+                Filters.silk_biquad_alt(frame, B_Q28, A_Q28, this.In_LP_State.GetPointer(), frame, frame_length, 1);
             }
         }
     }

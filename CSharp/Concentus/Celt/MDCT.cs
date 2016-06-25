@@ -75,7 +75,6 @@ namespace Concentus.Celt
             /* Window, shuffle, fold */
             {
                 /* Temp pointers to make it really clear to the compiler what we're doing */
-                // fixme: can these be boxed? or just removed
                 int xp1 = input_ptr + (overlap >> 1);
                 int xp2 = input_ptr + N2 - 1 + (overlap >> 1);
                 int yp = 0;
@@ -118,7 +117,6 @@ namespace Concentus.Celt
                 int t = trig_ptr;
                 for (i = 0; i < N4; i++)
                 {
-                    kiss_fft_cpx yc = new kiss_fft_cpx(); // [porting note] stack variable
                     short t0, t1;
                     int re, im, yr, yi;
                     t0 = trig[t + i];
@@ -127,12 +125,8 @@ namespace Concentus.Celt
                     im = f[yp++];
                     yr = KissFFT.S_MUL(re, t0) - KissFFT.S_MUL(im, t1);
                     yi = KissFFT.S_MUL(im, t0) + KissFFT.S_MUL(re, t1);
-                    yc.r = yr;
-                    yc.i = yi;
-                    yc.r = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.r), scale_shift);
-                    yc.i = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yc.i), scale_shift);
-                    f2[2 * st.bitrev[i]] = yc.r;
-                    f2[2 * st.bitrev[i] + 1] = yc.i;
+                    f2[2 * st.bitrev[i]] = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yr), scale_shift);
+                    f2[2 * st.bitrev[i] + 1] = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yi), scale_shift);
                 }
             }
 

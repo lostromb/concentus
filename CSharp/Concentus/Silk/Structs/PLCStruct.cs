@@ -42,8 +42,8 @@ namespace Concentus.Silk.Structs
     internal class PLCStruct
     {
         internal int pitchL_Q8 = 0;                          /* Pitch lag to use for voiced concealment                          */
-        internal readonly Pointer<short> LTPCoef_Q14 = Pointer.Malloc<short>(SilkConstants.LTP_ORDER);           /* LTP coeficients to use for voiced concealment                    */
-        internal readonly Pointer<short> prevLPC_Q12 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
+        internal readonly short[] LTPCoef_Q14 = new short[SilkConstants.LTP_ORDER];           /* LTP coeficients to use for voiced concealment                    */
+        internal readonly short[] prevLPC_Q12 = new short[SilkConstants.MAX_LPC_ORDER];
         internal int last_frame_lost = 0;                    /* Was previous frame lost                                          */
         internal int rand_seed = 0;                          /* Seed for unvoiced signal generation                              */
         internal short randScale_Q14 = 0;                      /* Scaling of unvoiced random signal                                */
@@ -58,8 +58,8 @@ namespace Concentus.Silk.Structs
         internal void Reset()
         {
             pitchL_Q8 = 0;
-            LTPCoef_Q14.MemSet(0, SilkConstants.LTP_ORDER);
-            prevLPC_Q12.MemSet(0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet<short>(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
+            Arrays.MemSet<short>(prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             last_frame_lost = 0;
             rand_seed = 0;
             randScale_Q14 = 0;

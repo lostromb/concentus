@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     /// <summary>
@@ -123,13 +124,13 @@ namespace Concentus.Silk
                     {
                         LTP_Gain_Q14 = temp_LTP_Gain_Q14;
 
-                        psDecCtrl.LTPCoef_Q14.Point(Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER)).MemCopyTo(psPLC.LTPCoef_Q14, SilkConstants.LTP_ORDER);
+                        psDecCtrl.LTPCoef_Q14.GetPointer(Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER)).MemCopyTo(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
 
                         psPLC.pitchL_Q8 = Inlines.silk_LSHIFT(psDecCtrl.pitchL[psDec.nb_subfr - 1 - j], 8);
                     }
                 }
 
-                psPLC.LTPCoef_Q14.MemSet(0, SilkConstants.LTP_ORDER);
+                Arrays.MemSet<short>(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
                 psPLC.LTPCoef_Q14[SilkConstants.LTP_ORDER / 2] = Inlines.CHOP16(LTP_Gain_Q14);
 
                 /* Limit LT coefs */
@@ -160,15 +161,15 @@ namespace Concentus.Silk
             }
             else {
                 psPLC.pitchL_Q8 = Inlines.silk_LSHIFT(Inlines.silk_SMULBB(psDec.fs_kHz, 18), 8);
-                psPLC.LTPCoef_Q14.MemSet(0, SilkConstants.LTP_ORDER);
+                Arrays.MemSet<short>(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
             }
 
             /* Save LPC coeficients */
-            psDecCtrl.PredCoef_Q12[1].MemCopyTo(psPLC.prevLPC_Q12, psDec.LPC_order);
+            Array.Copy(psDecCtrl.PredCoef_Q12[1], psPLC.prevLPC_Q12, psDec.LPC_order);
             psPLC.prevLTP_scale_Q14 = Inlines.CHOP16(psDecCtrl.LTP_scale_Q14);
 
             /* Save last two gains */
-            psDecCtrl.Gains_Q16.Point(psDec.nb_subfr - 2).MemCopyTo(psPLC.prevGain_Q16, 2);
+            psDecCtrl.Gains_Q16.GetPointer(psDec.nb_subfr - 2).MemCopyTo(psPLC.prevGain_Q16, 2);
 
             psPLC.subfr_length = psDec.subfr_length;
             psPLC.nb_subfr = psDec.nb_subfr;
@@ -247,7 +248,7 @@ namespace Concentus.Silk
 
             if (psDec.first_frame_after_reset != 0)
             {
-                psPLC.prevLPC_Q12.MemSet(0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemSet<short>(psPLC.prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             }
 
             silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
@@ -263,7 +264,7 @@ namespace Concentus.Silk
             }
 
             /* Set up Gain to random noise component */
-            B_Q14 = psPLC.LTPCoef_Q14;
+            B_Q14 = psPLC.LTPCoef_Q14.GetPointer();
             rand_scale_Q14 = psPLC.randScale_Q14;
 
             /* Set up attenuation gains */
@@ -277,10 +278,10 @@ namespace Concentus.Silk
             }
 
             /* LPC concealment. Apply BWE to previous LPC */
-            BWExpander.silk_bwexpander(psPLC.prevLPC_Q12, psDec.LPC_order, Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16));
+            BWExpander.silk_bwexpander(psPLC.prevLPC_Q12.GetPointer(), psDec.LPC_order, Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16));
 
             /* Preload LPC coeficients to array on stack. Gives small performance gain FIXME no it doesn't */
-            psPLC.prevLPC_Q12.MemCopyTo(A_Q12, psDec.LPC_order);
+            psPLC.prevLPC_Q12.GetPointer().MemCopyTo(A_Q12, psDec.LPC_order);
 
             /* First Lost frame */
             if (psDec.lossCnt == 0)
@@ -302,7 +303,7 @@ namespace Concentus.Silk
                     /* Reduce random noise for unvoiced frames with high LPC gain */
                     int invGain_Q30, down_scale_Q30;
 
-                    invGain_Q30 = LPCInversePredGain.silk_LPC_inverse_pred_gain(psPLC.prevLPC_Q12, psDec.LPC_order);
+                    invGain_Q30 = LPCInversePredGain.silk_LPC_inverse_pred_gain(psPLC.prevLPC_Q12.GetPointer(), psDec.LPC_order);
 
                     down_scale_Q30 = Inlines.silk_min_32(Inlines.silk_RSHIFT((int)1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_HIGH_THRES), invGain_Q30);
                     down_scale_Q30 = Inlines.silk_max_32(Inlines.silk_RSHIFT((int)1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_LOW_THRES), down_scale_Q30);

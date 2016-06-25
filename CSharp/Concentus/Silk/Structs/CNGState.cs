@@ -39,18 +39,18 @@ namespace Concentus.Silk.Structs
     /// </summary>
     internal class CNGState
     {
-        internal readonly Pointer<int> CNG_exc_buf_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_FRAME_LENGTH);
-        internal readonly Pointer<short> CNG_smth_NLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
-        internal readonly Pointer<int> CNG_synth_state = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
+        internal readonly int[] CNG_exc_buf_Q14 = new int[SilkConstants.MAX_FRAME_LENGTH];
+        internal readonly short[] CNG_smth_NLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
+        internal readonly int[] CNG_synth_state = new int[SilkConstants.MAX_LPC_ORDER];
         internal int CNG_smth_Gain_Q16 = 0;
         internal int rand_seed = 0;
         internal int fs_kHz = 0;
 
         internal void Reset()
         {
-            CNG_exc_buf_Q14.MemSet(0, SilkConstants.MAX_FRAME_LENGTH);
-            CNG_smth_NLSF_Q15.MemSet(0, SilkConstants.MAX_LPC_ORDER);
-            CNG_synth_state.MemSet(0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet<int>(CNG_exc_buf_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet<short>(CNG_smth_NLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet<int>(CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
             CNG_smth_Gain_Q16 = 0;
             rand_seed = 0;
             fs_kHz = 0;

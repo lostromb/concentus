@@ -110,7 +110,7 @@ namespace Concentus.Silk
 
             /* Quantize gains */
             BoxedValue<sbyte> boxed_lastGainIndex = new BoxedValue<sbyte>(psShapeSt.LastGainIndex);
-            GainQuantization.silk_gains_quant(psEnc.indices.GainsIndices, psEncCtrl.Gains_Q16,
+            GainQuantization.silk_gains_quant(psEnc.indices.GainsIndices.GetPointer(), psEncCtrl.Gains_Q16,
                 boxed_lastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.nb_subfr);
             psShapeSt.LastGainIndex = boxed_lastGainIndex.Val;
 

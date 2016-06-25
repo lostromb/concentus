@@ -35,12 +35,13 @@ namespace Concentus.Silk.Structs
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
+    using System;
 
     internal class SideInfoIndices
     {
-        internal readonly Pointer<sbyte> GainsIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
-        internal readonly Pointer<sbyte> LTPIndex = Pointer.Malloc<sbyte>(SilkConstants.MAX_NB_SUBFR);
-        internal readonly Pointer<sbyte> NLSFIndices = Pointer.Malloc<sbyte>(SilkConstants.MAX_LPC_ORDER + 1);
+        internal readonly sbyte[] GainsIndices = new sbyte[SilkConstants.MAX_NB_SUBFR];
+        internal readonly sbyte[] LTPIndex = new sbyte[SilkConstants.MAX_NB_SUBFR];
+        internal readonly sbyte[] NLSFIndices = new sbyte[SilkConstants.MAX_LPC_ORDER + 1];
         internal short lagIndex = 0;
         internal sbyte contourIndex = 0;
         internal sbyte signalType = 0;
@@ -52,9 +53,9 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            GainsIndices.MemSet(0, SilkConstants.MAX_NB_SUBFR);
-            LTPIndex.MemSet(0, SilkConstants.MAX_NB_SUBFR);
-            NLSFIndices.MemSet(0, SilkConstants.MAX_LPC_ORDER + 1);
+            Arrays.MemSet<sbyte>(GainsIndices, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet<sbyte>(LTPIndex, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet<sbyte>(NLSFIndices, 0, SilkConstants.MAX_LPC_ORDER + 1);
             lagIndex = 0;
             contourIndex = 0;
             signalType = 0;
@@ -71,9 +72,9 @@ namespace Concentus.Silk.Structs
         /// <param name="other"></param>
         internal void Assign(SideInfoIndices other)
         {
-            other.GainsIndices.MemCopyTo(this.GainsIndices, SilkConstants.MAX_NB_SUBFR);
-            other.LTPIndex.MemCopyTo(this.LTPIndex, SilkConstants.MAX_NB_SUBFR);
-            other.NLSFIndices.MemCopyTo(this.NLSFIndices, SilkConstants.MAX_LPC_ORDER + 1);
+            Array.Copy(other.GainsIndices, this.GainsIndices, SilkConstants.MAX_NB_SUBFR);
+            Array.Copy(other.LTPIndex, this.LTPIndex, SilkConstants.MAX_NB_SUBFR);
+            Array.Copy(other.NLSFIndices, this.NLSFIndices, SilkConstants.MAX_LPC_ORDER + 1);
             this.lagIndex = other.lagIndex;
             this.contourIndex = other.contourIndex;
             this.signalType = other.signalType;
