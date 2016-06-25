@@ -45,9 +45,9 @@ namespace Concentus.Silk.Structs
         /// Buffer for quantized output signal
         /// </summary>
         internal readonly short[] xq = new short[2 * SilkConstants.MAX_FRAME_LENGTH];
-        internal readonly Pointer<int> sLTP_shp_Q14 = Pointer.Malloc<int>(2 * SilkConstants.MAX_FRAME_LENGTH);
-        internal readonly Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-        internal readonly Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
+        internal readonly int[] sLTP_shp_Q14 = new int[2 * SilkConstants.MAX_FRAME_LENGTH];
+        internal readonly int[] sLPC_Q14 = new int[SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH];
+        internal readonly int[] sAR2_Q14 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
         internal int sLF_AR_shp_Q14 = 0;
         internal int lagPrev = 0;
         internal int sLTP_buf_idx = 0;
@@ -59,9 +59,9 @@ namespace Concentus.Silk.Structs
         internal void Reset()
         {
             Arrays.MemSet<short>(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            sLTP_shp_Q14.MemSet(0, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            sLPC_Q14.MemSet(0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-            sAR2_Q14.MemSet(0, SilkConstants.MAX_SHAPE_LPC_ORDER);
+            Arrays.MemSet<int>(sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet<int>(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Arrays.MemSet<int>(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
             sLF_AR_shp_Q14 = 0;
             lagPrev = 0;
             sLTP_buf_idx = 0;
@@ -82,20 +82,20 @@ namespace Concentus.Silk.Structs
             this.prev_gain_Q16 = other.prev_gain_Q16;
             this.rewhite_flag = other.rewhite_flag;
             Array.Copy(other.xq, this.xq, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            other.sLTP_shp_Q14.MemCopyTo(this.sLTP_shp_Q14, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            other.sLPC_Q14.MemCopyTo(this.sLPC_Q14, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-            other.sAR2_Q14.MemCopyTo(this.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
+            Array.Copy(other.sLTP_shp_Q14, this.sLTP_shp_Q14, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Array.Copy(other.sLPC_Q14, this.sLPC_Q14, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Array.Copy(other.sAR2_Q14, this.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
         }
 
         private class NSQ_del_dec_struct
         {
-            internal Pointer<int> sLPC_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-            internal Pointer<int> RandState = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            internal Pointer<int> Q_Q10 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            internal Pointer<int> Xq_Q14 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            internal Pointer<int> Pred_Q15 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            internal Pointer<int> Shape_Q14 = Pointer.Malloc<int>(SilkConstants.DECISION_DELAY);
-            internal Pointer<int> sAR2_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
+            internal readonly int[] sLPC_Q14 = new int[SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH];
+            internal readonly int[] RandState = new int[SilkConstants.DECISION_DELAY];
+            internal readonly int[] Q_Q10 = new int[SilkConstants.DECISION_DELAY];
+            internal readonly int[] Xq_Q14 = new int[SilkConstants.DECISION_DELAY];
+            internal readonly int[] Pred_Q15 = new int[SilkConstants.DECISION_DELAY];
+            internal readonly int[] Shape_Q14 = new int[SilkConstants.DECISION_DELAY];
+            internal readonly int[] sAR2_Q14 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
             internal int LF_AR_Q14;
             internal int Seed;
             internal int SeedInit;
@@ -108,13 +108,13 @@ namespace Concentus.Silk.Structs
 
             internal void Reset()
             {
-                sLPC_Q14.MemSet(0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-                RandState.MemSet(0, SilkConstants.DECISION_DELAY);
-                Q_Q10.MemSet(0, SilkConstants.DECISION_DELAY);
-                Xq_Q14.MemSet(0, SilkConstants.DECISION_DELAY);
-                Pred_Q15.MemSet(0, SilkConstants.DECISION_DELAY);
-                Shape_Q14.MemSet(0, SilkConstants.DECISION_DELAY);
-                sAR2_Q14.MemSet(0, SilkConstants.MAX_SHAPE_LPC_ORDER);
+                Arrays.MemSet<int>(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+                Arrays.MemSet<int>(RandState, 0, SilkConstants.DECISION_DELAY);
+                Arrays.MemSet<int>(Q_Q10, 0, SilkConstants.DECISION_DELAY);
+                Arrays.MemSet<int>(Xq_Q14, 0, SilkConstants.DECISION_DELAY);
+                Arrays.MemSet<int>(Pred_Q15, 0, SilkConstants.DECISION_DELAY);
+                Arrays.MemSet<int>(Shape_Q14, 0, SilkConstants.DECISION_DELAY);
+                Arrays.MemSet<int>(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
                 LF_AR_Q14 = 0;
                 Seed = 0;
                 SeedInit = 0;
@@ -123,14 +123,13 @@ namespace Concentus.Silk.Structs
 
             internal void PartialCopyFrom(NSQ_del_dec_struct other, int q14Offset)
             {
-                other.sLPC_Q14.Point(q14Offset).MemCopyTo(sLPC_Q14.Point(q14Offset), SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH - q14Offset);
-                other.RandState.MemCopyTo(RandState, SilkConstants.DECISION_DELAY);
-                other.Q_Q10.MemCopyTo(Q_Q10, SilkConstants.DECISION_DELAY);
-                other.Xq_Q14.MemCopyTo(Xq_Q14, SilkConstants.DECISION_DELAY);
-                other.Pred_Q15.MemCopyTo(Pred_Q15, SilkConstants.DECISION_DELAY);
-                other.Shape_Q14.MemCopyTo(Shape_Q14, SilkConstants.DECISION_DELAY);
-                other.sAR2_Q14.MemCopyTo(sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
-
+                Array.Copy(other.sLPC_Q14, q14Offset, sLPC_Q14, q14Offset, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH - q14Offset);
+                Array.Copy(other.RandState, RandState, SilkConstants.DECISION_DELAY);
+                Array.Copy(other.Q_Q10, Q_Q10, SilkConstants.DECISION_DELAY);
+                Array.Copy(other.Xq_Q14, Xq_Q14, SilkConstants.DECISION_DELAY);
+                Array.Copy(other.Pred_Q15, Pred_Q15, SilkConstants.DECISION_DELAY);
+                Array.Copy(other.Shape_Q14, Shape_Q14, SilkConstants.DECISION_DELAY);
+                Array.Copy(other.sAR2_Q14, sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
                 LF_AR_Q14 = other.LF_AR_Q14;
                 Seed = other.Seed;
                 SeedInit = other.SeedInit;
@@ -284,7 +283,7 @@ namespace Concentus.Silk.Structs
 
             /* Save quantized speech and noise shaping signals */
             this.xq.GetPointer(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
-            this.sLTP_shp_Q14.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
+            this.sLTP_shp_Q14.GetPointer(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
         }
 
         /***********************************/
@@ -320,12 +319,12 @@ namespace Concentus.Silk.Structs
             int tmp1, tmp2, sLF_AR_shp_Q14;
             Pointer<int> psLPC_Q14, shp_lag_ptr, pred_lag_ptr;
 
-            shp_lag_ptr = this.sLTP_shp_Q14.Point(this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2);
+            shp_lag_ptr = this.sLTP_shp_Q14.GetPointer(this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2);
             pred_lag_ptr = sLTP_Q15.Point(this.sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2);
             Gain_Q10 = Inlines.silk_RSHIFT(Gain_Q16, 6);
 
             /* Set up short term AR state */
-            psLPC_Q14 = this.sLPC_Q14.Point(SilkConstants.NSQ_LPC_BUF_LENGTH - 1);
+            psLPC_Q14 = this.sLPC_Q14.GetPointer(SilkConstants.NSQ_LPC_BUF_LENGTH - 1);
 
             for (i = 0; i < length; i++)
             {
@@ -502,7 +501,7 @@ namespace Concentus.Silk.Structs
             }
 
             /* Update LPC synth buffer */
-            this.sLPC_Q14.Point(length).MemCopyTo(this.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Array.Copy(this.sLPC_Q14, length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
         }
 
         private void silk_nsq_scale_states(
@@ -644,8 +643,8 @@ namespace Concentus.Silk.Structs
                 psDD.RD_Q10 = 0;
                 psDD.LF_AR_Q14 = this.sLF_AR_shp_Q14;
                 psDD.Shape_Q14[0] = this.sLTP_shp_Q14[psEncC.ltp_mem_length - 1];
-                this.sLPC_Q14.MemCopyTo(psDD.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
-                this.sAR2_Q14.MemCopyTo(psDD.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
+                Array.Copy(this.sLPC_Q14, psDD.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
+                Array.Copy(this.sAR2_Q14, psDD.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
             }
 
             offset_Q10 = Tables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
@@ -796,8 +795,8 @@ namespace Concentus.Silk.Structs
                             Inlines.silk_SMULWW(psDD.Xq_Q14[last_smple_idx], Gain_Q10), 8));
                 this.sLTP_shp_Q14[this.sLTP_shp_buf_idx - decisionDelay + i] = psDD.Shape_Q14[last_smple_idx];
             }
-            psDD.sLPC_Q14.Point(psEncC.subfr_length).MemCopyTo(this.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
-            psDD.sAR2_Q14.MemCopyTo(this.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
+            Array.Copy(psDD.sLPC_Q14, psEncC.subfr_length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Array.Copy(psDD.sAR2_Q14, 0, this.sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
 
             /* Update states */
             this.sLF_AR_shp_Q14 = psDD.LF_AR_Q14;
@@ -805,7 +804,7 @@ namespace Concentus.Silk.Structs
 
             /* Save quantized speech signal */
             this.xq.GetPointer(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
-            this.sLTP_shp_Q14.Point(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
+            this.sLTP_shp_Q14.GetPointer(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
         }
 
         /******************************************/
@@ -858,7 +857,7 @@ namespace Concentus.Silk.Structs
                 psSampleState[c] = new NSQ_sample_pair();
             }
 
-            shp_lag_ptr = this.sLTP_shp_Q14.Point(this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2);
+            shp_lag_ptr = this.sLTP_shp_Q14.GetPointer(this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2);
             pred_lag_ptr = sLTP_Q15.Point(this.sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2);
             Gain_Q10 = Inlines.silk_RSHIFT(Gain_Q16, 6);
 
@@ -909,7 +908,7 @@ namespace Concentus.Silk.Structs
                     psDD.Seed = Inlines.silk_RAND(psDD.Seed);
 
                     /* Pointer used in short term prediction and shaping */
-                    psLPC_Q14 = psDD.sLPC_Q14.Point(SilkConstants.NSQ_LPC_BUF_LENGTH - 1 + i);
+                    psLPC_Q14 = psDD.sLPC_Q14.GetPointer(SilkConstants.NSQ_LPC_BUF_LENGTH - 1 + i);
                     /* Short-term prediction */
                     Inlines.OpusAssert(predictLPCOrder == 10 || predictLPCOrder == 16);
                     /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
@@ -1171,7 +1170,7 @@ namespace Concentus.Silk.Structs
             for (k = 0; k < nStatesDelayedDecision; k++)
             {
                 psDD = psDelDec[k];
-                psDD.sLPC_Q14.Point(length).MemCopyTo(psDD.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
+                Array.Copy(psDD.sLPC_Q14, length, psDD.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
             }
         }
 

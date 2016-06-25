@@ -56,7 +56,7 @@ namespace Concentus.Celt
             for (i = 0; i < max_pitch - 3; i += 4)
             {
                 int[] sum = { 0, 0, 0, 0 };
-
+                
                 Kernels.xcorr_kernel(_x.Data, _x.Offset, _y.Data, _y.Offset + i, sum, len);
                 xcorr[i] = sum[0];
                 xcorr[i + 1] = sum[1];
