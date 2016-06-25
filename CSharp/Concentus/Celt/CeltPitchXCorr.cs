@@ -40,9 +40,12 @@ namespace Concentus.Celt
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using System.Diagnostics;
+    using System.Threading;
 
     internal static class CeltPitchXCorr
     {
+        private static ThreadLocal<int[]> scratch = new ThreadLocal<int[]>(() => { return new int[4]; });
+
         internal static int pitch_xcorr(
             Pointer<int> _x,
             Pointer<int> _y,
@@ -50,13 +53,16 @@ namespace Concentus.Celt
             int len,
             int max_pitch)
         {
+            int[] sum = scratch.Value;
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
             for (i = 0; i < max_pitch - 3; i += 4)
             {
-                int[] sum = { 0, 0, 0, 0 };
-                
+                sum[0] = 0;
+                sum[1] = 0;
+                sum[2] = 0;
+                sum[3] = 0;
                 Kernels.xcorr_kernel(_x.Data, _x.Offset, _y.Data, _y.Offset + i, sum, len);
                 xcorr[i] = sum[0];
                 xcorr[i + 1] = sum[1];
@@ -70,9 +76,9 @@ namespace Concentus.Celt
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
             {
-                int sum = Kernels.celt_inner_prod(_x.Data, _x.Offset, _y.Data, _y.Offset + i, len);
-                xcorr[i] = sum;
-                maxcorr = Inlines.MAX32(maxcorr, sum);
+                int inner_sum = Kernels.celt_inner_prod(_x.Data, _x.Offset, _y.Data, _y.Offset + i, len);
+                xcorr[i] = inner_sum;
+                maxcorr = Inlines.MAX32(maxcorr, inner_sum);
             }
             return maxcorr;
         }
@@ -84,14 +90,16 @@ namespace Concentus.Celt
             int len,
             int max_pitch)
         {
+            int[] sum = scratch.Value;
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
-            // Inlines.OpusAssert((((byte*)_x - (byte*)NULL)&3)== 0); // fixme this checks alignment, right?
             for (i = 0; i < max_pitch - 3; i += 4)
             {
-                int[] sum = { 0, 0, 0, 0 };
-
+                sum[0] = 0;
+                sum[1] = 0;
+                sum[2] = 0;
+                sum[3] = 0;
                 Kernels.xcorr_kernel(_x.Data, _x.Offset, _y.Data, _y.Offset + i, sum, len);
 
                 xcorr[i] = sum[0];
@@ -106,9 +114,9 @@ namespace Concentus.Celt
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
             {
-                int sum = Kernels.celt_inner_prod(_x.Data, _x.Offset, _y.Data, _y.Offset + i, len);
-                xcorr[i] = sum;
-                maxcorr = Inlines.MAX32(maxcorr, sum);
+                int inner_sum = Kernels.celt_inner_prod(_x.Data, _x.Offset, _y.Data, _y.Offset + i, len);
+                xcorr[i] = inner_sum;
+                maxcorr = Inlines.MAX32(maxcorr, inner_sum);
             }
             return maxcorr;
         }

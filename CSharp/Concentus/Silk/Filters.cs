@@ -128,7 +128,7 @@ namespace Concentus.Silk
                 AR1_shp_Q13 = psEncCtrl.AR1_Q13.Point(k * SilkConstants.MAX_SHAPE_LPC_ORDER);
 
                 /* Short term FIR filtering*/
-                silk_warped_LPC_analysis_filter(P.sAR_shp, st_res_Q2, AR1_shp_Q13, px,
+                silk_warped_LPC_analysis_filter(P.sAR_shp.GetPointer(), st_res_Q2, AR1_shp_Q13, px,
                     Inlines.CHOP16(psEnc.warping_Q16), psEnc.subfr_length, psEnc.shapingLPCOrder);
 
                 /* Reduce (mainly) low frequencies during harmonic emphasis */
@@ -173,7 +173,7 @@ namespace Concentus.Silk
             Pointer<short> LTP_shp_buf;
 
             /* To speed up use temp variables instead of using the struct */
-            LTP_shp_buf = P.sLTP_shp;
+            LTP_shp_buf = P.sLTP_shp.GetPointer();
             LTP_shp_buf_idx = P.sLTP_shp_buf_idx;
             sLF_AR_shp_Q12 = P.sLF_AR_shp_Q12;
             sLF_MA_shp_Q12 = P.sLF_MA_shp_Q12;

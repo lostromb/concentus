@@ -161,7 +161,8 @@ namespace Concentus.Celt
             if (C == 2)
                 shift++;
 
-            for (i = 1; i < len >> 1; i++)
+            int halflen = len >> 1; // cached for performance
+            for (i = 1; i < halflen; i++)
             {
                 x_lp[i] = (Inlines.SHR32(Inlines.HALF32(Inlines.HALF32(x[0][(2 * i - 1)] + x[0][(2 * i + 1)]) + x[0][2 * i]), shift));
             }
@@ -170,13 +171,13 @@ namespace Concentus.Celt
 
             if (C == 2)
             {
-                for (i = 1; i < len >> 1; i++)
+                for (i = 1; i < halflen; i++)
                     x_lp[i] += (Inlines.SHR32(Inlines.HALF32(Inlines.HALF32(x[1][(2 * i - 1)] + x[1][(2 * i + 1)]) + x[1][2 * i]), shift));
                 x_lp[0] += (Inlines.SHR32(Inlines.HALF32(Inlines.HALF32(x[1][1]) + x[1][0]), shift));
             }
 
             CeltLPC._celt_autocorr(x_lp, ac.GetPointer(), null, 0,
-                           4, len >> 1);
+                           4, halflen);
 
             /* Noise floor -40 dB */
             ac[0] += Inlines.SHR32(ac[0], 13);
@@ -200,7 +201,7 @@ namespace Concentus.Celt
             lpc2[3] = (lpc[3] + Inlines.MULT16_16_Q15(c1, lpc[2]));
             lpc2[4] = Inlines.MULT16_16_Q15(c1, lpc[3]);
 
-            celt_fir5(x_lp, lpc2.GetPointer(), x_lp, len >> 1, mem.GetPointer());
+            celt_fir5(x_lp, lpc2.GetPointer(), x_lp, halflen, mem.GetPointer());
         }
 
         internal static void pitch_search(Pointer<int> x_lp, Pointer<int> y,

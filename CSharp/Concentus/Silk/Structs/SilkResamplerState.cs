@@ -35,14 +35,14 @@ namespace Concentus.Silk.Structs
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
-
+    using System;
     internal class SilkResamplerState
     {
-        internal readonly Pointer<int> sIIR = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER); /* this must be the first element of this struct FIXME why? */
-        internal readonly Pointer<int> sFIR_i32 = Pointer.Malloc<int>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-        internal readonly Pointer<short> sFIR_i16 = Pointer.Malloc<short>(SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+        internal readonly int[] sIIR = new int[SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER]; /* this must be the first element of this struct FIXME why? */
+        internal readonly int[] sFIR_i32 = new int[SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER]; // porting note: these two fields were originally a union, so that means only 1 will ever be used at a time.
+        internal readonly short[] sFIR_i16 = new short[SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER];
 
-        internal readonly Pointer<short> delayBuf = Pointer.Malloc<short>(48);
+        internal readonly short[] delayBuf = new short[48];
         internal int resampler_function = 0;
         internal int batchSize = 0;
         internal int invRatio_Q16 = 0;
@@ -59,10 +59,10 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            sIIR.MemSet(0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
-            sFIR_i32.MemSet(0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            sFIR_i16.MemSet(0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            delayBuf.MemSet(0, 48);
+            Arrays.MemSet<int>(sIIR, 0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
+            Arrays.MemSet<int>(sFIR_i32, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Arrays.MemSet<short>(sFIR_i16, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Arrays.MemSet<short>(delayBuf, 0, 48);
             resampler_function = 0;
             batchSize = 0;
             invRatio_Q16 = 0;
@@ -85,10 +85,10 @@ namespace Concentus.Silk.Structs
             Fs_out_kHz = other.Fs_out_kHz;
             inputDelay = other.inputDelay;
             Coefs = other.Coefs;
-            other.sIIR.MemCopyTo(this.sIIR, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
-            other.sFIR_i32.MemCopyTo(this.sFIR_i32, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            other.sFIR_i16.MemCopyTo(this.sFIR_i16, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            other.delayBuf.MemCopyTo(this.delayBuf, 48);
+            Array.Copy(other.sIIR, this.sIIR, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
+            Array.Copy(other.sFIR_i32, this.sFIR_i32, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Array.Copy(other.sFIR_i16, this.sFIR_i16, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Array.Copy(other.delayBuf, this.delayBuf, 48);
         }
     }
 }

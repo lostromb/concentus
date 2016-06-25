@@ -41,8 +41,8 @@ namespace Concentus.Silk.Structs
     /// </summary>
     internal class SilkPrefilterState
     {
-        internal readonly Pointer<short> sLTP_shp = Pointer.Malloc<short>(SilkConstants.LTP_BUF_LENGTH);
-        internal readonly Pointer<int> sAR_shp = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
+        internal readonly short[] sLTP_shp = new short[SilkConstants.LTP_BUF_LENGTH];
+        internal readonly int[] sAR_shp = new int[SilkConstants.MAX_SHAPE_LPC_ORDER + 1];
         internal int sLTP_shp_buf_idx = 0;
         internal int sLF_AR_shp_Q12 = 0;
         internal int sLF_MA_shp_Q12 = 0;
@@ -57,8 +57,8 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            sLTP_shp.MemSet(0, SilkConstants.LTP_BUF_LENGTH);
-            sAR_shp.MemSet(0, SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
+            Arrays.MemSet<short>(sLTP_shp, 0, SilkConstants.LTP_BUF_LENGTH);
+            Arrays.MemSet<int>(sAR_shp, 0, SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
             sLTP_shp_buf_idx = 0;
             sLF_AR_shp_Q12 = 0;
             sLF_MA_shp_Q12 = 0;
