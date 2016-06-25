@@ -97,15 +97,16 @@ namespace Concentus.Common
         }
 
         //        /** 16x32 multiplication, followed by a 15-bit shift right. Results fits in 32 bits */
-        //#define MULT16_32_Q15(a,b) ADD32(SHL(MULT16_16((a),SHR((b),16)),1), SHR(MULT16_16SU((a),((b)&0x0000ffff)),15))
         public static int MULT16_32_Q15(short a, int b)
         {
-            return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (ushort)((b) & 0x0000ffff)), 15));
+            return ((a * (b >> 16)) << 1) + ((a * (b & 0xFFFF)) >> 15);
+            //return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (ushort)((b) & 0x0000ffff)), 15));
         }
 
         public static int MULT16_32_Q15(int a, int b)
         {
-            return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (uint)((b) & 0x0000ffff)), 15));
+            return ((a * (b >> 16)) << 1) + ((a * (b & 0xFFFF)) >> 15);
+            //return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (uint)((b) & 0x0000ffff)), 15));
         }
 
         //        /** 32x32 multiplication, followed by a 31-bit shift right. Results fits in 32 bits */
