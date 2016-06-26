@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class EncodeAPI
@@ -168,11 +169,8 @@ namespace Concentus.Silk
                 psEnc.sStereo.smth_width_Q14 = Inlines.CHOP16(Inlines.SILK_CONST(1.0f, 14));
                 if (psEnc.nChannelsAPI == 2)
                 {
-                    // silk_memcpy(&psEnc.state_Fxx[1].resampler_state, &psEnc.state_Fxx[0].resampler_state, sizeof(silk_resampler_state_struct));
                     psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
-
-                    //silk_memcpy(&psEnc.state_Fxx[1].In_HP_State, &psEnc.state_Fxx[0].In_HP_State, sizeof(psEnc.state_Fxx[1].In_HP_State) );
-                    psEnc.state_Fxx[0].In_HP_State.MemCopyTo(psEnc.state_Fxx[1].In_HP_State, 2);
+                    Array.Copy(psEnc.state_Fxx[0].In_HP_State, psEnc.state_Fxx[1].In_HP_State, 2);
                 }
             }
 
@@ -284,7 +282,7 @@ namespace Concentus.Silk
 
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
-                        psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].inputBufIx + 2),
+                        psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
                         buf,
                         nSamplesFromInput);
 
@@ -298,7 +296,7 @@ namespace Concentus.Silk
                     }
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[1].resampler_state,
-                        psEnc.state_Fxx[1].inputBuf.Point(psEnc.state_Fxx[1].inputBufIx + 2),
+                        psEnc.state_Fxx[1].inputBuf.GetPointer(psEnc.state_Fxx[1].inputBufIx + 2),
                         buf,
                         nSamplesFromInput);
 
@@ -315,7 +313,7 @@ namespace Concentus.Silk
 
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
-                        psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].inputBufIx + 2),
+                        psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
                         buf,
                         nSamplesFromInput);
 
@@ -324,7 +322,7 @@ namespace Concentus.Silk
                     {
                         ret += Resampler.silk_resampler(
                             psEnc.state_Fxx[1].resampler_state,
-                            psEnc.state_Fxx[1].inputBuf.Point(psEnc.state_Fxx[1].inputBufIx + 2),
+                            psEnc.state_Fxx[1].inputBuf.GetPointer(psEnc.state_Fxx[1].inputBufIx + 2),
                             buf,
                             nSamplesFromInput);
 
@@ -344,7 +342,7 @@ namespace Concentus.Silk
                     samplesIn.MemCopyTo(buf, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
-                        psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].inputBufIx + 2),
+                        psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
                         buf,
                         nSamplesFromInput);
 
@@ -420,7 +418,7 @@ namespace Concentus.Silk
 
                                     EncodeIndices.silk_encode_indices(psEnc.state_Fxx[n], psRangeEnc, i, 1, condCoding);
                                     EncodePulses.silk_encode_pulses(psRangeEnc, psEnc.state_Fxx[n].indices_LBRR[i].signalType, psEnc.state_Fxx[n].indices_LBRR[i].quantOffsetType,
-                                        psEnc.state_Fxx[n].pulses_LBRR[i], psEnc.state_Fxx[n].frame_length);
+                                        psEnc.state_Fxx[n].pulses_LBRR[i].GetPointer(), psEnc.state_Fxx[n].frame_length);
                                 }
                             }
                         }
@@ -428,7 +426,7 @@ namespace Concentus.Silk
                         /* Reset LBRR flags */
                         for (n = 0; n < encControl.nChannelsInternal; n++)
                         {
-                            psEnc.state_Fxx[n].LBRR_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
+                            Arrays.MemSet<int>(psEnc.state_Fxx[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
                         }
 
                         psEnc.nBitsUsedLBRR = psRangeEnc.tell();
@@ -476,8 +474,8 @@ namespace Concentus.Silk
                     {
                         BoxedValue<sbyte> midOnlyFlagBoxed = new BoxedValue<sbyte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                         Stereo.silk_stereo_LR_to_MS(psEnc.sStereo,
-                            psEnc.state_Fxx[0].inputBuf.Point(2),
-                            psEnc.state_Fxx[1].inputBuf.Point(2),
+                            psEnc.state_Fxx[0].inputBuf.GetPointer(2),
+                            psEnc.state_Fxx[1].inputBuf.GetPointer(2),
                             psEnc.sStereo.predIx[psEnc.state_Fxx[0].nFramesEncoded],
                             midOnlyFlagBoxed,
                             MStargetRates_bps.GetPointer(),
@@ -497,7 +495,7 @@ namespace Concentus.Silk
                                 psEnc.state_Fxx[1].sShape.Reset();
                                 psEnc.state_Fxx[1].sPrefilt.Reset();
                                 psEnc.state_Fxx[1].sNSQ.Reset();
-                                psEnc.state_Fxx[1].prev_NLSFq_Q15.MemSet(0, SilkConstants.MAX_LPC_ORDER);
+                                Arrays.MemSet<short>(psEnc.state_Fxx[1].prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
                                 Arrays.MemSet(psEnc.state_Fxx[1].sLP.In_LP_State, 0, 2);
 
                                 psEnc.state_Fxx[1].prevLag = 100;
@@ -527,8 +525,8 @@ namespace Concentus.Silk
                     else
                     {
                         /* Buffering */
-                        psEnc.sStereo.sMid.MemCopyTo(psEnc.state_Fxx[0].inputBuf, 2);
-                        psEnc.state_Fxx[0].inputBuf.Point(psEnc.state_Fxx[0].frame_length).MemCopyTo(psEnc.sStereo.sMid, 2);
+                        psEnc.sStereo.sMid.MemCopyTo(psEnc.state_Fxx[0].inputBuf.GetPointer(), 2);
+                        psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].frame_length).MemCopyTo(psEnc.sStereo.sMid, 2);
                     }
 
                     psEnc.state_Fxx[0].silk_encode_do_VAD();

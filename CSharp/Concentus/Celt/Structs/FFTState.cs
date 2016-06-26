@@ -48,7 +48,7 @@ namespace Concentus.Celt.Structs
         internal int scale_shift = 0;
         internal int shift = 0;
         internal short[] factors = new short[2 * KissFFT.MAXFACTORS];
-        internal Pointer<short> bitrev = null;
+        internal short[] bitrev = null;
         internal short[] twiddles = null;
     }
 }

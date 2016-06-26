@@ -176,7 +176,7 @@ namespace Concentus.Silk
                     Inlines.OpusAssert(pitch_low_bits < psEncC.fs_kHz / 2);
                     Inlines.OpusAssert(pitch_high_bits < 32);
                     psRangeEnc.enc_icdf( pitch_high_bits, Tables.silk_pitch_lag_iCDF.GetPointer(), 8);
-                    psRangeEnc.enc_icdf( pitch_low_bits, psEncC.pitch_lag_low_bits_iCDF, 8);
+                    psRangeEnc.enc_icdf( pitch_low_bits, psEncC.pitch_lag_low_bits_iCDF.GetPointer(), 8);
                 }
                 psEncC.ec_prevLagIndex = psIndices.lagIndex;
 
@@ -186,7 +186,7 @@ namespace Concentus.Silk
                             (psIndices.contourIndex < 11 && psEncC.fs_kHz == 8 && psEncC.nb_subfr == 4) ||
                             (psIndices.contourIndex < 12 && psEncC.fs_kHz > 8 && psEncC.nb_subfr == 2) ||
                             (psIndices.contourIndex < 3 && psEncC.fs_kHz == 8 && psEncC.nb_subfr == 2));
-                psRangeEnc.enc_icdf( psIndices.contourIndex, psEncC.pitch_contour_iCDF, 8);
+                psRangeEnc.enc_icdf( psIndices.contourIndex, psEncC.pitch_contour_iCDF.GetPointer(), 8);
 
                 /********************/
                 /* Encode LTP gains */

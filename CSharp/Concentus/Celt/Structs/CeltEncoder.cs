@@ -80,10 +80,10 @@ namespace Concentus.Celt.Structs
         internal int prefilter_gain = 0;
         internal int prefilter_tapset = 0;
         internal int consec_transient = 0;
-        internal AnalysisInfo analysis = new AnalysisInfo(); // fixme is this necessary? Huh?
+        internal AnalysisInfo analysis = new AnalysisInfo();
 
-        internal readonly Pointer<int> preemph_memE = Pointer.Malloc<int>(2);
-        internal readonly Pointer<int> preemph_memD = Pointer.Malloc<int>(2);
+        internal readonly int[] preemph_memE = new int[2];
+        internal readonly int[] preemph_memD = new int[2];
 
         /* VBR-related parameters */
         internal int vbr_reservoir = 0;
@@ -107,11 +107,11 @@ namespace Concentus.Celt.Structs
         /// val16 oldLogE[],       Size = channels*mode.nbEBands
         /// val16 oldLogE2[],      Size = channels*mode.nbEBands
         /// </summary>
-        internal Pointer<int> in_mem = null;
-        internal Pointer<int> prefilter_mem = null;
-        internal Pointer<int> oldBandE = null;
-        internal Pointer<int> oldLogE = null;
-        internal Pointer<int> oldLogE2 = null;
+        internal int[] in_mem = null;
+        internal int[] prefilter_mem = null;
+        internal int[] oldBandE = null;
+        internal int[] oldLogE = null;
+        internal int[] oldLogE2 = null;
 
         private void Reset()
         {
@@ -150,8 +150,10 @@ namespace Concentus.Celt.Structs
             prefilter_tapset = 0;
             consec_transient = 0;
             analysis.Reset();
-            preemph_memE.MemSet(0, 2);
-            preemph_memD.MemSet(0, 2);
+            preemph_memE[0] = 0;
+            preemph_memE[1] = 0;
+            preemph_memD[0] = 0;
+            preemph_memD[1] = 0;
             vbr_reservoir = 0;
             vbr_drift = 0;
             vbr_offset = 0;
@@ -168,9 +170,9 @@ namespace Concentus.Celt.Structs
             oldLogE2 = null;
         }
 
-        #endregion
+#endregion
 
-        #region API functions
+#region API functions
 
         internal void ResetState()
         {
@@ -178,12 +180,12 @@ namespace Concentus.Celt.Structs
 
             this.PartialReset();
 
-            // We have to reconstitute the dynamic buffers here. fixme: this could be better implemented
-            this.in_mem = Pointer.Malloc<int>(this.channels * this.mode.overlap);
-            this.prefilter_mem = Pointer.Malloc<int>(this.channels * CeltConstants.COMBFILTER_MAXPERIOD);
-            this.oldBandE = Pointer.Malloc<int>(this.channels * this.mode.nbEBands);
-            this.oldLogE = Pointer.Malloc<int>(this.channels * this.mode.nbEBands);
-            this.oldLogE2 = Pointer.Malloc<int>(this.channels * this.mode.nbEBands);
+            // We have to reconstitute the dynamic buffers here.
+            this.in_mem = new int[this.channels * this.mode.overlap];
+            this.prefilter_mem = new int[this.channels * CeltConstants.COMBFILTER_MAXPERIOD];
+            this.oldBandE = new int[this.channels * this.mode.nbEBands];
+            this.oldLogE = new int[this.channels * this.mode.nbEBands];
+            this.oldLogE2 = new int[this.channels * this.mode.nbEBands];
 
             for (i = 0; i < this.channels * this.mode.nbEBands; i++)
             {
@@ -226,11 +228,11 @@ namespace Concentus.Celt.Structs
             this.lsb_depth = 24;
 
             // fixme is this necessary if we just call encoder_ctrl right there anyways?
-            this.in_mem = Pointer.Malloc<int>(channels * mode.overlap);
-            this.prefilter_mem = Pointer.Malloc<int>(channels * CeltConstants.COMBFILTER_MAXPERIOD);
-            this.oldBandE = Pointer.Malloc<int>(channels * mode.nbEBands);
-            this.oldLogE = Pointer.Malloc<int>(channels * mode.nbEBands);
-            this.oldLogE2 = Pointer.Malloc<int>(channels * mode.nbEBands);
+            //this.in_mem = Pointer.Malloc<int>(channels * mode.overlap);
+            //this.prefilter_mem = Pointer.Malloc<int>(channels * CeltConstants.COMBFILTER_MAXPERIOD);
+            //this.oldBandE = Pointer.Malloc<int>(channels * mode.nbEBands);
+            //this.oldLogE = Pointer.Malloc<int>(channels * mode.nbEBands);
+            //this.oldLogE2 = Pointer.Malloc<int>(channels * mode.nbEBands);
 
             this.ResetState();
 
@@ -346,7 +348,7 @@ namespace Concentus.Celt.Structs
             {
                 int offset = mode.shortMdctSize - overlap;
                 this.prefilter_period = Inlines.IMAX(this.prefilter_period, CeltConstants.COMBFILTER_MINPERIOD);
-                this.in_mem.Point(c * overlap).MemCopyTo(input.Point(c * (N + overlap)), overlap);
+                this.in_mem.GetPointer(c * overlap).MemCopyTo(input.Point(c * (N + overlap)), overlap);
                 if (offset != 0)
                 {
                     CeltCommon.comb_filter(input.Point(c * (N + overlap) + overlap), pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD),
@@ -357,7 +359,7 @@ namespace Concentus.Celt.Structs
                 CeltCommon.comb_filter(input.Point(c * (N + overlap) + overlap + offset), pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       this.prefilter_period, pitch_index.Val, N - offset, -this.prefilter_gain, -gain1,
                       this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
-                input.Point(c * (N + overlap) + N).MemCopyTo(this.in_mem.Point(c * overlap), overlap);
+                input.Point(c * (N + overlap) + N).MemCopyTo(this.in_mem, c * overlap, overlap);
 
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
                 {
@@ -396,8 +398,6 @@ namespace Concentus.Celt.Structs
             Pointer<int> fine_priority;
             Pointer<int> tf_res;
             Pointer<byte> collapse_masks;
-            Pointer<int> prefilter_mem;
-            Pointer<int> oldBandE, oldLogE, oldLogE2;
             int shortBlocks = 0;
             int isTransient = 0;
             int CC = this.channels;
@@ -467,12 +467,6 @@ namespace Concentus.Celt.Structs
             }
             M = 1 << LM;
             N = M * mode.shortMdctSize;
-
-            // fixme: can remove these temp pointers?
-            prefilter_mem = this.prefilter_mem;
-            oldBandE = this.oldBandE;
-            oldLogE = this.oldLogE;
-            oldLogE2 = this.oldLogE2;
 
             if (enc == null)
             {
@@ -598,7 +592,7 @@ namespace Concentus.Celt.Structs
                 BoxedValue<int> boxed_pitch_index = new BoxedValue<int>(pitch_index);
                 BoxedValue<int> boxed_gain1 = new BoxedValue<int>(gain1);
                 BoxedValue<int> boxed_qg = new BoxedValue<int>();
-                pf_on = this.run_prefilter(input, prefilter_mem, CC, N, prefilter_tapset, boxed_pitch_index, boxed_gain1, boxed_qg, enabled, nbAvailableBytes);
+                pf_on = this.run_prefilter(input, this.prefilter_mem.GetPointer(), CC, N, prefilter_tapset, boxed_pitch_index, boxed_gain1, boxed_qg, enabled, nbAvailableBytes);
                 pitch_index = boxed_pitch_index.Val;
                 gain1 = boxed_gain1.Val;
                 qg = boxed_qg.Val;
@@ -790,7 +784,7 @@ namespace Concentus.Celt.Structs
                time-domain analysis */
             if (LM > 0 && enc.tell() + 3 <= total_bits && isTransient == 0 && this.complexity >= 5 && this.lfe == 0)
             {
-                if (CeltCommon.patch_transient_decision(bandLogE, oldBandE, nbEBands, start, end, C) != 0)
+                if (CeltCommon.patch_transient_decision(bandLogE, this.oldBandE.GetPointer(), nbEBands, start, end, C) != 0)
                 {
                     isTransient = 1;
                     shortBlocks = M;
@@ -843,7 +837,7 @@ namespace Concentus.Celt.Structs
             error = Pointer.Malloc<int>(C * nbEBands);
             BoxedValue<int> boxed_delayedIntra = new BoxedValue<int>(this.delayedIntra);
             QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE,
-                  oldBandE, (uint)total_bits, error, enc,
+                  this.oldBandE.GetPointer(), (uint)total_bits, error, enc,
                   C, LM, nbAvailableBytes, this.force_intra,
                   boxed_delayedIntra, this.complexity >= 4 ? 1 : 0, this.loss_rate, this.lfe);
             this.delayedIntra = boxed_delayedIntra.Val;
@@ -1108,7 +1102,7 @@ namespace Concentus.Celt.Structs
             else
                 this.lastCodedBands = codedBands;
 
-            QuantizeBands.quant_fine_energy(mode, start, end, oldBandE, error, fine_quant, enc, C);
+            QuantizeBands.quant_fine_energy(mode, start, end, this.oldBandE.GetPointer(), error, fine_quant, enc, C);
 
             /* Residual quantisation */
             collapse_masks = Pointer.Malloc<byte>(C * nbEBands);
@@ -1128,12 +1122,12 @@ namespace Concentus.Celt.Structs
                 enc.enc_bits((uint)anti_collapse_on, 1);
             }
 
-            QuantizeBands.quant_energy_finalise(mode, start, end, oldBandE, error, fine_quant, fine_priority, nbCompressedBytes * 8 - (int)enc.tell(), enc, C);
+            QuantizeBands.quant_energy_finalise(mode, start, end, this.oldBandE.GetPointer(), error, fine_quant, fine_priority, nbCompressedBytes * 8 - (int)enc.tell(), enc, C);
 
             if (silence != 0)
             {
                 for (i = 0; i < C * nbEBands; i++)
-                    oldBandE[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    this.oldBandE[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
             }
 
             this.prefilter_period = pitch_index;
@@ -1142,13 +1136,13 @@ namespace Concentus.Celt.Structs
 
             if (CC == 2 && C == 1)
             {
-                oldBandE.MemCopyTo(oldBandE.Point(nbEBands), nbEBands);
+                Array.Copy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
             }
 
             if (isTransient == 0)
             {
-                oldLogE.MemCopyTo(oldLogE2, CC * nbEBands);
-                oldBandE.MemCopyTo(oldLogE, CC * nbEBands);
+                Array.Copy(oldLogE, oldLogE2, CC * nbEBands);
+                Array.Copy(oldBandE, oldLogE, CC * nbEBands);
             }
             else
             {
@@ -1191,9 +1185,9 @@ namespace Concentus.Celt.Structs
                 return nbCompressedBytes;
         }
 
-        #endregion
+#endregion
 
-        #region Getters and Setters
+#region Getters and Setters
 
         internal void SetComplexity(int value)
         {
@@ -1305,6 +1299,6 @@ namespace Concentus.Celt.Structs
             this.energy_mask = value;
         }
 
-        #endregion
+#endregion
     }
 }

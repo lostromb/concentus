@@ -179,13 +179,13 @@ namespace Concentus.Celt
                 Pointer<int> xp2 = input.Point(stride * (N2 - 1));
                 Pointer<int> yp = output.Point(overlap >> 1);
                 Pointer<short> t = trig;
-                Pointer<short> bitrev = l.kfft[shift].bitrev;
+                short[] bitrev = l.kfft[shift].bitrev;
+                int bitrav_ptr = 0;
                 for (i = 0; i < N4; i++)
                 {
                     int rev;
                     int yr, yi;
-                    rev = bitrev[0];
-                    bitrev = bitrev.Point(1);
+                    rev = bitrev[bitrav_ptr++];
                     yr = KissFFT.S_MUL(xp2[0], t[i]) + KissFFT.S_MUL(xp1[0], t[N4 + i]);
                     yi = KissFFT.S_MUL(xp1[0], t[i]) - KissFFT.S_MUL(xp2[0], t[N4 + i]);
                     /* We swap real and imag because we use an FFT instead of an IFFT. */

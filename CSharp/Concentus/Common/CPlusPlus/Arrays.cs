@@ -139,5 +139,38 @@ namespace Concentus.Common.CPlusPlus
                 array[c] = value;
             }
         }
+
+        internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)
+        {
+            if (src_idx == dst_idx || length == 0)
+                return;
+
+            // Do regions overlap?
+            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+            {
+                // Take extra precautions
+                if (dst_idx < src_idx)
+                {
+                    // Copy forwards
+                    for (int c = 0; c < length; c++)
+                    {
+                        array[c + dst_idx] = array[c + src_idx];
+                    }
+                }
+                else
+                {
+                    // Copy backwards
+                    for (int c = length - 1; c >= 0; c--)
+                    {
+                        array[c + dst_idx] = array[c + src_idx];
+                    }
+                }
+            }
+            else
+            {
+                // Memory regions cannot overlap; just do a fast copy
+                Array.Copy(array, src_idx, array, dst_idx, length);
+            }
+        }
     }
 }

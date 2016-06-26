@@ -487,35 +487,7 @@ namespace Concentus.Common.CPlusPlus
 #else
         public void MemMove(int move_dist, int length)
         {
-            if (move_dist == 0 || length == 0)
-                return;
-            
-            // Do regions overlap?
-            if ((move_dist > 0 && move_dist < length) || (move_dist < 0 && 0 - move_dist > length))
-            {
-                // Take extra precautions
-                if (move_dist < 0)
-                {
-                    // Copy forwards
-                    for (int c = 0; c < length; c++)
-                    {
-                        _array[c + _offset + move_dist] = _array[c + _offset];
-                    }
-                }
-                else
-                {
-                    // Copy backwards
-                    for (int c = length - 1; c >= 0; c--)
-                    {
-                        _array[c + _offset + move_dist] = _array[c + _offset];
-                    }
-                }
-            }
-            else
-            {
-                // Memory regions cannot overlap; just do a fast copy
-                Array.Copy(_array, _offset, _array, _offset + move_dist, length);
-            }
+            Arrays.MemMove(_array, _offset, _offset + move_dist, length);
         }
 #endif
 

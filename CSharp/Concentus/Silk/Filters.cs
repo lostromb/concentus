@@ -352,7 +352,7 @@ namespace Concentus.Silk
         /// <param name="N">I    Number of input samples</param>
         internal static void silk_ana_filt_bank_1(
             Pointer<short> input,
-            Pointer<int> S,
+            int[] S,
             Pointer<short> outL,
             Pointer<short> outH,
             int N)

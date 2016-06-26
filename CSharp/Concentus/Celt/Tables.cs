@@ -718,7 +718,7 @@ namespace Concentus.Celt
             scale_shift = 8,
             shift = -1,
             factors = new short[] { 5, 96, 3, 32, 4, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, },
-            bitrev = fft_bitrev480.GetPointer(),
+            bitrev = fft_bitrev480,
             twiddles = fft_twiddles48000_960
         };
 
@@ -729,7 +729,7 @@ namespace Concentus.Celt
             scale_shift = 7,
             shift = 1,
             factors = new short[] { 5, 48, 3, 16, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
-            bitrev = fft_bitrev240.GetPointer(),
+            bitrev = fft_bitrev240,
             twiddles = fft_twiddles48000_960
         };
 
@@ -740,7 +740,7 @@ namespace Concentus.Celt
             scale_shift = 6,
             shift = 2,
             factors = new short[] { 5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
-            bitrev = fft_bitrev120.GetPointer(),
+            bitrev = fft_bitrev120,
             twiddles = fft_twiddles48000_960
         };
 
@@ -751,7 +751,7 @@ namespace Concentus.Celt
             scale_shift = 5,
             shift = 3,
             factors = new short[] { 5, 12, 3, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
-            bitrev = fft_bitrev60.GetPointer(),
+            bitrev = fft_bitrev60,
             twiddles = fft_twiddles48000_960
         };
 

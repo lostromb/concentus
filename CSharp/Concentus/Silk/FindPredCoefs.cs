@@ -158,15 +158,14 @@ namespace Concentus.Silk
             FindLPC.silk_find_LPC(psEnc, NLSF_Q15, LPC_in_pre, minInvGain_Q30);
 
             /* Quantize LSFs */
-            NLSF.silk_process_NLSFs(psEnc, psEncCtrl.PredCoef_Q12, NLSF_Q15, psEnc.prev_NLSFq_Q15);
+            NLSF.silk_process_NLSFs(psEnc, psEncCtrl.PredCoef_Q12, NLSF_Q15, psEnc.prev_NLSFq_Q15.GetPointer());
 
             /* Calculate residual energy using quantized LPC coefficients */
             ResidualEnergy.silk_residual_energy(psEncCtrl.ResNrg, psEncCtrl.ResNrgQ, LPC_in_pre, psEncCtrl.PredCoef_Q12, local_gains,
                 psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             /* Copy to prediction struct for use in next frame for interpolation */
-            NLSF_Q15.MemCopyTo(psEnc.prev_NLSFq_Q15, SilkConstants.MAX_LPC_ORDER);
-
+            NLSF_Q15.MemCopyTo(psEnc.prev_NLSFq_Q15.GetPointer(), SilkConstants.MAX_LPC_ORDER);
         }
     }
 }
