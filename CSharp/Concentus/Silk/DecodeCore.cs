@@ -173,8 +173,8 @@ namespace Concentus.Silk
                             xq.MemCopyTo(psDec.outBuf.Point(psDec.ltp_mem_length), 2 * psDec.subfr_length);
                         }
 
-                        Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), psDec.outBuf.Point(start_idx + k * psDec.subfr_length),
-                            A_Q12, psDec.ltp_mem_length - start_idx, psDec.LPC_order);
+                        Filters.silk_LPC_analysis_filter(sLTP.Data, sLTP.Offset + start_idx, psDec.outBuf.Data, psDec.outBuf.Offset + (start_idx + k * psDec.subfr_length),
+                            A_Q12.Data, 0, psDec.ltp_mem_length - start_idx, psDec.LPC_order);
 
                         /* After rewhitening the LTP state is unscaled */
                         if (k == 0)

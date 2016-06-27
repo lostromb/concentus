@@ -271,7 +271,7 @@ namespace ParityTest
                     }
                 }
             }
-            catch (Exception e)
+            catch (ArgumentException e)
             {
                 returnVal.Message = "ENCODER: " + e.Message + " (frame " + frameCount + ")";
                 returnVal.Passed = false;

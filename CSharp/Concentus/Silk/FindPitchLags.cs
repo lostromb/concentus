@@ -121,7 +121,7 @@ namespace Concentus.Silk
             /*****************************************/
             /* LPC analysis filtering                */
             /*****************************************/
-            Filters.silk_LPC_analysis_filter(res, x_buf, A_Q12, buf_len, psEnc.pitchEstimationLPCOrder);
+            Filters.silk_LPC_analysis_filter(res.Data, res.Offset, x_buf.Data, x_buf.Offset, A_Q12.Data, A_Q12.Offset, buf_len, psEnc.pitchEstimationLPCOrder);
 
             if (psEnc.indices.signalType != SilkConstants.TYPE_NO_VOICE_ACTIVITY && psEnc.first_frame_after_reset == 0)
             {

@@ -69,7 +69,7 @@ namespace Concentus.Silk
             for (i = 0; i < nb_subfr >> 1; i++)
             {
                 /* Calculate half frame LPC residual signal including preceding samples */
-                Filters.silk_LPC_analysis_filter(LPC_res, x_ptr, a_Q12.Point(i * SilkConstants.MAX_LPC_ORDER), (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
+                Filters.silk_LPC_analysis_filter(LPC_res.Data, LPC_res.Offset, x_ptr.Data, x_ptr.Offset, a_Q12.Data, a_Q12.Offset + (i * SilkConstants.MAX_LPC_ORDER), (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
 
                 /* Point to first subframe of the just calculated LPC residual signal */
                 LPC_res_ptr = LPC_res.Point(LPC_order);

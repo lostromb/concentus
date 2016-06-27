@@ -1040,11 +1040,11 @@ namespace Concentus.Silk.Structs
                                 0,
                                 sEncCtrl.AR2_Q13,
                                 0,
-                                sEncCtrl.HarmShapeGain_Q14.GetPointer(),
-                                sEncCtrl.Tilt_Q14.GetPointer(),
-                                sEncCtrl.LF_shp_Q14.GetPointer(),
-                                sEncCtrl.Gains_Q16.GetPointer(),
-                                sEncCtrl.pitchL.GetPointer(),
+                                sEncCtrl.HarmShapeGain_Q14,
+                                sEncCtrl.Tilt_Q14,
+                                sEncCtrl.LF_shp_Q14,
+                                sEncCtrl.Gains_Q16,
+                                sEncCtrl.pitchL,
                                 sEncCtrl.Lambda_Q10,
                                 sEncCtrl.LTP_scale_Q14);
                         }
@@ -1265,11 +1265,11 @@ namespace Concentus.Silk.Structs
                         0,
                         thisCtrl.AR2_Q13,
                         0,
-                        thisCtrl.HarmShapeGain_Q14.GetPointer(),
-                        thisCtrl.Tilt_Q14.GetPointer(),
-                        thisCtrl.LF_shp_Q14.GetPointer(),
-                        thisCtrl.Gains_Q16.GetPointer(),
-                        thisCtrl.pitchL.GetPointer(),
+                        thisCtrl.HarmShapeGain_Q14,
+                        thisCtrl.Tilt_Q14,
+                        thisCtrl.LF_shp_Q14,
+                        thisCtrl.Gains_Q16,
+                        thisCtrl.pitchL,
                         thisCtrl.Lambda_Q10,
                         thisCtrl.LTP_scale_Q14);
                 }

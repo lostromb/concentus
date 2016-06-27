@@ -113,7 +113,7 @@ namespace Concentus.Silk
                     NLSF.silk_NLSF2A(a_tmp_Q12, NLSF0_Q15, psEncC.predictLPCOrder);
 
                     /* Calculate residual energy with NLSF interpolation */
-                    Filters.silk_LPC_analysis_filter(LPC_res, x, a_tmp_Q12, 2 * subfr_length, psEncC.predictLPCOrder);
+                    Filters.silk_LPC_analysis_filter(LPC_res.Data, LPC_res.Offset, x.Data, x.Offset, a_tmp_Q12.Data, a_tmp_Q12.Offset, 2 * subfr_length, psEncC.predictLPCOrder);
                     
                     SumSqrShift.silk_sum_sqr_shift(scratch_box1, scratch_box2, LPC_res.Point(psEncC.predictLPCOrder), subfr_length - psEncC.predictLPCOrder);
                     res_nrg0 = scratch_box1.Val;

@@ -320,7 +320,7 @@ namespace Concentus.Silk
             /* Rewhiten LTP state */
             idx = psDec.ltp_mem_length - lag - psDec.LPC_order - SilkConstants.LTP_ORDER / 2;
             Inlines.OpusAssert(idx > 0);
-            Filters.silk_LPC_analysis_filter(sLTP.Point(idx), psDec.outBuf.Point(idx), A_Q12, psDec.ltp_mem_length - idx, psDec.LPC_order);
+            Filters.silk_LPC_analysis_filter(sLTP.Data, sLTP.Offset + idx, psDec.outBuf.Data, psDec.outBuf.Offset + idx, A_Q12.Data, A_Q12.Offset, psDec.ltp_mem_length - idx, psDec.LPC_order);
             /* Scale LTP state */
             inv_gain_Q30 = Inlines.silk_INVERSE32_varQ(psPLC.prevGain_Q16[1], 46);
             inv_gain_Q30 = Inlines.silk_min(inv_gain_Q30, int.MaxValue >> 1);

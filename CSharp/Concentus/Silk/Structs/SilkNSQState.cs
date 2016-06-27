@@ -190,23 +190,23 @@ namespace Concentus.Silk.Structs
                 int LTPCoef_Q14_ptr,
                 short[] AR2_Q13, /* I Noise shaping coefs [MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER]            */
                 int AR2_Q13_ptr,
-                Pointer<int> HarmShapeGain_Q14,          /* I    Long term shaping coefs [MAX_NB_SUBFR]        */
-                Pointer<int> Tilt_Q14,                   /* I    Spectral tilt [MAX_NB_SUBFR]                  */
-                Pointer<int> LF_shp_Q14,                 /* I    Low frequency shaping coefs [MAX_NB_SUBFR]    */
-                Pointer<int> Gains_Q16,                  /* I    Quantization step sizes [MAX_NB_SUBFR]        */
-                Pointer<int> pitchL,                     /* I    Pitch lags [MAX_NB_SUBFR]                     */
+                int[] HarmShapeGain_Q14,          /* I    Long term shaping coefs [MAX_NB_SUBFR]        */
+                int[] Tilt_Q14,                   /* I    Spectral tilt [MAX_NB_SUBFR]                  */
+                int[] LF_shp_Q14,                 /* I    Low frequency shaping coefs [MAX_NB_SUBFR]    */
+                int[] Gains_Q16,                  /* I    Quantization step sizes [MAX_NB_SUBFR]        */
+                int[] pitchL,                     /* I    Pitch lags [MAX_NB_SUBFR]                     */
                 int Lambda_Q10,                                 /* I    Rate/distortion tradeoff        */
                 int LTP_scale_Q14                               /* I    LTP state scaling               */
             )
         {
             int k, lag, start_idx, LSF_interpolation_flag;
-            Pointer<short> A_Q12, B_Q14, AR_shp_Q13;
-            Pointer<short> pxq;
-            Pointer<int> sLTP_Q15;
-            Pointer<short> sLTP;
+            int A_Q12, B_Q14, AR_shp_Q13;
+            int pxq;
+            int[] sLTP_Q15;
+            short[] sLTP;
             int HarmShapeFIRPacked_Q14;
             int offset_Q10;
-            Pointer<int> x_sc_Q10;
+            int[] x_sc_Q10;
             int pulses_ptr = 0;
 
             this.rand_seed = psIndices.Seed;
@@ -226,18 +226,18 @@ namespace Concentus.Silk.Structs
                 LSF_interpolation_flag = 1;
             }
 
-            sLTP_Q15 = Pointer.Malloc<int>(psEncC.ltp_mem_length + psEncC.frame_length);
-            sLTP = Pointer.Malloc<short>(psEncC.ltp_mem_length + psEncC.frame_length);
-            x_sc_Q10 = Pointer.Malloc<int>(psEncC.subfr_length);
+            sLTP_Q15 = new int[psEncC.ltp_mem_length + psEncC.frame_length];
+            sLTP = new short[psEncC.ltp_mem_length + psEncC.frame_length];
+            x_sc_Q10 = new int[psEncC.subfr_length];
             /* Set up pointers to start of sub frame */
             this.sLTP_shp_buf_idx = psEncC.ltp_mem_length;
             this.sLTP_buf_idx = psEncC.ltp_mem_length;
-            pxq = this.xq.GetPointer(psEncC.ltp_mem_length);
+            pxq = psEncC.ltp_mem_length;
             for (k = 0; k < psEncC.nb_subfr; k++)
             {
-                A_Q12 = PredCoef_Q12.GetPointer(PredCoef_Q12_ptr + (((k >> 1) | (1 - LSF_interpolation_flag)) * SilkConstants.MAX_LPC_ORDER));
-                B_Q14 = LTPCoef_Q14.GetPointer(LTPCoef_Q14_ptr + (k * SilkConstants.LTP_ORDER));
-                AR_shp_Q13 = AR2_Q13.GetPointer(AR2_Q13_ptr + (k * SilkConstants.MAX_SHAPE_LPC_ORDER));
+                A_Q12 = PredCoef_Q12_ptr + (((k >> 1) | (1 - LSF_interpolation_flag)) * SilkConstants.MAX_LPC_ORDER);
+                B_Q14 = LTPCoef_Q14_ptr + (k * SilkConstants.LTP_ORDER);
+                AR_shp_Q13 = AR2_Q13_ptr + (k * SilkConstants.MAX_SHAPE_LPC_ORDER);
 
                 /* Noise shape parameters */
                 Inlines.OpusAssert(HarmShapeGain_Q14[k] >= 0);
@@ -257,8 +257,8 @@ namespace Concentus.Silk.Structs
                         start_idx = psEncC.ltp_mem_length - lag - psEncC.predictLPCOrder - SilkConstants.LTP_ORDER / 2;
                         Inlines.OpusAssert(start_idx > 0);
 
-                        Filters.silk_LPC_analysis_filter(sLTP.Point(start_idx), this.xq.GetPointer(start_idx + k * psEncC.subfr_length),
-                            A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
+                        Filters.silk_LPC_analysis_filter(sLTP, start_idx, this.xq, start_idx + k * psEncC.subfr_length,
+                            PredCoef_Q12, A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
 
                         this.rewhite_flag = 1;
                         this.sLTP_buf_idx = psEncC.ltp_mem_length;
@@ -267,21 +267,42 @@ namespace Concentus.Silk.Structs
 
                 silk_nsq_scale_states(psEncC, x_Q3, x_Q3_ptr, x_sc_Q10, sLTP, sLTP_Q15, k, LTP_scale_Q14, Gains_Q16, pitchL, psIndices.signalType);
 
-                silk_noise_shape_quantizer(psIndices.signalType, x_sc_Q10, pulses, pulses_ptr, pxq, sLTP_Q15, A_Q12, B_Q14,
-                    AR_shp_Q13, lag, HarmShapeFIRPacked_Q14, Tilt_Q14[k], LF_shp_Q14[k], Gains_Q16[k], Lambda_Q10,
-                    offset_Q10, psEncC.subfr_length, psEncC.shapingLPCOrder, psEncC.predictLPCOrder);
+                silk_noise_shape_quantizer(
+                    psIndices.signalType,
+                    x_sc_Q10,
+                    pulses,
+                    pulses_ptr,
+                    this.xq,
+                    pxq,
+                    sLTP_Q15,
+                    PredCoef_Q12,
+                    A_Q12,
+                    LTPCoef_Q14,
+                    B_Q14,
+                    AR2_Q13,
+                    AR_shp_Q13,
+                    lag,
+                    HarmShapeFIRPacked_Q14,
+                    Tilt_Q14[k],
+                    LF_shp_Q14[k],
+                    Gains_Q16[k],
+                    Lambda_Q10,
+                    offset_Q10,
+                    psEncC.subfr_length,
+                    psEncC.shapingLPCOrder,
+                    psEncC.predictLPCOrder);
 
                 x_Q3_ptr += psEncC.subfr_length;
                 pulses_ptr += psEncC.subfr_length;
-                pxq = pxq.Point(psEncC.subfr_length);
+                pxq += psEncC.subfr_length;
             }
 
             /* Update lagPrev for next frame */
             this.lagPrev = pitchL[psEncC.nb_subfr - 1];
 
             /* Save quantized speech and noise shaping signals */
-            this.xq.GetPointer(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
-            this.sLTP_shp_Q14.GetPointer(psEncC.frame_length).MemMove(0 - psEncC.frame_length, psEncC.ltp_mem_length);
+            Arrays.MemMove(this.xq, psEncC.frame_length, 0, psEncC.ltp_mem_length);
+            Arrays.MemMove(this.sLTP_shp_Q14, psEncC.frame_length, 0, psEncC.ltp_mem_length);
         }
 
         /***********************************/
@@ -289,14 +310,18 @@ namespace Concentus.Silk.Structs
         /***********************************/
         private void silk_noise_shape_quantizer(
                 int signalType,             /* I    Signal type                     */
-                Pointer<int> x_sc_Q10,             /* I [length]                                   */
+                int[] x_sc_Q10,             /* I [length]                                   */
                 sbyte[] pulses,               /* O [length]                                    */
                 int pulses_ptr,
-                Pointer<short> xq,                   /* O [length]                                    */
-                Pointer<int> sLTP_Q15,             /* I/O  LTP state                       */
-                Pointer<short> a_Q12,                /* I    Short term prediction coefs     */
-                Pointer<short> b_Q14,                /* I    Long term prediction coefs      */
-                Pointer<short> AR_shp_Q13,           /* I    Noise shaping AR coefs          */
+                short[] xq,                   /* O [length]                                    */
+                int xq_ptr,
+                int[] sLTP_Q15,             /* I/O  LTP state                       */
+                short[] a_Q12,                /* I    Short term prediction coefs     */
+                int a_Q12_ptr,
+                short[] b_Q14,                /* I    Long term prediction coefs      */
+                int b_Q14_ptr,
+                short[] AR_shp_Q13,           /* I    Noise shaping AR coefs          */
+                int AR_shp_Q13_ptr,
                 int lag,                    /* I    Pitch lag                       */
                 int HarmShapeFIRPacked_Q14, /* I                                    */
                 int Tilt_Q14,               /* I    Spectral tilt                   */
@@ -309,8 +334,6 @@ namespace Concentus.Silk.Structs
                 int predictLPCOrder         /* I    Prediction filter order         */
             )
         {
-
-
             int i, j;
             int LTP_pred_Q13, LPC_pred_Q10, n_AR_Q12, n_LTP_Q13;
             int n_LF_Q12, r_Q10, rr_Q10, q1_Q0, q1_Q10, q2_Q10, rd1_Q20, rd2_Q20;
@@ -318,10 +341,10 @@ namespace Concentus.Silk.Structs
             int tmp1, tmp2, sLF_AR_shp_Q14;
             int psLPC_Q14;
             int shp_lag_ptr;
-            Pointer<int> pred_lag_ptr;
+            int pred_lag_ptr;
 
             shp_lag_ptr = this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2;
-            pred_lag_ptr = sLTP_Q15.Point(this.sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2);
+            pred_lag_ptr = this.sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2;
             Gain_Q10 = Inlines.silk_RSHIFT(Gain_Q16, 6);
 
             /* Set up short term AR state */
@@ -336,24 +359,24 @@ namespace Concentus.Silk.Structs
                 Inlines.OpusAssert(predictLPCOrder == 10 || predictLPCOrder == 16);
                 /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                 LPC_pred_Q10 = Inlines.silk_RSHIFT(predictLPCOrder, 1);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 0], a_Q12[0]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 1], a_Q12[1]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 2], a_Q12[2]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 3], a_Q12[3]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 4], a_Q12[4]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 5], a_Q12[5]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 6], a_Q12[6]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 7], a_Q12[7]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 8], a_Q12[8]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 9], a_Q12[9]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 0], a_Q12[a_Q12_ptr]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 1], a_Q12[a_Q12_ptr + 1]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 2], a_Q12[a_Q12_ptr + 2]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 3], a_Q12[a_Q12_ptr + 3]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 4], a_Q12[a_Q12_ptr + 4]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 5], a_Q12[a_Q12_ptr + 5]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 6], a_Q12[a_Q12_ptr + 6]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 7], a_Q12[a_Q12_ptr + 7]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 8], a_Q12[a_Q12_ptr + 8]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 9], a_Q12[a_Q12_ptr + 9]);
                 if (predictLPCOrder == 16)
                 {
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 10], a_Q12[10]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 11], a_Q12[11]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 12], a_Q12[12]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 13], a_Q12[13]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 14], a_Q12[14]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 15], a_Q12[15]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 10], a_Q12[a_Q12_ptr + 10]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 11], a_Q12[a_Q12_ptr + 11]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 12], a_Q12[a_Q12_ptr + 12]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 13], a_Q12[a_Q12_ptr + 13]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 14], a_Q12[a_Q12_ptr + 14]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 15], a_Q12[a_Q12_ptr + 15]);
                 }
 
                 /* Long-term prediction */
@@ -362,12 +385,12 @@ namespace Concentus.Silk.Structs
                     /* Unrolled loop */
                     /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                     LTP_pred_Q13 = 2;
-                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[0], b_Q14[0]);
-                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[-1], b_Q14[1]);
-                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[-2], b_Q14[2]);
-                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[-3], b_Q14[3]);
-                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, pred_lag_ptr[-4], b_Q14[4]);
-                    pred_lag_ptr = pred_lag_ptr.Point(1); ;
+                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr], b_Q14[b_Q14_ptr]);
+                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 1], b_Q14[b_Q14_ptr + 1]);
+                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 2], b_Q14[b_Q14_ptr + 2]);
+                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 3], b_Q14[b_Q14_ptr + 3]);
+                    LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 4], b_Q14[b_Q14_ptr + 4]);
+                    pred_lag_ptr += 1;
                 }
                 else {
                     LTP_pred_Q13 = 0;
@@ -379,18 +402,18 @@ namespace Concentus.Silk.Structs
                 tmp1 = this.sAR2_Q14[0];
                 this.sAR2_Q14[0] = tmp2;
                 n_AR_Q12 = Inlines.silk_RSHIFT(shapingLPCOrder, 1);
-                n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, tmp2, AR_shp_Q13[0]);
+                n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, tmp2, AR_shp_Q13[AR_shp_Q13_ptr]);
                 for (j = 2; j < shapingLPCOrder; j += 2)
                 {
                     tmp2 = this.sAR2_Q14[j - 1];
                     this.sAR2_Q14[j - 1] = tmp1;
-                    n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, tmp1, AR_shp_Q13[j - 1]);
+                    n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, tmp1, AR_shp_Q13[AR_shp_Q13_ptr + j - 1]);
                     tmp1 = this.sAR2_Q14[j + 0];
                     this.sAR2_Q14[j + 0] = tmp2;
-                    n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, tmp2, AR_shp_Q13[j]);
+                    n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, tmp2, AR_shp_Q13[AR_shp_Q13_ptr + j]);
                 }
                 this.sAR2_Q14[shapingLPCOrder - 1] = tmp1;
-                n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, tmp1, AR_shp_Q13[shapingLPCOrder - 1]);
+                n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, tmp1, AR_shp_Q13[AR_shp_Q13_ptr + shapingLPCOrder - 1]);
 
                 n_AR_Q12 = Inlines.silk_LSHIFT32(n_AR_Q12, 1);                                /* Q11 . Q12 */
                 n_AR_Q12 = Inlines.silk_SMLAWB(n_AR_Q12, this.sLF_AR_shp_Q14, Tilt_Q14);
@@ -484,7 +507,7 @@ namespace Concentus.Silk.Structs
                 xq_Q14 = Inlines.silk_ADD_LSHIFT32(LPC_exc_Q14, LPC_pred_Q10, 4);
 
                 /* Scale XQ back to normal level before saving */
-                xq[i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(xq_Q14, Gain_Q10), 8));
+                xq[xq_ptr + i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(xq_Q14, Gain_Q10), 8));
 
                 /* Update states */
                 psLPC_Q14 += 1;
@@ -509,13 +532,13 @@ namespace Concentus.Silk.Structs
                 SilkChannelEncoder psEncC,           /* I    Encoder State                   */
                 int[] x_Q3,                 /* I    input in Q3                     */
                 int x_Q3_ptr,
-                Pointer<int> x_sc_Q10,             /* O    input scaled with 1/Gain        */
-                Pointer<short> sLTP,                 /* I    re-whitened LTP state in Q0     */
-                Pointer<int> sLTP_Q15,             /* O    LTP state matching scaled input */
+                int[] x_sc_Q10,             /* O    input scaled with 1/Gain        */
+                short[] sLTP,                 /* I    re-whitened LTP state in Q0     */
+                int[] sLTP_Q15,             /* O    LTP state matching scaled input */
                 int subfr,                  /* I    subframe number                 */
                 int LTP_scale_Q14,          /* I                                    */
-                Pointer<int> Gains_Q16, /* I [MAX_NB_SUBFR]                                */
-                Pointer<int> pitchL, /* I    Pitch lag [MAX_NB_SUBFR]                      */
+                int[] Gains_Q16, /* I [MAX_NB_SUBFR]                                */
+                int[] pitchL, /* I    Pitch lag [MAX_NB_SUBFR]                      */
                 int signal_type             /* I    Signal type                     */
             )
         {
@@ -748,16 +771,29 @@ namespace Concentus.Silk.Structs
                         start_idx = psEncC.ltp_mem_length - lag - psEncC.predictLPCOrder - SilkConstants.LTP_ORDER / 2;
                         Inlines.OpusAssert(start_idx > 0);
 
-                        Filters.silk_LPC_analysis_filter(sLTP.GetPointer(start_idx), this.xq.GetPointer(start_idx + k * psEncC.subfr_length),
-                            PredCoef_Q12.GetPointer(A_Q12), psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
+                        Filters.silk_LPC_analysis_filter(sLTP, start_idx, this.xq, start_idx + k * psEncC.subfr_length,
+                            PredCoef_Q12, A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
 
                         this.sLTP_buf_idx = psEncC.ltp_mem_length;
                         this.rewhite_flag = 1;
                     }
                 }
 
-                silk_nsq_del_dec_scale_states(psEncC, psDelDec, x_Q3.GetPointer(x_Q3_ptr), x_sc_Q10.GetPointer(), sLTP.GetPointer(), sLTP_Q15.GetPointer(), k,
-                    psEncC.nStatesDelayedDecision, LTP_scale_Q14, Gains_Q16.GetPointer(), pitchL.GetPointer(), psIndices.signalType, decisionDelay);
+                silk_nsq_del_dec_scale_states(
+                    psEncC,
+                    psDelDec,
+                    x_Q3,
+                    x_Q3_ptr,
+                    x_sc_Q10,
+                    sLTP,
+                    sLTP_Q15,
+                    k,
+                    psEncC.nStatesDelayedDecision,
+                    LTP_scale_Q14,
+                    Gains_Q16,
+                    pitchL,
+                    psIndices.signalType,
+                    decisionDelay);
 
                 BoxedValue<int> smpl_buf_idx_boxed = new BoxedValue<int>(smpl_buf_idx);
                 silk_noise_shape_quantizer_del_dec(
@@ -1210,15 +1246,16 @@ namespace Concentus.Silk.Structs
         private void silk_nsq_del_dec_scale_states(
                 SilkChannelEncoder psEncC,               /* I    Encoder State                       */
                 NSQ_del_dec_struct[] psDelDec,                 /* I/O  Delayed decision states             */
-                Pointer<int> x_Q3,                     /* I    Input in Q3                         */
-                Pointer<int> x_sc_Q10,                 /* O    Input scaled with 1/Gain in Q10     */
-                Pointer<short> sLTP,                     /* I    Re-whitened LTP state in Q0         */
-                Pointer<int> sLTP_Q15,                 /* O    LTP state matching scaled input     */
+                int[] x_Q3,                     /* I    Input in Q3                         */
+                int x_Q3_ptr,
+                int[] x_sc_Q10,                 /* O    Input scaled with 1/Gain in Q10     */
+                short[] sLTP,                     /* I    Re-whitened LTP state in Q0         */
+                int[] sLTP_Q15,                 /* O    LTP state matching scaled input     */
                 int subfr,                      /* I    Subframe number                     */
                 int nStatesDelayedDecision,     /* I    Number of del dec states            */
                 int LTP_scale_Q14,              /* I    LTP state scaling                   */
-                Pointer<int> Gains_Q16,  /* I [MAX_NB_SUBFR]                                       */
-                Pointer<int> pitchL,     /* I    Pitch lag [MAX_NB_SUBFR]                          */
+                int[] Gains_Q16,  /* I [MAX_NB_SUBFR]                                       */
+                int[] pitchL,     /* I    Pitch lag [MAX_NB_SUBFR]                          */
                 int signal_type,                /* I    Signal type                         */
                 int decisionDelay               /* I    Decision delay                      */
             )
@@ -1244,7 +1281,7 @@ namespace Concentus.Silk.Structs
             inv_gain_Q23 = Inlines.silk_RSHIFT_ROUND(inv_gain_Q31, 8);
             for (i = 0; i < psEncC.subfr_length; i++)
             {
-                x_sc_Q10[i] = Inlines.silk_SMULWW(x_Q3[i], inv_gain_Q23);
+                x_sc_Q10[i] = Inlines.silk_SMULWW(x_Q3[x_Q3_ptr + i], inv_gain_Q23);
             }
 
             /* Save inverse gain */

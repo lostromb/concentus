@@ -528,9 +528,12 @@ namespace Concentus.Silk
         /// <param name="d">I    Filter order</param>
         /// <param name="arch">I    Run-time architecture</param>
         internal static void silk_LPC_analysis_filter(
-                    Pointer<short> output,
-                    Pointer<short> input,
-                    Pointer<short> B,
+                    short[] output,
+                    int output_ptr,
+                    short[] input,
+                    int input_ptr,
+                    short[] B,
+                    int B_ptr,
                     int len,
                     int d)
         {
@@ -546,14 +549,14 @@ namespace Concentus.Silk
             Inlines.OpusAssert(d <= SilkConstants.SILK_MAX_ORDER_LPC);
             for (j = 0; j < d; j++)
             {
-                num[j] = Inlines.CHOP16(0 - B[j]);
+                num[j] = Inlines.CHOP16(0 - B[B_ptr + j]);
             }
             for (j = 0; j < d; j++)
             {
-                mem[j] = input[d - j - 1];
+                mem[j] = input[input_ptr + d - j - 1];
             }
-            Kernels.celt_fir(input.Data, input.Offset + d, num, output.Data, output.Offset + d, len - d, d, mem);
-            for (j = 0; j < d; j++)
+            Kernels.celt_fir(input, input_ptr + d, num, output, output_ptr + d, len - d, d, mem);
+            for (j = output_ptr; j < output_ptr + d; j++)
             {
                 output[j] = 0;
             }
