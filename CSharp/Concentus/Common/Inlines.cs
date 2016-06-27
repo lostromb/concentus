@@ -677,6 +677,19 @@ namespace Concentus.Common
             return MAX32(maxval, -minval);
         }
 
+        public static int celt_maxabs32(int[] x, int x_ptr, int len)
+        {
+            int i;
+            int maxval = 0;
+            int minval = 0;
+            for (i = x_ptr; i < x_ptr + len; i++)
+            {
+                maxval = MAX32(maxval, x[i]);
+                minval = MIN32(minval, x[i]);
+            }
+            return MAX32(maxval, -minval);
+        }
+
         /// <summary>
         /// Multiplies two 16-bit fractional values. Bit-exactness of this macro is important
         /// </summary>

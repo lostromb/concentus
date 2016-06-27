@@ -164,11 +164,11 @@ namespace Concentus.Celt
             return target;
         }
 
-        internal static int transient_analysis(Pointer<int> input, int len, int C,
+        internal static int transient_analysis(int[] input, int len, int C,
                                   BoxedValue<int> tf_estimate, BoxedValue<int> tf_chan)
         {
             int i;
-            Pointer<int> tmp;
+            int[] tmp;
             int mem0, mem1;
             int is_transient = 0;
             int mask_metric = 0;
@@ -176,7 +176,7 @@ namespace Concentus.Celt
             int tf_max;
             int len2;
 
-            tmp = Pointer.Malloc<int>(len);
+            tmp = new int[len];
 
             len2 = len / 2;
             for (c = 0; c < C; c++)
@@ -200,12 +200,12 @@ namespace Concentus.Celt
                 }
                 /*printf("\n");*/
                 /* First few samples are bad because we don't propagate the memory */
-                tmp.MemSet(0, 12);
+                Arrays.MemSet<int>(tmp, 0, 12);
 
                 /* Normalize tmp to max range */
                 {
                     int shift = 0;
-                    shift = 14 - Inlines.celt_ilog2(1 + Inlines.celt_maxabs32(tmp, len));
+                    shift = 14 - Inlines.celt_ilog2(1 + Inlines.celt_maxabs32(tmp, 0, len));
                     if (shift != 0)
                     {
                         for (i = 0; i < len; i++)

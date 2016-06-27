@@ -626,7 +626,7 @@ namespace Concentus.Celt.Structs
             {
                 BoxedValue<int> boxed_tf_estimate = new BoxedValue<int>(tf_estimate);
                 BoxedValue<int> boxed_tf_chan = new BoxedValue<int>(tf_chan);
-                isTransient = CeltCommon.transient_analysis(input, N + overlap, CC,
+                isTransient = CeltCommon.transient_analysis(input.Data, N + overlap, CC,
                       boxed_tf_estimate, boxed_tf_chan);
                 tf_estimate = boxed_tf_estimate.Val;
                 tf_chan = boxed_tf_chan.Val;
