@@ -125,7 +125,7 @@ namespace Concentus.Silk
                 HarmShapeFIRPacked_Q12 |= Inlines.silk_LSHIFT((int)Inlines.silk_RSHIFT(HarmShapeGain_Q12, 1), 16);
                 Tilt_Q14 = psEncCtrl.Tilt_Q14[k];
                 LF_shp_Q14 = psEncCtrl.LF_shp_Q14[k];
-                AR1_shp_Q13 = psEncCtrl.AR1_Q13.Point(k * SilkConstants.MAX_SHAPE_LPC_ORDER);
+                AR1_shp_Q13 = psEncCtrl.AR1_Q13.GetPointer(k * SilkConstants.MAX_SHAPE_LPC_ORDER);
 
                 /* Short term FIR filtering*/
                 silk_warped_LPC_analysis_filter(P.sAR_shp.GetPointer(), st_res_Q2, AR1_shp_Q13, px,

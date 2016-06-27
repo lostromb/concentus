@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class ProcessGains
@@ -105,12 +106,12 @@ namespace Concentus.Silk
             }
 
             /* Save unquantized gains and gain Index */
-            psEncCtrl.Gains_Q16.MemCopyTo(psEncCtrl.GainsUnq_Q16,psEnc.nb_subfr);
+            Array.Copy(psEncCtrl.Gains_Q16, psEncCtrl.GainsUnq_Q16, psEnc.nb_subfr);
             psEncCtrl.lastGainIndexPrev = psShapeSt.LastGainIndex;
 
             /* Quantize gains */
             BoxedValue<sbyte> boxed_lastGainIndex = new BoxedValue<sbyte>(psShapeSt.LastGainIndex);
-            GainQuantization.silk_gains_quant(psEnc.indices.GainsIndices.GetPointer(), psEncCtrl.Gains_Q16,
+            GainQuantization.silk_gains_quant(psEnc.indices.GainsIndices.GetPointer(), psEncCtrl.Gains_Q16.GetPointer(),
                 boxed_lastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.nb_subfr);
             psShapeSt.LastGainIndex = boxed_lastGainIndex.Val;
 

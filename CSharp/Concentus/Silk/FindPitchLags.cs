@@ -139,7 +139,7 @@ namespace Concentus.Silk
                 BoxedValue<short> boxed_lagIndex = new BoxedValue<short>(psEnc.indices.lagIndex);
                 BoxedValue<sbyte> boxed_contourIndex = new BoxedValue<sbyte>(psEnc.indices.contourIndex);
                 BoxedValue<int> boxed_LTPcorr = new BoxedValue<int>(psEnc.LTPCorr_Q15);
-                if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL, boxed_lagIndex, boxed_contourIndex,
+                if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL.GetPointer(), boxed_lagIndex, boxed_contourIndex,
                         boxed_LTPcorr, psEnc.prevLag, psEnc.pitchEstimationThreshold_Q16,
                         (int)thrhld_Q13, psEnc.fs_kHz, psEnc.pitchEstimationComplexity, psEnc.nb_subfr) == 0)
                 {
@@ -154,7 +154,7 @@ namespace Concentus.Silk
                 psEnc.LTPCorr_Q15 = boxed_LTPcorr.Val;
             }
             else {
-                psEncCtrl.pitchL.MemSet(0, SilkConstants.MAX_NB_SUBFR);
+                Arrays.MemSet<int>(psEncCtrl.pitchL, 0, SilkConstants.MAX_NB_SUBFR);
                 psEnc.indices.lagIndex = 0;
                 psEnc.indices.contourIndex = 0;
                 psEnc.LTPCorr_Q15 = 0;

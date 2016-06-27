@@ -131,7 +131,7 @@ namespace Concentus.Silk.Structs
         internal int useInBandFEC = 0;                      /* Saves the API setting for query                                  */
         internal int LBRR_enabled = 0;                      /* Depends on useInBandFRC, bitrate and packet loss rate            */
         internal int LBRR_GainIncreases = 0;                /* Gains increment for coding LBRR frames                           */
-        internal readonly Pointer<SideInfoIndices> indices_LBRR = Pointer.Malloc<SideInfoIndices>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal readonly SideInfoIndices[] indices_LBRR = new SideInfoIndices[SilkConstants.MAX_FRAMES_PER_PACKET];
         internal readonly sbyte[][] pulses_LBRR = Arrays.InitTwoDimensionalArray<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
 
         /* Noise shaping state */
@@ -1010,14 +1010,43 @@ namespace Concentus.Silk.Structs
                         /*****************************************/
                         if (this.nStatesDelayedDecision > 1 || this.warping_Q16 > 0)
                         {
-                            sNSQ.silk_NSQ_del_dec(this, this.indices, xfw_Q3, pulses.GetPointer(),
-                                   sEncCtrl.PredCoef_Q12, sEncCtrl.LTPCoef_Q14, sEncCtrl.AR2_Q13, sEncCtrl.HarmShapeGain_Q14,
-                                   sEncCtrl.Tilt_Q14, sEncCtrl.LF_shp_Q14, sEncCtrl.Gains_Q16, sEncCtrl.pitchL, sEncCtrl.Lambda_Q10, sEncCtrl.LTP_scale_Q14);
+                            sNSQ.silk_NSQ_del_dec(
+                                this,
+                                this.indices,
+                                xfw_Q3.Data,
+                                xfw_Q3.Offset,
+                                pulses,
+                                sEncCtrl.PredCoef_Q12,
+                                sEncCtrl.LTPCoef_Q14,
+                                sEncCtrl.AR2_Q13,
+                                sEncCtrl.HarmShapeGain_Q14,
+                                sEncCtrl.Tilt_Q14,
+                                sEncCtrl.LF_shp_Q14,
+                                sEncCtrl.Gains_Q16,
+                                sEncCtrl.pitchL,
+                                sEncCtrl.Lambda_Q10,
+                                sEncCtrl.LTP_scale_Q14);
                         }
                         else {
-                            sNSQ.silk_NSQ(this, this.indices, xfw_Q3.Data, xfw_Q3.Offset, pulses, 0,
-                                    sEncCtrl.PredCoef_Q12.Data, sEncCtrl.PredCoef_Q12.Offset, sEncCtrl.LTPCoef_Q14, sEncCtrl.AR2_Q13, sEncCtrl.HarmShapeGain_Q14,
-                                    sEncCtrl.Tilt_Q14, sEncCtrl.LF_shp_Q14, sEncCtrl.Gains_Q16, sEncCtrl.pitchL, sEncCtrl.Lambda_Q10, sEncCtrl.LTP_scale_Q14);
+                            sNSQ.silk_NSQ(
+                                this,
+                                this.indices,
+                                xfw_Q3.Data,
+                                xfw_Q3.Offset,
+                                pulses,
+                                sEncCtrl.PredCoef_Q12,
+                                0,
+                                sEncCtrl.LTPCoef_Q14,
+                                0,
+                                sEncCtrl.AR2_Q13,
+                                0,
+                                sEncCtrl.HarmShapeGain_Q14.GetPointer(),
+                                sEncCtrl.Tilt_Q14.GetPointer(),
+                                sEncCtrl.LF_shp_Q14.GetPointer(),
+                                sEncCtrl.Gains_Q16.GetPointer(),
+                                sEncCtrl.pitchL.GetPointer(),
+                                sEncCtrl.Lambda_Q10,
+                                sEncCtrl.LTP_scale_Q14);
                         }
 
                         /****************************************/
@@ -1126,7 +1155,7 @@ namespace Concentus.Silk.Structs
                     /* Quantize gains */
                     this.sShape.LastGainIndex = sEncCtrl.lastGainIndexPrev;
                     BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(this.sShape.LastGainIndex);
-                    GainQuantization.silk_gains_quant(this.indices.GainsIndices.GetPointer(), sEncCtrl.Gains_Q16,
+                    GainQuantization.silk_gains_quant(this.indices.GainsIndices.GetPointer(), sEncCtrl.Gains_Q16.GetPointer(),
                           boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                     this.sShape.LastGainIndex = boxed_gainIndex.Val;
 
@@ -1184,7 +1213,7 @@ namespace Concentus.Silk.Structs
                 psIndices_LBRR.Assign(this.indices);
 
                 /* Save original gains */
-                thisCtrl.Gains_Q16.MemCopyTo(TempGains_Q16, this.nb_subfr);
+                thisCtrl.Gains_Q16.GetPointer().MemCopyTo(TempGains_Q16, this.nb_subfr);
 
                 if (this.nFramesEncoded == 0 || this.LBRR_flags[this.nFramesEncoded - 1] == 0)
                 {
@@ -1199,7 +1228,7 @@ namespace Concentus.Silk.Structs
                 /* Decode to get gains in sync with decoder         */
                 /* Overwrite unquantized gains with quantized gains */
                 BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(this.LBRRprevLastGainIndex);
-                GainQuantization.silk_gains_dequant(thisCtrl.Gains_Q16, psIndices_LBRR.GainsIndices.GetPointer(),
+                GainQuantization.silk_gains_dequant(thisCtrl.Gains_Q16.GetPointer(), psIndices_LBRR.GainsIndices.GetPointer(),
                     boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                 this.LBRRprevLastGainIndex = boxed_gainIndex.Val;
 
@@ -1208,20 +1237,12 @@ namespace Concentus.Silk.Structs
                 /*****************************************/
                 if (this.nStatesDelayedDecision > 1 || this.warping_Q16 > 0)
                 {
-                    sNSQ_LBRR.silk_NSQ_del_dec(this, psIndices_LBRR, xfw_Q3,
-                        this.pulses_LBRR[this.nFramesEncoded].GetPointer(), thisCtrl.PredCoef_Q12, thisCtrl.LTPCoef_Q14,
-                        thisCtrl.AR2_Q13, thisCtrl.HarmShapeGain_Q14, thisCtrl.Tilt_Q14, thisCtrl.LF_shp_Q14,
-                        thisCtrl.Gains_Q16, thisCtrl.pitchL, thisCtrl.Lambda_Q10, thisCtrl.LTP_scale_Q14);
-                }
-                else {
-                    sNSQ_LBRR.silk_NSQ(this,
+                    sNSQ_LBRR.silk_NSQ_del_dec(this,
                         psIndices_LBRR,
                         xfw_Q3.Data,
                         xfw_Q3.Offset,
                         this.pulses_LBRR[this.nFramesEncoded],
-                        0,
-                        thisCtrl.PredCoef_Q12.Data,
-                        thisCtrl.PredCoef_Q12.Offset,
+                        thisCtrl.PredCoef_Q12,
                         thisCtrl.LTPCoef_Q14,
                         thisCtrl.AR2_Q13,
                         thisCtrl.HarmShapeGain_Q14,
@@ -1232,9 +1253,29 @@ namespace Concentus.Silk.Structs
                         thisCtrl.Lambda_Q10,
                         thisCtrl.LTP_scale_Q14);
                 }
+                else {
+                    sNSQ_LBRR.silk_NSQ(this,
+                        psIndices_LBRR,
+                        xfw_Q3.Data,
+                        xfw_Q3.Offset,
+                        this.pulses_LBRR[this.nFramesEncoded],
+                        thisCtrl.PredCoef_Q12,
+                        0,
+                        thisCtrl.LTPCoef_Q14,
+                        0,
+                        thisCtrl.AR2_Q13,
+                        0,
+                        thisCtrl.HarmShapeGain_Q14.GetPointer(),
+                        thisCtrl.Tilt_Q14.GetPointer(),
+                        thisCtrl.LF_shp_Q14.GetPointer(),
+                        thisCtrl.Gains_Q16.GetPointer(),
+                        thisCtrl.pitchL.GetPointer(),
+                        thisCtrl.Lambda_Q10,
+                        thisCtrl.LTP_scale_Q14);
+                }
 
                 /* Restore original gains */
-                TempGains_Q16.MemCopyTo(thisCtrl.Gains_Q16, this.nb_subfr);
+                TempGains_Q16.MemCopyTo(thisCtrl.Gains_Q16.GetPointer(), this.nb_subfr);
             }
         }
     }

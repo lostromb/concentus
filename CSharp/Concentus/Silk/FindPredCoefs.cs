@@ -100,15 +100,15 @@ namespace Concentus.Silk
 
                 /* LTP analysis */
                 BoxedValue<int> boxed_codgain = new BoxedValue<int>(psEncCtrl.LTPredCodGain_Q7);
-                FindLTP.silk_find_LTP(psEncCtrl.LTPCoef_Q14, WLTP, boxed_codgain,
-                    res_pitch, psEncCtrl.pitchL, Wght_Q15, psEnc.subfr_length,
+                FindLTP.silk_find_LTP(psEncCtrl.LTPCoef_Q14.GetPointer(), WLTP, boxed_codgain,
+                    res_pitch, psEncCtrl.pitchL.GetPointer(), Wght_Q15, psEnc.subfr_length,
                     psEnc.nb_subfr, psEnc.ltp_mem_length, LTP_corrs_rshift);
                 psEncCtrl.LTPredCodGain_Q7 = boxed_codgain.Val;
 
                 /* Quantize LTP gain parameters */
                 BoxedValue<sbyte> boxed_periodicity = new BoxedValue<sbyte>(psEnc.indices.PERIndex);
                 BoxedValue<int> boxed_gain = new BoxedValue<int>(psEnc.sum_log_gain_Q7);
-                QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex.GetPointer(), boxed_periodicity,
+                QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14.GetPointer(), psEnc.indices.LTPIndex.GetPointer(), boxed_periodicity,
                     boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr
                     );
                 psEnc.indices.PERIndex = boxed_periodicity.Val;
@@ -118,8 +118,8 @@ namespace Concentus.Silk
                 LTPScaleControl.silk_LTP_scale_ctrl(psEnc, psEncCtrl, condCoding);
 
                 /* Create LTP residual */
-                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre, x.Point(0 - psEnc.predictLPCOrder), psEncCtrl.LTPCoef_Q14,
-                    psEncCtrl.pitchL, invGains_Q16, psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
+                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre, x.Point(0 - psEnc.predictLPCOrder), psEncCtrl.LTPCoef_Q14.GetPointer(),
+                    psEncCtrl.pitchL.GetPointer(), invGains_Q16, psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             }
             else {
@@ -137,7 +137,7 @@ namespace Concentus.Silk
                     x_ptr = x_ptr.Point(psEnc.subfr_length);
                 }
 
-                psEncCtrl.LTPCoef_Q14.MemSet(0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);
+               Arrays.MemSet<short>(psEncCtrl.LTPCoef_Q14, 0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);
                 psEncCtrl.LTPredCodGain_Q7 = 0;
                 psEnc.sum_log_gain_Q7 = 0;
             }
@@ -158,10 +158,10 @@ namespace Concentus.Silk
             FindLPC.silk_find_LPC(psEnc, NLSF_Q15, LPC_in_pre, minInvGain_Q30);
 
             /* Quantize LSFs */
-            NLSF.silk_process_NLSFs(psEnc, psEncCtrl.PredCoef_Q12, NLSF_Q15, psEnc.prev_NLSFq_Q15.GetPointer());
+            NLSF.silk_process_NLSFs(psEnc, psEncCtrl.PredCoef_Q12.GetPointer(), NLSF_Q15, psEnc.prev_NLSFq_Q15.GetPointer());
 
             /* Calculate residual energy using quantized LPC coefficients */
-            ResidualEnergy.silk_residual_energy(psEncCtrl.ResNrg, psEncCtrl.ResNrgQ, LPC_in_pre, psEncCtrl.PredCoef_Q12, local_gains,
+            ResidualEnergy.silk_residual_energy(psEncCtrl.ResNrg.GetPointer(), psEncCtrl.ResNrgQ.GetPointer(), LPC_in_pre, psEncCtrl.PredCoef_Q12.GetPointer(), local_gains,
                 psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             /* Copy to prediction struct for use in next frame for interpolation */
