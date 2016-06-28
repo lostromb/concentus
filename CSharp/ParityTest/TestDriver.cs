@@ -45,8 +45,11 @@ namespace ParityTest
         private static OpusEncoder CreateConcentusEncoder(TestParameters parameters)
         {
             OpusEncoder concentusEncoder = OpusEncoder.Create(parameters.SampleRate, parameters.Channels, parameters.Application);
-            
-            concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
+
+            if (parameters.Bitrate > 0)
+            {
+                concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
+            }
             concentusEncoder.SetComplexity(parameters.Complexity);
             concentusEncoder.SetUseDTX(parameters.UseDTX);
             if (parameters.PacketLossPercent > 0)
@@ -77,7 +80,10 @@ namespace ParityTest
                 return returnVal;
             }
 
-            opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_BITRATE_REQUEST, parameters.Bitrate * 1024);
+            if (parameters.Bitrate > 0)
+            {
+                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_BITRATE_REQUEST, parameters.Bitrate * 1024);
+            }
             opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_COMPLEXITY_REQUEST, parameters.Complexity);
             opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_DTX_REQUEST, parameters.UseDTX ? 1 : 0);
             if (parameters.PacketLossPercent > 0)
@@ -182,6 +188,14 @@ namespace ParityTest
                             if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.SetForceMode(parameters.ForceMode);
                             opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, (int)parameters.ForceMode);
                         }
+                    }
+
+                    // If bitrate is variable, set it to a random value every few frames
+                    if (parameters.Bitrate < 0 && random.NextDouble() < 0.1)
+                    {
+                        int newBitrate = random.Next(6, parameters.ForceMode == OpusMode.MODE_SILK_ONLY ? 40 : 510);
+                        concentusEncoder.SetBitrate(newBitrate * 1024);
+                        opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_BITRATE_REQUEST, newBitrate * 1024);
                     }
 
                     Pointer<short> inputPacketWithOffset = Pointerize(inputPacket);

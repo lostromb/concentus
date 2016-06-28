@@ -42,9 +42,9 @@ namespace Concentus.Silk.Structs
     internal class SilkChannelDecoder
     {
         internal int prev_gain_Q16 = 0;
-        internal readonly Pointer<int> exc_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_FRAME_LENGTH);
-        internal readonly Pointer<int> sLPC_Q14_buf = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
-        internal readonly Pointer<short> outBuf = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);  /* Buffer for output signal                     */
+        internal readonly int[] exc_Q14 = new int[SilkConstants.MAX_FRAME_LENGTH];
+        internal readonly int[] sLPC_Q14_buf = new int[SilkConstants.MAX_LPC_ORDER];
+        internal readonly short[] outBuf = new short[SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH];  /* Buffer for output signal                     */
         internal int lagPrev = 0;                            /* Previous Lag                                                     */
         internal sbyte LastGainIndex = 0;                      /* Previous gain index                                              */
         internal int fs_kHz = 0;                             /* Sampling frequency in kHz                                        */
@@ -90,9 +90,9 @@ namespace Concentus.Silk.Structs
         internal void Reset()
         {
             prev_gain_Q16 = 0;
-            exc_Q14.MemSet(0, SilkConstants.MAX_FRAME_LENGTH);
-            sLPC_Q14_buf.MemSet(0, SilkConstants.MAX_LPC_ORDER);
-            outBuf.MemSet(0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+            Arrays.MemSet<int>(exc_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet<int>(sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet<short>(outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
             lagPrev = 0;
             LastGainIndex = 0;
             fs_kHz = 0;
@@ -254,8 +254,8 @@ namespace Concentus.Silk.Structs
                     this.lagPrev = 100;
                     this.LastGainIndex = 10;
                     this.prevSignalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
-                    this.outBuf.MemSet(0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
-                    this.sLPC_Q14_buf.MemSet(0, SilkConstants.MAX_LPC_ORDER);
+                    Arrays.MemSet<short>(this.outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+                    Arrays.MemSet<int>(this.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
                 }
 
                 this.fs_kHz = fs_kHz;
@@ -337,10 +337,8 @@ namespace Concentus.Silk.Structs
             /*************************/
             Inlines.OpusAssert(this.ltp_mem_length >= this.frame_length);
             mv_len = this.ltp_mem_length - this.frame_length;
-            // FIXME CHECK THIS
-            // silk_memmove(this.outBuf, &this.outBuf[this.frame_length], mv_len * sizeof(short));
-            this.outBuf.Point(this.frame_length).MemMove(0 - this.frame_length, mv_len);
-            pOut.MemCopyTo(this.outBuf.Point(mv_len), this.frame_length);
+            Arrays.MemMove<short>(this.outBuf, this.frame_length, 0, mv_len);
+            pOut.MemCopyTo(this.outBuf, mv_len, this.frame_length);
 
             /************************************************/
             /* Comfort noise generation / estimation        */

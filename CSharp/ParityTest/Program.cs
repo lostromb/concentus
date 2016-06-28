@@ -28,7 +28,7 @@ namespace ParityTest
             LoadTestFile(48, true);
 
             OpusApplication[] Applications = new OpusApplication[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
-            int[] Bitrates = new int[] { 6, 16, 20, 32, 64 };
+            int[] Bitrates = new int[] { -1, 6, 16, 20, 32, 64 };
             int[] Channels = new int[] { 1, 2 };
             int[] Complexities = new int[] { 0, 5, 10 };
             int[] SampleRates = new int[] { 8000, 12000, 16000, 24000, 48000 };
@@ -151,7 +151,7 @@ namespace ParityTest
                 }
             }
 
-            double concentusTime = 0;
+            double concentusTime = 0.001;
             double opusTime = 0;
             int passedTests = 0;
             int testsRun = 0;
@@ -159,12 +159,12 @@ namespace ParityTest
             foreach (TestParameters p in allTestsRandom)
             {
                 testsRun++;
-                Console.Write("{0,5} {1} {2} Cpx={3,2} {4,3}Kbps {5,2}Khz {6,3} Ms PLC {7,2}% {8} {9} {10}... ",
+                Console.Write("{0,5} {1} {2} Cpx={3,2} {4}Kbps {5,2}Khz {6,3} Ms PLC {7,2}% {8} {9} {10}... ",
                     testsRun,
                     PrintApplication(p.Application),
                     p.Channels == 1 ? "Mono  " : "Stereo",
                     p.Complexity,
-                    p.Bitrate,
+                    p.Bitrate > 0 ? string.Format("{0,3}", p.Bitrate) : "VAR",
                     p.SampleRate / 1000,
                     p.FrameSize,
                     p.PacketLossPercent,
@@ -177,8 +177,11 @@ namespace ParityTest
                 if (response.Passed)
                 {
                     passedTests++;
-                    concentusTime += response.ConcentusTimeMs;
-                    opusTime += response.OpusTimeMs;
+                    if (passedTests > 7)
+                    {
+                        concentusTime += response.ConcentusTimeMs;
+                        opusTime += response.OpusTimeMs;
+                    }
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("{0} (Speed {1:F2}% Pass {2:F2}%)", response.Message, (opusTime * 100 / concentusTime), ((double)passedTests * 100 / testsRun));
                     Console.ForegroundColor = ConsoleColor.Gray;

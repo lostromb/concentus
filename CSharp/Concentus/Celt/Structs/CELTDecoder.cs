@@ -67,7 +67,7 @@ namespace Concentus.Celt.Structs
         internal int postfilter_tapset = 0;
         internal int postfilter_tapset_old = 0;
 
-        internal readonly Pointer<int> preemph_memD = Pointer.Malloc<int>(2);
+        internal readonly int[] preemph_memD = new int[2];
 
         /// <summary>
         /// Scratch space used by the decoder. It is actually a variable-sized
@@ -81,12 +81,12 @@ namespace Concentus.Celt.Structs
         /// val16 oldLogE2[],       Size = 2*mode.nbEBands
         /// val16 backgroundLogE[], Size = 2*mode.nbEBands
         /// </summary>
-        internal Pointer<int> decode_mem = null;
-        internal Pointer<int> lpc = null;
-        internal Pointer<int> oldEBands = null;
-        internal Pointer<int> oldLogE = null;
-        internal Pointer<int> oldLogE2 = null;
-        internal Pointer<int> backgroundLogE = null;
+        internal int[] decode_mem = null;
+        internal int[] lpc = null;
+        internal int[] oldEBands = null;
+        internal int[] oldLogE = null;
+        internal int[] oldLogE2 = null;
+        internal int[] backgroundLogE = null;
 
         private void Reset()
         {
@@ -113,7 +113,7 @@ namespace Concentus.Celt.Structs
             postfilter_gain_old = 0;
             postfilter_tapset = 0;
             postfilter_tapset_old = 0;
-            preemph_memD.MemSet(0, 2);
+            Arrays.MemSet<int>(preemph_memD, 0, 2);
             decode_mem = null;
             lpc = null;
             oldEBands = null;
@@ -131,12 +131,12 @@ namespace Concentus.Celt.Structs
             this.PartialReset();
 
             // We have to reconstitute the dynamic buffers here. fixme: this could be better implemented
-            this.decode_mem = Pointer.Malloc<int>(this.channels * (CeltConstants.DECODE_BUFFER_SIZE + this.mode.overlap));
-            this.lpc = Pointer.Malloc<int>(this.channels * CeltConstants.LPC_ORDER);
-            this.oldEBands = Pointer.Malloc<int>(2 * this.mode.nbEBands);
-            this.oldLogE = Pointer.Malloc<int>(2 * this.mode.nbEBands);
-            this.oldLogE2 = Pointer.Malloc<int>(2 * this.mode.nbEBands);
-            this.backgroundLogE = Pointer.Malloc<int>(2 * this.mode.nbEBands);
+            this.decode_mem = new int[this.channels * (CeltConstants.DECODE_BUFFER_SIZE + this.mode.overlap)];
+            this.lpc = new int[this.channels * CeltConstants.LPC_ORDER];
+            this.oldEBands = new int[2 * this.mode.nbEBands];
+            this.oldLogE = new int[2 * this.mode.nbEBands];
+            this.oldLogE2 = new int[2 * this.mode.nbEBands];
+            this.backgroundLogE = new int[2 * this.mode.nbEBands];
 
             for (i = 0; i < 2 * this.mode.nbEBands; i++)
                 this.oldLogE[i] = this.oldLogE2[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
@@ -177,12 +177,12 @@ namespace Concentus.Celt.Structs
             this.loss_count = 0;
 
             // fixme is this necessary if we just call decoder_ctrl right there anyways?
-            this.decode_mem = Pointer.Malloc<int>(channels * (CeltConstants.DECODE_BUFFER_SIZE + mode.overlap));
-            this.lpc = Pointer.Malloc<int>(channels * CeltConstants.LPC_ORDER);
-            this.oldEBands = Pointer.Malloc<int>(2 * mode.nbEBands);
-            this.oldLogE = Pointer.Malloc<int>(2 * mode.nbEBands);
-            this.oldLogE2 = Pointer.Malloc<int>(2 * mode.nbEBands);
-            this.backgroundLogE = Pointer.Malloc<int>(2 * mode.nbEBands);
+            //this.decode_mem = Pointer.Malloc<int>(channels * (CeltConstants.DECODE_BUFFER_SIZE + mode.overlap));
+            //this.lpc = Pointer.Malloc<int>(channels * CeltConstants.LPC_ORDER);
+            //this.oldEBands = Pointer.Malloc<int>(2 * mode.nbEBands);
+            //this.oldLogE = Pointer.Malloc<int>(2 * mode.nbEBands);
+            //this.oldLogE2 = Pointer.Malloc<int>(2 * mode.nbEBands);
+            //this.backgroundLogE = Pointer.Malloc<int>(2 * mode.nbEBands);
 
             this.ResetState();
 
@@ -213,16 +213,16 @@ namespace Concentus.Celt.Structs
 
             c = 0; do
             {
-                decode_mem[c] = this.decode_mem.Point(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
+                decode_mem[c] = this.decode_mem.GetPointer(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
                 out_syn[c] = decode_mem[c].Point(CeltConstants.DECODE_BUFFER_SIZE - N);
             } while (++c < C);
 
             // fixme: can remove these temp pointers
-            lpc = this.lpc;
-            oldBandE = this.oldEBands;
-            oldLogE = this.oldLogE;
-            oldLogE2 = this.oldLogE2;
-            backgroundLogE = this.backgroundLogE;
+            lpc = this.lpc.GetPointer();
+            oldBandE = this.oldEBands.GetPointer();
+            oldLogE = this.oldLogE.GetPointer();
+            oldLogE2 = this.oldLogE2.GetPointer();
+            backgroundLogE = this.backgroundLogE.GetPointer();
 
             loss_count = this.loss_count;
             start = this.start;
@@ -528,11 +528,11 @@ namespace Concentus.Celt.Structs
             end = this.end;
             frame_size *= this.downsample;
 
-            lpc = this.lpc;
-            oldBandE = this.oldEBands;
-            oldLogE = this.oldLogE;
-            oldLogE2 = this.oldLogE2;
-            backgroundLogE = this.backgroundLogE;
+            lpc = this.lpc.GetPointer();
+            oldBandE = this.oldEBands.GetPointer();
+            oldLogE = this.oldLogE.GetPointer();
+            oldLogE2 = this.oldLogE2.GetPointer();
+            backgroundLogE = this.backgroundLogE.GetPointer();
 
             {
                 for (LM = 0; LM <= mode.maxLM; LM++)
@@ -549,7 +549,7 @@ namespace Concentus.Celt.Structs
             N = M * mode.shortMdctSize;
             c = 0; do
             {
-                decode_mem[c] = this.decode_mem.Point(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
+                decode_mem[c] = this.decode_mem.GetPointer(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
                 out_syn[c] = decode_mem[c].Point(CeltConstants.DECODE_BUFFER_SIZE - N);
             } while (++c < CC);
 
@@ -560,7 +560,7 @@ namespace Concentus.Celt.Structs
             if (data == null || len <= 1)
             {
                 this.celt_decode_lost(N, LM);
-                CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD, accum);
+                CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD.GetPointer(), accum);
 
                 return frame_size / this.downsample;
             }
@@ -807,7 +807,7 @@ namespace Concentus.Celt.Structs
             } while (++c < 2);
             this.rng = dec.rng;
 
-            CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD, accum);
+            CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD.GetPointer(), accum);
             this.loss_count = 0;
 
             if (dec.tell() > 8 * len)

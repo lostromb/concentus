@@ -277,8 +277,8 @@ namespace Concentus.Silk
             /* Reset side channel decoder prediction memory for first frame with side coding */
             if (decControl.nChannelsInternal == 2 && decode_only_middle == 0 && psDec.prev_decode_only_middle == 1)
             {
-                psDec.channel_state[1].outBuf.MemSet(0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
-                psDec.channel_state[1].sLPC_Q14_buf.MemSet(0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemSet<short>(psDec.channel_state[1].outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+                Arrays.MemSet<int>(psDec.channel_state[1].sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
                 psDec.channel_state[1].lagPrev = 100;
                 psDec.channel_state[1].LastGainIndex = 10;
                 psDec.channel_state[1].prevSignalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;

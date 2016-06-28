@@ -237,7 +237,6 @@ namespace Concentus.Silk
             short rand_scale_Q14;
             Pointer<short> B_Q14;
             Pointer<int> sLPC_Q14_ptr;
-            Pointer<short> A_Q12 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
             Pointer<short> sLTP = Pointer.Malloc<short>(psDec.ltp_mem_length);
             Pointer<int> sLTP_Q14 = Pointer.Malloc<int>(psDec.ltp_mem_length + psDec.frame_length);
             PLCStruct psPLC = psDec.sPLC;
@@ -251,16 +250,16 @@ namespace Concentus.Silk
                 Arrays.MemSet<short>(psPLC.prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             }
 
-            silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
+            silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14.GetPointer(), prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
 
             if (Inlines.silk_RSHIFT(energy1.Val, shift2.Val) < Inlines.silk_RSHIFT(energy2.Val, shift1.Val))
             {
                 /* First sub-frame has lowest energy */
-                rand_ptr = psDec.exc_Q14.Point(Inlines.silk_max_int(0, (psPLC.nb_subfr - 1) * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE));
+                rand_ptr = psDec.exc_Q14.GetPointer(Inlines.silk_max_int(0, (psPLC.nb_subfr - 1) * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE));
             }
             else {
                 /* Second sub-frame has lowest energy */
-                rand_ptr = psDec.exc_Q14.Point(Inlines.silk_max_int(0, psPLC.nb_subfr * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE));
+                rand_ptr = psDec.exc_Q14.GetPointer(Inlines.silk_max_int(0, psPLC.nb_subfr * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE));
             }
 
             /* Set up Gain to random noise component */
@@ -279,10 +278,7 @@ namespace Concentus.Silk
 
             /* LPC concealment. Apply BWE to previous LPC */
             BWExpander.silk_bwexpander(psPLC.prevLPC_Q12.GetPointer(), psDec.LPC_order, Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16));
-
-            /* Preload LPC coeficients to array on stack. Gives small performance gain FIXME no it doesn't */
-            psPLC.prevLPC_Q12.GetPointer().MemCopyTo(A_Q12, psDec.LPC_order);
-
+            
             /* First Lost frame */
             if (psDec.lossCnt == 0)
             {
@@ -320,7 +316,7 @@ namespace Concentus.Silk
             /* Rewhiten LTP state */
             idx = psDec.ltp_mem_length - lag - psDec.LPC_order - SilkConstants.LTP_ORDER / 2;
             Inlines.OpusAssert(idx > 0);
-            Filters.silk_LPC_analysis_filter(sLTP.Data, sLTP.Offset + idx, psDec.outBuf.Data, psDec.outBuf.Offset + idx, A_Q12.Data, A_Q12.Offset, psDec.ltp_mem_length - idx, psDec.LPC_order);
+            Filters.silk_LPC_analysis_filter(sLTP.Data, sLTP.Offset + idx, psDec.outBuf, idx, psPLC.prevLPC_Q12, 0, psDec.ltp_mem_length - idx, psDec.LPC_order);
             /* Scale LTP state */
             inv_gain_Q30 = Inlines.silk_INVERSE32_varQ(psPLC.prevGain_Q16[1], 46);
             inv_gain_Q30 = Inlines.silk_min(inv_gain_Q30, int.MaxValue >> 1);
@@ -375,7 +371,7 @@ namespace Concentus.Silk
             sLPC_Q14_ptr = sLTP_Q14.Point(psDec.ltp_mem_length - SilkConstants.MAX_LPC_ORDER);
 
             /* Copy LPC state */
-            psDec.sLPC_Q14_buf.MemCopyTo(sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
+            psDec.sLPC_Q14_buf.GetPointer().MemCopyTo(sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
 
             Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
             for (i = 0; i < psDec.frame_length; i++)
@@ -383,19 +379,19 @@ namespace Concentus.Silk
                 /* partly unrolled */
                 /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                 LPC_pred_Q10 = Inlines.silk_RSHIFT(psDec.LPC_order, 1);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 1], A_Q12[0]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 2], A_Q12[1]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 3], A_Q12[2]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 4], A_Q12[3]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 5], A_Q12[4]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 6], A_Q12[5]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 7], A_Q12[6]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 8], A_Q12[7]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 9], A_Q12[8]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 10], A_Q12[9]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 1], psPLC.prevLPC_Q12[0]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 2], psPLC.prevLPC_Q12[1]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 3], psPLC.prevLPC_Q12[2]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 4], psPLC.prevLPC_Q12[3]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 5], psPLC.prevLPC_Q12[4]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 6], psPLC.prevLPC_Q12[5]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 7], psPLC.prevLPC_Q12[6]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 8], psPLC.prevLPC_Q12[7]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 9], psPLC.prevLPC_Q12[8]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 10], psPLC.prevLPC_Q12[9]);
                 for (j = 10; j < psDec.LPC_order; j++)
                 {
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - j - 1], A_Q12[j]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - j - 1], psPLC.prevLPC_Q12[j]);
                 }
 
                 /* Add prediction to LPC excitation */
@@ -406,7 +402,7 @@ namespace Concentus.Silk
             }
 
             /* Save LPC state */
-            sLPC_Q14_ptr.Point(psDec.frame_length).MemCopyTo(psDec.sLPC_Q14_buf, SilkConstants.MAX_LPC_ORDER);
+            sLPC_Q14_ptr.Point(psDec.frame_length).MemCopyTo(psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
 
             /**************************************/
             /* Update states                      */

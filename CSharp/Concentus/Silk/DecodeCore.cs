@@ -106,9 +106,9 @@ namespace Concentus.Silk
             }
 
             /* Copy LPC state */
-            psDec.sLPC_Q14_buf.MemCopyTo(sLPC_Q14, SilkConstants.MAX_LPC_ORDER);
+            psDec.sLPC_Q14_buf.GetPointer().MemCopyTo(sLPC_Q14, SilkConstants.MAX_LPC_ORDER);
 
-            pexc_Q14 = psDec.exc_Q14;
+            pexc_Q14 = psDec.exc_Q14.GetPointer();
             pxq = xq;
             sLTP_buf_idx = psDec.ltp_mem_length;
             /* Loop over subframes */
@@ -170,10 +170,10 @@ namespace Concentus.Silk
 
                         if (k == 2)
                         {
-                            xq.MemCopyTo(psDec.outBuf.Point(psDec.ltp_mem_length), 2 * psDec.subfr_length);
+                            xq.MemCopyTo(psDec.outBuf.GetPointer(psDec.ltp_mem_length), 2 * psDec.subfr_length);
                         }
 
-                        Filters.silk_LPC_analysis_filter(sLTP.Data, sLTP.Offset + start_idx, psDec.outBuf.Data, psDec.outBuf.Offset + (start_idx + k * psDec.subfr_length),
+                        Filters.silk_LPC_analysis_filter(sLTP.Data, sLTP.Offset + start_idx, psDec.outBuf, (start_idx + k * psDec.subfr_length),
                             A_Q12.Data, 0, psDec.ltp_mem_length - start_idx, psDec.LPC_order);
 
                         /* After rewhitening the LTP state is unscaled */
@@ -270,7 +270,7 @@ namespace Concentus.Silk
             }
 
             /* Save LPC state */
-            sLPC_Q14.MemCopyTo(psDec.sLPC_Q14_buf, SilkConstants.MAX_LPC_ORDER);
+            sLPC_Q14.MemCopyTo(psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
         }
     }
 }
