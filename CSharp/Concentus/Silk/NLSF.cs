@@ -379,6 +379,7 @@ namespace Concentus.Silk
         /// <param name="mu_Q20">(I) R/D tradeoff</param>
         /// <param name="order">(I) Number of input values</param>
         /// <returns>RD value in Q25</returns>
+        /// Fixme: Optimize this method!
         internal static int silk_NLSF_del_dec_quant(
             Pointer<sbyte> indices,
             Pointer<short> x_Q10,

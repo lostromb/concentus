@@ -204,6 +204,7 @@ namespace Concentus.Celt
             celt_fir5(x_lp, lpc2.GetPointer(), x_lp, halflen, mem.GetPointer());
         }
 
+        // Fixme: remove pointers and optimize
         internal static void pitch_search(Pointer<int> x_lp, Pointer<int> y,
                   int len, int max_pitch, BoxedValue<int> pitch)
         {
