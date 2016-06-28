@@ -69,7 +69,7 @@ namespace Concentus.Silk
             psEncC.indices.NLSFInterpCoef_Q2 = 4;
 
             /* Burg AR analysis for the full frame */
-            BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_Q16, x, minInvGain_Q30, subfr_length, psEncC.nb_subfr, psEncC.predictLPCOrder);
+            BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_Q16, x.Data, x.Offset, minInvGain_Q30, subfr_length, psEncC.nb_subfr, psEncC.predictLPCOrder);
             res_nrg = scratch_box1.Val;
             res_nrg_Q = scratch_box2.Val;
 
@@ -78,7 +78,7 @@ namespace Concentus.Silk
                 Pointer<short> LPC_res;
 
                 /* Optimal solution for last 10 ms */
-                BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_tmp_Q16, x.Point(2 * subfr_length), minInvGain_Q30, subfr_length, 2, psEncC.predictLPCOrder);
+                BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_tmp_Q16, x.Data, x.Offset + (2 * subfr_length), minInvGain_Q30, subfr_length, 2, psEncC.predictLPCOrder);
                 res_tmp_nrg = scratch_box1.Val;
                 res_tmp_nrg_Q = scratch_box2.Val;
 
