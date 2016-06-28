@@ -73,7 +73,7 @@ namespace Concentus.Silk
             int[] xcorr = new int[SilkConstants.SILK_MAX_ORDER_LPC];
             long C0_64;
 
-            Inlines.OpusAssert(subfr_length * nb_subfr <= MAX_FRAME_SIZE);
+            //Inlines.OpusAssert(subfr_length * nb_subfr <= MAX_FRAME_SIZE);
 
             /* Compute autocorrelations, added over subframes */
             C0_64 = Inlines.silk_inner_prod16_aligned_64(x.GetPointer(x_offset), x.GetPointer(x_offset), subfr_length * nb_subfr);

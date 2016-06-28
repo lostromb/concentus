@@ -53,9 +53,9 @@ namespace Concentus
             Pointer<int> A_Q28 = Pointer.Malloc<int>(2);
             int Fc_Q19, r_Q28, r_Q22;
 
-            Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19));
+            //Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19));
             Fc_Q19 = Inlines.silk_DIV32_16(Inlines.silk_SMULBB(Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19), cutoff_Hz), Fs / 1000);
-            Inlines.OpusAssert(Fc_Q19 > 0 && Fc_Q19 < 32768);
+            //Inlines.OpusAssert(Fc_Q19 > 0 && Fc_Q19 < 32768);
 
             r_Q28 = Inlines.SILK_CONST(1.0f, 28) - Inlines.silk_MUL(Inlines.SILK_CONST(0.92f, 9), Fc_Q19);
 
@@ -332,7 +332,7 @@ namespace Concentus
                 /* Consider the CELT delay when not in restricted-lowdelay */
                 /* We assume the buffering is between 2.5 and 5 ms */
                 offset = 2 * subframe - buffering;
-                Inlines.OpusAssert(offset >= 0 && offset <= subframe);
+                //Inlines.OpusAssert(offset >= 0 && offset <= subframe);
                 len -= offset;
                 e[1] = mem[1];
                 e_1[1] = 1.0f / (CeltConstants.EPSILON + mem[1]);

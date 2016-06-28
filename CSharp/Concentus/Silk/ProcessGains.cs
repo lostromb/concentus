@@ -92,7 +92,7 @@ namespace Concentus.Silk
                 {
                     /* recalculate with higher precision */
                     gain_squared = Inlines.silk_SMLAWW(Inlines.silk_LSHIFT(ResNrgPart, 16), gain, gain);
-                    Inlines.OpusAssert(gain_squared > 0);
+                    //Inlines.OpusAssert(gain_squared > 0);
                     gain = Inlines.silk_SQRT_APPROX(gain_squared);                    /* Q8   */
                     gain = Inlines.silk_min(gain, int.MaxValue >> 8);
                     psEncCtrl.Gains_Q16[k] = Inlines.silk_LSHIFT_SAT32(gain, 8);   /* Q16  */
@@ -136,8 +136,8 @@ namespace Concentus.Silk
                                   + Inlines.silk_SMULWB(Inlines.SILK_CONST(TuningParameters.LAMBDA_CODING_QUALITY, 12), psEncCtrl.coding_quality_Q14)
                                   + Inlines.silk_SMULWB(Inlines.SILK_CONST(TuningParameters.LAMBDA_QUANT_OFFSET, 16), quant_offset_Q10);
 
-            Inlines.OpusAssert(psEncCtrl.Lambda_Q10 > 0);
-            Inlines.OpusAssert(psEncCtrl.Lambda_Q10 < Inlines.SILK_CONST(2, 10));
+            //Inlines.OpusAssert(psEncCtrl.Lambda_Q10 > 0);
+            //Inlines.OpusAssert(psEncCtrl.Lambda_Q10 < Inlines.SILK_CONST(2, 10));
         }
     }
 }

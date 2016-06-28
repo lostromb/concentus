@@ -215,8 +215,8 @@ namespace Concentus.Celt
             int shift = 0;
             int offset;
 
-            Inlines.OpusAssert(len > 0);
-            Inlines.OpusAssert(max_pitch > 0);
+            //Inlines.OpusAssert(len > 0);
+            //Inlines.OpusAssert(max_pitch > 0);
             lag = len + max_pitch;
 
             Pointer<int> x_lp4 = Pointer.Malloc<int>(len >> 2);

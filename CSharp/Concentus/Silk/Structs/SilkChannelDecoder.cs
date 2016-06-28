@@ -185,8 +185,8 @@ namespace Concentus.Silk.Structs
         {
             int frame_length, ret = 0;
 
-            Inlines.OpusAssert(fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16);
-            Inlines.OpusAssert(this.nb_subfr == SilkConstants.MAX_NB_SUBFR || this.nb_subfr == SilkConstants.MAX_NB_SUBFR / 2);
+            //Inlines.OpusAssert(fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16);
+            //Inlines.OpusAssert(this.nb_subfr == SilkConstants.MAX_NB_SUBFR || this.nb_subfr == SilkConstants.MAX_NB_SUBFR / 2);
 
             /* New (sub)frame length */
             this.subfr_length = Inlines.silk_SMULBB(SilkConstants.SUB_FRAME_LENGTH_MS, fs_kHz);
@@ -248,7 +248,7 @@ namespace Concentus.Silk.Structs
                     }
                     else {
                         /* unsupported sampling rate */
-                        Inlines.OpusAssert(false);
+                        //Inlines.OpusAssert(false);
                     }
                     this.first_frame_after_reset = 1;
                     this.lagPrev = 100;
@@ -263,7 +263,7 @@ namespace Concentus.Silk.Structs
             }
 
             /* Check that settings are valid */
-            Inlines.OpusAssert(this.frame_length > 0 && this.frame_length <= SilkConstants.MAX_FRAME_LENGTH);
+            //Inlines.OpusAssert(this.frame_length > 0 && this.frame_length <= SilkConstants.MAX_FRAME_LENGTH);
 
             return ret;
         }
@@ -287,7 +287,7 @@ namespace Concentus.Silk.Structs
             thisCtrl.LTP_scale_Q14 = 0;
 
             /* Safety checks */
-            Inlines.OpusAssert(L > 0 && L <= SilkConstants.MAX_FRAME_LENGTH);
+            //Inlines.OpusAssert(L > 0 && L <= SilkConstants.MAX_FRAME_LENGTH);
 
             if (lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL ||
                 (lostFlag == DecoderAPIFlag.FLAG_DECODE_LBRR && this.LBRR_flags[this.nFramesDecoded] == 1))
@@ -321,7 +321,7 @@ namespace Concentus.Silk.Structs
 
                 this.lossCnt = 0;
                 this.prevSignalType = this.indices.signalType;
-                Inlines.OpusAssert(this.prevSignalType >= 0 && this.prevSignalType <= 2);
+                //Inlines.OpusAssert(this.prevSignalType >= 0 && this.prevSignalType <= 2);
 
                 /* A frame has been decoded without errors */
                 this.first_frame_after_reset = 0;
@@ -335,7 +335,7 @@ namespace Concentus.Silk.Structs
             /*************************/
             /* Update output buffer. */
             /*************************/
-            Inlines.OpusAssert(this.ltp_mem_length >= this.frame_length);
+            //Inlines.OpusAssert(this.ltp_mem_length >= this.frame_length);
             mv_len = this.ltp_mem_length - this.frame_length;
             Arrays.MemMove<short>(this.outBuf, this.frame_length, 0, mv_len);
             pOut.MemCopyTo(this.outBuf, mv_len, this.frame_length);

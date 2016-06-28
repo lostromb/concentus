@@ -70,7 +70,7 @@ namespace Concentus.Silk
             for (i = 0; i < psEnc.nb_subfr; i++)
             {
                 /* Divide to Q16 */
-                Inlines.OpusAssert(psEncCtrl.Gains_Q16[i] > 0);
+                //Inlines.OpusAssert(psEncCtrl.Gains_Q16[i] > 0);
                 /* Invert and normalize gains, and ensure that maximum invGains_Q16 is within range of a 16 bit int */
                 invGains_Q16[i] = Inlines.silk_DIV32_varQ(min_gain_Q16, psEncCtrl.Gains_Q16[i], 16 - 2);
 
@@ -78,7 +78,7 @@ namespace Concentus.Silk
                 invGains_Q16[i] = Inlines.silk_max(invGains_Q16[i], 363);
 
                 /* Square the inverted gains */
-                Inlines.OpusAssert(invGains_Q16[i] == Inlines.silk_SAT16(invGains_Q16[i]));
+                //Inlines.OpusAssert(invGains_Q16[i] == Inlines.silk_SAT16(invGains_Q16[i]));
                 tmp = Inlines.silk_SMULWB(invGains_Q16[i], invGains_Q16[i]);
                 Wght_Q15[i] = Inlines.silk_RSHIFT(tmp, 1);
 
@@ -94,7 +94,7 @@ namespace Concentus.Silk
                 /**********/
                 /* VOICED */
                 /**********/
-                Inlines.OpusAssert(psEnc.ltp_mem_length - psEnc.predictLPCOrder >= psEncCtrl.pitchL[0] + SilkConstants.LTP_ORDER / 2);
+                //Inlines.OpusAssert(psEnc.ltp_mem_length - psEnc.predictLPCOrder >= psEncCtrl.pitchL[0] + SilkConstants.LTP_ORDER / 2);
 
                 WLTP = Pointer.Malloc<int>(psEnc.nb_subfr * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER);
 

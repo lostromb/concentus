@@ -1232,7 +1232,7 @@ namespace Concentus.Celt
                     ret = 6;
                     break;
                 default:
-                    Inlines.OpusAssert(false);
+                    //Inlines.OpusAssert(false);
                     ret = 0;
                     break;
             }

@@ -64,7 +64,7 @@ namespace Concentus.Silk
             Pointer<int> res_Q14;
             Pointer<int> sLPC_Q14;
 
-            Inlines.OpusAssert(psDec.prev_gain_Q16 != 0);
+            //Inlines.OpusAssert(psDec.prev_gain_Q16 != 0);
 
             sLTP= Pointer.Malloc<short>(psDec.ltp_mem_length);
             sLTP_Q15 = Pointer.Malloc<int>(psDec.ltp_mem_length + psDec.frame_length);
@@ -141,7 +141,7 @@ namespace Concentus.Silk
                 }
 
                 /* Save inv_gain */
-                Inlines.OpusAssert(inv_gain_Q31 != 0);
+                //Inlines.OpusAssert(inv_gain_Q31 != 0);
                 psDec.prev_gain_Q16 = psDecCtrl.Gains_Q16[k];
 
                 /* Avoid abrupt transition from voiced PLC to unvoiced normal decoding */
@@ -166,7 +166,7 @@ namespace Concentus.Silk
                     {
                         /* Rewhiten with new A coefs */
                         start_idx = psDec.ltp_mem_length - lag - psDec.LPC_order - SilkConstants.LTP_ORDER / 2;
-                        Inlines.OpusAssert(start_idx > 0);
+                        //Inlines.OpusAssert(start_idx > 0);
 
                         if (k == 2)
                         {
@@ -231,7 +231,7 @@ namespace Concentus.Silk
                 for (i = 0; i < psDec.subfr_length; i++)
                 {
                     /* Short-term prediction */
-                    Inlines.OpusAssert(psDec.LPC_order == 10 || psDec.LPC_order == 16);
+                    //Inlines.OpusAssert(psDec.LPC_order == 10 || psDec.LPC_order == 16);
                     /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
                     LPC_pred_Q10 = Inlines.silk_RSHIFT(psDec.LPC_order, 1);
                     LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14[SilkConstants.MAX_LPC_ORDER + i - 1], A_Q12_tmp[0]);

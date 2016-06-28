@@ -51,7 +51,7 @@ namespace Concentus.Silk
             int i;
             for (i = 0; i < D; i++)
             {
-                Inlines.matrix_adr(XX, i, i, D)[0] = Inlines.silk_ADD32(Inlines.matrix_ptr(XX, i, i, D), noise);
+                Inlines.MatrixSet(XX, i, i, D, Inlines.silk_ADD32(Inlines.MatrixGet(XX, i, i, D), noise));
             }
             xx[0] += noise;
         }

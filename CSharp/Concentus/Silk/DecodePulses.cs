@@ -63,11 +63,11 @@ namespace Concentus.Silk
             RateLevelIndex = psRangeDec.dec_icdf(Tables.silk_rate_levels_iCDF[signalType >> 1].GetPointer(), 8);
 
             /* Calculate number of shell blocks */
-            Inlines.OpusAssert(1 << SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH == SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+            //Inlines.OpusAssert(1 << SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH == SilkConstants.SHELL_CODEC_FRAME_LENGTH);
             iter = Inlines.silk_RSHIFT(frame_length, SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH);
             if (iter * SilkConstants.SHELL_CODEC_FRAME_LENGTH < frame_length)
             {
-                Inlines.OpusAssert(frame_length == 12 * 10); /* Make sure only happens for 10 ms @ 12 kHz */
+                //Inlines.OpusAssert(frame_length == 12 * 10); /* Make sure only happens for 10 ms @ 12 kHz */
                 iter++;
             }
 

@@ -67,9 +67,9 @@ namespace Concentus.Silk
             int diff_Q15, sum_error_Q30, sum_error_Q26;
             int pCB_idx = 0;
 
-            Inlines.OpusAssert(err_Q26 != null);
-            Inlines.OpusAssert(LPC_order <= 16);
-            Inlines.OpusAssert((LPC_order & 1) == 0);
+            //Inlines.OpusAssert(err_Q26 != null);
+            //Inlines.OpusAssert(LPC_order <= 16);
+            //Inlines.OpusAssert((LPC_order & 1) == 0);
 
             // Loop over codebook
             for (int i = 0; i < K; i++)
@@ -88,8 +88,8 @@ namespace Concentus.Silk
 
                     sum_error_Q26 = Inlines.silk_ADD_RSHIFT32(sum_error_Q26, sum_error_Q30, 4);
 
-                    Inlines.OpusAssert(sum_error_Q26 >= 0);
-                    Inlines.OpusAssert(sum_error_Q30 >= 0);
+                    //Inlines.OpusAssert(sum_error_Q26 >= 0);
+                    //Inlines.OpusAssert(sum_error_Q30 >= 0);
                 }
 
                 err_Q26[i] = sum_error_Q26;
@@ -107,9 +107,9 @@ namespace Concentus.Silk
             int k;
             int tmp1_int, tmp2_int;
 
-            Inlines.OpusAssert(pNLSFW_Q_OUT != null);
-            Inlines.OpusAssert(D > 0);
-            Inlines.OpusAssert((D & 1) == 0);
+            //Inlines.OpusAssert(pNLSFW_Q_OUT != null);
+            //Inlines.OpusAssert(D > 0);
+            //Inlines.OpusAssert((D & 1) == 0);
 
             // First value
             tmp1_int = Inlines.silk_max_int(pNLSF_Q15[0], 1);
@@ -118,7 +118,7 @@ namespace Concentus.Silk
             tmp2_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp2_int);
             pNLSFW_Q_OUT[0] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, short.MaxValue);
 
-            Inlines.OpusAssert(pNLSFW_Q_OUT[0] > 0);
+            //Inlines.OpusAssert(pNLSFW_Q_OUT[0] > 0);
 
             // Main loop
             for (k = 1; k < D - 1; k += 2)
@@ -126,12 +126,12 @@ namespace Concentus.Silk
                 tmp1_int = Inlines.silk_max_int(pNLSF_Q15[k + 1] - pNLSF_Q15[k], 1);
                 tmp1_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp1_int);
                 pNLSFW_Q_OUT[k] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, short.MaxValue);
-                Inlines.OpusAssert(pNLSFW_Q_OUT[k] > 0);
+                //Inlines.OpusAssert(pNLSFW_Q_OUT[k] > 0);
 
                 tmp2_int = Inlines.silk_max_int(pNLSF_Q15[k + 2] - pNLSF_Q15[k + 1], 1);
                 tmp2_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp2_int);
                 pNLSFW_Q_OUT[k + 1] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, short.MaxValue);
-                Inlines.OpusAssert(pNLSFW_Q_OUT[k + 1] > 0);
+                //Inlines.OpusAssert(pNLSFW_Q_OUT[k + 1] > 0);
             }
 
             // Last value
@@ -139,7 +139,7 @@ namespace Concentus.Silk
             tmp1_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp1_int);
             pNLSFW_Q_OUT[D - 1] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, short.MaxValue);
 
-            Inlines.OpusAssert(pNLSFW_Q_OUT[D - 1] > 0);
+            //Inlines.OpusAssert(pNLSFW_Q_OUT[D - 1] > 0);
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace Concentus.Silk
             int diff_Q15, min_diff_Q15, min_center_Q15, max_center_Q15;
 
             // This is necessary to ensure an output within range of a short
-            Inlines.OpusAssert(NDeltaMin_Q15[L] >= 1);
+            //Inlines.OpusAssert(NDeltaMin_Q15[L] >= 1);
 
             for (loops = 0; loops < MAX_STABILIZE_LOOPS; loops++)
             {
@@ -438,7 +438,7 @@ namespace Concentus.Silk
                 out1_Q10_table[i + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT] = Inlines.silk_SMULWB((int)out1_Q10, quant_step_size_Q16);
             }
 
-            Inlines.OpusAssert((SilkConstants.NLSF_QUANT_DEL_DEC_STATES & (SilkConstants.NLSF_QUANT_DEL_DEC_STATES - 1)) == 0); // must be power of two
+            //Inlines.OpusAssert((SilkConstants.NLSF_QUANT_DEL_DEC_STATES & (SilkConstants.NLSF_QUANT_DEL_DEC_STATES - 1)) == 0); // must be power of two
 
             nStates = 1;
             RD_Q25[0] = 0;
@@ -613,13 +613,13 @@ namespace Concentus.Silk
             for (j = 0; j < order; j++)
             {
                 indices[j] = ind[ind_tmp & (SilkConstants.NLSF_QUANT_DEL_DEC_STATES - 1)][j];
-                Inlines.OpusAssert(indices[j] >= 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
-                Inlines.OpusAssert(indices[j] <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
+                //Inlines.OpusAssert(indices[j] >= 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
+                //Inlines.OpusAssert(indices[j] <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
             }
 
             indices[0] = (sbyte)(indices[0] + Inlines.silk_RSHIFT(ind_tmp, SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2));
-            Inlines.OpusAssert(indices[0] <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
-            Inlines.OpusAssert(min_Q25 >= 0);
+            //Inlines.OpusAssert(indices[0] <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
+            //Inlines.OpusAssert(min_Q25 >= 0);
             return min_Q25;
         }
 
@@ -658,9 +658,9 @@ namespace Concentus.Silk
             Pointer<short> ec_ix = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
             Pointer<byte> pCB_element, iCDF_ptr;
 
-            Inlines.OpusAssert(nSurvivors <= SilkConstants.NLSF_VQ_MAX_SURVIVORS);
-            Inlines.OpusAssert(signalType >= 0 && signalType <= 2);
-            Inlines.OpusAssert(NLSF_mu_Q20 <= 32767 && NLSF_mu_Q20 >= 0);
+            //Inlines.OpusAssert(nSurvivors <= SilkConstants.NLSF_VQ_MAX_SURVIVORS);
+            //Inlines.OpusAssert(signalType >= 0 && signalType <= 2);
+            //Inlines.OpusAssert(NLSF_mu_Q20 <= 32767 && NLSF_mu_Q20 >= 0);
 
             // NLSF stabilization
             silk_NLSF_stabilize(pNLSF_Q15, psNLSF_CB.deltaMin_Q15, psNLSF_CB.order);
@@ -803,15 +803,15 @@ namespace Concentus.Silk
             int Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
             int maxabs, absval, idx = 0, sc_Q16;
 
-            Inlines.OpusAssert (SilkConstants.LSF_COS_TAB_SZ == 128);
-            Inlines.OpusAssert (d == 10 || d == 16);
+            //Inlines.OpusAssert (SilkConstants.LSF_COS_TAB_SZ == 128);
+            //Inlines.OpusAssert (d == 10 || d == 16);
 
             /* convert LSFs to 2*cos(LSF), using piecewise linear curve from table */
             ordering = d == 16 ? ordering16 : ordering10;
 
             for (k = 0; k < d; k++)
             {
-                Inlines.OpusAssert(NLSF[k] >= 0);
+                //Inlines.OpusAssert(NLSF[k] >= 0);
 
                 /* f_int on a scale 0-127 (rounded down) */
                 f_int = Inlines.silk_RSHIFT(NLSF[k], 15 - 7);
@@ -819,8 +819,8 @@ namespace Concentus.Silk
                 /* f_frac, range: 0..255 */
                 f_frac = NLSF[k] - Inlines.silk_LSHIFT(f_int, 15 - 7);
 
-                Inlines.OpusAssert(f_int >= 0);
-                Inlines.OpusAssert(f_int < SilkConstants.LSF_COS_TAB_SZ);
+                //Inlines.OpusAssert(f_int >= 0);
+                //Inlines.OpusAssert(f_int < SilkConstants.LSF_COS_TAB_SZ);
 
                 /* Read start and end value from table */
                 cos_val = Tables.silk_LSFCosTab_Q12[f_int];                /* Q12 */
@@ -1107,7 +1107,7 @@ namespace Concentus.Silk
                     }
                     NLSF[root_ix] = (short)Inlines.silk_min_32(Inlines.silk_LSHIFT((int)k, 8) + ffrac, short.MaxValue);
 
-                    Inlines.OpusAssert(NLSF[root_ix] >= 0);
+                    //Inlines.OpusAssert(NLSF[root_ix] >= 0);
 
                     root_ix++;        /* Next root */
                     if (root_ix >= d)
@@ -1190,9 +1190,9 @@ namespace Concentus.Silk
             Pointer<short> pNLSFW_QW = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
             Pointer<short> pNLSFW0_temp_QW = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
 
-            Inlines.OpusAssert(psEncC.speech_activity_Q8 >= 0);
-            Inlines.OpusAssert(psEncC.speech_activity_Q8 <= Inlines.SILK_CONST(1.0f, 8));
-            Inlines.OpusAssert(psEncC.useInterpolatedNLSFs == 1 || psEncC.indices.NLSFInterpCoef_Q2 == (1 << 2));
+            //Inlines.OpusAssert(psEncC.speech_activity_Q8 >= 0);
+            //Inlines.OpusAssert(psEncC.speech_activity_Q8 <= Inlines.SILK_CONST(1.0f, 8));
+            //Inlines.OpusAssert(psEncC.useInterpolatedNLSFs == 1 || psEncC.indices.NLSFInterpCoef_Q2 == (1 << 2));
 
             /***********************/
             /* Calculate mu values */
@@ -1205,8 +1205,8 @@ namespace Concentus.Silk
                 NLSF_mu_Q20 = Inlines.silk_ADD_RSHIFT(NLSF_mu_Q20, NLSF_mu_Q20, 1);
             }
 
-            Inlines.OpusAssert(NLSF_mu_Q20 > 0);
-            Inlines.OpusAssert(NLSF_mu_Q20 <= Inlines.SILK_CONST(0.005f, 20));
+            //Inlines.OpusAssert(NLSF_mu_Q20 > 0);
+            //Inlines.OpusAssert(NLSF_mu_Q20 <= Inlines.SILK_CONST(0.005f, 20));
 
             /* Calculate NLSF weights */
             // fixme: potential errors here//////////////////////////////////////////////
@@ -1229,7 +1229,7 @@ namespace Concentus.Silk
                 for (i = 0; i < psEncC.predictLPCOrder; i++)
                 {
                     pNLSFW_QW[i] = Inlines.CHOP16(Inlines.silk_SMLAWB(Inlines.silk_RSHIFT(pNLSFW_QW[i], 1), (int)pNLSFW0_temp_QW[i], i_sqr_Q15));
-                    Inlines.OpusAssert(pNLSFW_QW[i] >= 1);
+                    //Inlines.OpusAssert(pNLSFW_QW[i] >= 1);
                 }
             }
 

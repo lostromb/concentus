@@ -56,7 +56,7 @@ namespace Concentus.Celt
             int[] sum = scratch.Value;
             int i;
             int maxcorr = 1;
-            Inlines.OpusAssert(max_pitch > 0);
+            //Inlines.OpusAssert(max_pitch > 0);
             for (i = 0; i < max_pitch - 3; i += 4)
             {
                 sum[0] = 0;
@@ -93,7 +93,7 @@ namespace Concentus.Celt
             int[] sum = scratch.Value;
             int i;
             int maxcorr = 1;
-            Inlines.OpusAssert(max_pitch > 0);
+            //Inlines.OpusAssert(max_pitch > 0);
             for (i = 0; i < max_pitch - 3; i += 4)
             {
                 sum[0] = 0;

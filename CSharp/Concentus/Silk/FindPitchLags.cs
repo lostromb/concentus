@@ -65,7 +65,7 @@ namespace Concentus.Silk
             buf_len = psEnc.la_pitch + psEnc.frame_length + psEnc.ltp_mem_length;
 
             /* Safety check */
-            Inlines.OpusAssert(buf_len >= psEnc.pitch_LPC_win_length);
+            //Inlines.OpusAssert(buf_len >= psEnc.pitch_LPC_win_length);
 
             x_buf = x.Point(0 - psEnc.ltp_mem_length);
 

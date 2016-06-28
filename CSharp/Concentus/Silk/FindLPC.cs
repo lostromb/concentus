@@ -93,7 +93,7 @@ namespace Concentus.Silk
                     }
                 }
                 else {
-                    Inlines.OpusAssert(shift > -32);
+                    //Inlines.OpusAssert(shift > -32);
                     res_nrg = Inlines.silk_RSHIFT(res_nrg, -shift) - res_tmp_nrg;
                     res_nrg_Q = res_tmp_nrg_Q;
                 }
@@ -181,7 +181,7 @@ namespace Concentus.Silk
                 NLSF.silk_A2NLSF(NLSF_Q15, a_Q16, psEncC.predictLPCOrder);
             }
 
-            Inlines.OpusAssert(psEncC.indices.NLSFInterpCoef_Q2 == 4 || (psEncC.useInterpolatedNLSFs != 0 && psEncC.first_frame_after_reset == 0 && psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR));
+            //Inlines.OpusAssert(psEncC.indices.NLSFInterpCoef_Q2 == 4 || (psEncC.useInterpolatedNLSFs != 0 && psEncC.first_frame_after_reset == 0 && psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR));
 
         }
     }

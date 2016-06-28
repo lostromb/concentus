@@ -78,7 +78,7 @@ namespace Concentus.Silk.Structs
             int fac_Q16 = 0;
             int ind = 0;
 
-            Inlines.OpusAssert(this.transition_frame_no >= 0 && this.transition_frame_no <= SilkConstants.TRANSITION_FRAMES);
+            //Inlines.OpusAssert(this.transition_frame_no >= 0 && this.transition_frame_no <= SilkConstants.TRANSITION_FRAMES);
 
             /* Run filter if needed */
             if (this.mode != 0)
@@ -89,8 +89,8 @@ namespace Concentus.Silk.Structs
                 ind = Inlines.silk_RSHIFT(fac_Q16, 16);
                 fac_Q16 -= Inlines.silk_LSHIFT(ind, 16);
 
-                Inlines.OpusAssert(ind >= 0);
-                Inlines.OpusAssert(ind < SilkConstants.TRANSITION_INT_NUM);
+                //Inlines.OpusAssert(ind >= 0);
+                //Inlines.OpusAssert(ind < SilkConstants.TRANSITION_INT_NUM);
 
                 /* Interpolate filter coefficients */
                 Filters.silk_LP_interpolate_filter_taps(B_Q28, A_Q28, ind, fac_Q16);
@@ -99,7 +99,7 @@ namespace Concentus.Silk.Structs
                 this.transition_frame_no = Inlines.silk_LIMIT(this.transition_frame_no + this.mode, 0, SilkConstants.TRANSITION_FRAMES);
 
                 /* ARMA low-pass filtering */
-                Inlines.OpusAssert(SilkConstants.TRANSITION_NB == 3 && SilkConstants.TRANSITION_NA == 2);
+                //Inlines.OpusAssert(SilkConstants.TRANSITION_NB == 3 && SilkConstants.TRANSITION_NA == 2);
                 Filters.silk_biquad_alt(frame, B_Q28, A_Q28, this.In_LP_State.GetPointer(), frame, frame_length, 1);
             }
         }

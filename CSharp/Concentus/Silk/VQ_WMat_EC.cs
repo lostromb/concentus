@@ -79,7 +79,7 @@ namespace Concentus.Silk
                 /* Penalty for too large gain */
                 sum1_Q14 = Inlines.silk_ADD_LSHIFT32(sum1_Q14, Inlines.silk_max(Inlines.silk_SUB32(gain_tmp_Q7, max_gain_Q7), 0), 10);
 
-                Inlines.OpusAssert(sum1_Q14 >= 0);
+                //Inlines.OpusAssert(sum1_Q14 >= 0);
 
                 /* first row of W_Q18 */
                 sum2_Q16 = Inlines.silk_SMULWB(W_Q18[1], diff_Q14[1]);
@@ -115,7 +115,7 @@ namespace Concentus.Silk
                 sum2_Q16 = Inlines.silk_SMULWB(W_Q18[24], diff_Q14[4]);
                 sum1_Q14 = Inlines.silk_SMLAWB(sum1_Q14, sum2_Q16, diff_Q14[4]);
 
-                Inlines.OpusAssert(sum1_Q14 >= 0);
+                //Inlines.OpusAssert(sum1_Q14 >= 0);
 
                 /* find best */
                 if (sum1_Q14 < rate_dist_Q14.Val)

@@ -73,8 +73,8 @@ namespace Concentus.Silk
 
                 /* rc_mult1_Q30 range: [ 1 : 2^30 ] */
                 rc_mult1_Q30 = ((int)1 << 30) - Inlines.silk_SMMUL(rc_Q31, rc_Q31);
-                Inlines.OpusAssert(rc_mult1_Q30 > (1 << 15));                   /* reduce A_LIMIT if fails */
-                Inlines.OpusAssert(rc_mult1_Q30 <= (1 << 30));
+                //Inlines.OpusAssert(rc_mult1_Q30 > (1 << 15));                   /* reduce A_LIMIT if fails */
+                //Inlines.OpusAssert(rc_mult1_Q30 <= (1 << 30));
 
                 /* rc_mult2 range: [ 2^30 : silk_int32_MAX ] */
                 mult2Q = 32 - Inlines.silk_CLZ32(Inlines.silk_abs(rc_mult1_Q30));
@@ -83,8 +83,8 @@ namespace Concentus.Silk
                 /* Update inverse gain */
                 /* invGain_Q30 range: [ 0 : 2^30 ] */
                 invGain_Q30 = Inlines.silk_LSHIFT(Inlines.silk_SMMUL(invGain_Q30, rc_mult1_Q30), 2);
-                Inlines.OpusAssert(invGain_Q30 >= 0);
-                Inlines.OpusAssert(invGain_Q30 <= (1 << 30));
+                //Inlines.OpusAssert(invGain_Q30 >= 0);
+                //Inlines.OpusAssert(invGain_Q30 <= (1 << 30));
 
                 /* Swap pointers */
                 Aold_QA = Anew_QA;
@@ -113,8 +113,8 @@ namespace Concentus.Silk
             /* Update inverse gain */
             /* Range: [ 0 : 2^30 ] */
             invGain_Q30 = Inlines.silk_LSHIFT(Inlines.silk_SMMUL(invGain_Q30, rc_mult1_Q30), 2);
-            Inlines.OpusAssert(invGain_Q30 >= 0);
-            Inlines.OpusAssert(invGain_Q30 <= 1 << 30);
+            //Inlines.OpusAssert(invGain_Q30 >= 0);
+            //Inlines.OpusAssert(invGain_Q30 <= 1 << 30);
 
             return invGain_Q30;
         }

@@ -53,9 +53,9 @@ namespace Concentus.Silk
             int i, j;
 
             // Safety checks
-            Inlines.OpusAssert(K > 0);
-            Inlines.OpusAssert(L > 0);
-            Inlines.OpusAssert(L >= K);
+            //Inlines.OpusAssert(K > 0);
+            //Inlines.OpusAssert(L > 0);
+            //Inlines.OpusAssert(L >= K);
 
             // Write start indices in index vector
             for (i = 0; i < K; i++)
@@ -113,7 +113,7 @@ namespace Concentus.Silk
             int i, j;
 
             // Safety checks
-            Inlines.OpusAssert(L > 0);
+            //Inlines.OpusAssert(L > 0);
 
             // Sort vector elements by value, increasing order
             for (i = 1; i < L; i++)
@@ -140,9 +140,9 @@ namespace Concentus.Silk
             short value;
 
             /* Safety checks */
-            Inlines.OpusAssert(K > 0);
-            Inlines.OpusAssert(L > 0);
-            Inlines.OpusAssert(L >= K);
+            //Inlines.OpusAssert(K > 0);
+            //Inlines.OpusAssert(L > 0);
+            //Inlines.OpusAssert(L >= K);
 
             /* Write start indices in index vector */
             for (i = 0; i < K; i++)

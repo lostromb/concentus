@@ -1028,7 +1028,7 @@ namespace Concentus.Structs
                     this.silk_mode.desiredInternalSampleRate = 12000;
                 }
                 else {
-                    Inlines.OpusAssert(this.mode == OpusMode.MODE_HYBRID || curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
+                    //Inlines.OpusAssert(this.mode == OpusMode.MODE_HYBRID || curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
                     this.silk_mode.desiredInternalSampleRate = 16000;
                 }
                 if (this.mode == OpusMode.MODE_HYBRID)
@@ -1143,7 +1143,7 @@ namespace Concentus.Structs
                 }
                 else
                 {
-                    Inlines.OpusAssert(this.silk_mode.internalSampleRate == 16000);
+                    //Inlines.OpusAssert(this.silk_mode.internalSampleRate == 16000);
                 }
 
                 this.silk_mode.opusCanSwitch = this.silk_mode.switchReady;

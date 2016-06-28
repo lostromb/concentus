@@ -113,7 +113,7 @@ namespace Concentus.Silk
             Pointer<int> pulses4 = Pointer.Malloc<int>(1);
 
             /* this function operates on one shell code frame of 16 pulses */
-            Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
+            //Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
 
             /* tree representation per pulse-subframe */
             combine_pulses(pulses1, pulses0, 8);
@@ -157,7 +157,7 @@ namespace Concentus.Silk
             Pointer<short> pulses3 = Pointer.Malloc<short>(2);
 
             /* this function operates on one shell code frame of 16 pulses */
-            Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
+            //Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
 
             decode_split(pulses3.Point(0), pulses3.Point(1), psRangeDec, pulses4, Tables.silk_shell_code_table3.GetPointer());
 

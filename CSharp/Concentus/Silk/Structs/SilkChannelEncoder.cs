@@ -435,8 +435,8 @@ namespace Concentus.Silk.Structs
             }
 
             /* Set internal sampling frequency */
-            Inlines.OpusAssert(fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16);
-            Inlines.OpusAssert(this.nb_subfr == 2 || this.nb_subfr == 4);
+            //Inlines.OpusAssert(fs_kHz == 8 || fs_kHz == 12 || fs_kHz == 16);
+            //Inlines.OpusAssert(this.nb_subfr == 2 || this.nb_subfr == 4);
             if (this.fs_kHz != fs_kHz)
             {
                 /* reset part of the state */
@@ -524,7 +524,7 @@ namespace Concentus.Silk.Structs
             }
 
             /* Check that settings are valid */
-            Inlines.OpusAssert((this.subfr_length * this.nb_subfr) == this.frame_length);
+            //Inlines.OpusAssert((this.subfr_length * this.nb_subfr) == this.frame_length);
 
             return ret;
         }
@@ -540,7 +540,7 @@ namespace Concentus.Silk.Structs
             int ret = 0;
 
             /* Set encoding complexity */
-            Inlines.OpusAssert(Complexity >= 0 && Complexity <= 10);
+            //Inlines.OpusAssert(Complexity >= 0 && Complexity <= 10);
             if (Complexity < 2)
             {
                 this.pitchEstimationComplexity = SilkConstants.SILK_PE_MIN_COMPLEX;
@@ -611,13 +611,13 @@ namespace Concentus.Silk.Structs
             this.shapeWinLength = SilkConstants.SUB_FRAME_LENGTH_MS * this.fs_kHz + 2 * this.la_shape;
             this.Complexity = Complexity;
 
-            Inlines.OpusAssert(this.pitchEstimationLPCOrder <= SilkConstants.MAX_FIND_PITCH_LPC_ORDER);
-            Inlines.OpusAssert(this.shapingLPCOrder <= SilkConstants.MAX_SHAPE_LPC_ORDER);
-            Inlines.OpusAssert(this.nStatesDelayedDecision <= SilkConstants.MAX_DEL_DEC_STATES);
-            Inlines.OpusAssert(this.warping_Q16 <= 32767);
-            Inlines.OpusAssert(this.la_shape <= SilkConstants.LA_SHAPE_MAX);
-            Inlines.OpusAssert(this.shapeWinLength <= SilkConstants.SHAPE_LPC_WIN_MAX);
-            Inlines.OpusAssert(this.NLSF_MSVQ_Survivors <= SilkConstants.NLSF_VQ_MAX_SURVIVORS);
+            //Inlines.OpusAssert(this.pitchEstimationLPCOrder <= SilkConstants.MAX_FIND_PITCH_LPC_ORDER);
+            //Inlines.OpusAssert(this.shapingLPCOrder <= SilkConstants.MAX_SHAPE_LPC_ORDER);
+            //Inlines.OpusAssert(this.nStatesDelayedDecision <= SilkConstants.MAX_DEL_DEC_STATES);
+            //Inlines.OpusAssert(this.warping_Q16 <= 32767);
+            //Inlines.OpusAssert(this.la_shape <= SilkConstants.LA_SHAPE_MAX);
+            //Inlines.OpusAssert(this.shapeWinLength <= SilkConstants.SHAPE_LPC_WIN_MAX);
+            //Inlines.OpusAssert(this.NLSF_MSVQ_Survivors <= SilkConstants.NLSF_VQ_MAX_SURVIVORS);
 
             return ret;
         }
@@ -1074,7 +1074,7 @@ namespace Concentus.Silk.Structs
                         {
                             /* Restore output state from earlier iteration that did meet the bitrate budget */
                             psRangeEnc.Assign(sRangeEnc_copy2);
-                            Inlines.OpusAssert(sRangeEnc_copy2.offs <= 1275);
+                            //Inlines.OpusAssert(sRangeEnc_copy2.offs <= 1275);
                             ec_buf_copy.MemCopyTo(psRangeEnc.buf, (int)sRangeEnc_copy2.offs);
                             this.sNSQ.Assign(sNSQ_copy2);
                             this.sShape.LastGainIndex = LastGainIndex_copy2;
@@ -1108,7 +1108,7 @@ namespace Concentus.Silk.Structs
                             gainsID_lower = gainsID;
                             /* Copy part of the output state */
                             sRangeEnc_copy2.Assign(psRangeEnc);
-                            Inlines.OpusAssert(psRangeEnc.offs <= 1275);
+                            //Inlines.OpusAssert(psRangeEnc.offs <= 1275);
                             psRangeEnc.buf.MemCopyTo(ec_buf_copy, (int)psRangeEnc.offs);
                             sNSQ_copy2.Assign(this.sNSQ);
                             LastGainIndex_copy2 = this.sShape.LastGainIndex;

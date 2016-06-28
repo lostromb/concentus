@@ -354,7 +354,7 @@ namespace Concentus.Common
             uint s;
             int ftb;
             /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-            Inlines.OpusAssert(_ft > 1);
+            //Inlines.OpusAssert(_ft > 1);
             _ft--;
             ftb = Inlines.EC_ILOG(_ft);
             if (ftb > EC_UINT_BITS)
@@ -548,7 +548,7 @@ namespace Concentus.Common
             uint fl;
             int ftb;
             /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-            Inlines.OpusAssert(_ft > 1);
+            //Inlines.OpusAssert(_ft > 1);
             _ft--;
             ftb = Inlines.EC_ILOG(_ft);
             if (ftb > EC_UINT_BITS)
@@ -568,7 +568,7 @@ namespace Concentus.Common
             int used;
             window = this.end_window;
             used = this.nend_bits;
-            Inlines.OpusAssert(_bits > 0);
+            //Inlines.OpusAssert(_bits > 0);
 
             if (used + _bits > EC_WINDOW_SIZE)
             {
@@ -592,7 +592,7 @@ namespace Concentus.Common
         {
             int shift;
             uint mask;
-            Inlines.OpusAssert(_nbits <= EC_SYM_BITS);
+            //Inlines.OpusAssert(_nbits <= EC_SYM_BITS);
             shift = EC_SYM_BITS - (int)_nbits;
             mask = ((1U << (int)_nbits) - 1) << shift;
 
@@ -621,7 +621,7 @@ namespace Concentus.Common
 
         internal void enc_shrink(uint _size)
         {
-            Inlines.OpusAssert(this.offs + this.end_offs <= _size);
+            //Inlines.OpusAssert(this.offs + this.end_offs <= _size);
             //(memmove(this.buf + _size - this.end_offs, this.buf + this.storage - this.end_offs, this.end_offs * sizeof(*(dst))))
             this.buf.Point(this.storage - this.end_offs).MemMove((int)(this.storage - _size), (int)this.end_offs);
             this.storage = _size;

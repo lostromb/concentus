@@ -108,7 +108,7 @@ namespace Concentus.Celt
             int i, j;
             Pointer<int> rden = Pointer.Malloc<int>(ord);
             Pointer<int> y = Pointer.Malloc<int>(N + ord);
-            Inlines.OpusAssert((ord & 3) == 0);
+            //Inlines.OpusAssert((ord & 3) == 0);
 
             for (i = 0; i < ord; i++)
                 rden[i] = den[ord - i - 1];
@@ -171,8 +171,8 @@ namespace Concentus.Celt
             Pointer<int> xptr;
             Pointer<int> xx = Pointer.Malloc<int>(n);
 
-            Inlines.OpusAssert(n > 0);
-            Inlines.OpusAssert(overlap >= 0);
+            //Inlines.OpusAssert(n > 0);
+            //Inlines.OpusAssert(overlap >= 0);
 
             if (overlap == 0)
             {

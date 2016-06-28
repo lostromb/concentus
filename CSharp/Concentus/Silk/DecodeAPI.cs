@@ -91,7 +91,7 @@ namespace Concentus.Silk
             int stereo_to_mono;
             int delay_stack_alloc;
 
-            Inlines.OpusAssert(decControl.nChannelsInternal == 1 || decControl.nChannelsInternal == 2);
+            //Inlines.OpusAssert(decControl.nChannelsInternal == 1 || decControl.nChannelsInternal == 2);
 
             /**********************************/
             /* Test if first frame in payload */
@@ -145,13 +145,13 @@ namespace Concentus.Silk
                         channel_state[n].nb_subfr = 4;
                     }
                     else {
-                        Inlines.OpusAssert(false);
+                        //Inlines.OpusAssert(false);
                         return SilkError.SILK_DEC_INVALID_FRAME_SIZE;
                     }
                     fs_kHz_dec = (decControl.internalSampleRate >> 10) + 1;
                     if (fs_kHz_dec != 8 && fs_kHz_dec != 12 && fs_kHz_dec != 16)
                     {
-                        Inlines.OpusAssert(false);
+                        //Inlines.OpusAssert(false);
                         return SilkError.SILK_DEC_INVALID_SAMPLING_FREQUENCY;
                     }
                     ret += channel_state[n].silk_decoder_set_fs(fs_kHz_dec, decControl.API_sampleRate);

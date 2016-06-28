@@ -43,15 +43,13 @@ namespace Concentus.Common
     {
         public static void OpusAssert(bool condition, string message = "Unknown error")
         {
-#if DEBUG
-            Debug.Assert(condition, message);
-#endif
 #if DEBUG_MACROS
             if (!condition) throw new ArithmeticException("Debug macro failed validation");
 #endif
+            Debug.Assert(condition, message);
         }
 
-#region CELT
+        #region CELT
 
         // CELT-SPECIFIC INLINES
 
@@ -612,19 +610,19 @@ namespace Concentus.Common
 
         public static uint celt_udiv(uint n, uint d)
         {
-            Inlines.OpusAssert(d > 0);
+            //Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
         public static int celt_udiv(int n, int d)
         {
-            Inlines.OpusAssert(d > 0);
+            //Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
         public static int celt_sudiv(int n, int d)
         {
-            Inlines.OpusAssert(d > 0);
+            //Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
@@ -637,7 +635,7 @@ namespace Concentus.Common
         /** Integer log in base2. Undefined for zero and negative numbers */
         public static int celt_ilog2(int x)
         {
-            Inlines.OpusAssert(x > 0, "celt_ilog2() only defined for strictly positive numbers");
+            //Inlines.OpusAssert(x > 0, "celt_ilog2() only defined for strictly positive numbers");
 #if DEBUG_MACROS
             if (x <= 0)
                 throw new ArgumentException("celt_ilog2() only defined for strictly positive numbers");
@@ -774,7 +772,7 @@ namespace Concentus.Common
             int i;
             int n;
             int r;
-            Inlines.OpusAssert(x > 0, "celt_rcp() only defined for positive values");
+            //Inlines.OpusAssert(x > 0, "celt_rcp() only defined for positive values");
             i = celt_ilog2(x);
             /* n is Q15 with range [0,1). */
             n = VSHR32(x, i - 15) - 32768;
@@ -984,9 +982,9 @@ namespace Concentus.Common
             return (short)x;
         }
 
-#endregion
+        #endregion
 
-#region SILK
+        #region SILK
 
         // SILK-SPECIFIC INLINES
 
@@ -1030,7 +1028,7 @@ namespace Concentus.Common
             int ret = a32 * b32;
 #if DEBUG_MACROS
             long ret64 = (long)a32 * (long)b32;
-            Inlines.OpusAssert((long)ret == ret64);
+            //Inlines.OpusAssert((long)ret == ret64);
 #endif
             return ret;
         }
@@ -1038,14 +1036,14 @@ namespace Concentus.Common
         public static uint silk_MUL_uint(uint a32, uint b32)
         {
             uint ret = a32 * b32;
-            Inlines.OpusAssert((ulong)ret == (ulong)a32 * (ulong)b32);
+            //Inlines.OpusAssert((ulong)ret == (ulong)a32 * (ulong)b32);
             return ret;
         }
 
         public static int silk_MLA(int a32, int b32, int c32)
         {
             int ret = silk_ADD32((a32), ((b32) * (c32)));
-            Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
+            //Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
             return ret;
         }
 
@@ -1053,7 +1051,7 @@ namespace Concentus.Common
         public static int silk_MLA_uint(uint a32, uint b32, uint c32)
         {
             uint ret = silk_ADD32((a32), ((b32) * (c32)));
-            Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
+            //Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
             return (int)ret;
         }
 
@@ -1157,7 +1155,7 @@ namespace Concentus.Common
             ret = ((a32 >> 16) * (int)((short)b32) + (((a32 & 0x0000FFFF) * (int)((short)b32)) >> 16));
             if ((long)ret != ((long)a32 * (short)b32) >> 16)
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
             return ret;
 #else
@@ -1178,7 +1176,7 @@ namespace Concentus.Common
             fail |= b32 == 0;
             fail |= b32 > short.MaxValue;
             fail |= b32 < short.MinValue;
-            Inlines.OpusAssert(!fail);
+            //Inlines.OpusAssert(!fail);
 #endif
             return a32 / b32;
         }
@@ -1195,7 +1193,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if (ret != silk_ADD_SAT16(a, b))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;
@@ -1208,7 +1206,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if (ret != silk_ADD_SAT32(a, b))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;
@@ -1223,7 +1221,7 @@ namespace Concentus.Common
         public static long silk_ADD64(long a, long b)
         {
             long ret = a + b;
-            Inlines.OpusAssert(ret == silk_ADD_SAT64(a, b));
+            //Inlines.OpusAssert(ret == silk_ADD_SAT64(a, b));
             return ret;
         }
 
@@ -1231,7 +1229,7 @@ namespace Concentus.Common
         public static short silk_SUB16(short a, short b)
         {
             short ret = (short)(a - b);
-            Inlines.OpusAssert(ret == silk_SUB_SAT16(a, b));
+            //Inlines.OpusAssert(ret == silk_SUB_SAT16(a, b));
             return ret;
         }
 
@@ -1239,7 +1237,7 @@ namespace Concentus.Common
         public static int silk_SUB32(int a, int b)
         {
             int ret = a - b;
-            Inlines.OpusAssert(ret == silk_SUB_SAT32(a, b));
+            //Inlines.OpusAssert(ret == silk_SUB_SAT32(a, b));
             return ret;
         }
 
@@ -1247,7 +1245,7 @@ namespace Concentus.Common
         public static long silk_SUB64(long a, long b)
         {
             long ret = a - b;
-            Inlines.OpusAssert(ret == silk_SUB_SAT64(a, b));
+            //Inlines.OpusAssert(ret == silk_SUB_SAT64(a, b));
             return ret;
         }
 
@@ -1262,7 +1260,7 @@ namespace Concentus.Common
         {
             return a > short.MaxValue ? short.MaxValue : ((a) < short.MinValue ? short.MinValue : (a));
         }
-        
+
         public static int silk_SAT32(long a)
         {
             return a > int.MaxValue ? int.MaxValue : ((a) < int.MinValue ? int.MinValue : (int)(a));
@@ -1343,7 +1341,7 @@ namespace Concentus.Common
         public static short silk_ADD_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_ADD32((int)(a16), (b16)));
-            Inlines.OpusAssert(res == silk_SAT16((int)a16 + (int)b16));
+            //Inlines.OpusAssert(res == silk_SAT16((int)a16 + (int)b16));
             return res;
         }
 
@@ -1352,7 +1350,7 @@ namespace Concentus.Common
             int res = (unchecked(((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
                 ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
                 ((((a32) | (b32)) & 0x80000000) == 0 ? int.MaxValue : (a32) + (b32)));
-            Inlines.OpusAssert(res == silk_SAT32((long)a32 + (long)b32));
+            //Inlines.OpusAssert(res == silk_SAT32((long)a32 + (long)b32));
             return res;
         }
 
@@ -1378,7 +1376,7 @@ namespace Concentus.Common
                 /* Saturation not necessary */
                 fail = res != a64 + b64;
             }
-            Inlines.OpusAssert(!fail);
+            //Inlines.OpusAssert(!fail);
 #endif
             return res;
         }
@@ -1386,7 +1384,7 @@ namespace Concentus.Common
         public static short silk_SUB_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_SUB32((int)(a16), (b16)));
-            Inlines.OpusAssert(res == silk_SAT16((int)a16 - (int)b16));
+            //Inlines.OpusAssert(res == silk_SAT16((int)a16 - (int)b16));
             return res;
         }
 
@@ -1395,7 +1393,7 @@ namespace Concentus.Common
             int res = (unchecked(((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
                 (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
                 ((((a32) ^ 0x80000000) & (b32) & 0x80000000) != 0 ? int.MaxValue : (a32) - (b32)));
-            Inlines.OpusAssert(res == silk_SAT32((long)a32 - (long)b32));
+            //Inlines.OpusAssert(res == silk_SAT32((long)a32 - (long)b32));
             return res;
         }
 
@@ -1421,7 +1419,7 @@ namespace Concentus.Common
                 /* Saturation not necessary */
                 fail = res != a64 - b64;
             }
-            Inlines.OpusAssert(!fail);
+            //Inlines.OpusAssert(!fail);
 #endif
             return res;
         }
@@ -1485,7 +1483,7 @@ namespace Concentus.Common
             fail |= shift < 0;
             fail |= shift >= 8;
             fail |= (long)ret != ((long)a) << shift;
-            Inlines.OpusAssert(!fail);
+            //Inlines.OpusAssert(!fail);
 #endif
             return ret;
         }
@@ -1498,7 +1496,7 @@ namespace Concentus.Common
             fail |= shift < 0;
             fail |= shift >= 16;
             fail |= (long)ret != ((long)a) << shift;
-            Inlines.OpusAssert(!fail);
+            //Inlines.OpusAssert(!fail);
 #endif
             return ret;
         }
@@ -1511,7 +1509,7 @@ namespace Concentus.Common
             fail |= shift < 0;
             fail |= shift >= 32;
             fail |= (long)ret != ((long)a) << shift;
-            Inlines.OpusAssert(!fail);
+            //Inlines.OpusAssert(!fail);
 #endif
             return ret;
         }
@@ -1524,7 +1522,7 @@ namespace Concentus.Common
             fail |= shift < 0;
             fail |= shift >= 64;
             fail |= (ret >> shift) != ((long)a);
-            Inlines.OpusAssert(!fail);
+            //Inlines.OpusAssert(!fail);
 #endif
             return ret;
         }
@@ -1537,7 +1535,7 @@ namespace Concentus.Common
             fail |= shift < 0;
             fail |= shift >= 32;
             fail |= (long)ret != ((long)a) << shift;
-            Inlines.OpusAssert(!fail);
+            //Inlines.OpusAssert(!fail);
 #endif
             return ret;
         }
@@ -1547,7 +1545,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32)) /* no check for overflow */
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return a << shift;
@@ -1559,7 +1557,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || ((long)ret != ((long)a) << shift))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;
@@ -1581,7 +1579,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 8))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return (sbyte)(a >> shift);
@@ -1592,7 +1590,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 16))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return (short)(a >> shift);
@@ -1603,7 +1601,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return a >> shift;
@@ -1614,7 +1612,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return a >> shift;
@@ -1625,7 +1623,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 64))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return a >> shift;
@@ -1636,7 +1634,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 32))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return a >> shift;
@@ -1648,7 +1646,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) << shift)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift >= 0 */
@@ -1660,7 +1658,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) << shift)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift >= 0 */
@@ -1673,7 +1671,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) << shift)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift >= 0 */
@@ -1685,7 +1683,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) >> shift)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift  > 0 */
@@ -1697,7 +1695,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) >> shift)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift  > 0 */
@@ -1710,7 +1708,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) >> shift)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift  > 0 */
@@ -1723,7 +1721,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a - (((long)b) << shift)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift >= 0 */
@@ -1736,7 +1734,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a - (((long)b) >> shift)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;                /* shift  > 0 */
@@ -1750,7 +1748,7 @@ namespace Concentus.Common
             /* the marco definition can't handle a shift of zero */
             if ((shift <= 0) || (shift > 31) || ((long)ret != ((long)a + ((long)1 << (shift - 1))) >> shift))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;
@@ -1763,7 +1761,7 @@ namespace Concentus.Common
             /* the macro definition can't handle a shift of zero */
             if ((shift <= 0) || (shift >= 64))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
@@ -1947,7 +1945,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if ((long)ret != (long)a32 + (((long)b32 * (c32 >> 16)) >> 16))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;
@@ -1965,8 +1963,8 @@ namespace Concentus.Common
             int a_headrm, b_headrm, lshift;
             int b32_inv, a32_nrm, b32_nrm, result;
 
-            Inlines.OpusAssert(b32 != 0);
-            Inlines.OpusAssert(Qres >= 0);
+            //Inlines.OpusAssert(b32 != 0);
+            //Inlines.OpusAssert(Qres >= 0);
 
             /* Compute number of bits head room and normalize inputs */
             a_headrm = silk_CLZ32(silk_abs(a32)) - 1;
@@ -2019,8 +2017,8 @@ namespace Concentus.Common
             int b_headrm, lshift;
             int b32_inv, b32_nrm, err_Q32, result;
 
-            Inlines.OpusAssert(b32 != 0);
-            Inlines.OpusAssert(Qres > 0);
+            //Inlines.OpusAssert(b32 != 0);
+            //Inlines.OpusAssert(Qres > 0);
 
             /* Compute number of bits head room and normalize input */
             b_headrm = silk_CLZ32(silk_abs(b32)) - 1;
@@ -2072,7 +2070,7 @@ namespace Concentus.Common
 #if DEBUG_MACROS
             if (silk_ADD32(a32, silk_SMULWB(b32, c32)) != silk_ADD_SAT32(a32, silk_SMULWB(b32, c32)))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 #endif
             return ret;
@@ -2102,40 +2100,19 @@ namespace Concentus.Common
             return (silk_ADD64((a64), ((long)(b32) * (long)(c32))));
         }
 
-        public static T matrix_ptr<T>(T[] Matrix_base_adr, int row, int column, int N)
+        public static T MatrixGet<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr[((row) * (N)) + (column)];
         }
 
-        public static Pointer<T> matrix_adr<T>(T[] Matrix_base_adr, int row, int column, int N)
+        public static void MatrixSet<T>(Pointer<T> Matrix_base_adr, int row, int column, int N, T value)
         {
-            return Matrix_base_adr.GetPointer(((row) * (N)) + (column));
+            Matrix_base_adr[((row) * (N)) + (column)] = value;
         }
 
-        public static T matrix_c_ptr<T>(T[] Matrix_base_adr, int row, int column, int M)
-        {
-            return Matrix_base_adr[(row) + ((M) * (column))];
-        }
-
-        public static T matrix_ptr<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
-        {
-            return Matrix_base_adr[((row) * (N)) + (column)];
-        }
-
-        // FIXME this should be replaced by a "SetMatrix" macro or something
-        public static Pointer<T> matrix_adr<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
+        public static Pointer<T> MatrixGetPointer<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr.Point(((row) * (N)) + (column));
-        }
-
-        public static T matrix_c_ptr<T>(Pointer<T> Matrix_base_adr, int row, int column, int M)
-        {
-            return Matrix_base_adr[(row) + ((M) * (column))];
-        }
-
-        public static Pointer<T> matrix_c_adr<T>(Pointer<T> Matrix_base_adr, int row, int column, int M)
-        {
-            return Matrix_base_adr.Point((row) + ((M) * (column)));
         }
 
         /// <summary>
@@ -2163,7 +2140,7 @@ namespace Concentus.Common
 
             if (fail)
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
 
             return ret;
@@ -2185,7 +2162,7 @@ namespace Concentus.Common
             ret = silk_ADD32(a32, tmp);
             if (ret != silk_ADD_SAT32(a32, tmp))
             {
-                Inlines.OpusAssert(false);
+                //Inlines.OpusAssert(false);
             }
             return ret;
 #else
@@ -2348,8 +2325,8 @@ namespace Concentus.Common
         {
             int i;
 
-            Inlines.OpusAssert(ifact_Q2 >= 0);
-            Inlines.OpusAssert(ifact_Q2 <= 4);
+            //Inlines.OpusAssert(ifact_Q2 >= 0);
+            //Inlines.OpusAssert(ifact_Q2 <= 4);
 
             for (i = 0; i < d; i++)
             {

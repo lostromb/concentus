@@ -478,7 +478,7 @@ namespace Concentus.Celt.Structs
                 nbFilledBytes = (tell + 4) >> 3;
             }
 
-            Inlines.OpusAssert(this.signalling == 0);
+            //Inlines.OpusAssert(this.signalling == 0);
 
             /* Can't produce more than 1275 output bytes */
             nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, 1275);
@@ -702,7 +702,7 @@ namespace Concentus.Celt.Structs
                         diff += Inlines.MULT16_16(mask, 1 + 2 * i - mask_end);
                     }
                 }
-                Inlines.OpusAssert(count > 0);
+                //Inlines.OpusAssert(count > 0);
                 mask_avg = Inlines.DIV32_16(mask_avg, count);
                 mask_avg += Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT);
                 diff = diff * 6 / (C * (mask_end - 1) * (mask_end + 1) * mask_end);

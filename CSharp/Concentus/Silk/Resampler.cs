@@ -100,7 +100,7 @@ namespace Concentus.Silk
                 if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000 && Fs_Hz_in != 24000 && Fs_Hz_in != 48000) ||
                     (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000))
                 {
-                    Inlines.OpusAssert(false);
+                    //Inlines.OpusAssert(false);
                     return -1;
                 }
                 S.inputDelay = Tables.delay_matrix_enc[rateID(Fs_Hz_in),rateID(Fs_Hz_out)];
@@ -109,7 +109,7 @@ namespace Concentus.Silk
                 if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000) ||
                     (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 && Fs_Hz_out != 24000 && Fs_Hz_out != 48000))
                 {
-                    Inlines.OpusAssert(false);
+                    //Inlines.OpusAssert(false);
                     return -1;
                 }
                 S.inputDelay = Tables.delay_matrix_dec[rateID(Fs_Hz_in),rateID(Fs_Hz_out)];
@@ -180,7 +180,7 @@ namespace Concentus.Silk
                 else
                 {
                     /* None available */
-                    Inlines.OpusAssert(false);
+                    //Inlines.OpusAssert(false);
                     return -1;
                 }
             }
@@ -220,9 +220,9 @@ namespace Concentus.Silk
             int nSamples;
 
             /* Need at least 1 ms of input data */
-            Inlines.OpusAssert(inLen >= S.Fs_in_kHz);
+            //Inlines.OpusAssert(inLen >= S.Fs_in_kHz);
             /* Delay can't exceed the 1 ms of buffering */
-            Inlines.OpusAssert(S.inputDelay <= S.Fs_in_kHz);
+            //Inlines.OpusAssert(S.inputDelay <= S.Fs_in_kHz);
 
             nSamples = S.Fs_in_kHz - S.inputDelay;
 
@@ -273,8 +273,8 @@ namespace Concentus.Silk
             int k, len2 = Inlines.silk_RSHIFT32(inLen, 1);
             int in32, out32, Y, X;
 
-            Inlines.OpusAssert(Tables.silk_resampler_down2_0 > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_down2_1 < 0);
+            //Inlines.OpusAssert(Tables.silk_resampler_down2_0 > 0);
+            //Inlines.OpusAssert(Tables.silk_resampler_down2_1 < 0);
 
             /* Internal variables and state are in Q10 format */
             for (k = 0; k < len2; k++)
@@ -514,7 +514,7 @@ namespace Concentus.Silk
                     }
                     break;
                 default:
-                    Inlines.OpusAssert(false);
+                    //Inlines.OpusAssert(false);
                     break;
             }
 
@@ -675,12 +675,12 @@ namespace Concentus.Silk
             int k;
             int in32, out32_1, out32_2, Y, X;
 
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[0] > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[1] > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[2] < 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[0] > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[1] > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[2] < 0);
+            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[0] > 0);
+            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[1] > 0);
+            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[2] < 0);
+            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[0] > 0);
+            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[1] > 0);
+            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[2] < 0);
 
             /* Internal variables and state are in Q10 format */
             for (k = 0; k < len; k++)

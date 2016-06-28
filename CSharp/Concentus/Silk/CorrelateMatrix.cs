@@ -75,7 +75,7 @@ namespace Concentus.Silk
                 }
             }
             else {
-                Inlines.OpusAssert(rshifts == 0);
+                //Inlines.OpusAssert(rshifts == 0);
                 for (lag = 0; lag < order; lag++)
                 {
                     Xt[lag] = Inlines.silk_inner_prod_aligned(ptr1, ptr2, L); /* X[:,lag]'*t */
@@ -125,13 +125,13 @@ namespace Concentus.Silk
 
             /* Calculate energy of remaining columns of X: X[:,j]'*X[:,j] */
             /* Fill out the diagonal of the correlation matrix */
-            Inlines.matrix_adr(XX, 0, 0, order)[0] = energy;
+            Inlines.MatrixSet(XX, 0, 0, order, energy);
             ptr1 = x.Point(order - 1); /* First sample of column 0 of X */
             for (j = 1; j < order; j++)
             {
                 energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[L - j], ptr1[L - j]), rshifts_local));
                 energy = Inlines.silk_ADD32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[-j], ptr1[-j]), rshifts_local));
-                Inlines.matrix_adr(XX, j, j, order)[0] = energy;
+                Inlines.MatrixSet(XX, j, j, order, energy);
             }
 
             ptr2 = x.Point(order - 2); /* First sample of column 1 of X */
@@ -148,14 +148,14 @@ namespace Concentus.Silk
                         energy += Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[i], ptr2[i]), rshifts_local);
                     }
                     /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */
-                    Inlines.matrix_adr(XX, lag, 0, order)[0] = energy;
-                    Inlines.matrix_adr(XX, 0, lag, order)[0] = energy;
+                    Inlines.MatrixSet(XX, lag, 0, order, energy);
+                    Inlines.MatrixSet(XX, 0, lag, order, energy);
                     for (j = 1; j < (order - lag); j++)
                     {
                         energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[L - j], ptr2[L - j]), rshifts_local));
                         energy = Inlines.silk_ADD32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[-j], ptr2[-j]), rshifts_local));
-                        Inlines.matrix_adr(XX, lag + j, j, order)[0] = energy;
-                        Inlines.matrix_adr(XX, j, lag + j, order)[0] = energy;
+                        Inlines.MatrixSet(XX, lag + j, j, order, energy);
+                        Inlines.MatrixSet(XX, j, lag + j, order, energy);
                     }
                     ptr2 = ptr2.Point(-1); /* Update pointer to first sample of next column (lag) in X */
                 }
@@ -165,15 +165,15 @@ namespace Concentus.Silk
                 {
                     /* Inner product of column 0 and column lag: X[:,0]'*X[:,lag] */
                     energy = Inlines.silk_inner_prod_aligned(ptr1, ptr2, L);
-                    Inlines.matrix_adr(XX, lag, 0, order)[0] = energy;
-                    Inlines.matrix_adr(XX, 0, lag, order)[0] = energy;
+                    Inlines.MatrixSet(XX, lag, 0, order,energy);
+                    Inlines.MatrixSet(XX, 0, lag, order, energy);
                     /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */
                     for (j = 1; j < (order - lag); j++)
                     {
                         energy = Inlines.silk_SUB32(energy, Inlines.silk_SMULBB(ptr1[L - j], ptr2[L - j]));
                         energy = Inlines.silk_SMLABB(energy, ptr1[-j], ptr2[-j]);
-                        Inlines.matrix_adr(XX, lag + j, j, order)[0] = energy;
-                        Inlines.matrix_adr(XX, j, lag + j, order)[0] = energy;
+                        Inlines.MatrixSet(XX, lag + j, j, order, energy);
+                        Inlines.MatrixSet(XX, j, lag + j, order, energy);
                     }
                     ptr2 = ptr2.Point(-1);/* Update pointer to first sample of next column (lag) in X */
                 }

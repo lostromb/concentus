@@ -192,8 +192,8 @@ namespace Concentus.Celt
             int yy;
             uint collapse_mask;
             
-            Inlines.OpusAssert(K > 0, "alg_quant() needs at least one pulse");
-            Inlines.OpusAssert(N > 1, "alg_quant() needs at least two dimensions");
+            //Inlines.OpusAssert(K > 0, "alg_quant() needs at least one pulse");
+            //Inlines.OpusAssert(N > 1, "alg_quant() needs at least two dimensions");
             
             exp_rotation(X, N, 1, B, K, spread);
 
@@ -259,7 +259,7 @@ namespace Concentus.Celt
                 } while (++j < N);
             }
 
-            Inlines.OpusAssert(pulsesLeft >= 1, "Allocated too many pulses in the quick pass");
+            //Inlines.OpusAssert(pulsesLeft >= 1, "Allocated too many pulses in the quick pass");
 
             /* This should never happen, but just in case it does (e.g. on silence)
                we fill the first bin with pulses. */
@@ -341,8 +341,8 @@ namespace Concentus.Celt
             int Ryy;
             uint collapse_mask;
             Pointer<int> iy = Pointer.Malloc<int>(N);
-            Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
-            Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
+            //Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
+            //Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
             Ryy = CWRS.decode_pulses(iy, N, K, dec);
             normalise_residual(iy, X, N, Ryy, gain);
             exp_rotation(X, N, -1, B, K, spread);

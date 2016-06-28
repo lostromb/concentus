@@ -315,7 +315,7 @@ namespace Concentus.Silk
 
             /* Rewhiten LTP state */
             idx = psDec.ltp_mem_length - lag - psDec.LPC_order - SilkConstants.LTP_ORDER / 2;
-            Inlines.OpusAssert(idx > 0);
+            //Inlines.OpusAssert(idx > 0);
             Filters.silk_LPC_analysis_filter(sLTP.Data, sLTP.Offset + idx, psDec.outBuf, idx, psPLC.prevLPC_Q12, 0, psDec.ltp_mem_length - idx, psDec.LPC_order);
             /* Scale LTP state */
             inv_gain_Q30 = Inlines.silk_INVERSE32_varQ(psPLC.prevGain_Q16[1], 46);
@@ -373,7 +373,7 @@ namespace Concentus.Silk
             /* Copy LPC state */
             psDec.sLPC_Q14_buf.GetPointer().MemCopyTo(sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
 
-            Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
+            //Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
             for (i = 0; i < psDec.frame_length; i++)
             {
                 /* partly unrolled */

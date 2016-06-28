@@ -65,8 +65,8 @@ namespace Concentus.Common
             int shift;
             Pointer<short> xptr;
             Pointer<short> xx = Pointer.Malloc<short>(n);
-            Inlines.OpusAssert(n > 0);
-            Inlines.OpusAssert(overlap >= 0);
+            //Inlines.OpusAssert(n > 0);
+            //Inlines.OpusAssert(overlap >= 0);
             if (overlap == 0)
             {
                 xptr = x;
@@ -162,8 +162,8 @@ namespace Concentus.Common
             long[] corr_QC = new long[Concentus.Silk.SilkConstants.MAX_SHAPE_LPC_ORDER + 1];// = { 0 };
 
             /* Order must be even */
-            Inlines.OpusAssert((order & 1) == 0);
-            Inlines.OpusAssert(2 * QS - QC >= 0);
+            //Inlines.OpusAssert((order & 1) == 0);
+            //Inlines.OpusAssert(2 * QS - QC >= 0);
 
             /* Loop over samples */
             for (n = 0; n < length; n++)
@@ -188,7 +188,7 @@ namespace Concentus.Common
             lsh = Inlines.silk_CLZ64(corr_QC[0]) - 35;
             lsh = Inlines.silk_LIMIT(lsh, -12 - QC, 30 - QC);
             scale.Val = -(QC + lsh);
-            Inlines.OpusAssert(scale.Val >= -30 && scale.Val <= 12);
+            //Inlines.OpusAssert(scale.Val >= -30 && scale.Val <= 12);
             if (lsh >= 0)
             {
                 for (i = 0; i < order + 1; i++)
@@ -202,7 +202,7 @@ namespace Concentus.Common
                     corr[i] = Inlines.CHOP32(Inlines.silk_RSHIFT64(corr_QC[i], -lsh));
                 }
             }
-            Inlines.OpusAssert(corr_QC[0] >= 0); /* If breaking, decrease QC*/
+            //Inlines.OpusAssert(corr_QC[0] >= 0); /* If breaking, decrease QC*/
         }
     }
 }

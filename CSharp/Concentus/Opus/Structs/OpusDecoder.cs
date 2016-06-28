@@ -380,7 +380,7 @@ namespace Concentus.Structs
                         }
                         else {
                             this.DecControl.internalSampleRate = 16000;
-                            Inlines.OpusAssert(false);
+                            //Inlines.OpusAssert(false);
                         }
                     }
                     else {
@@ -635,7 +635,7 @@ namespace Concentus.Structs
                         return ret;
                     pcm_count += ret;
                 } while (pcm_count < frame_size);
-                Inlines.OpusAssert(pcm_count == frame_size);
+                //Inlines.OpusAssert(pcm_count == frame_size);
                 this.last_packet_duration = pcm_count;
                 return pcm_count;
             }
@@ -676,7 +676,7 @@ namespace Concentus.Structs
                         this.last_packet_duration = duration_copy;
                         return ret;
                     }
-                    Inlines.OpusAssert(ret == frame_size - packet_frame_size);
+                    //Inlines.OpusAssert(ret == frame_size - packet_frame_size);
                 }
                 /* Complete with FEC */
                 this.mode = packet_mode;
@@ -709,7 +709,7 @@ namespace Concentus.Structs
                 ret = opus_decode_frame(data, size[i], pcm.Point(nb_samples * this.channels), frame_size - nb_samples, 0);
                 if (ret < 0)
                     return ret;
-                Inlines.OpusAssert(ret == packet_frame_size);
+                //Inlines.OpusAssert(ret == packet_frame_size);
                 data = data.Point(size[i]);
                 nb_samples += ret;
             }

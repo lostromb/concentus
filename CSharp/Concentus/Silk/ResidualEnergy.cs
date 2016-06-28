@@ -65,7 +65,7 @@ namespace Concentus.Silk
 
             /* Filter input to create the LPC residual for each frame half, and measure subframe energies */
             LPC_res = Pointer.Malloc<short>((SilkConstants.MAX_NB_SUBFR >> 1) * offset);
-            Inlines.OpusAssert((nb_subfr >> 1) * (SilkConstants.MAX_NB_SUBFR >> 1) == nb_subfr);
+            //Inlines.OpusAssert((nb_subfr >> 1) * (SilkConstants.MAX_NB_SUBFR >> 1) == nb_subfr);
             for (i = 0; i < nb_subfr >> 1; i++)
             {
                 /* Calculate half frame LPC residual signal including preceding samples */
@@ -125,10 +125,10 @@ namespace Concentus.Silk
             Pointer<int> pRow;
 
             /* Safety checks */
-            Inlines.OpusAssert(D >= 0);
-            Inlines.OpusAssert(D <= 16);
-            Inlines.OpusAssert(cQ > 0);
-            Inlines.OpusAssert(cQ < 16);
+            //Inlines.OpusAssert(D >= 0);
+            //Inlines.OpusAssert(D <= 16);
+            //Inlines.OpusAssert(cQ > 0);
+            //Inlines.OpusAssert(cQ < 16);
 
             lshifts = 16 - cQ;
             Qxtra = lshifts;
@@ -146,7 +146,7 @@ namespace Concentus.Silk
             for (i = 0; i < D; i++)
             {
                 cn[i] = Inlines.silk_LSHIFT((int)c[i], Qxtra);
-                Inlines.OpusAssert(Inlines.silk_abs(cn[i]) <= (short.MaxValue + 1)); /* Check that Inlines.silk_SMLAWB can be used */
+                //Inlines.OpusAssert(Inlines.silk_abs(cn[i]) <= (short.MaxValue + 1)); /* Check that Inlines.silk_SMLAWB can be used */
             }
             lshifts -= Qxtra;
 

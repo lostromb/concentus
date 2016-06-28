@@ -52,7 +52,7 @@ namespace Concentus.Silk
             int[][] C = Arrays.InitTwoDimensionalArray<int>(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
             int Ctmp1, Ctmp2, rc_tmp_Q15;
 
-            Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
+            //Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
 
             /* Get number of leading zeros */
             lz = Inlines.silk_CLZ32(c[0]);
@@ -139,7 +139,7 @@ namespace Concentus.Silk
             int[][] C = Arrays.InitTwoDimensionalArray<int>(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
             int Ctmp1_Q30, Ctmp2_Q30, rc_tmp_Q31;
 
-            Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
+            //Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
 
             /* Check for invalid input */
             if (c[0] <= 0)

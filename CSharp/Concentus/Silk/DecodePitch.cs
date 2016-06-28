@@ -60,7 +60,7 @@ namespace Concentus.Silk
                 }
                 else
                 {
-                    Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
+                    //Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
                     Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms.GetPointer(0);
                     cbk_size = SilkConstants.PE_NB_CBKS_STAGE2_10MS;
                 }
@@ -74,7 +74,7 @@ namespace Concentus.Silk
                 }
                 else
                 {
-                    Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
+                    //Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
                     Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms.GetPointer(0);
                     cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
                 }
@@ -86,7 +86,7 @@ namespace Concentus.Silk
 
             for (k = 0; k < nb_subfr; k++)
             {
-                pitch_lags[k] = lag + Inlines.matrix_ptr(Lag_CB_ptr, k, contourIndex, cbk_size);
+                pitch_lags[k] = lag + Inlines.MatrixGet(Lag_CB_ptr, k, contourIndex, cbk_size);
                 pitch_lags[k] = Inlines.silk_LIMIT(pitch_lags[k], min_lag, max_lag);
             }
         }

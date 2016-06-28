@@ -102,12 +102,12 @@ namespace Concentus.Silk
 
             /* Entropy coding */
             n = 5 * ix[0][2] + ix[1][2];
-            Inlines.OpusAssert(n < 25);
+            //Inlines.OpusAssert(n < 25);
             psRangeEnc.enc_icdf( n, Tables.silk_stereo_pred_joint_iCDF.GetPointer(), 8);
             for (n = 0; n < 2; n++)
             {
-                Inlines.OpusAssert(ix[n][0] < 3);
-                Inlines.OpusAssert(ix[n][1] < SilkConstants.STEREO_QUANT_SUB_STEPS);
+                //Inlines.OpusAssert(ix[n][0] < 3);
+                //Inlines.OpusAssert(ix[n][1] < SilkConstants.STEREO_QUANT_SUB_STEPS);
                 psRangeEnc.enc_icdf( ix[n][0], Tables.silk_uniform3_iCDF.GetPointer(), 8);
                 psRangeEnc.enc_icdf( ix[n][1], Tables.silk_uniform5_iCDF.GetPointer(), 8);
             }
@@ -166,7 +166,7 @@ namespace Concentus.Silk
             smooth_coef_Q16 = (int)Inlines.silk_max_int(smooth_coef_Q16, Inlines.silk_abs(pred2_Q10));
 
             /* Smoothed mid and residual norms */
-            Inlines.OpusAssert(smooth_coef_Q16 < 32768);
+            //Inlines.OpusAssert(smooth_coef_Q16 < 32768);
             scale = Inlines.silk_RSHIFT(scale, 1);
             mid_res_amp_Q0[0] = Inlines.silk_SMLAWB(mid_res_amp_Q0[0],
                 Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgx.Val), scale) - mid_res_amp_Q0[0], smooth_coef_Q16);
@@ -281,7 +281,7 @@ namespace Concentus.Silk
                 total_rate_bps = 1;
             }
             min_mid_rate_bps = Inlines.silk_SMLABB(2000, fs_kHz, 900);
-            Inlines.OpusAssert(min_mid_rate_bps < 32767);
+            //Inlines.OpusAssert(min_mid_rate_bps < 32767);
             /* Default bitrate distribution: 8 parts for Mid and (5+3*frac) parts for Side. so: mid_rate = ( 8 / ( 13 + 3 * frac ) ) * total_ rate */
             frac_3_Q16 = Inlines.silk_MUL(3, frac_Q16);
             mid_side_rates_bps[0] = Inlines.silk_DIV32_varQ(total_rate_bps, Inlines.SILK_CONST(8 + 5, 16) + frac_3_Q16, 16 + 3);

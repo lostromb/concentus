@@ -106,14 +106,14 @@ namespace Concentus.Silk
             Pointer<sbyte> Lag_CB_ptr;
 
             /* Check for valid sampling frequency */
-            Inlines.OpusAssert(Fs_kHz == 8 || Fs_kHz == 12 || Fs_kHz == 16);
+            //Inlines.OpusAssert(Fs_kHz == 8 || Fs_kHz == 12 || Fs_kHz == 16);
 
             /* Check for valid complexity setting */
-            Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
-            Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
+            //Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
+            //Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
 
-            Inlines.OpusAssert(search_thres1_Q16 >= 0 && search_thres1_Q16 <= (1 << 16));
-            Inlines.OpusAssert(search_thres2_Q13 >= 0 && search_thres2_Q13 <= (1 << 13));
+            //Inlines.OpusAssert(search_thres1_Q16 >= 0 && search_thres1_Q16 <= (1 << 16));
+            //Inlines.OpusAssert(search_thres2_Q13 >= 0 && search_thres2_Q13 <= (1 << 13));
 
             /* Set up frame lengths max / min lag for the sampling frequency */
             frame_length = (SilkConstants.PE_LTP_MEM_LENGTH_MS + nb_subfr * SilkConstants.PE_SUBFR_LENGTH_MS) * Fs_kHz;
@@ -136,7 +136,7 @@ namespace Concentus.Silk
                 Resampler.silk_resampler_down2_3(filt_state, frame_8kHz, frame, frame_length);
             }
             else {
-                Inlines.OpusAssert(Fs_kHz == 8);
+                //Inlines.OpusAssert(Fs_kHz == 8);
                 frame.MemCopyTo(frame_8kHz, frame_length_8kHz);
             }
 
@@ -181,14 +181,14 @@ namespace Concentus.Silk
             for (k = 0; k < nb_subfr >> 1; k++)
             {
                 /* Check that we are within range of the array */
-                Inlines.OpusAssert(target_ptr.Offset >= frame_4kHz.Offset);
-                Inlines.OpusAssert(target_ptr.Offset + SF_LENGTH_8KHZ <= frame_4kHz.Offset + frame_length_4kHz);
+                //Inlines.OpusAssert(target_ptr.Offset >= frame_4kHz.Offset);
+                //Inlines.OpusAssert(target_ptr.Offset + SF_LENGTH_8KHZ <= frame_4kHz.Offset + frame_length_4kHz);
 
                 basis_ptr = target_ptr.Point(0 - MIN_LAG_4KHZ);
 
                 /* Check that we are within range of the array */
-                Inlines.OpusAssert(basis_ptr.Offset >= frame_4kHz.Offset);
-                Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_4kHz.Offset + frame_length_4kHz);
+                //Inlines.OpusAssert(basis_ptr.Offset >= frame_4kHz.Offset);
+                //Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_4kHz.Offset + frame_length_4kHz);
 
                 CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - MAX_LAG_4KHZ), xcorr32, SF_LENGTH_8KHZ, MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1);
 
@@ -198,8 +198,8 @@ namespace Concentus.Silk
                 normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, SF_LENGTH_8KHZ));
                 normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_SMULBB(SF_LENGTH_8KHZ, 4000));
 
-                Inlines.matrix_adr(C, k, 0, CSTRIDE_4KHZ)[0] =
-                    (short)Inlines.silk_DIV32_varQ(cross_corr, normalizer, 13 + 1);                      /* Q13 */
+                Inlines.MatrixSet(C, k, 0, CSTRIDE_4KHZ,
+                    (short)Inlines.silk_DIV32_varQ(cross_corr, normalizer, 13 + 1));                      /* Q13 */
 
                 /* From now on normalizer is computed recursively */
                 for (d = MIN_LAG_4KHZ + 1; d <= MAX_LAG_4KHZ; d++)
@@ -207,8 +207,8 @@ namespace Concentus.Silk
                     basis_ptr = basis_ptr.Point(-1);
 
                     /* Check that we are within range of the array */
-                    Inlines.OpusAssert(basis_ptr.Offset >= frame_4kHz.Offset);
-                    Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_4kHz.Offset + frame_length_4kHz);
+                    //Inlines.OpusAssert(basis_ptr.Offset >= frame_4kHz.Offset);
+                    //Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_4kHz.Offset + frame_length_4kHz);
 
                     cross_corr = xcorr32[MAX_LAG_4KHZ - d];
 
@@ -217,8 +217,8 @@ namespace Concentus.Silk
                         Inlines.silk_SMULBB(basis_ptr[0], basis_ptr[0]) -
                         Inlines.silk_SMULBB(basis_ptr[SF_LENGTH_8KHZ], basis_ptr[SF_LENGTH_8KHZ]));
 
-                    Inlines.matrix_adr(C, k, d - MIN_LAG_4KHZ, CSTRIDE_4KHZ)[0] =
-                        (short)Inlines.silk_DIV32_varQ(cross_corr, normalizer, 13 + 1);                  /* Q13 */
+                    Inlines.MatrixSet(C, k, d - MIN_LAG_4KHZ, CSTRIDE_4KHZ,
+                        (short)Inlines.silk_DIV32_varQ(cross_corr, normalizer, 13 + 1));                  /* Q13 */
                 }
                 /* Update target pointer */
                 target_ptr = target_ptr.Point(SF_LENGTH_8KHZ);
@@ -229,8 +229,8 @@ namespace Concentus.Silk
             {
                 for (i = MAX_LAG_4KHZ; i >= MIN_LAG_4KHZ; i--)
                 {
-                    sum = (int)Inlines.matrix_ptr(C, 0, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ)
-                        + (int)Inlines.matrix_ptr(C, 1, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ);               /* Q14 */
+                    sum = (int)Inlines.MatrixGet(C, 0, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ)
+                        + (int)Inlines.MatrixGet(C, 1, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ);               /* Q14 */
                     sum = Inlines.silk_SMLAWB(sum, sum, Inlines.silk_LSHIFT(-i, 4));                                /* Q14 */
                     C[i - MIN_LAG_4KHZ] = (short)sum;                                            /* Q14 */
                 }
@@ -247,7 +247,7 @@ namespace Concentus.Silk
 
             /* Sort */
             length_d_srch = Inlines.silk_ADD_LSHIFT32(4, complexity, 1);
-            Inlines.OpusAssert(3 * length_d_srch <= SilkConstants.PE_D_SRCH_LENGTH);
+            //Inlines.OpusAssert(3 * length_d_srch <= SilkConstants.PE_D_SRCH_LENGTH);
             Sort.silk_insertion_sort_decreasing_int16(C, d_srch, CSTRIDE_4KHZ, length_d_srch);
 
             /* Escape if correlation is very low already here */
@@ -275,7 +275,7 @@ namespace Concentus.Silk
                     break;
                 }
             }
-            Inlines.OpusAssert(length_d_srch > 0);
+            //Inlines.OpusAssert(length_d_srch > 0);
 
             d_comp = Pointer.Malloc<short>(D_COMP_STRIDE);
             for (i = D_COMP_MIN; i < D_COMP_MAX; i++)
@@ -352,8 +352,8 @@ namespace Concentus.Silk
             {
 
                 /* Check that we are within range of the array */
-                Inlines.OpusAssert(target_ptr.Offset >= frame_8kHz.Offset);
-                Inlines.OpusAssert(target_ptr.Offset + SF_LENGTH_8KHZ <= frame_8kHz.Offset + frame_length_8kHz);
+                //Inlines.OpusAssert(target_ptr.Offset >= frame_8kHz.Offset);
+                //Inlines.OpusAssert(target_ptr.Offset + SF_LENGTH_8KHZ <= frame_8kHz.Offset + frame_length_8kHz);
 
                 energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, SF_LENGTH_8KHZ), 1);
                 for (j = 0; j < length_d_comp; j++)
@@ -362,21 +362,21 @@ namespace Concentus.Silk
                     basis_ptr = target_ptr.Point(0 - d);
 
                     /* Check that we are within range of the array */
-                    Inlines.OpusAssert(basis_ptr.Offset >= frame_8kHz.Offset);
-                    Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_8kHz.Offset + frame_length_8kHz);
+                    //Inlines.OpusAssert(basis_ptr.Offset >= frame_8kHz.Offset);
+                    //Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_8kHz.Offset + frame_length_8kHz);
 
                     cross_corr = Inlines.silk_inner_prod_aligned(target_ptr, basis_ptr, SF_LENGTH_8KHZ);
                     if (cross_corr > 0)
                     {
                         energy_basis = Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, SF_LENGTH_8KHZ);
-                        Inlines.matrix_adr(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ)[0] =
+                        Inlines.MatrixSet(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ,
                             (short)Inlines.silk_DIV32_varQ(cross_corr,
                                                          Inlines.silk_ADD32(energy_target,
                                                                      energy_basis),
-                                                         13 + 1);                                      /* Q13 */
+                                                         13 + 1));                                      /* Q13 */
                     }
                     else {
-                        Inlines.matrix_adr(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ)[0] = 0;
+                        Inlines.MatrixSet<short>(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ, 0);
                     }
                 }
                 target_ptr = target_ptr.Point(SF_LENGTH_8KHZ);
@@ -406,7 +406,7 @@ namespace Concentus.Silk
             else {
                 prevLag_log2_Q7 = 0;
             }
-            Inlines.OpusAssert(search_thres2_Q13 == Inlines.silk_SAT16(search_thres2_Q13));
+            //Inlines.OpusAssert(search_thres2_Q13 == Inlines.silk_SAT16(search_thres2_Q13));
             /* Set up stage 2 codebook based on number of subframes */
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
@@ -437,9 +437,9 @@ namespace Concentus.Silk
                     {
                         int d_subfr;
                         /* Try all codebooks */
-                        d_subfr = d + Inlines.matrix_ptr(Lag_CB_ptr, i, j, cbk_size);
+                        d_subfr = d + Inlines.MatrixGet(Lag_CB_ptr, i, j, cbk_size);
                         CC[j] = CC[j]
-                           + (int)Inlines.matrix_ptr(C, i,
+                           + (int)Inlines.MatrixGet(C, i,
                                                     d_subfr - (MIN_LAG_8KHZ - 2),
                                                     CSTRIDE_8KHZ);
                     }
@@ -458,16 +458,16 @@ namespace Concentus.Silk
 
                 /* Bias towards shorter lags */
                 lag_log2_Q7 = Inlines.silk_lin2log(d); /* Q7 */
-                Inlines.OpusAssert(lag_log2_Q7 == Inlines.silk_SAT16(lag_log2_Q7));
-                Inlines.OpusAssert(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_SHORTLAG_BIAS, 13) == Inlines.silk_SAT16(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_SHORTLAG_BIAS, 13)));
+                //Inlines.OpusAssert(lag_log2_Q7 == Inlines.silk_SAT16(lag_log2_Q7));
+                //Inlines.OpusAssert(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_SHORTLAG_BIAS, 13) == Inlines.silk_SAT16(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_SHORTLAG_BIAS, 13)));
                 CCmax_new_b = CCmax_new - Inlines.silk_RSHIFT(Inlines.silk_SMULBB(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_SHORTLAG_BIAS, 13), lag_log2_Q7), 7); /* Q13 */
 
                 /* Bias towards previous lag */
-                Inlines.OpusAssert(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_PREVLAG_BIAS, 13) == Inlines.silk_SAT16(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_PREVLAG_BIAS, 13)));
+                //Inlines.OpusAssert(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_PREVLAG_BIAS, 13) == Inlines.silk_SAT16(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_PREVLAG_BIAS, 13)));
                 if (prevLag > 0)
                 {
                     delta_lag_log2_sqr_Q7 = lag_log2_Q7 - prevLag_log2_Q7;
-                    Inlines.OpusAssert(delta_lag_log2_sqr_Q7 == Inlines.silk_SAT16(delta_lag_log2_sqr_Q7));
+                    //Inlines.OpusAssert(delta_lag_log2_sqr_Q7 == Inlines.silk_SAT16(delta_lag_log2_sqr_Q7));
                     delta_lag_log2_sqr_Q7 = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(delta_lag_log2_sqr_Q7, delta_lag_log2_sqr_Q7), 7);
                     prev_lag_bias_Q13 = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(nb_subfr * Inlines.SILK_CONST(SilkConstants.PE_PREVLAG_BIAS, 13), LTPCorr_Q15.Val), 15); /* Q13 */
                     prev_lag_bias_Q13 = Inlines.silk_DIV32(Inlines.silk_MUL(prev_lag_bias_Q13, delta_lag_log2_sqr_Q7), delta_lag_log2_sqr_Q7 + Inlines.SILK_CONST(0.5f, 7));
@@ -499,7 +499,7 @@ namespace Concentus.Silk
 
             /* Output normalized correlation */
             LTPCorr_Q15.Val = (int)Inlines.silk_LSHIFT(Inlines.silk_DIV32_16(CCmax, nb_subfr), 2);
-            Inlines.OpusAssert(LTPCorr_Q15.Val >= 0);
+            //Inlines.OpusAssert(LTPCorr_Q15.Val >= 0);
 
             if (Fs_kHz > 8)
             {
@@ -529,7 +529,7 @@ namespace Concentus.Silk
                 /* Search in original signal */
                 CBimax_old = CBimax;
                 /* Compensate for decimation */
-                Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
+                //Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
                 if (Fs_kHz == 12)
                 {
                     lag = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(lag, 3), 1);
@@ -580,7 +580,7 @@ namespace Concentus.Silk
                 silk_P_Ana_calc_energy_st3(energies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
 
                 lag_counter = 0;
-                Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
+                //Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
                 contour_bias_Q15 = Inlines.silk_DIV32_16(Inlines.SILK_CONST(SilkConstants.PE_FLATCONTOUR_BIAS, 15), lag);
 
                 target_ptr = input_frame_ptr.Point(SilkConstants.PE_LTP_MEM_LENGTH_MS * Fs_kHz);
@@ -594,19 +594,19 @@ namespace Concentus.Silk
                         for (k = 0; k < nb_subfr; k++)
                         {
                             cross_corr = Inlines.silk_ADD32(cross_corr,
-                                Inlines.matrix_ptr(cross_corr_st3, k, j,
+                                Inlines.MatrixGet(cross_corr_st3, k, j,
                                             nb_cbk_search).Values[lag_counter]);
                             energy = Inlines.silk_ADD32(energy,
-                                Inlines.matrix_ptr(energies_st3, k, j,
+                                Inlines.MatrixGet(energies_st3, k, j,
                                             nb_cbk_search).Values[lag_counter]);
-                            Inlines.OpusAssert(energy >= 0);
+                            //Inlines.OpusAssert(energy >= 0);
                         }
                         if (cross_corr > 0)
                         {
                             CCmax_new = Inlines.silk_DIV32_varQ(cross_corr, energy, 13 + 1);          /* Q13 */
                                                                                                       /* Reduce depending on flatness of contour */
                             diff = short.MaxValue - Inlines.silk_MUL(contour_bias_Q15, j);            /* Q15 */
-                            Inlines.OpusAssert(diff == Inlines.silk_SAT16(diff));
+                            //Inlines.OpusAssert(diff == Inlines.silk_SAT16(diff));
                             CCmax_new = Inlines.silk_SMULWB(CCmax_new, diff);                         /* Q14 */
                         }
                         else {
@@ -625,7 +625,7 @@ namespace Concentus.Silk
 
                 for (k = 0; k < nb_subfr; k++)
                 {
-                    pitch_out[k] = lag_new + Inlines.matrix_ptr(Lag_CB_ptr, k, CBimax, cbk_size);
+                    pitch_out[k] = lag_new + Inlines.MatrixGet(Lag_CB_ptr, k, CBimax, cbk_size);
                     pitch_out[k] = Inlines.silk_LIMIT(pitch_out[k], min_lag, SilkConstants.PE_MAX_LAG_MS * Fs_kHz);
                 }
                 lagIndex.Val = (short)(lag_new - min_lag);
@@ -635,13 +635,13 @@ namespace Concentus.Silk
                           /* Save Lags */
                 for (k = 0; k < nb_subfr; k++)
                 {
-                    pitch_out[k] = lag + Inlines.matrix_ptr(Lag_CB_ptr, k, CBimax, cbk_size);
+                    pitch_out[k] = lag + Inlines.MatrixGet(Lag_CB_ptr, k, CBimax, cbk_size);
                     pitch_out[k] = Inlines.silk_LIMIT(pitch_out[k], MIN_LAG_8KHZ, SilkConstants.PE_MAX_LAG_MS * 8);
                 }
                 lagIndex.Val = (short)(lag - MIN_LAG_8KHZ);
                 contourIndex.Val = (sbyte)CBimax;
             }
-            Inlines.OpusAssert(lagIndex.Val >= 0);
+            //Inlines.OpusAssert(lagIndex.Val >= 0);
             /* return as voiced */
 
             return 0;
@@ -676,8 +676,8 @@ namespace Concentus.Silk
             Pointer<int> xcorr32;
             Pointer<sbyte> Lag_range_ptr, Lag_CB_ptr;
             
-            Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
-            Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
+            //Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
+            //Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
 
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
@@ -687,7 +687,7 @@ namespace Concentus.Silk
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_MAX;
             }
             else {
-                Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
+                //Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
                 Lag_range_ptr = Tables.silk_Lag_range_stage3_10_ms.GetPointer();
                 Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms.GetPointer();
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
@@ -702,28 +702,28 @@ namespace Concentus.Silk
                 lag_counter = 0;
 
                 /* Calculate the correlations for each subframe */
-                lag_low = Inlines.matrix_ptr(Lag_range_ptr, k, 0, 2);
-                lag_high = Inlines.matrix_ptr(Lag_range_ptr, k, 1, 2);
-                Inlines.OpusAssert(lag_high - lag_low + 1 <= SCRATCH_SIZE);
+                lag_low = Inlines.MatrixGet(Lag_range_ptr, k, 0, 2);
+                lag_high = Inlines.MatrixGet(Lag_range_ptr, k, 1, 2);
+                //Inlines.OpusAssert(lag_high - lag_low + 1 <= SCRATCH_SIZE);
                 CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - start_lag - lag_high), xcorr32, sf_length, lag_high - lag_low + 1);
                 for (j = lag_low; j <= lag_high; j++)
                 {
-                    Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);
+                    //Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);
                     scratch_mem[lag_counter] = xcorr32[lag_high - j];
                     lag_counter++;
                 }
 
-                delta = Inlines.matrix_ptr(Lag_range_ptr, k, 0, 2);
+                delta = Inlines.MatrixGet(Lag_range_ptr, k, 0, 2);
                 for (i = 0; i < nb_cbk_search; i++)
                 {
                     /* Fill out the 3 dim array that stores the correlations for */
                     /* each code_book vector for each start lag */
-                    idx = Inlines.matrix_ptr(Lag_CB_ptr, k, i, cbk_size) - delta;
+                    idx = Inlines.MatrixGet(Lag_CB_ptr, k, i, cbk_size) - delta;
                     for (j = 0; j < SilkConstants.PE_NB_STAGE3_LAGS; j++)
                     {
-                        Inlines.OpusAssert(idx + j < SCRATCH_SIZE);
-                        Inlines.OpusAssert(idx + j < lag_counter);
-                        Inlines.matrix_ptr(cross_corr_st3, k, i, nb_cbk_search).Values[j] =
+                        //Inlines.OpusAssert(idx + j < SCRATCH_SIZE);
+                        //Inlines.OpusAssert(idx + j < lag_counter);
+                        Inlines.MatrixGet(cross_corr_st3, k, i, nb_cbk_search).Values[j] =
                             scratch_mem[idx + j];
                     }
                 }
@@ -753,8 +753,8 @@ namespace Concentus.Silk
             Pointer<sbyte> Lag_range_ptr, Lag_CB_ptr;
 
 
-            Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
-            Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
+            //Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
+            //Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
 
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
@@ -764,7 +764,7 @@ namespace Concentus.Silk
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_MAX;
             }
             else {
-                Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
+                //Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
                 Lag_range_ptr = Tables.silk_Lag_range_stage3_10_ms.GetPointer();
                 Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms.GetPointer();
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
@@ -778,39 +778,39 @@ namespace Concentus.Silk
                 lag_counter = 0;
 
                 /* Calculate the energy for first lag */
-                basis_ptr = target_ptr.Point(0 - (start_lag + Inlines.matrix_ptr(Lag_range_ptr, k, 0, 2)));
+                basis_ptr = target_ptr.Point(0 - (start_lag + Inlines.MatrixGet(Lag_range_ptr, k, 0, 2)));
                 energy = Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, sf_length);
-                Inlines.OpusAssert(energy >= 0);
+                //Inlines.OpusAssert(energy >= 0);
                 scratch_mem[lag_counter] = energy;
                 lag_counter++;
 
-                lag_diff = (Inlines.matrix_ptr(Lag_range_ptr, k, 1, 2) - Inlines.matrix_ptr(Lag_range_ptr, k, 0, 2) + 1);
+                lag_diff = (Inlines.MatrixGet(Lag_range_ptr, k, 1, 2) - Inlines.MatrixGet(Lag_range_ptr, k, 0, 2) + 1);
                 for (i = 1; i < lag_diff; i++)
                 {
                     /* remove part outside new window */
                     energy -= Inlines.silk_SMULBB(basis_ptr[sf_length - i], basis_ptr[sf_length - i]);
-                    Inlines.OpusAssert(energy >= 0);
+                    //Inlines.OpusAssert(energy >= 0);
 
                     /* add part that comes into window */
                     energy = Inlines.silk_ADD_SAT32(energy, Inlines.silk_SMULBB(basis_ptr[-i], basis_ptr[-i]));
-                    Inlines.OpusAssert(energy >= 0);
-                    Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);
+                    //Inlines.OpusAssert(energy >= 0);
+                    //Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);
                     scratch_mem[lag_counter] = energy;
                     lag_counter++;
                 }
 
-                delta = Inlines.matrix_ptr(Lag_range_ptr, k, 0, 2);
+                delta = Inlines.MatrixGet(Lag_range_ptr, k, 0, 2);
                 for (i = 0; i < nb_cbk_search; i++)
                 {
                     /* Fill out the 3 dim array that stores the correlations for    */
                     /* each code_book vector for each start lag                     */
-                    idx = Inlines.matrix_ptr(Lag_CB_ptr, k, i, cbk_size) - delta;
+                    idx = Inlines.MatrixGet(Lag_CB_ptr, k, i, cbk_size) - delta;
                     for (j = 0; j < SilkConstants.PE_NB_STAGE3_LAGS; j++)
                     {
-                        Inlines.OpusAssert(idx + j < SCRATCH_SIZE);
-                        Inlines.OpusAssert(idx + j < lag_counter);
-                        Inlines.matrix_ptr(energies_st3, k, i, nb_cbk_search).Values[j] = scratch_mem[idx + j];
-                        Inlines.OpusAssert(Inlines.matrix_ptr(energies_st3, k, i, nb_cbk_search).Values[j] >= 0);
+                        //Inlines.OpusAssert(idx + j < SCRATCH_SIZE);
+                        //Inlines.OpusAssert(idx + j < lag_counter);
+                        Inlines.MatrixGet(energies_st3, k, i, nb_cbk_search).Values[j] = scratch_mem[idx + j];
+                        //Inlines.OpusAssert(Inlines.MatrixGet(energies_st3, k, i, nb_cbk_search).Values[j] >= 0);
                     }
                 }
                 target_ptr = target_ptr.Point(sf_length);
