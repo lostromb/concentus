@@ -145,7 +145,7 @@ namespace Concentus.Celt
                     else if (budget - tell >= 2)
                     {
                         qi = Inlines.IMAX(-1, Inlines.IMIN(qi, 1));
-                        enc.enc_icdf(2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf.GetPointer(), 2);
+                        enc.enc_icdf(2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf, 2);
                     }
                     else if (budget - tell >= 1)
                     {
@@ -381,7 +381,7 @@ namespace Concentus.Celt
                     }
                     else if (budget - tell >= 2)
                     {
-                        qi = dec.dec_icdf(small_energy_icdf.GetPointer(), 2);
+                        qi = dec.dec_icdf(small_energy_icdf, 2);
                         qi = (qi >> 1) ^ -(qi & 1);
                     }
                     else if (budget - tell >= 1)

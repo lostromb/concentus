@@ -94,7 +94,6 @@ namespace Concentus.Silk
             Pointer<int> pulses_comb = Pointer.Malloc<int>(8);
             Pointer<int> abs_pulses_ptr;
             Pointer<sbyte> pulses_ptr;
-            Pointer<byte> cdf_ptr;
             Pointer<byte> nBits_ptr;
 
             pulses_comb.MemSet(0, 8);
@@ -189,27 +188,26 @@ namespace Concentus.Silk
                 }
             }
 
-            psRangeEnc.enc_icdf( RateLevelIndex, Tables.silk_rate_levels_iCDF[signalType >> 1].GetPointer(), 8);
+            psRangeEnc.enc_icdf( RateLevelIndex, Tables.silk_rate_levels_iCDF[signalType >> 1], 8);
 
             /***************************************************/
             /* Sum-Weighted-Pulses Encoding                    */
             /***************************************************/
-            cdf_ptr = new Pointer<byte>(Tables.silk_pulses_per_block_iCDF[RateLevelIndex]);
             for (i = 0; i < iter; i++)
             {
                 if (nRshifts[i] == 0)
                 {
-                    psRangeEnc.enc_icdf( sum_pulses[i], cdf_ptr, 8);
+                    psRangeEnc.enc_icdf( sum_pulses[i], Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
                 }
                 else
                 {
-                    psRangeEnc.enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, cdf_ptr, 8);
+                    psRangeEnc.enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
                     for (k = 0; k < nRshifts[i] - 1; k++)
                     {
-                        psRangeEnc.enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1].GetPointer(), 8);
+                        psRangeEnc.enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1], 8);
                     }
 
-                    psRangeEnc.enc_icdf( sum_pulses[i], Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1].GetPointer(), 8);
+                    psRangeEnc.enc_icdf( sum_pulses[i], Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1], 8);
                 }
             }
 
@@ -239,10 +237,10 @@ namespace Concentus.Silk
                         for (j = nLS; j > 0; j--)
                         {
                             bit = Inlines.silk_RSHIFT(abs_q, j) & 1;
-                            psRangeEnc.enc_icdf( bit, Tables.silk_lsb_iCDF.GetPointer(), 8);
+                            psRangeEnc.enc_icdf( bit, Tables.silk_lsb_iCDF, 8);
                         }
                         bit = abs_q & 1;
-                        psRangeEnc.enc_icdf( bit, Tables.silk_lsb_iCDF.GetPointer(), 8);
+                        psRangeEnc.enc_icdf( bit, Tables.silk_lsb_iCDF, 8);
                     }
                 }
             }

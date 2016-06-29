@@ -55,12 +55,11 @@ namespace Concentus.Silk
             Pointer<int> sum_pulses = Pointer.Malloc<int>(SilkConstants.MAX_NB_SHELL_BLOCKS);
             Pointer<int> nLshifts = Pointer.Malloc<int>(SilkConstants.MAX_NB_SHELL_BLOCKS);
             Pointer<short> pulses_ptr;
-            Pointer<byte> cdf_ptr;
 
             /*********************/
             /* Decode rate level */
             /*********************/
-            RateLevelIndex = psRangeDec.dec_icdf(Tables.silk_rate_levels_iCDF[signalType >> 1].GetPointer(), 8);
+            RateLevelIndex = psRangeDec.dec_icdf(Tables.silk_rate_levels_iCDF[signalType >> 1], 8);
 
             /* Calculate number of shell blocks */
             //Inlines.OpusAssert(1 << SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH == SilkConstants.SHELL_CODEC_FRAME_LENGTH);
@@ -74,11 +73,10 @@ namespace Concentus.Silk
             /***************************************************/
             /* Sum-Weighted-Pulses Decoding                    */
             /***************************************************/
-            cdf_ptr = Tables.silk_pulses_per_block_iCDF[RateLevelIndex].GetPointer();
             for (i = 0; i < iter; i++)
             {
                 nLshifts[i] = 0;
-                sum_pulses[i] = psRangeDec.dec_icdf(cdf_ptr, 8);
+                sum_pulses[i] = psRangeDec.dec_icdf(Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
 
                 /* LSB indication */
                 while (sum_pulses[i] == SilkConstants.SILK_MAX_PULSES + 1)
@@ -86,7 +84,7 @@ namespace Concentus.Silk
                     nLshifts[i]++;
                     /* When we've already got 10 LSBs, we shift the table to not allow (SILK_MAX_PULSES + 1) */
                     sum_pulses[i] = psRangeDec.dec_icdf(
-                          Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1].GetPointer(nLshifts[i] == 10 ? 1 : 0), 8);
+                          Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1], (nLshifts[i] == 10 ? 1 : 0), 8);
                 }
             }
 
@@ -120,7 +118,7 @@ namespace Concentus.Silk
                         for (j = 0; j < nLS; j++)
                         {
                             abs_q = Inlines.silk_LSHIFT(abs_q, 1);
-                            abs_q += psRangeDec.dec_icdf(Tables.silk_lsb_iCDF.GetPointer(), 8);
+                            abs_q += psRangeDec.dec_icdf(Tables.silk_lsb_iCDF, 8);
                         }
                         pulses_ptr[k] = Inlines.CHOP16(abs_q);
                     }

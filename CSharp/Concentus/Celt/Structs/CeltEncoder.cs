@@ -616,7 +616,7 @@ namespace Concentus.Celt.Structs
                     enc.enc_bits((uint)(pitch_index - (16 << octave)), (uint)(4 + octave));
                     pitch_index -= 1;
                     enc.enc_bits((uint)qg, 3);
-                    enc.enc_icdf(prefilter_tapset, Tables.tapset_icdf.GetPointer(), 2);
+                    enc.enc_icdf(prefilter_tapset, Tables.tapset_icdf, 2);
                 }
             }
 
@@ -875,7 +875,7 @@ namespace Concentus.Celt.Structs
                     /*printf("%d %d\n", st.tapset_decision, st.spread_decision);*/
                     /*printf("%f %d %f %d\n\n", st.analysis.tonality, st.spread_decision, st.analysis.tonality_slope, st.tapset_decision);*/
                 }
-                enc.enc_icdf(this.spread_decision, Tables.spread_icdf.GetPointer(), 5);
+                enc.enc_icdf(this.spread_decision, Tables.spread_icdf, 5);
             }
 
             offsets = Pointer.Malloc<int>(nbEBands);
@@ -960,7 +960,7 @@ namespace Concentus.Celt.Structs
                        this.intensity, surround_trim);
                     this.stereo_saving = boxed_stereo_saving.Val;
                 }
-                enc.enc_icdf(alloc_trim, Tables.trim_icdf.GetPointer(), 7);
+                enc.enc_icdf(alloc_trim, Tables.trim_icdf, 7);
                 tell = (int)enc.tell_frac();
             }
 

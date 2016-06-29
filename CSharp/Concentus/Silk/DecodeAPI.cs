@@ -188,7 +188,7 @@ namespace Concentus.Silk
                 /* Decode LBRR flags */
                 for (n = 0; n < decControl.nChannelsInternal; n++)
                 {
-                    channel_state[n].LBRR_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
+                    Arrays.MemSet<int>(channel_state[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
                     if (channel_state[n].LBRR_flag != 0)
                     {
                         if (channel_state[n].nFramesPerPacket == 1)
@@ -196,7 +196,7 @@ namespace Concentus.Silk
                             channel_state[n].LBRR_flags[0] = 1;
                         }
                         else {
-                            LBRR_symbol = psRangeDec.dec_icdf(Tables.silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2].GetPointer(), 8) + 1;
+                            LBRR_symbol = psRangeDec.dec_icdf(Tables.silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2], 8) + 1;
                             for (i = 0; i < channel_state[n].nFramesPerPacket; i++)
                             {
                                 channel_state[n].LBRR_flags[i] = Inlines.silk_RSHIFT(LBRR_symbol, i) & 1;

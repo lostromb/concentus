@@ -325,7 +325,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        internal int dec_icdf(Pointer<byte> _icdf, uint _ftb)
+        internal int dec_icdf(byte[] _icdf, uint _ftb)
         {
             uint r;
             uint d;
@@ -346,6 +346,29 @@ namespace Concentus.Common
             this.rng = t - s;
             dec_normalize();
             return ret;
+        }
+
+        internal int dec_icdf(byte[] _icdf, int _icdf_offset, uint _ftb)
+        {
+            uint r;
+            uint d;
+            uint s;
+            uint t;
+            int ret;
+            s = this.rng;
+            d = this.val;
+            r = s >> (int)_ftb;
+            ret = _icdf_offset - 1;
+            do
+            {
+                t = s;
+                s = r * _icdf[++ret];
+            }
+            while (d < s);
+            this.val = d - s;
+            this.rng = t - s;
+            dec_normalize();
+            return ret - _icdf_offset;
         }
 
         internal uint dec_uint(uint _ft)
@@ -526,7 +549,7 @@ namespace Concentus.Common
             enc_normalize();
         }
 
-        internal void enc_icdf(int _s, Pointer<byte> _icdf, uint _ftb)
+        internal void enc_icdf(int _s, byte[] _icdf, uint _ftb)
         {
             uint r;
             r = this.rng >> (int)_ftb;
@@ -538,6 +561,22 @@ namespace Concentus.Common
             else
             {
                 this.rng -= (r * _icdf[_s]);
+            }
+            enc_normalize();
+        }
+
+        internal void enc_icdf(int _s, byte[] _icdf, int icdf_ptr, uint _ftb)
+        {
+            uint r;
+            r = this.rng >> (int)_ftb;
+            if (_s > 0)
+            {
+                this.val += this.rng - (r * _icdf[icdf_ptr + _s - 1]);
+                this.rng = (r * (uint)(_icdf[icdf_ptr + _s - 1] - _icdf[icdf_ptr + _s]));
+            }
+            else
+            {
+                this.rng -= (r * _icdf[icdf_ptr + _s]);
             }
             enc_normalize();
         }

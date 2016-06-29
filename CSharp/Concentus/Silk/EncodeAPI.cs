@@ -368,7 +368,7 @@ namespace Concentus.Silk
                         /* Create space at start of payload for VAD and FEC flags */
                         byte[] iCDF = { 0, 0 };
                         iCDF[0] = Inlines.CHOP8U(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
-                        psRangeEnc.enc_icdf( 0, iCDF.GetPointer(), 8);
+                        psRangeEnc.enc_icdf(0, iCDF, 8);
 
                         /* Encode any LBRR data from previous packet */
                         /* Encode LBRR flags */
@@ -383,7 +383,7 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[n].LBRR_flag = (sbyte)(LBRR_symbol > 0 ? 1 : 0);
                             if (LBRR_symbol != 0 && psEnc.state_Fxx[n].nFramesPerPacket > 1)
                             {
-                                psRangeEnc.enc_icdf( LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2].GetPointer(), 8);
+                                psRangeEnc.enc_icdf( LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2], 8);
                             }
                         }
 

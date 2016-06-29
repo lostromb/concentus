@@ -56,8 +56,8 @@ namespace Concentus.Silk.Structs
         internal int LPC_order = 0;                          /* LPC order                                                        */
         internal readonly short[] prevNLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER];      /* Used to interpolate LSFs                                         */
         internal int first_frame_after_reset = 0;            /* Flag for deactivating NLSF interpolation                         */
-        internal Pointer<byte> pitch_lag_low_bits_iCDF;           /* Pointer to iCDF table for low bits of pitch lag index            */
-        internal Pointer<byte> pitch_contour_iCDF;                /* Pointer to iCDF table for pitch contour index                    */
+        internal byte[] pitch_lag_low_bits_iCDF;           /* Pointer to iCDF table for low bits of pitch lag index            */
+        internal byte[] pitch_contour_iCDF;                /* Pointer to iCDF table for pitch contour index                    */
 
         /* For buffering payload in case of more frames per packet */
         internal int nFramesDecoded = 0;
@@ -67,9 +67,9 @@ namespace Concentus.Silk.Structs
         internal int ec_prevSignalType = 0;
         internal short ec_prevLagIndex = 0;
 
-        internal readonly Pointer<int> VAD_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal readonly int[] VAD_flags = new int[SilkConstants.MAX_FRAMES_PER_PACKET];
         internal int LBRR_flag = 0;
-        internal readonly Pointer<int> LBRR_flags = Pointer.Malloc<int>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal readonly int[] LBRR_flags = new int[SilkConstants.MAX_FRAMES_PER_PACKET];
 
         internal readonly SilkResamplerState resampler_state = new SilkResamplerState();
 
@@ -110,9 +110,9 @@ namespace Concentus.Silk.Structs
             nFramesPerPacket = 0;
             ec_prevSignalType = 0;
             ec_prevLagIndex = 0;
-            VAD_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSet<int>(VAD_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             LBRR_flag = 0;
-            LBRR_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSet<int>(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             resampler_state.Reset();
             psNLSF_CB = null;
             indices.Reset();
@@ -207,19 +207,19 @@ namespace Concentus.Silk.Structs
                 {
                     if (this.nb_subfr == SilkConstants.MAX_NB_SUBFR)
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_NB_iCDF.GetPointer();
+                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_NB_iCDF;
                     }
                     else {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_NB_iCDF.GetPointer();
+                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_NB_iCDF;
                     }
                 }
                 else {
                     if (this.nb_subfr == SilkConstants.MAX_NB_SUBFR)
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_iCDF.GetPointer();
+                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_iCDF;
                     }
                     else {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_iCDF.GetPointer();
+                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_iCDF;
                     }
                 }
                 if (this.fs_kHz != fs_kHz)
@@ -236,15 +236,15 @@ namespace Concentus.Silk.Structs
                     }
                     if (fs_kHz == 16)
                     {
-                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform8_iCDF.GetPointer();
+                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform8_iCDF;
                     }
                     else if (fs_kHz == 12)
                     {
-                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform6_iCDF.GetPointer();
+                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform6_iCDF;
                     }
                     else if (fs_kHz == 8)
                     {
-                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform4_iCDF.GetPointer();
+                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform4_iCDF;
                     }
                     else {
                         /* unsupported sampling rate */
