@@ -51,7 +51,7 @@ namespace Concentus.Silk
             decState.Reset();
 
             int n, ret = SilkError.SILK_NO_ERROR;
-            Pointer<SilkChannelDecoder> channel_states = decState.channel_state;
+            SilkChannelDecoder[] channel_states = decState.channel_state;
 
             for (n = 0; n < SilkConstants.DECODER_NUM_CHANNELS; n++)
             {
@@ -86,7 +86,7 @@ namespace Concentus.Silk
             Pointer<short> samplesOut2_tmp;
             Pointer<int> MS_pred_Q13 = new Pointer<int>(new int[] { 0, 0 });
             Pointer<short> resample_out_ptr;
-            Pointer<SilkChannelDecoder> channel_state = psDec.channel_state;
+            SilkChannelDecoder[] channel_state = psDec.channel_state;
             int has_side;
             int stereo_to_mono;
             int delay_stack_alloc;

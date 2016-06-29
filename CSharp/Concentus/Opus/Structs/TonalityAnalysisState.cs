@@ -12,20 +12,20 @@ namespace Concentus.Structs
 {
     internal class TonalityAnalysisState
     {
-        internal readonly Pointer<float> angle = Pointer.Malloc<float>(240);
-        internal readonly Pointer<float> d_angle = Pointer.Malloc<float>(240);
-        internal readonly Pointer<float> d2_angle = Pointer.Malloc<float>(240);
-        internal readonly Pointer<int> inmem = Pointer.Malloc<int>(OpusConstants.ANALYSIS_BUF_SIZE);
+        internal readonly float[] angle = new float[240];
+        internal readonly float[] d_angle = new float[240];
+        internal readonly float[] d2_angle = new float[240];
+        internal readonly int[] inmem = new int[OpusConstants.ANALYSIS_BUF_SIZE];
         internal int mem_fill;                      /* number of usable samples in the buffer */
-        internal readonly Pointer<float> prev_band_tonality = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
+        internal readonly float[] prev_band_tonality = new float[OpusConstants.NB_TBANDS];
         internal float prev_tonality;
         internal readonly Pointer<Pointer<float>> E = Arrays.InitTwoDimensionalArrayPointer<float>(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
-        internal readonly Pointer<float> lowE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-        internal readonly Pointer<float> highE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-        internal readonly Pointer<float> meanE = Pointer.Malloc<float>(OpusConstants.NB_TOT_BANDS);
-        internal readonly Pointer<float> mem = Pointer.Malloc<float>(32);
-        internal readonly Pointer<float> cmean = Pointer.Malloc<float>(8);
-        internal readonly Pointer<float> std = Pointer.Malloc<float>(9);
+        internal readonly float[] lowE = new float[OpusConstants.NB_TBANDS];
+        internal readonly float[] highE = new float[OpusConstants.NB_TBANDS];
+        internal readonly float[] meanE = new float[OpusConstants.NB_TOT_BANDS];
+        internal readonly float[] mem = new float[32];
+        internal readonly float[] cmean = new float[8];
+        internal readonly float[] std = new float[9];
         internal float music_prob;
         internal float Etracker;
         internal float lowECount;
@@ -33,14 +33,14 @@ namespace Concentus.Structs
         internal int last_music;
         internal int last_transition;
         internal int count;
-        internal readonly Pointer<float> subframe_mem = Pointer.Malloc<float>(3);
+        internal readonly float[] subframe_mem = new float[3];
         internal int analysis_offset;
         /** Probability of having speech for time i to DETECT_SIZE-1 (and music before).
             pspeech[0] is the probability that all frames in the window are speech. */
-        internal readonly Pointer<float> pspeech = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
+        internal readonly float[] pspeech = new float[OpusConstants.DETECT_SIZE];
         /** Probability of having music for time i to DETECT_SIZE-1 (and speech before).
             pmusic[0] is the probability that all frames in the window are music. */
-        internal readonly Pointer<float> pmusic = Pointer.Malloc<float>(OpusConstants.DETECT_SIZE);
+        internal readonly float[] pmusic = new float[OpusConstants.DETECT_SIZE];
         internal float speech_confidence;
         internal float music_confidence;
         internal int speech_confidence_count;
@@ -60,23 +60,23 @@ namespace Concentus.Structs
 
         internal void Reset()
         {
-            angle.MemSet(0, 240);
-            d_angle.MemSet(0, 240);
-            d2_angle.MemSet(0, 240);
-            inmem.MemSet(0, OpusConstants.ANALYSIS_BUF_SIZE);
+            Arrays.MemSet<float>(angle,0, 240);
+            Arrays.MemSet<float>(d_angle,0, 240);
+            Arrays.MemSet<float>(d2_angle,0, 240);
+            Arrays.MemSet<int>(inmem, 0, OpusConstants.ANALYSIS_BUF_SIZE);
             mem_fill = 0;
-            prev_band_tonality.MemSet(0, OpusConstants.NB_TBANDS);
+            Arrays.MemSet<float>(prev_band_tonality,0, OpusConstants.NB_TBANDS);
             prev_tonality = 0;
             for (int c = 0; c < OpusConstants.NB_FRAMES; c++)
             {
                 E[c].MemSet(0, OpusConstants.NB_TBANDS);
             }
-            lowE.MemSet(0, OpusConstants.NB_TBANDS);
-            highE.MemSet(0, OpusConstants.NB_TBANDS);
-            meanE.MemSet(0, OpusConstants.NB_TOT_BANDS);
-            mem.MemSet(0, 32);
-            cmean.MemSet(0, 8);
-            std.MemSet(0, 9);
+            Arrays.MemSet<float>(lowE,0, OpusConstants.NB_TBANDS);
+            Arrays.MemSet<float>(highE,0, OpusConstants.NB_TBANDS);
+            Arrays.MemSet<float>(meanE,0, OpusConstants.NB_TOT_BANDS);
+            Arrays.MemSet<float>(mem,0, 32);
+            Arrays.MemSet<float>(cmean,0, 8);
+            Arrays.MemSet<float>(std,0, 9);
             music_prob = 0;
             Etracker = 0;
             lowECount = 0;
@@ -84,10 +84,10 @@ namespace Concentus.Structs
             last_music = 0;
             last_transition = 0;
             count = 0;
-            subframe_mem.MemSet(0, 3);
+            Arrays.MemSet<float>(subframe_mem,0, 3);
             analysis_offset = 0;
-            pspeech.MemSet(0, OpusConstants.DETECT_SIZE);
-            pmusic.MemSet(0, OpusConstants.DETECT_SIZE);
+            Arrays.MemSet<float>(pspeech,0, OpusConstants.DETECT_SIZE);
+            Arrays.MemSet<float>(pmusic,0, OpusConstants.DETECT_SIZE);
             speech_confidence = 0;
             music_confidence = 0;
             speech_confidence_count = 0;

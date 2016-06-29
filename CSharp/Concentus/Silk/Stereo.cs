@@ -96,7 +96,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="ix">I    Quantization indices [ 2 ][ 3 ]</param>
-        internal static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, Pointer<Pointer<sbyte>> ix)
+        internal static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, sbyte[][] ix)
         {
             int n;
 
@@ -201,7 +201,7 @@ namespace Concentus.Silk
             StereoEncodeState state,
             Pointer<short> x1,
             Pointer<short> x2,
-            Pointer<Pointer<sbyte>> ix,
+            sbyte[][] ix,
             BoxedValue<sbyte> mid_only_flag,
             Pointer<int> mid_side_rates_bps,
             int total_rate_bps,
@@ -484,7 +484,7 @@ namespace Concentus.Silk
         /// <param name="ix">O    Quantization indices [ 2 ][ 3 ]</param>
         internal static void silk_stereo_quant_pred(
                             Pointer<int> pred_Q13,
-                            Pointer<Pointer<sbyte>> ix)
+                            sbyte[][] ix)
         {
             sbyte i, j; // [porting note] these were originally ints
             int n;
@@ -493,8 +493,8 @@ namespace Concentus.Silk
             // FIXME: ix was formerly an out parameter that was newly allocated here
             // but now it relies on the caller to initialize it
             // clear ix
-            ix[0].MemSet(0, 3);
-            ix[1].MemSet(0, 3);
+            Arrays.MemSet<sbyte>(ix[0], 0, 3);
+            Arrays.MemSet<sbyte>(ix[1], 0, 3);
 
             /* Quantize */
             for (n = 0; n < 2; n++)

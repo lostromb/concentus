@@ -169,7 +169,7 @@ namespace Concentus.Silk
             psPLC.prevLTP_scale_Q14 = Inlines.CHOP16(psDecCtrl.LTP_scale_Q14);
 
             /* Save last two gains */
-            psDecCtrl.Gains_Q16.GetPointer(psDec.nb_subfr - 2).MemCopyTo(psPLC.prevGain_Q16, 2);
+            Array.Copy(psDecCtrl.Gains_Q16, psDec.nb_subfr - 2, psPLC.prevGain_Q16, 0, 2);
 
             psPLC.subfr_length = psDec.subfr_length;
             psPLC.nb_subfr = psDec.nb_subfr;

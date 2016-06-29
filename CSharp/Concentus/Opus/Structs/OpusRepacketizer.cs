@@ -13,7 +13,7 @@ namespace Concentus.Structs
     {
         public byte toc = 0;
         public int nb_frames = 0;
-        public readonly Pointer<Pointer<byte>> frames = Pointer.Malloc<Pointer<byte>>(48);
+        public readonly Pointer<byte>[] frames = new Pointer<byte>[48];
         public readonly short[] len = new short[48];
         public int framesize = 0;
         
@@ -80,7 +80,7 @@ namespace Concentus.Structs
                 return OpusError.OPUS_INVALID_PACKET;
             }
 
-            ret = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, tmp_toc, this.frames.Point(this.nb_frames), this.len.GetPointer(this.nb_frames), null, null);
+            ret = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, tmp_toc, this.frames.GetPointer(this.nb_frames), this.len.GetPointer(this.nb_frames), null, null);
             if (ret < 1) return ret;
 
             this.nb_frames += curr_nb_frames;
@@ -171,7 +171,7 @@ namespace Concentus.Structs
             count = end - begin;
 
             len = this.len.GetPointer(begin);
-            frames = this.frames.Point(begin);
+            frames = this.frames.GetPointer(begin);
 
             if (self_delimited != 0)
                 tot_size = 1 + (len[count - 1] >= 252 ? 1 : 0);

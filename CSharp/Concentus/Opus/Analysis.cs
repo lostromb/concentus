@@ -127,9 +127,9 @@ namespace Concentus
             int[] input;
             int[] TOKENoutput;
             int N = 480, N2 = 240;
-            Pointer<float> A = tonal.angle;
-            Pointer<float> dA = tonal.d_angle;
-            Pointer<float> d2A = tonal.d2_angle;
+            Pointer<float> A = tonal.angle.GetPointer();
+            Pointer<float> dA = tonal.d_angle.GetPointer();
+            Pointer<float> d2A = tonal.d2_angle.GetPointer();
             Pointer<float> tonality;
             Pointer<float> noisiness;
             Pointer<float> band_tonality = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
@@ -165,7 +165,7 @@ namespace Concentus
             if (tonal.count == 0)
                 tonal.mem_fill = 240;
 
-            downmix(x, tonal.inmem.Point(tonal.mem_fill), Inlines.IMIN(len, OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill), offset, c1, c2, C);
+            downmix(x, tonal.inmem.GetPointer(tonal.mem_fill), Inlines.IMIN(len, OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill), offset, c1, c2, C);
 
             if (tonal.mem_fill + len < OpusConstants.ANALYSIS_BUF_SIZE)
             {
@@ -190,10 +190,10 @@ namespace Concentus
                 input[(2 * (N - i - 1))] = (int)(w * tonal.inmem[N - i - 1]);
                 input[(2 * (N - i - 1)) + 1] = (int)(w * tonal.inmem[N + N2 - i - 1]);
             }
-            tonal.inmem.Point(OpusConstants.ANALYSIS_BUF_SIZE - 240).MemMoveTo(tonal.inmem, 240);
+            Arrays.MemMove<int>(tonal.inmem, OpusConstants.ANALYSIS_BUF_SIZE - 240, 0, 240);
 
             remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
-            downmix(x, tonal.inmem.Point(240), remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
+            downmix(x, tonal.inmem.GetPointer(240), remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
             tonal.mem_fill = 240 + remaining;
             
             KissFFT.opus_fft(kfft, input.GetPointer(), TOKENoutput.GetPointer());

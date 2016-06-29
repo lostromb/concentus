@@ -50,7 +50,7 @@ namespace Concentus.Silk.Structs
         internal int conc_energy = 0;
         internal int conc_energy_shift = 0;
         internal short prevLTP_scale_Q14 = 0;
-        internal readonly Pointer<int> prevGain_Q16 = Pointer.Malloc<int>(2);
+        internal readonly int[] prevGain_Q16 = new int[2];
         internal int fs_kHz = 0;
         internal int nb_subfr = 0;
         internal int subfr_length = 0;
@@ -66,7 +66,7 @@ namespace Concentus.Silk.Structs
             conc_energy = 0;
             conc_energy_shift = 0;
             prevLTP_scale_Q14 = 0;
-            prevGain_Q16.MemSet(0, 2);
+            Arrays.MemSet<int>(prevGain_Q16, 0, 2);
             fs_kHz = 0;
             nb_subfr = 0;
             subfr_length = 0;

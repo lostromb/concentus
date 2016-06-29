@@ -49,7 +49,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Voice activity for each frame in packet
         /// </summary>
-        internal readonly Pointer<int> VADFlags = Pointer.Malloc<int>(SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
+        internal readonly int[] VADFlags = new int[SilkConstants.SILK_MAX_FRAMES_PER_PACKET];
 
         /// <summary>
         /// Flag indicating if packet contains in-band FEC
@@ -59,7 +59,7 @@ namespace Concentus.Silk.Structs
         internal void Reset()
         {
             VADFlag = 0;
-            VADFlags.MemSet(0, SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
+            Arrays.MemSet<int>(VADFlags, 0, SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
             inbandFECFlag = 0;
         }
     }

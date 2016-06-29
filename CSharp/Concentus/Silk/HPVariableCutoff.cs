@@ -44,7 +44,7 @@ namespace Concentus.Silk
         /// High-pass filter with cutoff frequency adaptation based on pitch lag statistics
         /// </summary>
         /// <param name="state_Fxx">I/O  Encoder states</param>
-        internal static void silk_HP_variable_cutoff(Pointer<SilkChannelEncoder> state_Fxx)
+        internal static void silk_HP_variable_cutoff(SilkChannelEncoder[] state_Fxx)
         {
             int quality_Q15;
             int pitch_freq_Hz_Q16, pitch_freq_log_Q7, delta_freq_Q7;

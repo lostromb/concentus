@@ -41,7 +41,7 @@ namespace Concentus.Silk.Structs
     /// </summary>
     internal class SilkDecoder
     {
-        internal readonly Pointer<SilkChannelDecoder> channel_state = Pointer.Malloc<SilkChannelDecoder>(SilkConstants.DECODER_NUM_CHANNELS);
+        internal readonly SilkChannelDecoder[] channel_state = new SilkChannelDecoder[SilkConstants.DECODER_NUM_CHANNELS];
         internal readonly StereoDecodeState sStereo = new StereoDecodeState();
         internal int nChannelsAPI = 0;
         internal int nChannelsInternal = 0;

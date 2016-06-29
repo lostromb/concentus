@@ -45,7 +45,7 @@ namespace Concentus.Silk.Structs
         internal short smth_width_Q14 = 0;
         internal short width_prev_Q14 = 0;
         internal short silent_side_len = 0;
-        internal readonly Pointer<Pointer<Pointer<sbyte>>> predIx = Arrays.InitThreeDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
+        internal readonly sbyte[][][] predIx = Arrays.InitThreeDimensionalArray<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
         internal readonly sbyte[] mid_only_flags = new sbyte[SilkConstants.MAX_FRAMES_PER_PACKET];
         
         internal void Reset()
@@ -61,7 +61,7 @@ namespace Concentus.Silk.Structs
             {
                 for (int y= 0; y < 2; y++)
                 {
-                    predIx[x][y].MemSet(0, 3);
+                    Arrays.MemSet<sbyte>(predIx[x][y], 0, 3);
                 }
             }
 
