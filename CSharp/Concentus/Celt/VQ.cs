@@ -42,6 +42,7 @@ namespace Concentus.Celt
 
     internal static class VQ
     {
+        // fixme: remove pointers from this file!
         internal static void exp_rotation1(Pointer<int> X, int len, int stride, int c, int s)
         {
             int i;
@@ -71,7 +72,7 @@ namespace Concentus.Celt
         }
 
         private static int[] SPREAD_FACTOR = { 15, 10, 5 };
-
+        
         internal static void exp_rotation(Pointer<int> X, int len, int dir, int stride, int K, int spread)
         {
             int i;

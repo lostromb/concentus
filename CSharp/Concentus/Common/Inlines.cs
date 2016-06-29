@@ -264,6 +264,7 @@ namespace Concentus.Common
         }
 
         //        /** Divide by two */
+        // fixme: can this be optimized?
         public static short HALF16(short x)
         {
             return (SHR16(x, 1));
@@ -649,6 +650,7 @@ namespace Concentus.Common
             return x <= 0 ? 0 : celt_ilog2(x);
         }
 
+        // fixme: optimize these methods to remove pointers!
         public static int celt_maxabs16(Pointer<int> x, int len)
         {
             int i;
@@ -2061,7 +2063,7 @@ namespace Concentus.Common
         /// <summary>
         /// a32 + (b32 * (int)((short)(c32))) >> 16 output have to be 32bit int
         /// </summary>
-
+        // fixme: This method should be as optimized as possible
         public static int silk_SMLAWB(int a32, int b32, int c32)
         {
             //return (int)(a32 + ((b32 * (long)((short)c32)) >> 16));
