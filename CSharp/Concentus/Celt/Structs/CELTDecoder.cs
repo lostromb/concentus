@@ -355,7 +355,7 @@ namespace Concentus.Celt.Structs
                     {
                         int E1 = 1, E2 = 1;
                         int decay_length;
-                        int shift = Inlines.IMAX(0, 2 * Inlines.celt_zlog2(Inlines.celt_maxabs16(exc.Point(CeltConstants.MAX_PERIOD - exc_length), exc_length)) - 20);
+                        int shift = Inlines.IMAX(0, 2 * Inlines.celt_zlog2(Inlines.celt_maxabs16(exc.Data, exc.Offset + (CeltConstants.MAX_PERIOD - exc_length), exc_length)) - 20);
                         decay_length = exc_length >> 1;
                         for (i = 0; i < decay_length; i++)
                         {

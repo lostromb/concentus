@@ -55,7 +55,7 @@ namespace Concentus.Silk
             BoxedValue<int> res_nrg_Q,         /* O    Residual energy Q value                                     */
             Pointer<int> A_Q16,            /* O    Prediction coefficients (length order)                      */
             short[] x,                /* I    Input signal, length: nb_subfr * ( D + subfr_length )       */
-            int x_offset,
+            int x_ptr,
             int minInvGain_Q30,     /* I    Inverse of max prediction gain                              */
             int subfr_length,       /* I    Input signal subframe length (incl. D preceding samples)    */
             int nb_subfr,           /* I    Number of subframes stacked in x                            */
@@ -64,7 +64,7 @@ namespace Concentus.Silk
         {
             int k, n, s, lz, rshifts, reached_max_gain;
             int C0, num, nrg, rc_Q31, invGain_Q30, Atmp_QA, Atmp1, tmp1, tmp2, x1, x2;
-            int TOKENx_ptr;
+            int x_offset;
             int[] C_first_row = new int[SilkConstants.SILK_MAX_ORDER_LPC];
             int[] C_last_row = new int[SilkConstants.SILK_MAX_ORDER_LPC];
             int[] Af_QA = new int[SilkConstants.SILK_MAX_ORDER_LPC];
@@ -76,7 +76,7 @@ namespace Concentus.Silk
             //Inlines.OpusAssert(subfr_length * nb_subfr <= MAX_FRAME_SIZE);
 
             /* Compute autocorrelations, added over subframes */
-            C0_64 = Inlines.silk_inner_prod16_aligned_64(x.GetPointer(x_offset), x.GetPointer(x_offset), subfr_length * nb_subfr);
+            C0_64 = Inlines.silk_inner_prod16_aligned_64(x, x_ptr, x, x_ptr, subfr_length * nb_subfr);
             lz = Inlines.silk_CLZ64(C0_64);
             rshifts = 32 + 1 + N_BITS_HEAD_ROOM - lz;
             if (rshifts > MAX_RSHIFTS) rshifts = MAX_RSHIFTS;
@@ -96,11 +96,11 @@ namespace Concentus.Silk
             {
                 for (s = 0; s < nb_subfr; s++)
                 {
-                    TOKENx_ptr = x_offset + s * subfr_length;
+                    x_offset = x_ptr + s * subfr_length;
                     for (n = 1; n < D + 1; n++)
                     {
                         C_first_row[n - 1] += (int)Inlines.silk_RSHIFT64(
-                          Inlines.silk_inner_prod16_aligned_64(x.GetPointer(TOKENx_ptr), x.GetPointer(TOKENx_ptr + n), subfr_length - n), rshifts);
+                          Inlines.silk_inner_prod16_aligned_64(x, x_offset, x, x_offset + n, subfr_length - n), rshifts);
                     }
                 }
             }
@@ -109,12 +109,12 @@ namespace Concentus.Silk
                 {
                     int i;
                     int d;
-                    TOKENx_ptr = x_offset + s * subfr_length;
-                    CeltPitchXCorr.pitch_xcorr(x.GetPointer(TOKENx_ptr), x.GetPointer(TOKENx_ptr + 1), xcorr.GetPointer(), subfr_length - D, D);
+                    x_offset = x_ptr + s * subfr_length;
+                    CeltPitchXCorr.pitch_xcorr(x.GetPointer(x_offset), x.GetPointer(x_offset + 1), xcorr.GetPointer(), subfr_length - D, D);
                     for (n = 1; n < D + 1; n++)
                     {
                         for (i = n + subfr_length - D, d = 0; i < subfr_length; i++)
-                            d = Inlines.MAC16_16(d, x[TOKENx_ptr + i], x[TOKENx_ptr + i - n]);
+                            d = Inlines.MAC16_16(d, x[x_offset + i], x[x_offset + i - n]);
                         xcorr[n - 1] += d;
                     }
                     for (n = 1; n < D + 1; n++)
@@ -140,52 +140,52 @@ namespace Concentus.Silk
                 {
                     for (s = 0; s < nb_subfr; s++)
                     {
-                        TOKENx_ptr = x_offset + s * subfr_length;
-                        x1 = -Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + n], 16 - rshifts);        /* Q(16-rshifts) */
-                        x2 = -Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + subfr_length - n - 1], 16 - rshifts);        /* Q(16-rshifts) */
-                        tmp1 = Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + n], QA - 16);             /* Q(QA-16) */
-                        tmp2 = Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + subfr_length - n - 1], QA - 16);             /* Q(QA-16) */
+                        x_offset = x_ptr + s * subfr_length;
+                        x1 = -Inlines.silk_LSHIFT32((int)x[x_offset + n], 16 - rshifts);        /* Q(16-rshifts) */
+                        x2 = -Inlines.silk_LSHIFT32((int)x[x_offset + subfr_length - n - 1], 16 - rshifts);        /* Q(16-rshifts) */
+                        tmp1 = Inlines.silk_LSHIFT32((int)x[x_offset + n], QA - 16);             /* Q(QA-16) */
+                        tmp2 = Inlines.silk_LSHIFT32((int)x[x_offset + subfr_length - n - 1], QA - 16);             /* Q(QA-16) */
                         for (k = 0; k < n; k++)
                         {
-                            C_first_row[k] = Inlines.silk_SMLAWB(C_first_row[k], x1, x[TOKENx_ptr + n - k - 1]); /* Q( -rshifts ) */
-                            C_last_row[k] = Inlines.silk_SMLAWB(C_last_row[k], x2, x[TOKENx_ptr + subfr_length - n + k]); /* Q( -rshifts ) */
+                            C_first_row[k] = Inlines.silk_SMLAWB(C_first_row[k], x1, x[x_offset + n - k - 1]); /* Q( -rshifts ) */
+                            C_last_row[k] = Inlines.silk_SMLAWB(C_last_row[k], x2, x[x_offset + subfr_length - n + k]); /* Q( -rshifts ) */
                             Atmp_QA = Af_QA[k];
-                            tmp1 = Inlines.silk_SMLAWB(tmp1, Atmp_QA, x[TOKENx_ptr + n - k - 1]);                 /* Q(QA-16) */
-                            tmp2 = Inlines.silk_SMLAWB(tmp2, Atmp_QA, x[TOKENx_ptr + subfr_length - n + k]);                 /* Q(QA-16) */
+                            tmp1 = Inlines.silk_SMLAWB(tmp1, Atmp_QA, x[x_offset + n - k - 1]);                 /* Q(QA-16) */
+                            tmp2 = Inlines.silk_SMLAWB(tmp2, Atmp_QA, x[x_offset + subfr_length - n + k]);                 /* Q(QA-16) */
                         }
                         tmp1 = Inlines.silk_LSHIFT32(-tmp1, 32 - QA - rshifts);                                       /* Q(16-rshifts) */
                         tmp2 = Inlines.silk_LSHIFT32(-tmp2, 32 - QA - rshifts);                                       /* Q(16-rshifts) */
                         for (k = 0; k <= n; k++)
                         {
-                            CAf[k] = Inlines.silk_SMLAWB(CAf[k], tmp1, x[TOKENx_ptr + n - k]);        /* Q( -rshift ) */
-                            CAb[k] = Inlines.silk_SMLAWB(CAb[k], tmp2, x[TOKENx_ptr + subfr_length - n + k - 1]);        /* Q( -rshift ) */
+                            CAf[k] = Inlines.silk_SMLAWB(CAf[k], tmp1, x[x_offset + n - k]);        /* Q( -rshift ) */
+                            CAb[k] = Inlines.silk_SMLAWB(CAb[k], tmp2, x[x_offset + subfr_length - n + k - 1]);        /* Q( -rshift ) */
                         }
                     }
                 }
                 else {
                     for (s = 0; s < nb_subfr; s++)
                     {
-                        TOKENx_ptr = x_offset + s * subfr_length;
-                        x1 = -Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + n], -rshifts);            /* Q( -rshifts ) */
-                        x2 = -Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + subfr_length - n - 1], -rshifts);            /* Q( -rshifts ) */
-                        tmp1 = Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + n], 17);                  /* Q17 */
-                        tmp2 = Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + subfr_length - n - 1], 17);                  /* Q17 */
+                        x_offset = x_ptr + s * subfr_length;
+                        x1 = -Inlines.silk_LSHIFT32((int)x[x_offset + n], -rshifts);            /* Q( -rshifts ) */
+                        x2 = -Inlines.silk_LSHIFT32((int)x[x_offset + subfr_length - n - 1], -rshifts);            /* Q( -rshifts ) */
+                        tmp1 = Inlines.silk_LSHIFT32((int)x[x_offset + n], 17);                  /* Q17 */
+                        tmp2 = Inlines.silk_LSHIFT32((int)x[x_offset + subfr_length - n - 1], 17);                  /* Q17 */
                         for (k = 0; k < n; k++)
                         {
-                            C_first_row[k] = Inlines.silk_MLA(C_first_row[k], x1, x[TOKENx_ptr + n - k - 1]); /* Q( -rshifts ) */
-                            C_last_row[k] = Inlines.silk_MLA(C_last_row[k], x2, x[TOKENx_ptr + subfr_length - n + k]); /* Q( -rshifts ) */
+                            C_first_row[k] = Inlines.silk_MLA(C_first_row[k], x1, x[x_offset + n - k - 1]); /* Q( -rshifts ) */
+                            C_last_row[k] = Inlines.silk_MLA(C_last_row[k], x2, x[x_offset + subfr_length - n + k]); /* Q( -rshifts ) */
                             Atmp1 = Inlines.silk_RSHIFT_ROUND(Af_QA[k], QA - 17);                                   /* Q17 */
-                            tmp1 = Inlines.silk_MLA(tmp1, x[TOKENx_ptr + n - k - 1], Atmp1);                      /* Q17 */
-                            tmp2 = Inlines.silk_MLA(tmp2, x[TOKENx_ptr + subfr_length - n + k], Atmp1);                      /* Q17 */
+                            tmp1 = Inlines.silk_MLA(tmp1, x[x_offset + n - k - 1], Atmp1);                      /* Q17 */
+                            tmp2 = Inlines.silk_MLA(tmp2, x[x_offset + subfr_length - n + k], Atmp1);                      /* Q17 */
                         }
                         tmp1 = -tmp1;                                                                           /* Q17 */
                         tmp2 = -tmp2;                                                                           /* Q17 */
                         for (k = 0; k <= n; k++)
                         {
                             CAf[k] = Inlines.silk_SMLAWW(CAf[k], tmp1,
-                              Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + n - k], -rshifts - 1));                    /* Q( -rshift ) */
+                              Inlines.silk_LSHIFT32((int)x[x_offset + n - k], -rshifts - 1));                    /* Q( -rshift ) */
                             CAb[k] = Inlines.silk_SMLAWW(CAb[k], tmp2,
-                              Inlines.silk_LSHIFT32((int)x[TOKENx_ptr + subfr_length - n + k - 1], -rshifts - 1)); /* Q( -rshift ) */
+                              Inlines.silk_LSHIFT32((int)x[x_offset + subfr_length - n + k - 1], -rshifts - 1)); /* Q( -rshift ) */
                         }
                     }
                 }
@@ -287,15 +287,15 @@ namespace Concentus.Silk
                 {
                     for (s = 0; s < nb_subfr; s++)
                     {
-                        TOKENx_ptr = x_offset + s * subfr_length;
-                        C0 -= (int)Inlines.silk_RSHIFT64(Inlines.silk_inner_prod16_aligned_64(x.GetPointer(TOKENx_ptr), x.GetPointer(TOKENx_ptr), D), rshifts);
+                        x_offset = x_ptr + s * subfr_length;
+                        C0 -= (int)Inlines.silk_RSHIFT64(Inlines.silk_inner_prod16_aligned_64(x, x_offset, x, x_offset, D), rshifts);
                     }
                 }
                 else {
                     for (s = 0; s < nb_subfr; s++)
                     {
-                        TOKENx_ptr = x_offset + s * subfr_length;
-                        C0 -= Inlines.silk_LSHIFT32(Inlines.silk_inner_prod_aligned(x.GetPointer(TOKENx_ptr), x.GetPointer(TOKENx_ptr), D), -rshifts);
+                        x_offset = x_ptr + s * subfr_length;
+                        C0 -= Inlines.silk_LSHIFT32(Inlines.silk_inner_prod_self(x, x_offset, D), -rshifts);
                     }
                 }
                 /* Approximate residual energy */

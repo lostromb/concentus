@@ -147,10 +147,10 @@ namespace Concentus.Celt
             int c1 = Inlines.QCONST16(0.8f, 15);
 
             int shift;
-            int maxabs = Inlines.celt_maxabs32(x[0], len);
+            int maxabs = Inlines.celt_maxabs32(x[0].Data, x[0].Offset, len);
             if (C == 2)
             {
-                int maxabs_1 = Inlines.celt_maxabs32(x[1], len);
+                int maxabs_1 = Inlines.celt_maxabs32(x[1].Data, x[1].Offset, len);
                 maxabs = Inlines.MAX32(maxabs, maxabs_1);
             }
             if (maxabs < 1)
@@ -230,8 +230,8 @@ namespace Concentus.Celt
             for (j = 0; j < lag >> 2; j++)
                 y_lp4[j] = y[2 * j];
 
-            xmax = Inlines.celt_maxabs32(x_lp4, len >> 2);
-            ymax = Inlines.celt_maxabs32(y_lp4, lag >> 2);
+            xmax = Inlines.celt_maxabs32(x_lp4.Data, x_lp4.Offset, len >> 2);
+            ymax = Inlines.celt_maxabs32(y_lp4.Data, y_lp4.Offset, lag >> 2);
             shift = Inlines.celt_ilog2(Inlines.MAX32(1, Inlines.MAX32(xmax, ymax))) - 11;
             if (shift > 0)
             {

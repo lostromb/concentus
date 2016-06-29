@@ -115,7 +115,7 @@ namespace Concentus.Celt
                     int j;
                     int maxval = 0;
                     int sum = 0;
-                    maxval = Inlines.celt_maxabs32(X.Point(c * N + (eBands[i] << LM)), (eBands[i + 1] - eBands[i]) << LM);
+                    maxval = Inlines.celt_maxabs32(X.Data, X.Offset + (c * N + (eBands[i] << LM)), (eBands[i + 1] - eBands[i]) << LM);
                     if (maxval > 0)
                     {
                         int shift = Inlines.celt_ilog2(maxval) - 14 + (((m.logN[i] >> EntropyCoder.BITRES) + LM + 1) >> 1);

@@ -544,8 +544,8 @@ namespace Concentus.Celt.Structs
 
             input = Pointer.Malloc<int>(CC * (N + overlap));
 
-            sample_max = Inlines.MAX32(this.overlap_max, Inlines.celt_maxabs32(pcm, C * (N - overlap) / this.upsample));
-            this.overlap_max = Inlines.celt_maxabs32(pcm.Point(C * (N - overlap) / this.upsample), C * overlap / this.upsample);
+            sample_max = Inlines.MAX32(this.overlap_max, Inlines.celt_maxabs32(pcm.Data, pcm.Offset, C * (N - overlap) / this.upsample));
+            this.overlap_max = Inlines.celt_maxabs32(pcm.Data, pcm.Offset + (C * (N - overlap) / this.upsample), C * overlap / this.upsample);
             sample_max = Inlines.MAX32(sample_max, this.overlap_max);
             silence = (sample_max == 0) ? 1 : 0;
 #if FUZZING

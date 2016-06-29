@@ -649,32 +649,18 @@ namespace Concentus.Common
         {
             return x <= 0 ? 0 : celt_ilog2(x);
         }
-
-        // fixme: optimize these methods to remove pointers!
-        public static int celt_maxabs16(Pointer<int> x, int len)
+        
+        public static int celt_maxabs16(int[] x, int x_ptr, int len)
         {
             int i;
             int maxval = 0;
             int minval = 0;
-            for (i = 0; i < len; i++)
+            for (i = x_ptr; i < len + x_ptr; i++)
             {
                 maxval = MAX32(maxval, x[i]);
                 minval = MIN32(minval, x[i]);
             }
             return MAX32(EXTEND32(maxval), -EXTEND32(minval));
-        }
-
-        public static int celt_maxabs32(Pointer<int> x, int len)
-        {
-            int i;
-            int maxval = 0;
-            int minval = 0;
-            for (i = 0; i < len; i++)
-            {
-                maxval = MAX32(maxval, x[i]);
-                minval = MIN32(minval, x[i]);
-            }
-            return MAX32(maxval, -minval);
         }
 
         public static int celt_maxabs32(int[] x, int x_ptr, int len)
@@ -2319,9 +2305,11 @@ namespace Concentus.Common
         /// <param name="d">(I) number of parameters</param>
 
         public static void silk_interpolate(
-            Pointer<short> xi,
-            Pointer<short> x0,
-            Pointer<short> x1,
+            short[] xi,
+            short[] x0,
+            int x0_ptr,
+            short[] x1,
+            int x1_ptr,
             int ifact_Q2,
             int d)
         {
@@ -2332,7 +2320,7 @@ namespace Concentus.Common
 
             for (i = 0; i < d; i++)
             {
-                xi[i] = (short)silk_ADD_RSHIFT(x0[i], silk_SMULBB(x1[i] - x0[i], ifact_Q2), 2);
+                xi[i] = (short)silk_ADD_RSHIFT(x0[i + x0_ptr], silk_SMULBB(x1[i + x1_ptr] - x0[i + x0_ptr], ifact_Q2), 2);
             }
         }
 
@@ -2346,15 +2334,17 @@ namespace Concentus.Common
         /// <returns></returns>
 
         public static int silk_inner_prod_aligned_scale(
-            Pointer<short> inVec1,
-            Pointer<short> inVec2,
+            short[] inVec1,
+            int inVec1_ptr,
+            short[] inVec2,
+            int inVec2_ptr,
             int scale,
             int len)
         {
             int i, sum = 0;
             for (i = 0; i < len; i++)
             {
-                sum = silk_ADD_RSHIFT32(sum, silk_SMULBB(inVec1[i], inVec2[i]), scale);
+                sum = silk_ADD_RSHIFT32(sum, silk_SMULBB(inVec1[i + inVec1_ptr], inVec2[i + inVec2_ptr]), scale);
             }
 
             return sum;
@@ -2362,50 +2352,68 @@ namespace Concentus.Common
 
         /* Copy and multiply a vector by a constant */
         public static void silk_scale_copy_vector16(
-            Pointer<short> data_out,
-        Pointer<short> data_in,
+            short[] data_out,
+            int data_out_ptr,
+        short[] data_in,
+        int data_in_ptr,
         int gain_Q16,           /* I    Gain in Q16                                                 */
         int dataSize            /* I    Length                                                      */
     )
         {
-            int i;
-            int tmp32;
-
-            for (i = 0; i < dataSize; i++)
+            for (int i = 0; i < dataSize; i++)
             {
-                tmp32 = silk_SMULWB(gain_Q16, data_in[i]);
-                data_out[i] = CHOP16(tmp32);
+                data_out[data_out_ptr + i] = CHOP16(silk_SMULWB(gain_Q16, data_in[data_in_ptr + i]));
             }
         }
 
         /* Multiply a vector by a constant */
         public static void silk_scale_vector32_Q26_lshift_18(
-            Pointer<int> data1,             /* I/O  Q0/Q18                                                      */
+            int[] data1,             /* I/O  Q0/Q18                                                      */
+            int data1_ptr,
             int gain_Q26,           /* I    Q26                                                         */
             int dataSize            /* I    length                                                      */
         )
         {
-            int i;
-
-            for (i = 0; i < dataSize; i++)
+            for (int i = data1_ptr; i < data1_ptr + dataSize; i++)
             {
                 data1[i] = CHOP32(silk_RSHIFT64(silk_SMULL(data1[i], gain_Q26), 8));    /* OUTPUT: Q18 */
             }
         }
 
         /* sum = for(i=0;i<len;i++)inVec1[i]*inVec2[i];      ---        inner product   */
-        public static int silk_inner_prod_aligned(
-            Pointer<short> inVec1,             /*    I input vector 1                                              */
-            Pointer<short> inVec2,             /*    I input vector 2                                              */
+        public static int silk_inner_prod(
+            short[] inVec1,             /*    I input vector 1                                              */
+            int inVec1_ptr,
+            short[] inVec2,             /*    I input vector 2                                              */
+            int inVec2_ptr,
             int len                /*    I vector lengths                                              */
         )
         {
-            return Kernels.celt_inner_prod(inVec1.Data, inVec1.Offset, inVec2.Data, inVec2.Offset, len);
+            int i;
+            int xy = 0;
+            for (i = 0; i < len; i++)
+                xy = Inlines.MAC16_16(xy, inVec1[inVec1_ptr + i], inVec2[inVec2_ptr + i]);
+            return xy;
+        }
+
+        public static int silk_inner_prod_self(
+            short[] inVec,             /*    I input vector 1 (will be crossed with itself)                                             */
+            int inVec_ptr,
+            int len                /*    I vector lengths                                              */
+        )
+        {
+            int i;
+            int xy = 0;
+            for (i = inVec_ptr; i < inVec_ptr + len; i++)
+                xy = Inlines.MAC16_16(xy, inVec[i], inVec[i]);
+            return xy;
         }
 
         public static long silk_inner_prod16_aligned_64(
-            Pointer<short> inVec1,            /*    I input vector 1                                              */
-            Pointer<short> inVec2,            /*    I input vector 2                                              */
+            short[] inVec1,             /*    I input vector 1                                              */
+            int inVec1_ptr,
+            short[] inVec2,             /*    I input vector 2                                              */
+            int inVec2_ptr,
             int len                 /*    I vector lengths                                              */
         )
         {
@@ -2413,7 +2421,7 @@ namespace Concentus.Common
             long sum = 0;
             for (i = 0; i < len; i++)
             {
-                sum = silk_SMLALBB(sum, inVec1[i], inVec2[i]);
+                sum = silk_SMLALBB(sum, inVec1[inVec1_ptr + i], inVec2[inVec2_ptr + i]);
             }
             return sum;
         }
@@ -2439,15 +2447,10 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_x"></param>
         /// <returns></returns>
-        public static int EC_CLZ(uint _x)
+        public static int EC_CLZ(uint x)
         {
-            if (_x == 0)
+            if (x == 0)
                 return 0;
-            return clz_fast(_x) - 31;
-        }
-
-        public static int clz_fast(uint x)
-        {
             x |= (x >> 1);
             x |= (x >> 2);
             x |= (x >> 4);
@@ -2459,18 +2462,47 @@ namespace Concentus.Common
             y += (y >> 8);
             y += (y >> 16);
             y = (y & 0x0000003f);
-            return (int)(32 - y);
+            return (int)(1 - y);
         }
+
+        //public static int clz_fast(uint x)
+        //{
+        //    x |= (x >> 1);
+        //    x |= (x >> 2);
+        //    x |= (x >> 4);
+        //    x |= (x >> 8);
+        //    x |= (x >> 16);
+        //    uint y = x - ((x >> 1) & 0x55555555);
+        //    y = (((y >> 2) & 0x33333333) + (y & 0x33333333));
+        //    y = (((y >> 4) + y) & 0x0f0f0f0f);
+        //    y += (y >> 8);
+        //    y += (y >> 16);
+        //    y = (y & 0x0000003f);
+        //    return (int)(32 - y);
+        //}
 
         /// <summary>
         /// returns inverse base-2 log of a value
         /// </summary>
         /// <param name="_x"></param>
         /// <returns></returns>
-        public static int EC_ILOG(uint _x)
+        public static int EC_ILOG(uint x)
         {
 #if PARITY
-            return 1 - EC_CLZ(_x);
+            if(x == 0)
+                return 1;
+            x |= (x >> 1);
+            x |= (x >> 2);
+            x |= (x >> 4);
+            x |= (x >> 8);
+            x |= (x >> 16);
+            uint y = x - ((x >> 1) & 0x55555555);
+            y = (((y >> 2) & 0x33333333) + (y & 0x33333333));
+            y = (((y >> 4) + y) & 0x0f0f0f0f);
+            y += (y >> 8);
+            y += (y >> 16);
+            y = (y & 0x0000003f);
+            return (int)y;
 #else
             // On a Pentium M, this branchless version tested as the fastest on
             // 1,000,000,000 random 32-bit integers, edging out a similar version with

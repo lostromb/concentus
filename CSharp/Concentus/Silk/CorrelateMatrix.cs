@@ -78,7 +78,7 @@ namespace Concentus.Silk
                 //Inlines.OpusAssert(rshifts == 0);
                 for (lag = 0; lag < order; lag++)
                 {
-                    Xt[lag] = Inlines.silk_inner_prod_aligned(ptr1, ptr2, L); /* X[:,lag]'*t */
+                    Xt[lag] = Inlines.silk_inner_prod(ptr1.Data, ptr1.Offset, ptr2.Data, ptr2.Offset, L); /* X[:,lag]'*t */
                     ptr1 = ptr1.Point(-1); /* Go to next column of X */
                 }
             }
@@ -164,7 +164,7 @@ namespace Concentus.Silk
                 for (lag = 1; lag < order; lag++)
                 {
                     /* Inner product of column 0 and column lag: X[:,0]'*X[:,lag] */
-                    energy = Inlines.silk_inner_prod_aligned(ptr1, ptr2, L);
+                    energy = Inlines.silk_inner_prod(ptr1.Data, ptr1.Offset, ptr2.Data, ptr2.Offset, L);
                     Inlines.MatrixSet(XX, lag, 0, order,energy);
                     Inlines.MatrixSet(XX, 0, lag, order, energy);
                     /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */

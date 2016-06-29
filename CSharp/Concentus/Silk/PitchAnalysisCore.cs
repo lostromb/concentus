@@ -194,8 +194,8 @@ namespace Concentus.Silk
 
                 /* Calculate first vector products before loop */
                 cross_corr = xcorr32[MAX_LAG_4KHZ - MIN_LAG_4KHZ];
-                normalizer = Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, SF_LENGTH_8KHZ);
-                normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, SF_LENGTH_8KHZ));
+                normalizer = Inlines.silk_inner_prod_self(target_ptr.Data, target_ptr.Offset, SF_LENGTH_8KHZ);
+                normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, SF_LENGTH_8KHZ));
                 normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_SMULBB(SF_LENGTH_8KHZ, 4000));
 
                 Inlines.MatrixSet(C, k, 0, CSTRIDE_4KHZ,
@@ -355,7 +355,7 @@ namespace Concentus.Silk
                 //Inlines.OpusAssert(target_ptr.Offset >= frame_8kHz.Offset);
                 //Inlines.OpusAssert(target_ptr.Offset + SF_LENGTH_8KHZ <= frame_8kHz.Offset + frame_length_8kHz);
 
-                energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, SF_LENGTH_8KHZ), 1);
+                energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod(target_ptr.Data, target_ptr.Offset, target_ptr.Data, target_ptr.Offset, SF_LENGTH_8KHZ), 1);
                 for (j = 0; j < length_d_comp; j++)
                 {
                     d = d_comp[j];
@@ -365,10 +365,10 @@ namespace Concentus.Silk
                     //Inlines.OpusAssert(basis_ptr.Offset >= frame_8kHz.Offset);
                     //Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_8kHz.Offset + frame_length_8kHz);
 
-                    cross_corr = Inlines.silk_inner_prod_aligned(target_ptr, basis_ptr, SF_LENGTH_8KHZ);
+                    cross_corr = Inlines.silk_inner_prod(target_ptr.Data, target_ptr.Offset, basis_ptr.Data, basis_ptr.Offset, SF_LENGTH_8KHZ);
                     if (cross_corr > 0)
                     {
-                        energy_basis = Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, SF_LENGTH_8KHZ);
+                        energy_basis = Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, SF_LENGTH_8KHZ);
                         Inlines.MatrixSet(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ,
                             (short)Inlines.silk_DIV32_varQ(cross_corr,
                                                          Inlines.silk_ADD32(energy_target,
@@ -584,7 +584,7 @@ namespace Concentus.Silk
                 contour_bias_Q15 = Inlines.silk_DIV32_16(Inlines.SILK_CONST(SilkConstants.PE_FLATCONTOUR_BIAS, 15), lag);
 
                 target_ptr = input_frame_ptr.Point(SilkConstants.PE_LTP_MEM_LENGTH_MS * Fs_kHz);
-                energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod_aligned(target_ptr, target_ptr, nb_subfr * sf_length), 1);
+                energy_target = Inlines.silk_ADD32(Inlines.silk_inner_prod_self(target_ptr.Data, target_ptr.Offset, nb_subfr * sf_length), 1);
                 for (d = start_lag; d <= end_lag; d++)
                 {
                     for (j = 0; j < nb_cbk_search; j++)
@@ -779,7 +779,7 @@ namespace Concentus.Silk
 
                 /* Calculate the energy for first lag */
                 basis_ptr = target_ptr.Point(0 - (start_lag + Inlines.MatrixGet(Lag_range_ptr, k, 0, 2)));
-                energy = Inlines.silk_inner_prod_aligned(basis_ptr, basis_ptr, sf_length);
+                energy = Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, sf_length);
                 //Inlines.OpusAssert(energy >= 0);
                 scratch_mem[lag_counter] = energy;
                 lag_counter++;

@@ -161,7 +161,7 @@ namespace Concentus.Silk
                     temp32 = Inlines.silk_min_32(temp32, Inlines.silk_LSHIFT((int)1, 26 - 18 + lshift));
                 }
 
-                Inlines.silk_scale_vector32_Q26_lshift_18(WLTP_ptr, temp32, SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER); /* WLTP_ptr in Q( 18 - corr_rshifts[ k ] ) */
+                Inlines.silk_scale_vector32_Q26_lshift_18(WLTP_ptr.Data, WLTP_ptr.Offset, temp32, SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER); /* WLTP_ptr in Q( 18 - corr_rshifts[ k ] ) */
 
                 w[k] = Inlines.MatrixGet(WLTP_ptr, SilkConstants.LTP_ORDER / 2, SilkConstants.LTP_ORDER / 2, SilkConstants.LTP_ORDER); /* w in Q( 18 - corr_rshifts[ k ] ) */
                 //Inlines.OpusAssert(w[k] >= 0);

@@ -1218,7 +1218,7 @@ namespace Concentus.Silk
             if (doInterpolate)
             {
                 /* Calculate the interpolated NLSF vector for the first half */
-                Inlines.silk_interpolate(pNLSF0_temp_Q15, prev_NLSFq_Q15, pNLSF_Q15,
+                Inlines.silk_interpolate(pNLSF0_temp_Q15.Data, prev_NLSFq_Q15.Data, prev_NLSFq_Q15.Offset, pNLSF_Q15.Data, 0,
                     psEncC.indices.NLSFInterpCoef_Q2, psEncC.predictLPCOrder);
 
                 /* Calculate first half NLSF weights for the interpolated NLSFs */
@@ -1245,7 +1245,7 @@ namespace Concentus.Silk
             if (doInterpolate)
             {
                 /* Calculate the interpolated, quantized LSF vector for the first half */
-                Inlines.silk_interpolate(pNLSF0_temp_Q15, prev_NLSFq_Q15, pNLSF_Q15,
+                Inlines.silk_interpolate(pNLSF0_temp_Q15.Data, prev_NLSFq_Q15.Data, prev_NLSFq_Q15.Offset, pNLSF_Q15.Data, 0,
                     psEncC.indices.NLSFInterpCoef_Q2, psEncC.predictLPCOrder);
 
                 /* Convert back to LPC coefficients */

@@ -107,7 +107,7 @@ namespace Concentus.Silk
                 for (k = 3; k >= 0; k--)
                 {
                     /* Interpolate NLSFs for first half */
-                    Inlines.silk_interpolate(NLSF0_Q15, psEncC.prev_NLSFq_Q15.GetPointer(), NLSF_Q15, k, psEncC.predictLPCOrder);
+                    Inlines.silk_interpolate(NLSF0_Q15.Data, psEncC.prev_NLSFq_Q15, 0, NLSF_Q15.Data, NLSF_Q15.Offset, k, psEncC.predictLPCOrder);
 
                     /* Convert to LPC for residual energy evaluation */
                     NLSF.silk_NLSF2A(a_tmp_Q12, NLSF0_Q15, psEncC.predictLPCOrder);

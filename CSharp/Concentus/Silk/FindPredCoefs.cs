@@ -131,7 +131,7 @@ namespace Concentus.Silk
                 x_pre_ptr = LPC_in_pre;
                 for (i = 0; i < psEnc.nb_subfr; i++)
                 {
-                    Inlines.silk_scale_copy_vector16(x_pre_ptr, x_ptr, invGains_Q16[i],
+                    Inlines.silk_scale_copy_vector16(x_pre_ptr.Data, x_pre_ptr.Offset, x_ptr.Data, x_ptr.Offset, invGains_Q16[i],
                         psEnc.subfr_length + psEnc.predictLPCOrder);
                     x_pre_ptr = x_pre_ptr.Point(psEnc.subfr_length + psEnc.predictLPCOrder);
                     x_ptr = x_ptr.Point(psEnc.subfr_length);

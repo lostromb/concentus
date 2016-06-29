@@ -157,7 +157,7 @@ namespace Concentus.Silk
             nrgy.Val = Inlines.silk_RSHIFT32(nrgy.Val, scale - scale2.Val);
             nrgx.Val = Inlines.silk_RSHIFT32(nrgx.Val, scale - scale1.Val);
             nrgx.Val = Inlines.silk_max_int(nrgx.Val, 1);
-            corr = Inlines.silk_inner_prod_aligned_scale(x, y, scale, length);
+            corr = Inlines.silk_inner_prod_aligned_scale(x.Data, x.Offset, y.Data, y.Offset, scale, length);
             pred_Q13 = Inlines.silk_DIV32_varQ(corr, nrgx.Val, 13);
             pred_Q13 = Inlines.silk_LIMIT(pred_Q13, -(1 << 14), 1 << 14);
             pred2_Q10 = Inlines.silk_SMULWB(pred_Q13, pred_Q13);
