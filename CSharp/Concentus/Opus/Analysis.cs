@@ -124,8 +124,8 @@ namespace Concentus
         {
             int i, b;
             FFTState kfft;
-            Pointer<kiss_fft_cpx> input;
-            Pointer<kiss_fft_cpx> output;
+            int[] input;
+            int[] TOKENoutput;
             int N = 480, N2 = 240;
             Pointer<float> A = tonal.angle;
             Pointer<float> dA = tonal.d_angle;
@@ -178,37 +178,25 @@ namespace Concentus
             if (tonal.write_pos >= OpusConstants.DETECT_SIZE)
                 tonal.write_pos -= OpusConstants.DETECT_SIZE;
 
-            input = Pointer.Malloc<kiss_fft_cpx>(480);
-            //output = Pointer.Malloc<kiss_fft_cpx>(480);
-            for (int c = 0; c < 480; c++)
-            {
-                input[c] = new kiss_fft_cpx();
-                //output[c] = new kiss_fft_cpx();
-            }
+            input = new int[960];
+            TOKENoutput = new int[960];
             tonality = Pointer.Malloc<float>(240);
             noisiness = Pointer.Malloc<float>(240);
             for (i = 0; i < N2; i++)
             {
                 float w = Tables.analysis_window[i];
-                input[i].r = (int)(w * tonal.inmem[i]);
-                input[i].i = (int)(w * tonal.inmem[N2 + i]);
-                input[N - i - 1].r = (int)(w * tonal.inmem[N - i - 1]);
-                input[N - i - 1].i = (int)(w * tonal.inmem[N + N2 - i - 1]);
+                input[2 * i] = (int)(w * tonal.inmem[i]);
+                input[2 * i + 1] = (int)(w * tonal.inmem[N2 + i]);
+                input[(2 * (N - i - 1))] = (int)(w * tonal.inmem[N - i - 1]);
+                input[(2 * (N - i - 1)) + 1] = (int)(w * tonal.inmem[N + N2 - i - 1]);
             }
-            //OPUS_MOVE(tonal.inmem, tonal.inmem + ANALYSIS_BUF_SIZE - 240, 240);
             tonal.inmem.Point(OpusConstants.ANALYSIS_BUF_SIZE - 240).MemMoveTo(tonal.inmem, 240);
 
             remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
             downmix(x, tonal.inmem.Point(240), remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
             tonal.mem_fill = 240 + remaining;
-
-            // FIXME: Hack to get FFT working again
-            int[] interleavedFFTIn = new int[960];
-            int[] interleavedFFTOut = new int[960];
-            kiss_fft_cpx.WriteComplexValuesToInterleavedIntArray(input, interleavedFFTIn.GetPointer(), 480);
-            KissFFT.opus_fft(kfft, interleavedFFTIn.GetPointer(), interleavedFFTOut.GetPointer());
-            kiss_fft_cpx[] outputComplex = kiss_fft_cpx.ConvertInterleavedIntArray(interleavedFFTOut.GetPointer(), 480);
-            output = outputComplex.GetPointer();
+            
+            KissFFT.opus_fft(kfft, input.GetPointer(), TOKENoutput.GetPointer());
 
             for (i = 1; i < N2; i++)
             {
@@ -216,10 +204,10 @@ namespace Concentus
                 float angle, d_angle, d2_angle;
                 float angle2, d_angle2, d2_angle2;
                 float mod1, mod2, avg_mod;
-                X1r = (float)output[i].r + output[N - i].r;
-                X1i = (float)output[i].i - output[N - i].i;
-                X2r = (float)output[i].i + output[N - i].i;
-                X2i = (float)output[N - i].r - output[i].r;
+                X1r = (float)TOKENoutput[2 * i] + TOKENoutput[2 * (N - i)];
+                X1i = (float)TOKENoutput[(2 * i) + 1] - TOKENoutput[2 * (N - i) + 1];
+                X2r = (float)TOKENoutput[(2 * i) + 1] + TOKENoutput[2 * (N - i) + 1];
+                X2i = (float)TOKENoutput[2 * (N - i)] - TOKENoutput[2 * i];
 
                 angle = (float)(.5f / M_PI) * fast_atan2f(X1i, X1r);
                 d_angle = angle - A[i];
@@ -270,8 +258,8 @@ namespace Concentus
                 float stationarity;
                 for (i = Tables.tbands[b]; i < Tables.tbands[b + 1]; i++)
                 {
-                    float binE = output[i].r * (float)output[i].r + output[N - i].r * (float)output[N - i].r
-                               + output[i].i * (float)output[i].i + output[N - i].i * (float)output[N - i].i;
+                    float binE = TOKENoutput[2 * i] * (float)TOKENoutput[2 * i] + TOKENoutput[2 * (N - i)] * (float)TOKENoutput[2 * (N - i)]
+                               + TOKENoutput[2 * i + 1] * (float)TOKENoutput[2 * i + 1] + TOKENoutput[2 * (N - i) + 1] * (float)TOKENoutput[2 * (N - i) + 1];
                     /* FIXME: It's probably best to change the BFCC filter initial state instead */
                     binE *= 5.55e-17f;
                     E += binE;
@@ -329,8 +317,8 @@ namespace Concentus
                 band_end = Tables.extra_bands[b + 1];
                 for (i = band_start; i < band_end; i++)
                 {
-                    float binE = output[i].r * (float)output[i].r + output[N - i].r * (float)output[N - i].r
-                     + output[i].i * (float)output[i].i + output[N - i].i * (float)output[N - i].i;
+                    float binE = TOKENoutput[2 * i] * (float)TOKENoutput[2 * i] + TOKENoutput[2 * (N - i)] * (float)TOKENoutput[2 * (N - i)]
+                               + TOKENoutput[2 * i + 1] * (float)TOKENoutput[2 * i + 1] + TOKENoutput[2 * (N - i) + 1] * (float)TOKENoutput[2 * (N - i) + 1];
                     E += binE;
                 }
                 maxE = Inlines.MAX32(maxE, E);
