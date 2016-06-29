@@ -45,7 +45,6 @@
     <Compile Include="Celt\KissFFT.cs" />
     <Compile Include="Celt\Laplace.cs" />
     <Compile Include="Celt\MDCT.cs" />
-    <Compile Include="Celt\Modes.cs" />
     <Compile Include="Celt\Pitch.cs" />
     <Compile Include="Celt\QuantizeBands.cs" />
     <Compile Include="Celt\Rate.cs" />

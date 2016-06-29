@@ -189,7 +189,7 @@ namespace Concentus.Silk
         {
             int i;
             byte entry;
-            Pointer<byte> ec_sel_ptr = psNLSF_CB.ec_sel.Point(CB1_index * psNLSF_CB.order / 2);
+            Pointer<byte> ec_sel_ptr = psNLSF_CB.ec_sel.GetPointer(CB1_index * psNLSF_CB.order / 2);
             int ec_sel_ptr_idx = 0;
 
             for (i = 0; i < psNLSF_CB.order; i += 2)
@@ -333,7 +333,7 @@ namespace Concentus.Silk
             int W_tmp_Q9, NLSF_Q15_tmp;
 
             // Decode first stage 
-            Pointer<byte> pCB_element = psNLSF_CB.CB1_NLSF_Q8.Point(NLSFIndices[0] * psNLSF_CB.order);
+            Pointer<byte> pCB_element = psNLSF_CB.CB1_NLSF_Q8.GetPointer(NLSFIndices[0] * psNLSF_CB.order);
 
             for (i = 0; i < psNLSF_CB.order; i++)
             {
@@ -362,7 +362,7 @@ namespace Concentus.Silk
             }
 
             // NLSF stabilization
-            silk_NLSF_stabilize(pNLSF_Q15, psNLSF_CB.deltaMin_Q15, psNLSF_CB.order);
+            silk_NLSF_stabilize(pNLSF_Q15, psNLSF_CB.deltaMin_Q15.GetPointer(), psNLSF_CB.order);
         }
 
         /// <summary>
@@ -664,11 +664,11 @@ namespace Concentus.Silk
             //Inlines.OpusAssert(NLSF_mu_Q20 <= 32767 && NLSF_mu_Q20 >= 0);
 
             // NLSF stabilization
-            silk_NLSF_stabilize(pNLSF_Q15, psNLSF_CB.deltaMin_Q15, psNLSF_CB.order);
+            silk_NLSF_stabilize(pNLSF_Q15, psNLSF_CB.deltaMin_Q15.GetPointer(), psNLSF_CB.order);
 
             // First stage: VQ
             err_Q26 = Pointer.Malloc<int>(psNLSF_CB.nVectors);
-            silk_NLSF_VQ(err_Q26, pNLSF_Q15, psNLSF_CB.CB1_NLSF_Q8, psNLSF_CB.nVectors, psNLSF_CB.order);
+            silk_NLSF_VQ(err_Q26, pNLSF_Q15, psNLSF_CB.CB1_NLSF_Q8.GetPointer(), psNLSF_CB.nVectors, psNLSF_CB.order);
 
             // Sort the quantization errors
             tempIndices1 = Pointer.Malloc<int>(nSurvivors);
@@ -683,7 +683,7 @@ namespace Concentus.Silk
                 ind1 = tempIndices1[s];
 
                 // Residual after first stage
-                pCB_element = psNLSF_CB.CB1_NLSF_Q8.Point(ind1 * psNLSF_CB.order);
+                pCB_element = psNLSF_CB.CB1_NLSF_Q8.GetPointer(ind1 * psNLSF_CB.order);
                 for (i = 0; i < psNLSF_CB.order; i++)
                 {
                     NLSF_tmp_Q15[i] = Inlines.silk_LSHIFT16((short)pCB_element[i], 7);
@@ -716,14 +716,14 @@ namespace Concentus.Silk
                     W_adj_Q5,
                     pred_Q8,
                     ec_ix,
-                    psNLSF_CB.ec_Rates_Q5,
+                    psNLSF_CB.ec_Rates_Q5.GetPointer(),
                     psNLSF_CB.quantStepSize_Q16,
                     psNLSF_CB.invQuantStepSize_Q6,
                     NLSF_mu_Q20,
                     psNLSF_CB.order);
 
                 // Add rate for first stage
-                iCDF_ptr = psNLSF_CB.CB1_iCDF.Point((signalType >> 1) * psNLSF_CB.nVectors);
+                iCDF_ptr = psNLSF_CB.CB1_iCDF.GetPointer((signalType >> 1) * psNLSF_CB.nVectors);
 
                 if (ind1 == 0)
                 {

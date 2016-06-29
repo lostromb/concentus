@@ -45,7 +45,7 @@ namespace Concentus.Celt.Structs
     /// </summary>
     internal class CeltDecoder
     {
-        internal CeltMode mode = new CeltMode();
+        internal CeltMode mode = null;
         internal int overlap = 0;
         internal int channels = 0;
         internal int stream_channels = 0;
@@ -90,7 +90,7 @@ namespace Concentus.Celt.Structs
 
         private void Reset()
         {
-            mode.Reset();
+            mode = null;
             overlap = 0;
             channels = 0;
             stream_channels = 0;
@@ -145,7 +145,7 @@ namespace Concentus.Celt.Structs
         internal int celt_decoder_init(int sampling_rate, int channels)
         {
             int ret;
-            ret = this.opus_custom_decoder_init(Modes.opus_custom_mode_create(48000, 960, null), channels);
+            ret = this.opus_custom_decoder_init(CeltMode.mode48000_960_120, channels);
             if (ret != OpusError.OPUS_OK)
                 return ret;
             this.downsample = CeltCommon.resampling_factor(sampling_rate);
@@ -209,7 +209,7 @@ namespace Concentus.Celt.Structs
             mode = this.mode;
             nbEBands = mode.nbEBands;
             overlap = mode.overlap;
-            eBands = mode.eBands;
+            eBands = mode.eBands.GetPointer();
 
             c = 0; do
             {
@@ -296,7 +296,7 @@ namespace Concentus.Celt.Structs
 
                 etmp = Pointer.Malloc<int>(overlap);
                 exc = Pointer.Malloc<int>(CeltConstants.MAX_PERIOD);
-                window = mode.window;
+                window = mode.window.GetPointer();
                 c = 0; do
                 {
                     int decay;
@@ -523,7 +523,7 @@ namespace Concentus.Celt.Structs
             mode = this.mode;
             nbEBands = mode.nbEBands;
             overlap = mode.overlap;
-            eBands = mode.eBands;
+            eBands = mode.eBands.GetPointer();
             start = this.start;
             end = this.end;
             frame_size *= this.downsample;
@@ -745,12 +745,12 @@ namespace Concentus.Celt.Structs
                 this.postfilter_period_old = Inlines.IMAX(this.postfilter_period_old, CeltConstants.COMBFILTER_MINPERIOD);
                 CeltCommon.comb_filter(out_syn[c], out_syn[c], this.postfilter_period_old, this.postfilter_period, mode.shortMdctSize,
                       this.postfilter_gain_old, this.postfilter_gain, this.postfilter_tapset_old, this.postfilter_tapset,
-                      mode.window, overlap);
+                      mode.window.GetPointer(), overlap);
                 if (LM != 0)
                 {
                     CeltCommon.comb_filter(out_syn[c].Point(mode.shortMdctSize), out_syn[c].Point(mode.shortMdctSize), this.postfilter_period, postfilter_pitch, N - mode.shortMdctSize,
                           this.postfilter_gain, postfilter_gain, this.postfilter_tapset, postfilter_tapset,
-                          mode.window, overlap);
+                          mode.window.GetPointer(), overlap);
                 }
 
             } while (++c < CC);

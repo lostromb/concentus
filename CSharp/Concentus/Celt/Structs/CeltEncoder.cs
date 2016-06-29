@@ -242,7 +242,7 @@ namespace Concentus.Celt.Structs
         internal int celt_encoder_init(int sampling_rate, int channels)
         {
             int ret;
-            ret = this.opus_custom_encoder_init_arch(Modes.opus_custom_mode_create(48000, 960, null), channels);
+            ret = this.opus_custom_encoder_init_arch(CeltMode.mode48000_960_120, channels);
             if (ret != OpusError.OPUS_OK)
                 return ret;
             this.upsample = CeltCommon.resampling_factor(sampling_rate);
@@ -358,7 +358,7 @@ namespace Concentus.Celt.Structs
 
                 CeltCommon.comb_filter(input.Point(c * (N + overlap) + overlap + offset), pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       this.prefilter_period, pitch_index.Val, N - offset, -this.prefilter_gain, -gain1,
-                      this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
+                      this.prefilter_tapset, prefilter_tapset, mode.window.GetPointer(), overlap);
                 input.Point(c * (N + overlap) + N).MemCopyTo(this.in_mem, c * overlap, overlap);
 
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
@@ -448,7 +448,7 @@ namespace Concentus.Celt.Structs
             mode = this.mode;
             nbEBands = mode.nbEBands;
             overlap = mode.overlap;
-            eBands = mode.eBands;
+            eBands = mode.eBands.GetPointer();
             start = this.start;
             end = this.end;
             tf_estimate = 0;
@@ -882,7 +882,7 @@ namespace Concentus.Celt.Structs
 
             BoxedValue<int> boxed_tot_boost = new BoxedValue<int>();
             maxDepth = CeltCommon.dynalloc_analysis(bandLogE, bandLogE2, nbEBands, start, end, C, offsets,
-                  this.lsb_depth, mode.logN, isTransient, this.vbr, this.constrained_vbr,
+                  this.lsb_depth, mode.logN.GetPointer(), isTransient, this.vbr, this.constrained_vbr,
                   eBands, LM, effectiveBytes, boxed_tot_boost, this.lfe, surround_dynalloc);
             tot_boost = boxed_tot_boost.Val;
 

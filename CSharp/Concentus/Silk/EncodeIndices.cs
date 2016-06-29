@@ -112,7 +112,7 @@ namespace Concentus.Silk
             /****************/
             /* Encode NLSFs */
             /****************/
-            psRangeEnc.enc_icdf( psIndices.NLSFIndices[0], psEncC.psNLSF_CB.CB1_iCDF.Point((psIndices.signalType >> 1) * psEncC.psNLSF_CB.nVectors), 8);
+            psRangeEnc.enc_icdf( psIndices.NLSFIndices[0], psEncC.psNLSF_CB.CB1_iCDF.GetPointer((psIndices.signalType >> 1) * psEncC.psNLSF_CB.nVectors), 8);
             NLSF.silk_NLSF_unpack(ec_ix.GetPointer(), pred_Q8.GetPointer(), psEncC.psNLSF_CB, psIndices.NLSFIndices[0]);
             //Inlines.OpusAssert(psEncC.psNLSF_CB.order == psEncC.predictLPCOrder);
 
@@ -120,17 +120,17 @@ namespace Concentus.Silk
             {
                 if (psIndices.NLSFIndices[i + 1] >= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE)
                 {
-                    psRangeEnc.enc_icdf( 2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
+                    psRangeEnc.enc_icdf( 2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, psEncC.psNLSF_CB.ec_iCDF.GetPointer(ec_ix[i]), 8);
                     psRangeEnc.enc_icdf( psIndices.NLSFIndices[i + 1] - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, Tables.silk_NLSF_EXT_iCDF.GetPointer(), 8);
                 }
                 else if (psIndices.NLSFIndices[i + 1] <= 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE)
                 {
-                    psRangeEnc.enc_icdf( 0, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
+                    psRangeEnc.enc_icdf( 0, psEncC.psNLSF_CB.ec_iCDF.GetPointer(ec_ix[i]), 8);
                     psRangeEnc.enc_icdf( -psIndices.NLSFIndices[i + 1] - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, Tables.silk_NLSF_EXT_iCDF.GetPointer(), 8);
                 }
                 else
                 {
-                    psRangeEnc.enc_icdf( psIndices.NLSFIndices[i + 1] + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, psEncC.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
+                    psRangeEnc.enc_icdf( psIndices.NLSFIndices[i + 1] + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, psEncC.psNLSF_CB.ec_iCDF.GetPointer(ec_ix[i]), 8);
                 }
             }
 

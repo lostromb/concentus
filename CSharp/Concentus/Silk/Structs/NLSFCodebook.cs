@@ -58,37 +58,37 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// POINTER
         /// </summary>
-        internal Pointer<byte> CB1_NLSF_Q8 = null;
+        internal byte[] CB1_NLSF_Q8 = null;
 
         /// <summary>
         /// POINTER
         /// </summary>
-        internal Pointer<byte> CB1_iCDF = null;
+        internal byte[] CB1_iCDF = null;
 
         /// <summary>
         /// POINTER to Backward predictor coefs [ order ]
         /// </summary>
-        internal Pointer<byte> pred_Q8 = null;
+        internal byte[] pred_Q8 = null;
 
         /// <summary>
         /// POINTER to Indices to entropy coding tables [ order ]
         /// </summary>
-        internal Pointer<byte> ec_sel = null;
+        internal byte[] ec_sel = null;
 
         /// <summary>
         /// POINTER
         /// </summary>
-        internal Pointer<byte> ec_iCDF = null;
+        internal byte[] ec_iCDF = null;
 
         /// <summary>
         /// POINTER
         /// </summary>
-        internal Pointer<byte> ec_Rates_Q5 = null;
+        internal byte[] ec_Rates_Q5 = null;
 
         /// <summary>
         /// POINTER
         /// </summary>
-        internal Pointer<short> deltaMin_Q15 = null;
+        internal short[] deltaMin_Q15 = null;
         
         internal void Reset()
         {

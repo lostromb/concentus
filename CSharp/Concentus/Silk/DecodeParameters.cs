@@ -93,7 +93,7 @@ namespace Concentus.Silk
                 Array.Copy(psDecCtrl.PredCoef_Q12[1], psDecCtrl.PredCoef_Q12[0], psDec.LPC_order);
             }
 
-            pNLSF_Q15.MemCopyTo(psDec.prevNLSF_Q15, psDec.LPC_order);
+            pNLSF_Q15.MemCopyTo(psDec.prevNLSF_Q15, 0, psDec.LPC_order);
 
             /* After a packet loss do BWE of LPC coefs */
             if (psDec.lossCnt != 0)

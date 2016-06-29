@@ -1090,7 +1090,7 @@ namespace Concentus.Structs
                        gets used (rather than sent to the encoder and discarded) */
                     prefill_offset = this.channels * (this.encoder_buffer - this.delay_compensation - this.Fs / 400);
                     CodecHelpers.gain_fade(this.delay_buffer.Point(prefill_offset), this.delay_buffer.Point(prefill_offset),
-                          0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
+                          0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window.GetPointer(), this.Fs);
                     this.delay_buffer.MemSet(0, prefill_offset);
 
                     // fixme: wasteful conversion here; need to normalize the delay buffer path to use int16 exclusively
@@ -1253,7 +1253,7 @@ namespace Concentus.Structs
             if (this.prev_HB_gain < CeltConstants.Q15ONE || HB_gain < CeltConstants.Q15ONE)
             {
                 CodecHelpers.gain_fade(pcm_buf.GetPointer(), pcm_buf.GetPointer(),
-                      this.prev_HB_gain, HB_gain, celt_mode.overlap, frame_size, this.channels, celt_mode.window, this.Fs);
+                      this.prev_HB_gain, HB_gain, celt_mode.overlap, frame_size, this.channels, celt_mode.window.GetPointer(), this.Fs);
             }
 
             this.prev_HB_gain = HB_gain;
@@ -1270,7 +1270,7 @@ namespace Concentus.Structs
                     g1 = g1 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g1, 1);
                     g2 = g2 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g2, 1);
                     CodecHelpers.stereo_fade(pcm_buf.GetPointer(), pcm_buf.GetPointer(), g1, g2, celt_mode.overlap,
-                          frame_size, this.channels, celt_mode.window, this.Fs);
+                          frame_size, this.channels, celt_mode.window.GetPointer(), this.Fs);
                     this.hybrid_stereo_width_Q14 = Inlines.CHOP16(this.silk_mode.stereoWidth_Q14);
                 }
             }

@@ -159,8 +159,8 @@ namespace Concentus.Silk
                 /* Mono . Stereo transition: init state of second channel and stereo state */
                 ret += SilkEncoder.silk_init_encoder(psEnc.state_Fxx[1]);
 
-                psEnc.sStereo.pred_prev_Q13.MemSet(0, 2);
-                psEnc.sStereo.sSide.MemSet(0, 2);
+                Arrays.MemSet<short>(psEnc.sStereo.pred_prev_Q13, 0, 2);
+                Arrays.MemSet<short>(psEnc.sStereo.sSide, 0, 2);
                 psEnc.sStereo.mid_side_amp_Q0[0] = 0;
                 psEnc.sStereo.mid_side_amp_Q0[1] = 1;
                 psEnc.sStereo.mid_side_amp_Q0[2] = 0;
@@ -525,8 +525,8 @@ namespace Concentus.Silk
                     else
                     {
                         /* Buffering */
-                        psEnc.sStereo.sMid.MemCopyTo(psEnc.state_Fxx[0].inputBuf.GetPointer(), 2);
-                        psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].frame_length).MemCopyTo(psEnc.sStereo.sMid, 2);
+                        Array.Copy(psEnc.sStereo.sMid, psEnc.state_Fxx[0].inputBuf, 2);
+                        Array.Copy(psEnc.state_Fxx[0].inputBuf, psEnc.state_Fxx[0].frame_length, psEnc.sStereo.sMid, 0, 2);
                     }
 
                     psEnc.state_Fxx[0].silk_encode_do_VAD();

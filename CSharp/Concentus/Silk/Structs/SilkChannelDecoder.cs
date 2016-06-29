@@ -54,7 +54,7 @@ namespace Concentus.Silk.Structs
         internal int subfr_length = 0;                       /* Subframe length (samples)                                        */
         internal int ltp_mem_length = 0;                     /* Length of LTP memory                                             */
         internal int LPC_order = 0;                          /* LPC order                                                        */
-        internal readonly Pointer<short> prevNLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);      /* Used to interpolate LSFs                                         */
+        internal readonly short[] prevNLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER];      /* Used to interpolate LSFs                                         */
         internal int first_frame_after_reset = 0;            /* Flag for deactivating NLSF interpolation                         */
         internal Pointer<byte> pitch_lag_low_bits_iCDF;           /* Pointer to iCDF table for low bits of pitch lag index            */
         internal Pointer<byte> pitch_contour_iCDF;                /* Pointer to iCDF table for pitch contour index                    */
@@ -102,7 +102,7 @@ namespace Concentus.Silk.Structs
             subfr_length = 0;
             ltp_mem_length = 0;
             LPC_order = 0;
-            prevNLSF_Q15.MemSet(0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet<short>(prevNLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
             first_frame_after_reset = 0;
             pitch_lag_low_bits_iCDF = null;
             pitch_contour_iCDF = null;

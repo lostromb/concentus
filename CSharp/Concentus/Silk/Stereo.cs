@@ -235,10 +235,10 @@ namespace Concentus.Silk
             }
 
             /* Buffering */
-            state.sMid.MemCopyTo(mid, 2);
-            state.sSide.MemCopyTo(side, 2);
-            mid.Point(frame_length).MemCopyTo(state.sMid, 2);
-            side.Point(frame_length).MemCopyTo(state.sSide, 2);
+            state.sMid.GetPointer().MemCopyTo(mid, 2);
+            state.sSide.GetPointer().MemCopyTo(side, 2);
+            mid.Point(frame_length).MemCopyTo(state.sMid, 0, 2);
+            side.Point(frame_length).MemCopyTo(state.sSide, 0, 2);
 
             /* LP and HP filter mid signal */
             LP_mid = Pointer.Malloc<short>(frame_length);
@@ -267,8 +267,8 @@ namespace Concentus.Silk
                 Inlines.SILK_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF, 16);
             smooth_coef_Q16 = Inlines.silk_SMULWB(Inlines.silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
-            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0.Point(0), frame_length, smooth_coef_Q16);
-            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0.Point(2), frame_length, smooth_coef_Q16);
+            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0.GetPointer(0), frame_length, smooth_coef_Q16);
+            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0.GetPointer(2), frame_length, smooth_coef_Q16);
             
             /* Ratio of the norms of residual and mid signals */
             frac_Q16 = Inlines.silk_SMLABB(HP_ratio_Q14.Val, LP_ratio_Q14.Val, 3);
@@ -435,14 +435,10 @@ namespace Concentus.Silk
             int sum, diff, pred0_Q13, pred1_Q13;
 
             /* Buffering */
-            //silk_memcpy(x1, state.sMid, 2 * sizeof(opus_int16));
-            //silk_memcpy(x2, state.sSide, 2 * sizeof(opus_int16));
-            //silk_memcpy(state.sMid, &x1[frame_length], 2 * sizeof(opus_int16));
-            //silk_memcpy(state.sSide, &x2[frame_length], 2 * sizeof(opus_int16));
-            state.sMid.MemCopyTo(x1, 2);
-            state.sSide.MemCopyTo(x2, 2);
-            x1.Point(frame_length).MemCopyTo(state.sMid, 2);
-            x2.Point(frame_length).MemCopyTo(state.sSide, 2);
+            state.sMid.GetPointer().MemCopyTo(x1, 2);
+            state.sSide.GetPointer().MemCopyTo(x2, 2);
+            x1.Point(frame_length).MemCopyTo(state.sMid, 0, 2);
+            x2.Point(frame_length).MemCopyTo(state.sSide, 0, 2);
 
             /* Interpolate predictors and add prediction to side channel */
             pred0_Q13 = state.pred_prev_Q13[0];

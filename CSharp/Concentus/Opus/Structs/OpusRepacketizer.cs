@@ -13,8 +13,8 @@ namespace Concentus.Structs
     {
         public byte toc = 0;
         public int nb_frames = 0;
-        public Pointer<Pointer<byte>> frames = Pointer.Malloc<Pointer<byte>>(48);
-        public Pointer<short> len = Pointer.Malloc<short>(48);
+        public readonly Pointer<Pointer<byte>> frames = Pointer.Malloc<Pointer<byte>>(48);
+        public readonly short[] len = new short[48];
         public int framesize = 0;
         
         private OpusRepacketizer() { }
@@ -80,14 +80,14 @@ namespace Concentus.Structs
                 return OpusError.OPUS_INVALID_PACKET;
             }
 
-            ret = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, tmp_toc, this.frames.Point(this.nb_frames), this.len.Point(this.nb_frames), null, null);
+            ret = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, tmp_toc, this.frames.Point(this.nb_frames), this.len.GetPointer(this.nb_frames), null, null);
             if (ret < 1) return ret;
 
             this.nb_frames += curr_nb_frames;
             return OpusError.OPUS_OK;
         }
 
-        /** Add a packet to the current repacketizer state.
+        /** opus_repacketizer_cat. Add a packet to the current repacketizer state.
   * This packet must match the configuration of any packets already submitted
   * for repacketization since the last call to opus_repacketizer_init().
   * This means that it must have the same coding mode, audio bandwidth, frame
@@ -170,7 +170,7 @@ namespace Concentus.Structs
             }
             count = end - begin;
 
-            len = this.len.Point(begin);
+            len = this.len.GetPointer(begin);
             frames = this.frames.Point(begin);
 
             if (self_delimited != 0)

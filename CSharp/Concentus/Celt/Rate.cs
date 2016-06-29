@@ -64,7 +64,7 @@ namespace Concentus.Celt
             Pointer<byte> cache;
 
             LM++;
-            cache = m.cache.bits.Point(m.cache.index[LM * m.nbEBands + band]);
+            cache = m.cache.bits.GetPointer(m.cache.index[LM * m.nbEBands + band]);
 
             lo = 0;
             hi = cache[0];
@@ -89,7 +89,7 @@ namespace Concentus.Celt
             Pointer<byte> cache;
 
             LM++;
-            cache = m.cache.bits.Point(m.cache.index[LM * m.nbEBands + band]);
+            cache = m.cache.bits.GetPointer(m.cache.index[LM * m.nbEBands + band]);
             return pulses == 0 ? 0 : cache[pulses] + 1;
         }
 

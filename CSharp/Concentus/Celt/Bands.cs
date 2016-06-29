@@ -104,7 +104,7 @@ namespace Concentus.Celt
         internal static void compute_band_energies(CeltMode m, Pointer<int> X, Pointer<int> bandE, int end, int C, int LM)
         {
             int i, c, N;
-            Pointer<short> eBands = m.eBands;
+            Pointer<short> eBands = m.eBands.GetPointer();
             N = m.shortMdctSize << LM;
             c = 0;
 
@@ -150,7 +150,7 @@ namespace Concentus.Celt
         internal static void normalise_bands(CeltMode m, Pointer<int> freq, Pointer<int> X, Pointer<int> bandE, int end, int C, int M)
         {
             int i, c, N;
-            Pointer<short> eBands = m.eBands;
+            Pointer<short> eBands = m.eBands.GetPointer();
             N = M * m.shortMdctSize;
             c = 0;
             do
@@ -181,7 +181,7 @@ namespace Concentus.Celt
             int bound;
             Pointer<int> f;
             Pointer<int> x;
-            Pointer<short> eBands = m.eBands;
+            Pointer<short> eBands = m.eBands.GetPointer();
             N = M * m.shortMdctSize;
             bound = M * eBands[end];
             if (downsample != 1)
@@ -427,7 +427,7 @@ namespace Concentus.Celt
         {
             int i, c, N0;
             int sum = 0, nbBands = 0;
-            Pointer<short> eBands = m.eBands;
+            Pointer<short> eBands = m.eBands.GetPointer();
             int decision;
             int hf_sum = 0;
 
@@ -977,7 +977,7 @@ namespace Concentus.Celt
             ec = ctx.ec;
 
             /* If we need 1.5 more bits than we can produce, split the band in two. */
-            cache = m.cache.bits.Point(m.cache.index[(LM + 1) * m.nbEBands + i]);
+            cache = m.cache.bits.GetPointer(m.cache.index[(LM + 1) * m.nbEBands + i]);
             if (LM != -1 && b > cache[cache[0]] + 12 && N > 2)
             {
                 int mbits, sbits, delta;
@@ -1443,7 +1443,7 @@ namespace Concentus.Celt
         {
             int i;
             int remaining_bits;
-            Pointer<short> eBands = m.eBands;
+            Pointer<short> eBands = m.eBands.GetPointer();
             Pointer<int> norm, norm2;
             Pointer<int> _norm;
             Pointer<int> lowband_scratch;

@@ -203,8 +203,8 @@ namespace Concentus.Structs
                     0,
                     freq,
                     0,
-                    celt_mode.window.Data,
-                    celt_mode.window.Offset,
+                    celt_mode.window,
+                    0,
                     overlap,
                     celt_mode.maxLM - LM,
                     1);

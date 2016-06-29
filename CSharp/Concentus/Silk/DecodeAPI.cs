@@ -160,8 +160,8 @@ namespace Concentus.Silk
 
             if (decControl.nChannelsAPI == 2 && decControl.nChannelsInternal == 2 && (psDec.nChannelsAPI == 1 || psDec.nChannelsInternal == 1))
             {
-                psDec.sStereo.pred_prev_Q13.MemSet(0, 2);
-                psDec.sStereo.sSide.MemSet(0, 2);
+                Arrays.MemSet<short>(psDec.sStereo.pred_prev_Q13, 0, 2);
+                Arrays.MemSet<short>(psDec.sStereo.sSide, 0, 2);
                 channel_state[1].resampler_state.Assign(channel_state[0].resampler_state);
             }
             psDec.nChannelsAPI = decControl.nChannelsAPI;
@@ -359,8 +359,8 @@ namespace Concentus.Silk
             else
             {
                 /* Buffering */
-                psDec.sStereo.sMid.MemCopyTo(samplesOut1_tmp[0], 2);
-                samplesOut1_tmp[0].Point(nSamplesOutDec.Val).MemCopyTo(psDec.sStereo.sMid, 2);
+                psDec.sStereo.sMid.GetPointer().MemCopyTo(samplesOut1_tmp[0], 2);
+                samplesOut1_tmp[0].Point(nSamplesOutDec.Val).MemCopyTo(psDec.sStereo.sMid, 0, 2);
             }
 
             /* Number of output samples */

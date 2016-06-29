@@ -38,22 +38,22 @@ namespace Concentus.Silk.Structs
 
     internal class StereoEncodeState
     {
-        internal readonly Pointer<short> pred_prev_Q13 = Pointer.Malloc<short>(2);
-        internal readonly Pointer<short> sMid = Pointer.Malloc<short>(2);
-        internal readonly Pointer<short> sSide = Pointer.Malloc<short>(2);
-        internal readonly Pointer<int> mid_side_amp_Q0 = Pointer.Malloc<int>(4);
+        internal readonly short[] pred_prev_Q13 = new short[2];
+        internal readonly short[] sMid = new short[2];
+        internal readonly short[] sSide = new short[2];
+        internal readonly int[] mid_side_amp_Q0 = new int[4];
         internal short smth_width_Q14 = 0;
         internal short width_prev_Q14 = 0;
         internal short silent_side_len = 0;
         internal readonly Pointer<Pointer<Pointer<sbyte>>> predIx = Arrays.InitThreeDimensionalArrayPointer<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
-        internal readonly Pointer<sbyte> mid_only_flags = Pointer.Malloc<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET);
+        internal readonly sbyte[] mid_only_flags = new sbyte[SilkConstants.MAX_FRAMES_PER_PACKET];
         
         internal void Reset()
         {
-            pred_prev_Q13.MemSet(0, 2);
-            sMid.MemSet(0, 2);
-            sSide.MemSet(0, 2);
-            mid_side_amp_Q0.MemSet(0, 4);
+            Arrays.MemSet<short>(pred_prev_Q13, 0, 2);
+            Arrays.MemSet<short>(sMid, 0, 2);
+            Arrays.MemSet<short>(sSide, 0, 2);
+            Arrays.MemSet<int>(mid_side_amp_Q0, 0, 4);
             smth_width_Q14 = 0;
             width_prev_Q14 = 0;
             silent_side_len = 0;
@@ -65,7 +65,7 @@ namespace Concentus.Silk.Structs
                 }
             }
 
-            mid_only_flags.MemSet(0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSet<sbyte>(mid_only_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
         }
     }
 }

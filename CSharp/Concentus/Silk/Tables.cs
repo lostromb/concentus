@@ -376,13 +376,13 @@ namespace Concentus.Silk
             order = 10,
             quantStepSize_Q16 = Inlines.CHOP16(Inlines.SILK_CONST(0.18f, 16)),
             invQuantStepSize_Q6 = Inlines.CHOP16(Inlines.SILK_CONST(1.0f / 0.18f, 6)),
-            CB1_NLSF_Q8 = silk_NLSF_CB1_NB_MB_Q8.GetPointer(),
-            CB1_iCDF = silk_NLSF_CB1_iCDF_NB_MB.GetPointer(),
-            pred_Q8 = silk_NLSF_PRED_NB_MB_Q8.GetPointer(),
-            ec_sel = silk_NLSF_CB2_SELECT_NB_MB.GetPointer(),
-            ec_iCDF = silk_NLSF_CB2_iCDF_NB_MB.GetPointer(),
-            ec_Rates_Q5 = silk_NLSF_CB2_BITS_NB_MB_Q5.GetPointer(),
-            deltaMin_Q15 = silk_NLSF_DELTA_MIN_NB_MB_Q15.GetPointer(),
+            CB1_NLSF_Q8 = silk_NLSF_CB1_NB_MB_Q8,
+            CB1_iCDF = silk_NLSF_CB1_iCDF_NB_MB,
+            pred_Q8 = silk_NLSF_PRED_NB_MB_Q8,
+            ec_sel = silk_NLSF_CB2_SELECT_NB_MB,
+            ec_iCDF = silk_NLSF_CB2_iCDF_NB_MB,
+            ec_Rates_Q5 = silk_NLSF_CB2_BITS_NB_MB_Q5,
+            deltaMin_Q15 = silk_NLSF_DELTA_MIN_NB_MB_Q15,
         };
 
         internal static readonly byte[] silk_NLSF_CB1_WB_Q8 = {
@@ -541,13 +541,13 @@ namespace Concentus.Silk
             order = 16,
             quantStepSize_Q16 = Inlines.CHOP16(Inlines.SILK_CONST(0.15f, 16)),
             invQuantStepSize_Q6 = Inlines.CHOP16(Inlines.SILK_CONST(1.0f / 0.15f, 6)),
-            CB1_NLSF_Q8 = silk_NLSF_CB1_WB_Q8.GetPointer(),
-            CB1_iCDF = silk_NLSF_CB1_iCDF_WB.GetPointer(),
-            pred_Q8 = silk_NLSF_PRED_WB_Q8.GetPointer(),
-            ec_sel = silk_NLSF_CB2_SELECT_WB.GetPointer(),
-            ec_iCDF = silk_NLSF_CB2_iCDF_WB.GetPointer(),
-            ec_Rates_Q5 = silk_NLSF_CB2_BITS_WB_Q5.GetPointer(),
-            deltaMin_Q15 = silk_NLSF_DELTA_MIN_WB_Q15.GetPointer(),
+            CB1_NLSF_Q8 = silk_NLSF_CB1_WB_Q8,
+            CB1_iCDF = silk_NLSF_CB1_iCDF_WB,
+            pred_Q8 = silk_NLSF_PRED_WB_Q8,
+            ec_sel = silk_NLSF_CB2_SELECT_WB,
+            ec_iCDF = silk_NLSF_CB2_iCDF_WB,
+            ec_Rates_Q5 = silk_NLSF_CB2_BITS_WB_Q5,
+            deltaMin_Q15 = silk_NLSF_DELTA_MIN_WB_Q15,
         };
 
         /* Piece-wise linear mapping from bitrate in kbps to coding quality in dB SNR */

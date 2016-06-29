@@ -54,13 +54,5 @@ namespace Concentus.Celt.Structs
         internal MDCTLookup()
         {
         }
-
-        internal void Reset()
-        {
-            n = 0;
-            maxshift = 0;
-            kfft = new FFTState[4];
-            trig = null;
-        }
     }
 }

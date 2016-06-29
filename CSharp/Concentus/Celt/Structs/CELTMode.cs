@@ -52,7 +52,7 @@ namespace Concentus.Celt.Structs
         /// <summary>
         /// Definition for each "pseudo-critical band"
         /// </summary>
-        internal Pointer<short> eBands = null;
+        internal short[] eBands = null;
 
         internal int maxLM = 0;
         internal int nbShortMdcts = 0;
@@ -66,34 +66,52 @@ namespace Concentus.Celt.Structs
         /// <summary>
         /// Number of bits in each band for several rates
         /// </summary>
-        internal Pointer<byte> allocVectors = null;
-        internal Pointer<short> logN = null;
+        internal byte[] allocVectors = null;
+        internal short[] logN = null;
 
-        internal Pointer<int> window = null;
+        internal int[] window = null;
         internal MDCTLookup mdct = new MDCTLookup();
         internal PulseCache cache = new PulseCache();
 
-        internal CeltMode()
+        private CeltMode()
         {
         }
 
-        internal void Reset()
+        internal static readonly CeltMode mode48000_960_120 = new CeltMode
         {
-            Fs = 0;
-            overlap = 0;
-            nbEBands = 0;
-            effEBands = 0;
-            Arrays.MemSet<int>(preemph, 0);
-            eBands = null;
-            maxLM = 0;
-            nbShortMdcts = 0;
-            shortMdctSize = 0;
-            nbAllocVectors = 0;
-            allocVectors = null;
-            logN = null;
-            window = null;
-            mdct.Reset();
-            cache.Reset();
-        }
+            Fs = 48000,
+            overlap = 120,
+            nbEBands = 21,
+            effEBands = 21,
+            preemph = new int[] { 27853, 0, 4096, 8192 },
+            eBands = Tables.eband5ms,
+            maxLM = 3,
+            nbShortMdcts = 8,
+            shortMdctSize = 120,
+            nbAllocVectors = 11,
+            allocVectors = Tables.band_allocation,
+            logN = Tables.logN400,
+            window = Tables.window120,
+            mdct = new MDCTLookup()
+            {
+                n = 1920,
+                maxshift = 3,
+                kfft = new FFTState[]
+                {
+                    Tables.fft_state48000_960_0,
+                    Tables.fft_state48000_960_1,
+                    Tables.fft_state48000_960_2,
+                    Tables.fft_state48000_960_3,
+                },
+                trig = Tables.mdct_twiddles960
+            },
+            cache = new PulseCache()
+            {
+                size = 392,
+                index = Tables.cache_index50,
+                bits = Tables.cache_bits50,
+                caps = Tables.cache_caps50,
+            }
+        };
     }
 }

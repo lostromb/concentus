@@ -38,15 +38,15 @@ namespace Concentus.Silk.Structs
 
     internal class StereoDecodeState
     {
-        internal readonly Pointer<short> pred_prev_Q13 = Pointer.Malloc<short>(2);
-        internal readonly Pointer<short> sMid = Pointer.Malloc<short>(2);
-        internal readonly Pointer<short> sSide = Pointer.Malloc<short>(2);
+        internal readonly short[] pred_prev_Q13 = new short[2];
+        internal readonly short[] sMid = new short[2];
+        internal readonly short[] sSide = new short[2];
 
         internal void Reset()
         {
-            pred_prev_Q13.MemSet(0, 2);
-            sMid.MemSet(0, 2);
-            sSide.MemSet(0, 2);
+            Arrays.MemSet<short>(pred_prev_Q13, 0, 2);
+            Arrays.MemSet<short>(sMid, 0, 2);
+            Arrays.MemSet<short>(sSide, 0, 2);
         }
     }
 }

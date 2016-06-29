@@ -209,6 +209,8 @@ namespace Concentus.Structs
             return st;
         }
         
+        private static readonly byte[] SILENCE = { 0xFF, 0xFF };
+
         internal int opus_decode_frame(Pointer<byte> data,
       int len, Pointer<short> pcm, int frame_size, int decode_fec)
         {
@@ -516,8 +518,6 @@ namespace Concentus.Structs
             }
             else
             {
-                // fixme: make this static
-                byte[] silence = { 0xFF, 0xFF };
                 if (celt_accum == 0)
                 {
                     for (i = 0; i < frame_size * this.channels; i++)
@@ -528,7 +528,7 @@ namespace Concentus.Structs
                 if (this.prev_mode == OpusMode.MODE_HYBRID && !(redundancy != 0 && celt_to_silk != 0 && this.prev_redundancy != 0))
                 {
                     celt_dec.SetStartBand(0);
-                    celt_dec.celt_decode_with_ec(silence.GetPointer(), 2, pcm, F2_5, null, celt_accum);
+                    celt_dec.celt_decode_with_ec(SILENCE.GetPointer(), 2, pcm, F2_5, null, celt_accum);
                 }
             }
 
@@ -538,7 +538,7 @@ namespace Concentus.Structs
                     pcm[i] = Inlines.SAT16(Inlines.ADD32(pcm[i], pcm_silk[i]));
             }
 
-            window = celt_dec.GetMode().window;
+            window = celt_dec.GetMode().window.GetPointer();
 
             /* 5 ms redundant frame for SILK.CELT */
             if (redundancy != 0 && celt_to_silk == 0)

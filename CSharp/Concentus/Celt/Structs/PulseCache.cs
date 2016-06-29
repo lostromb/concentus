@@ -43,9 +43,9 @@ namespace Concentus.Celt.Structs
     internal class PulseCache
     {
         internal int size = 0;
-        internal Pointer<short> index = null;
-        internal Pointer<byte> bits = null;
-        internal Pointer<byte> caps = null;
+        internal short[] index = null;
+        internal byte[] bits = null;
+        internal byte[] caps = null;
 
         internal void Reset()
         {

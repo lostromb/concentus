@@ -91,12 +91,12 @@ namespace Concentus.Silk
             /**********************/
             /* Decode LSF Indices */
             /**********************/
-            psDec.indices.NLSFIndices[0] = (sbyte)psRangeDec.dec_icdf(psDec.psNLSF_CB.CB1_iCDF.Point((psDec.indices.signalType >> 1) * psDec.psNLSF_CB.nVectors), 8);
+            psDec.indices.NLSFIndices[0] = (sbyte)psRangeDec.dec_icdf(psDec.psNLSF_CB.CB1_iCDF.GetPointer((psDec.indices.signalType >> 1) * psDec.psNLSF_CB.nVectors), 8);
             NLSF.silk_NLSF_unpack(ec_ix, pred_Q8, psDec.psNLSF_CB, psDec.indices.NLSFIndices[0]);
             //Inlines.OpusAssert(psDec.psNLSF_CB.order == psDec.LPC_order);
             for (i = 0; i < psDec.psNLSF_CB.order; i++)
             {
-                Ix = psRangeDec.dec_icdf(psDec.psNLSF_CB.ec_iCDF.Point(ec_ix[i]), 8);
+                Ix = psRangeDec.dec_icdf(psDec.psNLSF_CB.ec_iCDF.GetPointer(ec_ix[i]), 8);
                 if (Ix == 0)
                 {
                     Ix -= psRangeDec.dec_icdf(Tables.silk_NLSF_EXT_iCDF.GetPointer(), 8);
