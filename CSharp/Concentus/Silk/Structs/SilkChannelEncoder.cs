@@ -35,7 +35,7 @@ namespace Concentus.Silk.Structs
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
-
+    using System;
     /// <summary>
     /// Encoder state
     /// </summary>
@@ -344,7 +344,7 @@ namespace Concentus.Silk.Structs
                 }
                 else
                 {
-                    Pointer<short> x_buf_API_fs_Hz;
+                    short[] x_buf_API_fs_Hz;
                     SilkResamplerState temp_resampler_state = null;
 
                     Pointer<short> x_bufFIX = this.x_buf.GetPointer();
@@ -364,14 +364,14 @@ namespace Concentus.Silk.Structs
                     api_buf_samples = buf_length_ms * Inlines.silk_DIV32_16(this.API_fs_Hz, 1000);
 
                     /* Temporary resampling of x_buf data to API_fs_Hz */
-                    x_buf_API_fs_Hz = Pointer.Malloc<short>(api_buf_samples);
-                    ret += Resampler.silk_resampler(temp_resampler_state, x_buf_API_fs_Hz, x_bufFIX, old_buf_samples);
+                    x_buf_API_fs_Hz = new short[api_buf_samples];
+                    ret += Resampler.silk_resampler(temp_resampler_state, x_buf_API_fs_Hz.GetPointer(), x_bufFIX, old_buf_samples);
 
                     /* Initialize the resampler for enc_API.c preparing resampling from API_fs_Hz to fs_kHz */
                     ret += Resampler.silk_resampler_init(this.resampler_state, this.API_fs_Hz, Inlines.silk_SMULBB(fs_kHz, 1000), 1);
 
                     /* Correct resampler state by resampling buffered data from API_fs_Hz to fs_kHz */
-                    ret += Resampler.silk_resampler(this.resampler_state, x_bufFIX, x_buf_API_fs_Hz, api_buf_samples);
+                    ret += Resampler.silk_resampler(this.resampler_state, x_bufFIX, x_buf_API_fs_Hz.GetPointer(), api_buf_samples);
                 }
             }
 
@@ -929,19 +929,19 @@ namespace Concentus.Silk.Structs
 
             if (this.prefillFlag == 0)
             {
-                Pointer<int> xfw_Q3;
-                Pointer<short> res_pitch;
-                Pointer<byte> ec_buf_copy;
+                int[] xfw_Q3;
+                short[] res_pitch;
+                byte[] ec_buf_copy;
                 Pointer<short> res_pitch_frame;
 
-                res_pitch = Pointer.Malloc<short>(this.la_pitch + this.frame_length + this.ltp_mem_length);
+                res_pitch = new short[this.la_pitch + this.frame_length + this.ltp_mem_length];
                 /* start of pitch LPC residual frame */
-                res_pitch_frame = res_pitch.Point(this.ltp_mem_length);
+                res_pitch_frame = res_pitch.GetPointer(this.ltp_mem_length);
 
                 /*****************************************/
                 /* Find pitch lags, initial LPC analysis */
                 /*****************************************/
-                FindPitchLags.silk_find_pitch_lags(this, sEncCtrl, res_pitch, x_frame);
+                FindPitchLags.silk_find_pitch_lags(this, sEncCtrl, res_pitch.GetPointer(), x_frame);
 
                 /************************/
                 /* Noise shape analysis */
@@ -951,7 +951,7 @@ namespace Concentus.Silk.Structs
                 /***************************************************/
                 /* Find linear prediction coefficients (LPC + LTP) */
                 /***************************************************/
-                FindPredCoefs.silk_find_pred_coefs(this, sEncCtrl, res_pitch, x_frame, condCoding);
+                FindPredCoefs.silk_find_pred_coefs(this, sEncCtrl, res_pitch.GetPointer(), x_frame, condCoding);
 
                 /****************************************/
                 /* Process gains                        */
@@ -961,8 +961,8 @@ namespace Concentus.Silk.Structs
                 /*****************************************/
                 /* Prefiltering for noise shaper         */
                 /*****************************************/
-                xfw_Q3 = Pointer.Malloc<int>(this.frame_length);
-                Filters.silk_prefilter(this, sEncCtrl, xfw_Q3, x_frame);
+                xfw_Q3 = new int[this.frame_length];
+                Filters.silk_prefilter(this, sEncCtrl, xfw_Q3, x_frame.Data, x_frame.Offset);
 
                 /****************************************/
                 /* Low Bitrate Redundant Encoding       */
@@ -983,7 +983,7 @@ namespace Concentus.Silk.Structs
                 seed_copy = this.indices.Seed;
                 ec_prevLagIndex_copy = this.ec_prevLagIndex;
                 ec_prevSignalType_copy = this.ec_prevSignalType;
-                ec_buf_copy = Pointer.Malloc<byte>(1275);
+                ec_buf_copy = new byte[1275]; // fixme: this size might be optimized to the actual size
                 for (iter = 0; ; iter++)
                 {
                     if (gainsID == gainsID_lower)
@@ -1013,8 +1013,7 @@ namespace Concentus.Silk.Structs
                             sNSQ.silk_NSQ_del_dec(
                                 this,
                                 this.indices,
-                                xfw_Q3.Data,
-                                xfw_Q3.Offset,
+                                xfw_Q3,
                                 pulses,
                                 sEncCtrl.PredCoef_Q12,
                                 sEncCtrl.LTPCoef_Q14,
@@ -1031,8 +1030,7 @@ namespace Concentus.Silk.Structs
                             sNSQ.silk_NSQ(
                                 this,
                                 this.indices,
-                                xfw_Q3.Data,
-                                xfw_Q3.Offset,
+                                xfw_Q3,
                                 pulses,
                                 sEncCtrl.PredCoef_Q12,
                                 0,
@@ -1075,7 +1073,7 @@ namespace Concentus.Silk.Structs
                             /* Restore output state from earlier iteration that did meet the bitrate budget */
                             psRangeEnc.Assign(sRangeEnc_copy2);
                             //Inlines.OpusAssert(sRangeEnc_copy2.offs <= 1275);
-                            ec_buf_copy.MemCopyTo(psRangeEnc.buf, (int)sRangeEnc_copy2.offs);
+                            ec_buf_copy.GetPointer().MemCopyTo(psRangeEnc.buf, (int)sRangeEnc_copy2.offs);
                             this.sNSQ.Assign(sNSQ_copy2);
                             this.sShape.LastGainIndex = LastGainIndex_copy2;
                         }
@@ -1109,7 +1107,7 @@ namespace Concentus.Silk.Structs
                             /* Copy part of the output state */
                             sRangeEnc_copy2.Assign(psRangeEnc);
                             //Inlines.OpusAssert(psRangeEnc.offs <= 1275);
-                            psRangeEnc.buf.MemCopyTo(ec_buf_copy, (int)psRangeEnc.offs);
+                            psRangeEnc.buf.MemCopyTo(ec_buf_copy, 0, (int)psRangeEnc.offs);
                             sNSQ_copy2.Assign(this.sNSQ);
                             LastGainIndex_copy2 = this.sShape.LastGainIndex;
                         }
@@ -1193,11 +1191,11 @@ namespace Concentus.Silk.Structs
         /* Low-Bitrate Redundancy (LBRR) encoding. Reuse all parameters but encode excitation at lower bitrate  */
         internal void silk_LBRR_encode(
             SilkEncoderControl thisCtrl,                             /* I/O  Pointer to Silk FIX encoder control struct                                  */
-            Pointer<int> xfw_Q3,                               /* I    Input signal                                                                */
+            int[] xfw_Q3,                               /* I    Input signal                                                                */
             int condCoding                              /* I    The type of conditional coding used so far for this frame                   */
         )
         {
-            Pointer<int> TempGains_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+            int[] TempGains_Q16 = new int[/*SilkConstants.MAX_NB_SUBFR*/ this.nb_subfr];
             SideInfoIndices psIndices_LBRR = this.indices_LBRR[this.nFramesEncoded];
             SilkNSQState sNSQ_LBRR = new SilkNSQState();
 
@@ -1213,7 +1211,7 @@ namespace Concentus.Silk.Structs
                 psIndices_LBRR.Assign(this.indices);
 
                 /* Save original gains */
-                thisCtrl.Gains_Q16.GetPointer().MemCopyTo(TempGains_Q16, this.nb_subfr);
+                Array.Copy(thisCtrl.Gains_Q16, TempGains_Q16, this.nb_subfr);
 
                 if (this.nFramesEncoded == 0 || this.LBRR_flags[this.nFramesEncoded - 1] == 0)
                 {
@@ -1239,8 +1237,7 @@ namespace Concentus.Silk.Structs
                 {
                     sNSQ_LBRR.silk_NSQ_del_dec(this,
                         psIndices_LBRR,
-                        xfw_Q3.Data,
-                        xfw_Q3.Offset,
+                        xfw_Q3,
                         this.pulses_LBRR[this.nFramesEncoded],
                         thisCtrl.PredCoef_Q12,
                         thisCtrl.LTPCoef_Q14,
@@ -1256,8 +1253,7 @@ namespace Concentus.Silk.Structs
                 else {
                     sNSQ_LBRR.silk_NSQ(this,
                         psIndices_LBRR,
-                        xfw_Q3.Data,
-                        xfw_Q3.Offset,
+                        xfw_Q3,
                         this.pulses_LBRR[this.nFramesEncoded],
                         thisCtrl.PredCoef_Q12,
                         0,
@@ -1275,7 +1271,7 @@ namespace Concentus.Silk.Structs
                 }
 
                 /* Restore original gains */
-                TempGains_Q16.MemCopyTo(thisCtrl.Gains_Q16.GetPointer(), this.nb_subfr);
+                Array.Copy(TempGains_Q16, thisCtrl.Gains_Q16, this.nb_subfr);
             }
         }
     }

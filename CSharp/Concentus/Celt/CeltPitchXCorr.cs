@@ -44,8 +44,6 @@ namespace Concentus.Celt
 
     internal static class CeltPitchXCorr
     {
-        private static ThreadLocal<int[]> scratch = new ThreadLocal<int[]>(() => { return new int[4]; });
-
         internal static int pitch_xcorr(
             Pointer<int> _x,
             Pointer<int> _y,
@@ -53,7 +51,7 @@ namespace Concentus.Celt
             int len,
             int max_pitch)
         {
-            int[] sum = scratch.Value;
+            int[] sum = new int[4];
             int i;
             int maxcorr = 1;
             //Inlines.OpusAssert(max_pitch > 0);
@@ -90,7 +88,7 @@ namespace Concentus.Celt
             int len,
             int max_pitch)
         {
-            int[] sum = scratch.Value;
+            int[] sum = new int[4];
             int i;
             int maxcorr = 1;
             //Inlines.OpusAssert(max_pitch > 0);

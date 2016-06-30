@@ -49,8 +49,8 @@ namespace Concentus
 
         internal static void hp_cutoff(short[] input, int input_ptr, int cutoff_Hz, int[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
         {
-            Pointer<int> B_Q28 = Pointer.Malloc<int>(3);
-            Pointer<int> A_Q28 = Pointer.Malloc<int>(2);
+            int[] B_Q28 = new int[3];
+            int[] A_Q28 = new int[2];
             int Fc_Q19, r_Q28, r_Q22;
 
             //Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19));
@@ -70,10 +70,10 @@ namespace Concentus
             A_Q28[0] = Inlines.silk_SMULWW(r_Q22, Inlines.silk_SMULWW(Fc_Q19, Fc_Q19) - Inlines.SILK_CONST(2.0f, 22));
             A_Q28[1] = Inlines.silk_SMULWW(r_Q22, r_Q22);
 
-            Filters.silk_biquad_alt(input, input_ptr, B_Q28, A_Q28, hp_mem.GetPointer(), output.GetPointer(output_ptr), len, channels);
+            Filters.silk_biquad_alt(input, input_ptr, B_Q28, A_Q28, hp_mem, 0, output, output_ptr, len, channels);
             if (channels == 2)
             {
-                Filters.silk_biquad_alt(input, input_ptr + 1, B_Q28, A_Q28, hp_mem.GetPointer(2), output.GetPointer(output_ptr + 1), len, channels);
+                Filters.silk_biquad_alt(input, input_ptr + 1, B_Q28, A_Q28, hp_mem, 2, output, output_ptr + 1, len, channels);
             }
         }
 

@@ -182,7 +182,6 @@ namespace Concentus.Silk.Structs
                 SilkChannelEncoder psEncC,                                    /* I/O  Encoder State                   */
                 SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
                 int[] x_Q3,                                     /* I    Prefiltered input signal        */
-                int x_Q3_ptr,
                 sbyte[] pulses,                                   /* O    Quantized pulse signal          */
                 short[] PredCoef_Q12,          /* I    Short term prediction coefs [2 * SilkConstants.MAX_LPC_ORDER]    */
                 int PredCoef_Q12_ptr,
@@ -208,6 +207,7 @@ namespace Concentus.Silk.Structs
             int offset_Q10;
             int[] x_sc_Q10;
             int pulses_ptr = 0;
+            int x_Q3_ptr = 0;
 
             this.rand_seed = psIndices.Seed;
 
@@ -619,7 +619,6 @@ namespace Concentus.Silk.Structs
             SilkChannelEncoder psEncC,                                    /* I  Encoder State                   */
             SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
             int[] x_Q3,                                     /* I    Prefiltered input signal        */
-            int x_Q3_ptr,
             sbyte[] pulses,                                   /* O    Quantized pulse signal          */
             short[] PredCoef_Q12,          /* I    Short term prediction coefs [2 * MAX_LPC_ORDER]    */
             short[] LTPCoef_Q14,    /* I    Long term prediction coefs LTP_ORDER * MAX_NB_SUBFR]     */
@@ -645,6 +644,7 @@ namespace Concentus.Silk.Structs
             int RDmin_Q10, Gain_Q10;
             int[] x_sc_Q10;
             int[] delayedGain_Q10;
+            int x_Q3_ptr = 0;
             NSQ_del_dec_struct[] psDelDec;
             NSQ_del_dec_struct psDD;
 

@@ -73,8 +73,8 @@ namespace Concentus.Silk.Structs
             int frame_length                    /* I    Frame length                                */
             )
         {
-            Pointer<int> B_Q28 = Pointer.Malloc<int>(SilkConstants.TRANSITION_NB);
-            Pointer<int> A_Q28 = Pointer.Malloc<int>(SilkConstants.TRANSITION_NA);
+            int[] B_Q28 = new int[SilkConstants.TRANSITION_NB];
+            int[] A_Q28 = new int[SilkConstants.TRANSITION_NA];
             int fac_Q16 = 0;
             int ind = 0;
 
@@ -93,14 +93,14 @@ namespace Concentus.Silk.Structs
                 //Inlines.OpusAssert(ind < SilkConstants.TRANSITION_INT_NUM);
 
                 /* Interpolate filter coefficients */
-                Filters.silk_LP_interpolate_filter_taps(B_Q28, A_Q28, ind, fac_Q16);
+                Filters.silk_LP_interpolate_filter_taps(B_Q28.GetPointer(), A_Q28.GetPointer(), ind, fac_Q16);
 
                 /* Update transition frame number for next frame */
                 this.transition_frame_no = Inlines.silk_LIMIT(this.transition_frame_no + this.mode, 0, SilkConstants.TRANSITION_FRAMES);
 
                 /* ARMA low-pass filtering */
                 //Inlines.OpusAssert(SilkConstants.TRANSITION_NB == 3 && SilkConstants.TRANSITION_NA == 2);
-                Filters.silk_biquad_alt(frame, B_Q28, A_Q28, this.In_LP_State.GetPointer(), frame, frame_length, 1);
+                Filters.silk_biquad_alt(frame.Data, frame.Offset, B_Q28, A_Q28, this.In_LP_State, frame.Data, frame.Offset, frame_length, 1);
             }
         }
     }

@@ -43,9 +43,11 @@ namespace Concentus.Silk
     {
         internal static void silk_warped_LPC_analysis_filter(
             int[] state,                    /* I/O  State [order + 1]                   */
-            Pointer<int> res_Q2,                   /* O    Residual signal [length]            */
-            Pointer<short> coef_Q13,                 /* I    Coefficients [order]                */
-            Pointer<short> input,                    /* I    Input signal [length]               */
+            int[] res_Q2,                   /* O    Residual signal [length]            */
+            short[] coef_Q13,                 /* I    Coefficients [order]                */
+            int coef_Q13_ptr,
+            short[] input,                    /* I    Input signal [length]               */
+            int input_ptr,
             short lambda_Q16,                 /* I    Warping factor                      */
             int length,                     /* I    Length of input signal              */
             int order                       /* I    Filter order (even)                 */
@@ -61,35 +63,36 @@ namespace Concentus.Silk
             {
                 /* Output of lowpass section */
                 tmp2 = Inlines.silk_SMLAWB(state[0], state[1], lambda_Q16);
-                state[0] = Inlines.silk_LSHIFT(input[n], 14);
+                state[0] = Inlines.silk_LSHIFT(input[input_ptr + n], 14);
                 /* Output of allpass section */
                 tmp1 = Inlines.silk_SMLAWB(state[1], state[2] - tmp2, lambda_Q16);
                 state[1] = tmp2;
                 acc_Q11 = Inlines.silk_RSHIFT(order, 1);
-                acc_Q11 = Inlines.silk_SMLAWB(acc_Q11, tmp2, coef_Q13[0]);
+                acc_Q11 = Inlines.silk_SMLAWB(acc_Q11, tmp2, coef_Q13[coef_Q13_ptr]);
                 /* Loop over allpass sections */
                 for (i = 2; i < order; i += 2)
                 {
                     /* Output of allpass section */
                     tmp2 = Inlines.silk_SMLAWB(state[i], state[i + 1] - tmp1, lambda_Q16);
                     state[i] = tmp1;
-                    acc_Q11 = Inlines.silk_SMLAWB(acc_Q11, tmp1, coef_Q13[i - 1]);
+                    acc_Q11 = Inlines.silk_SMLAWB(acc_Q11, tmp1, coef_Q13[coef_Q13_ptr + i - 1]);
                     /* Output of allpass section */
                     tmp1 = Inlines.silk_SMLAWB(state[i + 1], state[i + 2] - tmp2, lambda_Q16);
                     state[i + 1] = tmp2;
-                    acc_Q11 = Inlines.silk_SMLAWB(acc_Q11, tmp2, coef_Q13[i]);
+                    acc_Q11 = Inlines.silk_SMLAWB(acc_Q11, tmp2, coef_Q13[coef_Q13_ptr + i]);
                 }
                 state[order] = tmp1;
-                acc_Q11 = Inlines.silk_SMLAWB(acc_Q11, tmp1, coef_Q13[order - 1]);
-                res_Q2[n] = Inlines.silk_LSHIFT((int)input[n], 2) - Inlines.silk_RSHIFT_ROUND(acc_Q11, 9);
+                acc_Q11 = Inlines.silk_SMLAWB(acc_Q11, tmp1, coef_Q13[coef_Q13_ptr + order - 1]);
+                res_Q2[n] = Inlines.silk_LSHIFT((int)input[input_ptr + n], 2) - Inlines.silk_RSHIFT_ROUND(acc_Q11, 9);
             }
         }
 
         internal static void silk_prefilter(
             SilkChannelEncoder psEnc,                                 /* I/O  Encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I    Encoder control                                                             */
-            Pointer<int> xw_Q3,                                /* O    Weighted signal                                                             */
-            Pointer<short> x                                     /* I    Speech signal                                                               */
+            int[] xw_Q3,                                /* O    Weighted signal                                                             */
+            short[] x,                                     /* I    Speech signal                                                               */
+            int x_ptr
 )
         {
             SilkPrefilterState P = psEnc.sPrefilt;
@@ -100,16 +103,16 @@ namespace Concentus.Silk
             Pointer<int> pxw_Q3;
             int HarmShapeGain_Q12, Tilt_Q14;
             int HarmShapeFIRPacked_Q12, LF_shp_Q14;
-            Pointer<int> x_filt_Q12;
-            Pointer<int> st_res_Q2;
-            Pointer<short> B_Q10 = Pointer.Malloc<short>(2);
+            int[] x_filt_Q12;
+            int[] st_res_Q2;
+            short[] B_Q10 = new short[2];
 
             /* Set up pointers */
-            px = x;
-            pxw_Q3 = xw_Q3;
+            px = x.GetPointer(x_ptr);
+            pxw_Q3 = xw_Q3.GetPointer();
             lag = P.lagPrev;
-            x_filt_Q12 = Pointer.Malloc<int>(psEnc.subfr_length);
-            st_res_Q2 = Pointer.Malloc<int>(psEnc.subfr_length);
+            x_filt_Q12 = new int[psEnc.subfr_length];
+            st_res_Q2 = new int[psEnc.subfr_length];
             for (k = 0; k < psEnc.nb_subfr; k++)
             {
                 /* Update Variables that change per sub frame */
@@ -128,7 +131,7 @@ namespace Concentus.Silk
                 AR1_shp_Q13 = psEncCtrl.AR1_Q13.GetPointer(k * SilkConstants.MAX_SHAPE_LPC_ORDER);
 
                 /* Short term FIR filtering*/
-                silk_warped_LPC_analysis_filter(P.sAR_shp, st_res_Q2, AR1_shp_Q13, px,
+                silk_warped_LPC_analysis_filter(P.sAR_shp, st_res_Q2, AR1_shp_Q13.Data, AR1_shp_Q13.Offset, px.Data, px.Offset,
                     Inlines.CHOP16(psEnc.warping_Q16), psEnc.subfr_length, psEnc.shapingLPCOrder);
 
                 /* Reduce (mainly) low frequencies during harmonic emphasis */
@@ -145,7 +148,7 @@ namespace Concentus.Silk
                 }
                 P.sHarmHP_Q2 = st_res_Q2[psEnc.subfr_length - 1];
 
-                silk_prefilt(P, x_filt_Q12, pxw_Q3, HarmShapeFIRPacked_Q12, Tilt_Q14, LF_shp_Q14, lag, psEnc.subfr_length);
+                silk_prefilt(P, x_filt_Q12, pxw_Q3.Data, pxw_Q3.Offset, HarmShapeFIRPacked_Q12, Tilt_Q14, LF_shp_Q14, lag, psEnc.subfr_length);
 
                 px = px.Point(psEnc.subfr_length);
                 pxw_Q3 = pxw_Q3.Point(psEnc.subfr_length);
@@ -158,8 +161,9 @@ namespace Concentus.Silk
         /* Prefilter for finding Quantizer input signal */
         static void silk_prefilt(
             SilkPrefilterState P,                         /* I/O  state                               */
-            Pointer<int> st_res_Q12,               /* I    short term residual signal          */
-            Pointer<int> xw_Q3,                    /* O    prefiltered signal                  */
+            int[] st_res_Q12,               /* I    short term residual signal          */
+            int[] xw_Q3,                    /* O    prefiltered signal                  */
+            int xw_Q3_ptr,
             int HarmShapeFIRPacked_Q12,     /* I    Harmonic shaping coeficients        */
             int Tilt_Q14,                   /* I    Tilt shaping coeficient             */
             int LF_shp_Q14,                 /* I    Low-frequancy shaping coeficients   */
@@ -170,10 +174,10 @@ namespace Concentus.Silk
             int i, idx, LTP_shp_buf_idx;
             int n_LTP_Q12, n_Tilt_Q10, n_LF_Q10;
             int sLF_MA_shp_Q12, sLF_AR_shp_Q12;
-            Pointer<short> LTP_shp_buf;
+            short[] LTP_shp_buf;
 
             /* To speed up use temp variables instead of using the struct */
-            LTP_shp_buf = P.sLTP_shp.GetPointer();
+            LTP_shp_buf = P.sLTP_shp;
             LTP_shp_buf_idx = P.sLTP_shp_buf_idx;
             sLF_AR_shp_Q12 = P.sLF_AR_shp_Q12;
             sLF_MA_shp_Q12 = P.sLF_MA_shp_Q12;
@@ -202,7 +206,7 @@ namespace Concentus.Silk
                 LTP_shp_buf_idx = (LTP_shp_buf_idx - 1) & SilkConstants.LTP_MASK;
                 LTP_shp_buf[LTP_shp_buf_idx] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sLF_MA_shp_Q12, 12));
 
-                xw_Q3[i] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_SUB32(sLF_MA_shp_Q12, n_LTP_Q12), 9);
+                xw_Q3[xw_Q3_ptr + i] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_SUB32(sLF_MA_shp_Q12, n_LTP_Q12), 9);
             }
 
             /* Copy temp variable back to state */
@@ -222,91 +226,13 @@ namespace Concentus.Silk
         /// <param name="len">I     signal length (must be even)</param>
         /// <param name="stride">I     Operate on interleaved signal if > 1</param>
         internal static void silk_biquad_alt(
-            Pointer<short> input,
-            Pointer<int> B_Q28,
-            Pointer<int> A_Q28,
-            Pointer<int> S,
-            Pointer<short> output,
-            int len,
-            int stride)
-        {
-            /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
-            int k;
-            int inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
-
-            /* Negate A_Q28 values and split in two parts */
-            A0_L_Q28 = (-A_Q28[0]) & 0x00003FFF;        /* lower part */
-            A0_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[0], 14);      /* upper part */
-            A1_L_Q28 = (-A_Q28[1]) & 0x00003FFF;        /* lower part */
-            A1_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[1], 14);      /* upper part */
-
-            for (k = 0; k < len; k++)
-            {
-                /* S[ 0 ], S[ 1 ]: Q12 */
-                inval = input[k * stride];
-                out32_Q14 = Inlines.silk_LSHIFT(Inlines.silk_SMLAWB(S[0], B_Q28[0], inval), 2);
-
-                S[0] = S[1] + Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A0_L_Q28), 14);
-                S[0] = Inlines.silk_SMLAWB(S[0], out32_Q14, A0_U_Q28);
-                S[0] = Inlines.silk_SMLAWB(S[0], B_Q28[1], inval);
-
-                S[1] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A1_L_Q28), 14);
-                S[1] = Inlines.silk_SMLAWB(S[1], out32_Q14, A1_U_Q28);
-                S[1] = Inlines.silk_SMLAWB(S[1], B_Q28[2], inval);
-
-                /* Scale back to Q0 and saturate */
-                output[k * stride] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
-            }
-        }
-
-        /// <summary>
-        /// FIXME: TEMPORARY
-        /// </summary>
-        internal static void silk_biquad_alt(
-            Pointer<int> input,
-            Pointer<int> B_Q28,
-            Pointer<int> A_Q28,
-            Pointer<int> S,
-            Pointer<int> output,
-            int len,
-            int stride)
-        {
-            /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
-            int k;
-            int inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
-
-            /* Negate A_Q28 values and split in two parts */
-            A0_L_Q28 = (-A_Q28[0]) & 0x00003FFF;        /* lower part */
-            A0_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[0], 14);      /* upper part */
-            A1_L_Q28 = (-A_Q28[1]) & 0x00003FFF;        /* lower part */
-            A1_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[1], 14);      /* upper part */
-
-            for (k = 0; k < len; k++)
-            {
-                /* S[ 0 ], S[ 1 ]: Q12 */
-                inval = input[k * stride];
-                out32_Q14 = Inlines.silk_LSHIFT(Inlines.silk_SMLAWB(S[0], B_Q28[0], inval), 2);
-
-                S[0] = S[1] + Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A0_L_Q28), 14);
-                S[0] = Inlines.silk_SMLAWB(S[0], out32_Q14, A0_U_Q28);
-                S[0] = Inlines.silk_SMLAWB(S[0], B_Q28[1], inval);
-
-                S[1] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A1_L_Q28), 14);
-                S[1] = Inlines.silk_SMLAWB(S[1], out32_Q14, A1_U_Q28);
-                S[1] = Inlines.silk_SMLAWB(S[1], B_Q28[2], inval);
-
-                /* Scale back to Q0 and saturate */
-                output[k * stride] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
-            }
-        }
-
-        internal static void silk_biquad_alt(
             short[] input,
             int input_ptr,
-            Pointer<int> B_Q28,
-            Pointer<int> A_Q28,
-            Pointer<int> S,
-            Pointer<int> output,
+            int[] B_Q28,
+            int[] A_Q28,
+            int[] S,
+            short[] output,
+            int output_ptr,
             int len,
             int stride)
         {
@@ -335,7 +261,49 @@ namespace Concentus.Silk
                 S[1] = Inlines.silk_SMLAWB(S[1], B_Q28[2], inval);
 
                 /* Scale back to Q0 and saturate */
-                output[k * stride] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
+                output[output_ptr + k * stride] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
+            }
+        }
+
+        internal static void silk_biquad_alt(
+            short[] input,
+            int input_ptr,
+            int[] B_Q28,
+            int[] A_Q28,
+            int[] S,
+            int S_ptr,
+            int[] output,
+            int output_ptr,
+            int len,
+            int stride)
+        {
+            /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
+            int k;
+            int inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
+
+            /* Negate A_Q28 values and split in two parts */
+            A0_L_Q28 = (-A_Q28[0]) & 0x00003FFF;        /* lower part */
+            A0_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[0], 14);      /* upper part */
+            A1_L_Q28 = (-A_Q28[1]) & 0x00003FFF;        /* lower part */
+            A1_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[1], 14);      /* upper part */
+
+            for (k = 0; k < len; k++)
+            {
+                int s1 = S_ptr + 1;
+                /* S[ 0 ], S[ 1 ]: Q12 */
+                inval = input[input_ptr + k * stride];
+                out32_Q14 = Inlines.silk_LSHIFT(Inlines.silk_SMLAWB(S[S_ptr], B_Q28[0], inval), 2);
+
+                S[S_ptr] = S[s1] + Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A0_L_Q28), 14);
+                S[S_ptr] = Inlines.silk_SMLAWB(S[S_ptr], out32_Q14, A0_U_Q28);
+                S[S_ptr] = Inlines.silk_SMLAWB(S[S_ptr], B_Q28[1], inval);
+
+                S[s1] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A1_L_Q28), 14);
+                S[s1] = Inlines.silk_SMLAWB(S[s1], out32_Q14, A1_U_Q28);
+                S[s1] = Inlines.silk_SMLAWB(S[s1], B_Q28[2], inval);
+
+                /* Scale back to Q0 and saturate */
+                output[output_ptr + k * stride] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
             }
         }
 
@@ -388,30 +356,30 @@ namespace Concentus.Silk
             }
         }
 
-        /// <summary>
-        /// Chirp (bandwidth expand) LP AR filter
-        /// </summary>
-        /// <param name="ar">I/O  AR filter to be expanded (without leading 1)</param>
-        /// <param name="d">I    Length of ar</param>
-        /// <param name="chirp_Q16">I    Chirp factor (typically in the range 0 to 1) FIXME Should this be an int?</param>
-        internal static void silk_bwexpander(
-            Pointer<short> ar,
-            int d,
-            int chirp_Q16)
-        {
-            int i;
-            int chirp_minus_one_Q16 = chirp_Q16 - 65536;
+        ///// <summary>
+        ///// Chirp (bandwidth expand) LP AR filter
+        ///// </summary>
+        ///// <param name="ar">I/O  AR filter to be expanded (without leading 1)</param>
+        ///// <param name="d">I    Length of ar</param>
+        ///// <param name="chirp_Q16">I    Chirp factor (typically in the range 0 to 1) FIXME Should this be an int?</param>
+        //internal static void silk_bwexpander(
+        //    Pointer<short> ar,
+        //    int d,
+        //    int chirp_Q16)
+        //{
+        //    int i;
+        //    int chirp_minus_one_Q16 = chirp_Q16 - 65536;
 
-            /* NB: Dont use silk_SMULWB, instead of silk_RSHIFT_ROUND( silk_MUL(), 16 ), below.  */
-            /* Bias in silk_SMULWB can lead to unstable filters                                */
-            for (i = 0; i < d - 1; i++)
-            {
-                ar[i] = (short)Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, ar[i]), 16);
-                chirp_Q16 += Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, chirp_minus_one_Q16), 16);
-            }
+        //    /* NB: Dont use silk_SMULWB, instead of silk_RSHIFT_ROUND( silk_MUL(), 16 ), below.  */
+        //    /* Bias in silk_SMULWB can lead to unstable filters                                */
+        //    for (i = 0; i < d - 1; i++)
+        //    {
+        //        ar[i] = (short)Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, ar[i]), 16);
+        //        chirp_Q16 += Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, chirp_minus_one_Q16), 16);
+        //    }
 
-            ar[d - 1] = (short)Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, ar[d - 1]), 16);
-        }
+        //    ar[d - 1] = (short)Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, ar[d - 1]), 16);
+        //}
 
         /// <summary>
         /// Chirp (bandwidth expand) LP AR filter
@@ -419,18 +387,18 @@ namespace Concentus.Silk
         /// <param name="ar">I/O  AR filter to be expanded (without leading 1)</param>
         /// <param name="d">I    Length of ar</param>
         /// <param name="chirp_Q16">I    Chirp factor in Q16</param>
-        internal static void silk_bwexpander_32(Pointer<int> ar, int d, int chirp_Q16)
+        internal static void silk_bwexpander_32(int[] ar, int ar_ptr, int d, int chirp_Q16)
         {
             int i;
             int chirp_minus_one_Q16 = chirp_Q16 - 65536;
 
-            for (i = 0; i < d - 1; i++)
+            for (i = ar_ptr; i < d - 1 + ar_ptr; i++)
             {
                 ar[i] = Inlines.silk_SMULWW(chirp_Q16, ar[i]);
                 chirp_Q16 += Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, chirp_minus_one_Q16), 16);
             }
 
-            ar[d - 1] = Inlines.silk_SMULWW(chirp_Q16, ar[d - 1]);
+            ar[ar_ptr + d - 1] = Inlines.silk_SMULWW(chirp_Q16, ar[ar_ptr + d - 1]);
         }
 
         /// <summary>

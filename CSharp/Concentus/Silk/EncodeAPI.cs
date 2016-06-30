@@ -133,7 +133,7 @@ namespace Concentus.Silk
             int speech_act_thr_for_switch_Q8;
             int TargetRate_bps, channelRate_bps, LBRR_symbol, sum;
             int[] MStargetRates_bps = new int[2];
-            Pointer<short> buf;
+            short[] buf;
             int transition, curr_block, tot_blocks;
             nBytesOut.Val = 0;
 
@@ -256,7 +256,7 @@ namespace Concentus.Silk
                                        psEnc.state_Fxx[0].API_fs_Hz,
                                    Inlines.CHOP16(psEnc.state_Fxx[0].fs_kHz * 1000));
 
-            buf = Pointer.Malloc<short>(nSamplesFromInputMax);
+            buf = new short[nSamplesFromInputMax];
 
             while (true)
             {
@@ -283,7 +283,7 @@ namespace Concentus.Silk
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
-                        buf,
+                        buf.GetPointer(),
                         nSamplesFromInput);
 
                     psEnc.state_Fxx[0].inputBufIx += nSamplesToBuffer;
@@ -297,7 +297,7 @@ namespace Concentus.Silk
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[1].resampler_state,
                         psEnc.state_Fxx[1].inputBuf.GetPointer(psEnc.state_Fxx[1].inputBufIx + 2),
-                        buf,
+                        buf.GetPointer(),
                         nSamplesFromInput);
 
                     psEnc.state_Fxx[1].inputBufIx += nSamplesToBuffer;
@@ -314,7 +314,7 @@ namespace Concentus.Silk
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
-                        buf,
+                        buf.GetPointer(),
                         nSamplesFromInput);
 
                     /* On the first mono frame, average the results for the two resampler states  */
@@ -323,7 +323,7 @@ namespace Concentus.Silk
                         ret += Resampler.silk_resampler(
                             psEnc.state_Fxx[1].resampler_state,
                             psEnc.state_Fxx[1].inputBuf.GetPointer(psEnc.state_Fxx[1].inputBufIx + 2),
-                            buf,
+                            buf.GetPointer(),
                             nSamplesFromInput);
 
                         for (n = 0; n < psEnc.state_Fxx[0].frame_length; n++)
@@ -339,11 +339,11 @@ namespace Concentus.Silk
                 else
                 {
                     //Inlines.OpusAssert(encControl.nChannelsAPI == 1 && encControl.nChannelsInternal == 1);
-                    samplesIn.MemCopyTo(buf, nSamplesFromInput);
+                    samplesIn.MemCopyTo(buf, 0, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
-                        buf,
+                        buf.GetPointer(),
                         nSamplesFromInput);
 
                     psEnc.state_Fxx[0].inputBufIx += nSamplesToBuffer;
