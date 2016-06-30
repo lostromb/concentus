@@ -42,7 +42,7 @@ namespace Concentus.Silk
     internal static class Filters
     {
         internal static void silk_warped_LPC_analysis_filter(
-            Pointer<int> state,                    /* I/O  State [order + 1]                   */
+            int[] state,                    /* I/O  State [order + 1]                   */
             Pointer<int> res_Q2,                   /* O    Residual signal [length]            */
             Pointer<short> coef_Q13,                 /* I    Coefficients [order]                */
             Pointer<short> input,                    /* I    Input signal [length]               */
@@ -128,7 +128,7 @@ namespace Concentus.Silk
                 AR1_shp_Q13 = psEncCtrl.AR1_Q13.GetPointer(k * SilkConstants.MAX_SHAPE_LPC_ORDER);
 
                 /* Short term FIR filtering*/
-                silk_warped_LPC_analysis_filter(P.sAR_shp.GetPointer(), st_res_Q2, AR1_shp_Q13, px,
+                silk_warped_LPC_analysis_filter(P.sAR_shp, st_res_Q2, AR1_shp_Q13, px,
                     Inlines.CHOP16(psEnc.warping_Q16), psEnc.subfr_length, psEnc.shapingLPCOrder);
 
                 /* Reduce (mainly) low frequencies during harmonic emphasis */
@@ -301,7 +301,8 @@ namespace Concentus.Silk
         }
 
         internal static void silk_biquad_alt(
-            Pointer<short> input,
+            short[] input,
+            int input_ptr,
             Pointer<int> B_Q28,
             Pointer<int> A_Q28,
             Pointer<int> S,
@@ -322,7 +323,7 @@ namespace Concentus.Silk
             for (k = 0; k < len; k++)
             {
                 /* S[ 0 ], S[ 1 ]: Q12 */
-                inval = input[k * stride];
+                inval = input[input_ptr + k * stride];
                 out32_Q14 = Inlines.silk_LSHIFT(Inlines.silk_SMLAWB(S[0], B_Q28[0], inval), 2);
 
                 S[0] = S[1] + Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A0_L_Q28), 14);

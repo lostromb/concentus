@@ -594,11 +594,11 @@ namespace Concentus.Structs
                 channels = this.layout.nb_streams + this.layout.nb_coupled_streams;
                 delay_compensation = this.encoders[encoder_ptr].GetLookahead();
                 delay_compensation -= Fs / 400;
-                frame_size = CodecHelpers.compute_frame_size(pcm.GetPointer(pcm_ptr), analysis_frame_size,
+                frame_size = CodecHelpers.compute_frame_size(pcm, pcm_ptr, analysis_frame_size,
                       this.variable_duration, channels, Fs, this.bitrate_bps,
                       delay_compensation, downmix
 #if ENABLE_ANALYSIS
-            , this.subframe_mem.GetPointer()
+            , this.subframe_mem
 #endif
             );
             }

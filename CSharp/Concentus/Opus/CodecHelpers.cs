@@ -47,7 +47,7 @@ namespace Concentus
             return toc;
         }
 
-        internal static void hp_cutoff(Pointer<short> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
+        internal static void hp_cutoff(short[] input, int input_ptr, int cutoff_Hz, int[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
         {
             Pointer<int> B_Q28 = Pointer.Malloc<int>(3);
             Pointer<int> A_Q28 = Pointer.Malloc<int>(2);
@@ -70,14 +70,14 @@ namespace Concentus
             A_Q28[0] = Inlines.silk_SMULWW(r_Q22, Inlines.silk_SMULWW(Fc_Q19, Fc_Q19) - Inlines.SILK_CONST(2.0f, 22));
             A_Q28[1] = Inlines.silk_SMULWW(r_Q22, r_Q22);
 
-            Filters.silk_biquad_alt(input, B_Q28, A_Q28, hp_mem, output, len, channels);
+            Filters.silk_biquad_alt(input, input_ptr, B_Q28, A_Q28, hp_mem.GetPointer(), output.GetPointer(output_ptr), len, channels);
             if (channels == 2)
             {
-                Filters.silk_biquad_alt(input.Point(1), B_Q28, A_Q28, hp_mem.Point(2), output.Point(1), len, channels);
+                Filters.silk_biquad_alt(input, input_ptr + 1, B_Q28, A_Q28, hp_mem.GetPointer(2), output.GetPointer(output_ptr + 1), len, channels);
             }
         }
 
-        internal static void dc_reject(Pointer<short> input, int cutoff_Hz, Pointer<int> output, Pointer<int> hp_mem, int len, int channels, int Fs)
+        internal static void dc_reject(short[] input, int input_ptr, int cutoff_Hz, int[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
         {
             int c, i;
             int shift;
@@ -89,20 +89,27 @@ namespace Concentus
                 for (i = 0; i < len; i++)
                 {
                     int x, tmp, y;
-                    x = Inlines.SHL32(Inlines.EXTEND32(input[channels * i + c]), 15);
+                    x = Inlines.SHL32(Inlines.EXTEND32(input[channels * i + c + input_ptr]), 15);
                     /* First stage */
                     tmp = x - hp_mem[2 * c];
                     hp_mem[2 * c] = hp_mem[2 * c] + Inlines.PSHR32(x - hp_mem[2 * c], shift);
                     /* Second stage */
                     y = tmp - hp_mem[2 * c + 1];
                     hp_mem[2 * c + 1] = hp_mem[2 * c + 1] + Inlines.PSHR32(tmp - hp_mem[2 * c + 1], shift);
-                    output[channels * i + c] = Inlines.EXTRACT16(Inlines.SATURATE(Inlines.PSHR32(y, 15), 32767));
+                    output[channels * i + c + output_ptr] = Inlines.EXTRACT16(Inlines.SATURATE(Inlines.PSHR32(y, 15), 32767));
                 }
             }
         }
 
-        internal static void stereo_fade(Pointer<int> input, Pointer<int> output, int g1, int g2,
-                int overlap48, int frame_size, int channels, Pointer<int> window, int Fs)
+        internal static void stereo_fade(
+            int[] pcm_buf,
+            int g1,
+            int g2,
+            int overlap48,
+            int frame_size,
+            int channels,
+            int[] window,
+            int Fs)
         {
             int i;
             int overlap;
@@ -118,23 +125,23 @@ namespace Concentus
                 w = Inlines.MULT16_16_Q15(window[i * inc], window[i * inc]);
                 g = Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, g2),
                       CeltConstants.Q15ONE - w, g1), 15);
-                diff = Inlines.EXTRACT16(Inlines.HALF32((int)input[i * channels] - (int)input[i * channels + 1]));
+                diff = Inlines.EXTRACT16(Inlines.HALF32((int)pcm_buf[i * channels] - (int)pcm_buf[i * channels + 1]));
                 diff = Inlines.MULT16_16_Q15(g, diff);
-                output[i * channels] = output[i * channels] - diff;
-                output[i * channels + 1] = output[i * channels + 1] + diff;
+                pcm_buf[i * channels] = pcm_buf[i * channels] - diff;
+                pcm_buf[i * channels + 1] = pcm_buf[i * channels + 1] + diff;
             }
             for (; i < frame_size; i++)
             {
                 int diff;
-                diff = Inlines.EXTRACT16(Inlines.HALF32((int)input[i * channels] - (int)input[i * channels + 1]));
+                diff = Inlines.EXTRACT16(Inlines.HALF32((int)pcm_buf[i * channels] - (int)pcm_buf[i * channels + 1]));
                 diff = Inlines.MULT16_16_Q15(g2, diff);
-                output[i * channels] = output[i * channels] - diff;
-                output[i * channels + 1] = output[i * channels + 1] + diff;
+                pcm_buf[i * channels] = pcm_buf[i * channels] - diff;
+                pcm_buf[i * channels + 1] = pcm_buf[i * channels + 1] + diff;
             }
         }
 
-        internal static void gain_fade(Pointer<int> input, Pointer<int> output, int g1, int g2,
-                int overlap48, int frame_size, int channels, Pointer<int> window, int Fs)
+        internal static void gain_fade(int[] buffer, int buf_ptr, int g1, int g2,
+                int overlap48, int frame_size, int channels, int[] window, int Fs)
         {
             int i;
             int inc;
@@ -150,7 +157,7 @@ namespace Concentus
                     w = Inlines.MULT16_16_Q15(window[i * inc], window[i * inc]);
                     g = Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, g2),
                           CeltConstants.Q15ONE - w, g1), 15);
-                    output[i] = Inlines.MULT16_16_Q15(g, input[i]);
+                    buffer[buf_ptr + i] = Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i]);
                 }
             }
             else {
@@ -160,15 +167,15 @@ namespace Concentus
                     w = Inlines.MULT16_16_Q15(window[i * inc], window[i * inc]);
                     g = Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, g2),
                                     CeltConstants.Q15ONE - w, g1), 15);
-                    output[i * 2] = Inlines.MULT16_16_Q15(g, input[i * 2]);
-                    output[i * 2 + 1] = Inlines.MULT16_16_Q15(g, input[i * 2 + 1]);
+                    buffer[buf_ptr + i * 2] = Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i * 2]);
+                    buffer[buf_ptr + i * 2 + 1] = Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i * 2 + 1]);
                 }
             }
             c = 0; do
             {
                 for (i = overlap; i < frame_size; i++)
                 {
-                    output[i * channels + c] = Inlines.MULT16_16_Q15(g2, input[i * channels + c]);
+                    buffer[buf_ptr + i * channels + c] = Inlines.MULT16_16_Q15(g2, buffer[buf_ptr + i * channels + c]);
                 }
             }
             while (++c < channels);
@@ -308,8 +315,8 @@ namespace Concentus
             return best_state;
         }
 
-        internal static int optimize_framesize<T>(Pointer<T> x, int len, int C, int Fs,
-                        int bitrate, int tonality, Pointer<float> mem, int buffering,
+        internal static int optimize_framesize<T>(T[] x, int x_ptr, int len, int C, int Fs,
+                        int bitrate, int tonality, float[] mem, int buffering,
                         Downmix.downmix_func<T> downmix)
         {
             int N;
@@ -354,7 +361,7 @@ namespace Concentus
                 int j;
                 tmp = CeltConstants.EPSILON;
 
-                downmix(x, sub, subframe, i * subframe + offset, 0, -2, C);
+                downmix(x.GetPointer(x_ptr), sub, subframe, i * subframe + offset, 0, -2, C);
                 if (i == 0)
                     memx = sub[0];
                 for (j = 0; j < subframe; j++)
@@ -403,11 +410,11 @@ namespace Concentus
             return new_size;
         }
 
-        internal static int compute_frame_size<T>(Pointer<T> analysis_pcm, int frame_size,
+        internal static int compute_frame_size<T>(T[] analysis_pcm, int analysis_pcm_ptr, int frame_size,
               OpusFramesize variable_duration, int C, int Fs, int bitrate_bps,
               int delay_compensation, Downmix.downmix_func<T> downmix
 #if ENABLE_ANALYSIS
-              , Pointer<float> subframe_mem
+              , float[] subframe_mem
 #endif
               )
         {
@@ -415,7 +422,7 @@ namespace Concentus
             if (variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size >= Fs / 200)
             {
                 int LM = 3;
-                LM = optimize_framesize(analysis_pcm, frame_size, C, Fs, bitrate_bps,
+                LM = optimize_framesize(analysis_pcm, analysis_pcm_ptr, frame_size, C, Fs, bitrate_bps,
                       0, subframe_mem, delay_compensation, downmix);
                 while ((Fs / 400 << LM) > frame_size)
                     LM--;
@@ -432,7 +439,7 @@ namespace Concentus
             return frame_size;
         }
 
-        internal static int compute_stereo_width(Pointer<short> pcm, int frame_size, int Fs, StereoWidthState mem)
+        internal static int compute_stereo_width(short[] pcm, int pcm_ptr, int frame_size, int Fs, StereoWidthState mem)
         {
             int corr;
             int ldiff;
@@ -453,23 +460,23 @@ namespace Concentus
                 int pxy = 0;
                 int pyy = 0;
                 int x, y;
-                x = pcm[2 * i];
-                y = pcm[2 * i + 1];
+                x = pcm[pcm_ptr + 2 * i];
+                y = pcm[pcm_ptr + 2 * i + 1];
                 pxx = Inlines.SHR32(Inlines.MULT16_16(x, x), 2);
                 pxy = Inlines.SHR32(Inlines.MULT16_16(x, y), 2);
                 pyy = Inlines.SHR32(Inlines.MULT16_16(y, y), 2);
-                x = pcm[2 * i + 2];
-                y = pcm[2 * i + 3];
+                x = pcm[pcm_ptr + 2 * i + 2];
+                y = pcm[pcm_ptr + 2 * i + 3];
                 pxx += Inlines.SHR32(Inlines.MULT16_16(x, x), 2);
                 pxy += Inlines.SHR32(Inlines.MULT16_16(x, y), 2);
                 pyy += Inlines.SHR32(Inlines.MULT16_16(y, y), 2);
-                x = pcm[2 * i + 4];
-                y = pcm[2 * i + 5];
+                x = pcm[pcm_ptr + 2 * i + 4];
+                y = pcm[pcm_ptr + 2 * i + 5];
                 pxx += Inlines.SHR32(Inlines.MULT16_16(x, x), 2);
                 pxy += Inlines.SHR32(Inlines.MULT16_16(x, y), 2);
                 pyy += Inlines.SHR32(Inlines.MULT16_16(y, y), 2);
-                x = pcm[2 * i + 6];
-                y = pcm[2 * i + 7];
+                x = pcm[pcm_ptr + 2 * i + 6];
+                y = pcm[pcm_ptr + 2 * i + 7];
                 pxx += Inlines.SHR32(Inlines.MULT16_16(x, x), 2);
                 pxy += Inlines.SHR32(Inlines.MULT16_16(x, y), 2);
                 pyy += Inlines.SHR32(Inlines.MULT16_16(y, y), 2);

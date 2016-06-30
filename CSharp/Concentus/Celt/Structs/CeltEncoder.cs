@@ -43,7 +43,7 @@ namespace Concentus.Celt.Structs
     internal class CeltEncoder
     {
         #region Encoder state
-        internal CeltMode mode = null;     /**< Mode used by the encoder [Porting Note] Pointer*/
+        internal CeltMode mode = null;     /**< Mode used by the encoder. Without custom modes, this always refers to the same predefined struct */
         internal int channels = 0;
         internal int stream_channels = 0;
 
@@ -93,7 +93,7 @@ namespace Concentus.Celt.Structs
         internal int overlap_max = 0;
         internal int stereo_saving = 0;
         internal int intensity = 0;
-        internal Pointer<int> energy_mask = null;
+        internal int[] energy_mask = null;
         internal int spec_avg = 0;
 
         /// <summary>
@@ -1294,7 +1294,7 @@ namespace Concentus.Celt.Structs
             this.lfe = value;
         }
 
-        internal void SetEnergyMask(Pointer<int> value)
+        internal void SetEnergyMask(int[] value)
         {
             this.energy_mask = value;
         }

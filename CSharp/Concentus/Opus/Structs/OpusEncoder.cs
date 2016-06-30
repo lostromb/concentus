@@ -398,8 +398,8 @@ namespace Concentus.Structs
                         T[] analysis_pcm, int analysis_pcm_ptr, int analysis_size, int c1, int c2,
                         int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
         {
-            SilkEncoder silk_enc; // porting note: pointer
-            CeltEncoder celt_enc; // porting note: pointer
+            SilkEncoder silk_enc;
+            CeltEncoder celt_enc;
             int i;
             int ret = 0;
             int nBytes;
@@ -425,7 +425,7 @@ namespace Concentus.Structs
             int max_data_bytes; /* Max number of bytes we're allowed to use */
             int total_buffer;
             int stereo_width;
-            CeltMode celt_mode; // porting note: pointer
+            CeltMode celt_mode;
 #if ENABLE_ANALYSIS
             AnalysisInfo analysis_info = new AnalysisInfo(); // porting note: stack var
             int analysis_read_pos_bak = -1;
@@ -500,7 +500,7 @@ namespace Concentus.Structs
 #endif
 
             if (this.channels == 2 && this.force_channels != 1)
-                stereo_width = CodecHelpers.compute_stereo_width(pcm.GetPointer(pcm_ptr), frame_size, this.Fs, this.width_mem);
+                stereo_width = CodecHelpers.compute_stereo_width(pcm, pcm_ptr, frame_size, this.Fs, this.width_mem);
             else
                 stereo_width = 0;
             total_buffer = delay_compensation;
@@ -822,7 +822,7 @@ namespace Concentus.Structs
                 OpusBandwidth bak_bandwidth;
                 int bak_channels, bak_to_mono;
                 OpusMode bak_mode;
-                OpusRepacketizer rp; // porting note: pointer
+                OpusRepacketizer rp;
                 int bytes_per_frame;
                 int repacketize_len;
 
@@ -924,10 +924,10 @@ namespace Concentus.Structs
 
             if (this.application == OpusApplication.OPUS_APPLICATION_VOIP)
             {
-                CodecHelpers.hp_cutoff(pcm.GetPointer(pcm_ptr), cutoff_Hz, pcm_buf.GetPointer(total_buffer * this.channels), this.hp_mem.GetPointer(), frame_size, this.channels, this.Fs);
+                CodecHelpers.hp_cutoff(pcm, pcm_ptr, cutoff_Hz, pcm_buf, (total_buffer * this.channels), this.hp_mem, frame_size, this.channels, this.Fs);
             }
             else {
-                CodecHelpers.dc_reject(pcm.GetPointer(pcm_ptr), 3, pcm_buf.GetPointer(total_buffer * this.channels), this.hp_mem.GetPointer(), frame_size, this.channels, this.Fs);
+                CodecHelpers.dc_reject(pcm, pcm_ptr, 3, pcm_buf, total_buffer * this.channels, this.hp_mem, frame_size, this.channels, this.Fs);
             }
 
             /* SILK processing */
@@ -1089,8 +1089,8 @@ namespace Concentus.Structs
                        rewritten is tmp_prefill[] and even then only the part after the ramp really
                        gets used (rather than sent to the encoder and discarded) */
                     prefill_offset = this.channels * (this.encoder_buffer - this.delay_compensation - this.Fs / 400);
-                    CodecHelpers.gain_fade(this.delay_buffer.GetPointer(prefill_offset), this.delay_buffer.GetPointer(prefill_offset),
-                          0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window.GetPointer(), this.Fs);
+                    CodecHelpers.gain_fade(this.delay_buffer, prefill_offset,
+                          0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
                     Arrays.MemSet<int>(this.delay_buffer, 0, prefill_offset);
 
                     // fixme: wasteful conversion here; need to normalize the delay buffer path to use int16 exclusively
@@ -1252,8 +1252,8 @@ namespace Concentus.Structs
                because we don't want any of this to affect the SILK part */
             if (this.prev_HB_gain < CeltConstants.Q15ONE || HB_gain < CeltConstants.Q15ONE)
             {
-                CodecHelpers.gain_fade(pcm_buf.GetPointer(), pcm_buf.GetPointer(),
-                      this.prev_HB_gain, HB_gain, celt_mode.overlap, frame_size, this.channels, celt_mode.window.GetPointer(), this.Fs);
+                CodecHelpers.gain_fade(pcm_buf, 0,
+                      this.prev_HB_gain, HB_gain, celt_mode.overlap, frame_size, this.channels, celt_mode.window, this.Fs);
             }
 
             this.prev_HB_gain = HB_gain;
@@ -1269,8 +1269,8 @@ namespace Concentus.Structs
                     g2 = (int)(this.silk_mode.stereoWidth_Q14);
                     g1 = g1 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g1, 1);
                     g2 = g2 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g2, 1);
-                    CodecHelpers.stereo_fade(pcm_buf.GetPointer(), pcm_buf.GetPointer(), g1, g2, celt_mode.overlap,
-                          frame_size, this.channels, celt_mode.window.GetPointer(), this.Fs);
+                    CodecHelpers.stereo_fade(pcm_buf, g1, g2, celt_mode.overlap,
+                          frame_size, this.channels, celt_mode.window, this.Fs);
                     this.hybrid_stereo_width_Q14 = Inlines.CHOP16(this.silk_mode.stereoWidth_Q14);
                 }
             }
@@ -1467,11 +1467,11 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm.GetPointer(pcm_offset), frame_size,
+            int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, pcm_offset, frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_int
 #if ENABLE_ANALYSIS
-                  , this.analysis.subframe_mem.GetPointer()
+                  , this.analysis.subframe_mem
 #endif
                   );
 
@@ -1540,11 +1540,11 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            internal_frame_size = CodecHelpers.compute_frame_size(in_pcm.GetPointer(pcm_offset), frame_size,
+            internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, pcm_offset, frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_float
 #if ENABLE_ANALYSIS
-                  , this.analysis.subframe_mem.GetPointer()
+                  , this.analysis.subframe_mem
 #endif
                   );
 
@@ -1856,7 +1856,7 @@ namespace Concentus.Structs
         public void SetEnergyMask(int[] value)
         {
             energy_masking = value;
-            Celt_Encoder.SetEnergyMask(value.GetPointer());
+            Celt_Encoder.SetEnergyMask(value);
         }
 
         internal CeltMode GetCeltMode()
