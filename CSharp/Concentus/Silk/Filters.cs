@@ -387,18 +387,18 @@ namespace Concentus.Silk
         /// <param name="ar">I/O  AR filter to be expanded (without leading 1)</param>
         /// <param name="d">I    Length of ar</param>
         /// <param name="chirp_Q16">I    Chirp factor in Q16</param>
-        internal static void silk_bwexpander_32(int[] ar, int ar_ptr, int d, int chirp_Q16)
+        internal static void silk_bwexpander_32(int[] ar, int d, int chirp_Q16)
         {
             int i;
             int chirp_minus_one_Q16 = chirp_Q16 - 65536;
 
-            for (i = ar_ptr; i < d - 1 + ar_ptr; i++)
+            for (i = 0; i < d - 1; i++)
             {
                 ar[i] = Inlines.silk_SMULWW(chirp_Q16, ar[i]);
                 chirp_Q16 += Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, chirp_minus_one_Q16), 16);
             }
 
-            ar[ar_ptr + d - 1] = Inlines.silk_SMULWW(chirp_Q16, ar[ar_ptr + d - 1]);
+            ar[d - 1] = Inlines.silk_SMULWW(chirp_Q16, ar[d - 1]);
         }
 
         /// <summary>
@@ -542,12 +542,12 @@ namespace Concentus.Silk
         /// <param name="order">Prediction order</param>
         /// <returns>inverse prediction gain in energy domain, Q30</returns>
         internal static int LPC_inverse_pred_gain_QA(
-            Pointer<Pointer<int>> A_QA,
+            int[][] A_QA,
             int order)
         {
             int k, n, mult2Q;
             int invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp_QA;
-            Pointer<int> Aold_QA, Anew_QA;
+            int[] Aold_QA, Anew_QA;
 
             Anew_QA = A_QA[order & 1];
 
@@ -620,10 +620,10 @@ namespace Concentus.Silk
         internal static int silk_LPC_inverse_pred_gain(Pointer<short> A_Q12, int order)
         {
             int k;
-            Pointer<Pointer<int>> Atmp_QA = Pointer.Malloc<Pointer<int>>(2);
-            Atmp_QA[0] = Pointer.Malloc<int>(SilkConstants.SILK_MAX_ORDER_LPC);
-            Atmp_QA[1] = Pointer.Malloc<int>(SilkConstants.SILK_MAX_ORDER_LPC);
-            Pointer<int> Anew_QA;
+            int[][] Atmp_QA = new int[2][];
+            Atmp_QA[0] = new int[order];
+            Atmp_QA[1] = new int[order];
+            int[] Anew_QA;
             int DC_resp = 0;
 
             Anew_QA = Atmp_QA[order & 1];

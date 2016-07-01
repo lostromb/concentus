@@ -78,24 +78,24 @@ namespace Concentus.Silk
             int nb_subfr           /* I    number of 5 ms subframes                                    */
         )
         {
-            Pointer<short> frame_8kHz;
-            Pointer<short> frame_4kHz;
-            Pointer<int> filt_state = Pointer.Malloc<int>(6);
+            short[] frame_8kHz;
+            short[] frame_4kHz;
+            int[] filt_state = new int[6];
             Pointer<short> input_frame_ptr;
             int i, k, d, j;
-            Pointer<short> C;
-            Pointer<int> xcorr32;
+            short[] C;
+            int[] xcorr32;
             Pointer<short> target_ptr, basis_ptr;
             int cross_corr, normalizer, energy, shift, energy_basis, energy_target;
             int Cmax, length_d_srch, length_d_comp;
-            Pointer<int> d_srch = Pointer.Malloc<int>(SilkConstants.PE_D_SRCH_LENGTH);
-            Pointer<short> d_comp;
+            int[] d_srch = new int[SilkConstants.PE_D_SRCH_LENGTH];
+            short[] d_comp;
             int sum, threshold, lag_counter;
             int CBimax, CBimax_new, CBimax_old, lag, start_lag, end_lag, lag_new;
             int CCmax, CCmax_b, CCmax_new_b, CCmax_new;
-            Pointer<int> CC = Pointer.Malloc<int>(SilkConstants.PE_NB_CBKS_STAGE2_EXT);
-            Pointer<silk_pe_stage3_vals> energies_st3;
-            Pointer<silk_pe_stage3_vals> cross_corr_st3;
+            int[] CC = new int[SilkConstants.PE_NB_CBKS_STAGE2_EXT];
+            Pointer<silk_pe_stage3_vals> TOKENenergies_st3;
+            Pointer<silk_pe_stage3_vals> TOKENcross_corr_st3;
             int frame_length, frame_length_8kHz, frame_length_4kHz;
             int sf_length;
             int min_lag;
@@ -124,26 +124,26 @@ namespace Concentus.Silk
             max_lag = SilkConstants.PE_MAX_LAG_MS * Fs_kHz - 1;
 
             /* Resample from input sampled at Fs_kHz to 8 kHz */
-            frame_8kHz = Pointer.Malloc<short>(frame_length_8kHz);
+            frame_8kHz = new short[frame_length_8kHz];
             if (Fs_kHz == 16)
             {
-                filt_state.MemSet(0, 2);
-                Resampler.silk_resampler_down2(filt_state, frame_8kHz, frame, frame_length);
+                Arrays.MemSet<int>(filt_state, 0, 2);
+                Resampler.silk_resampler_down2(filt_state.GetPointer(), frame_8kHz.GetPointer(), frame, frame_length);
             }
             else if (Fs_kHz == 12)
             {
-                filt_state.MemSet(0, 6);
-                Resampler.silk_resampler_down2_3(filt_state, frame_8kHz, frame, frame_length);
+                Arrays.MemSet<int>(filt_state, 0, 6);
+                Resampler.silk_resampler_down2_3(filt_state.GetPointer(), frame_8kHz.GetPointer(), frame, frame_length);
             }
             else {
                 //Inlines.OpusAssert(Fs_kHz == 8);
-                frame.MemCopyTo(frame_8kHz, frame_length_8kHz);
+                frame.MemCopyTo(frame_8kHz.GetPointer(), frame_length_8kHz);
             }
 
             /* Decimate again to 4 kHz */
-            filt_state.MemSet(0, 2); /* Set state to zero */
-            frame_4kHz = Pointer.Malloc<short>(frame_length_4kHz);
-            Resampler.silk_resampler_down2(filt_state, frame_4kHz, frame_8kHz, frame_length_8kHz);
+            Arrays.MemSet<int>(filt_state, 0, 2); /* Set state to zero */
+            frame_4kHz = new short[frame_length_4kHz];
+            Resampler.silk_resampler_down2(filt_state.GetPointer(), frame_4kHz.GetPointer(), frame_8kHz.GetPointer(), frame_length_8kHz);
 
             /* Low-pass filter */
             for (i = frame_length_4kHz - 1; i > 0; i--)
@@ -159,7 +159,7 @@ namespace Concentus.Silk
             /* Inner product is calculated with different lengths, so scale for the worst case */
             BoxedValue<int> boxed_energy = new BoxedValue<int>();
             BoxedValue<int> boxed_shift = new BoxedValue<int>();
-            SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_4kHz, frame_length_4kHz);
+            SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_4kHz.GetPointer(), frame_length_4kHz);
             energy = boxed_energy.Val;
             shift = boxed_shift.Val;
             if (shift > 0)
@@ -174,10 +174,10 @@ namespace Concentus.Silk
             /******************************************************************************
             * FIRST STAGE, operating in 4 khz
             ******************************************************************************/
-            C = Pointer.Malloc<short>(nb_subfr * CSTRIDE_8KHZ);
-            xcorr32 = Pointer.Malloc<int>(MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1);
-            C.MemSet(0, (nb_subfr >> 1) * CSTRIDE_4KHZ);
-            target_ptr = frame_4kHz.Point(Inlines.silk_LSHIFT(SF_LENGTH_4KHZ, 2));
+            C = new short[nb_subfr * CSTRIDE_8KHZ];
+            xcorr32 = new int[MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1];
+            Arrays.MemSet<short>(C, 0, (nb_subfr >> 1) * CSTRIDE_4KHZ);
+            target_ptr = frame_4kHz.GetPointer(Inlines.silk_LSHIFT(SF_LENGTH_4KHZ, 2));
             for (k = 0; k < nb_subfr >> 1; k++)
             {
                 /* Check that we are within range of the array */
@@ -190,7 +190,7 @@ namespace Concentus.Silk
                 //Inlines.OpusAssert(basis_ptr.Offset >= frame_4kHz.Offset);
                 //Inlines.OpusAssert(basis_ptr.Offset + SF_LENGTH_8KHZ <= frame_4kHz.Offset + frame_length_4kHz);
 
-                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - MAX_LAG_4KHZ), xcorr32, SF_LENGTH_8KHZ, MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1);
+                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - MAX_LAG_4KHZ), xcorr32.GetPointer(), SF_LENGTH_8KHZ, MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1);
 
                 /* Calculate first vector products before loop */
                 cross_corr = xcorr32[MAX_LAG_4KHZ - MIN_LAG_4KHZ];
@@ -198,7 +198,7 @@ namespace Concentus.Silk
                 normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, SF_LENGTH_8KHZ));
                 normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_SMULBB(SF_LENGTH_8KHZ, 4000));
 
-                Inlines.MatrixSet(C, k, 0, CSTRIDE_4KHZ,
+                Inlines.MatrixSet(C.GetPointer(), k, 0, CSTRIDE_4KHZ,
                     (short)Inlines.silk_DIV32_varQ(cross_corr, normalizer, 13 + 1));                      /* Q13 */
 
                 /* From now on normalizer is computed recursively */
@@ -217,7 +217,7 @@ namespace Concentus.Silk
                         Inlines.silk_SMULBB(basis_ptr[0], basis_ptr[0]) -
                         Inlines.silk_SMULBB(basis_ptr[SF_LENGTH_8KHZ], basis_ptr[SF_LENGTH_8KHZ]));
 
-                    Inlines.MatrixSet(C, k, d - MIN_LAG_4KHZ, CSTRIDE_4KHZ,
+                    Inlines.MatrixSet(C.GetPointer(), k, d - MIN_LAG_4KHZ, CSTRIDE_4KHZ,
                         (short)Inlines.silk_DIV32_varQ(cross_corr, normalizer, 13 + 1));                  /* Q13 */
                 }
                 /* Update target pointer */
@@ -229,8 +229,8 @@ namespace Concentus.Silk
             {
                 for (i = MAX_LAG_4KHZ; i >= MIN_LAG_4KHZ; i--)
                 {
-                    sum = (int)Inlines.MatrixGet(C, 0, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ)
-                        + (int)Inlines.MatrixGet(C, 1, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ);               /* Q14 */
+                    sum = (int)Inlines.MatrixGet(C.GetPointer(), 0, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ)
+                        + (int)Inlines.MatrixGet(C.GetPointer(), 1, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ);               /* Q14 */
                     sum = Inlines.silk_SMLAWB(sum, sum, Inlines.silk_LSHIFT(-i, 4));                                /* Q14 */
                     C[i - MIN_LAG_4KHZ] = (short)sum;                                            /* Q14 */
                 }
@@ -248,7 +248,7 @@ namespace Concentus.Silk
             /* Sort */
             length_d_srch = Inlines.silk_ADD_LSHIFT32(4, complexity, 1);
             //Inlines.OpusAssert(3 * length_d_srch <= SilkConstants.PE_D_SRCH_LENGTH);
-            Sort.silk_insertion_sort_decreasing_int16(C, d_srch, CSTRIDE_4KHZ, length_d_srch);
+            Sort.silk_insertion_sort_decreasing_int16(C.GetPointer(), d_srch.GetPointer(), CSTRIDE_4KHZ, length_d_srch);
 
             /* Escape if correlation is very low already here */
             Cmax = (int)C[0];                                                    /* Q14 */
@@ -277,7 +277,7 @@ namespace Concentus.Silk
             }
             //Inlines.OpusAssert(length_d_srch > 0);
 
-            d_comp = Pointer.Malloc<short>(D_COMP_STRIDE);
+            d_comp = new short[D_COMP_STRIDE];
             for (i = D_COMP_MIN; i < D_COMP_MAX; i++)
             {
                 d_comp[i - D_COMP_MIN] = 0;
@@ -330,7 +330,7 @@ namespace Concentus.Silk
             // fixme see if these are really necessary
             boxed_shift.Val = 0;
             boxed_energy.Val = 0;
-            SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_8kHz, frame_length_8kHz);
+            SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_8kHz.GetPointer(), frame_length_8kHz);
             energy = boxed_energy.Val;
             shift = boxed_shift.Val;
             if (shift > 0)
@@ -345,9 +345,9 @@ namespace Concentus.Silk
             /*********************************************************************************
             * Find energy of each subframe projected onto its history, for a range of delays
             *********************************************************************************/
-            C.MemSet(0, nb_subfr * CSTRIDE_8KHZ );
+            Arrays.MemSet<short>(C, 0, nb_subfr * CSTRIDE_8KHZ );
 
-            target_ptr = frame_8kHz.Point(SilkConstants.PE_LTP_MEM_LENGTH_MS * 8);
+            target_ptr = frame_8kHz.GetPointer(SilkConstants.PE_LTP_MEM_LENGTH_MS * 8);
             for (k = 0; k < nb_subfr; k++)
             {
 
@@ -369,14 +369,14 @@ namespace Concentus.Silk
                     if (cross_corr > 0)
                     {
                         energy_basis = Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, SF_LENGTH_8KHZ);
-                        Inlines.MatrixSet(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ,
+                        Inlines.MatrixSet(C.GetPointer(), k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ,
                             (short)Inlines.silk_DIV32_varQ(cross_corr,
                                                          Inlines.silk_ADD32(energy_target,
                                                                      energy_basis),
                                                          13 + 1));                                      /* Q13 */
                     }
                     else {
-                        Inlines.MatrixSet<short>(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ, 0);
+                        Inlines.MatrixSet<short>(C.GetPointer(), k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ, 0);
                     }
                 }
                 target_ptr = target_ptr.Point(SF_LENGTH_8KHZ);
@@ -439,7 +439,7 @@ namespace Concentus.Silk
                         /* Try all codebooks */
                         d_subfr = d + Inlines.MatrixGet(Lag_CB_ptr, i, j, cbk_size);
                         CC[j] = CC[j]
-                           + (int)Inlines.MatrixGet(C, i,
+                           + (int)Inlines.MatrixGet(C.GetPointer(), i,
                                                     d_subfr - (MIN_LAG_8KHZ - 2),
                                                     CSTRIDE_8KHZ);
                     }
@@ -503,7 +503,7 @@ namespace Concentus.Silk
 
             if (Fs_kHz > 8)
             {
-                Pointer<short> scratch_mem;
+                short[] scratch_mem;
                 /***************************************************************************/
                 /* Scale input signal down to avoid correlations measures from overflowing */
                 /***************************************************************************/
@@ -513,14 +513,14 @@ namespace Concentus.Silk
                 shift = boxed_shift.Val;
                 if (shift > 0)
                 {
-                    scratch_mem = Pointer.Malloc<short>(frame_length);
+                    scratch_mem = new short[frame_length];
                     /* Move signal to scratch mem because the input signal should be unchanged */
                     shift = Inlines.silk_RSHIFT(shift, 1);
                     for (i = 0; i < frame_length; i++)
                     {
                         scratch_mem[i] = Inlines.silk_RSHIFT16(frame[i], shift);
                     }
-                    input_frame_ptr = scratch_mem;
+                    input_frame_ptr = scratch_mem.GetPointer();
                 }
                 else {
                     input_frame_ptr = frame;
@@ -569,15 +569,15 @@ namespace Concentus.Silk
                 }
 
                 /* Calculate the correlations and energies needed in stage 3 */
-                energies_st3 = Pointer.Malloc<silk_pe_stage3_vals>(nb_subfr * nb_cbk_search);
-                cross_corr_st3 = Pointer.Malloc<silk_pe_stage3_vals>(nb_subfr * nb_cbk_search);
+                TOKENenergies_st3 = Pointer.Malloc<silk_pe_stage3_vals>(nb_subfr * nb_cbk_search);
+                TOKENcross_corr_st3 = Pointer.Malloc<silk_pe_stage3_vals>(nb_subfr * nb_cbk_search);
                 for (int c = 0; c < nb_subfr * nb_cbk_search; c++)
                 {
-                    energies_st3[c] = new silk_pe_stage3_vals(); // fixme: these can be replaced with a linearized array probably, or at least a struct
-                    cross_corr_st3[c] = new silk_pe_stage3_vals();
+                    TOKENenergies_st3[c] = new silk_pe_stage3_vals(); // fixme: these can be replaced with a linearized array probably, or at least a struct
+                    TOKENcross_corr_st3[c] = new silk_pe_stage3_vals();
                 }
-                silk_P_Ana_calc_corr_st3(cross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
-                silk_P_Ana_calc_energy_st3(energies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
+                silk_P_Ana_calc_corr_st3(TOKENcross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
+                silk_P_Ana_calc_energy_st3(TOKENenergies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
 
                 lag_counter = 0;
                 //Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
@@ -594,10 +594,10 @@ namespace Concentus.Silk
                         for (k = 0; k < nb_subfr; k++)
                         {
                             cross_corr = Inlines.silk_ADD32(cross_corr,
-                                Inlines.MatrixGet(cross_corr_st3, k, j,
+                                Inlines.MatrixGet(TOKENcross_corr_st3, k, j,
                                             nb_cbk_search).Values[lag_counter]);
                             energy = Inlines.silk_ADD32(energy,
-                                Inlines.MatrixGet(energies_st3, k, j,
+                                Inlines.MatrixGet(TOKENenergies_st3, k, j,
                                             nb_cbk_search).Values[lag_counter]);
                             //Inlines.OpusAssert(energy >= 0);
                         }
@@ -672,8 +672,8 @@ namespace Concentus.Silk
             Pointer<short> target_ptr;
             int i, j, k, lag_counter, lag_low, lag_high;
             int nb_cbk_search, delta, idx, cbk_size;
-            Pointer<int> scratch_mem;
-            Pointer<int> xcorr32;
+            int[] scratch_mem;
+            int[] xcorr32;
             Pointer<sbyte> Lag_range_ptr, Lag_CB_ptr;
             
             //Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
@@ -693,8 +693,8 @@ namespace Concentus.Silk
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
             }
-            scratch_mem = Pointer.Malloc<int>( SCRATCH_SIZE);
-            xcorr32 = Pointer.Malloc<int>(SCRATCH_SIZE);
+            scratch_mem = new int[SCRATCH_SIZE];
+            xcorr32 = new int[SCRATCH_SIZE];
 
             target_ptr = frame.Point(Inlines.silk_LSHIFT(sf_length, 2)); /* Pointer to middle of frame */
             for (k = 0; k < nb_subfr; k++)
@@ -705,7 +705,7 @@ namespace Concentus.Silk
                 lag_low = Inlines.MatrixGet(Lag_range_ptr, k, 0, 2);
                 lag_high = Inlines.MatrixGet(Lag_range_ptr, k, 1, 2);
                 //Inlines.OpusAssert(lag_high - lag_low + 1 <= SCRATCH_SIZE);
-                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - start_lag - lag_high), xcorr32, sf_length, lag_high - lag_low + 1);
+                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - start_lag - lag_high), xcorr32.GetPointer(), sf_length, lag_high - lag_low + 1);
                 for (j = lag_low; j <= lag_high; j++)
                 {
                     //Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);
@@ -749,7 +749,7 @@ namespace Concentus.Silk
             int energy;
             int k, i, j, lag_counter;
             int nb_cbk_search, delta, idx, cbk_size, lag_diff;
-            Pointer<int> scratch_mem;
+            int[] scratch_mem;
             Pointer<sbyte> Lag_range_ptr, Lag_CB_ptr;
 
 
@@ -770,7 +770,7 @@ namespace Concentus.Silk
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
             }
-            scratch_mem = Pointer.Malloc<int>(SCRATCH_SIZE);
+            scratch_mem = new int[SCRATCH_SIZE];
 
             target_ptr = frame.Point(Inlines.silk_LSHIFT(sf_length, 2));
             for (k = 0; k < nb_subfr; k++)

@@ -647,10 +647,10 @@ namespace Concentus.Silk
         {
             int i, s, ind1, prob_Q8, bits_q7;
             int W_tmp_Q9;
-            Pointer<int> err_Q26;
-            Pointer<int> RD_Q25;
-            Pointer<int> tempIndices1;
-            Pointer<sbyte> tempIndices2;
+            int[] err_Q26;
+            int[] RD_Q25;
+            int[] tempIndices1;
+            sbyte[] tempIndices2;
             short[] res_Q15 = new short[psNLSF_CB.order];
             short[] res_Q10 = new short[psNLSF_CB.order];
             short[] NLSF_tmp_Q15 = new short[psNLSF_CB.order];
@@ -668,15 +668,15 @@ namespace Concentus.Silk
             silk_NLSF_stabilize(pNLSF_Q15, psNLSF_CB.deltaMin_Q15.GetPointer(), psNLSF_CB.order);
 
             // First stage: VQ
-            err_Q26 = Pointer.Malloc<int>(psNLSF_CB.nVectors);
-            silk_NLSF_VQ(err_Q26, pNLSF_Q15, psNLSF_CB.CB1_NLSF_Q8.GetPointer(), psNLSF_CB.nVectors, psNLSF_CB.order);
+            err_Q26 = new int[psNLSF_CB.nVectors];
+            silk_NLSF_VQ(err_Q26.GetPointer(), pNLSF_Q15, psNLSF_CB.CB1_NLSF_Q8.GetPointer(), psNLSF_CB.nVectors, psNLSF_CB.order);
 
             // Sort the quantization errors
-            tempIndices1 = Pointer.Malloc<int>(nSurvivors);
-            Sort.silk_insertion_sort_increasing(err_Q26, tempIndices1, psNLSF_CB.nVectors, nSurvivors);
+            tempIndices1 = new int[nSurvivors];
+            Sort.silk_insertion_sort_increasing(err_Q26.GetPointer(), tempIndices1.GetPointer(), psNLSF_CB.nVectors, nSurvivors);
 
-            RD_Q25 = Pointer.Malloc<int>(nSurvivors);
-            tempIndices2 = Pointer.Malloc<sbyte>(nSurvivors * SilkConstants.MAX_LPC_ORDER);
+            RD_Q25 = new int[nSurvivors];
+            tempIndices2 = new sbyte[nSurvivors * SilkConstants.MAX_LPC_ORDER];
 
             // Loop over survivors
             for (s = 0; s < nSurvivors; s++)
@@ -712,7 +712,7 @@ namespace Concentus.Silk
 
                 // Trellis quantizer
                 RD_Q25[s] = silk_NLSF_del_dec_quant(
-                    tempIndices2.Point(s * SilkConstants.MAX_LPC_ORDER),
+                    tempIndices2.GetPointer(s * SilkConstants.MAX_LPC_ORDER),
                     res_Q10,
                     W_adj_Q5,
                     pred_Q8,
@@ -740,11 +740,11 @@ namespace Concentus.Silk
             }
 
             // Find the lowest rate-distortion error
-            Pointer<int> bestIndex = Pointer.Malloc<int>(1);
-            Sort.silk_insertion_sort_increasing(RD_Q25, bestIndex, nSurvivors, 1);
+            int[] bestIndex = new int[1];
+            Sort.silk_insertion_sort_increasing(RD_Q25.GetPointer(), bestIndex.GetPointer(), nSurvivors, 1);
 
             NLSFIndices[0] = (sbyte)tempIndices1[bestIndex[0]];
-            tempIndices2.Point(bestIndex[0] * SilkConstants.MAX_LPC_ORDER).MemCopyTo(NLSFIndices.Point(1), psNLSF_CB.order);
+            tempIndices2.GetPointer(bestIndex[0] * SilkConstants.MAX_LPC_ORDER).MemCopyTo(NLSFIndices.Point(1), psNLSF_CB.order);
 
             // Decode
             silk_NLSF_decode(pNLSF_Q15, NLSFIndices, psNLSF_CB);
@@ -797,10 +797,10 @@ namespace Concentus.Silk
 
             byte[] ordering;
             int k, i, dd;
-            Pointer<int> cos_LSF_QA = Pointer.Malloc<int>(SilkConstants.SILK_MAX_ORDER_LPC);
-            Pointer<int> P = Pointer.Malloc<int>(SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1);
-            Pointer<int> Q = Pointer.Malloc<int>(SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1);
-            Pointer<int> a32_QA1 = Pointer.Malloc<int>(SilkConstants.SILK_MAX_ORDER_LPC);
+            int[] cos_LSF_QA = new int[SilkConstants.SILK_MAX_ORDER_LPC];
+            int[] P = new int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
+            int[] Q = new int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
+            int[] a32_QA1 = new int[SilkConstants.SILK_MAX_ORDER_LPC];
 
             int Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
             int maxabs, absval, idx = 0, sc_Q16;
@@ -835,8 +835,8 @@ namespace Concentus.Silk
             dd = Inlines.silk_RSHIFT(d, 1);
 
             /* generate even and odd polynomials using convolution */
-            silk_NLSF2A_find_poly(P, cos_LSF_QA.Point(0), dd);
-            silk_NLSF2A_find_poly(Q, cos_LSF_QA.Point(1), dd);
+            silk_NLSF2A_find_poly(P.GetPointer(), cos_LSF_QA.GetPointer(0), dd);
+            silk_NLSF2A_find_poly(Q.GetPointer(), cos_LSF_QA.GetPointer(1), dd);
 
             /* convert even and odd polynomials to opus_int32 Q12 filter coefs */
             for (k = 0; k < dd; k++)
@@ -872,7 +872,7 @@ namespace Concentus.Silk
                     maxabs = Inlines.silk_min(maxabs, 163838);  /* ( silk_int32_MAX >> 14 ) + silk_int16_MAX = 163838 */
                     sc_Q16 = Inlines.SILK_CONST(0.999f, 16) - Inlines.silk_DIV32(Inlines.silk_LSHIFT(maxabs - short.MaxValue, 14),
                                                 Inlines.silk_RSHIFT32(Inlines.silk_MUL(maxabs, idx + 1), 2));
-                    Filters.silk_bwexpander_32(a32_QA1.Data, a32_QA1.Offset, d, sc_Q16);
+                    Filters.silk_bwexpander_32(a32_QA1, d, sc_Q16);
                 }
                 else
                 {
@@ -903,7 +903,7 @@ namespace Concentus.Silk
                 {
                     /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
                     /* on the unscaled coefficients, convert to Q12 and measure again                   */
-                    Filters.silk_bwexpander_32(a32_QA1.Data, a32_QA1.Offset, d, 65536 - Inlines.silk_LSHIFT(2, i));
+                    Filters.silk_bwexpander_32(a32_QA1, d, 65536 - Inlines.silk_LSHIFT(2, i));
 
                     for (k = 0; k < d; k++)
                     {
@@ -974,7 +974,7 @@ namespace Concentus.Silk
         }
 
         internal static void silk_A2NLSF_init(
-             Pointer<int> a_Q16,
+             int[] a_Q16,
              Pointer<int> P,
              Pointer<int> Q,
              int dd)
@@ -1011,7 +1011,7 @@ namespace Concentus.Silk
         /// <param name="NLSF">(O) Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d]</param>
         /// <param name="a_Q16">(I/O) Monic whitening filter coefficients in Q16 [d]</param>
         /// <param name="d">(I) Filter order (must be even)</param>
-        internal static void silk_A2NLSF(Pointer<short> NLSF, Pointer<int> a_Q16, int d)
+        internal static void silk_A2NLSF(Pointer<short> NLSF, int[] a_Q16, int d)
         {
             int i, k, m, dd, root_ix, ffrac;
             int xlo, xhi, xmid;
@@ -1148,7 +1148,7 @@ namespace Concentus.Silk
                         }
 
                         /* Error: Apply progressively more bandwidth expansion and run again */
-                        Filters.silk_bwexpander_32(a_Q16.Data, a_Q16.Offset, d, 65536 - Inlines.silk_SMULBB(10 + i, i)); /* 10_Q16 = 0.00015*/
+                        Filters.silk_bwexpander_32(a_Q16, d, 65536 - Inlines.silk_SMULBB(10 + i, i)); /* 10_Q16 = 0.00015*/
 
                         silk_A2NLSF_init(a_Q16, P, Q, dd);
                         p = P;                            /* Pointer to polynomial */

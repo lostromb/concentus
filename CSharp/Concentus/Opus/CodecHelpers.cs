@@ -328,10 +328,10 @@ namespace Concentus
             int subframe;
             int pos;
             int offset;
-            Pointer<int> sub;
+            int[] sub;
 
             subframe = Fs / 400;
-            sub = Pointer.Malloc<int>(subframe);
+            sub = new int[subframe];
             e[0] = mem[0];
             e_1[0] = 1.0f / (CeltConstants.EPSILON + mem[0]);
             if (buffering != 0)
@@ -361,7 +361,7 @@ namespace Concentus
                 int j;
                 tmp = CeltConstants.EPSILON;
 
-                downmix(x.GetPointer(x_ptr), sub, subframe, i * subframe + offset, 0, -2, C);
+                downmix(x.GetPointer(x_ptr), sub.GetPointer(), subframe, i * subframe + offset, 0, -2, C);
                 if (i == 0)
                     memx = sub[0];
                 for (j = 0; j < subframe; j++)

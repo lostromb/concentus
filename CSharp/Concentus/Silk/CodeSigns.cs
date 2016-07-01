@@ -114,7 +114,7 @@ namespace Concentus.Silk
             Pointer<int> sum_pulses)
         {
             int i, j, p;
-            Pointer<byte> icdf = Pointer.Malloc<byte>(2);
+            byte[] icdf = new byte[2];
             Pointer<short> q_ptr;
             Pointer<byte> icdf_ptr;
 
@@ -136,7 +136,7 @@ namespace Concentus.Silk
                         if (q_ptr[j] > 0)
                         {
                             /* attach sign */
-                            q_ptr[j] *= Inlines.CHOP16(silk_dec_map(psRangeDec.dec_icdf(icdf.Data, icdf.Offset, 8)));
+                            q_ptr[j] *= Inlines.CHOP16(silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
                         }
                     }
                 }

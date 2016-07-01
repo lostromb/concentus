@@ -49,7 +49,7 @@ namespace Concentus.Silk
         )
         {
             int k, subfr_length;
-            Pointer<int> a_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
+            int[] a_Q16 = new int[SilkConstants.MAX_LPC_ORDER];
             int isInterpLower, shift;
             int res_nrg0, res_nrg1;
             int rshift0, rshift1;
@@ -57,11 +57,11 @@ namespace Concentus.Silk
             BoxedValue<int> scratch_box2 = new BoxedValue<int>();
 
             /* Used only for LSF interpolation */
-            Pointer<int> a_tmp_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_LPC_ORDER);
+            int[] a_tmp_Q16 = new int[SilkConstants.MAX_LPC_ORDER];
             int res_nrg_interp, res_nrg, res_tmp_nrg;
             int res_nrg_interp_Q, res_nrg_Q, res_tmp_nrg_Q;
-            Pointer<short> a_tmp_Q12 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
-            Pointer<short> NLSF0_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
+            short[] a_tmp_Q12 = new short[SilkConstants.MAX_LPC_ORDER];
+            short[] NLSF0_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
             
             subfr_length = psEncC.subfr_length + psEncC.predictLPCOrder;
 
@@ -69,16 +69,16 @@ namespace Concentus.Silk
             psEncC.indices.NLSFInterpCoef_Q2 = 4;
 
             /* Burg AR analysis for the full frame */
-            BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_Q16, x.Data, x.Offset, minInvGain_Q30, subfr_length, psEncC.nb_subfr, psEncC.predictLPCOrder);
+            BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_Q16.GetPointer(), x.Data, x.Offset, minInvGain_Q30, subfr_length, psEncC.nb_subfr, psEncC.predictLPCOrder);
             res_nrg = scratch_box1.Val;
             res_nrg_Q = scratch_box2.Val;
 
             if (psEncC.useInterpolatedNLSFs != 0 && psEncC.first_frame_after_reset == 0 && psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR)
             {
-                Pointer<short> LPC_res;
+                short[] LPC_res;
 
                 /* Optimal solution for last 10 ms */
-                BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_tmp_Q16, x.Data, x.Offset + (2 * subfr_length), minInvGain_Q30, subfr_length, 2, psEncC.predictLPCOrder);
+                BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_tmp_Q16.GetPointer(), x.Data, x.Offset + (2 * subfr_length), minInvGain_Q30, subfr_length, 2, psEncC.predictLPCOrder);
                 res_tmp_nrg = scratch_box1.Val;
                 res_tmp_nrg_Q = scratch_box2.Val;
 
@@ -101,25 +101,25 @@ namespace Concentus.Silk
                 /* Convert to NLSFs */
                 NLSF.silk_A2NLSF(NLSF_Q15, a_tmp_Q16, psEncC.predictLPCOrder);
 
-               LPC_res = Pointer.Malloc<short>(2 * subfr_length);
+               LPC_res = new short[2 * subfr_length];
 
                 /* Search over interpolation indices to find the one with lowest residual energy */
                 for (k = 3; k >= 0; k--)
                 {
                     /* Interpolate NLSFs for first half */
-                    Inlines.silk_interpolate(NLSF0_Q15.Data, psEncC.prev_NLSFq_Q15, 0, NLSF_Q15.Data, NLSF_Q15.Offset, k, psEncC.predictLPCOrder);
+                    Inlines.silk_interpolate(NLSF0_Q15, psEncC.prev_NLSFq_Q15, 0, NLSF_Q15.Data, NLSF_Q15.Offset, k, psEncC.predictLPCOrder);
 
                     /* Convert to LPC for residual energy evaluation */
-                    NLSF.silk_NLSF2A(a_tmp_Q12, NLSF0_Q15, psEncC.predictLPCOrder);
+                    NLSF.silk_NLSF2A(a_tmp_Q12.GetPointer(), NLSF0_Q15.GetPointer(), psEncC.predictLPCOrder);
 
                     /* Calculate residual energy with NLSF interpolation */
-                    Filters.silk_LPC_analysis_filter(LPC_res.Data, LPC_res.Offset, x.Data, x.Offset, a_tmp_Q12.Data, a_tmp_Q12.Offset, 2 * subfr_length, psEncC.predictLPCOrder);
+                    Filters.silk_LPC_analysis_filter(LPC_res, 0, x.Data, x.Offset, a_tmp_Q12, 0, 2 * subfr_length, psEncC.predictLPCOrder);
                     
-                    SumSqrShift.silk_sum_sqr_shift(scratch_box1, scratch_box2, LPC_res.Point(psEncC.predictLPCOrder), subfr_length - psEncC.predictLPCOrder);
+                    SumSqrShift.silk_sum_sqr_shift(scratch_box1, scratch_box2, LPC_res.GetPointer(psEncC.predictLPCOrder), subfr_length - psEncC.predictLPCOrder);
                     res_nrg0 = scratch_box1.Val;
                     rshift0 = scratch_box2.Val;
                     
-                    SumSqrShift.silk_sum_sqr_shift(scratch_box1, scratch_box2, LPC_res.Point(psEncC.predictLPCOrder + subfr_length), subfr_length - psEncC.predictLPCOrder);
+                    SumSqrShift.silk_sum_sqr_shift(scratch_box1, scratch_box2, LPC_res.GetPointer(psEncC.predictLPCOrder + subfr_length), subfr_length - psEncC.predictLPCOrder);
                     res_nrg1 = scratch_box1.Val;
                     rshift1 = scratch_box2.Val;
 

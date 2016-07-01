@@ -51,12 +51,12 @@ namespace Concentus.Silk
             int buf_len, i, scale;
             int thrhld_Q13, res_nrg;
             Pointer<short> x_buf, x_buf_ptr;
-            Pointer<short> Wsig;
+            short[] Wsig;
             Pointer<short> Wsig_ptr;
-            Pointer<int> auto_corr = Pointer.Malloc<int>(SilkConstants.MAX_FIND_PITCH_LPC_ORDER + 1);
-            Pointer<short> rc_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_FIND_PITCH_LPC_ORDER);
-            Pointer<int> A_Q24 = Pointer.Malloc<int>(SilkConstants.MAX_FIND_PITCH_LPC_ORDER);
-            Pointer<short> A_Q12 = Pointer.Malloc<short>(SilkConstants.MAX_FIND_PITCH_LPC_ORDER);
+            int[] auto_corr = new int[SilkConstants.MAX_FIND_PITCH_LPC_ORDER + 1];
+            short[] rc_Q15 = new short[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
+            int[] A_Q24 = new int[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
+            short[] A_Q12 = new short[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
 
 
             /******************************************/
@@ -75,11 +75,11 @@ namespace Concentus.Silk
 
             /* Calculate windowed signal */
 
-            Wsig = Pointer.Malloc<short>(psEnc.pitch_LPC_win_length);
+            Wsig = new short[psEnc.pitch_LPC_win_length];
 
             /* First LA_LTP samples */
             x_buf_ptr = x_buf.Point(buf_len - psEnc.pitch_LPC_win_length);
-            Wsig_ptr = Wsig;
+            Wsig_ptr = Wsig.GetPointer();
             ApplySineWindow.silk_apply_sine_window(Wsig_ptr, x_buf_ptr, 1, psEnc.la_pitch);
 
             /* Middle un - windowed samples */
@@ -94,20 +94,20 @@ namespace Concentus.Silk
 
             /* Calculate autocorrelation sequence */
             BoxedValue<int> boxed_scale = new BoxedValue<int>();
-            Autocorrelation.silk_autocorr(auto_corr, boxed_scale, Wsig, psEnc.pitch_LPC_win_length, psEnc.pitchEstimationLPCOrder + 1);
+            Autocorrelation.silk_autocorr(auto_corr.GetPointer(), boxed_scale, Wsig.GetPointer(), psEnc.pitch_LPC_win_length, psEnc.pitchEstimationLPCOrder + 1);
             scale = boxed_scale.Val;
 
             /* Add white noise, as fraction of energy */
             auto_corr[0] = Inlines.silk_SMLAWB(auto_corr[0], auto_corr[0], Inlines.SILK_CONST(TuningParameters.FIND_PITCH_WHITE_NOISE_FRACTION, 16)) + 1;
 
             /* Calculate the reflection coefficients using schur */
-            res_nrg = Schur.silk_schur(rc_Q15, auto_corr, psEnc.pitchEstimationLPCOrder);
+            res_nrg = Schur.silk_schur(rc_Q15.GetPointer(), auto_corr.GetPointer(), psEnc.pitchEstimationLPCOrder);
 
             /* Prediction gain */
             psEncCtrl.predGain_Q16 = Inlines.silk_DIV32_varQ(auto_corr[0], Inlines.silk_max_int(res_nrg, 1), 16);
 
             /* Convert reflection coefficients to prediction coefficients */
-            K2A.silk_k2a(A_Q24, rc_Q15, psEnc.pitchEstimationLPCOrder);
+            K2A.silk_k2a(A_Q24.GetPointer(), rc_Q15.GetPointer(), psEnc.pitchEstimationLPCOrder);
 
             /* Convert From 32 bit Q24 to 16 bit Q12 coefs */
             for (i = 0; i < psEnc.pitchEstimationLPCOrder; i++)
@@ -116,12 +116,12 @@ namespace Concentus.Silk
             }
 
             /* Do BWE */
-            BWExpander.silk_bwexpander(A_Q12, psEnc.pitchEstimationLPCOrder, Inlines.SILK_CONST(TuningParameters.FIND_PITCH_BANDWIDTH_EXPANSION, 16));
+            BWExpander.silk_bwexpander(A_Q12.GetPointer(), psEnc.pitchEstimationLPCOrder, Inlines.SILK_CONST(TuningParameters.FIND_PITCH_BANDWIDTH_EXPANSION, 16));
 
             /*****************************************/
             /* LPC analysis filtering                */
             /*****************************************/
-            Filters.silk_LPC_analysis_filter(res.Data, res.Offset, x_buf.Data, x_buf.Offset, A_Q12.Data, A_Q12.Offset, buf_len, psEnc.pitchEstimationLPCOrder);
+            Filters.silk_LPC_analysis_filter(res.Data, res.Offset, x_buf.Data, x_buf.Offset, A_Q12, 0, buf_len, psEnc.pitchEstimationLPCOrder);
 
             if (psEnc.indices.signalType != SilkConstants.TYPE_NO_VOICE_ACTIVITY && psEnc.first_frame_after_reset == 0)
             {

@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     /// <summary>
@@ -115,7 +116,7 @@ namespace Concentus.Silk
         {
             int i, subfr;
             int sum_Q6, max_Gain_Q16, gain_Q16;
-            Pointer<short> A_Q12 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
+            short[] A_Q12 = new short[SilkConstants.MAX_LPC_ORDER]; // fixme: psDec.LPC_order?
             CNGState psCNG = psDec.sCNG;
 
             if (psDec.fs_kHz != psCNG.fs_kHz)
@@ -162,7 +163,7 @@ namespace Concentus.Silk
             /* Add CNG when packet is lost or during DTX */
             if (psDec.lossCnt != 0)
             {
-                Pointer<int> CNG_sig_Q10 = Pointer.Malloc<int>(length + SilkConstants.MAX_LPC_ORDER);
+                int[] CNG_sig_Q10 = new int[length + SilkConstants.MAX_LPC_ORDER];
 
                 /* Generate CNG excitation */
                 gain_Q16 = Inlines.silk_SMULWW(psDec.sPLC.randScale_Q14, psDec.sPLC.prevGain_Q16[1]);
@@ -178,13 +179,13 @@ namespace Concentus.Silk
                     gain_Q16 = Inlines.silk_SUB_LSHIFT32(Inlines.silk_SMULWW(psCNG.CNG_smth_Gain_Q16, psCNG.CNG_smth_Gain_Q16), gain_Q16, 5);
                     gain_Q16 = Inlines.silk_LSHIFT32(Inlines.silk_SQRT_APPROX(gain_Q16), 8);
                 }
-                silk_CNG_exc(CNG_sig_Q10.Point(SilkConstants.MAX_LPC_ORDER), psCNG.CNG_exc_buf_Q14.GetPointer(), gain_Q16, length, ref psCNG.rand_seed);
+                silk_CNG_exc(CNG_sig_Q10.GetPointer(SilkConstants.MAX_LPC_ORDER), psCNG.CNG_exc_buf_Q14.GetPointer(), gain_Q16, length, ref psCNG.rand_seed);
 
                 /* Convert CNG NLSF to filter representation */
-                NLSF.silk_NLSF2A(A_Q12, psCNG.CNG_smth_NLSF_Q15.GetPointer(), psDec.LPC_order);
+                NLSF.silk_NLSF2A(A_Q12.GetPointer(), psCNG.CNG_smth_NLSF_Q15.GetPointer(), psDec.LPC_order);
 
                 /* Generate CNG signal, by synthesis filtering */
-                psCNG.CNG_synth_state.GetPointer().MemCopyTo(CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);
+                Array.Copy(psCNG.CNG_synth_state, CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);
 
                 for (i = 0; i < length; i++)
                 {
@@ -218,7 +219,7 @@ namespace Concentus.Silk
                     frame[i] = Inlines.silk_ADD_SAT16(frame[i], Inlines.CHOP16(Inlines.silk_RSHIFT_ROUND(CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i], 10)));
                 }
 
-                CNG_sig_Q10.Point(length).MemCopyTo(psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
+                Array.Copy(CNG_sig_Q10, length, psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
             }
             else
             {

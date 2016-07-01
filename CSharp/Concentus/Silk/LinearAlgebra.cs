@@ -38,6 +38,7 @@ namespace Concentus.Silk
     using Concentus.Silk.Structs;
     using System.Diagnostics;
 
+    // fixme: lots of obvious optimizations to be made here
     internal static class LinearAlgebra
     {
         /* Solves Ax = b, assuming A is symmetric */
@@ -48,8 +49,9 @@ namespace Concentus.Silk
             Pointer<int> x_Q16                                  /* O    Pointer to x solution vector                                                */
             )
         {
-            Pointer<int> L_Q16;
-            Pointer<int> Y = Pointer.Malloc<int>(SilkConstants.MAX_MATRIX_SIZE);
+            //Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
+            int[] L_Q16 = new int[M * M];
+            int[] Y = new int[SilkConstants.MAX_MATRIX_SIZE];
 
             // [Porting note] This is an interleaved array. Formerly it was an array of data structures laid out thus:
             //private struct inv_D_t
@@ -57,34 +59,30 @@ namespace Concentus.Silk
             //    int Q36_part;
             //    int Q48_part;
             //}
-            Pointer<int> inv_D = Pointer.Malloc<int>(SilkConstants.MAX_MATRIX_SIZE * 2);
-
-
-            //Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
-            L_Q16 = Pointer.Malloc<int>(M * M);
-
+            int[] inv_D = new int[SilkConstants.MAX_MATRIX_SIZE * 2];
+            
             /***************************************************
             Factorize A by LDL such that A = L*D*L',
             where L is lower triangular with ones on diagonal
             ****************************************************/
-            silk_LDL_factorize(A, M, L_Q16, inv_D);
+            silk_LDL_factorize(A, M, L_Q16.GetPointer(), inv_D.GetPointer());
 
             /****************************************************
             * substitute D*L'*x = Y. ie:
             L*D*L'*x = b => L*Y = b <=> Y = inv(L)*b
             ******************************************************/
-            silk_LS_SolveFirst(L_Q16, M, b, Y);
+            silk_LS_SolveFirst(L_Q16.GetPointer(), M, b, Y.GetPointer());
 
             /****************************************************
             D*L'*x = Y <=> L'*x = inv(D)*Y, because D is
             diagonal just multiply with 1/d_i
             ****************************************************/
-            silk_LS_divide_Q16(Y, inv_D, M);
+            silk_LS_divide_Q16(Y.GetPointer(), inv_D.GetPointer(), M);
 
             /****************************************************
             x = inv(L') * inv(D) * Y
             *****************************************************/
-            silk_LS_SolveLast(L_Q16, M, Y, x_Q16);
+            silk_LS_SolveLast(L_Q16.GetPointer(), M, Y.GetPointer(), x_Q16);
 
         }
 
@@ -99,8 +97,8 @@ namespace Concentus.Silk
             int i, j, k, status, loop_count;
             Pointer<int> ptr1, ptr2;
             int diag_min_value, tmp_32, err;
-            Pointer<int> v_Q0 = Pointer.Malloc<int>(SilkConstants.MAX_MATRIX_SIZE);
-            Pointer<int> D_Q0 = Pointer.Malloc<int>(SilkConstants.MAX_MATRIX_SIZE);
+            int[] v_Q0 = new int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
+            int[] D_Q0 = new int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
             int one_div_diag_Q36, one_div_diag_Q40, one_div_diag_Q48;
 
             //Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);

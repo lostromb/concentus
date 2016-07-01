@@ -88,15 +88,15 @@ namespace Concentus.Silk
         {
             int i, k, j, iter, bit, nLS, scale_down, RateLevelIndex = 0;
             int abs_q, minSumBits_Q5, sumBits_Q5;
-            Pointer<int> abs_pulses;
-            Pointer<int> sum_pulses;
-            Pointer<int> nRshifts;
-            Pointer<int> pulses_comb = Pointer.Malloc<int>(8);
+            int[] abs_pulses;
+            int[] sum_pulses;
+            int[] nRshifts;
+            int[] pulses_comb = new int[8];
             Pointer<int> abs_pulses_ptr;
             Pointer<sbyte> pulses_ptr;
             Pointer<byte> nBits_ptr;
 
-            pulses_comb.MemSet(0, 8);
+            Arrays.MemSet<int>(pulses_comb, 0, 8);
 
             /****************************/
             /* Prepare for shell coding */
@@ -112,7 +112,7 @@ namespace Concentus.Silk
             }
 
             /* Take the absolute value of the pulses */
-            abs_pulses = Pointer.Malloc<int>(iter * SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+            abs_pulses = new int[iter * SilkConstants.SHELL_CODEC_FRAME_LENGTH];
             //Inlines.OpusAssert((SilkConstants.SHELL_CODEC_FRAME_LENGTH & 3) == 0);
             
             // unrolled loop
@@ -125,9 +125,9 @@ namespace Concentus.Silk
             }
 
             /* Calc sum pulses per shell code frame */
-            sum_pulses = Pointer.Malloc<int>(iter);
-            nRshifts = Pointer.Malloc<int>(iter);
-            abs_pulses_ptr = abs_pulses;
+            sum_pulses = new int[iter];
+            nRshifts = new int[iter];
+            abs_pulses_ptr = abs_pulses.GetPointer();
             for (i = 0; i < iter; i++)
             {
                 nRshifts[i] = 0;
@@ -135,13 +135,13 @@ namespace Concentus.Silk
                 while (true)
                 {
                     /* 1+1 . 2 */
-                    scale_down = combine_and_check(pulses_comb, abs_pulses_ptr, Tables.silk_max_pulses_table[0], 8);
+                    scale_down = combine_and_check(pulses_comb.GetPointer(), abs_pulses_ptr, Tables.silk_max_pulses_table[0], 8);
                     /* 2+2 . 4 */
-                    scale_down += combine_and_check(pulses_comb, pulses_comb, Tables.silk_max_pulses_table[1], 4);
+                    scale_down += combine_and_check(pulses_comb.GetPointer(), pulses_comb.GetPointer(), Tables.silk_max_pulses_table[1], 4);
                     /* 4+4 . 8 */
-                    scale_down += combine_and_check(pulses_comb, pulses_comb, Tables.silk_max_pulses_table[2], 2);
+                    scale_down += combine_and_check(pulses_comb.GetPointer(), pulses_comb.GetPointer(), Tables.silk_max_pulses_table[2], 2);
                     /* 8+8 . 16 */
-                    scale_down += combine_and_check(sum_pulses.Point(i), pulses_comb, Tables.silk_max_pulses_table[3], 1);
+                    scale_down += combine_and_check(sum_pulses.GetPointer(i), pulses_comb.GetPointer(), Tables.silk_max_pulses_table[3], 1);
                     
                     if (scale_down != 0)
                     {
@@ -218,7 +218,7 @@ namespace Concentus.Silk
             {
                 if (sum_pulses[i] > 0)
                 {
-                    ShellCoder.silk_shell_encoder(psRangeEnc, abs_pulses.Point(i * SilkConstants.SHELL_CODEC_FRAME_LENGTH));
+                    ShellCoder.silk_shell_encoder(psRangeEnc, abs_pulses.GetPointer(i * SilkConstants.SHELL_CODEC_FRAME_LENGTH));
                 }
             }
 
@@ -248,7 +248,7 @@ namespace Concentus.Silk
             /****************/
             /* Encode signs */
             /****************/
-            CodeSigns.silk_encode_signs(psRangeEnc, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
+            CodeSigns.silk_encode_signs(psRangeEnc, pulses, frame_length, signalType, quantOffsetType, sum_pulses.GetPointer());
         }
     }
 }

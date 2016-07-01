@@ -76,20 +76,20 @@ namespace Concentus.Silk
 
             int regu;
             Pointer<int> WLTP_ptr;
-            Pointer<int> b_Q16 = Pointer.Malloc<int>(SilkConstants.LTP_ORDER);
-            Pointer<int> delta_b_Q14 = Pointer.Malloc<int>(SilkConstants.LTP_ORDER);
-            Pointer<int> d_Q14 = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
-            Pointer<int> nrg = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+            int[] b_Q16 = new int[SilkConstants.LTP_ORDER];
+            int[] delta_b_Q14 = new int[SilkConstants.LTP_ORDER];
+            int[] d_Q14 = new int[SilkConstants.MAX_NB_SUBFR];
+            int[] nrg = new int[SilkConstants.MAX_NB_SUBFR];
             int g_Q26;
-            Pointer<int> w = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+            int[] w = new int[SilkConstants.MAX_NB_SUBFR];
             int WLTP_max, max_abs_d_Q14, max_w_bits;
 
             int temp32, denom32;
             int extra_shifts;
             int rr_shifts, maxRshifts, maxRshifts_wxtra, LZs;
             int LPC_res_nrg, LPC_LTP_res_nrg, div_Q16;
-            Pointer<int> Rr = Pointer.Malloc<int>(SilkConstants.LTP_ORDER);
-            Pointer<int> rr = Pointer.Malloc<int>(SilkConstants.MAX_NB_SUBFR);
+            int[] Rr = new int[SilkConstants.LTP_ORDER];
+            int[] rr = new int[SilkConstants.MAX_NB_SUBFR];
             int wd, m_Q12;
 
             b_Q14_ptr = b_Q14;
@@ -118,7 +118,7 @@ namespace Concentus.Silk
                 corr_rshifts[k] = boxed_shifts.Val;
 
                 /* The correlation vector always has lower max abs value than rr and/or RR so head room is assured */
-                CorrelateMatrix.silk_corrVector(lag_ptr, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
+                CorrelateMatrix.silk_corrVector(lag_ptr, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr.GetPointer(), corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
                 if (corr_rshifts[k] > rr_shifts)
                 {
                     rr[k] = Inlines.silk_RSHIFT(rr[k], corr_rshifts[k] - rr_shifts); /* rr[ k ] in Q( -corr_rshifts[ k ] ) */
@@ -129,15 +129,15 @@ namespace Concentus.Silk
                 regu = Inlines.silk_SMLAWB(regu, rr[k], Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16));
                 regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, 0, 0, SilkConstants.LTP_ORDER), Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16));
                 regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER), Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16));
-                RegularizeCorrelations.silk_regularize_correlations(WLTP_ptr, rr.Point(k), regu, SilkConstants.LTP_ORDER);
+                RegularizeCorrelations.silk_regularize_correlations(WLTP_ptr, rr.GetPointer(k), regu, SilkConstants.LTP_ORDER);
 
-                LinearAlgebra.silk_solve_LDL(WLTP_ptr, SilkConstants.LTP_ORDER, Rr, b_Q16); /* WLTP_ptr and Rr_ptr both in Q(-corr_rshifts[k]) */
+                LinearAlgebra.silk_solve_LDL(WLTP_ptr, SilkConstants.LTP_ORDER, Rr.GetPointer(), b_Q16.GetPointer()); /* WLTP_ptr and Rr_ptr both in Q(-corr_rshifts[k]) */
 
                 /* Limit and store in Q14 */
-                silk_fit_LTP(b_Q16, b_Q14_ptr);
+                silk_fit_LTP(b_Q16.GetPointer(), b_Q14_ptr);
 
                 /* Calculate residual energy */
-                nrg[k] = ResidualEnergy.silk_residual_energy16_covar(b_Q14_ptr, WLTP_ptr, Rr, rr[k], SilkConstants.LTP_ORDER, 14); /* nrg in Q( -corr_rshifts[ k ] ) */
+                nrg[k] = ResidualEnergy.silk_residual_energy16_covar(b_Q14_ptr, WLTP_ptr, Rr.GetPointer(), rr[k], SilkConstants.LTP_ORDER, 14); /* nrg in Q( -corr_rshifts[ k ] ) */
 
                 /* temp = Wght[ k ] / ( nrg[ k ] * Wght[ k ] + 0.01f * subfr_length ); */
                 extra_shifts = Inlines.silk_min_int(corr_rshifts[k], LTP_CORRS_HEAD_ROOM);
