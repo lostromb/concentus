@@ -49,8 +49,8 @@ namespace Concentus.Silk
         )
         {
             int i, k, Ix;
-            Pointer<short> pNLSF_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
-            Pointer<short> pNLSF0_Q15 = Pointer.Malloc<short>(SilkConstants.MAX_LPC_ORDER);
+            short[] pNLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER]; // fixme use psdec.order
+            short[] pNLSF0_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
             Pointer<sbyte> cbk_ptr_Q7;
 
             /* Dequant Gains */
@@ -62,10 +62,10 @@ namespace Concentus.Silk
             /****************/
             /* Decode NLSFs */
             /****************/
-            NLSF.silk_NLSF_decode(pNLSF_Q15, psDec.indices.NLSFIndices.GetPointer(), psDec.psNLSF_CB);
+            NLSF.silk_NLSF_decode(pNLSF_Q15.GetPointer(), psDec.indices.NLSFIndices.GetPointer(), psDec.psNLSF_CB);
 
             /* Convert NLSF parameters to AR prediction filter coefficients */
-            NLSF.silk_NLSF2A(psDecCtrl.PredCoef_Q12[1].GetPointer(), pNLSF_Q15, psDec.LPC_order);
+            NLSF.silk_NLSF2A(psDecCtrl.PredCoef_Q12[1].GetPointer(), pNLSF_Q15.GetPointer(), psDec.LPC_order);
 
             /* If just reset, e.g., because internal Fs changed, do not allow interpolation */
             /* improves the case of packet loss in the first frame after a switch           */
@@ -85,7 +85,7 @@ namespace Concentus.Silk
                 }
 
                 /* Convert NLSF parameters to AR prediction filter coefficients */
-                NLSF.silk_NLSF2A(psDecCtrl.PredCoef_Q12[0].GetPointer(), pNLSF0_Q15, psDec.LPC_order);
+                NLSF.silk_NLSF2A(psDecCtrl.PredCoef_Q12[0].GetPointer(), pNLSF0_Q15.GetPointer(), psDec.LPC_order);
             }
             else
             {
@@ -93,7 +93,7 @@ namespace Concentus.Silk
                 Array.Copy(psDecCtrl.PredCoef_Q12[1], psDecCtrl.PredCoef_Q12[0], psDec.LPC_order);
             }
 
-            pNLSF_Q15.MemCopyTo(psDec.prevNLSF_Q15, 0, psDec.LPC_order);
+            Array.Copy(pNLSF_Q15, psDec.prevNLSF_Q15, psDec.LPC_order);
 
             /* After a packet loss do BWE of LPC coefs */
             if (psDec.lossCnt != 0)

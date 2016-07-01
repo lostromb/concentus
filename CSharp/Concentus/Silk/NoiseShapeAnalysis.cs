@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class NoiseShapeAnalysis
@@ -173,11 +174,11 @@ namespace Concentus.Silk
             int SNR_adj_dB_Q7, HarmBoost_Q16, HarmShapeGain_Q16, Tilt_Q16, tmp32;
             int nrg, pre_nrg_Q30, log_energy_Q7, log_energy_prev_Q7, energy_variation_Q7;
             int delta_Q16, BWExp1_Q16, BWExp2_Q16, gain_mult_Q16, gain_add_Q16, strength_Q16, b_Q8;
-            Pointer<int> auto_corr = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
-            Pointer<int> refl_coef_Q16 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
-            Pointer<int> AR1_Q24 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
-            Pointer<int> AR2_Q24 = Pointer.Malloc<int>(SilkConstants.MAX_SHAPE_LPC_ORDER);
-            Pointer<short> x_windowed;
+            int[] auto_corr = new int[SilkConstants.MAX_SHAPE_LPC_ORDER + 1];
+            int[] refl_coef_Q16 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
+            int[] AR1_Q24 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
+            int[] AR2_Q24 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
+            short[] x_windowed;
             Pointer<short> x_ptr, pitch_res_ptr;
 
 
@@ -295,7 +296,7 @@ namespace Concentus.Silk
             /********************************************/
             /* Compute noise shaping AR coefs and gains */
             /********************************************/
-            x_windowed = Pointer.Malloc<short>(psEnc.shapeWinLength);
+            x_windowed = new short[psEnc.shapeWinLength];
             for (k = 0; k < psEnc.nb_subfr; k++)
             {
                 /* Apply window: sine slope followed by flat part followed by cosine slope */
@@ -303,11 +304,11 @@ namespace Concentus.Silk
                 flat_part = psEnc.fs_kHz * 3;
                 slope_part = Inlines.silk_RSHIFT(psEnc.shapeWinLength - flat_part, 1);
                 
-                ApplySineWindow.silk_apply_sine_window(x_windowed, x_ptr, 1, slope_part);
+                ApplySineWindow.silk_apply_sine_window(x_windowed.GetPointer(), x_ptr, 1, slope_part);
                 shift = slope_part;
-                x_ptr.Point(shift).MemCopyTo(x_windowed.Point(shift), flat_part);
+                x_ptr.Point(shift).MemCopyTo(x_windowed.GetPointer(shift), flat_part);
                 shift += flat_part;
-                ApplySineWindow.silk_apply_sine_window(x_windowed.Point(shift), x_ptr.Point(shift), 2, slope_part);
+                ApplySineWindow.silk_apply_sine_window(x_windowed.GetPointer(shift), x_ptr.Point(shift), 2, slope_part);
                 
                 /* Update pointer: next LPC analysis block */
                 x_ptr = x_ptr.Point(psEnc.subfr_length);
@@ -315,11 +316,11 @@ namespace Concentus.Silk
                 if (psEnc.warping_Q16 > 0)
                 {
                     /* Calculate warped auto correlation */
-                    Autocorrelation.silk_warped_autocorrelation(auto_corr, scale_boxed, x_windowed, warping_Q16, psEnc.shapeWinLength, psEnc.shapingLPCOrder);
+                    Autocorrelation.silk_warped_autocorrelation(auto_corr.GetPointer(), scale_boxed, x_windowed.GetPointer(), warping_Q16, psEnc.shapeWinLength, psEnc.shapingLPCOrder);
                 }
                 else {
                     /* Calculate regular auto correlation */
-                    Autocorrelation.silk_autocorr(auto_corr, scale_boxed, x_windowed, psEnc.shapeWinLength, psEnc.shapingLPCOrder + 1);
+                    Autocorrelation.silk_autocorr(auto_corr.GetPointer(), scale_boxed, x_windowed.GetPointer(), psEnc.shapeWinLength, psEnc.shapingLPCOrder + 1);
                 }
                 scale = scale_boxed.Val;
 
@@ -328,11 +329,11 @@ namespace Concentus.Silk
                     Inlines.SILK_CONST(TuningParameters.SHAPE_WHITE_NOISE_FRACTION, 20)), 1));
 
                 /* Calculate the reflection coefficients using schur */
-                nrg = Schur.silk_schur64(refl_coef_Q16, auto_corr, psEnc.shapingLPCOrder);
+                nrg = Schur.silk_schur64(refl_coef_Q16.GetPointer(), auto_corr.GetPointer(), psEnc.shapingLPCOrder);
                 //Inlines.OpusAssert(nrg >= 0);
 
                 /* Convert reflection coefficients to prediction coefficients */
-                K2A.silk_k2a_Q16(AR2_Q24, refl_coef_Q16, psEnc.shapingLPCOrder);
+                K2A.silk_k2a_Q16(AR2_Q24.GetPointer(), refl_coef_Q16.GetPointer(), psEnc.shapingLPCOrder);
 
                 Qnrg = -scale;          /* range: -12...30*/
                 //Inlines.OpusAssert(Qnrg >= -12);
@@ -353,7 +354,7 @@ namespace Concentus.Silk
                 if (psEnc.warping_Q16 > 0)
                 {
                     /* Adjust gain for warping */
-                    gain_mult_Q16 = warped_gain(AR2_Q24, warping_Q16, psEnc.shapingLPCOrder);
+                    gain_mult_Q16 = warped_gain(AR2_Q24.GetPointer(), warping_Q16, psEnc.shapingLPCOrder);
                     //Inlines.OpusAssert(psEncCtrl.Gains_Q16[k] >= 0);
                     if (Inlines.silk_SMULWW(Inlines.silk_RSHIFT_ROUND(psEncCtrl.Gains_Q16[k], 1), gain_mult_Q16) >= (int.MaxValue >> 1))
                     {
@@ -365,25 +366,25 @@ namespace Concentus.Silk
                 }
 
                 /* Bandwidth expansion for synthesis filter shaping */
-                BWExpander.silk_bwexpander_32(AR2_Q24, psEnc.shapingLPCOrder, BWExp2_Q16);
+                BWExpander.silk_bwexpander_32(AR2_Q24.GetPointer(), psEnc.shapingLPCOrder, BWExp2_Q16);
                 
                 /* Compute noise shaping filter coefficients */
-                AR2_Q24.MemCopyTo(AR1_Q24, psEnc.shapingLPCOrder);
+                Array.Copy(AR2_Q24, AR1_Q24, psEnc.shapingLPCOrder);
 
                 /* Bandwidth expansion for analysis filter shaping */
                 //Inlines.OpusAssert(BWExp1_Q16 <= Inlines.SILK_CONST(1.0f, 16));
-                BWExpander.silk_bwexpander_32(AR1_Q24, psEnc.shapingLPCOrder, BWExp1_Q16);
+                BWExpander.silk_bwexpander_32(AR1_Q24.GetPointer(), psEnc.shapingLPCOrder, BWExp1_Q16);
                 
                 /* Ratio of prediction gains, in energy domain */
-                pre_nrg_Q30 = LPCInversePredGain.silk_LPC_inverse_pred_gain_Q24(AR2_Q24, psEnc.shapingLPCOrder);
-                nrg = LPCInversePredGain.silk_LPC_inverse_pred_gain_Q24(AR1_Q24, psEnc.shapingLPCOrder);
+                pre_nrg_Q30 = LPCInversePredGain.silk_LPC_inverse_pred_gain_Q24(AR2_Q24.GetPointer(), psEnc.shapingLPCOrder);
+                nrg = LPCInversePredGain.silk_LPC_inverse_pred_gain_Q24(AR1_Q24.GetPointer(), psEnc.shapingLPCOrder);
 
                 /*psEncCtrl.GainsPre[ k ] = 1.0f - 0.7f * ( 1.0f - pre_nrg / nrg ) = 0.3f + 0.7f * pre_nrg / nrg;*/
                 pre_nrg_Q30 = Inlines.silk_LSHIFT32(Inlines.silk_SMULWB(pre_nrg_Q30, Inlines.SILK_CONST(0.7f, 15)), 1);
                 psEncCtrl.GainsPre_Q14[k] = (int)Inlines.SILK_CONST(0.3f, 14) + Inlines.silk_DIV32_varQ(pre_nrg_Q30, nrg, 14);
 
                 /* Convert to monic warped prediction coefficients and limit absolute values */
-                limit_warped_coefs(AR2_Q24, AR1_Q24, warping_Q16, Inlines.SILK_CONST(3.999f, 24), psEnc.shapingLPCOrder);
+                limit_warped_coefs(AR2_Q24.GetPointer(), AR1_Q24.GetPointer(), warping_Q16, Inlines.SILK_CONST(3.999f, 24), psEnc.shapingLPCOrder);
 
                 /* Convert from Q24 to Q13 and store in int16 */
                 for (i = 0; i < psEnc.shapingLPCOrder; i++)

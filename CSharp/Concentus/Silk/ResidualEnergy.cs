@@ -56,7 +56,7 @@ namespace Concentus.Silk
             int offset, i, j, lz1, lz2;
             BoxedValue<int> rshift = new BoxedValue<int>();
             Pointer<short> LPC_res_ptr;
-            Pointer<short> LPC_res;
+            short[] LPC_res;
             Pointer<short> x_ptr;
             int tmp32;
             
@@ -64,15 +64,15 @@ namespace Concentus.Silk
             offset = LPC_order + subfr_length;
 
             /* Filter input to create the LPC residual for each frame half, and measure subframe energies */
-            LPC_res = Pointer.Malloc<short>((SilkConstants.MAX_NB_SUBFR >> 1) * offset);
+            LPC_res = new short[(SilkConstants.MAX_NB_SUBFR >> 1) * offset];
             //Inlines.OpusAssert((nb_subfr >> 1) * (SilkConstants.MAX_NB_SUBFR >> 1) == nb_subfr);
             for (i = 0; i < nb_subfr >> 1; i++)
             {
                 /* Calculate half frame LPC residual signal including preceding samples */
-                Filters.silk_LPC_analysis_filter(LPC_res.Data, LPC_res.Offset, x_ptr.Data, x_ptr.Offset, a_Q12.Data, a_Q12.Offset + (i * SilkConstants.MAX_LPC_ORDER), (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
+                Filters.silk_LPC_analysis_filter(LPC_res, 0, x_ptr.Data, x_ptr.Offset, a_Q12.Data, a_Q12.Offset + (i * SilkConstants.MAX_LPC_ORDER), (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
 
                 /* Point to first subframe of the just calculated LPC residual signal */
-                LPC_res_ptr = LPC_res.Point(LPC_order);
+                LPC_res_ptr = LPC_res.GetPointer(LPC_order);
                 for (j = 0; j < (SilkConstants.MAX_NB_SUBFR >> 1); j++)
                 {
                     /* Measure subframe energy */
@@ -121,7 +121,7 @@ namespace Concentus.Silk
         {
             int i, j, lshifts, Qxtra;
             int c_max, w_max, tmp, tmp2, nrg;
-            Pointer<int> cn = Pointer.Malloc<int>(SilkConstants.MAX_MATRIX_SIZE);
+            int[] cn = new int[D]; //SilkConstants.MAX_MATRIX_SIZE
             Pointer<int> pRow;
 
             /* Safety checks */

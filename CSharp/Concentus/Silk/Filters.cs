@@ -322,7 +322,7 @@ namespace Concentus.Silk
         internal static void silk_ana_filt_bank_1(
             Pointer<short> input,
             int[] S,
-            Pointer<short> outL,
+            short[] outL,
             Pointer<short> outH,
             int N)
         {

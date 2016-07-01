@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     /*
@@ -317,11 +318,11 @@ namespace Concentus.Silk
             int inLen)
         {
             int nSamplesIn, counter, res_Q6;
-            Pointer<int> buf = Pointer.Malloc<int>(SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR);
+            int[] buf = new int[SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR];
             Pointer<int> buf_ptr;
 
             /* Copy buffered samples to start of buffer */
-            S.MemCopyTo(buf, ORDER_FIR);
+            S.MemCopyTo(buf, 0, ORDER_FIR);
 
             /* Iterate over blocks of frameSizeIn input samples */
             while (true)
@@ -329,11 +330,11 @@ namespace Concentus.Silk
                 nSamplesIn = Inlines.silk_min(inLen, SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN);
 
                 /* Second-order AR filter (output in Q8) */
-                silk_resampler_private_AR2(S.Point(ORDER_FIR), buf.Point(ORDER_FIR), input,
+                silk_resampler_private_AR2(S.Point(ORDER_FIR), buf.GetPointer(ORDER_FIR), input,
                     Tables.silk_Resampler_2_3_COEFS_LQ.GetPointer(), nSamplesIn);
 
                 /* Interpolate filtered signal */
-                buf_ptr = buf;
+                buf_ptr = buf.GetPointer();
                 counter = nSamplesIn;
                 while (counter > 2)
                 {
@@ -366,7 +367,7 @@ namespace Concentus.Silk
                 if (inLen > 0)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    buf.Point(nSamplesIn).MemCopyTo(buf, ORDER_FIR);
+                    Array.Copy(buf, nSamplesIn, buf, 0, ORDER_FIR);
                 }
                 else
                 {
@@ -375,7 +376,7 @@ namespace Concentus.Silk
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            buf.Point(nSamplesIn).MemCopyTo(S, ORDER_FIR);
+            buf.GetPointer(nSamplesIn).MemCopyTo(S, ORDER_FIR);
         }
 
         /// <summary>
@@ -536,11 +537,11 @@ namespace Concentus.Silk
         {
             int nSamplesIn;
             int max_index_Q16, index_increment_Q16;
-            Pointer<int> buf = Pointer.Malloc<int>(S.batchSize + S.FIR_Order);
+            int[] buf = new int[S.batchSize + S.FIR_Order];
             Pointer<short> FIR_Coefs;
 
             /* Copy buffered samples to start of buffer */
-            S.sFIR_i32.GetPointer().MemCopyTo(buf, S.FIR_Order);
+            Array.Copy(S.sFIR_i32, buf, S.FIR_Order);
 
             FIR_Coefs = S.Coefs.Point(2);
 
@@ -551,12 +552,12 @@ namespace Concentus.Silk
                 nSamplesIn = Inlines.silk_min(inLen, S.batchSize);
 
                 /* Second-order AR filter (output in Q8) */
-                silk_resampler_private_AR2(S.sIIR.GetPointer(), buf.Point(S.FIR_Order), input, S.Coefs, nSamplesIn);
+                silk_resampler_private_AR2(S.sIIR.GetPointer(), buf.GetPointer(S.FIR_Order), input, S.Coefs, nSamplesIn);
 
                 max_index_Q16 = Inlines.silk_LSHIFT32(nSamplesIn, 16);
 
                 /* Interpolate filtered signal */
-                output = silk_resampler_private_down_FIR_INTERPOL(output, buf, FIR_Coefs, S.FIR_Order,
+                output = silk_resampler_private_down_FIR_INTERPOL(output, buf.GetPointer(), FIR_Coefs, S.FIR_Order,
                     S.FIR_Fracs, max_index_Q16, index_increment_Q16);
 
                 input = input.Point(nSamplesIn);
@@ -565,7 +566,7 @@ namespace Concentus.Silk
                 if (inLen > 1)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    buf.Point(nSamplesIn).MemCopyTo(buf, S.FIR_Order);
+                    Array.Copy(buf, nSamplesIn, buf, 0, S.FIR_Order);
                 }
                 else
                 {
@@ -574,7 +575,7 @@ namespace Concentus.Silk
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            buf.Point(nSamplesIn).MemCopyTo(S.sFIR_i32, 0, S.FIR_Order);
+            Array.Copy(buf, nSamplesIn, S.sFIR_i32, 0, S.FIR_Order);
         }
 
         internal static Pointer<short> silk_resampler_private_IIR_FIR_INTERPOL(
@@ -623,10 +624,10 @@ namespace Concentus.Silk
             int nSamplesIn;
             int max_index_Q16, index_increment_Q16;
 
-            Pointer<short> buf = Pointer.Malloc<short>(2 * S.batchSize + SilkConstants.RESAMPLER_ORDER_FIR_12);
+            short[] buf = new short[2 * S.batchSize + SilkConstants.RESAMPLER_ORDER_FIR_12];
 
             /* Copy buffered samples to start of buffer */
-            S.sFIR_i16.GetPointer().MemCopyTo(buf, SilkConstants.RESAMPLER_ORDER_FIR_12);
+            Array.Copy(S.sFIR_i16, 0, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
 
             /* Iterate over blocks of frameSizeIn input samples */
             index_increment_Q16 = S.invRatio_Q16;
@@ -635,17 +636,17 @@ namespace Concentus.Silk
                 nSamplesIn = Inlines.silk_min(inLen, S.batchSize);
 
                 /* Upsample 2x */
-                silk_resampler_private_up2_HQ(S.sIIR.GetPointer(), buf.Point(SilkConstants.RESAMPLER_ORDER_FIR_12), input, nSamplesIn);
+                silk_resampler_private_up2_HQ(S.sIIR.GetPointer(), buf.GetPointer(SilkConstants.RESAMPLER_ORDER_FIR_12), input, nSamplesIn);
 
                 max_index_Q16 = Inlines.silk_LSHIFT32(nSamplesIn, 16 + 1);         /* + 1 because 2x upsampling */
-                output = silk_resampler_private_IIR_FIR_INTERPOL(output, buf, max_index_Q16, index_increment_Q16);
+                output = silk_resampler_private_IIR_FIR_INTERPOL(output, buf.GetPointer(), max_index_Q16, index_increment_Q16);
                 input = input.Point(nSamplesIn);
                 inLen -= nSamplesIn;
 
                 if (inLen > 0)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    buf.Point(nSamplesIn << 1).MemCopyTo(buf, SilkConstants.RESAMPLER_ORDER_FIR_12);
+                    Array.Copy(buf, nSamplesIn << 1, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
                 }
                 else
                 {
@@ -654,7 +655,7 @@ namespace Concentus.Silk
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            buf.Point(nSamplesIn << 1).MemCopyTo(S.sFIR_i16, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
+            Array.Copy(buf, nSamplesIn << 1, S.sFIR_i16, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
         }
 
         /// <summary>

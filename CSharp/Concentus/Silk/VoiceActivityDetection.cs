@@ -103,7 +103,7 @@ namespace Concentus.Silk
             int dec_subframe_length, dec_subframe_offset, SNR_Q7, i, b, s;
             int sumSquared = 0, smooth_coef_Q16;
             short HPstateTmp;
-            Pointer<short> X;
+            short[] X;
             int[] Xnrg = new int[SilkConstants.VAD_N_BANDS];
             int[] NrgToNoiseRatio_Q8 = new int[SilkConstants.VAD_N_BANDS];
             int speech_nrg, x_tmp;
@@ -137,19 +137,19 @@ namespace Concentus.Silk
             X_offset[1] = decimated_framelength + decimated_framelength2;
             X_offset[2] = X_offset[1] + decimated_framelength;
             X_offset[3] = X_offset[2] + decimated_framelength2;
-            X = Pointer.Malloc<short>(X_offset[3] + decimated_framelength1);
+            X = new short[X_offset[3] + decimated_framelength1];
 
             /* 0-8 kHz to 0-4 kHz and 4-8 kHz */
             Filters.silk_ana_filt_bank_1(pIn, psSilk_VAD.AnaState,
-                X, X.Point(X_offset[3]), psEncC.frame_length);
+                X, X.GetPointer(X_offset[3]), psEncC.frame_length);
 
             /* 0-4 kHz to 0-2 kHz and 2-4 kHz */
-            Filters.silk_ana_filt_bank_1(X, psSilk_VAD.AnaState1,
-                X, X.Point(X_offset[2]), decimated_framelength1);
+            Filters.silk_ana_filt_bank_1(X.GetPointer(), psSilk_VAD.AnaState1,
+                X, X.GetPointer(X_offset[2]), decimated_framelength1);
 
             /* 0-2 kHz to 0-1 kHz and 1-2 kHz */
-            Filters.silk_ana_filt_bank_1(X, psSilk_VAD.AnaState2,
-                X, X.Point(X_offset[1]), decimated_framelength2);
+            Filters.silk_ana_filt_bank_1(X.GetPointer(), psSilk_VAD.AnaState2,
+                X, X.GetPointer(X_offset[1]), decimated_framelength2);
             
             /*********************************************/
             /* HP filter on lowest band (differentiator) */

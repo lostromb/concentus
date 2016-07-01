@@ -42,21 +42,23 @@ namespace Concentus.Celt
 
     internal static class Pitch
     {
-        internal static void find_best_pitch(Pointer<int> xcorr, Pointer<int> y, int len,
+        internal static void find_best_pitch(int[] xcorr, Pointer<int> y, int len,
                                     int max_pitch, Pointer<int> best_pitch,
                                     int yshift, int maxcorr
                                     )
         {
             int i, j;
             int Syy = 1;
-            Pointer<int> best_num = Pointer.Malloc<int>(2);
-            Pointer<int> best_den = Pointer.Malloc<int>(2);
+            int best_num_0;
+            int best_num_1;
+            int best_den_0;
+            int best_den_1;
             int xshift = Inlines.celt_ilog2(maxcorr) - 14;
 
-            best_num[0] = -1;
-            best_num[1] = -1;
-            best_den[0] = 0;
-            best_den[1] = 0;
+            best_num_0 = -1;
+            best_num_1 = -1;
+            best_den_0 = 0;
+            best_den_1 = 0;
             best_pitch[0] = 0;
             best_pitch[1] = 1;
             for (j = 0; j < len; j++)
@@ -69,21 +71,21 @@ namespace Concentus.Celt
                     int xcorr16;
                     xcorr16 = Inlines.EXTRACT16(Inlines.VSHR32(xcorr[i], xshift));
                     num = Inlines.MULT16_16_Q15((xcorr16), (xcorr16));
-                    if (Inlines.MULT16_32_Q15(num, best_den[1]) > Inlines.MULT16_32_Q15(best_num[1], Syy))
+                    if (Inlines.MULT16_32_Q15(num, best_den_1) > Inlines.MULT16_32_Q15(best_num_1, Syy))
                     {
-                        if (Inlines.MULT16_32_Q15(num, best_den[0]) > Inlines.MULT16_32_Q15(best_num[0], Syy))
+                        if (Inlines.MULT16_32_Q15(num, best_den_0) > Inlines.MULT16_32_Q15(best_num_0, Syy))
                         {
-                            best_num[1] = best_num[0];
-                            best_den[1] = best_den[0];
+                            best_num_1 = best_num_0;
+                            best_den_1 = best_den_0;
                             best_pitch[1] = best_pitch[0];
-                            best_num[0] = num;
-                            best_den[0] = Syy;
+                            best_num_0 = num;
+                            best_den_0 = Syy;
                             best_pitch[0] = i;
                         }
                         else
                         {
-                            best_num[1] = num;
-                            best_den[1] = Syy;
+                            best_num_1 = num;
+                            best_den_1 = Syy;
                             best_pitch[1] = i;
                         }
                     }
@@ -220,9 +222,9 @@ namespace Concentus.Celt
             //Inlines.OpusAssert(max_pitch > 0);
             lag = len + max_pitch;
 
-            Pointer<int> x_lp4 = Pointer.Malloc<int>(len >> 2);
-            Pointer<int> y_lp4 = Pointer.Malloc<int>(lag >> 2);
-            Pointer<int> xcorr = Pointer.Malloc<int>(max_pitch >> 1);
+            int[] x_lp4 = new int[len >> 2];
+            int[] y_lp4 = new int[lag >> 2];
+            int[] xcorr = new int[max_pitch >> 1];
 
             /* Downsample by 2 again */
             for (j = 0; j < len >> 2; j++)
@@ -230,8 +232,8 @@ namespace Concentus.Celt
             for (j = 0; j < lag >> 2; j++)
                 y_lp4[j] = y[2 * j];
 
-            xmax = Inlines.celt_maxabs32(x_lp4.Data, x_lp4.Offset, len >> 2);
-            ymax = Inlines.celt_maxabs32(y_lp4.Data, y_lp4.Offset, lag >> 2);
+            xmax = Inlines.celt_maxabs32(x_lp4, 0, len >> 2);
+            ymax = Inlines.celt_maxabs32(y_lp4, 0, lag >> 2);
             shift = Inlines.celt_ilog2(Inlines.MAX32(1, Inlines.MAX32(xmax, ymax))) - 11;
             if (shift > 0)
             {
@@ -247,9 +249,9 @@ namespace Concentus.Celt
             }
 
             /* Coarse search with 4x decimation */
-            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4, y_lp4, xcorr, len >> 2, max_pitch >> 2);
+            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4.GetPointer(), y_lp4.GetPointer(), xcorr.GetPointer(), len >> 2, max_pitch >> 2);
 
-            find_best_pitch(xcorr, y_lp4, len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
+            find_best_pitch(xcorr, y_lp4.GetPointer(), len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
 
             /* Finer search with 2x decimation */
             maxcorr = 1;
@@ -324,7 +326,7 @@ namespace Concentus.Celt
                 T0_.Val = maxperiod - 1;
 
             T = T0 = T0_.Val;
-            Pointer<int> yy_lookup = Pointer.Malloc<int>(maxperiod + 1);
+            int[] yy_lookup = new int[maxperiod + 1];
             Kernels.dual_inner_prod(x.Data, x.Offset, x.Data, x.Offset, x.Data, x.Offset - T0, N, xx, xy);
             yy_lookup[0] = xx.Val;
             yy = xx.Val;

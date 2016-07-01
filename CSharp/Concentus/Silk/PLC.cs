@@ -197,25 +197,24 @@ namespace Concentus.Silk
             int nb_subfr)
         {
             int i, k;
-            Pointer<short> exc_buf_ptr;
-            Pointer<short> exc_buf = Pointer.Malloc<short>(2 * subfr_length);
+            int exc_buf_ptr = 0;
+            short[] exc_buf = new short[2 * subfr_length];
 
             /* Find random noise component */
             /* Scale previous excitation signal */
-            exc_buf_ptr = exc_buf;
             for (k = 0; k < 2; k++)
             {
                 for (i = 0; i < subfr_length; i++)
                 {
-                    exc_buf_ptr[i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(
+                    exc_buf[exc_buf_ptr + i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(
                         Inlines.silk_SMULWW(exc_Q14[i + (k + nb_subfr - 2) * subfr_length], prevGain_Q10[k]), 8));
                 }
-                exc_buf_ptr = exc_buf_ptr.Point(subfr_length);
+                exc_buf_ptr += subfr_length;
             }
 
             /* Find the subframe with lowest energy of the last two and use that as random noise generator */
-            SumSqrShift.silk_sum_sqr_shift(energy1, shift1, exc_buf, subfr_length);
-            SumSqrShift.silk_sum_sqr_shift(energy2, shift2, exc_buf.Point(subfr_length), subfr_length);
+            SumSqrShift.silk_sum_sqr_shift(energy1, shift1, exc_buf.GetPointer(), subfr_length);
+            SumSqrShift.silk_sum_sqr_shift(energy2, shift2, exc_buf.GetPointer(subfr_length), subfr_length);
         }
 
         internal static void silk_PLC_conceal(
@@ -237,10 +236,10 @@ namespace Concentus.Silk
             short rand_scale_Q14;
             Pointer<short> B_Q14;
             Pointer<int> sLPC_Q14_ptr;
-            Pointer<short> sLTP = Pointer.Malloc<short>(psDec.ltp_mem_length);
-            Pointer<int> sLTP_Q14 = Pointer.Malloc<int>(psDec.ltp_mem_length + psDec.frame_length);
+            short[] sLTP = new short[psDec.ltp_mem_length];
+            int[] sLTP_Q14 = new int[psDec.ltp_mem_length + psDec.frame_length];
             PLCStruct psPLC = psDec.sPLC;
-            Pointer<int> prevGain_Q10 = Pointer.Malloc<int>(2);
+            int[] prevGain_Q10 = new int[2];
 
             prevGain_Q10[0] = Inlines.silk_RSHIFT(psPLC.prevGain_Q16[0], 6);
             prevGain_Q10[1] = Inlines.silk_RSHIFT(psPLC.prevGain_Q16[1], 6);
@@ -250,7 +249,7 @@ namespace Concentus.Silk
                 Arrays.MemSet<short>(psPLC.prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             }
 
-            silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14.GetPointer(), prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
+            silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14.GetPointer(), prevGain_Q10.GetPointer(), psDec.subfr_length, psDec.nb_subfr);
 
             if (Inlines.silk_RSHIFT(energy1.Val, shift2.Val) < Inlines.silk_RSHIFT(energy2.Val, shift1.Val))
             {
@@ -316,7 +315,7 @@ namespace Concentus.Silk
             /* Rewhiten LTP state */
             idx = psDec.ltp_mem_length - lag - psDec.LPC_order - SilkConstants.LTP_ORDER / 2;
             //Inlines.OpusAssert(idx > 0);
-            Filters.silk_LPC_analysis_filter(sLTP.Data, sLTP.Offset + idx, psDec.outBuf, idx, psPLC.prevLPC_Q12, 0, psDec.ltp_mem_length - idx, psDec.LPC_order);
+            Filters.silk_LPC_analysis_filter(sLTP, idx, psDec.outBuf, idx, psPLC.prevLPC_Q12, 0, psDec.ltp_mem_length - idx, psDec.LPC_order);
             /* Scale LTP state */
             inv_gain_Q30 = Inlines.silk_INVERSE32_varQ(psPLC.prevGain_Q16[1], 46);
             inv_gain_Q30 = Inlines.silk_min(inv_gain_Q30, int.MaxValue >> 1);
@@ -331,7 +330,7 @@ namespace Concentus.Silk
             for (k = 0; k < psDec.nb_subfr; k++)
             {
                 /* Set up pointer */
-                pred_lag_ptr = sLTP_Q14.Point(sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2);
+                pred_lag_ptr = sLTP_Q14.GetPointer(sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2);
                 for (i = 0; i < psDec.subfr_length; i++)
                 {
                     /* Unrolled loop */
@@ -368,7 +367,7 @@ namespace Concentus.Silk
             /***************************/
             /* LPC synthesis filtering */
             /***************************/
-            sLPC_Q14_ptr = sLTP_Q14.Point(psDec.ltp_mem_length - SilkConstants.MAX_LPC_ORDER);
+            sLPC_Q14_ptr = sLTP_Q14.GetPointer(psDec.ltp_mem_length - SilkConstants.MAX_LPC_ORDER);
 
             /* Copy LPC state */
             psDec.sLPC_Q14_buf.GetPointer().MemCopyTo(sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);

@@ -51,14 +51,9 @@ namespace Concentus.Celt
             int i, j;
             int r;
             int error = ac[0];
-            Pointer<int> lpc = Pointer.Malloc<int>(CeltConstants.LPC_ORDER);
+            int[] lpc = new int[p];
 
-            // FIXME this is just MemSet(0)
-            // opus bug: why does original code not use opus_clear?
-            for (i = 0; i < p; i++)
-            {
-                lpc[i] = 0;
-            }
+            //Arrays.MemSet<int>(lpc, 0, p); strictly, this is not necessary since the runtime zeroes memory for us
 
             if (ac[0] != 0)
             {
@@ -106,8 +101,8 @@ namespace Concentus.Celt
                  Pointer<int> mem)
         {
             int i, j;
-            Pointer<int> rden = Pointer.Malloc<int>(ord);
-            Pointer<int> y = Pointer.Malloc<int>(N + ord);
+            int[] rden = new int[ord];
+            int[] y = new int[N + ord];
             //Inlines.OpusAssert((ord & 3) == 0);
 
             for (i = 0; i < ord; i++)
@@ -124,7 +119,7 @@ namespace Concentus.Celt
                 sum[1] = _x[i + 1];
                 sum[2] = _x[i + 2];
                 sum[3] = _x[i + 3];
-                Kernels.xcorr_kernel(rden.Data, 0, y.Data, y.Offset + i, sum, ord);
+                Kernels.xcorr_kernel(rden, 0, y, i, sum, ord);
 
                 /* Patch up the result to compensate for the fact that this is an IIR */
                 y[i + ord] = (0 - Inlines.ROUND16((sum[0]), CeltConstants.SIG_SHIFT));
@@ -169,7 +164,7 @@ namespace Concentus.Celt
             int fastN = n - lag;
             int shift;
             Pointer<int> xptr;
-            Pointer<int> xx = Pointer.Malloc<int>(n);
+            int[] xx = new int[n];
 
             //Inlines.OpusAssert(n > 0);
             //Inlines.OpusAssert(overlap >= 0);
@@ -187,7 +182,7 @@ namespace Concentus.Celt
                     xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
                     xx[n - i - 1] = Inlines.MULT16_16_Q15(x[n - i - 1], window[i]);
                 }
-                xptr = xx;
+                xptr = xx.GetPointer();
             }
 
             shift = 0;
@@ -209,7 +204,7 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < n; i++)
                     xx[i] = (Inlines.PSHR32(xptr[i], shift));
-                xptr = xx;
+                xptr = xx.GetPointer();
             }
             else
                 shift = 0;

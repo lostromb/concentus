@@ -279,7 +279,6 @@ namespace Concentus.Silk.Structs
             int condCoding                     /* I    The type of conditional coding to use       */
         )
         {
-            // [porting note] this is a pointer to a heap struct, not a stack variable
             SilkDecoderControl thisCtrl = new SilkDecoderControl();
             int L, mv_len, ret = 0;
 
@@ -292,7 +291,7 @@ namespace Concentus.Silk.Structs
             if (lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL ||
                 (lostFlag == DecoderAPIFlag.FLAG_DECODE_LBRR && this.LBRR_flags[this.nFramesDecoded] == 1))
             {
-                Pointer<short> pulses = Pointer.Malloc<short>((L + SilkConstants.SHELL_CODEC_FRAME_LENGTH - 1) & ~(SilkConstants.SHELL_CODEC_FRAME_LENGTH - 1));
+                short[] pulses = new short[(L + SilkConstants.SHELL_CODEC_FRAME_LENGTH - 1) & ~(SilkConstants.SHELL_CODEC_FRAME_LENGTH - 1)];
                 /*********************************************/
                 /* Decode quantization indices of side info  */
                 /*********************************************/
@@ -301,7 +300,7 @@ namespace Concentus.Silk.Structs
                 /*********************************************/
                 /* Decode quantization indices of excitation */
                 /*********************************************/
-                DecodePulses.silk_decode_pulses(psRangeDec, pulses, this.indices.signalType,
+                DecodePulses.silk_decode_pulses(psRangeDec, pulses.GetPointer(), this.indices.signalType,
                         this.indices.quantOffsetType, this.frame_length);
 
                 /********************************************/
@@ -312,7 +311,7 @@ namespace Concentus.Silk.Structs
                 /********************************************************/
                 /* Run inverse NSQ                                      */
                 /********************************************************/
-                DecodeCore.silk_decode_core(this, thisCtrl, pOut, pulses);
+                DecodeCore.silk_decode_core(this, thisCtrl, pOut, pulses.GetPointer());
 
                 /********************************************************/
                 /* Update PLC state                                     */

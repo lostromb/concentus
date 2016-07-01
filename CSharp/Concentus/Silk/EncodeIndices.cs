@@ -113,7 +113,7 @@ namespace Concentus.Silk
             /* Encode NLSFs */
             /****************/
             psRangeEnc.enc_icdf( psIndices.NLSFIndices[0], psEncC.psNLSF_CB.CB1_iCDF, ((psIndices.signalType >> 1) * psEncC.psNLSF_CB.nVectors), 8);
-            NLSF.silk_NLSF_unpack(ec_ix.GetPointer(), pred_Q8.GetPointer(), psEncC.psNLSF_CB, psIndices.NLSFIndices[0]);
+            NLSF.silk_NLSF_unpack(ec_ix, pred_Q8, psEncC.psNLSF_CB, psIndices.NLSFIndices[0]);
             //Inlines.OpusAssert(psEncC.psNLSF_CB.order == psEncC.predictLPCOrder);
 
             for (i = 0; i < psEncC.psNLSF_CB.order; i++)

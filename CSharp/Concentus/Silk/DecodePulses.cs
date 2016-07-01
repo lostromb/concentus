@@ -52,8 +52,8 @@ namespace Concentus.Silk
             )
         {
             int i, j, k, iter, abs_q, nLS, RateLevelIndex;
-            Pointer<int> sum_pulses = Pointer.Malloc<int>(SilkConstants.MAX_NB_SHELL_BLOCKS);
-            Pointer<int> nLshifts = Pointer.Malloc<int>(SilkConstants.MAX_NB_SHELL_BLOCKS);
+            int[] sum_pulses = new int[SilkConstants.MAX_NB_SHELL_BLOCKS];
+            int[] nLshifts = new int[SilkConstants.MAX_NB_SHELL_BLOCKS];
             Pointer<short> pulses_ptr;
 
             /*********************/
@@ -130,7 +130,7 @@ namespace Concentus.Silk
             /****************************************/
             /* Decode and add signs to pulse signal */
             /****************************************/
-            CodeSigns.silk_decode_signs(psRangeDec, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
+            CodeSigns.silk_decode_signs(psRangeDec, pulses, frame_length, signalType, quantOffsetType, sum_pulses.GetPointer());
         }
     }
 }

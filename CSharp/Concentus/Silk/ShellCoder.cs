@@ -49,8 +49,25 @@ namespace Concentus.Silk
         /// <param name="input">I    input vector       [2 * len]</param>
         /// <param name="len">I    number of OUTPUT samples</param>
         internal static void combine_pulses(
-            Pointer<int> output,
+            int[] output,
             Pointer<int> input,
+            int len)
+        {
+            int k;
+            for (k = 0; k < len; k++)
+            {
+                output[k] = input[2 * k] + input[2 * k + 1];
+            }
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="output">O    combined pulses vector [len]</param>
+        /// <param name="input">I    input vector       [2 * len]</param>
+        /// <param name="len">I    number of OUTPUT samples</param>
+        internal static void combine_pulses(
+            int[] output,
+            int[] input,
             int len)
         {
             int k;
@@ -86,11 +103,11 @@ namespace Concentus.Silk
             Pointer<short> p_child2,
             EntropyCoder psRangeDec,
             int p,
-            Pointer<byte> shell_table)
+            byte[] shell_table)
         {
             if (p > 0)
             {
-                p_child1[0] = Inlines.CHOP16(psRangeDec.dec_icdf(shell_table.Data, shell_table.Offset + (Tables.silk_shell_code_table_offsets[p]), 8));
+                p_child1[0] = Inlines.CHOP16(psRangeDec.dec_icdf(shell_table, (Tables.silk_shell_code_table_offsets[p]), 8));
                 p_child2[0] = Inlines.CHOP16(p - p_child1[0]);
             }
             else
@@ -107,10 +124,10 @@ namespace Concentus.Silk
         /// <param name="pulses0">I    data: nonnegative pulse amplitudes</param>
         internal static void silk_shell_encoder(EntropyCoder psRangeEnc, Pointer<int> pulses0)
         {
-            Pointer<int> pulses1 = Pointer.Malloc<int>(8);
-            Pointer<int> pulses2 = Pointer.Malloc<int>(4);
-            Pointer<int> pulses3 = Pointer.Malloc<int>(2);
-            Pointer<int> pulses4 = Pointer.Malloc<int>(1);
+            int[] pulses1 = new int[8];
+            int[] pulses2 = new int[4];
+            int[] pulses3 = new int[2];
+            int[] pulses4 = new int[1];
 
             /* this function operates on one shell code frame of 16 pulses */
             //Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
@@ -152,34 +169,34 @@ namespace Concentus.Silk
             int pulses4                         /* I    number of pulses per pulse-subframe         */
         )
         {
-            Pointer<short> pulses1 = Pointer.Malloc<short>(8);
-            Pointer<short> pulses2 = Pointer.Malloc<short>(4);
-            Pointer<short> pulses3 = Pointer.Malloc<short>(2);
+            short[] pulses1 = new short[8];
+            short[] pulses2 = new short[4];
+            short[] pulses3 = new short[2];
 
             /* this function operates on one shell code frame of 16 pulses */
             //Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
 
-            decode_split(pulses3.Point(0), pulses3.Point(1), psRangeDec, pulses4, Tables.silk_shell_code_table3.GetPointer());
+            decode_split(pulses3.GetPointer(0), pulses3.GetPointer(1), psRangeDec, pulses4, Tables.silk_shell_code_table3);
 
-            decode_split(pulses2.Point(0), pulses2.Point(1), psRangeDec, pulses3[0], Tables.silk_shell_code_table2.GetPointer());
+            decode_split(pulses2.GetPointer(0), pulses2.GetPointer(1), psRangeDec, pulses3[0], Tables.silk_shell_code_table2);
 
-            decode_split(pulses1.Point(0), pulses1.Point(1), psRangeDec, pulses2[0], Tables.silk_shell_code_table1.GetPointer());
-            decode_split(pulses0.Point(0), pulses0.Point(1), psRangeDec, pulses1[0], Tables.silk_shell_code_table0.GetPointer());
-            decode_split(pulses0.Point(2), pulses0.Point(3), psRangeDec, pulses1[1], Tables.silk_shell_code_table0.GetPointer());
+            decode_split(pulses1.GetPointer(0), pulses1.GetPointer(1), psRangeDec, pulses2[0], Tables.silk_shell_code_table1);
+            decode_split(pulses0.Point(0), pulses0.Point(1), psRangeDec, pulses1[0], Tables.silk_shell_code_table0);
+            decode_split(pulses0.Point(2), pulses0.Point(3), psRangeDec, pulses1[1], Tables.silk_shell_code_table0);
 
-            decode_split(pulses1.Point(2), pulses1.Point(3), psRangeDec, pulses2[1], Tables.silk_shell_code_table1.GetPointer());
-            decode_split(pulses0.Point(4), pulses0.Point(5), psRangeDec, pulses1[2], Tables.silk_shell_code_table0.GetPointer());
-            decode_split(pulses0.Point(6), pulses0.Point(7), psRangeDec, pulses1[3], Tables.silk_shell_code_table0.GetPointer());
+            decode_split(pulses1.GetPointer(2), pulses1.GetPointer(3), psRangeDec, pulses2[1], Tables.silk_shell_code_table1);
+            decode_split(pulses0.Point(4), pulses0.Point(5), psRangeDec, pulses1[2], Tables.silk_shell_code_table0);
+            decode_split(pulses0.Point(6), pulses0.Point(7), psRangeDec, pulses1[3], Tables.silk_shell_code_table0);
 
-            decode_split(pulses2.Point(2), pulses2.Point(3), psRangeDec, pulses3[1], Tables.silk_shell_code_table2.GetPointer());
+            decode_split(pulses2.GetPointer(2), pulses2.GetPointer(3), psRangeDec, pulses3[1], Tables.silk_shell_code_table2);
 
-            decode_split(pulses1.Point(4), pulses1.Point(5), psRangeDec, pulses2[2], Tables.silk_shell_code_table1.GetPointer());
-            decode_split(pulses0.Point(8), pulses0.Point(9), psRangeDec, pulses1[4], Tables.silk_shell_code_table0.GetPointer());
-            decode_split(pulses0.Point(10), pulses0.Point(11), psRangeDec, pulses1[5], Tables.silk_shell_code_table0.GetPointer());
+            decode_split(pulses1.GetPointer(4), pulses1.GetPointer(5), psRangeDec, pulses2[2], Tables.silk_shell_code_table1);
+            decode_split(pulses0.Point(8), pulses0.Point(9), psRangeDec, pulses1[4], Tables.silk_shell_code_table0);
+            decode_split(pulses0.Point(10), pulses0.Point(11), psRangeDec, pulses1[5], Tables.silk_shell_code_table0);
 
-            decode_split(pulses1.Point(6), pulses1.Point(7), psRangeDec, pulses2[3], Tables.silk_shell_code_table1.GetPointer());
-            decode_split(pulses0.Point(12), pulses0.Point(13), psRangeDec, pulses1[6], Tables.silk_shell_code_table0.GetPointer());
-            decode_split(pulses0.Point(14), pulses0.Point(15), psRangeDec, pulses1[7], Tables.silk_shell_code_table0.GetPointer());
+            decode_split(pulses1.GetPointer(6), pulses1.GetPointer(7), psRangeDec, pulses2[3], Tables.silk_shell_code_table1);
+            decode_split(pulses0.Point(12), pulses0.Point(13), psRangeDec, pulses1[6], Tables.silk_shell_code_table0);
+            decode_split(pulses0.Point(14), pulses0.Point(15), psRangeDec, pulses1[7], Tables.silk_shell_code_table0);
         }
     }
 }

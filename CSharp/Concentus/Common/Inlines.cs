@@ -2111,6 +2111,16 @@ namespace Concentus.Common
             return Matrix_base_adr.Point(((row) * (N)) + (column));
         }
 
+        public static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
+        {
+            return Matrix_base_adr[((row) * (N)) + (column)];
+        }
+
+        public static void MatrixSet<T>(T[] Matrix_base_adr, int row, int column, int N, T value)
+        {
+            Matrix_base_adr[((row) * (N)) + (column)] = value;
+        }
+
         /// <summary>
         /// (a32 * b32) >> 16
         /// </summary>

@@ -58,7 +58,7 @@ namespace Concentus.Silk
             short[] NLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
             Pointer<short> x_ptr;
             Pointer<short> x_pre_ptr;
-            Pointer<short> LPC_in_pre;
+            short[] LPC_in_pre;
             int tmp, min_gain_Q16, minInvGain_Q30;
             int[] LTP_corrs_rshift = new int[SilkConstants.MAX_NB_SUBFR];
             
@@ -87,7 +87,7 @@ namespace Concentus.Silk
                 local_gains[i] = Inlines.silk_DIV32(((int)1 << 16), invGains_Q16[i]);
             }
 
-            LPC_in_pre = Pointer.Malloc<short>(psEnc.nb_subfr * psEnc.predictLPCOrder + psEnc.frame_length);
+            LPC_in_pre = new short[psEnc.nb_subfr * psEnc.predictLPCOrder + psEnc.frame_length];
             if (psEnc.indices.signalType == SilkConstants.TYPE_VOICED)
             {
                 int[] WLTP;
@@ -119,7 +119,7 @@ namespace Concentus.Silk
                 LTPScaleControl.silk_LTP_scale_ctrl(psEnc, psEncCtrl, condCoding);
 
                 /* Create LTP residual */
-                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre, x.Point(0 - psEnc.predictLPCOrder), psEncCtrl.LTPCoef_Q14.GetPointer(),
+                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre.GetPointer(), x.Point(0 - psEnc.predictLPCOrder), psEncCtrl.LTPCoef_Q14.GetPointer(),
                     psEncCtrl.pitchL.GetPointer(), invGains_Q16.GetPointer(), psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             }
@@ -129,7 +129,7 @@ namespace Concentus.Silk
                 /************/
                 /* Create signal with prepended subframes, scaled by inverse gains */
                 x_ptr = x.Point(0 - psEnc.predictLPCOrder);
-                x_pre_ptr = LPC_in_pre;
+                x_pre_ptr = LPC_in_pre.GetPointer();
                 for (i = 0; i < psEnc.nb_subfr; i++)
                 {
                     Inlines.silk_scale_copy_vector16(x_pre_ptr.Data, x_pre_ptr.Offset, x_ptr.Data, x_ptr.Offset, invGains_Q16[i],
@@ -156,13 +156,13 @@ namespace Concentus.Silk
             }
 
             /* LPC_in_pre contains the LTP-filtered input for voiced, and the unfiltered input for unvoiced */
-            FindLPC.silk_find_LPC(psEnc, NLSF_Q15.GetPointer(), LPC_in_pre, minInvGain_Q30);
+            FindLPC.silk_find_LPC(psEnc, NLSF_Q15.GetPointer(), LPC_in_pre.GetPointer(), minInvGain_Q30);
 
             /* Quantize LSFs */
             NLSF.silk_process_NLSFs(psEnc, psEncCtrl.PredCoef_Q12.GetPointer(), NLSF_Q15.GetPointer(), psEnc.prev_NLSFq_Q15.GetPointer());
 
             /* Calculate residual energy using quantized LPC coefficients */
-            ResidualEnergy.silk_residual_energy(psEncCtrl.ResNrg.GetPointer(), psEncCtrl.ResNrgQ.GetPointer(), LPC_in_pre, psEncCtrl.PredCoef_Q12.GetPointer(), local_gains.GetPointer(),
+            ResidualEnergy.silk_residual_energy(psEncCtrl.ResNrg.GetPointer(), psEncCtrl.ResNrgQ.GetPointer(), LPC_in_pre.GetPointer(), psEncCtrl.PredCoef_Q12.GetPointer(), local_gains.GetPointer(),
                 psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             /* Copy to prediction struct for use in next frame for interpolation */

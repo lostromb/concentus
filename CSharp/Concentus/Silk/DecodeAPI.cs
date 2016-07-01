@@ -214,7 +214,7 @@ namespace Concentus.Silk
                         {
                             if (channel_state[n].LBRR_flags[i] != 0)
                             {
-                                Pointer<short> pulses = Pointer.Malloc<short>(SilkConstants.MAX_FRAME_LENGTH);
+                                short[] pulses = new short[SilkConstants.MAX_FRAME_LENGTH];
                                 int condCoding;
 
                                 if (decControl.nChannelsInternal == 2 && n == 0)
@@ -237,7 +237,7 @@ namespace Concentus.Silk
                                     condCoding = SilkConstants.CODE_INDEPENDENTLY;
                                 }
                                 DecodeIndices.silk_decode_indices(channel_state[n], psRangeDec, i, 1, condCoding);
-                                DecodePulses.silk_decode_pulses(psRangeDec, pulses, channel_state[n].indices.signalType,
+                                DecodePulses.silk_decode_pulses(psRangeDec, pulses.GetPointer(), channel_state[n].indices.signalType,
                                     channel_state[n].indices.quantOffsetType, channel_state[n].frame_length);
                             }
                         }

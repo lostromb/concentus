@@ -547,7 +547,7 @@ namespace Concentus.Celt
             int i, j;
             int N;
             N = N0 * stride;
-            Pointer<int> tmp = Pointer.Malloc<int>(N);
+            int[] tmp = new int[N];
 
             //Inlines.OpusAssert(stride > 0);
             if (hadamard != 0)
@@ -573,7 +573,7 @@ namespace Concentus.Celt
                 }
             }
 
-            tmp.MemCopyTo(X, N);
+            tmp.GetPointer().MemCopyTo(X, N);
         }
 
         internal static void interleave_hadamard(Pointer<int> X, int N0, int stride, int hadamard)
@@ -581,7 +581,7 @@ namespace Concentus.Celt
             int i, j;
             int N;
             N = N0 * stride;
-            Pointer<int> tmp = Pointer.Malloc<int>(N);
+            int[] tmp = new int[N];
 
             if (hadamard != 0)
             {
@@ -605,7 +605,7 @@ namespace Concentus.Celt
                 }
             }
 
-            tmp.MemCopyTo(X, N);
+            tmp.GetPointer().MemCopyTo(X, N);
         }
 
         internal static void haar1(Pointer<int> X, int N0, int stride)
@@ -1444,8 +1444,9 @@ namespace Concentus.Celt
             int i;
             int remaining_bits;
             Pointer<short> eBands = m.eBands.GetPointer();
-            Pointer<int> norm, norm2;
-            Pointer<int> _norm;
+            int[] norm;
+            int[] _norm;
+            Pointer<int> norm2;
             Pointer<int> lowband_scratch;
             int B;
             int M;
@@ -1462,9 +1463,9 @@ namespace Concentus.Celt
 
             /* No need to allocate norm for the last band because we don't need an
                output in that band. */
-            _norm = Pointer.Malloc<int>(C * (M * eBands[m.nbEBands - 1] - norm_offset));
+            _norm = new int[(C * (M * eBands[m.nbEBands - 1] - norm_offset))];
             norm = _norm;
-            norm2 = norm.Point(M * eBands[m.nbEBands - 1] - norm_offset);
+            norm2 = norm.GetPointer(M * eBands[m.nbEBands - 1] - norm_offset);
 
             /* We can use the last band as scratch space because we don't need that
                scratch space for the last band. */
@@ -1530,10 +1531,10 @@ namespace Concentus.Celt
                 ctx.tf_change = tf_change;
                 if (i >= m.effEBands)
                 {
-                    X = norm;
+                    X = norm.GetPointer();
                     if (Y_ != null)
                     {
-                        Y = norm;
+                        Y = norm.GetPointer();
                     }
                     lowband_scratch = null;
                 }
@@ -1592,9 +1593,9 @@ namespace Concentus.Celt
                         N,
                         b / 2,
                         B,
-                        effective_lowband != -1 ? norm.Point(effective_lowband) : null,
+                        effective_lowband != -1 ? norm.GetPointer(effective_lowband) : null,
                         LM,
-                        last != 0 ? null : norm.Point(M * eBands[i] - norm_offset),
+                        last != 0 ? null : norm.GetPointer(M * eBands[i] - norm_offset),
                         CeltConstants.Q15ONE,
                         lowband_scratch,
                         (int)x_cm);
@@ -1622,9 +1623,9 @@ namespace Concentus.Celt
                             N,
                             b,
                             B,
-                            effective_lowband != -1 ? norm.Point(effective_lowband) : null,
+                            effective_lowband != -1 ? norm.GetPointer(effective_lowband) : null,
                             LM,
-                            last != 0 ? null : norm.Point(M * eBands[i] - norm_offset),
+                            last != 0 ? null : norm.GetPointer(M * eBands[i] - norm_offset),
                             lowband_scratch,
                             (int)(x_cm | y_cm));
                     }
@@ -1636,9 +1637,9 @@ namespace Concentus.Celt
                             N,
                             b,
                             B,
-                            effective_lowband != -1 ? norm.Point(effective_lowband) : null,
+                            effective_lowband != -1 ? norm.GetPointer(effective_lowband) : null,
                             LM,
-                            last != 0 ? null : norm.Point(M * eBands[i] - norm_offset),
+                            last != 0 ? null : norm.GetPointer(M * eBands[i] - norm_offset),
                             CeltConstants.Q15ONE,
                             lowband_scratch,
                             (int)(x_cm | y_cm));

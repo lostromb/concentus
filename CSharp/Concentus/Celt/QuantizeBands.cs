@@ -174,8 +174,8 @@ namespace Concentus.Celt
         {
             int intra;
             int max_decay;
-            Pointer<int> oldEBands_intra;
-            Pointer<int> error_intra;
+            int[] oldEBands_intra;
+            int[] error_intra;
             EntropyCoder enc_start_state = new EntropyCoder(); // [porting note] stack variable
             uint tell;
             int badness1 = 0;
@@ -202,14 +202,14 @@ namespace Concentus.Celt
             }
             enc_start_state.Assign(enc);
 
-            oldEBands_intra = Pointer.Malloc<int>(C * m.nbEBands);
-            error_intra = Pointer.Malloc<int>(C * m.nbEBands);
-            oldEBands.MemCopyTo(oldEBands_intra, C * m.nbEBands);
+            oldEBands_intra = new int[C * m.nbEBands];
+            error_intra = new int[C * m.nbEBands];
+            oldEBands.MemCopyTo(oldEBands_intra, 0, C * m.nbEBands);
 
             if (two_pass != 0 || intra != 0)
             {
-                badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, (int)budget,
-                      (int)tell, Tables.e_prob_model[LM][1].GetPointer(), error_intra, enc, C, LM, 1, max_decay, lfe);
+                badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra.GetPointer(), (int)budget,
+                      (int)tell, Tables.e_prob_model[LM][1].GetPointer(), error_intra.GetPointer(), enc, C, LM, 1, max_decay, lfe);
             }
 
             if (intra == 0)
@@ -221,7 +221,7 @@ namespace Concentus.Celt
                 uint nintra_bytes;
                 uint save_bytes;
                 int badness2;
-                Pointer<byte> intra_bits = null;
+                byte[] intra_bits = null;
 
                 tell_intra = (int)enc.tell_frac();
 
@@ -234,9 +234,9 @@ namespace Concentus.Celt
 
                 if (save_bytes != 0)
                 {
-                    intra_bits = Pointer.Malloc<byte>((int)save_bytes);
+                    intra_bits = new byte[(int)save_bytes];
                     /* Copy bits from intra bit-stream */
-                    intra_buf.MemCopyTo(intra_bits, (int)save_bytes);
+                    intra_buf.MemCopyTo(intra_bits, 0, (int)save_bytes);
                 }
 
                 enc.Assign(enc_start_state);
@@ -250,17 +250,17 @@ namespace Concentus.Celt
                     /* Copy intra bits to bit-stream */
                     if (intra_bits != null)
                     {
-                        intra_bits.MemCopyTo(intra_buf, (int)(nintra_bytes - nstart_bytes));
+                        intra_buf.MemCopyFrom(intra_bits, 0, (int)(nintra_bytes - nstart_bytes));
                     }
-                    oldEBands_intra.MemCopyTo(oldEBands,  C * m.nbEBands);
-                    error_intra.MemCopyTo(error,  C * m.nbEBands);
+                    oldEBands.MemCopyFrom(oldEBands_intra, 0,  C * m.nbEBands);
+                    error.MemCopyFrom(error_intra, 0, C * m.nbEBands);
                     intra = 1;
                 }
             }
             else
             {
-                oldEBands_intra.MemCopyTo(oldEBands, C * m.nbEBands);
-                error_intra.MemCopyTo(error, C * m.nbEBands);
+                oldEBands.MemCopyFrom(oldEBands_intra, 0, C * m.nbEBands);
+                error.MemCopyFrom(error_intra, 0, C * m.nbEBands);
             }
 
             if (intra != 0)

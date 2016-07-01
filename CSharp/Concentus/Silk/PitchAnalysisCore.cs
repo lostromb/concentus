@@ -94,8 +94,8 @@ namespace Concentus.Silk
             int CBimax, CBimax_new, CBimax_old, lag, start_lag, end_lag, lag_new;
             int CCmax, CCmax_b, CCmax_new_b, CCmax_new;
             int[] CC = new int[SilkConstants.PE_NB_CBKS_STAGE2_EXT];
-            Pointer<silk_pe_stage3_vals> TOKENenergies_st3;
-            Pointer<silk_pe_stage3_vals> TOKENcross_corr_st3;
+            silk_pe_stage3_vals[] energies_st3;
+            silk_pe_stage3_vals[] cross_corr_st3;
             int frame_length, frame_length_8kHz, frame_length_4kHz;
             int sf_length;
             int min_lag;
@@ -229,8 +229,8 @@ namespace Concentus.Silk
             {
                 for (i = MAX_LAG_4KHZ; i >= MIN_LAG_4KHZ; i--)
                 {
-                    sum = (int)Inlines.MatrixGet(C.GetPointer(), 0, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ)
-                        + (int)Inlines.MatrixGet(C.GetPointer(), 1, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ);               /* Q14 */
+                    sum = (int)Inlines.MatrixGet(C, 0, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ)
+                        + (int)Inlines.MatrixGet(C, 1, i - MIN_LAG_4KHZ, CSTRIDE_4KHZ);               /* Q14 */
                     sum = Inlines.silk_SMLAWB(sum, sum, Inlines.silk_LSHIFT(-i, 4));                                /* Q14 */
                     C[i - MIN_LAG_4KHZ] = (short)sum;                                            /* Q14 */
                 }
@@ -439,7 +439,7 @@ namespace Concentus.Silk
                         /* Try all codebooks */
                         d_subfr = d + Inlines.MatrixGet(Lag_CB_ptr, i, j, cbk_size);
                         CC[j] = CC[j]
-                           + (int)Inlines.MatrixGet(C.GetPointer(), i,
+                           + (int)Inlines.MatrixGet(C, i,
                                                     d_subfr - (MIN_LAG_8KHZ - 2),
                                                     CSTRIDE_8KHZ);
                     }
@@ -569,15 +569,15 @@ namespace Concentus.Silk
                 }
 
                 /* Calculate the correlations and energies needed in stage 3 */
-                TOKENenergies_st3 = Pointer.Malloc<silk_pe_stage3_vals>(nb_subfr * nb_cbk_search);
-                TOKENcross_corr_st3 = Pointer.Malloc<silk_pe_stage3_vals>(nb_subfr * nb_cbk_search);
+                energies_st3 = new silk_pe_stage3_vals[nb_subfr * nb_cbk_search];
+                cross_corr_st3 = new silk_pe_stage3_vals[nb_subfr * nb_cbk_search];
                 for (int c = 0; c < nb_subfr * nb_cbk_search; c++)
                 {
-                    TOKENenergies_st3[c] = new silk_pe_stage3_vals(); // fixme: these can be replaced with a linearized array probably, or at least a struct
-                    TOKENcross_corr_st3[c] = new silk_pe_stage3_vals();
+                    energies_st3[c] = new silk_pe_stage3_vals(); // fixme: these can be replaced with a linearized array probably, or at least a struct
+                    cross_corr_st3[c] = new silk_pe_stage3_vals();
                 }
-                silk_P_Ana_calc_corr_st3(TOKENcross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
-                silk_P_Ana_calc_energy_st3(TOKENenergies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
+                silk_P_Ana_calc_corr_st3(cross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
+                silk_P_Ana_calc_energy_st3(energies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
 
                 lag_counter = 0;
                 //Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
@@ -594,10 +594,10 @@ namespace Concentus.Silk
                         for (k = 0; k < nb_subfr; k++)
                         {
                             cross_corr = Inlines.silk_ADD32(cross_corr,
-                                Inlines.MatrixGet(TOKENcross_corr_st3, k, j,
+                                Inlines.MatrixGet(cross_corr_st3, k, j,
                                             nb_cbk_search).Values[lag_counter]);
                             energy = Inlines.silk_ADD32(energy,
-                                Inlines.MatrixGet(TOKENenergies_st3, k, j,
+                                Inlines.MatrixGet(energies_st3, k, j,
                                             nb_cbk_search).Values[lag_counter]);
                             //Inlines.OpusAssert(energy >= 0);
                         }
@@ -661,7 +661,7 @@ namespace Concentus.Silk
          * case 4*12*5 = 240 correlations, but more likely around 120.
          ***********************************************************************/
         private static void silk_P_Ana_calc_corr_st3(
-            Pointer<silk_pe_stage3_vals> cross_corr_st3,              /* O 3 DIM correlation array */
+            silk_pe_stage3_vals[] cross_corr_st3,              /* O 3 DIM correlation array */
             Pointer<short> frame,                         /* I vector to correlate         */
             int start_lag,                       /* I lag offset to search around */
             int sf_length,                       /* I length of a 5 ms subframe   */
@@ -737,7 +737,7 @@ namespace Concentus.Silk
         /* calculated recursively.                                          */
         /********************************************************************/
         static void silk_P_Ana_calc_energy_st3(
-            Pointer<silk_pe_stage3_vals> energies_st3,                 /* O 3 DIM energy array */
+            silk_pe_stage3_vals[] energies_st3,                 /* O 3 DIM energy array */
             Pointer<short> frame,                          /* I vector to calc energy in    */
             int start_lag,                        /* I lag offset to search around */
             int sf_length,                        /* I length of one 5 ms subframe */

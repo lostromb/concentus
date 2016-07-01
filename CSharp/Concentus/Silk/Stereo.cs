@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class Stereo
@@ -216,14 +217,14 @@ namespace Concentus.Silk
             int frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
             BoxedValue<int> LP_ratio_Q14 = new BoxedValue<int>();
             BoxedValue<int> HP_ratio_Q14 = new BoxedValue<int>();
-            Pointer<short> side;
-            Pointer<short> LP_mid;
-            Pointer<short> HP_mid;
-            Pointer<short> LP_side;
-            Pointer<short> HP_side;
+            short[] side;
+            short[] LP_mid;
+            short[] HP_mid;
+            short[] LP_side;
+            short[] HP_side;
             Pointer<short> mid = x1.Point(-2);
 
-            side = Pointer.Malloc<short>(frame_length + 2);
+            side = new short[frame_length + 2];
 
             /* Convert to basic mid/side signals */
             for (n = 0; n < frame_length + 2; n++)
@@ -236,13 +237,13 @@ namespace Concentus.Silk
 
             /* Buffering */
             state.sMid.GetPointer().MemCopyTo(mid, 2);
-            state.sSide.GetPointer().MemCopyTo(side, 2);
+            Array.Copy(state.sSide, side, 2);
             mid.Point(frame_length).MemCopyTo(state.sMid, 0, 2);
-            side.Point(frame_length).MemCopyTo(state.sSide, 0, 2);
+            Array.Copy(side, frame_length, state.sSide, 0, 2);
 
             /* LP and HP filter mid signal */
-            LP_mid = Pointer.Malloc<short>(frame_length);
-            HP_mid = Pointer.Malloc<short>(frame_length);
+            LP_mid = new short[frame_length];
+            HP_mid = new short[frame_length];
             for (n = 0; n < frame_length; n++)
             {
                 sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(mid[n] + mid[n + 2], mid[n + 1], 1), 2); // opus bug: was ADD_LSHIFT, but the intermediate calculation would overflow
@@ -251,8 +252,8 @@ namespace Concentus.Silk
             }
 
             /* LP and HP filter side signal */
-            LP_side = Pointer.Malloc<short>(frame_length);
-            HP_side = Pointer.Malloc<short>(frame_length);
+            LP_side = new short[frame_length];
+            HP_side = new short[frame_length];
             for (n = 0; n < frame_length; n++)
             {
                 sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(side[n] + side[n + 2], side[n + 1], 1), 2);
@@ -267,8 +268,8 @@ namespace Concentus.Silk
                 Inlines.SILK_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF, 16);
             smooth_coef_Q16 = Inlines.silk_SMULWB(Inlines.silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
-            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0.GetPointer(0), frame_length, smooth_coef_Q16);
-            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0.GetPointer(2), frame_length, smooth_coef_Q16);
+            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid.GetPointer(), LP_side.GetPointer(), state.mid_side_amp_Q0.GetPointer(0), frame_length, smooth_coef_Q16);
+            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid.GetPointer(), HP_side.GetPointer(), state.mid_side_amp_Q0.GetPointer(2), frame_length, smooth_coef_Q16);
             
             /* Ratio of the norms of residual and mid signals */
             frac_Q16 = Inlines.silk_SMLABB(HP_ratio_Q14.Val, LP_ratio_Q14.Val, 3);
