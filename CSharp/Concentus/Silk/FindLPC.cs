@@ -43,8 +43,8 @@ namespace Concentus.Silk
         /* Finds LPC vector from correlations, and converts to NLSF */
         internal static void silk_find_LPC(
             SilkChannelEncoder psEncC,                                /* I/O  Encoder state                                                               */
-            Pointer<short> NLSF_Q15,                             /* O    NLSFs                                                                       */
-            Pointer<short> x,                                    /* I    Input signal                                                                */
+            short[] NLSF_Q15,                             /* O    NLSFs                                                                       */
+            short[] x,                                    /* I    Input signal                                                                */
             int minInvGain_Q30                          /* I    Inverse of max prediction gain                                              */
         )
         {
@@ -69,7 +69,7 @@ namespace Concentus.Silk
             psEncC.indices.NLSFInterpCoef_Q2 = 4;
 
             /* Burg AR analysis for the full frame */
-            BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_Q16.GetPointer(), x.Data, x.Offset, minInvGain_Q30, subfr_length, psEncC.nb_subfr, psEncC.predictLPCOrder);
+            BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_Q16, x, 0, minInvGain_Q30, subfr_length, psEncC.nb_subfr, psEncC.predictLPCOrder);
             res_nrg = scratch_box1.Val;
             res_nrg_Q = scratch_box2.Val;
 
@@ -78,7 +78,7 @@ namespace Concentus.Silk
                 short[] LPC_res;
 
                 /* Optimal solution for last 10 ms */
-                BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_tmp_Q16.GetPointer(), x.Data, x.Offset + (2 * subfr_length), minInvGain_Q30, subfr_length, 2, psEncC.predictLPCOrder);
+                BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_tmp_Q16, x, (2 * subfr_length), minInvGain_Q30, subfr_length, 2, psEncC.predictLPCOrder);
                 res_tmp_nrg = scratch_box1.Val;
                 res_tmp_nrg_Q = scratch_box2.Val;
 
@@ -93,13 +93,13 @@ namespace Concentus.Silk
                     }
                 }
                 else {
-                    //Inlines.OpusAssert(shift > -32);
+                    Inlines.OpusAssert(shift > -32);
                     res_nrg = Inlines.silk_RSHIFT(res_nrg, -shift) - res_tmp_nrg;
                     res_nrg_Q = res_tmp_nrg_Q;
                 }
 
                 /* Convert to NLSFs */
-                NLSF.silk_A2NLSF(NLSF_Q15, a_tmp_Q16, psEncC.predictLPCOrder);
+                NLSF.silk_A2NLSF(NLSF_Q15.GetPointer(), a_tmp_Q16, psEncC.predictLPCOrder);
 
                LPC_res = new short[2 * subfr_length];
 
@@ -107,13 +107,13 @@ namespace Concentus.Silk
                 for (k = 3; k >= 0; k--)
                 {
                     /* Interpolate NLSFs for first half */
-                    Inlines.silk_interpolate(NLSF0_Q15, psEncC.prev_NLSFq_Q15, 0, NLSF_Q15.Data, NLSF_Q15.Offset, k, psEncC.predictLPCOrder);
+                    Inlines.silk_interpolate(NLSF0_Q15, psEncC.prev_NLSFq_Q15, 0, NLSF_Q15, 0, k, psEncC.predictLPCOrder);
 
                     /* Convert to LPC for residual energy evaluation */
-                    NLSF.silk_NLSF2A(a_tmp_Q12.GetPointer(), NLSF0_Q15.GetPointer(), psEncC.predictLPCOrder);
+                    NLSF.silk_NLSF2A(a_tmp_Q12.GetPointer(), NLSF0_Q15, psEncC.predictLPCOrder);
 
                     /* Calculate residual energy with NLSF interpolation */
-                    Filters.silk_LPC_analysis_filter(LPC_res, 0, x.Data, x.Offset, a_tmp_Q12, 0, 2 * subfr_length, psEncC.predictLPCOrder);
+                    Filters.silk_LPC_analysis_filter(LPC_res, 0, x, 0, a_tmp_Q12, 0, 2 * subfr_length, psEncC.predictLPCOrder);
                     
                     SumSqrShift.silk_sum_sqr_shift(scratch_box1, scratch_box2, LPC_res.GetPointer(psEncC.predictLPCOrder), subfr_length - psEncC.predictLPCOrder);
                     res_nrg0 = scratch_box1.Val;
@@ -178,10 +178,10 @@ namespace Concentus.Silk
             if (psEncC.indices.NLSFInterpCoef_Q2 == 4)
             {
                 /* NLSF interpolation is currently inactive, calculate NLSFs from full frame AR coefficients */
-                NLSF.silk_A2NLSF(NLSF_Q15, a_Q16, psEncC.predictLPCOrder);
+                NLSF.silk_A2NLSF(NLSF_Q15.GetPointer(), a_Q16, psEncC.predictLPCOrder);
             }
 
-            //Inlines.OpusAssert(psEncC.indices.NLSFInterpCoef_Q2 == 4 || (psEncC.useInterpolatedNLSFs != 0 && psEncC.first_frame_after_reset == 0 && psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR));
+            Inlines.OpusAssert(psEncC.indices.NLSFInterpCoef_Q2 == 4 || (psEncC.useInterpolatedNLSFs != 0 && psEncC.first_frame_after_reset == 0 && psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR));
 
         }
     }

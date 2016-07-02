@@ -194,11 +194,11 @@ namespace Concentus.Celt.Structs
             int c;
             int i;
             int C = this.channels;
-            Pointer<Pointer<int>> decode_mem = Pointer.Malloc<Pointer<int>>(2);
-            Pointer<Pointer<int>> out_syn = Pointer.Malloc<Pointer<int>>(2);
+            Pointer<int>[] local_decode_mem = new Pointer<int>[2];
+            Pointer<int>[] out_syn = new Pointer<int>[2];
             Pointer<int> lpc;
             Pointer<int> oldBandE, oldLogE, oldLogE2, backgroundLogE;
-            CeltMode mode; // porting note: pointer
+            CeltMode mode;
             int nbEBands;
             int overlap;
             int start;
@@ -213,8 +213,8 @@ namespace Concentus.Celt.Structs
 
             c = 0; do
             {
-                decode_mem[c] = this.decode_mem.GetPointer(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
-                out_syn[c] = decode_mem[c].Point(CeltConstants.DECODE_BUFFER_SIZE - N);
+                local_decode_mem[c] = this.decode_mem.GetPointer(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
+                out_syn[c] = local_decode_mem[c].Point(CeltConstants.DECODE_BUFFER_SIZE - N);
             } while (++c < C);
 
             // fixme: can remove these temp pointers
@@ -271,10 +271,10 @@ namespace Concentus.Celt.Structs
                 c = 0;
                 do
                 {
-                    decode_mem[c].Point(N).MemMove(0 - N, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
+                    local_decode_mem[c].Point(N).MemMove(0 - N, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
                 } while (++c < C);
 
-                CeltCommon.celt_synthesis(mode, X.GetPointer(), out_syn, oldBandE, start, effEnd, C, C, 0, LM, this.downsample, 0);
+                CeltCommon.celt_synthesis(mode, X.GetPointer(), out_syn.GetPointer(), oldBandE, start, effEnd, C, C, 0, LM, this.downsample, 0);
             }
             else
             {
@@ -287,7 +287,7 @@ namespace Concentus.Celt.Structs
 
                 if (loss_count == 0)
                 {
-                    this.last_pitch_index = pitch_index = CeltCommon.celt_plc_pitch_search(decode_mem, C);
+                    this.last_pitch_index = pitch_index = CeltCommon.celt_plc_pitch_search(local_decode_mem.GetPointer(), C);
                 }
                 else {
                     pitch_index = this.last_pitch_index;
@@ -308,7 +308,7 @@ namespace Concentus.Celt.Structs
                     int exc_length;
                     int j;
 
-                    buf = decode_mem[c];
+                    buf = local_decode_mem[c];
                     for (i = 0; i < CeltConstants.MAX_PERIOD; i++)
                     {
                         exc[i] = Inlines.ROUND16(buf[CeltConstants.DECODE_BUFFER_SIZE - CeltConstants.MAX_PERIOD + i], CeltConstants.SIG_SHIFT);
@@ -487,8 +487,8 @@ namespace Concentus.Celt.Structs
             int[] fine_priority;
             int[] tf_res;
             byte[] collapse_masks;
-            Pointer<Pointer<int>> decode_mem = Pointer.Malloc<Pointer<int>>(2);
-            Pointer<Pointer<int>> out_syn = Pointer.Malloc<Pointer<int>>(2);
+            Pointer<int>[] decode_mem = new Pointer<int>[2];
+            Pointer<int>[] out_syn = new Pointer<int>[2];
             Pointer<int> lpc;
             Pointer<int> oldBandE, oldLogE, oldLogE2, backgroundLogE;
 
@@ -560,7 +560,7 @@ namespace Concentus.Celt.Structs
             if (data == null || len <= 1)
             {
                 this.celt_decode_lost(N, LM);
-                CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD.GetPointer(), accum);
+                CeltCommon.deemphasis(out_syn.GetPointer(), pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD.GetPointer(), accum);
 
                 return frame_size / this.downsample;
             }
@@ -736,7 +736,7 @@ namespace Concentus.Celt.Structs
                     oldBandE[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
             }
 
-            CeltCommon.celt_synthesis(mode, X.GetPointer(), out_syn, oldBandE, start, effEnd,
+            CeltCommon.celt_synthesis(mode, X.GetPointer(), out_syn.GetPointer(), oldBandE, start, effEnd,
                            C, CC, isTransient, LM, this.downsample, silence);
 
             c = 0; do
@@ -807,7 +807,7 @@ namespace Concentus.Celt.Structs
             } while (++c < 2);
             this.rng = dec.rng;
 
-            CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD.GetPointer(), accum);
+            CeltCommon.deemphasis(out_syn.GetPointer(), pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD.GetPointer(), accum);
             this.loss_count = 0;
 
             if (dec.tell() > 8 * len)

@@ -53,8 +53,8 @@ namespace Concentus.Silk
         /// <param name="conditional">I    first gain is delta coded if 1</param>
         /// <param name="nb_subfr">I    number of subframes</param>
         internal static void silk_gains_quant(
-            Pointer<sbyte> ind,
-            Pointer<int> gain_Q16,
+            sbyte[] ind,
+            int[] gain_Q16,
             BoxedValue<sbyte> prev_ind,
             int conditional,
             int nb_subfr)
@@ -125,8 +125,8 @@ namespace Concentus.Silk
         /// <param name="conditional">I    first gain is delta coded if 1</param>
         /// <param name="nb_subfr">I    number of subframes</param>
         internal static void silk_gains_dequant(
-            Pointer<int> gain_Q16,
-            Pointer<sbyte> ind,
+            int[] gain_Q16,
+            sbyte[] ind,
             BoxedValue<sbyte> prev_ind,
             int conditional,
             int nb_subfr)
@@ -170,7 +170,7 @@ namespace Concentus.Silk
         /// <param name="ind">I    gain indices [MAX_NB_SUBFR]</param>
         /// <param name="nb_subfr">I    number of subframes</param>
         /// <returns>unique identifier of gains</returns>
-        internal static int silk_gains_ID(Pointer<sbyte> ind, int nb_subfr)
+        internal static int silk_gains_ID(sbyte[] ind, int nb_subfr)
         {
             int k;
             int gainsID;

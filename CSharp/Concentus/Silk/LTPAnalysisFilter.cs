@@ -41,11 +41,11 @@ namespace Concentus.Silk
     internal static class LTPAnalysisFilter
     {
         internal static void silk_LTP_analysis_filter(
-            Pointer<short> LTP_res,                               /* O    LTP residual signal of length SilkConstants.MAX_NB_SUBFR * ( pre_length + subfr_length )  */
+            short[] LTP_res,                               /* O    LTP residual signal of length SilkConstants.MAX_NB_SUBFR * ( pre_length + subfr_length )  */
             Pointer<short> x,                                     /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
-            Pointer<short> LTPCoef_Q14,/* I     LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe  [SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR]                 */
-            Pointer<int> pitchL,                 /* I    Pitch lag, one for each subframe [SilkConstants.MAX_NB_SUBFR]                                           */
-            Pointer<int> invGains_Q16,           /* I    Inverse quantization gains, one for each subframe [SilkConstants.MAX_NB_SUBFR]                           */
+            short[] LTPCoef_Q14,/* I     LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe  [SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR]                 */
+            int[] pitchL,                 /* I    Pitch lag, one for each subframe [SilkConstants.MAX_NB_SUBFR]                                           */
+            int[] invGains_Q16,           /* I    Inverse quantization gains, one for each subframe [SilkConstants.MAX_NB_SUBFR]                           */
             int subfr_length,                           /* I    Length of each subframe                                                     */
             int nb_subfr,                               /* I    Number of subframes                                                         */
             int pre_length                              /* I    Length of the preceding samples starting at &x[0] for each subframe         */
@@ -58,7 +58,7 @@ namespace Concentus.Silk
             int LTP_est;
 
             x_ptr = x;
-            LTP_res_ptr = LTP_res;
+            LTP_res_ptr = LTP_res.GetPointer();
             for (k = 0; k < nb_subfr; k++)
             {
 

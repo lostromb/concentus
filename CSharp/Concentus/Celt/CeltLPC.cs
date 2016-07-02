@@ -103,7 +103,7 @@ namespace Concentus.Celt
             int i, j;
             int[] rden = new int[ord];
             int[] y = new int[N + ord];
-            //Inlines.OpusAssert((ord & 3) == 0);
+            Inlines.OpusAssert((ord & 3) == 0);
 
             for (i = 0; i < ord; i++)
                 rden[i] = den[ord - i - 1];
@@ -166,8 +166,8 @@ namespace Concentus.Celt
             Pointer<int> xptr;
             int[] xx = new int[n];
 
-            //Inlines.OpusAssert(n > 0);
-            //Inlines.OpusAssert(overlap >= 0);
+            Inlines.OpusAssert(n > 0);
+            Inlines.OpusAssert(overlap >= 0);
 
             if (overlap == 0)
             {

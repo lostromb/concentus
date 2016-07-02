@@ -241,7 +241,7 @@ namespace Concentus.Celt
                 }
             }
 
-            //Inlines.OpusAssert(codedBands > start);
+            Inlines.OpusAssert(codedBands > start);
             /* Code the intensity and dual stereo parameters. */
             if (intensity_rsv > 0)
             {
@@ -303,7 +303,7 @@ namespace Concentus.Celt
                 int NClogN;
                 int excess, bit;
 
-                //Inlines.OpusAssert(bits[j] >= 0);
+                Inlines.OpusAssert(bits[j] >= 0);
                 N0 = m.eBands[j + 1] - m.eBands[j];
                 N = N0 << LM;
                 bit = (int)bits[j] + balance;
@@ -375,8 +375,8 @@ namespace Concentus.Celt
                 }
                 balance = excess;
 
-                //Inlines.OpusAssert(bits[j] >= 0);
-                //Inlines.OpusAssert(ebits[j] >= 0);
+                Inlines.OpusAssert(bits[j] >= 0);
+                Inlines.OpusAssert(ebits[j] >= 0);
             }
             /* Save any remaining bits over the cap for the rebalancing in
                 quant_all_bands(). */
@@ -386,7 +386,7 @@ namespace Concentus.Celt
             for (; j < end; j++)
             {
                 ebits[j] = bits[j] >> stereo >> EntropyCoder.BITRES;
-                //Inlines.OpusAssert(C * ebits[j] << EntropyCoder.BITRES == bits[j]);
+                Inlines.OpusAssert(C * ebits[j] << EntropyCoder.BITRES == bits[j]);
                 bits[j] = 0;
                 fine_priority[j] = (ebits[j] < 1) ? 1 : 0;
             }

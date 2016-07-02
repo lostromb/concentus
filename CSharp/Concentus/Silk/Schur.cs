@@ -43,16 +43,16 @@ namespace Concentus.Silk
         /* Faster than schur64(), but much less accurate.                       */
         /* uses SMLAWB(), requiring armv5E and higher.                          */
         internal static int silk_schur(                              /* O    Returns residual energy                                     */
-            Pointer<short> rc_Q15,            /* O    reflection coefficients [order] Q15                         */
-    Pointer<int> c,                 /* I    correlations [order+1]                                      */
-    int order               /* I    prediction order                                            */
-)
+            short[] rc_Q15,            /* O    reflection coefficients [order] Q15                         */
+            int[] c,                 /* I    correlations [order+1]                                      */
+            int order               /* I    prediction order                                            */
+        )
         {
             int k, n, lz;
             int[][] C = Arrays.InitTwoDimensionalArray<int>(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
             int Ctmp1, Ctmp2, rc_tmp_Q15;
 
-            //Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
+            Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
 
             /* Get number of leading zeros */
             lz = Inlines.silk_CLZ32(c[0]);
@@ -130,8 +130,8 @@ namespace Concentus.Silk
         /* Slower than schur(), but more accurate.                              */
         /* Uses SMULL(), available on armv4                                     */
         internal static int silk_schur64(                            /* O    returns residual energy                                     */
-            Pointer<int> rc_Q16,           /* O    Reflection coefficients [order] Q16                         */
-            Pointer<int> c,                /* I    Correlations [order+1]                                      */
+            int[] rc_Q16,           /* O    Reflection coefficients [order] Q16                         */
+            int[] c,                /* I    Correlations [order+1]                                      */
             int order               /* I    Prediction order                                            */
         )
         {
@@ -139,12 +139,12 @@ namespace Concentus.Silk
             int[][] C = Arrays.InitTwoDimensionalArray<int>(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
             int Ctmp1_Q30, Ctmp2_Q30, rc_tmp_Q31;
 
-            //Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
+            Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
 
             /* Check for invalid input */
             if (c[0] <= 0)
             {
-                rc_Q16.MemSet(0, order);
+                Arrays.MemSet<int>(rc_Q16, 0, order);
                 return 0;
             }
 

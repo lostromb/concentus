@@ -101,7 +101,7 @@ namespace Concentus.Silk
                 if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000 && Fs_Hz_in != 24000 && Fs_Hz_in != 48000) ||
                     (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000))
                 {
-                    //Inlines.OpusAssert(false);
+                    Inlines.OpusAssert(false);
                     return -1;
                 }
                 S.inputDelay = Tables.delay_matrix_enc[rateID(Fs_Hz_in),rateID(Fs_Hz_out)];
@@ -110,7 +110,7 @@ namespace Concentus.Silk
                 if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000) ||
                     (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 && Fs_Hz_out != 24000 && Fs_Hz_out != 48000))
                 {
-                    //Inlines.OpusAssert(false);
+                    Inlines.OpusAssert(false);
                     return -1;
                 }
                 S.inputDelay = Tables.delay_matrix_dec[rateID(Fs_Hz_in),rateID(Fs_Hz_out)];
@@ -181,7 +181,7 @@ namespace Concentus.Silk
                 else
                 {
                     /* None available */
-                    //Inlines.OpusAssert(false);
+                    Inlines.OpusAssert(false);
                     return -1;
                 }
             }
@@ -221,9 +221,9 @@ namespace Concentus.Silk
             int nSamples;
 
             /* Need at least 1 ms of input data */
-            //Inlines.OpusAssert(inLen >= S.Fs_in_kHz);
+            Inlines.OpusAssert(inLen >= S.Fs_in_kHz);
             /* Delay can't exceed the 1 ms of buffering */
-            //Inlines.OpusAssert(S.inputDelay <= S.Fs_in_kHz);
+            Inlines.OpusAssert(S.inputDelay <= S.Fs_in_kHz);
 
             nSamples = S.Fs_in_kHz - S.inputDelay;
 
@@ -266,16 +266,16 @@ namespace Concentus.Silk
         /// <param name="input">I    Input signal [ len ]</param>
         /// <param name="inLen">I    Number of input samples</param>
         internal static void silk_resampler_down2(
-            Pointer<int> S,
-            Pointer<short> output,
-            Pointer<short> input,
+            int[] S,
+            short[] output,
+            short[] input,
             int inLen)
         {
             int k, len2 = Inlines.silk_RSHIFT32(inLen, 1);
             int in32, out32, Y, X;
 
-            //Inlines.OpusAssert(Tables.silk_resampler_down2_0 > 0);
-            //Inlines.OpusAssert(Tables.silk_resampler_down2_1 < 0);
+            Inlines.OpusAssert(Tables.silk_resampler_down2_0 > 0);
+            Inlines.OpusAssert(Tables.silk_resampler_down2_1 < 0);
 
             /* Internal variables and state are in Q10 format */
             for (k = 0; k < len2; k++)
@@ -312,17 +312,19 @@ namespace Concentus.Silk
         /// <param name="input">I    Input signal [ inLen ]</param>
         /// <param name="inLen">I    Number of input samples</param>
         internal static void silk_resampler_down2_3(
-            Pointer<int> S,
-            Pointer<short> output,
-            Pointer<short> input,
+            int[] S,
+            short[] output,
+            short[] input,
             int inLen)
         {
             int nSamplesIn, counter, res_Q6;
             int[] buf = new int[SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR];
             Pointer<int> buf_ptr;
+            int input_ptr = 0;
+            int output_ptr = 0;
 
             /* Copy buffered samples to start of buffer */
-            S.MemCopyTo(buf, 0, ORDER_FIR);
+            Array.Copy(S, 0, buf, 0, ORDER_FIR);
 
             /* Iterate over blocks of frameSizeIn input samples */
             while (true)
@@ -330,7 +332,7 @@ namespace Concentus.Silk
                 nSamplesIn = Inlines.silk_min(inLen, SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN);
 
                 /* Second-order AR filter (output in Q8) */
-                silk_resampler_private_AR2(S.Point(ORDER_FIR), buf.GetPointer(ORDER_FIR), input,
+                silk_resampler_private_AR2(S.GetPointer(ORDER_FIR), buf.GetPointer(ORDER_FIR), input.GetPointer(input_ptr),
                     Tables.silk_Resampler_2_3_COEFS_LQ.GetPointer(), nSamplesIn);
 
                 /* Interpolate filtered signal */
@@ -345,8 +347,7 @@ namespace Concentus.Silk
                     res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[3], Tables.silk_Resampler_2_3_COEFS_LQ[4]);
 
                     /* Scale down, saturate and store in output array */
-                    output[0] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
-                    output = output.Point(1);
+                    output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
 
                     res_Q6 = Inlines.silk_SMULWB(buf_ptr[1], Tables.silk_Resampler_2_3_COEFS_LQ[4]);
                     res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[2], Tables.silk_Resampler_2_3_COEFS_LQ[5]);
@@ -354,14 +355,13 @@ namespace Concentus.Silk
                     res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[4], Tables.silk_Resampler_2_3_COEFS_LQ[2]);
 
                     /* Scale down, saturate and store in output array */
-                    output[0] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
-                    output = output.Point(1);
+                    output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
 
                     buf_ptr = buf_ptr.Point(3);
                     counter -= 3;
                 }
 
-                input = input.Point(nSamplesIn);
+                input_ptr += nSamplesIn;
                 inLen -= nSamplesIn;
 
                 if (inLen > 0)
@@ -376,7 +376,7 @@ namespace Concentus.Silk
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            buf.GetPointer(nSamplesIn).MemCopyTo(S, ORDER_FIR);
+            Array.Copy(buf, nSamplesIn, S, 0, ORDER_FIR);
         }
 
         /// <summary>
@@ -515,7 +515,7 @@ namespace Concentus.Silk
                     }
                     break;
                 default:
-                    //Inlines.OpusAssert(false);
+                    Inlines.OpusAssert(false);
                     break;
             }
 
@@ -676,12 +676,12 @@ namespace Concentus.Silk
             int k;
             int in32, out32_1, out32_2, Y, X;
 
-            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[0] > 0);
-            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[1] > 0);
-            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[2] < 0);
-            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[0] > 0);
-            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[1] > 0);
-            //Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[2] < 0);
+            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[0] > 0);
+            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[1] > 0);
+            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[2] < 0);
+            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[0] > 0);
+            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[1] > 0);
+            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[2] < 0);
 
             /* Internal variables and state are in Q10 format */
             for (k = 0; k < len; k++)

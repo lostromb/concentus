@@ -47,7 +47,7 @@ namespace Concentus.Silk
         /// <param name="d">I length of ar</param>
         /// <param name="chirp">I    chirp factor (typically in range (0..1) )</param>
         internal static void silk_bwexpander_32(
-            Pointer<int> ar,                /* I/O  AR filter to be expanded (without leading 1)                */
+            int[] ar,                /* I/O  AR filter to be expanded (without leading 1)                */
     int d,                  /* I    Length of ar                                                */
     int chirp_Q16           /* I    Chirp factor in Q16                                         */
 )
@@ -70,7 +70,7 @@ namespace Concentus.Silk
         /// <param name="d">I length of ar</param>
         /// <param name="chirp">I    chirp factor (typically in range (0..1) )</param>
         internal static void silk_bwexpander(
-                    Pointer<short> ar,
+                    short[] ar,
                     int d,
                     int chirp_Q16)
         {

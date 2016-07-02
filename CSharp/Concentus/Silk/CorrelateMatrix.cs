@@ -75,7 +75,7 @@ namespace Concentus.Silk
                 }
             }
             else {
-                //Inlines.OpusAssert(rshifts == 0);
+                Inlines.OpusAssert(rshifts == 0);
                 for (lag = 0; lag < order; lag++)
                 {
                     Xt[lag] = Inlines.silk_inner_prod(ptr1.Data, ptr1.Offset, ptr2.Data, ptr2.Offset, L); /* X[:,lag]'*t */

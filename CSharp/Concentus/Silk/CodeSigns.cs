@@ -61,7 +61,7 @@ namespace Concentus.Silk
         /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
         internal static void silk_encode_signs(
             EntropyCoder psRangeEnc,
-            Pointer<sbyte> pulses,
+            sbyte[] pulses,
             int length,
             int signalType,
             int quantOffsetType,
@@ -73,7 +73,7 @@ namespace Concentus.Silk
             Pointer<byte> icdf_ptr;
 
             icdf[1] = 0;
-            q_ptr = pulses;
+            q_ptr = pulses.GetPointer();
             i = Inlines.silk_SMULBB(7, Inlines.silk_ADD_LSHIFT(quantOffsetType, signalType, 1));
             icdf_ptr = Tables.silk_sign_iCDF.GetPointer(i);
             length = Inlines.silk_RSHIFT(length + (SilkConstants.SHELL_CODEC_FRAME_LENGTH / 2), SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH);

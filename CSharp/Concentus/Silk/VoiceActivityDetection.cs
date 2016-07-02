@@ -112,10 +112,10 @@ namespace Concentus.Silk
             SilkVADState psSilk_VAD = psEncC.sVAD;
 
             /* Safety checks */
-            //Inlines.OpusAssert(SilkConstants.VAD_N_BANDS == 4);
-            //Inlines.OpusAssert(SilkConstants.MAX_FRAME_LENGTH >= psEncC.frame_length);
-            //Inlines.OpusAssert(psEncC.frame_length <= 512);
-            //Inlines.OpusAssert(psEncC.frame_length == 8 * Inlines.silk_RSHIFT(psEncC.frame_length, 3));
+            Inlines.OpusAssert(SilkConstants.VAD_N_BANDS == 4);
+            Inlines.OpusAssert(SilkConstants.MAX_FRAME_LENGTH >= psEncC.frame_length);
+            Inlines.OpusAssert(psEncC.frame_length <= 512);
+            Inlines.OpusAssert(psEncC.frame_length == 8 * Inlines.silk_RSHIFT(psEncC.frame_length, 3));
             
             /***********************/
             /* Filter and Decimate */
@@ -193,7 +193,7 @@ namespace Concentus.Silk
                             X[X_offset[b] + i + dec_subframe_offset], 3);
                         sumSquared = Inlines.silk_SMLABB(sumSquared, x_tmp, x_tmp);
                         /* Safety check */
-                        //Inlines.OpusAssert(sumSquared >= 0);
+                        Inlines.OpusAssert(sumSquared >= 0);
                     }
 
                     /* Add/saturate summed energy of current subframe */
@@ -359,15 +359,15 @@ namespace Concentus.Silk
             {
                 /* Get old noise level estimate for current band */
                 nl = psSilk_VAD.NL[k];
-                //Inlines.OpusAssert(nl >= 0);
+                Inlines.OpusAssert(nl >= 0);
 
                 /* Add bias */
                 nrg = Inlines.silk_ADD_POS_SAT32(pX[k], psSilk_VAD.NoiseLevelBias[k]);
-                //Inlines.OpusAssert(nrg > 0);
+                Inlines.OpusAssert(nrg > 0);
 
                 /* Invert energies */
                 inv_nrg = Inlines.silk_DIV32(int.MaxValue, nrg);
-                //Inlines.OpusAssert(inv_nrg >= 0);
+                Inlines.OpusAssert(inv_nrg >= 0);
 
                 /* Less update when subband energy is high */
                 if (nrg > Inlines.silk_LSHIFT(nl, 3))
@@ -388,11 +388,11 @@ namespace Concentus.Silk
 
                 /* Smooth inverse energies */
                 psSilk_VAD.inv_NL[k] = Inlines.silk_SMLAWB(psSilk_VAD.inv_NL[k], inv_nrg - psSilk_VAD.inv_NL[k], coef);
-                //Inlines.OpusAssert(psSilk_VAD.inv_NL[k] >= 0);
+                Inlines.OpusAssert(psSilk_VAD.inv_NL[k] >= 0);
 
                 /* Compute noise level by inverting again */
                 nl = Inlines.silk_DIV32(int.MaxValue, psSilk_VAD.inv_NL[k]);
-                //Inlines.OpusAssert(nl >= 0);
+                Inlines.OpusAssert(nl >= 0);
 
                 /* Limit noise levels (guarantee 7 bits of head room) */
                 nl = Inlines.silk_min(nl, 0x00FFFFFF);

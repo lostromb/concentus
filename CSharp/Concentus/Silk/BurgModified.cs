@@ -53,7 +53,7 @@ namespace Concentus.Silk
         internal static void silk_burg_modified(
             BoxedValue<int> res_nrg,           /* O    Residual energy                                             */
             BoxedValue<int> res_nrg_Q,         /* O    Residual energy Q value                                     */
-            Pointer<int> A_Q16,            /* O    Prediction coefficients (length order)                      */
+            int[] A_Q16,            /* O    Prediction coefficients (length order)                      */
             short[] x,                /* I    Input signal, length: nb_subfr * ( D + subfr_length )       */
             int x_ptr,
             int minInvGain_Q30,     /* I    Inverse of max prediction gain                              */
@@ -73,7 +73,7 @@ namespace Concentus.Silk
             int[] xcorr = new int[SilkConstants.SILK_MAX_ORDER_LPC];
             long C0_64;
 
-            //Inlines.OpusAssert(subfr_length * nb_subfr <= MAX_FRAME_SIZE);
+            Inlines.OpusAssert(subfr_length * nb_subfr <= MAX_FRAME_SIZE);
 
             /* Compute autocorrelations, added over subframes */
             C0_64 = Inlines.silk_inner_prod16_aligned_64(x, x_ptr, x, x_ptr, subfr_length * nb_subfr);

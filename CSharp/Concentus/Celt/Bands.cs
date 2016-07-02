@@ -82,10 +82,10 @@ namespace Concentus.Celt
             int tmp;
             int x2;
             tmp = (4096 + ((int)(x) * (x))) >> 13;
-            //Inlines.OpusAssert(tmp <= 32767);
+            Inlines.OpusAssert(tmp <= 32767);
             x2 = (tmp);
             x2 = ((32767 - x2) + Inlines.FRAC_MUL16(x2, (-7651 + Inlines.FRAC_MUL16(x2, (8277 + Inlines.FRAC_MUL16(-626, x2))))));
-            //Inlines.OpusAssert(x2 <= 32766);
+            Inlines.OpusAssert(x2 <= 32766);
             return (1 + x2);
         }
 
@@ -249,7 +249,7 @@ namespace Concentus.Celt
                 }
             }
 
-            //Inlines.OpusAssert(start <= end);
+            Inlines.OpusAssert(start <= end);
             freq.Point(bound).MemSet(0, N - bound);
         }
 
@@ -269,7 +269,7 @@ namespace Concentus.Celt
 
                 N0 = m.eBands[i + 1] - m.eBands[i];
                 /* depth in 1/8 bits */
-                //Inlines.OpusAssert(pulses[i] >= 0);
+                Inlines.OpusAssert(pulses[i] >= 0);
                 depth = Inlines.celt_udiv(1 + pulses[i], (m.eBands[i + 1] - m.eBands[i])) >> LM;
 
                 thresh32 = Inlines.SHR32(Inlines.celt_exp2((0 - Inlines.SHL16((depth), 10 - EntropyCoder.BITRES))), 1);
@@ -431,7 +431,7 @@ namespace Concentus.Celt
             int decision;
             int hf_sum = 0;
 
-            //Inlines.OpusAssert(end > 0);
+            Inlines.OpusAssert(end > 0);
 
             N0 = M * m.shortMdctSize;
 
@@ -510,8 +510,8 @@ namespace Concentus.Celt
                 }
             }
 
-            //Inlines.OpusAssert(nbBands > 0); /* end has to be non-zero */
-            //Inlines.OpusAssert(sum >= 0);
+            Inlines.OpusAssert(nbBands > 0); /* end has to be non-zero */
+            Inlines.OpusAssert(sum >= 0);
             sum = Inlines.celt_udiv(sum, nbBands);
 
             /* Recursive averaging */
@@ -549,7 +549,7 @@ namespace Concentus.Celt
             N = N0 * stride;
             int[] tmp = new int[N];
 
-            //Inlines.OpusAssert(stride > 0);
+            Inlines.OpusAssert(stride > 0);
             if (hadamard != 0)
             {
                 Pointer<int> ordery = Tables.ordery_table.GetPointer(stride - 2);
@@ -651,7 +651,7 @@ namespace Concentus.Celt
                 qn = exp2_table8[qb & 0x7] >> (14 - (qb >> EntropyCoder.BITRES));
                 qn = (qn + 1) >> 1 << 1;
             }
-            //Inlines.OpusAssert(qn <= 256);
+            Inlines.OpusAssert(qn <= 256);
             return qn;
         }
 
@@ -827,7 +827,7 @@ namespace Concentus.Celt
                         ec.dec_update((uint)fl, (uint)(fl + fs), (uint)ft);
                     }
                 }
-                //Inlines.OpusAssert(itheta >= 0);
+                Inlines.OpusAssert(itheta >= 0);
                 itheta = Inlines.celt_udiv(itheta * 16384, qn);
                 if (encode != 0 && stereo != 0)
                 {

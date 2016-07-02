@@ -53,9 +53,9 @@ namespace Concentus.Silk
             int i, j;
 
             // Safety checks
-            //Inlines.OpusAssert(K > 0);
-            //Inlines.OpusAssert(L > 0);
-            //Inlines.OpusAssert(L >= K);
+            Inlines.OpusAssert(K > 0);
+            Inlines.OpusAssert(L > 0);
+            Inlines.OpusAssert(L >= K);
 
             // Write start indices in index vector
             for (i = 0; i < K; i++)
@@ -105,7 +105,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="a">(I/O) Unsorted / Sorted vector</param>
         /// <param name="L">(I) Vector length</param>
-        internal static void silk_insertion_sort_increasing_all_values_int16(Pointer<short> a, int L)
+        internal static void silk_insertion_sort_increasing_all_values_int16(short[] a, int L)
         {
             // FIXME: Could just use Array.Sort(a.Array, a.Offset, L);
 
@@ -113,7 +113,7 @@ namespace Concentus.Silk
             int i, j;
 
             // Safety checks
-            //Inlines.OpusAssert(L > 0);
+            Inlines.OpusAssert(L > 0);
 
             // Sort vector elements by value, increasing order
             for (i = 1; i < L; i++)
@@ -140,9 +140,9 @@ namespace Concentus.Silk
             short value;
 
             /* Safety checks */
-            //Inlines.OpusAssert(K > 0);
-            //Inlines.OpusAssert(L > 0);
-            //Inlines.OpusAssert(L >= K);
+            Inlines.OpusAssert(K > 0);
+            Inlines.OpusAssert(L > 0);
+            Inlines.OpusAssert(L >= K);
 
             /* Write start indices in index vector */
             for (i = 0; i < K; i++)

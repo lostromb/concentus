@@ -39,20 +39,20 @@ namespace Concentus.Common
     {
         /* Compute autocorrelation */
         internal static void silk_autocorr(
-            Pointer<int> results,           /* O    Result (length correlationCount)                            */
+            int[] results,           /* O    Result (length correlationCount)                            */
             BoxedValue<int> scale,             /* O    Scaling of the correlation vector                           */
-            Pointer<short> inputData,         /* I    Input data to correlate                                     */
+            short[] inputData,         /* I    Input data to correlate                                     */
             int inputDataSize,      /* I    Length of input                                             */
             int correlationCount   /* I    Number of correlation taps to compute                       */
         )
         {
             int corrCount = Inlines.silk_min_int(inputDataSize, correlationCount);
-            scale.Val = Autocorrelation._celt_autocorr(inputData, results, null, 0, corrCount - 1, inputDataSize);
+            scale.Val = _celt_autocorr(inputData, results, null, 0, corrCount - 1, inputDataSize);
         }
 
         internal static int _celt_autocorr(
-                  Pointer<short> x,   /*  in: [0...n-1] samples x   */
-                   Pointer<int> ac,  /* out: [0...lag-1] ac values */
+                  short[] x,   /*  in: [0...n-1] samples x   */
+                   int[] ac,  /* out: [0...lag-1] ac values */
                    Pointer<short> window,
                    int overlap,
                    int lag,
@@ -65,11 +65,11 @@ namespace Concentus.Common
             int shift;
             Pointer<short> xptr;
             short[] xx = new short[n];
-            //Inlines.OpusAssert(n > 0);
-            //Inlines.OpusAssert(overlap >= 0);
+            Inlines.OpusAssert(n > 0);
+            Inlines.OpusAssert(overlap >= 0);
             if (overlap == 0)
             {
-                xptr = x;
+                xptr = x.GetPointer();
             }
             else {
                 for (i = 0; i < n; i++)
@@ -109,7 +109,7 @@ namespace Concentus.Common
                 else
                     shift = 0;
             }
-            CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
+            CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac.GetPointer(), fastN, lag + 1);
             for (k = 0; k <= lag; k++)
             {
                 for (i = k + fastN, d = 0; i < n; i++)
@@ -148,9 +148,9 @@ namespace Concentus.Common
 
         /* Autocorrelations for a warped frequency axis */
         internal static void silk_warped_autocorrelation(
-                  Pointer<int> corr,                                  /* O    Result [order + 1]                                                          */
+                  int[] corr,                                  /* O    Result [order + 1]                                                          */
                   BoxedValue<int> scale,                                 /* O    Scaling of the correlation vector                                           */
-                    Pointer<short> input,                                 /* I    Input data to correlate                                                     */
+                    short[] input,                                 /* I    Input data to correlate                                                     */
                     int warping_Q16,                            /* I    Warping coefficient                                                         */
                     int length,                                 /* I    Length of input                                                             */
                     int order                                   /* I    Correlation order (even)                                                    */
@@ -162,9 +162,10 @@ namespace Concentus.Common
             long[] corr_QC = new long[Concentus.Silk.SilkConstants.MAX_SHAPE_LPC_ORDER + 1];// = { 0 };
 
             /* Order must be even */
-            //Inlines.OpusAssert((order & 1) == 0);
-            //Inlines.OpusAssert(2 * QS - QC >= 0);
+            Inlines.OpusAssert((order & 1) == 0);
+            Inlines.OpusAssert(2 * QS - QC >= 0);
 
+            // fixme: This might be able to be threaded
             /* Loop over samples */
             for (n = 0; n < length; n++)
             {
@@ -188,7 +189,7 @@ namespace Concentus.Common
             lsh = Inlines.silk_CLZ64(corr_QC[0]) - 35;
             lsh = Inlines.silk_LIMIT(lsh, -12 - QC, 30 - QC);
             scale.Val = -(QC + lsh);
-            //Inlines.OpusAssert(scale.Val >= -30 && scale.Val <= 12);
+            Inlines.OpusAssert(scale.Val >= -30 && scale.Val <= 12);
             if (lsh >= 0)
             {
                 for (i = 0; i < order + 1; i++)
@@ -202,7 +203,7 @@ namespace Concentus.Common
                     corr[i] = Inlines.CHOP32(Inlines.silk_RSHIFT64(corr_QC[i], -lsh));
                 }
             }
-            //Inlines.OpusAssert(corr_QC[0] >= 0); /* If breaking, decrease QC*/
+            Inlines.OpusAssert(corr_QC[0] >= 0); /* If breaking, decrease QC*/
         }
     }
 }

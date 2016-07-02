@@ -57,7 +57,7 @@ namespace Concentus.Silk
             int acc_Q11, tmp1, tmp2;
 
             /* Order must be even */
-            //Inlines.OpusAssert((order & 1) == 0);
+            Inlines.OpusAssert((order & 1) == 0);
 
             for (n = 0; n < length; n++)
             {
@@ -123,7 +123,7 @@ namespace Concentus.Silk
 
                 /* Noise shape parameters */
                 HarmShapeGain_Q12 = Inlines.silk_SMULWB((int)psEncCtrl.HarmShapeGain_Q14[k], 16384 - psEncCtrl.HarmBoost_Q14[k]);
-                //Inlines.OpusAssert(HarmShapeGain_Q12 >= 0);
+                Inlines.OpusAssert(HarmShapeGain_Q12 >= 0);
                 HarmShapeFIRPacked_Q12 = Inlines.silk_RSHIFT(HarmShapeGain_Q12, 2);
                 HarmShapeFIRPacked_Q12 |= Inlines.silk_LSHIFT((int)Inlines.silk_RSHIFT(HarmShapeGain_Q12, 1), 16);
                 Tilt_Q14 = psEncCtrl.Tilt_Q14[k];
@@ -187,7 +187,7 @@ namespace Concentus.Silk
                 if (lag > 0)
                 {
                     /* unrolled loop */
-                    //Inlines.OpusAssert(SilkConstants.HARM_SHAPE_FIR_TAPS == 3);
+                    Inlines.OpusAssert(SilkConstants.HARM_SHAPE_FIR_TAPS == 3);
                     idx = lag + LTP_shp_buf_idx;
                     n_LTP_Q12 = Inlines.silk_SMULBB(LTP_shp_buf[(idx - SilkConstants.HARM_SHAPE_FIR_TAPS / 2 - 1) & SilkConstants.LTP_MASK], HarmShapeFIRPacked_Q12);
                     n_LTP_Q12 = Inlines.silk_SMLABT(n_LTP_Q12, LTP_shp_buf[(idx - SilkConstants.HARM_SHAPE_FIR_TAPS / 2) & SilkConstants.LTP_MASK], HarmShapeFIRPacked_Q12);
@@ -448,7 +448,7 @@ namespace Concentus.Silk
                     else
                     {
                         /* ( fac_Q16 - ( 1 << 16 ) ) is in range of a 16-bit int */
-                        //Inlines.OpusAssert(fac_Q16 - (1 << 16) == Inlines.silk_SAT16(fac_Q16 - (1 << 16)));
+                        Inlines.OpusAssert(fac_Q16 - (1 << 16) == Inlines.silk_SAT16(fac_Q16 - (1 << 16)));
 
                         /* Piece-wise linear interpolation of B and A */
 
@@ -511,11 +511,11 @@ namespace Concentus.Silk
             short[] mem = new short[SilkConstants.SILK_MAX_ORDER_LPC];
             short[] num = new short[SilkConstants.SILK_MAX_ORDER_LPC];
 
-            //Inlines.OpusAssert(d >= 6);
-            //Inlines.OpusAssert((d & 1) == 0);
-            //Inlines.OpusAssert(d <= len);
+            Inlines.OpusAssert(d >= 6);
+            Inlines.OpusAssert((d & 1) == 0);
+            Inlines.OpusAssert(d <= len);
 
-            //Inlines.OpusAssert(d <= SilkConstants.SILK_MAX_ORDER_LPC);
+            Inlines.OpusAssert(d <= SilkConstants.SILK_MAX_ORDER_LPC);
             for (j = 0; j < d; j++)
             {
                 num[j] = Inlines.CHOP16(0 - B[B_ptr + j]);
@@ -565,8 +565,8 @@ namespace Concentus.Silk
 
                 /* rc_mult1_Q30 range: [ 1 : 2^30 ] */
                 rc_mult1_Q30 = ((int)1 << 30) - Inlines.silk_SMMUL(rc_Q31, rc_Q31);
-                //Inlines.OpusAssert(rc_mult1_Q30 > (1 << 15));                   /* reduce A_LIMIT if fails */
-                //Inlines.OpusAssert(rc_mult1_Q30 <= (1 << 30));
+                Inlines.OpusAssert(rc_mult1_Q30 > (1 << 15));                   /* reduce A_LIMIT if fails */
+                Inlines.OpusAssert(rc_mult1_Q30 <= (1 << 30));
 
                 /* rc_mult2 range: [ 2^30 : silk_int32_MAX ] */
                 mult2Q = 32 - Inlines.silk_CLZ32(Inlines.silk_abs(rc_mult1_Q30));
@@ -575,8 +575,8 @@ namespace Concentus.Silk
                 /* Update inverse gain */
                 /* invGain_Q30 range: [ 0 : 2^30 ] */
                 invGain_Q30 = Inlines.silk_LSHIFT(Inlines.silk_SMMUL(invGain_Q30, rc_mult1_Q30), 2);
-                //Inlines.OpusAssert(invGain_Q30 >= 0);
-                //Inlines.OpusAssert(invGain_Q30 <= (1 << 30));
+                Inlines.OpusAssert(invGain_Q30 >= 0);
+                Inlines.OpusAssert(invGain_Q30 <= (1 << 30));
 
                 /* Swap pointers */
                 Aold_QA = Anew_QA;
@@ -605,8 +605,8 @@ namespace Concentus.Silk
             /* Update inverse gain */
             /* Range: [ 0 : 2^30 ] */
             invGain_Q30 = Inlines.silk_LSHIFT(Inlines.silk_SMMUL(invGain_Q30, rc_mult1_Q30), 2);
-            //Inlines.OpusAssert(invGain_Q30 >= 0);
-            //Inlines.OpusAssert(invGain_Q30 <= 1 << 30);
+            Inlines.OpusAssert(invGain_Q30 >= 0);
+            Inlines.OpusAssert(invGain_Q30 <= 1 << 30);
 
             return invGain_Q30;
         }

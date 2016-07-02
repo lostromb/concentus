@@ -254,7 +254,7 @@ namespace Concentus.Celt.Structs
         {
             int c;
             int[] _pre;
-            Pointer<Pointer<int>> pre = Pointer.Malloc<Pointer<int>>(2);
+            Pointer<int>[] pre = new Pointer<int>[2];
             CeltMode mode; // [porting note] pointer
             BoxedValue<int> pitch_index = new BoxedValue<int>();
             int gain1;
@@ -281,7 +281,7 @@ namespace Concentus.Celt.Structs
             {
                 int[] pitch_buf = new int[(CeltConstants.COMBFILTER_MAXPERIOD + N) >> 1];
 
-                Concentus.Celt.Pitch.pitch_downsample(pre, pitch_buf.GetPointer(), CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
+                Concentus.Celt.Pitch.pitch_downsample(pre.GetPointer(), pitch_buf.GetPointer(), CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
                 /* Don't search for the fir last 1.5 octave of the range because
                    there's too many false-positives due to short-term correlation */
                 Concentus.Celt.Pitch.pitch_search(pitch_buf.GetPointer(CeltConstants.COMBFILTER_MAXPERIOD >> 1), pitch_buf.GetPointer(), N,
@@ -478,7 +478,7 @@ namespace Concentus.Celt.Structs
                 nbFilledBytes = (tell + 4) >> 3;
             }
 
-            //Inlines.OpusAssert(this.signalling == 0);
+            Inlines.OpusAssert(this.signalling == 0);
 
             /* Can't produce more than 1275 output bytes */
             nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, 1275);
@@ -702,7 +702,7 @@ namespace Concentus.Celt.Structs
                         diff += Inlines.MULT16_16(mask, 1 + 2 * i - mask_end);
                     }
                 }
-                //Inlines.OpusAssert(count > 0);
+                Inlines.OpusAssert(count > 0);
                 mask_avg = Inlines.DIV32_16(mask_avg, count);
                 mask_avg += Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT);
                 diff = diff * 6 / (C * (mask_end - 1) * (mask_end + 1) * mask_end);

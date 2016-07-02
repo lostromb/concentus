@@ -159,7 +159,7 @@ namespace Concentus.Silk.Structs
                   (maxInternalSampleRate < desiredInternalSampleRate) ||
                   (minInternalSampleRate > maxInternalSampleRate))
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_FS_NOT_SUPPORTED;
             }
             if (payloadSize_ms != 10 &&
@@ -167,47 +167,47 @@ namespace Concentus.Silk.Structs
                 payloadSize_ms != 40 &&
                 payloadSize_ms != 60)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_PACKET_SIZE_NOT_SUPPORTED;
             }
             if (packetLossPercentage < 0 || packetLossPercentage > 100)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_INVALID_LOSS_RATE;
             }
             if (useDTX < 0 || useDTX > 1)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_INVALID_DTX_SETTING;
             }
             if (useCBR < 0 || useCBR > 1)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_INVALID_CBR_SETTING;
             }
             if (useInBandFEC < 0 || useInBandFEC > 1)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_INVALID_INBAND_FEC_SETTING;
             }
             if (nChannelsAPI < 1 || nChannelsAPI > SilkConstants.ENCODER_NUM_CHANNELS)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
             }
             if (nChannelsInternal < 1 || nChannelsInternal > SilkConstants.ENCODER_NUM_CHANNELS)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
             }
             if (nChannelsInternal > nChannelsAPI)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
             }
             if (complexity < 0 || complexity > 10)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return SilkError.SILK_ENC_INVALID_COMPLEXITY_SETTING;
             }
 

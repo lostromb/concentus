@@ -83,7 +83,7 @@ namespace Concentus.Silk
             EntropyCoder psRangeEnc,
             int signalType,
             int quantOffsetType,
-            Pointer<sbyte> pulses,
+            sbyte[] pulses,
             int frame_length)
         {
             int i, k, j, iter, bit, nLS, scale_down, RateLevelIndex = 0;
@@ -102,18 +102,18 @@ namespace Concentus.Silk
             /* Prepare for shell coding */
             /****************************/
             /* Calculate number of shell blocks */
-            //Inlines.OpusAssert(1 << SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH == SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+            Inlines.OpusAssert(1 << SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH == SilkConstants.SHELL_CODEC_FRAME_LENGTH);
             iter = Inlines.silk_RSHIFT(frame_length, SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH);
             if (iter * SilkConstants.SHELL_CODEC_FRAME_LENGTH < frame_length)
             {
-                //Inlines.OpusAssert(frame_length == 12 * 10); /* Make sure only happens for 10 ms @ 12 kHz */
+                Inlines.OpusAssert(frame_length == 12 * 10); /* Make sure only happens for 10 ms @ 12 kHz */
                 iter++;
-                pulses.Point(frame_length).MemSet(0, SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                pulses.GetPointer(frame_length).MemSet(0, SilkConstants.SHELL_CODEC_FRAME_LENGTH); // fixme: memset needs an offset
             }
 
             /* Take the absolute value of the pulses */
             abs_pulses = new int[iter * SilkConstants.SHELL_CODEC_FRAME_LENGTH];
-            //Inlines.OpusAssert((SilkConstants.SHELL_CODEC_FRAME_LENGTH & 3) == 0);
+            Inlines.OpusAssert((SilkConstants.SHELL_CODEC_FRAME_LENGTH & 3) == 0);
             
             // unrolled loop
             for (i = 0; i < iter * SilkConstants.SHELL_CODEC_FRAME_LENGTH; i += 4)
@@ -229,7 +229,7 @@ namespace Concentus.Silk
             {
                 if (nRshifts[i] > 0)
                 {
-                    pulses_ptr = pulses.Point(i * SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                    pulses_ptr = pulses.GetPointer(i * SilkConstants.SHELL_CODEC_FRAME_LENGTH);
                     nLS = nRshifts[i] - 1;
                     for (k = 0; k < SilkConstants.SHELL_CODEC_FRAME_LENGTH; k++)
                     {

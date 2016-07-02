@@ -44,7 +44,7 @@ namespace Concentus.Silk
         internal static void silk_find_pitch_lags(
             SilkChannelEncoder psEnc,                                 /* I/O  encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I/O  encoder control                                                             */
-            Pointer<short> res,                                  /* O    residual                                                                    */
+            short[] res,                                  /* O    residual                                                                    */
             Pointer<short> x                                    /* I    Speech signal                                                               */
         )
         {
@@ -65,7 +65,7 @@ namespace Concentus.Silk
             buf_len = psEnc.la_pitch + psEnc.frame_length + psEnc.ltp_mem_length;
 
             /* Safety check */
-            //Inlines.OpusAssert(buf_len >= psEnc.pitch_LPC_win_length);
+            Inlines.OpusAssert(buf_len >= psEnc.pitch_LPC_win_length);
 
             x_buf = x.Point(0 - psEnc.ltp_mem_length);
 
@@ -94,20 +94,20 @@ namespace Concentus.Silk
 
             /* Calculate autocorrelation sequence */
             BoxedValue<int> boxed_scale = new BoxedValue<int>();
-            Autocorrelation.silk_autocorr(auto_corr.GetPointer(), boxed_scale, Wsig.GetPointer(), psEnc.pitch_LPC_win_length, psEnc.pitchEstimationLPCOrder + 1);
+            Autocorrelation.silk_autocorr(auto_corr, boxed_scale, Wsig, psEnc.pitch_LPC_win_length, psEnc.pitchEstimationLPCOrder + 1);
             scale = boxed_scale.Val;
 
             /* Add white noise, as fraction of energy */
             auto_corr[0] = Inlines.silk_SMLAWB(auto_corr[0], auto_corr[0], Inlines.SILK_CONST(TuningParameters.FIND_PITCH_WHITE_NOISE_FRACTION, 16)) + 1;
 
             /* Calculate the reflection coefficients using schur */
-            res_nrg = Schur.silk_schur(rc_Q15.GetPointer(), auto_corr.GetPointer(), psEnc.pitchEstimationLPCOrder);
+            res_nrg = Schur.silk_schur(rc_Q15, auto_corr, psEnc.pitchEstimationLPCOrder);
 
             /* Prediction gain */
             psEncCtrl.predGain_Q16 = Inlines.silk_DIV32_varQ(auto_corr[0], Inlines.silk_max_int(res_nrg, 1), 16);
 
             /* Convert reflection coefficients to prediction coefficients */
-            K2A.silk_k2a(A_Q24.GetPointer(), rc_Q15.GetPointer(), psEnc.pitchEstimationLPCOrder);
+            K2A.silk_k2a(A_Q24, rc_Q15, psEnc.pitchEstimationLPCOrder);
 
             /* Convert From 32 bit Q24 to 16 bit Q12 coefs */
             for (i = 0; i < psEnc.pitchEstimationLPCOrder; i++)
@@ -116,12 +116,12 @@ namespace Concentus.Silk
             }
 
             /* Do BWE */
-            BWExpander.silk_bwexpander(A_Q12.GetPointer(), psEnc.pitchEstimationLPCOrder, Inlines.SILK_CONST(TuningParameters.FIND_PITCH_BANDWIDTH_EXPANSION, 16));
+            BWExpander.silk_bwexpander(A_Q12, psEnc.pitchEstimationLPCOrder, Inlines.SILK_CONST(TuningParameters.FIND_PITCH_BANDWIDTH_EXPANSION, 16));
 
             /*****************************************/
             /* LPC analysis filtering                */
             /*****************************************/
-            Filters.silk_LPC_analysis_filter(res.Data, res.Offset, x_buf.Data, x_buf.Offset, A_Q12, 0, buf_len, psEnc.pitchEstimationLPCOrder);
+            Filters.silk_LPC_analysis_filter(res, 0, x_buf.Data, x_buf.Offset, A_Q12, 0, buf_len, psEnc.pitchEstimationLPCOrder);
 
             if (psEnc.indices.signalType != SilkConstants.TYPE_NO_VOICE_ACTIVITY && psEnc.first_frame_after_reset == 0)
             {
@@ -139,7 +139,7 @@ namespace Concentus.Silk
                 BoxedValue<short> boxed_lagIndex = new BoxedValue<short>(psEnc.indices.lagIndex);
                 BoxedValue<sbyte> boxed_contourIndex = new BoxedValue<sbyte>(psEnc.indices.contourIndex);
                 BoxedValue<int> boxed_LTPcorr = new BoxedValue<int>(psEnc.LTPCorr_Q15);
-                if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL.GetPointer(), boxed_lagIndex, boxed_contourIndex,
+                if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL, boxed_lagIndex, boxed_contourIndex,
                         boxed_LTPcorr, psEnc.prevLag, psEnc.pitchEstimationThreshold_Q16,
                         (int)thrhld_Q13, psEnc.fs_kHz, psEnc.pitchEstimationComplexity, psEnc.nb_subfr) == 0)
                 {

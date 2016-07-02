@@ -36,16 +36,17 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class QuantizeLTPGains
     {
         internal static void silk_quant_LTP_gains(
-            Pointer<short> B_Q14,          /* I/O  (un)quantized LTP gains [MAX_NB_SUBFR * LTP_ORDER]        */
-            Pointer<sbyte> cbk_index,                  /* O    Codebook Index [MAX_NB_SUBFR]                 */
+            short[] B_Q14,          /* I/O  (un)quantized LTP gains [MAX_NB_SUBFR * LTP_ORDER]        */
+            sbyte[] cbk_index,                  /* O    Codebook Index [MAX_NB_SUBFR]                 */
             BoxedValue<sbyte> periodicity_index,                         /* O    Periodicity Index               */
             BoxedValue<int> sum_log_gain_Q7,                           /* I/O  Cumulative max prediction gain  */
-            Pointer<int> W_Q18,  /* I    Error Weights in Q18 [MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER]           */
+            int[] W_Q18,  /* I    Error Weights in Q18 [MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER]           */
             int mu_Q9,                                      /* I    Mu value (R/D tradeoff)         */
             int lowComplexity,                              /* I    Flag for low complexity         */
             int nb_subfr                                   /* I    number of subframes             */
@@ -79,8 +80,8 @@ namespace Concentus.Silk
                 cbk_size = Tables.silk_LTP_vq_sizes[k];
 
                 /* Set up pointer to first subframe */
-                W_Q18_ptr = W_Q18;
-                b_Q14_ptr = B_Q14;
+                W_Q18_ptr = W_Q18.GetPointer();
+                b_Q14_ptr = B_Q14.GetPointer();
 
                 rate_dist_Q14 = 0;
                 sum_log_gain_tmp_Q7 = sum_log_gain_Q7.Val;
@@ -124,7 +125,7 @@ namespace Concentus.Silk
                 {
                     min_rate_dist_Q14 = rate_dist_Q14;
                     periodicity_index.Val = (sbyte)k;
-                    cbk_index.MemCopyFrom(temp_idx, 0, nb_subfr);
+                    Array.Copy(temp_idx, 0, cbk_index, 0, nb_subfr);
                     best_sum_log_gain_Q7 = sum_log_gain_tmp_Q7;
                 }
 

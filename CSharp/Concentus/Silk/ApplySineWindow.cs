@@ -65,20 +65,20 @@ namespace Concentus.Silk
             int k, f_Q16, c_Q16;
             int S0_Q16, S1_Q16;
 
-            //Inlines.OpusAssert(win_type == 1 || win_type == 2);
+            Inlines.OpusAssert(win_type == 1 || win_type == 2);
 
             /* Length must be in a range from 16 to 120 and a multiple of 4 */
-            //Inlines.OpusAssert(length >= 16 && length <= 120);
-            //Inlines.OpusAssert((length & 3) == 0);
+            Inlines.OpusAssert(length >= 16 && length <= 120);
+            Inlines.OpusAssert((length & 3) == 0);
 
             /* Frequency */
             k = (length >> 2) - 4;
-            //Inlines.OpusAssert(k >= 0 && k <= 26);
+            Inlines.OpusAssert(k >= 0 && k <= 26);
             f_Q16 = (int)freq_table_Q16[k];
 
             /* Factor used for cosine approximation */
             c_Q16 = Inlines.silk_SMULWB((int)f_Q16, -f_Q16);
-            //Inlines.OpusAssert(c_Q16 >= -32768);
+            Inlines.OpusAssert(c_Q16 >= -32768);
 
             /* initialize state */
             if (win_type == 1)

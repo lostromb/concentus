@@ -124,7 +124,7 @@ namespace Concentus.Common.CPlusPlus
             _offset = absoluteOffset;
 #if DEBUG
             _length = buffer.Length - absoluteOffset;
-            ////Inlines.OpusAssert(_length >= 0, "Attempted to point past the end of an array");
+            //Inlines.OpusAssert(_length >= 0, "Attempted to point past the end of an array");
             _statistics = new Statistics(absoluteOffset);
             _initialized = new bool[buffer.Length];
             for (int c = 0; c < buffer.Length; c++)
@@ -140,7 +140,7 @@ namespace Concentus.Common.CPlusPlus
             _array = buffer;
             _offset = absoluteOffset;
             _length = buffer.Length - absoluteOffset;
-            ////Inlines.OpusAssert(_length >= 0, "Attempted to point past the end of an array");
+            //Inlines.OpusAssert(_length >= 0, "Attempted to point past the end of an array");
             _statistics = statistics;
             _initialized = initializedStatus;
         }
@@ -192,8 +192,8 @@ namespace Concentus.Common.CPlusPlus
             get
             {
 #if DEBUG
-                if (CHECK_UNINIT_MEM) //Inlines.OpusAssert(_initialized[index + _offset], "Attempted to read from uninitialized memory!");
-                // //Inlines.OpusAssert(index < _length, "Attempted to read past the end of an array!");
+                if (CHECK_UNINIT_MEM) Inlines.OpusAssert(_initialized[index + _offset], "Attempted to read from uninitialized memory!");
+                // Inlines.OpusAssert(index < _length, "Attempted to read past the end of an array!");
                 _statistics.maxReadIndex = Math.Max(_statistics.maxReadIndex, index + _offset);
                 _statistics.minReadIndex = Math.Min(_statistics.minReadIndex, index + _offset);
 #endif
@@ -203,7 +203,7 @@ namespace Concentus.Common.CPlusPlus
             set
             {
 #if DEBUG
-                // //Inlines.OpusAssert(index < _length, "Attempted to write past the end of an array!");
+                // Inlines.OpusAssert(index < _length, "Attempted to write past the end of an array!");
                 _statistics.maxWriteIndex = Math.Max(_statistics.maxWriteIndex, index + _offset);
                 _statistics.minWriteIndex = Math.Min(_statistics.minWriteIndex, index + _offset);
                 _initialized[index + _offset] = true;
@@ -317,7 +317,7 @@ namespace Concentus.Common.CPlusPlus
 #if DEBUG
         public void MemCopyTo(Pointer<T> destination, int length, bool debug = false)
         {
-            //Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
+            Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
             if (debug)
                 PrintMemCopy(_array, _offset, length);
             
@@ -354,7 +354,7 @@ namespace Concentus.Common.CPlusPlus
 #if DEBUG
         public void MemCopyTo(T[] destination, int destOffset, int length)
         {
-            //Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
+            Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
             //PrintMemCopy(_array, _offset, length);
             for (int c = 0; c < length; c++)
             {
@@ -377,7 +377,7 @@ namespace Concentus.Common.CPlusPlus
 #if DEBUG
         public void MemCopyFrom(T[] source, int sourceOffset, int length)
         {
-            //Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
+            Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
             //PrintMemCopy(source, sourceOffset, length);
             for (int c = 0; c < length; c++)
             {
@@ -400,7 +400,7 @@ namespace Concentus.Common.CPlusPlus
         public void MemSet(T value, int length)
         {
 #if DEBUG
-            //Inlines.OpusAssert(length >= 0, "Cannot memset() with a negative length!");
+            Inlines.OpusAssert(length >= 0, "Cannot memset() with a negative length!");
 #endif
             MemSet(value, (uint)length);
         }
@@ -448,7 +448,7 @@ namespace Concentus.Common.CPlusPlus
 #if DEBUG
         public void MemMove(int move_dist, int length)
         {
-            //Inlines.OpusAssert(length >= 0, "Cannot memmove() with a negative length!");
+            Inlines.OpusAssert(length >= 0, "Cannot memmove() with a negative length!");
             if (move_dist == 0 || length == 0)
                 return;
 

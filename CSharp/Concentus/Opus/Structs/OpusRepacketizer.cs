@@ -292,7 +292,7 @@ namespace Concentus.Structs
                 /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
                    padding from opus_packet_pad or opus_packet_unpad(). */
                 // fixme: what is this?
-                ////Inlines.OpusAssert(frames[i].Offset + len[i] <= data.Offset || ptr.Offset <= frames[i].Offset);
+                //Inlines.OpusAssert(frames[i].Offset + len[i] <= data.Offset || ptr.Offset <= frames[i].Offset);
                 // OPUS_MOVE(ptr, frames[i], len[i]);
                 frames[i].MemMoveTo(ptr, len[i]);
                 ptr = ptr.Point(len[i]);
@@ -439,7 +439,7 @@ namespace Concentus.Structs
             if (ret < 0)
                 return ret;
             ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, len, 0, 0);
-            //Inlines.OpusAssert(ret > 0 && ret <= len);
+            Inlines.OpusAssert(ret > 0 && ret <= len);
 
             return ret;
         }

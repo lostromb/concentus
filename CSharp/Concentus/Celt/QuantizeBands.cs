@@ -370,7 +370,7 @@ namespace Concentus.Celt
                     /* It would be better to express this invariant as a
                        test on C at function entry, but that isn't enough
                        to make the static analyzer happy. */
-                    //Inlines.OpusAssert(c < 2);
+                    Inlines.OpusAssert(c < 2);
                     tell = dec.tell();
                     if (budget - tell >= 15)
                     {

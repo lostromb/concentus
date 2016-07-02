@@ -74,8 +74,8 @@ namespace Concentus.Silk
             {
                 seed = Inlines.silk_RAND(seed);
                 idx = (int)(Inlines.silk_RSHIFT(seed, 24) & exc_mask);
-                //Inlines.OpusAssert(idx >= 0);
-                //Inlines.OpusAssert(idx <= SilkConstants.CNG_BUF_MASK_MAX);
+                Inlines.OpusAssert(idx >= 0);
+                Inlines.OpusAssert(idx <= SilkConstants.CNG_BUF_MASK_MAX);
                 exc_Q10[i] = (short)Inlines.silk_SAT16(Inlines.silk_SMULWW(exc_buf_Q14[idx], Gain_Q16 >> 4));
             }
 
@@ -182,14 +182,14 @@ namespace Concentus.Silk
                 silk_CNG_exc(CNG_sig_Q10.GetPointer(SilkConstants.MAX_LPC_ORDER), psCNG.CNG_exc_buf_Q14.GetPointer(), gain_Q16, length, ref psCNG.rand_seed);
 
                 /* Convert CNG NLSF to filter representation */
-                NLSF.silk_NLSF2A(A_Q12.GetPointer(), psCNG.CNG_smth_NLSF_Q15.GetPointer(), psDec.LPC_order);
+                NLSF.silk_NLSF2A(A_Q12.GetPointer(), psCNG.CNG_smth_NLSF_Q15, psDec.LPC_order);
 
                 /* Generate CNG signal, by synthesis filtering */
                 Array.Copy(psCNG.CNG_synth_state, CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);
 
                 for (i = 0; i < length; i++)
                 {
-                    //Inlines.OpusAssert(psDec.LPC_order == 10 || psDec.LPC_order == 16);
+                    Inlines.OpusAssert(psDec.LPC_order == 10 || psDec.LPC_order == 16);
                     /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
                     sum_Q6 = Inlines.silk_RSHIFT(psDec.LPC_order, 1);
                     sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 1], A_Q12[0]);

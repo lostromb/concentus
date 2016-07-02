@@ -190,7 +190,7 @@ namespace Concentus.Celt
             uint i;
             int j;
             int k;
-            //Inlines.OpusAssert(_n >= 2);
+            Inlines.OpusAssert(_n >= 2);
             j = _n - 1;
             i = (_y[j] < 0) ? 1U : 0;
             k = Inlines.abs(_y[j]);
@@ -207,7 +207,7 @@ namespace Concentus.Celt
 
         internal static void encode_pulses(Pointer<int> _y, int _n, int _k, EntropyCoder _enc)
         {
-            //Inlines.OpusAssert(_k > 0);
+            Inlines.OpusAssert(_k > 0);
             _enc.enc_uint(icwrs(_n, _y), CELT_PVQ_V(_n, _k));
         }
 
@@ -218,8 +218,8 @@ namespace Concentus.Celt
             int k0;
             short val;
             int yy = 0;
-            //Inlines.OpusAssert(_k > 0);
-            //Inlines.OpusAssert(_n > 1);
+            Inlines.OpusAssert(_k > 0);
+            Inlines.OpusAssert(_n > 1);
 
             while (_n > 2)
             {
@@ -239,7 +239,7 @@ namespace Concentus.Celt
 
                     if (q > _i)
                     {
-                        //Inlines.OpusAssert(p > q);
+                        Inlines.OpusAssert(p > q);
                         _k = _n;
 
                         do

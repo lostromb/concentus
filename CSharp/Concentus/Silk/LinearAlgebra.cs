@@ -49,7 +49,7 @@ namespace Concentus.Silk
             Pointer<int> x_Q16                                  /* O    Pointer to x solution vector                                                */
             )
         {
-            //Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
+            Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
             int[] L_Q16 = new int[M * M];
             int[] Y = new int[SilkConstants.MAX_MATRIX_SIZE];
 
@@ -101,7 +101,7 @@ namespace Concentus.Silk
             int[] D_Q0 = new int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
             int one_div_diag_Q36, one_div_diag_Q40, one_div_diag_Q48;
 
-            //Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
+            Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
 
             status = 1;
             diag_min_value = Inlines.silk_max_32(Inlines.silk_SMMUL(Inlines.silk_ADD_SAT32(A[0], A[Inlines.silk_SMULBB(M, M) - 1]), Inlines.SILK_CONST(TuningParameters.FIND_LTP_COND_FAC, 31)), 1 << 9);
@@ -164,7 +164,7 @@ namespace Concentus.Silk
                 }
             }
 
-            //Inlines.OpusAssert(status == 0);
+            Inlines.OpusAssert(status == 0);
         }
 
         private static void silk_LS_divide_Q16(

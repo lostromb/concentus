@@ -66,8 +66,8 @@ namespace Concentus.Celt
                     fs += LAPLACE_MINP;
                     fl += Inlines.CHOP32U(fs & ~s);
                 }
-                //Inlines.OpusAssert(fl + fs <= 32768);
-                //Inlines.OpusAssert(fs > 0);
+                Inlines.OpusAssert(fl + fs <= 32768);
+                Inlines.OpusAssert(fs > 0);
             }
 
             enc.encode_bin(fl, fl + fs, 15);
@@ -109,10 +109,10 @@ namespace Concentus.Celt
                     fl += fs;
             }
 
-            //Inlines.OpusAssert(fl < 32768);
-            //Inlines.OpusAssert(fs > 0);
-            //Inlines.OpusAssert(fl <= fm);
-            //Inlines.OpusAssert(fm < Inlines.IMIN(fl + fs, 32768));
+            Inlines.OpusAssert(fl < 32768);
+            Inlines.OpusAssert(fs > 0);
+            Inlines.OpusAssert(fl <= fm);
+            Inlines.OpusAssert(fm < Inlines.IMIN(fl + fs, 32768));
 
             dec.dec_update(fl, Inlines.IMIN(fl + fs, 32768), 32768);
             return val;

@@ -171,7 +171,7 @@ namespace Concentus.Celt
         {
             int j;
             short y_0, y_1, y_2, y_3;
-            //Inlines.OpusAssert(len >= 3);
+            Inlines.OpusAssert(len >= 3);
             y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
             y_0 = y[y_ptr++];
             y_1 = y[y_ptr++];
@@ -240,7 +240,7 @@ namespace Concentus.Celt
         {
             int j;
             int y_0, y_1, y_2, y_3;
-            //Inlines.OpusAssert(len >= 3);
+            Inlines.OpusAssert(len >= 3);
             y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
             y_0 = y[y_ptr++];
             y_1 = y[y_ptr++];

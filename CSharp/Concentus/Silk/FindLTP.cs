@@ -58,16 +58,16 @@ namespace Concentus.Silk
         /// <param name="corr_rshifts"></param>
         /// <param name="arch"></param>
         internal static void silk_find_LTP(
-             Pointer<short> b_Q14,      /* O    LTP coefs [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER]                                                                  */
-             Pointer<int> WLTP, /* O    Weight for LTP quantization [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER]                                          */
+             short[] b_Q14,      /* O    LTP coefs [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER]                                                                  */
+             int[] WLTP, /* O    Weight for LTP quantization [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER]                                          */
              BoxedValue<int> LTPredCodGain_Q7,                      /* O    LTP coding gain                                                             */
-             Pointer<short> r_lpc,                                /* I    residual signal after LPC signal + state for first 10 ms                    */
-              Pointer<int> lag,                    /* I    LTP lags   [SilkConstants.MAX_NB_SUBFR]                                                                 */
-              Pointer<int> Wght_Q15,               /* I    weights [SilkConstants.MAX_NB_SUBFR]                                                                    */
+             short[] r_lpc,                                /* I    residual signal after LPC signal + state for first 10 ms                    */
+             int[] lag,                    /* I    LTP lags   [SilkConstants.MAX_NB_SUBFR]                                                                 */
+             int[] Wght_Q15,               /* I    weights [SilkConstants.MAX_NB_SUBFR]                                                                    */
              int subfr_length,                           /* I    subframe length                                                             */
              int nb_subfr,                               /* I    number of subframes                                                         */
              int mem_offset,                             /* I    number of samples in LTP memory                                             */
-              Pointer<int> corr_rshifts           /* O    right shifts applied to correlations  [SilkConstants.MAX_NB_SUBFR]                                      */
+             int[] corr_rshifts           /* O    right shifts applied to correlations  [SilkConstants.MAX_NB_SUBFR]                                      */
          )
         {
             int i, k, lshift;
@@ -92,9 +92,9 @@ namespace Concentus.Silk
             int[] rr = new int[SilkConstants.MAX_NB_SUBFR];
             int wd, m_Q12;
 
-            b_Q14_ptr = b_Q14;
-            WLTP_ptr = WLTP;
-            r_ptr = r_lpc.Point(mem_offset);
+            b_Q14_ptr = b_Q14.GetPointer();
+            WLTP_ptr = WLTP.GetPointer();
+            r_ptr = r_lpc.GetPointer(mem_offset);
             for (k = 0; k < nb_subfr; k++)
             {
                 lag_ptr = r_ptr.Point(0 - (lag[k] + SilkConstants.LTP_ORDER / 2));
@@ -123,7 +123,7 @@ namespace Concentus.Silk
                 {
                     rr[k] = Inlines.silk_RSHIFT(rr[k], corr_rshifts[k] - rr_shifts); /* rr[ k ] in Q( -corr_rshifts[ k ] ) */
                 }
-                //Inlines.OpusAssert(rr[k] >= 0);
+                Inlines.OpusAssert(rr[k] >= 0);
 
                 regu = 1;
                 regu = Inlines.silk_SMLAWB(regu, rr[k], Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16));
@@ -144,7 +144,7 @@ namespace Concentus.Silk
                 denom32 = Inlines.silk_LSHIFT_SAT32(Inlines.silk_SMULWB(nrg[k], Wght_Q15[k]), 1 + extra_shifts) + /* Q( -corr_rshifts[ k ] + extra_shifts ) */
                             Inlines.silk_RSHIFT(Inlines.silk_SMULWB((int)subfr_length, 655), corr_rshifts[k] - extra_shifts);    /* Q( -corr_rshifts[ k ] + extra_shifts ) */
                 denom32 = Inlines.silk_max(denom32, 1);
-                //Inlines.OpusAssert(((long)Wght_Q15[k] << 16) < int.MaxValue);                       /* Wght always < 0.5 in Q0 */
+                Inlines.OpusAssert(((long)Wght_Q15[k] << 16) < int.MaxValue);                       /* Wght always < 0.5 in Q0 */
                 temp32 = Inlines.silk_DIV32(Inlines.silk_LSHIFT((int)Wght_Q15[k], 16), denom32);             /* Q( 15 + 16 + corr_rshifts[k] - extra_shifts ) */
                 temp32 = Inlines.silk_RSHIFT(temp32, 31 + corr_rshifts[k] - extra_shifts - 26);               /* Q26 */
 
@@ -155,7 +155,7 @@ namespace Concentus.Silk
                     WLTP_max = Inlines.silk_max(WLTP_ptr[i], WLTP_max);
                 }
                 lshift = Inlines.silk_CLZ32(WLTP_max) - 1 - 3; /* keep 3 bits free for vq_nearest_neighbor */
-                //Inlines.OpusAssert(26 - 18 + lshift >= 0);
+                Inlines.OpusAssert(26 - 18 + lshift >= 0);
                 if (26 - 18 + lshift < 31)
                 {
                     temp32 = Inlines.silk_min_32(temp32, Inlines.silk_LSHIFT((int)1, 26 - 18 + lshift));
@@ -164,7 +164,7 @@ namespace Concentus.Silk
                 Inlines.silk_scale_vector32_Q26_lshift_18(WLTP_ptr.Data, WLTP_ptr.Offset, temp32, SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER); /* WLTP_ptr in Q( 18 - corr_rshifts[ k ] ) */
 
                 w[k] = Inlines.MatrixGet(WLTP_ptr, SilkConstants.LTP_ORDER / 2, SilkConstants.LTP_ORDER / 2, SilkConstants.LTP_ORDER); /* w in Q( 18 - corr_rshifts[ k ] ) */
-                //Inlines.OpusAssert(w[k] >= 0);
+                Inlines.OpusAssert(w[k] >= 0);
 
                 r_ptr = r_ptr.Point(subfr_length);
                 b_Q14_ptr = b_Q14_ptr.Point(SilkConstants.LTP_ORDER);
@@ -182,7 +182,7 @@ namespace Concentus.Silk
             {
                 LPC_LTP_res_nrg = 0;
                 LPC_res_nrg = 0;
-                //Inlines.OpusAssert(LTP_CORRS_HEAD_ROOM >= 2); /* Check that no overflow will happen when adding */
+                Inlines.OpusAssert(LTP_CORRS_HEAD_ROOM >= 2); /* Check that no overflow will happen when adding */
                 for (k = 0; k < nb_subfr; k++)
                 {
                     LPC_res_nrg = Inlines.silk_ADD32(LPC_res_nrg, Inlines.silk_RSHIFT(Inlines.silk_ADD32(Inlines.silk_SMULWB(rr[k], Wght_Q15[k]), 1), 1 + (maxRshifts - corr_rshifts[k]))); /* Q( -maxRshifts ) */
@@ -193,12 +193,12 @@ namespace Concentus.Silk
                 div_Q16 = Inlines.silk_DIV32_varQ(LPC_res_nrg, LPC_LTP_res_nrg, 16);
                 LTPredCodGain_Q7.Val = (int)Inlines.silk_SMULBB(3, Inlines.silk_lin2log(div_Q16) - (16 << 7));
 
-                //Inlines.OpusAssert(LTPredCodGain_Q7.Val == (int)Inlines.silk_SAT16(Inlines.silk_MUL(3, Inlines.silk_lin2log(div_Q16) - (16 << 7))));
+                Inlines.OpusAssert(LTPredCodGain_Q7.Val == (int)Inlines.silk_SAT16(Inlines.silk_MUL(3, Inlines.silk_lin2log(div_Q16) - (16 << 7))));
             }
 
             /* smoothing */
             /* d = sum( B, 1 ); */
-            b_Q14_ptr = b_Q14;
+            b_Q14_ptr = b_Q14.GetPointer();
             for (k = 0; k < nb_subfr; k++)
             {
                 d_Q14[k] = 0;
@@ -223,7 +223,7 @@ namespace Concentus.Silk
             }
 
             /* max_abs_d_Q14 = (5 << 15); worst case, i.e. SilkConstants.LTP_ORDER * -silk_int16_MIN */
-            //Inlines.OpusAssert(max_abs_d_Q14 <= (5 << 15));
+            Inlines.OpusAssert(max_abs_d_Q14 <= (5 << 15));
 
             /* How many bits is needed for w*d' in Q( 18 - maxRshifts ) in the worst case, of all d_Q14's being equal to max_abs_d_Q14 */
             extra_shifts = max_w_bits + 32 - Inlines.silk_CLZ32(max_abs_d_Q14) - 14;
@@ -244,7 +244,7 @@ namespace Concentus.Silk
             }
             m_Q12 = Inlines.silk_DIV32_varQ(wd, temp32, 12);
 
-            b_Q14_ptr = b_Q14;
+            b_Q14_ptr = b_Q14.GetPointer();
             for (k = 0; k < nb_subfr; k++)
             {
                 /* w[ k ] from Q( 18 - corr_rshifts[ k ] ) to Q( 16 ) */

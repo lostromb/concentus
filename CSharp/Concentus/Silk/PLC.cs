@@ -276,7 +276,7 @@ namespace Concentus.Silk
             }
 
             /* LPC concealment. Apply BWE to previous LPC */
-            BWExpander.silk_bwexpander(psPLC.prevLPC_Q12.GetPointer(), psDec.LPC_order, Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16));
+            BWExpander.silk_bwexpander(psPLC.prevLPC_Q12, psDec.LPC_order, Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16));
             
             /* First Lost frame */
             if (psDec.lossCnt == 0)
@@ -298,7 +298,7 @@ namespace Concentus.Silk
                     /* Reduce random noise for unvoiced frames with high LPC gain */
                     int invGain_Q30, down_scale_Q30;
 
-                    invGain_Q30 = LPCInversePredGain.silk_LPC_inverse_pred_gain(psPLC.prevLPC_Q12.GetPointer(), psDec.LPC_order);
+                    invGain_Q30 = LPCInversePredGain.silk_LPC_inverse_pred_gain(psPLC.prevLPC_Q12, psDec.LPC_order);
 
                     down_scale_Q30 = Inlines.silk_min_32(Inlines.silk_RSHIFT((int)1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_HIGH_THRES), invGain_Q30);
                     down_scale_Q30 = Inlines.silk_max_32(Inlines.silk_RSHIFT((int)1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_LOW_THRES), down_scale_Q30);
@@ -314,7 +314,7 @@ namespace Concentus.Silk
 
             /* Rewhiten LTP state */
             idx = psDec.ltp_mem_length - lag - psDec.LPC_order - SilkConstants.LTP_ORDER / 2;
-            //Inlines.OpusAssert(idx > 0);
+            Inlines.OpusAssert(idx > 0);
             Filters.silk_LPC_analysis_filter(sLTP, idx, psDec.outBuf, idx, psPLC.prevLPC_Q12, 0, psDec.ltp_mem_length - idx, psDec.LPC_order);
             /* Scale LTP state */
             inv_gain_Q30 = Inlines.silk_INVERSE32_varQ(psPLC.prevGain_Q16[1], 46);
@@ -372,7 +372,7 @@ namespace Concentus.Silk
             /* Copy LPC state */
             psDec.sLPC_Q14_buf.GetPointer().MemCopyTo(sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
 
-            //Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
+            Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
             for (i = 0; i < psDec.frame_length; i++)
             {
                 /* partly unrolled */

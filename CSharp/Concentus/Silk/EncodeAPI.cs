@@ -58,7 +58,7 @@ namespace Concentus.Silk
             for (int n = 0; n < SilkConstants.ENCODER_NUM_CHANNELS; n++)
             {
                 ret += SilkEncoder.silk_init_encoder(encState.state_Fxx[n]);
-                //Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
+                Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
             }
 
             encState.nChannelsAPI = 1;
@@ -66,7 +66,7 @@ namespace Concentus.Silk
 
             /* Read control structure */
             ret += silk_QueryEncoder(encState, encStatus);
-            //Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
+            Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
 
             return ret;
         }
@@ -148,7 +148,7 @@ namespace Concentus.Silk
             ret += encControl.check_control_input();
             if (ret != SilkError.SILK_NO_ERROR)
             {
-                //Inlines.OpusAssert(false);
+                Inlines.OpusAssert(false);
                 return ret;
             }
 
@@ -187,14 +187,14 @@ namespace Concentus.Silk
                 /* Only accept input length of 10 ms */
                 if (nBlocksOf10ms != 1)
                 {
-                    //Inlines.OpusAssert(false);
+                    Inlines.OpusAssert(false);
                     return SilkError.SILK_ENC_INPUT_INVALID_NO_OF_SAMPLES;
                 }
                 /* Reset Encoder */
                 for (n = 0; n < encControl.nChannelsInternal; n++)
                 {
                     ret += SilkEncoder.silk_init_encoder(psEnc.state_Fxx[n]);
-                    //Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
+                    Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
                 }
                 tmp_payloadSize_ms = encControl.payloadSize_ms;
                 encControl.payloadSize_ms = 10;
@@ -211,13 +211,13 @@ namespace Concentus.Silk
                 /* Only accept input lengths that are a multiple of 10 ms */
                 if (nBlocksOf10ms * encControl.API_sampleRate != 100 * nSamplesIn || nSamplesIn < 0)
                 {
-                    //Inlines.OpusAssert(false);
+                    Inlines.OpusAssert(false);
                     return SilkError.SILK_ENC_INPUT_INVALID_NO_OF_SAMPLES;
                 }
                 /* Make sure no more than one packet can be produced */
                 if (1000 * (int)nSamplesIn > encControl.payloadSize_ms * encControl.API_sampleRate)
                 {
-                    //Inlines.OpusAssert(false);
+                    Inlines.OpusAssert(false);
                     return SilkError.SILK_ENC_INPUT_INVALID_NO_OF_SAMPLES;
                 }
             }
@@ -232,7 +232,7 @@ namespace Concentus.Silk
 
                 if (ret != SilkError.SILK_NO_ERROR)
                 {
-                    //Inlines.OpusAssert(false);
+                    Inlines.OpusAssert(false);
                     return ret;
                 }
 
@@ -247,7 +247,7 @@ namespace Concentus.Silk
                 psEnc.state_Fxx[n].inDTX = psEnc.state_Fxx[n].useDTX;
             }
 
-            //Inlines.OpusAssert(encControl.nChannelsInternal == 1 || psEnc.state_Fxx[0].fs_kHz == psEnc.state_Fxx[1].fs_kHz);
+            Inlines.OpusAssert(encControl.nChannelsInternal == 1 || psEnc.state_Fxx[0].fs_kHz == psEnc.state_Fxx[1].fs_kHz);
 
             /* Input buffering/resampling and encoding */
             nSamplesToBufferMax = 10 * nBlocksOf10ms * psEnc.state_Fxx[0].fs_kHz;
@@ -338,7 +338,7 @@ namespace Concentus.Silk
                 }
                 else
                 {
-                    //Inlines.OpusAssert(encControl.nChannelsAPI == 1 && encControl.nChannelsInternal == 1);
+                    Inlines.OpusAssert(encControl.nChannelsAPI == 1 && encControl.nChannelsInternal == 1);
                     samplesIn.MemCopyTo(buf, 0, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
@@ -359,8 +359,8 @@ namespace Concentus.Silk
                 if (psEnc.state_Fxx[0].inputBufIx >= psEnc.state_Fxx[0].frame_length)
                 {
                     /* Enough data in input buffer, so encode */
-                    //Inlines.OpusAssert(psEnc.state_Fxx[0].inputBufIx == psEnc.state_Fxx[0].frame_length);
-                    //Inlines.OpusAssert(encControl.nChannelsInternal == 1 || psEnc.state_Fxx[1].inputBufIx == psEnc.state_Fxx[1].frame_length);
+                    Inlines.OpusAssert(psEnc.state_Fxx[0].inputBufIx == psEnc.state_Fxx[0].frame_length);
+                    Inlines.OpusAssert(encControl.nChannelsInternal == 1 || psEnc.state_Fxx[1].inputBufIx == psEnc.state_Fxx[1].frame_length);
 
                     /* Deal with LBRR data */
                     if (psEnc.state_Fxx[0].nFramesEncoded == 0 && prefillFlag == 0)
@@ -418,7 +418,7 @@ namespace Concentus.Silk
 
                                     EncodeIndices.silk_encode_indices(psEnc.state_Fxx[n], psRangeEnc, i, 1, condCoding);
                                     EncodePulses.silk_encode_pulses(psRangeEnc, psEnc.state_Fxx[n].indices_LBRR[i].signalType, psEnc.state_Fxx[n].indices_LBRR[i].quantOffsetType,
-                                        psEnc.state_Fxx[n].pulses_LBRR[i].GetPointer(), psEnc.state_Fxx[n].frame_length);
+                                        psEnc.state_Fxx[n].pulses_LBRR[i], psEnc.state_Fxx[n].frame_length);
                                 }
                             }
                         }
@@ -478,7 +478,7 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[1].inputBuf.GetPointer(2),
                             psEnc.sStereo.predIx[psEnc.state_Fxx[0].nFramesEncoded],
                             midOnlyFlagBoxed,
-                            MStargetRates_bps.GetPointer(),
+                            MStargetRates_bps,
                             TargetRate_bps,
                             psEnc.state_Fxx[0].speech_activity_Q8,
                             encControl.toMono,
@@ -595,7 +595,7 @@ namespace Concentus.Silk
                             }
 
                             ret += psEnc.state_Fxx[n].silk_encode_frame(nBytesOut, psRangeEnc, condCoding, maxBits, useCBR);
-                            //Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
+                            Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
                         }
 
                         psEnc.state_Fxx[n].controlled_since_last_payload = 0;

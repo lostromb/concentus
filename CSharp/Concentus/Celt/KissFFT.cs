@@ -76,7 +76,7 @@ namespace Concentus.Celt
                 short tw;
                 tw = Inlines.QCONST16(0.7071067812f, 15);
                 /* We know that m==4 here because the radix-2 is just after a radix-4 */
-                //Inlines.OpusAssert(m == 4);
+                Inlines.OpusAssert(m == 4);
                 for (i = 0; i < N; i++)
                 {
                     int t_r, t_i;
@@ -409,7 +409,7 @@ namespace Concentus.Celt
             int scale_shift = st.scale_shift - 1;
             short scale = st.scale;
 
-            //Inlines.OpusAssert(fin != fout, "In-place FFT not supported");
+            Inlines.OpusAssert(fin != fout, "In-place FFT not supported");
 
             /* Bit-reverse the input */
             for (i = 0; i < st.nfft; i++)
@@ -425,7 +425,7 @@ namespace Concentus.Celt
         internal static void opus_ifft(FFTState st, Pointer<int> fin, Pointer<int> fout)
         {
             int i;
-            //Inlines.OpusAssert(fin != fout, "In-place iFFT not supported");
+            Inlines.OpusAssert(fin != fout, "In-place iFFT not supported");
 
             /* Bit-reverse the input */
             for (i = 0; i < st.nfft * 2; i++)
