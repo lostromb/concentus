@@ -45,8 +45,8 @@ namespace Concentus.Celt
     internal static class CeltPitchXCorr
     {
         internal static int pitch_xcorr(
-            Pointer<int> _x,
-            Pointer<int> _y,
+            int[] _x,
+            int[] _y,
             Pointer<int> xcorr,
             int len,
             int max_pitch)
@@ -61,7 +61,7 @@ namespace Concentus.Celt
                 sum[1] = 0;
                 sum[2] = 0;
                 sum[3] = 0;
-                Kernels.xcorr_kernel(_x.Data, _x.Offset, _y.Data, _y.Offset + i, sum, len);
+                Kernels.xcorr_kernel(_x, _y, i, sum, len);
                 xcorr[i] = sum[0];
                 xcorr[i + 1] = sum[1];
                 xcorr[i + 2] = sum[2];
@@ -74,7 +74,7 @@ namespace Concentus.Celt
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
             {
-                int inner_sum = Kernels.celt_inner_prod(_x.Data, _x.Offset, _y.Data, _y.Offset + i, len);
+                int inner_sum = Kernels.celt_inner_prod(_x, 0, _y, i, len);
                 xcorr[i] = inner_sum;
                 maxcorr = Inlines.MAX32(maxcorr, inner_sum);
             }

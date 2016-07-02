@@ -319,7 +319,7 @@ namespace Concentus.Celt.Structs
                         int[] ac = new int[CeltConstants.LPC_ORDER + 1];
                         /* Compute LPC coefficients for the last MAX_PERIOD samples before
                            the first loss so we can work in the excitation-filter domain. */
-                        CeltLPC._celt_autocorr(exc.GetPointer(), ac.GetPointer(), window, overlap,
+                        CeltLPC._celt_autocorr(exc, ac.GetPointer(), window, overlap,
                                CeltConstants.LPC_ORDER, CeltConstants.MAX_PERIOD);
                         /* Add a noise floor of -40 dB. */
                         ac[0] += Inlines.SHR32(ac[0], 13);

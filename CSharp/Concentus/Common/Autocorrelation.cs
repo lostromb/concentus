@@ -165,6 +165,7 @@ namespace Concentus.Common
             //Inlines.OpusAssert((order & 1) == 0);
             //Inlines.OpusAssert(2 * QS - QC >= 0);
 
+            //fixme: this might be able to be threaded
             /* Loop over samples */
             for (n = 0; n < length; n++)
             {

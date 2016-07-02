@@ -140,7 +140,7 @@ namespace Concentus.Celt
             for (i = 0; i < N - 3; i += 4)
             {
                 int[] sum = { 0, 0, 0, 0 };
-                xcorr_kernel(rnum, 0, local_x, i, sum, ord);
+                xcorr_kernel(rnum, local_x, i, sum, ord);
                 y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum[0], CeltConstants.SIG_SHIFT))));
                 y[y_ptr + i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 1]), Inlines.PSHR32(sum[1], CeltConstants.SIG_SHIFT))));
                 y[y_ptr + i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 2]), Inlines.PSHR32(sum[2], CeltConstants.SIG_SHIFT))));
@@ -236,10 +236,11 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void xcorr_kernel(int[] x, int x_ptr, int[] y, int y_ptr, int[] sum, int len)
+        internal static void xcorr_kernel(int[] x, int[] y, int y_ptr, int[] sum, int len)
         {
             int j;
             int y_0, y_1, y_2, y_3;
+            int x_ptr = 0;
             //Inlines.OpusAssert(len >= 3);
             y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
             y_0 = y[y_ptr++];
