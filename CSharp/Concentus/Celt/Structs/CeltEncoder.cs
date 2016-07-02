@@ -281,7 +281,7 @@ namespace Concentus.Celt.Structs
             {
                 int[] pitch_buf = new int[(CeltConstants.COMBFILTER_MAXPERIOD + N) >> 1];
 
-                Concentus.Celt.Pitch.pitch_downsample(pre.GetPointer(), pitch_buf.GetPointer(), CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
+                Concentus.Celt.Pitch.pitch_downsample(pre.GetPointer(), pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
                 /* Don't search for the fir last 1.5 octave of the range because
                    there's too many false-positives due to short-term correlation */
                 Concentus.Celt.Pitch.pitch_search(pitch_buf.GetPointer(CeltConstants.COMBFILTER_MAXPERIOD >> 1), pitch_buf.GetPointer(), N,

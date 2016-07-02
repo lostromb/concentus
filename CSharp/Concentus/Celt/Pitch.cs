@@ -138,7 +138,7 @@ namespace Concentus.Celt
         }
 
 
-        internal static void pitch_downsample(Pointer<Pointer<int>> x, Pointer<int> x_lp, int len, int C)
+        internal static void pitch_downsample(Pointer<Pointer<int>> x, int[] x_lp, int len, int C)
         {
             int i;
             int[] ac = new int[5];
@@ -203,7 +203,7 @@ namespace Concentus.Celt
             lpc2[3] = (lpc[3] + Inlines.MULT16_16_Q15(c1, lpc[2]));
             lpc2[4] = Inlines.MULT16_16_Q15(c1, lpc[3]);
 
-            celt_fir5(x_lp, lpc2.GetPointer(), x_lp, halflen, mem.GetPointer());
+            celt_fir5(x_lp.GetPointer(), lpc2.GetPointer(), x_lp.GetPointer(), halflen, mem.GetPointer());
         }
 
         // Fixme: remove pointers and optimize
@@ -249,7 +249,7 @@ namespace Concentus.Celt
             }
 
             /* Coarse search with 4x decimation */
-            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4.GetPointer(), y_lp4.GetPointer(), xcorr.GetPointer(), len >> 2, max_pitch >> 2);
+            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4, y_lp4, xcorr.GetPointer(), len >> 2, max_pitch >> 2);
 
             find_best_pitch(xcorr, y_lp4.GetPointer(), len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
 

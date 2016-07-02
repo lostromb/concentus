@@ -47,7 +47,7 @@ namespace Concentus.Common
         )
         {
             int corrCount = Inlines.silk_min_int(inputDataSize, correlationCount);
-            scale.Val = _celt_autocorr(inputData, results, null, 0, corrCount - 1, inputDataSize);
+            scale.Val = Autocorrelation._celt_autocorr(inputData, results, null, 0, corrCount - 1, inputDataSize);
         }
 
         internal static int _celt_autocorr(
@@ -63,13 +63,13 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            Pointer<short> xptr;
+            short[] xptr;
             short[] xx = new short[n];
             Inlines.OpusAssert(n > 0);
             Inlines.OpusAssert(overlap >= 0);
             if (overlap == 0)
             {
-                xptr = x.GetPointer();
+                xptr = x;
             }
             else {
                 for (i = 0; i < n; i++)
@@ -81,7 +81,7 @@ namespace Concentus.Common
                     xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
                     xx[n - i - 1] = Inlines.MULT16_16_Q15(x[n - i - 1], window[i]);
                 }
-                xptr = xx.GetPointer();
+                xptr = xx;
             }
             shift = 0;
             {
@@ -104,12 +104,12 @@ namespace Concentus.Common
                     {
                         xx[i] = Inlines.CHOP16(Inlines.PSHR32(xptr[i], shift));
                     }
-                    xptr = xx.GetPointer();
+                    xptr = xx;
                 }
                 else
                     shift = 0;
             }
-            CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac.GetPointer(), fastN, lag + 1);
+            CeltPitchXCorr.pitch_xcorr(xptr.GetPointer(), xptr.GetPointer(), ac.GetPointer(), fastN, lag + 1);
             for (k = 0; k <= lag; k++)
             {
                 for (i = k + fastN, d = 0; i < n; i++)
@@ -165,7 +165,7 @@ namespace Concentus.Common
             Inlines.OpusAssert((order & 1) == 0);
             Inlines.OpusAssert(2 * QS - QC >= 0);
 
-            // fixme: This might be able to be threaded
+            //fixme: this might be able to be threaded
             /* Loop over samples */
             for (n = 0; n < length; n++)
             {

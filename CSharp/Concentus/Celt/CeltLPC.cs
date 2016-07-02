@@ -119,7 +119,7 @@ namespace Concentus.Celt
                 sum[1] = _x[i + 1];
                 sum[2] = _x[i + 2];
                 sum[3] = _x[i + 3];
-                Kernels.xcorr_kernel(rden, 0, y, i, sum, ord);
+                Kernels.xcorr_kernel(rden, y, i, sum, ord);
 
                 /* Patch up the result to compensate for the fact that this is an IIR */
                 y[i + ord] = (0 - Inlines.ROUND16((sum[0]), CeltConstants.SIG_SHIFT));
@@ -152,7 +152,7 @@ namespace Concentus.Celt
         }
 
         internal static int _celt_autocorr(
-                           Pointer<int> x,   /*  in: [0...n-1] samples x   */
+                           int[] x,   /*  in: [0...n-1] samples x   */
                            Pointer<int> ac,  /* out: [0...lag-1] ac values */
                            Pointer<int> window,
                            int overlap,
@@ -163,7 +163,7 @@ namespace Concentus.Celt
             int i, k;
             int fastN = n - lag;
             int shift;
-            Pointer<int> xptr;
+            int[] xptr;
             int[] xx = new int[n];
 
             Inlines.OpusAssert(n > 0);
@@ -182,7 +182,7 @@ namespace Concentus.Celt
                     xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
                     xx[n - i - 1] = Inlines.MULT16_16_Q15(x[n - i - 1], window[i]);
                 }
-                xptr = xx.GetPointer();
+                xptr = xx;
             }
 
             shift = 0;
@@ -204,7 +204,7 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < n; i++)
                     xx[i] = (Inlines.PSHR32(xptr[i], shift));
-                xptr = xx.GetPointer();
+                xptr = xx;
             }
             else
                 shift = 0;
