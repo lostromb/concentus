@@ -64,7 +64,7 @@ namespace Concentus.Common
             int fastN = n - lag;
             int shift;
             Pointer<short> xptr;
-            Pointer<short> xx = Pointer.Malloc<short>(n);
+            short[] xx = new short[n];
             //Inlines.OpusAssert(n > 0);
             //Inlines.OpusAssert(overlap >= 0);
             if (overlap == 0)
@@ -81,7 +81,7 @@ namespace Concentus.Common
                     xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
                     xx[n - i - 1] = Inlines.MULT16_16_Q15(x[n - i - 1], window[i]);
                 }
-                xptr = xx;
+                xptr = xx.GetPointer();
             }
             shift = 0;
             {
@@ -104,7 +104,7 @@ namespace Concentus.Common
                     {
                         xx[i] = Inlines.CHOP16(Inlines.PSHR32(xptr[i], shift));
                     }
-                    xptr = xx;
+                    xptr = xx.GetPointer();
                 }
                 else
                     shift = 0;

@@ -425,10 +425,10 @@ namespace Concentus.Celt
                 }
             }
 
-            Pointer<int> bits1 = Pointer.Malloc<int>(len);
-            Pointer<int> bits2 = Pointer.Malloc<int>(len);
-            Pointer<int> thresh = Pointer.Malloc<int>(len);
-            Pointer<int> trim_offset = Pointer.Malloc<int>(len);
+            int[] bits1 = new int[len];
+            int[] bits2 = new int[len];
+            int[] thresh = new int[len];
+            int[] trim_offset = new int[len];
 
             for (j = start; j < end; j++)
             {
@@ -511,7 +511,7 @@ namespace Concentus.Celt
                 bits2[j] = bits2j;
             }
 
-            codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
+            codedBands = interp_bits2pulses(m, start, end, skip_start, bits1.GetPointer(), bits2.GetPointer(), thresh.GetPointer(), cap,
                   total, balance, skip_rsv, intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
                   pulses, ebits, fine_priority, C, LM, ec, encode, prev, signalBandwidth);
 

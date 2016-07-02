@@ -69,59 +69,59 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        internal static Pointer<Pointer<Pointer<T>>> InitThreeDimensionalArrayPointer<T>(int x, int y, int z)
-        {
-            Pointer<Pointer<Pointer<T>>> returnVal = Pointer.Malloc<Pointer<Pointer<T>>>(x);
-            for (int c = 0; c < x; c++)
-            {
-                returnVal[c] = Pointer.Malloc<Pointer<T>>(y);
-                for (int a = 0; a < y; a++)
-                {
-                    returnVal[c][a] = Pointer.Malloc<T>(z);
-                }
-            }
-            return returnVal;
-        }
+        //internal static Pointer<Pointer<Pointer<T>>> InitThreeDimensionalArrayPointer<T>(int x, int y, int z)
+        //{
+        //    Pointer<Pointer<Pointer<T>>> returnVal = Pointer.Malloc<Pointer<Pointer<T>>>(x);
+        //    for (int c = 0; c < x; c++)
+        //    {
+        //        returnVal[c] = Pointer.Malloc<Pointer<T>>(y);
+        //        for (int a = 0; a < y; a++)
+        //        {
+        //            returnVal[c][a] = Pointer.Malloc<T>(z);
+        //        }
+        //    }
+        //    return returnVal;
+        //}
 
-        internal static T[] CloneArray<T>(T[] inArray)
-        {
-            T[] returnVal = new T[inArray.Length];
-            Array.Copy(inArray, returnVal, inArray.Length);
-            return returnVal;
-        }
+        //internal static T[] CloneArray<T>(T[] inArray)
+        //{
+        //    T[] returnVal = new T[inArray.Length];
+        //    Array.Copy(inArray, returnVal, inArray.Length);
+        //    return returnVal;
+        //}
 
-        internal static T[][] CloneArray<T>(T[][] inArray)
-        {
-            T[][] returnVal = new T[inArray.Length][];
-            for (int c = 0; c < inArray.Length; c++)
-            {
-                returnVal[c] = new T[inArray[c].Length];
-                Array.Copy(inArray[c], returnVal[c], inArray[c].Length);
-            }
-            return returnVal;
-        }
+        //internal static T[][] CloneArray<T>(T[][] inArray)
+        //{
+        //    T[][] returnVal = new T[inArray.Length][];
+        //    for (int c = 0; c < inArray.Length; c++)
+        //    {
+        //        returnVal[c] = new T[inArray[c].Length];
+        //        Array.Copy(inArray[c], returnVal[c], inArray[c].Length);
+        //    }
+        //    return returnVal;
+        //}
 
-        internal static T[][][] CloneArray<T>(T[][][] inArray)
-        {
-            T[][][] returnVal = new T[inArray.Length][][];
-            for (int c = 0; c < inArray.Length; c++)
-            {
-                returnVal[c] = new T[inArray[c].Length][];
-                for (int a = 0; a < inArray[c].Length; a++)
-                {
-                    returnVal[c][a] = new T[inArray[c][a].Length];
-                    Array.Copy(inArray[c][a], returnVal[c][a], inArray[c][a].Length);
-                }
-            }
-            return returnVal;
-        }
+        //internal static T[][][] CloneArray<T>(T[][][] inArray)
+        //{
+        //    T[][][] returnVal = new T[inArray.Length][][];
+        //    for (int c = 0; c < inArray.Length; c++)
+        //    {
+        //        returnVal[c] = new T[inArray[c].Length][];
+        //        for (int a = 0; a < inArray[c].Length; a++)
+        //        {
+        //            returnVal[c][a] = new T[inArray[c][a].Length];
+        //            Array.Copy(inArray[c][a], returnVal[c][a], inArray[c][a].Length);
+        //        }
+        //    }
+        //    return returnVal;
+        //}
 
-        internal static Pointer<T> CloneArray<T>(Pointer<T> inArray, int arrayLength)
-        {
-            Pointer<T> returnVal = Pointer.Malloc<T>(arrayLength);
-            inArray.MemCopyTo(returnVal, arrayLength);
-            return returnVal;
-        }
+        //internal static Pointer<T> CloneArray<T>(Pointer<T> inArray, int arrayLength)
+        //{
+        //    Pointer<T> returnVal = Pointer.Malloc<T>(arrayLength);
+        //    inArray.MemCopyTo(returnVal, arrayLength);
+        //    return returnVal;
+        //}
 
         //FIXME: For the most part this method is used to zero-out arrays, which is usually already done by the runtime.
         internal static void MemSet<T>(T[] array, T value)

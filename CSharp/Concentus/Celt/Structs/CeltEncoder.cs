@@ -228,11 +228,11 @@ namespace Concentus.Celt.Structs
             this.lsb_depth = 24;
 
             // fixme is this necessary if we just call encoder_ctrl right there anyways?
-            //this.in_mem = Pointer.Malloc<int>(channels * mode.overlap);
-            //this.prefilter_mem = Pointer.Malloc<int>(channels * CeltConstants.COMBFILTER_MAXPERIOD);
-            //this.oldBandE = Pointer.Malloc<int>(channels * mode.nbEBands);
-            //this.oldLogE = Pointer.Malloc<int>(channels * mode.nbEBands);
-            //this.oldLogE2 = Pointer.Malloc<int>(channels * mode.nbEBands);
+            //this.in_mem = new int[channels * mode.overlap);
+            //this.prefilter_mem = new int[channels * CeltConstants.COMBFILTER_MAXPERIOD);
+            //this.oldBandE = new int[channels * mode.nbEBands);
+            //this.oldLogE = new int[channels * mode.nbEBands);
+            //this.oldLogE2 = new int[channels * mode.nbEBands);
 
             this.ResetState();
 
@@ -253,7 +253,7 @@ namespace Concentus.Celt.Structs
               int prefilter_tapset, BoxedValue<int> pitch, BoxedValue<int> gain, BoxedValue<int> qgain, int enabled, int nbAvailableBytes)
         {
             int c;
-            Pointer<int> _pre;
+            int[] _pre;
             Pointer<Pointer<int>> pre = Pointer.Malloc<Pointer<int>>(2);
             CeltMode mode; // [porting note] pointer
             BoxedValue<int> pitch_index = new BoxedValue<int>();
@@ -265,10 +265,10 @@ namespace Concentus.Celt.Structs
 
             mode = this.mode;
             overlap = mode.overlap;
-            _pre = Pointer.Malloc<int>(CC * (N + CeltConstants.COMBFILTER_MAXPERIOD));
+            _pre = new int[CC * (N + CeltConstants.COMBFILTER_MAXPERIOD)];
 
-            pre[0] = _pre;
-            pre[1] = _pre.Point(N + CeltConstants.COMBFILTER_MAXPERIOD);
+            pre[0] = _pre.GetPointer();
+            pre[1] = _pre.GetPointer(N + CeltConstants.COMBFILTER_MAXPERIOD);
 
             c = 0;
             do
@@ -279,15 +279,15 @@ namespace Concentus.Celt.Structs
 
             if (enabled != 0)
             {
-                Pointer<int> pitch_buf = Pointer.Malloc<int>((CeltConstants.COMBFILTER_MAXPERIOD + N) >> 1);
+                int[] pitch_buf = new int[(CeltConstants.COMBFILTER_MAXPERIOD + N) >> 1];
 
-                Concentus.Celt.Pitch.pitch_downsample(pre, pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
+                Concentus.Celt.Pitch.pitch_downsample(pre, pitch_buf.GetPointer(), CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
                 /* Don't search for the fir last 1.5 octave of the range because
                    there's too many false-positives due to short-term correlation */
-                Concentus.Celt.Pitch.pitch_search(pitch_buf.Point(CeltConstants.COMBFILTER_MAXPERIOD >> 1), pitch_buf, N,
+                Concentus.Celt.Pitch.pitch_search(pitch_buf.GetPointer(CeltConstants.COMBFILTER_MAXPERIOD >> 1), pitch_buf.GetPointer(), N,
                       CeltConstants.COMBFILTER_MAXPERIOD - 3 * CeltConstants.COMBFILTER_MINPERIOD, pitch_index);
                 pitch_index.Val = CeltConstants.COMBFILTER_MAXPERIOD - pitch_index.Val;
-                gain1 = Concentus.Celt.Pitch.remove_doubling(pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MINPERIOD,
+                gain1 = Concentus.Celt.Pitch.remove_doubling(pitch_buf.GetPointer(), CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MINPERIOD,
                       N, pitch_index, this.prefilter_period, this.prefilter_gain);
                 if (pitch_index.Val > CeltConstants.COMBFILTER_MAXPERIOD - 2)
                     pitch_index.Val = CeltConstants.COMBFILTER_MAXPERIOD - 2;
@@ -384,20 +384,20 @@ namespace Concentus.Celt.Structs
         {
             int i, c, N;
             int bits;
-            Pointer<int> input;
-            Pointer<int> freq;
-            Pointer<int> X;
-            Pointer<int> bandE;
-            Pointer<int> bandLogE;
-            Pointer<int> bandLogE2;
-            Pointer<int> fine_quant;
-            Pointer<int> error;
-            Pointer<int> pulses;
-            Pointer<int> cap;
-            Pointer<int> offsets;
-            Pointer<int> fine_priority;
-            Pointer<int> tf_res;
-            Pointer<byte> collapse_masks;
+            int[] input;
+            int[] freq;
+            int[] X;
+            int[] bandE;
+            int[] bandLogE;
+            int[] bandLogE2;
+            int[] fine_quant;
+            int[] error;
+            int[] pulses;
+            int[] cap;
+            int[] offsets;
+            int[] fine_priority;
+            int[] tf_res;
+            byte[] collapse_masks;
             int shortBlocks = 0;
             int isTransient = 0;
             int CC = this.channels;
@@ -443,7 +443,7 @@ namespace Concentus.Celt.Structs
             int temporal_vbr = 0;
             int surround_trim = 0;
             int equiv_rate = 510000;
-            Pointer<int> surround_dynalloc;
+            int[] surround_dynalloc;
 
             mode = this.mode;
             nbEBands = mode.nbEBands;
@@ -542,7 +542,7 @@ namespace Concentus.Celt.Structs
             if (effEnd > mode.effEBands)
                 effEnd = mode.effEBands;
 
-            input = Pointer.Malloc<int>(CC * (N + overlap));
+            input = new int[CC * (N + overlap)];
 
             sample_max = Inlines.MAX32(this.overlap_max, Inlines.celt_maxabs32(pcm.Data, pcm.Offset, C * (N - overlap) / this.upsample));
             this.overlap_max = Inlines.celt_maxabs32(pcm.Data, pcm.Offset + (C * (N - overlap) / this.upsample), C * overlap / this.upsample);
@@ -576,7 +576,7 @@ namespace Concentus.Celt.Structs
             {
                 int need_clip = 0;
                 BoxedValue<int> preemph_mem_boxed = new BoxedValue<int>(this.preemph_memE[c]);
-                CeltCommon.celt_preemphasis(pcm.Point(c), input.Point(c * (N + overlap) + overlap), N, CC, this.upsample,
+                CeltCommon.celt_preemphasis(pcm.Point(c), input.GetPointer(c * (N + overlap) + overlap), N, CC, this.upsample,
                             mode.preemph.GetPointer(), preemph_mem_boxed, need_clip);
                 this.preemph_memE[c] = preemph_mem_boxed.Val;
             } while (++c < CC);
@@ -592,7 +592,7 @@ namespace Concentus.Celt.Structs
                 BoxedValue<int> boxed_pitch_index = new BoxedValue<int>(pitch_index);
                 BoxedValue<int> boxed_gain1 = new BoxedValue<int>(gain1);
                 BoxedValue<int> boxed_qg = new BoxedValue<int>();
-                pf_on = this.run_prefilter(input, this.prefilter_mem.GetPointer(), CC, N, prefilter_tapset, boxed_pitch_index, boxed_gain1, boxed_qg, enabled, nbAvailableBytes);
+                pf_on = this.run_prefilter(input.GetPointer(), this.prefilter_mem.GetPointer(), CC, N, prefilter_tapset, boxed_pitch_index, boxed_gain1, boxed_qg, enabled, nbAvailableBytes);
                 pitch_index = boxed_pitch_index.Val;
                 gain1 = boxed_gain1.Val;
                 qg = boxed_qg.Val;
@@ -626,7 +626,7 @@ namespace Concentus.Celt.Structs
             {
                 BoxedValue<int> boxed_tf_estimate = new BoxedValue<int>(tf_estimate);
                 BoxedValue<int> boxed_tf_chan = new BoxedValue<int>(tf_chan);
-                isTransient = CeltCommon.transient_analysis(input.Data, N + overlap, CC,
+                isTransient = CeltCommon.transient_analysis(input, N + overlap, CC,
                       boxed_tf_estimate, boxed_tf_chan);
                 tf_estimate = boxed_tf_estimate.Val;
                 tf_chan = boxed_tf_chan.Val;
@@ -642,28 +642,28 @@ namespace Concentus.Celt.Structs
                 transient_got_disabled = 1;
             }
 
-            freq = Pointer.Malloc<int>(CC * N); /**< Interleaved signal MDCTs */
-            bandE = Pointer.Malloc<int>(nbEBands * CC);
-            bandLogE = Pointer.Malloc<int>(nbEBands * CC);
+            freq = new int[CC * N]; /**< Interleaved signal MDCTs */
+            bandE = new int[nbEBands * CC];
+            bandLogE = new int[nbEBands * CC];
 
             secondMdct = (shortBlocks != 0 && this.complexity >= 8) ? 1 : 0;
-            bandLogE2 = Pointer.Malloc<int>(C * nbEBands);
-            bandLogE2.MemSet(0, C * nbEBands); // FIXME: TEMPORARY
+            bandLogE2 = new int[C * nbEBands];
+            //Arrays.MemSet<int>(bandLogE2, 0, C * nbEBands); // not explicitly needed
             if (secondMdct != 0)
             {
-                CeltCommon.compute_mdcts(mode, 0, input, freq, C, CC, LM, this.upsample);
-                Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
-                QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
+                CeltCommon.compute_mdcts(mode, 0, input.GetPointer(), freq.GetPointer(), C, CC, LM, this.upsample);
+                Bands.compute_band_energies(mode, freq.GetPointer(), bandE.GetPointer(), effEnd, C, LM);
+                QuantizeBands.amp2Log2(mode, effEnd, end, bandE.GetPointer(), bandLogE2.GetPointer(), C);
                 for (i = 0; i < C * nbEBands; i++)
                 {
                     bandLogE2[i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
                 }
             }
 
-            CeltCommon.compute_mdcts(mode, shortBlocks, input, freq, C, CC, LM, this.upsample);
+            CeltCommon.compute_mdcts(mode, shortBlocks, input.GetPointer(), freq.GetPointer(), C, CC, LM, this.upsample);
             if (CC == 2 && C == 1)
                 tf_chan = 0;
-            Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
+            Bands.compute_band_energies(mode, freq.GetPointer(), bandE.GetPointer(), effEnd, C, LM);
 
             if (this.lfe != 0)
             {
@@ -674,10 +674,10 @@ namespace Concentus.Celt.Structs
                 }
             }
 
-            QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
+            QuantizeBands.amp2Log2(mode, effEnd, end, bandE.GetPointer(), bandLogE.GetPointer(), C);
 
-            surround_dynalloc = Pointer.Malloc<int>(C * nbEBands);
-            surround_dynalloc.MemSet(0, end);
+            surround_dynalloc = new int[C * nbEBands];
+            Arrays.MemSet<int>(surround_dynalloc, 0, end); // fixme: not strictly needed
             /* This computes how much masking takes place between surround channels */
             if (start == 0 && this.energy_mask != null && this.lfe == 0)
             {
@@ -740,7 +740,7 @@ namespace Concentus.Celt.Structs
                            disabling masking. */
                         mask_avg = 0;
                         diff = 0;
-                        surround_dynalloc.MemSet(0, mask_end);
+                        Arrays.MemSet<int>(surround_dynalloc, 0, mask_end);
                     }
                     else {
                         for (i = 0; i < mask_end; i++)
@@ -777,20 +777,20 @@ namespace Concentus.Celt.Structs
 
             if (secondMdct == 0)
             {
-                bandLogE.MemCopyTo(bandLogE2, C * nbEBands);
+                Array.Copy(bandLogE, bandLogE2, C * nbEBands);
             }
 
             /* Last chance to catch any transient we might have missed in the
                time-domain analysis */
             if (LM > 0 && enc.tell() + 3 <= total_bits && isTransient == 0 && this.complexity >= 5 && this.lfe == 0)
             {
-                if (CeltCommon.patch_transient_decision(bandLogE, this.oldBandE.GetPointer(), nbEBands, start, end, C) != 0)
+                if (CeltCommon.patch_transient_decision(bandLogE.GetPointer(), this.oldBandE.GetPointer(), nbEBands, start, end, C) != 0)
                 {
                     isTransient = 1;
                     shortBlocks = M;
-                    CeltCommon.compute_mdcts(mode, shortBlocks, input, freq, C, CC, LM, this.upsample);
-                    Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
-                    QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
+                    CeltCommon.compute_mdcts(mode, shortBlocks, input.GetPointer(), freq.GetPointer(), C, CC, LM, this.upsample);
+                    Bands.compute_band_energies(mode, freq.GetPointer(), bandE.GetPointer(), effEnd, C, LM);
+                    QuantizeBands.amp2Log2(mode, effEnd, end, bandE.GetPointer(), bandLogE.GetPointer(), C);
                     /* Compensate for the scaling of short vs long mdcts */
                     for (i = 0; i < C * nbEBands; i++)
                         bandLogE2[i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
@@ -801,12 +801,12 @@ namespace Concentus.Celt.Structs
             if (LM > 0 && enc.tell() + 3 <= total_bits)
                 enc.enc_bit_logp(isTransient, 3);
 
-            X = Pointer.Malloc<int>(C * N);         /**< Interleaved normalised MDCTs */
+            X = new int[C * N];         /**< Interleaved normalised MDCTs */
 
             /* Band normalisation */
-            Bands.normalise_bands(mode, freq, X, bandE, effEnd, C, M);
+            Bands.normalise_bands(mode, freq.GetPointer(), X.GetPointer(), bandE.GetPointer(), effEnd, C, M);
 
-            tf_res = Pointer.Malloc<int>(nbEBands);
+            tf_res = new int[nbEBands];
             /* Disable variable tf resolution for hybrid and at very low bitrate */
             if (effectiveBytes >= 15 * C && start == 0 && this.complexity >= 2 && this.lfe == 0)
             {
@@ -821,7 +821,7 @@ namespace Concentus.Celt.Structs
                     lambda = 3;
                 lambda *= 2;
                 BoxedValue<int> boxed_tf_sum = new BoxedValue<int>();
-                tf_select = CeltCommon.tf_analysis(mode, effEnd, isTransient, tf_res, lambda, X, N, LM, boxed_tf_sum, tf_estimate, tf_chan);
+                tf_select = CeltCommon.tf_analysis(mode, effEnd, isTransient, tf_res.GetPointer(), lambda, X.GetPointer(), N, LM, boxed_tf_sum, tf_estimate, tf_chan);
                 tf_sum = boxed_tf_sum.Val;
 
                 for (i = effEnd; i < end; i++)
@@ -834,15 +834,15 @@ namespace Concentus.Celt.Structs
                 tf_select = 0;
             }
 
-            error = Pointer.Malloc<int>(C * nbEBands);
+            error = new int[C * nbEBands];
             BoxedValue<int> boxed_delayedIntra = new BoxedValue<int>(this.delayedIntra);
-            QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE,
-                  this.oldBandE.GetPointer(), (uint)total_bits, error, enc,
+            QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE.GetPointer(),
+                  this.oldBandE.GetPointer(), (uint)total_bits, error.GetPointer(), enc,
                   C, LM, nbAvailableBytes, this.force_intra,
                   boxed_delayedIntra, this.complexity >= 4 ? 1 : 0, this.loss_rate, this.lfe);
             this.delayedIntra = boxed_delayedIntra.Val;
 
-            CeltCommon.tf_encode(start, end, isTransient, tf_res, LM, tf_select, enc);
+            CeltCommon.tf_encode(start, end, isTransient, tf_res.GetPointer(), LM, tf_select, enc);
 
             if (enc.tell() + 4 <= total_bits)
             {
@@ -864,7 +864,7 @@ namespace Concentus.Celt.Structs
                         BoxedValue<int> boxed_tonal_average = new BoxedValue<int>(this.tonal_average);
                         BoxedValue<int> boxed_hf_average = new BoxedValue<int>(this.hf_average);
                         BoxedValue<int> boxed_tapset_decision = new BoxedValue<int>(this.tapset_decision);
-                        this.spread_decision = Bands.spreading_decision(mode, X,
+                        this.spread_decision = Bands.spreading_decision(mode, X.GetPointer(),
                               boxed_tonal_average, this.spread_decision, boxed_hf_average,
                               boxed_tapset_decision, (pf_on != 0 && shortBlocks == 0) ? 1 : 0, effEnd, C, M);
                         this.tonal_average = boxed_tonal_average.Val;
@@ -878,19 +878,19 @@ namespace Concentus.Celt.Structs
                 enc.enc_icdf(this.spread_decision, Tables.spread_icdf, 5);
             }
 
-            offsets = Pointer.Malloc<int>(nbEBands);
+            offsets = new int[nbEBands];
 
             BoxedValue<int> boxed_tot_boost = new BoxedValue<int>();
-            maxDepth = CeltCommon.dynalloc_analysis(bandLogE, bandLogE2, nbEBands, start, end, C, offsets,
+            maxDepth = CeltCommon.dynalloc_analysis(bandLogE.GetPointer(), bandLogE2.GetPointer(), nbEBands, start, end, C, offsets.GetPointer(),
                   this.lsb_depth, mode.logN.GetPointer(), isTransient, this.vbr, this.constrained_vbr,
-                  eBands, LM, effectiveBytes, boxed_tot_boost, this.lfe, surround_dynalloc);
+                  eBands, LM, effectiveBytes, boxed_tot_boost, this.lfe, surround_dynalloc.GetPointer());
             tot_boost = boxed_tot_boost.Val;
 
             /* For LFE, everything interesting is in the first band */
             if (this.lfe != 0)
                 offsets[0] = Inlines.IMIN(8, effectiveBytes / 3);
-            cap = Pointer.Malloc<int>(nbEBands);
-            CeltCommon.init_caps(mode, cap, LM, C);
+            cap = new int[nbEBands];
+            CeltCommon.init_caps(mode, cap.GetPointer(), LM, C);
 
             dynalloc_logp = 6;
             total_bits <<= EntropyCoder.BITRES;
@@ -938,7 +938,7 @@ namespace Concentus.Celt.Structs
 
                 /* Always use MS for 2.5 ms frames until we can do a better analysis */
                 if (LM != 0)
-                    dual_stereo = CeltCommon.stereo_analysis(mode, X, LM, N);
+                    dual_stereo = CeltCommon.stereo_analysis(mode, X.GetPointer(), LM, N);
 
                 this.intensity = Bands.hysteresis_decision((int)(equiv_rate / 1000),
                       intensity_thresholds.GetPointer(), intensity_histeresis.GetPointer(), 21, this.intensity);
@@ -955,7 +955,7 @@ namespace Concentus.Celt.Structs
                 else
                 {
                     BoxedValue<int> boxed_stereo_saving = new BoxedValue<int>(this.stereo_saving);
-                    alloc_trim = CeltCommon.alloc_trim_analysis(mode, X, bandLogE,
+                    alloc_trim = CeltCommon.alloc_trim_analysis(mode, X.GetPointer(), bandLogE.GetPointer(),
                        end, LM, C, N, this.analysis, boxed_stereo_saving, tf_estimate,
                        this.intensity, surround_trim);
                     this.stereo_saving = boxed_stereo_saving.Val;
@@ -1054,9 +1054,9 @@ namespace Concentus.Celt.Structs
             }
 
             /* Bit allocation */
-            fine_quant = Pointer.Malloc<int>(nbEBands);
-            pulses = Pointer.Malloc<int>(nbEBands);
-            fine_priority = Pointer.Malloc<int>(nbEBands);
+            fine_quant = new int[nbEBands];
+            pulses = new int[nbEBands];
+            fine_priority = new int[nbEBands];
 
             /* bits =    packet size                                     - where we are                        - safety*/
             bits = (((int)nbCompressedBytes * 8) << EntropyCoder.BITRES) - (int)enc.tell_frac() - 1;
@@ -1090,9 +1090,9 @@ namespace Concentus.Celt.Structs
             BoxedValue<int> boxed_intensity = new BoxedValue<int>(this.intensity);
             BoxedValue<int> boxed_dual_stereo = new BoxedValue<int>(dual_stereo);
             BoxedValue<int> boxed_balance = new BoxedValue<int>();
-            codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
-                  alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
-                  fine_quant, fine_priority, C, LM, enc, 1, this.lastCodedBands, signalBandwidth);
+            codedBands = Rate.compute_allocation(mode, start, end, offsets.GetPointer(), cap.GetPointer(),
+                  alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses.GetPointer(),
+                  fine_quant.GetPointer(), fine_priority.GetPointer(), C, LM, enc, 1, this.lastCodedBands, signalBandwidth);
             this.intensity = boxed_intensity.Val;
             dual_stereo = boxed_dual_stereo.Val;
             balance = boxed_balance.Val;
@@ -1102,14 +1102,14 @@ namespace Concentus.Celt.Structs
             else
                 this.lastCodedBands = codedBands;
 
-            QuantizeBands.quant_fine_energy(mode, start, end, this.oldBandE.GetPointer(), error, fine_quant, enc, C);
+            QuantizeBands.quant_fine_energy(mode, start, end, this.oldBandE.GetPointer(), error.GetPointer(), fine_quant.GetPointer(), enc, C);
 
             /* Residual quantisation */
-            collapse_masks = Pointer.Malloc<byte>(C * nbEBands);
+            collapse_masks = new byte[C * nbEBands];
             BoxedValue<uint> boxed_rng = new BoxedValue<uint>(this.rng);
-            Bands.quant_all_bands(1, mode, start, end, X, C == 2 ? X.Point(N) : null, collapse_masks,
-                  bandE, pulses, shortBlocks, this.spread_decision,
-                  dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
+            Bands.quant_all_bands(1, mode, start, end, X.GetPointer(), C == 2 ? X.GetPointer(N) : null, collapse_masks.GetPointer(),
+                  bandE.GetPointer(), pulses.GetPointer(), shortBlocks, this.spread_decision,
+                  dual_stereo, this.intensity, tf_res.GetPointer(), nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
                   balance, enc, LM, codedBands, boxed_rng);
             this.rng = boxed_rng.Val;
 
@@ -1122,7 +1122,7 @@ namespace Concentus.Celt.Structs
                 enc.enc_bits((uint)anti_collapse_on, 1);
             }
 
-            QuantizeBands.quant_energy_finalise(mode, start, end, this.oldBandE.GetPointer(), error, fine_quant, fine_priority, nbCompressedBytes * 8 - (int)enc.tell(), enc, C);
+            QuantizeBands.quant_energy_finalise(mode, start, end, this.oldBandE.GetPointer(), error.GetPointer(), fine_quant.GetPointer(), fine_priority.GetPointer(), nbCompressedBytes * 8 - (int)enc.tell(), enc, C);
 
             if (silence != 0)
             {

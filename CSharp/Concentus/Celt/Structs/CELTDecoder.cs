@@ -177,12 +177,12 @@ namespace Concentus.Celt.Structs
             this.loss_count = 0;
 
             // fixme is this necessary if we just call decoder_ctrl right there anyways?
-            //this.decode_mem = Pointer.Malloc<int>(channels * (CeltConstants.DECODE_BUFFER_SIZE + mode.overlap));
-            //this.lpc = Pointer.Malloc<int>(channels * CeltConstants.LPC_ORDER);
-            //this.oldEBands = Pointer.Malloc<int>(2 * mode.nbEBands);
-            //this.oldLogE = Pointer.Malloc<int>(2 * mode.nbEBands);
-            //this.oldLogE2 = Pointer.Malloc<int>(2 * mode.nbEBands);
-            //this.backgroundLogE = Pointer.Malloc<int>(2 * mode.nbEBands);
+            //this.decode_mem = new int[channels * (CeltConstants.DECODE_BUFFER_SIZE + mode.overlap));
+            //this.lpc = new int[channels * CeltConstants.LPC_ORDER);
+            //this.oldEBands = new int[2 * mode.nbEBands);
+            //this.oldLogE = new int[2 * mode.nbEBands);
+            //this.oldLogE2 = new int[2 * mode.nbEBands);
+            //this.backgroundLogE = new int[2 * mode.nbEBands);
 
             this.ResetState();
 
@@ -230,7 +230,7 @@ namespace Concentus.Celt.Structs
             if (noise_based != 0)
             {
                 /* Noise-based PLC/CNG */
-                Pointer<int> X;
+                int[] X;
                 uint seed;
                 int end;
                 int effEnd;
@@ -238,7 +238,7 @@ namespace Concentus.Celt.Structs
                 end = this.end;
                 effEnd = Inlines.IMAX(start, Inlines.IMIN(end, mode.effEBands));
 
-                X = Pointer.Malloc<int>(C * N);   /**< Interleaved normalised MDCTs */
+                X = new int[C * N];   /**< Interleaved normalised MDCTs */
 
                 /* Energy decay */
                 decay = loss_count == 0 ? Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT) : Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT);
@@ -263,7 +263,7 @@ namespace Concentus.Celt.Structs
                             X[boffs + j] = (unchecked((int)seed) >> 20);
                         }
 
-                        VQ.renormalise_vector(X.Point(boffs), blen, CeltConstants.Q15ONE);
+                        VQ.renormalise_vector(X.GetPointer(boffs), blen, CeltConstants.Q15ONE);
                     }
                 }
                 this.rng = seed;
@@ -274,7 +274,7 @@ namespace Concentus.Celt.Structs
                     decode_mem[c].Point(N).MemMove(0 - N, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
                 } while (++c < C);
 
-                CeltCommon.celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, this.downsample, 0);
+                CeltCommon.celt_synthesis(mode, X.GetPointer(), out_syn, oldBandE, start, effEnd, C, C, 0, LM, this.downsample, 0);
             }
             else
             {
@@ -282,8 +282,8 @@ namespace Concentus.Celt.Structs
                 Pointer<int> window;
                 int fade = CeltConstants.Q15ONE;
                 int pitch_index;
-                Pointer<int> etmp;
-                Pointer<int> exc;
+                int[] etmp;
+                int[] exc;
 
                 if (loss_count == 0)
                 {
@@ -294,8 +294,8 @@ namespace Concentus.Celt.Structs
                     fade = Inlines.QCONST16(.8f, 15);
                 }
 
-                etmp = Pointer.Malloc<int>(overlap);
-                exc = Pointer.Malloc<int>(CeltConstants.MAX_PERIOD);
+                etmp = new int[overlap];
+                exc = new int[CeltConstants.MAX_PERIOD];
                 window = mode.window.GetPointer();
                 c = 0; do
                 {
@@ -316,10 +316,10 @@ namespace Concentus.Celt.Structs
 
                     if (loss_count == 0)
                     {
-                        Pointer<int> ac = Pointer.Malloc<int>(CeltConstants.LPC_ORDER + 1);
+                        int[] ac = new int[CeltConstants.LPC_ORDER + 1];
                         /* Compute LPC coefficients for the last MAX_PERIOD samples before
                            the first loss so we can work in the excitation-filter domain. */
-                        CeltLPC._celt_autocorr(exc, ac, window, overlap,
+                        CeltLPC._celt_autocorr(exc.GetPointer(), ac.GetPointer(), window, overlap,
                                CeltConstants.LPC_ORDER, CeltConstants.MAX_PERIOD);
                         /* Add a noise floor of -40 dB. */
                         ac[0] += Inlines.SHR32(ac[0], 13);
@@ -329,7 +329,7 @@ namespace Concentus.Celt.Structs
                             /*ac[i] *= exp(-.5*(2*M_PI*.002*i)*(2*M_PI*.002*i));*/
                             ac[i] -= Inlines.MULT16_32_Q15(2 * i * i, ac[i]);
                         }
-                        CeltLPC._celt_lpc(lpc.Point(c * CeltConstants.LPC_ORDER), ac, CeltConstants.LPC_ORDER);
+                        CeltLPC._celt_lpc(lpc.Point(c * CeltConstants.LPC_ORDER), ac.GetPointer(), CeltConstants.LPC_ORDER);
                     }
                     /* We want the excitation for 2 pitch periods in order to look for a
                        decaying signal, but we can't get more than MAX_PERIOD. */
@@ -345,8 +345,8 @@ namespace Concentus.Celt.Structs
                         }
 
                         /* Compute the excitation for exc_length samples before the loss. */
-                        Kernels.celt_fir(exc.Data, exc.Offset + (CeltConstants.MAX_PERIOD - exc_length), lpc.Data, lpc.Offset + (c * CeltConstants.LPC_ORDER),
-                              exc.Data, exc.Offset + (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
+                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), lpc.Data, lpc.Offset + (c * CeltConstants.LPC_ORDER),
+                              exc, (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
                     }
 
                     /* Check if the waveform is decaying, and if so how fast.
@@ -355,7 +355,7 @@ namespace Concentus.Celt.Structs
                     {
                         int E1 = 1, E2 = 1;
                         int decay_length;
-                        int shift = Inlines.IMAX(0, 2 * Inlines.celt_zlog2(Inlines.celt_maxabs16(exc.Data, exc.Offset + (CeltConstants.MAX_PERIOD - exc_length), exc_length)) - 20);
+                        int shift = Inlines.IMAX(0, 2 * Inlines.celt_zlog2(Inlines.celt_maxabs16(exc, (CeltConstants.MAX_PERIOD - exc_length), exc_length)) - 20);
                         decay_length = exc_length >> 1;
                         for (i = 0; i < decay_length; i++)
                         {
@@ -403,7 +403,7 @@ namespace Concentus.Celt.Structs
                     }
 
                     {
-                        Pointer<int> lpc_mem = Pointer.Malloc<int>(CeltConstants.LPC_ORDER);
+                        int[] lpc_mem = new int[CeltConstants.LPC_ORDER];
                         /* Copy the last decoded samples (prior to the overlap region) to
                            synthesis filter memory so we can have a continuous signal. */
                         for (i = 0; i < CeltConstants.LPC_ORDER; i++)
@@ -412,7 +412,7 @@ namespace Concentus.Celt.Structs
                            the signal domain. */
                         CeltLPC.celt_iir(buf.Point(CeltConstants.DECODE_BUFFER_SIZE - N), lpc.Point(c * CeltConstants.LPC_ORDER),
                               buf.Point(CeltConstants.DECODE_BUFFER_SIZE - N), extrapolation_len, CeltConstants.LPC_ORDER,
-                              lpc_mem);
+                              lpc_mem.GetPointer());
                     }
 
                     /* Check if the synthesis energy is higher than expected, which can
@@ -454,7 +454,7 @@ namespace Concentus.Celt.Structs
                     /* Apply the pre-filter to the MDCT overlap for the next frame because
                        the post-filter will be re-applied in the decoder after the MDCT
                        overlap. */
-                    CeltCommon.comb_filter(etmp, buf.Point(CeltConstants.DECODE_BUFFER_SIZE),
+                    CeltCommon.comb_filter(etmp.GetPointer(), buf.Point(CeltConstants.DECODE_BUFFER_SIZE),
                          this.postfilter_period, this.postfilter_period, overlap,
                          -this.postfilter_gain, -this.postfilter_gain,
                          this.postfilter_tapset, this.postfilter_tapset, null, 0);
@@ -479,14 +479,14 @@ namespace Concentus.Celt.Structs
             int c, i, N;
             int spread_decision;
             int bits;
-            Pointer<int> X;
-            Pointer<int> fine_quant;
-            Pointer<int> pulses;
-            Pointer<int> cap;
-            Pointer<int> offsets;
-            Pointer<int> fine_priority;
-            Pointer<int> tf_res;
-            Pointer<byte> collapse_masks;
+            int[] X;
+            int[] fine_quant;
+            int[] pulses;
+            int[] cap;
+            int[] offsets;
+            int[] fine_priority;
+            int[] tf_res;
+            byte[] collapse_masks;
             Pointer<Pointer<int>> decode_mem = Pointer.Malloc<Pointer<int>>(2);
             Pointer<Pointer<int>> out_syn = Pointer.Malloc<Pointer<int>>(2);
             Pointer<int> lpc;
@@ -633,19 +633,19 @@ namespace Concentus.Celt.Structs
             QuantizeBands.unquant_coarse_energy(mode, start, end, oldBandE,
                   intra_ener, dec, C, LM);
 
-            tf_res = Pointer.Malloc<int>(nbEBands);
-            CeltCommon.tf_decode(start, end, isTransient, tf_res, LM, dec);
+            tf_res = new int[nbEBands];
+            CeltCommon.tf_decode(start, end, isTransient, tf_res.GetPointer(), LM, dec);
 
             tell = dec.tell();
             spread_decision = Spread.SPREAD_NORMAL;
             if (tell + 4 <= total_bits)
                 spread_decision = dec.dec_icdf(Tables.spread_icdf, 5);
 
-            cap = Pointer.Malloc<int>(nbEBands);
+            cap = new int[nbEBands];
 
-            CeltCommon.init_caps(mode, cap, LM, C);
+            CeltCommon.init_caps(mode, cap.GetPointer(), LM, C);
 
-            offsets = Pointer.Malloc<int>(nbEBands);
+            offsets = new int[nbEBands];
 
             dynalloc_logp = 6;
             total_bits <<= EntropyCoder.BITRES;
@@ -678,7 +678,7 @@ namespace Concentus.Celt.Structs
                     dynalloc_logp = Inlines.IMAX(2, dynalloc_logp - 1);
             }
 
-            fine_quant = Pointer.Malloc<int>(nbEBands);
+            fine_quant = new int[nbEBands];
             alloc_trim = tell + (6 << EntropyCoder.BITRES) <= total_bits ?
                   dec.dec_icdf(Tables.trim_icdf, 7) : 5;
 
@@ -686,20 +686,20 @@ namespace Concentus.Celt.Structs
             anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;
             bits -= anti_collapse_rsv;
 
-            pulses = Pointer.Malloc<int>(nbEBands);
-            fine_priority = Pointer.Malloc<int>(nbEBands);
+            pulses = new int[nbEBands];
+            fine_priority = new int[nbEBands];
 
             BoxedValue<int> boxed_intensity = new BoxedValue<int>(intensity);
             BoxedValue<int> boxed_dual_stereo = new BoxedValue<int>(dual_stereo);
             BoxedValue<int> boxed_balance = new BoxedValue<int>();
-            codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
-                  alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
-                  fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
+            codedBands = Rate.compute_allocation(mode, start, end, offsets.GetPointer(), cap.GetPointer(),
+                  alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses.GetPointer(),
+                  fine_quant.GetPointer(), fine_priority.GetPointer(), C, LM, dec, 0, 0, 0);
             intensity = boxed_intensity.Val;
             dual_stereo = boxed_dual_stereo.Val;
             balance = boxed_balance.Val;
 
-            QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, C);
+            QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant.GetPointer(), dec, C);
 
             c = 0;
             do
@@ -708,13 +708,13 @@ namespace Concentus.Celt.Structs
             } while (++c < CC);
 
             /* Decode fixed codebook */
-            collapse_masks = Pointer.Malloc<byte>(C * nbEBands);
+            collapse_masks = new byte[C * nbEBands];
 
-            X = Pointer.Malloc<int>(C * N);   /**< Interleaved normalised MDCTs */
+            X = new int[C * N];   /**< Interleaved normalised MDCTs */
 
             BoxedValue<uint> boxed_rng = new BoxedValue<uint>(this.rng);
-            Bands.quant_all_bands(0, mode, start, end, X, C == 2 ? X.Point(N) : null, collapse_masks,
-                  null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
+            Bands.quant_all_bands(0, mode, start, end, X.GetPointer(), C == 2 ? X.GetPointer(N) : null, collapse_masks.GetPointer(),
+                  null, pulses.GetPointer(), shortBlocks, spread_decision, dual_stereo, intensity, tf_res.GetPointer(),
                   len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, boxed_rng);
             this.rng = boxed_rng.Val;
 
@@ -724,11 +724,11 @@ namespace Concentus.Celt.Structs
             }
 
             QuantizeBands.unquant_energy_finalise(mode, start, end, oldBandE,
-                  fine_quant, fine_priority, len * 8 - dec.tell(), dec, C);
+                  fine_quant.GetPointer(), fine_priority.GetPointer(), len * 8 - dec.tell(), dec, C);
 
             if (anti_collapse_on != 0)
-                Bands.anti_collapse(mode, X, collapse_masks, LM, C, N,
-                      start, end, oldBandE, oldLogE, oldLogE2, pulses, this.rng);
+                Bands.anti_collapse(mode, X.GetPointer(), collapse_masks.GetPointer(), LM, C, N,
+                      start, end, oldBandE, oldLogE, oldLogE2, pulses.GetPointer(), this.rng);
 
             if (silence != 0)
             {
@@ -736,7 +736,7 @@ namespace Concentus.Celt.Structs
                     oldBandE[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
             }
 
-            CeltCommon.celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd,
+            CeltCommon.celt_synthesis(mode, X.GetPointer(), out_syn, oldBandE, start, effEnd,
                            C, CC, isTransient, LM, this.downsample, silence);
 
             c = 0; do
