@@ -81,12 +81,12 @@ namespace Concentus.Silk
             EntropyCoder psRangeEnc,    /* I/O  compressor data structure                   */
             int p_child1,       /* I    pulse amplitude of first child subframe     */
             int p,              /* I    pulse amplitude of current subframe         */
-            Pointer<byte> shell_table    /* I    table of shell cdfs                         */
+            byte[] shell_table    /* I    table of shell cdfs                         */
         )
         {
             if (p > 0)
             {
-                psRangeEnc.enc_icdf( p_child1, shell_table.Data, shell_table.Offset + (Tables.silk_shell_code_table_offsets[p]), 8);
+                psRangeEnc.enc_icdf( p_child1, shell_table, Tables.silk_shell_code_table_offsets[p], 8);
             }
         }
 
@@ -138,27 +138,27 @@ namespace Concentus.Silk
             combine_pulses(pulses3, pulses2, 2);
             combine_pulses(pulses4, pulses3, 1);
 
-            encode_split(psRangeEnc, pulses3[0], pulses4[0], Tables.silk_shell_code_table3.GetPointer());
+            encode_split(psRangeEnc, pulses3[0], pulses4[0], Tables.silk_shell_code_table3);
 
-            encode_split(psRangeEnc, pulses2[0], pulses3[0], Tables.silk_shell_code_table2.GetPointer());
+            encode_split(psRangeEnc, pulses2[0], pulses3[0], Tables.silk_shell_code_table2);
 
-            encode_split(psRangeEnc, pulses1[0], pulses2[0], Tables.silk_shell_code_table1.GetPointer());
-            encode_split(psRangeEnc, pulses0[0], pulses1[0], Tables.silk_shell_code_table0.GetPointer());
-            encode_split(psRangeEnc, pulses0[2], pulses1[1], Tables.silk_shell_code_table0.GetPointer());
+            encode_split(psRangeEnc, pulses1[0], pulses2[0], Tables.silk_shell_code_table1);
+            encode_split(psRangeEnc, pulses0[0], pulses1[0], Tables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses0[2], pulses1[1], Tables.silk_shell_code_table0);
 
-            encode_split(psRangeEnc, pulses1[2], pulses2[1], Tables.silk_shell_code_table1.GetPointer());
-            encode_split(psRangeEnc, pulses0[4], pulses1[2], Tables.silk_shell_code_table0.GetPointer());
-            encode_split(psRangeEnc, pulses0[6], pulses1[3], Tables.silk_shell_code_table0.GetPointer());
+            encode_split(psRangeEnc, pulses1[2], pulses2[1], Tables.silk_shell_code_table1);
+            encode_split(psRangeEnc, pulses0[4], pulses1[2], Tables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses0[6], pulses1[3], Tables.silk_shell_code_table0);
 
-            encode_split(psRangeEnc, pulses2[2], pulses3[1], Tables.silk_shell_code_table2.GetPointer());
+            encode_split(psRangeEnc, pulses2[2], pulses3[1], Tables.silk_shell_code_table2);
 
-            encode_split(psRangeEnc, pulses1[4], pulses2[2], Tables.silk_shell_code_table1.GetPointer());
-            encode_split(psRangeEnc, pulses0[8], pulses1[4], Tables.silk_shell_code_table0.GetPointer());
-            encode_split(psRangeEnc, pulses0[10], pulses1[5], Tables.silk_shell_code_table0.GetPointer());
+            encode_split(psRangeEnc, pulses1[4], pulses2[2], Tables.silk_shell_code_table1);
+            encode_split(psRangeEnc, pulses0[8], pulses1[4], Tables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses0[10], pulses1[5], Tables.silk_shell_code_table0);
 
-            encode_split(psRangeEnc, pulses1[6], pulses2[3], Tables.silk_shell_code_table1.GetPointer());
-            encode_split(psRangeEnc, pulses0[12], pulses1[6], Tables.silk_shell_code_table0.GetPointer());
-            encode_split(psRangeEnc, pulses0[14], pulses1[7], Tables.silk_shell_code_table0.GetPointer());
+            encode_split(psRangeEnc, pulses1[6], pulses2[3], Tables.silk_shell_code_table1);
+            encode_split(psRangeEnc, pulses0[12], pulses1[6], Tables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses0[14], pulses1[7], Tables.silk_shell_code_table0);
         }
 
 

@@ -131,7 +131,7 @@ namespace Concentus.Silk
                 regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER), Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16));
                 RegularizeCorrelations.silk_regularize_correlations(WLTP_ptr, rr.GetPointer(k), regu, SilkConstants.LTP_ORDER);
 
-                LinearAlgebra.silk_solve_LDL(WLTP_ptr, SilkConstants.LTP_ORDER, Rr.GetPointer(), b_Q16.GetPointer()); /* WLTP_ptr and Rr_ptr both in Q(-corr_rshifts[k]) */
+                LinearAlgebra.silk_solve_LDL(WLTP_ptr, SilkConstants.LTP_ORDER, Rr, b_Q16); /* WLTP_ptr and Rr_ptr both in Q(-corr_rshifts[k]) */
 
                 /* Limit and store in Q14 */
                 silk_fit_LTP(b_Q16.GetPointer(), b_Q14_ptr);

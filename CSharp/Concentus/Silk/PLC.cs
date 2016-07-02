@@ -213,7 +213,7 @@ namespace Concentus.Silk
             }
 
             /* Find the subframe with lowest energy of the last two and use that as random noise generator */
-            SumSqrShift.silk_sum_sqr_shift(energy1, shift1, exc_buf.GetPointer(), subfr_length);
+            SumSqrShift.silk_sum_sqr_shift(energy1, shift1, exc_buf, subfr_length);
             SumSqrShift.silk_sum_sqr_shift(energy2, shift2, exc_buf.GetPointer(subfr_length), subfr_length);
         }
 

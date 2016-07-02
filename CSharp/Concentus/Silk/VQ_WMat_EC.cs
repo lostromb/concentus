@@ -47,7 +47,7 @@ namespace Concentus.Silk
             BoxedValue<int> gain_Q7,                       /* O    sum of absolute LTP coefficients            */
             Pointer<short> in_Q14,                        /* I    input vector to be quantized                */
             Pointer<int> W_Q18,                         /* I    weighting matrix                            */
-            Pointer<sbyte> cb_Q7,                         /* I    codebook                                    */
+            sbyte[] cb_Q7,                         /* I    codebook                                    */
             Pointer<byte> cb_gain_Q7,                    /* I    codebook effective gain                     */
             Pointer<byte> cl_Q5,                         /* I    code length for each codebook vector        */
             int mu_Q9,                          /* I    tradeoff betw. weighted error and rate      */
@@ -62,7 +62,7 @@ namespace Concentus.Silk
 
             /* Loop over codebook */
             rate_dist_Q14.Val = int.MaxValue;
-            cb_row_Q7 = cb_Q7;
+            cb_row_Q7 = cb_Q7.GetPointer();
             for (k = 0; k < L; k++)
             {
                 gain_tmp_Q7 = cb_gain_Q7[k];

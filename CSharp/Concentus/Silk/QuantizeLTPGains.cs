@@ -55,7 +55,7 @@ namespace Concentus.Silk
             int j, k, cbk_size;
             sbyte[] temp_idx = new sbyte[SilkConstants.MAX_NB_SUBFR];
             Pointer<byte> cl_ptr_Q5;
-            Pointer<sbyte> cbk_ptr_Q7;
+            sbyte[] cbk_ptr_Q7;
             Pointer<byte> cbk_gain_ptr_Q7;
             Pointer<short> b_Q14_ptr;
             Pointer<int> W_Q18_ptr;

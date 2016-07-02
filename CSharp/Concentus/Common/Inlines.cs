@@ -2531,16 +2531,14 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_inner_prod_aligned_scale(
             short[] inVec1,
-            int inVec1_ptr,
             short[] inVec2,
-            int inVec2_ptr,
             int scale,
             int len)
         {
             int i, sum = 0;
             for (i = 0; i < len; i++)
             {
-                sum = silk_ADD_RSHIFT32(sum, silk_SMULBB(inVec1[i + inVec1_ptr], inVec2[i + inVec2_ptr]), scale);
+                sum = silk_ADD_RSHIFT32(sum, silk_SMULBB(inVec1[i], inVec2[i]), scale);
             }
 
             return sum;

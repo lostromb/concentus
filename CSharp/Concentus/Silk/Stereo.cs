@@ -137,8 +137,8 @@ namespace Concentus.Silk
         /// <returns>O    Returns predictor in Q13</returns>
         internal static int silk_stereo_find_predictor(
             BoxedValue<int> ratio_Q14,
-            Pointer<short> x,
-            Pointer<short> y,
+            short[] x,
+            short[] y,
             Pointer<int> mid_res_amp_Q0,
             int length,
             int smooth_coef_Q16)
@@ -150,7 +150,7 @@ namespace Concentus.Silk
             BoxedValue<int> nrgy = new BoxedValue<int>();
             int corr, pred_Q13, pred2_Q10;
 
-            /* Find  predictor */
+            /* Find predictor */
             SumSqrShift.silk_sum_sqr_shift(nrgx, scale1, x, length);
             SumSqrShift.silk_sum_sqr_shift(nrgy, scale2, y, length);
             scale = Inlines.silk_max_int(scale1.Val, scale2.Val);
@@ -158,7 +158,7 @@ namespace Concentus.Silk
             nrgy.Val = Inlines.silk_RSHIFT32(nrgy.Val, scale - scale2.Val);
             nrgx.Val = Inlines.silk_RSHIFT32(nrgx.Val, scale - scale1.Val);
             nrgx.Val = Inlines.silk_max_int(nrgx.Val, 1);
-            corr = Inlines.silk_inner_prod_aligned_scale(x.Data, x.Offset, y.Data, y.Offset, scale, length);
+            corr = Inlines.silk_inner_prod_aligned_scale(x, y, scale, length);
             pred_Q13 = Inlines.silk_DIV32_varQ(corr, nrgx.Val, 13);
             pred_Q13 = Inlines.silk_LIMIT(pred_Q13, -(1 << 14), 1 << 14);
             pred2_Q10 = Inlines.silk_SMULWB(pred_Q13, pred_Q13);
@@ -268,8 +268,8 @@ namespace Concentus.Silk
                 Inlines.SILK_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF, 16);
             smooth_coef_Q16 = Inlines.silk_SMULWB(Inlines.silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
-            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid.GetPointer(), LP_side.GetPointer(), state.mid_side_amp_Q0.GetPointer(0), frame_length, smooth_coef_Q16);
-            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid.GetPointer(), HP_side.GetPointer(), state.mid_side_amp_Q0.GetPointer(2), frame_length, smooth_coef_Q16);
+            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0.GetPointer(), frame_length, smooth_coef_Q16);
+            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0.GetPointer(2), frame_length, smooth_coef_Q16);
             
             /* Ratio of the norms of residual and mid signals */
             frac_Q16 = Inlines.silk_SMLABB(HP_ratio_Q14.Val, LP_ratio_Q14.Val, 3);
@@ -312,7 +312,7 @@ namespace Concentus.Silk
                 width_Q14 = 0;
                 pred_Q13[0] = 0;
                 pred_Q13[1] = 0;
-                silk_stereo_quant_pred(pred_Q13.GetPointer(), ix);
+                silk_stereo_quant_pred(pred_Q13, ix);
             }
             else if (state.width_prev_Q14 == 0 &&
               (8 * total_rate_bps < 13 * min_mid_rate_bps || Inlines.silk_SMULWB(frac_Q16, state.smth_width_Q14) < Inlines.SILK_CONST(0.05f, 14)))
@@ -321,7 +321,7 @@ namespace Concentus.Silk
                 /* Scale down and quantize predictors */
                 pred_Q13[0] = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(state.smth_width_Q14, pred_Q13[0]), 14);
                 pred_Q13[1] = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(state.smth_width_Q14, pred_Q13[1]), 14);
-                silk_stereo_quant_pred(pred_Q13.GetPointer(), ix);
+                silk_stereo_quant_pred(pred_Q13, ix);
                 /* Collapse stereo width */
                 width_Q14 = 0;
                 pred_Q13[0] = 0;
@@ -337,7 +337,7 @@ namespace Concentus.Silk
                 /* Scale down and quantize predictors */
                 pred_Q13[0] = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(state.smth_width_Q14, pred_Q13[0]), 14);
                 pred_Q13[1] = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(state.smth_width_Q14, pred_Q13[1]), 14);
-                silk_stereo_quant_pred(pred_Q13.GetPointer(), ix);
+                silk_stereo_quant_pred(pred_Q13, ix);
                 /* Collapse stereo width */
                 width_Q14 = 0;
                 pred_Q13[0] = 0;
@@ -346,7 +346,7 @@ namespace Concentus.Silk
             else if (state.smth_width_Q14 > Inlines.SILK_CONST(0.95f, 14))
             {
                 /* Full-width stereo coding */
-                silk_stereo_quant_pred(pred_Q13.GetPointer(), ix);
+                silk_stereo_quant_pred(pred_Q13, ix);
                 width_Q14 = Inlines.SILK_CONST(1, 14);
             }
             else
@@ -354,7 +354,7 @@ namespace Concentus.Silk
                 /* Reduced-width stereo coding; scale down and quantize predictors */
                 pred_Q13[0] = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(state.smth_width_Q14, pred_Q13[0]), 14);
                 pred_Q13[1] = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(state.smth_width_Q14, pred_Q13[1]), 14);
-                silk_stereo_quant_pred(pred_Q13.GetPointer(), ix);
+                silk_stereo_quant_pred(pred_Q13, ix);
                 width_Q14 = state.smth_width_Q14;
             }
 
@@ -484,7 +484,7 @@ namespace Concentus.Silk
         /// <param name="pred_Q13">I/O  Predictors (out: quantized)</param>
         /// <param name="ix">O    Quantization indices [ 2 ][ 3 ]</param>
         internal static void silk_stereo_quant_pred(
-                            Pointer<int> pred_Q13,
+                            int[] pred_Q13,
                             sbyte[][] ix)
         {
             sbyte i, j; // [porting note] these were originally ints

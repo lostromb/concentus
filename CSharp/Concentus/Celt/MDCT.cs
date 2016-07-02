@@ -155,7 +155,7 @@ namespace Concentus.Celt
         }
 
         internal static void clt_mdct_backward(MDCTLookup l, Pointer<int> input, Pointer<int> output,
-              Pointer<int> window, int overlap, int shift, int stride)
+              int[] window, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;
@@ -243,8 +243,8 @@ namespace Concentus.Celt
                 // fixme: remove these temps
                 Pointer<int> xp1 = output.Point(overlap - 1);
                 Pointer<int> yp1 = output;
-                Pointer<int> wp1 = window;
-                Pointer<int> wp2 = window.Point(overlap - 1);
+                Pointer<int> wp1 = window.GetPointer();
+                Pointer<int> wp2 = window.GetPointer(overlap - 1);
 
                 for (i = 0; i < overlap / 2; i++)
                 {

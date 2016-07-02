@@ -70,10 +70,10 @@ namespace Concentus.Celt
             int coded_bands;
             int tf_calibration;
             int nbEBands;
-            Pointer<short> eBands;
+            short[] eBands;
 
             nbEBands = mode.nbEBands;
-            eBands = mode.eBands.GetPointer();
+            eBands = mode.eBands;
 
             coded_bands = lastCodedBands != 0 ? lastCodedBands : nbEBands;
             coded_bins = eBands[coded_bands] << LM;
@@ -474,7 +474,7 @@ namespace Concentus.Celt
             mem.Val = m;
         }
 
-        internal static int l1_metric(Pointer<int> tmp, int N, int LM, int bias)
+        internal static int l1_metric(int[] tmp, int N, int LM, int bias)
         {
             int i;
             int L1;
@@ -532,14 +532,14 @@ namespace Concentus.Celt
                 /*if (C==2)
                    for (j=0;j<N;j++)
                       tmp[j] = ADD16(SHR16(tmp[j], 1),SHR16(X[N0+j+(m.eBands[i]<<LM)], 1));*/
-                L1 = l1_metric(tmp.GetPointer(), N, isTransient != 0 ? LM : 0, bias);
+                L1 = l1_metric(tmp, N, isTransient != 0 ? LM : 0, bias);
                 best_L1 = L1;
                 /* Check the -1 case for transients */
                 if (isTransient != 0 && narrow == 0)
                 {
                     Array.Copy(tmp, 0, tmp_1, 0, N);
-                    Bands.haar1(tmp_1.GetPointer(), N >> LM, 1 << LM);
-                    L1 = l1_metric(tmp_1.GetPointer(), N, LM + 1, bias);
+                    Bands.haar1(tmp_1, N >> LM, 1 << LM);
+                    L1 = l1_metric(tmp_1, N, LM + 1, bias);
                     if (L1 < best_L1)
                     {
                         best_L1 = L1;
@@ -556,9 +556,9 @@ namespace Concentus.Celt
                     else
                         B = k + 1;
 
-                    Bands.haar1(tmp.GetPointer(), N >> k, 1 << k);
+                    Bands.haar1(tmp, N >> k, 1 << k);
 
-                    L1 = l1_metric(tmp.GetPointer(), N, B, bias);
+                    L1 = l1_metric(tmp, N, B, bias);
 
                     if (L1 < best_L1)
                     {
@@ -1127,9 +1127,9 @@ namespace Concentus.Celt
                 freq2 = out_syn[1].Point(overlap / 2);
                 freq.GetPointer().MemCopyTo(freq2, N);
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq2.Point(b), out_syn[0].Point(NB * b), mode.window.GetPointer(), overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq2.Point(b), out_syn[0].Point(NB * b), mode.window, overlap, shift, B);
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[1].Point(NB * b), mode.window.GetPointer(), overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[1].Point(NB * b), mode.window, overlap, shift, B);
             }
             else if (CC == 1 && C == 2)
             {
@@ -1144,7 +1144,7 @@ namespace Concentus.Celt
                 for (i = 0; i < N; i++)
                     freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], freq2[i]));
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[0].Point(NB * b), mode.window.GetPointer(), overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[0].Point(NB * b), mode.window, overlap, shift, B);
             }
             else {
                 /* Normal case (mono or stereo) */
@@ -1153,7 +1153,7 @@ namespace Concentus.Celt
                     Bands.denormalise_bands(mode, X.Point(c * N), freq.GetPointer(), oldBandE.Point(c * nbEBands), start, effEnd, M,
                           downsample, silence);
                     for (b = 0; b < B; b++)
-                        MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[c].Point(NB * b), mode.window.GetPointer(), overlap, shift, B);
+                        MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[c].Point(NB * b), mode.window, overlap, shift, B);
                 } while (++c < CC);
             }
 

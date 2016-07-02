@@ -224,10 +224,10 @@ namespace Concentus.Silk
                  2,      0,      9,     10,     88
         };
 
-        internal static readonly Pointer<sbyte>[] silk_LTP_vq_ptrs_Q7 = {
-            silk_LTP_gain_vq_0.GetPointer(),
-            silk_LTP_gain_vq_1.GetPointer(),
-            silk_LTP_gain_vq_2.GetPointer()
+        internal static readonly sbyte[][] silk_LTP_vq_ptrs_Q7 = {
+            silk_LTP_gain_vq_0,
+            silk_LTP_gain_vq_1,
+            silk_LTP_gain_vq_2
         };
 
         /* Maximum frequency-dependent response of the pitch taps above,

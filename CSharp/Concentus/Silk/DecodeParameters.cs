@@ -51,7 +51,7 @@ namespace Concentus.Silk
             int i, k, Ix;
             short[] pNLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER]; // fixme use psdec.order
             short[] pNLSF0_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
-            Pointer<sbyte> cbk_ptr_Q7;
+            sbyte[] cbk_ptr_Q7;
 
             /* Dequant Gains */
             BoxedValue<sbyte> boxedLastGainIndex = new BoxedValue<sbyte>(psDec.LastGainIndex);

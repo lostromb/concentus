@@ -104,7 +104,7 @@ namespace Concentus.Celt
         internal static void compute_band_energies(CeltMode m, Pointer<int> X, Pointer<int> bandE, int end, int C, int LM)
         {
             int i, c, N;
-            Pointer<short> eBands = m.eBands.GetPointer();
+            short[] eBands = m.eBands;
             N = m.shortMdctSize << LM;
             c = 0;
 
@@ -150,7 +150,7 @@ namespace Concentus.Celt
         internal static void normalise_bands(CeltMode m, Pointer<int> freq, Pointer<int> X, Pointer<int> bandE, int end, int C, int M)
         {
             int i, c, N;
-            Pointer<short> eBands = m.eBands.GetPointer();
+            short[] eBands = m.eBands;
             N = M * m.shortMdctSize;
             c = 0;
             do
@@ -181,7 +181,7 @@ namespace Concentus.Celt
             int bound;
             Pointer<int> f;
             Pointer<int> x;
-            Pointer<short> eBands = m.eBands.GetPointer();
+            short[] eBands = m.eBands;
             N = M * m.shortMdctSize;
             bound = M * eBands[end];
             if (downsample != 1)
@@ -427,7 +427,7 @@ namespace Concentus.Celt
         {
             int i, c, N0;
             int sum = 0, nbBands = 0;
-            Pointer<short> eBands = m.eBands.GetPointer();
+            short[] eBands = m.eBands;
             int decision;
             int hf_sum = 0;
 
@@ -609,6 +609,21 @@ namespace Concentus.Celt
         }
 
         internal static void haar1(Pointer<int> X, int N0, int stride)
+        {
+            int i, j;
+            N0 >>= 1;
+            for (i = 0; i < stride; i++)
+                for (j = 0; j < N0; j++)
+                {
+                    int tmp1, tmp2;
+                    tmp1 = Inlines.MULT16_16(Inlines.QCONST16(.70710678f, 15), X[stride * 2 * j + i]);
+                    tmp2 = Inlines.MULT16_16(Inlines.QCONST16(.70710678f, 15), X[stride * (2 * j + 1) + i]);
+                    X[stride * 2 * j + i] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.ADD32(tmp1, tmp2), 15));
+                    X[stride * (2 * j + 1) + i] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.SUB32(tmp1, tmp2), 15));
+                }
+        }
+
+        internal static void haar1(int[] X, int N0, int stride)
         {
             int i, j;
             N0 >>= 1;
@@ -1136,6 +1151,7 @@ namespace Concentus.Celt
             return cm;
         }
 
+        private static readonly byte[] bit_interleave_table = { 0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3 };
 
         /* This function is responsible for encoding and decoding a band for the mono case. */
         internal static uint quant_band(band_ctx ctx, Pointer<int> X,
@@ -1181,8 +1197,6 @@ namespace Concentus.Celt
 
             for (k = 0; k < recombine; k++)
             {
-                // fixme: this is static
-                byte[] bit_interleave_table = { 0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3 };
                 if (encode != 0)
                     haar1(X, N >> k, 1 << k);
                 if (lowband != null)
@@ -1443,7 +1457,7 @@ namespace Concentus.Celt
         {
             int i;
             int remaining_bits;
-            Pointer<short> eBands = m.eBands.GetPointer();
+            short[] eBands = m.eBands;
             int[] norm;
             int[] _norm;
             Pointer<int> norm2;

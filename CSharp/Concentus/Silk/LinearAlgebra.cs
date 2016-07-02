@@ -45,8 +45,8 @@ namespace Concentus.Silk
         internal static void silk_solve_LDL(
             Pointer<int> A,                                     /* I    Pointer to symetric square matrix A                                         */
             int M,                                      /* I    Size of matrix                                                              */
-            Pointer<int> b,                                     /* I    Pointer to b vector                                                         */
-            Pointer<int> x_Q16                                  /* O    Pointer to x solution vector                                                */
+            int[] b,                                     /* I    Pointer to b vector                                                         */
+            int[] x_Q16                                  /* O    Pointer to x solution vector                                                */
             )
         {
             Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
@@ -65,24 +65,24 @@ namespace Concentus.Silk
             Factorize A by LDL such that A = L*D*L',
             where L is lower triangular with ones on diagonal
             ****************************************************/
-            silk_LDL_factorize(A, M, L_Q16.GetPointer(), inv_D.GetPointer());
+            silk_LDL_factorize(A, M, L_Q16, inv_D);
 
             /****************************************************
             * substitute D*L'*x = Y. ie:
             L*D*L'*x = b => L*Y = b <=> Y = inv(L)*b
             ******************************************************/
-            silk_LS_SolveFirst(L_Q16.GetPointer(), M, b, Y.GetPointer());
+            silk_LS_SolveFirst(L_Q16, M, b, Y);
 
             /****************************************************
             D*L'*x = Y <=> L'*x = inv(D)*Y, because D is
             diagonal just multiply with 1/d_i
             ****************************************************/
-            silk_LS_divide_Q16(Y.GetPointer(), inv_D.GetPointer(), M);
+            silk_LS_divide_Q16(Y, inv_D, M);
 
             /****************************************************
             x = inv(L') * inv(D) * Y
             *****************************************************/
-            silk_LS_SolveLast(L_Q16.GetPointer(), M, Y.GetPointer(), x_Q16);
+            silk_LS_SolveLast(L_Q16, M, Y, x_Q16);
 
         }
 
@@ -90,8 +90,8 @@ namespace Concentus.Silk
         private static void silk_LDL_factorize(
             Pointer<int> A,         /* I/O Pointer to Symetric Square Matrix                            */
             int M,          /* I   Size of Matrix                                               */
-            Pointer<int> L_Q16,     /* I/O Pointer to Square Upper triangular Matrix                    */
-            Pointer<int> inv_D      /* I/O Pointer to vector holding inverted diagonal elements of D    */
+            int[] L_Q16,     /* I/O Pointer to Square Upper triangular Matrix                    */
+            int[] inv_D      /* I/O Pointer to vector holding inverted diagonal elements of D    */
         )
         {
             int i, j, k, status, loop_count;
@@ -110,7 +110,7 @@ namespace Concentus.Silk
                 status = 0;
                 for (j = 0; j < M; j++)
                 {
-                    ptr1 = Inlines.MatrixGetPointer(L_Q16, j, 0, M);
+                    ptr1 = Inlines.MatrixGetPointer(L_Q16.GetPointer(), j, 0, M);
                     tmp_32 = 0;
                     for (i = 0; i < j; i++)
                     {
@@ -144,7 +144,7 @@ namespace Concentus.Silk
 
                     Inlines.MatrixSet(L_Q16, j, j, M, 65536); /* 1.0 in Q16 */
                     ptr1 = Inlines.MatrixGetPointer(A, j, 0, M);
-                    ptr2 = Inlines.MatrixGetPointer(L_Q16, j + 1, 0, M);
+                    ptr2 = Inlines.MatrixGetPointer(L_Q16.GetPointer(), j + 1, 0, M);
                     for (i = j + 1; i < M; i++)
                     {
                         tmp_32 = 0;
@@ -168,8 +168,8 @@ namespace Concentus.Silk
         }
 
         private static void silk_LS_divide_Q16(
-            Pointer<int> T,        /* I/O  Numenator vector                                            */
-            Pointer<int> inv_D,     /* I    1 / D vector                                                */
+            int[] T,        /* I/O  Numenator vector                                            */
+            int[] inv_D,     /* I    1 / D vector                                                */
             int M           /* I    dimension                                                   */
         )
         {
@@ -189,10 +189,10 @@ namespace Concentus.Silk
 
         /* Solve Lx = b, when L is lower triangular and has ones on the diagonal */
         private static void silk_LS_SolveFirst(
-            Pointer<int> L_Q16,     /* I    Pointer to Lower Triangular Matrix                          */
+            int[] L_Q16,     /* I    Pointer to Lower Triangular Matrix                          */
             int M,          /* I    Dim of Matrix equation                                      */
-            Pointer<int> b,         /* I    b Vector                                                    */
-            Pointer<int> x_Q16      /* O    x Vector                                                    */
+            int[] b,         /* I    b Vector                                                    */
+            int[] x_Q16      /* O    x Vector                                                    */
             )
         {
             int i, j;
@@ -201,7 +201,7 @@ namespace Concentus.Silk
 
             for (i = 0; i < M; i++)
             {
-                ptr32 = Inlines.MatrixGetPointer(L_Q16, i, 0, M);
+                ptr32 = Inlines.MatrixGetPointer(L_Q16.GetPointer(), i, 0, M);
                 tmp_32 = 0;
                 for (j = 0; j < i; j++)
                 {
@@ -213,10 +213,10 @@ namespace Concentus.Silk
 
         /* Solve L^t*x = b, where L is lower triangular with ones on the diagonal */
         private static void silk_LS_SolveLast(
-        Pointer<int> L_Q16,     /* I    Pointer to Lower Triangular Matrix                          */
-        int M,          /* I    Dim of Matrix equation                                      */
-        Pointer<int> b,         /* I    b Vector                                                    */
-            Pointer<int> x_Q16      /* O    x Vector                                                    */
+            int[] L_Q16,     /* I    Pointer to Lower Triangular Matrix                          */
+            int M,          /* I    Dim of Matrix equation                                      */
+            int[] b,         /* I    b Vector                                                    */
+            int[] x_Q16      /* O    x Vector                                                    */
         )
         {
             int i, j;
@@ -225,7 +225,7 @@ namespace Concentus.Silk
 
             for (i = M - 1; i >= 0; i--)
             {
-                ptr32 = Inlines.MatrixGetPointer(L_Q16, 0, i, M);
+                ptr32 = Inlines.MatrixGetPointer(L_Q16.GetPointer(), 0, i, M);
                 tmp_32 = 0;
                 for (j = M - 1; j > i; j--)
                 {

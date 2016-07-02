@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    // fixme: merge with resampler state
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
