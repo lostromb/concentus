@@ -114,29 +114,28 @@ namespace Concentus.Celt
             for (i = 0; i < N - 3; i += 4)
             {
                 /* Unroll by 4 as if it were an FIR filter */
-                int[] sum = new int[4];
-                sum[0] = _x[i];
-                sum[1] = _x[i + 1];
-                sum[2] = _x[i + 2];
-                sum[3] = _x[i + 3];
-                Kernels.xcorr_kernel(rden, y, i, sum, ord);
+                int sum0 = _x[i];
+                int sum1 = _x[i + 1];
+                int sum2 = _x[i + 2];
+                int sum3 = _x[i + 3];
+                Kernels.xcorr_kernel(rden, y, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
 
                 /* Patch up the result to compensate for the fact that this is an IIR */
-                y[i + ord] = (0 - Inlines.ROUND16((sum[0]), CeltConstants.SIG_SHIFT));
-                _y[i] = sum[0];
-                sum[1] = Inlines.MAC16_16(sum[1], y[i + ord], den[0]);
-                y[i + ord + 1] = (0 - Inlines.ROUND16((sum[1]), CeltConstants.SIG_SHIFT));
-                _y[i + 1] = sum[1];
-                sum[2] = Inlines.MAC16_16(sum[2], y[i + ord + 1], den[0]);
-                sum[2] = Inlines.MAC16_16(sum[2], y[i + ord], den[1]);
-                y[i + ord + 2] = (0 - Inlines.ROUND16((sum[2]), CeltConstants.SIG_SHIFT));
-                _y[i + 2] = sum[2];
+                y[i + ord] = (0 - Inlines.ROUND16((sum0), CeltConstants.SIG_SHIFT));
+                _y[i] = sum0;
+                sum1 = Inlines.MAC16_16(sum1, y[i + ord], den[0]);
+                y[i + ord + 1] = (0 - Inlines.ROUND16((sum1), CeltConstants.SIG_SHIFT));
+                _y[i + 1] = sum1;
+                sum2 = Inlines.MAC16_16(sum2, y[i + ord + 1], den[0]);
+                sum2 = Inlines.MAC16_16(sum2, y[i + ord], den[1]);
+                y[i + ord + 2] = (0 - Inlines.ROUND16((sum2), CeltConstants.SIG_SHIFT));
+                _y[i + 2] = sum2;
 
-                sum[3] = Inlines.MAC16_16(sum[3], y[i + ord + 2], den[0]);
-                sum[3] = Inlines.MAC16_16(sum[3], y[i + ord + 1], den[1]);
-                sum[3] = Inlines.MAC16_16(sum[3], y[i + ord], den[2]);
-                y[i + ord + 3] = (0 - Inlines.ROUND16((sum[3]), CeltConstants.SIG_SHIFT));
-                _y[i + 3] = sum[3];
+                sum3 = Inlines.MAC16_16(sum3, y[i + ord + 2], den[0]);
+                sum3 = Inlines.MAC16_16(sum3, y[i + ord + 1], den[1]);
+                sum3 = Inlines.MAC16_16(sum3, y[i + ord], den[2]);
+                y[i + ord + 3] = (0 - Inlines.ROUND16((sum3), CeltConstants.SIG_SHIFT));
+                _y[i + 3] = sum3;
             }
             for (; i < N; i++)
             {

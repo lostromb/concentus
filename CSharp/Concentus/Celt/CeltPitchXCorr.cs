@@ -51,25 +51,21 @@ namespace Concentus.Celt
             int len,
             int max_pitch)
         {
-            int[] sum = new int[4];
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
             for (i = 0; i < max_pitch - 3; i += 4)
             {
-                sum[0] = 0;
-                sum[1] = 0;
-                sum[2] = 0;
-                sum[3] = 0;
-                Kernels.xcorr_kernel(_x, _y, i, sum, len);
-                xcorr[i] = sum[0];
-                xcorr[i + 1] = sum[1];
-                xcorr[i + 2] = sum[2];
-                xcorr[i + 3] = sum[3];
-                sum[0] = Inlines.MAX32(sum[0], sum[1]);
-                sum[2] = Inlines.MAX32(sum[2], sum[3]);
-                sum[0] = Inlines.MAX32(sum[0], sum[2]);
-                maxcorr = Inlines.MAX32(maxcorr, sum[0]);
+                int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                Kernels.xcorr_kernel(_x, _y, i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                xcorr[i] = sum0;
+                xcorr[i + 1] = sum1;
+                xcorr[i + 2] = sum2;
+                xcorr[i + 3] = sum3;
+                sum0 = Inlines.MAX32(sum0, sum1);
+                sum2 = Inlines.MAX32(sum2, sum3);
+                sum0 = Inlines.MAX32(sum0, sum2);
+                maxcorr = Inlines.MAX32(maxcorr, sum0);
             }
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
@@ -88,26 +84,22 @@ namespace Concentus.Celt
             int len,
             int max_pitch)
         {
-            int[] sum = new int[4];
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
             for (i = 0; i < max_pitch - 3; i += 4)
             {
-                sum[0] = 0;
-                sum[1] = 0;
-                sum[2] = 0;
-                sum[3] = 0;
-                Kernels.xcorr_kernel(_x.Data, _x.Offset, _y.Data, _y.Offset + i, sum, len);
+                int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                Kernels.xcorr_kernel(_x.Data, _x.Offset, _y.Data, _y.Offset + i, ref sum0, ref sum1, ref sum2, ref sum3, len);
 
-                xcorr[i] = sum[0];
-                xcorr[i + 1] = sum[1];
-                xcorr[i + 2] = sum[2];
-                xcorr[i + 3] = sum[3];
-                sum[0] = Inlines.MAX32(sum[0], sum[1]);
-                sum[2] = Inlines.MAX32(sum[2], sum[3]);
-                sum[0] = Inlines.MAX32(sum[0], sum[2]);
-                maxcorr = Inlines.MAX32(maxcorr, sum[0]);
+                xcorr[i] = sum0;
+                xcorr[i + 1] = sum1;
+                xcorr[i + 2] = sum2;
+                xcorr[i + 3] = sum3;
+                sum0 = Inlines.MAX32(sum0, sum1);
+                sum2 = Inlines.MAX32(sum2, sum3);
+                sum0 = Inlines.MAX32(sum0, sum2);
+                maxcorr = Inlines.MAX32(maxcorr, sum0);
             }
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
@@ -126,26 +118,22 @@ namespace Concentus.Celt
             int len,
             int max_pitch)
         {
-            int[] sum = new int[4];
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
             for (i = 0; i < max_pitch - 3; i += 4)
             {
-                sum[0] = 0;
-                sum[1] = 0;
-                sum[2] = 0;
-                sum[3] = 0;
-                Kernels.xcorr_kernel(_x, 0, _y, i, sum, len);
+                int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                Kernels.xcorr_kernel(_x, 0, _y, i, ref sum0, ref sum1, ref sum2, ref sum3, len);
 
-                xcorr[i] = sum[0];
-                xcorr[i + 1] = sum[1];
-                xcorr[i + 2] = sum[2];
-                xcorr[i + 3] = sum[3];
-                sum[0] = Inlines.MAX32(sum[0], sum[1]);
-                sum[2] = Inlines.MAX32(sum[2], sum[3]);
-                sum[0] = Inlines.MAX32(sum[0], sum[2]);
-                maxcorr = Inlines.MAX32(maxcorr, sum[0]);
+                xcorr[i] = sum0;
+                xcorr[i + 1] = sum1;
+                xcorr[i + 2] = sum2;
+                xcorr[i + 3] = sum3;
+                sum0 = Inlines.MAX32(sum0, sum1);
+                sum2 = Inlines.MAX32(sum2, sum3);
+                sum0 = Inlines.MAX32(sum0, sum2);
+                maxcorr = Inlines.MAX32(maxcorr, sum0);
             }
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
