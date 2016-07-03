@@ -315,6 +315,15 @@ namespace Concentus.Celt
             return xy;
         }
 
+        internal static int celt_inner_prod(short[] x, short[] y, int y_ptr, int N)
+        {
+            int i;
+            int xy = 0;
+            for (i = 0; i < N; i++)
+                xy = Inlines.MAC16_16(xy, x[i], y[y_ptr + i]);
+            return xy;
+        }
+
         internal static int celt_inner_prod(int[] x, int x_ptr, int[] y, int y_ptr, int N)
         {
             int i;

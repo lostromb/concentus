@@ -94,9 +94,9 @@ namespace Concentus.Celt
         }
 
         internal static int interp_bits2pulses(CeltMode m, int start, int end, int skip_start,
-              Pointer<int> bits1, Pointer<int> bits2, Pointer<int> thresh, Pointer<int> cap, int total, BoxedValue<int> _balance,
-              int skip_rsv, BoxedValue<int> intensity, int intensity_rsv, BoxedValue<int> dual_stereo, int dual_stereo_rsv, Pointer<int> bits,
-              Pointer<int> ebits, Pointer<int> fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
+              int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, BoxedValue<int> _balance,
+              int skip_rsv, BoxedValue<int> intensity, int intensity_rsv, BoxedValue<int> dual_stereo, int dual_stereo_rsv, int[] bits,
+              int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
         {
             int psum;
             int lo, hi;
@@ -394,8 +394,8 @@ namespace Concentus.Celt
             return codedBands;
         }
 
-        internal static int compute_allocation(CeltMode m, int start, int end, Pointer<int> offsets, Pointer<int> cap, int alloc_trim, BoxedValue<int> intensity, BoxedValue<int> dual_stereo,
-              int total, BoxedValue<int> balance, Pointer<int> pulses, Pointer<int> ebits, Pointer<int> fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
+        internal static int compute_allocation(CeltMode m, int start, int end, int[] offsets, int[] cap, int alloc_trim, BoxedValue<int> intensity, BoxedValue<int> dual_stereo,
+              int total, BoxedValue<int> balance, int[] pulses, int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
         {
             int lo, hi, len, j;
             int codedBands;
@@ -511,7 +511,7 @@ namespace Concentus.Celt
                 bits2[j] = bits2j;
             }
 
-            codedBands = interp_bits2pulses(m, start, end, skip_start, bits1.GetPointer(), bits2.GetPointer(), thresh.GetPointer(), cap,
+            codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
                   total, balance, skip_rsv, intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
                   pulses, ebits, fine_priority, C, LM, ec, encode, prev, signalBandwidth);
 

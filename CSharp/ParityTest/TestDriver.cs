@@ -285,7 +285,7 @@ namespace ParityTest
                     }
                 }
             }
-            catch (ArgumentException e)
+            catch (OpusException e)
             {
                 returnVal.Message = "ENCODER: " + e.Message + " (frame " + frameCount + ")";
                 returnVal.Passed = false;
@@ -367,7 +367,7 @@ namespace ParityTest
                 }
                 frameCount++;
             }
-            catch (Exception e)
+            catch (OpusException e)
             {
                 returnVal.Message = "DECODER: " + e.Message + " (frame " + frameCount + ")";
                 returnVal.Passed = false;

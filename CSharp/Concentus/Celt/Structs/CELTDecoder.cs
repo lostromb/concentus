@@ -196,36 +196,23 @@ namespace Concentus.Celt.Structs
             int C = this.channels;
             Pointer<int>[] local_decode_mem = new Pointer<int>[2];
             Pointer<int>[] out_syn = new Pointer<int>[2];
-            Pointer<int> lpc;
-            Pointer<int> oldBandE, oldLogE, oldLogE2, backgroundLogE;
             CeltMode mode;
             int nbEBands;
             int overlap;
-            int start;
-            int loss_count;
             int noise_based;
-            Pointer<short> eBands;
+            short[] eBands;
 
             mode = this.mode;
             nbEBands = mode.nbEBands;
             overlap = mode.overlap;
-            eBands = mode.eBands.GetPointer();
+            eBands = mode.eBands;
 
             c = 0; do
             {
                 local_decode_mem[c] = this.decode_mem.GetPointer(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
                 out_syn[c] = local_decode_mem[c].Point(CeltConstants.DECODE_BUFFER_SIZE - N);
             } while (++c < C);
-
-            // fixme: can remove these temp pointers
-            lpc = this.lpc.GetPointer();
-            oldBandE = this.oldEBands.GetPointer();
-            oldLogE = this.oldLogE.GetPointer();
-            oldLogE2 = this.oldLogE2.GetPointer();
-            backgroundLogE = this.backgroundLogE.GetPointer();
-
-            loss_count = this.loss_count;
-            start = this.start;
+            
             noise_based = (loss_count >= 5 || start != 0) ? 1 : 0;
             if (noise_based != 0)
             {
@@ -245,7 +232,7 @@ namespace Concentus.Celt.Structs
                 c = 0; do
                 {
                     for (i = start; i < end; i++)
-                        oldBandE[c * nbEBands + i] = Inlines.MAX16(backgroundLogE[c * nbEBands + i], oldBandE[c * nbEBands + i] - decay);
+                        this.oldEBands[c * nbEBands + i] = Inlines.MAX16(backgroundLogE[c * nbEBands + i], this.oldEBands[c * nbEBands + i] - decay);
                 } while (++c < C);
                 seed = this.rng;
                 for (c = 0; c < C; c++)
@@ -274,12 +261,12 @@ namespace Concentus.Celt.Structs
                     local_decode_mem[c].Point(N).MemMove(0 - N, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
                 } while (++c < C);
 
-                CeltCommon.celt_synthesis(mode, X.GetPointer(), out_syn.GetPointer(), oldBandE, start, effEnd, C, C, 0, LM, this.downsample, 0);
+                CeltCommon.celt_synthesis(mode, X, out_syn, this.oldEBands, start, effEnd, C, C, 0, LM, this.downsample, 0);
             }
             else
             {
                 /* Pitch-based PLC */
-                Pointer<int> window;
+                int[] window;
                 int fade = CeltConstants.Q15ONE;
                 int pitch_index;
                 int[] etmp;
@@ -287,7 +274,7 @@ namespace Concentus.Celt.Structs
 
                 if (loss_count == 0)
                 {
-                    this.last_pitch_index = pitch_index = CeltCommon.celt_plc_pitch_search(local_decode_mem.GetPointer(), C);
+                    this.last_pitch_index = pitch_index = CeltCommon.celt_plc_pitch_search(local_decode_mem, C);
                 }
                 else {
                     pitch_index = this.last_pitch_index;
@@ -296,7 +283,7 @@ namespace Concentus.Celt.Structs
 
                 etmp = new int[overlap];
                 exc = new int[CeltConstants.MAX_PERIOD];
-                window = mode.window.GetPointer();
+                window = mode.window;
                 c = 0; do
                 {
                     int decay;
@@ -319,7 +306,7 @@ namespace Concentus.Celt.Structs
                         int[] ac = new int[CeltConstants.LPC_ORDER + 1];
                         /* Compute LPC coefficients for the last MAX_PERIOD samples before
                            the first loss so we can work in the excitation-filter domain. */
-                        CeltLPC._celt_autocorr(exc, ac.GetPointer(), window, overlap,
+                        Autocorrelation._celt_autocorr(exc, ac, window, overlap,
                                CeltConstants.LPC_ORDER, CeltConstants.MAX_PERIOD);
                         /* Add a noise floor of -40 dB. */
                         ac[0] += Inlines.SHR32(ac[0], 13);
@@ -329,7 +316,7 @@ namespace Concentus.Celt.Structs
                             /*ac[i] *= exp(-.5*(2*M_PI*.002*i)*(2*M_PI*.002*i));*/
                             ac[i] -= Inlines.MULT16_32_Q15(2 * i * i, ac[i]);
                         }
-                        CeltLPC._celt_lpc(lpc.Point(c * CeltConstants.LPC_ORDER), ac.GetPointer(), CeltConstants.LPC_ORDER);
+                        CeltLPC.celt_lpc(this.lpc.GetPointer(c * CeltConstants.LPC_ORDER), ac, CeltConstants.LPC_ORDER);
                     }
                     /* We want the excitation for 2 pitch periods in order to look for a
                        decaying signal, but we can't get more than MAX_PERIOD. */
@@ -345,7 +332,7 @@ namespace Concentus.Celt.Structs
                         }
 
                         /* Compute the excitation for exc_length samples before the loss. */
-                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), lpc.Data, lpc.Offset + (c * CeltConstants.LPC_ORDER),
+                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), this.lpc, (c * CeltConstants.LPC_ORDER),
                               exc, (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
                     }
 
@@ -410,9 +397,9 @@ namespace Concentus.Celt.Structs
                             lpc_mem[i] = Inlines.ROUND16(buf[CeltConstants.DECODE_BUFFER_SIZE - N - 1 - i], CeltConstants.SIG_SHIFT);
                         /* Apply the synthesis filter to convert the excitation back into
                            the signal domain. */
-                        CeltLPC.celt_iir(buf.Point(CeltConstants.DECODE_BUFFER_SIZE - N), lpc.Point(c * CeltConstants.LPC_ORDER),
+                        CeltLPC.celt_iir(buf.Point(CeltConstants.DECODE_BUFFER_SIZE - N), this.lpc.GetPointer(c * CeltConstants.LPC_ORDER),
                               buf.Point(CeltConstants.DECODE_BUFFER_SIZE - N), extrapolation_len, CeltConstants.LPC_ORDER,
-                              lpc_mem.GetPointer());
+                              lpc_mem);
                     }
 
                     /* Check if the synthesis energy is higher than expected, which can
@@ -489,8 +476,8 @@ namespace Concentus.Celt.Structs
             byte[] collapse_masks;
             Pointer<int>[] decode_mem = new Pointer<int>[2];
             Pointer<int>[] out_syn = new Pointer<int>[2];
-            Pointer<int> lpc;
-            Pointer<int> oldBandE, oldLogE, oldLogE2, backgroundLogE;
+            int[] lpc;
+            int[] oldBandE, oldLogE, oldLogE2, backgroundLogE;
 
             int shortBlocks;
             int isTransient;
@@ -518,21 +505,21 @@ namespace Concentus.Celt.Structs
             CeltMode mode; // porting note: pointer
             int nbEBands;
             int overlap;
-            Pointer<short> eBands;
+            short[] eBands;
 
             mode = this.mode;
             nbEBands = mode.nbEBands;
             overlap = mode.overlap;
-            eBands = mode.eBands.GetPointer();
+            eBands = mode.eBands;
             start = this.start;
             end = this.end;
             frame_size *= this.downsample;
 
-            lpc = this.lpc.GetPointer();
-            oldBandE = this.oldEBands.GetPointer();
-            oldLogE = this.oldLogE.GetPointer();
-            oldLogE2 = this.oldLogE2.GetPointer();
-            backgroundLogE = this.backgroundLogE.GetPointer();
+            lpc = this.lpc;
+            oldBandE = this.oldEBands;
+            oldLogE = this.oldLogE;
+            oldLogE2 = this.oldLogE2;
+            backgroundLogE = this.backgroundLogE;
 
             {
                 for (LM = 0; LM <= mode.maxLM; LM++)
@@ -560,7 +547,7 @@ namespace Concentus.Celt.Structs
             if (data == null || len <= 1)
             {
                 this.celt_decode_lost(N, LM);
-                CeltCommon.deemphasis(out_syn.GetPointer(), pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD.GetPointer(), accum);
+                CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
 
                 return frame_size / this.downsample;
             }
@@ -634,7 +621,7 @@ namespace Concentus.Celt.Structs
                   intra_ener, dec, C, LM);
 
             tf_res = new int[nbEBands];
-            CeltCommon.tf_decode(start, end, isTransient, tf_res.GetPointer(), LM, dec);
+            CeltCommon.tf_decode(start, end, isTransient, tf_res, LM, dec);
 
             tell = dec.tell();
             spread_decision = Spread.SPREAD_NORMAL;
@@ -643,7 +630,7 @@ namespace Concentus.Celt.Structs
 
             cap = new int[nbEBands];
 
-            CeltCommon.init_caps(mode, cap.GetPointer(), LM, C);
+            CeltCommon.init_caps(mode, cap, LM, C);
 
             offsets = new int[nbEBands];
 
@@ -692,14 +679,14 @@ namespace Concentus.Celt.Structs
             BoxedValue<int> boxed_intensity = new BoxedValue<int>(intensity);
             BoxedValue<int> boxed_dual_stereo = new BoxedValue<int>(dual_stereo);
             BoxedValue<int> boxed_balance = new BoxedValue<int>();
-            codedBands = Rate.compute_allocation(mode, start, end, offsets.GetPointer(), cap.GetPointer(),
-                  alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses.GetPointer(),
-                  fine_quant.GetPointer(), fine_priority.GetPointer(), C, LM, dec, 0, 0, 0);
+            codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
+                  alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
+                  fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
             intensity = boxed_intensity.Val;
             dual_stereo = boxed_dual_stereo.Val;
             balance = boxed_balance.Val;
 
-            QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant.GetPointer(), dec, C);
+            QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, C);
 
             c = 0;
             do
@@ -713,8 +700,8 @@ namespace Concentus.Celt.Structs
             X = new int[C * N];   /**< Interleaved normalised MDCTs */
 
             BoxedValue<uint> boxed_rng = new BoxedValue<uint>(this.rng);
-            Bands.quant_all_bands(0, mode, start, end, X.GetPointer(), C == 2 ? X.GetPointer(N) : null, collapse_masks.GetPointer(),
-                  null, pulses.GetPointer(), shortBlocks, spread_decision, dual_stereo, intensity, tf_res.GetPointer(),
+            Bands.quant_all_bands(0, mode, start, end, X, C == 2 ? X.GetPointer(N) : null, collapse_masks,
+                  null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
                   len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, boxed_rng);
             this.rng = boxed_rng.Val;
 
@@ -724,11 +711,11 @@ namespace Concentus.Celt.Structs
             }
 
             QuantizeBands.unquant_energy_finalise(mode, start, end, oldBandE,
-                  fine_quant.GetPointer(), fine_priority.GetPointer(), len * 8 - dec.tell(), dec, C);
+                  fine_quant, fine_priority, len * 8 - dec.tell(), dec, C);
 
             if (anti_collapse_on != 0)
-                Bands.anti_collapse(mode, X.GetPointer(), collapse_masks.GetPointer(), LM, C, N,
-                      start, end, oldBandE, oldLogE, oldLogE2, pulses.GetPointer(), this.rng);
+                Bands.anti_collapse(mode, X, collapse_masks, LM, C, N,
+                      start, end, oldBandE, oldLogE, oldLogE2, pulses, this.rng);
 
             if (silence != 0)
             {
@@ -736,7 +723,7 @@ namespace Concentus.Celt.Structs
                     oldBandE[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
             }
 
-            CeltCommon.celt_synthesis(mode, X.GetPointer(), out_syn.GetPointer(), oldBandE, start, effEnd,
+            CeltCommon.celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd,
                            C, CC, isTransient, LM, this.downsample, silence);
 
             c = 0; do
@@ -745,12 +732,12 @@ namespace Concentus.Celt.Structs
                 this.postfilter_period_old = Inlines.IMAX(this.postfilter_period_old, CeltConstants.COMBFILTER_MINPERIOD);
                 CeltCommon.comb_filter(out_syn[c], out_syn[c], this.postfilter_period_old, this.postfilter_period, mode.shortMdctSize,
                       this.postfilter_gain_old, this.postfilter_gain, this.postfilter_tapset_old, this.postfilter_tapset,
-                      mode.window.GetPointer(), overlap);
+                      mode.window, overlap);
                 if (LM != 0)
                 {
                     CeltCommon.comb_filter(out_syn[c].Point(mode.shortMdctSize), out_syn[c].Point(mode.shortMdctSize), this.postfilter_period, postfilter_pitch, N - mode.shortMdctSize,
                           this.postfilter_gain, postfilter_gain, this.postfilter_tapset, postfilter_tapset,
-                          mode.window.GetPointer(), overlap);
+                          mode.window, overlap);
                 }
 
             } while (++c < CC);
@@ -769,15 +756,15 @@ namespace Concentus.Celt.Structs
 
             if (C == 1)
             {
-                oldBandE.MemCopyTo(oldBandE.Point(nbEBands), nbEBands);
+                Array.Copy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
             }
 
             /* In case start or end were to change */
             if (isTransient == 0)
             {
                 int max_background_increase;
-                oldLogE.MemCopyTo(oldLogE2, 2 * nbEBands);
-                oldBandE.MemCopyTo(oldLogE, 2 * nbEBands);
+                Array.Copy(oldLogE, oldLogE2, 2 * nbEBands);
+                Array.Copy(oldBandE, oldLogE, 2 * nbEBands);
                 /* In normal circumstances, we only allow the noise floor to increase by
                    up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB
                    increase for each update.*/
@@ -807,7 +794,7 @@ namespace Concentus.Celt.Structs
             } while (++c < 2);
             this.rng = dec.rng;
 
-            CeltCommon.deemphasis(out_syn.GetPointer(), pcm, N, CC, this.downsample, mode.preemph.GetPointer(), this.preemph_memD.GetPointer(), accum);
+            CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
             this.loss_count = 0;
 
             if (dec.tell() > 8 * len)

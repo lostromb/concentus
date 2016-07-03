@@ -179,6 +179,8 @@ namespace ParityTest
                     passedTests++;
                     if (passedTests > 7)
                     {
+                        concentusTime *= 0.999;
+                        opusTime *= 0.999;
                         concentusTime += response.ConcentusTimeMs;
                         opusTime += response.OpusTimeMs;
                     }

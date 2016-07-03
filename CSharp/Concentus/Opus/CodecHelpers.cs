@@ -226,7 +226,7 @@ namespace Concentus
            14: 20 ms (#7)
            15: 20 ms (#8)
         */
-        internal static int transient_viterbi(Pointer<float> E, Pointer<float> E_1, int N, int frame_cost, int rate)
+        internal static int transient_viterbi(float[] E, float[] E_1, int N, int frame_cost, int rate)
         {
             int i;
             Pointer<Pointer<float>> cost = Arrays.InitTwoDimensionalArrayPointer<float>(MAX_DYNAMIC_FRAMESIZE, 16);
@@ -252,7 +252,7 @@ namespace Concentus
             }
             for (i = 0; i < 4; i++)
             {
-                cost[0][1 << i] = (frame_cost + rate * (1 << i)) * (1 + factor * transient_boost(E, E_1, i, N + 1));
+                cost[0][1 << i] = (frame_cost + rate * (1 << i)) * (1 + factor * transient_boost(E.GetPointer(), E_1.GetPointer(), i, N + 1));
                 states[0][1 << i] = i;
             }
             for (i = 1; i < N; i++)
@@ -283,7 +283,7 @@ namespace Concentus
                             min_cost = tmp;
                         }
                     }
-                    curr_cost = (frame_cost + rate * (1 << j)) * (1 + factor * transient_boost(E.Point(i), E_1.Point(i), j, N - i + 1));
+                    curr_cost = (frame_cost + rate * (1 << j)) * (1 + factor * transient_boost(E.GetPointer(i), E_1.GetPointer(i), j, N - i + 1));
                     cost[i][1 << j] = min_cost;
                     /* If part of the frame is outside the analysis window, only count part of the cost */
                     if (N - i < (1 << j))
@@ -361,7 +361,7 @@ namespace Concentus
                 int j;
                 tmp = CeltConstants.EPSILON;
 
-                downmix(x.GetPointer(x_ptr), sub.GetPointer(), subframe, i * subframe + offset, 0, -2, C);
+                downmix(x, x_ptr, sub, subframe, i * subframe + offset, 0, -2, C);
                 if (i == 0)
                     memx = sub[0];
                 for (j = 0; j < subframe; j++)
@@ -379,7 +379,7 @@ namespace Concentus
             e[i + pos] = e[i + pos - 1];
             if (buffering != 0)
                 N = Inlines.IMIN(MAX_DYNAMIC_FRAMESIZE, N + 2);
-            bestLM = transient_viterbi(e.GetPointer(), e_1.GetPointer(), N, (int)((1.0f + .5f * tonality) * (60 * C + 40)), bitrate / 400);
+            bestLM = transient_viterbi(e, e_1, N, (int)((1.0f + .5f * tonality) * (60 * C + 40)), bitrate / 400);
             mem[0] = e[1 << bestLM];
             if (buffering != 0)
             {

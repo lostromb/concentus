@@ -42,8 +42,8 @@ namespace Concentus.Celt
 
     internal static class Pitch
     {
-        internal static void find_best_pitch(int[] xcorr, Pointer<int> y, int len,
-                                    int max_pitch, Pointer<int> best_pitch,
+        internal static void find_best_pitch(int[] xcorr, int[] y, int len,
+                                    int max_pitch, int[]best_pitch,
                                     int yshift, int maxcorr
                                     )
         {
@@ -96,11 +96,11 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void celt_fir5(Pointer<int> x,
-                Pointer<int> num,
-                Pointer<int> y,
+        internal static void celt_fir5(int[] x,
+                int[] num,
+                int[] y,
                 int N,
-                Pointer<int> mem)
+                int[] mem)
         {
             int i;
             int num0, num1, num2, num3, num4;
@@ -138,7 +138,7 @@ namespace Concentus.Celt
         }
 
 
-        internal static void pitch_downsample(Pointer<Pointer<int>> x, int[] x_lp, int len, int C)
+        internal static void pitch_downsample(Pointer<int>[] x, int[] x_lp, int len, int C)
         {
             int i;
             int[] ac = new int[5];
@@ -178,8 +178,7 @@ namespace Concentus.Celt
                 x_lp[0] += (Inlines.SHR32(Inlines.HALF32(Inlines.HALF32(x[1][1]) + x[1][0]), shift));
             }
 
-            CeltLPC._celt_autocorr(x_lp, ac.GetPointer(), null, 0,
-                           4, halflen);
+            Autocorrelation._celt_autocorr(x_lp, ac, null, 0, 4, halflen);
 
             /* Noise floor -40 dB */
             ac[0] += Inlines.SHR32(ac[0], 13);
@@ -190,7 +189,7 @@ namespace Concentus.Celt
                 ac[i] -= Inlines.MULT16_32_Q15((2 * i * i), ac[i]);
             }
 
-            CeltLPC._celt_lpc(lpc.GetPointer(), ac.GetPointer(), 4);
+            CeltLPC.celt_lpc(lpc.GetPointer(0), ac, 4);
             for (i = 0; i < 4; i++)
             {
                 tmp = Inlines.MULT16_16_Q15(Inlines.QCONST16(.9f, 15), tmp);
@@ -203,16 +202,16 @@ namespace Concentus.Celt
             lpc2[3] = (lpc[3] + Inlines.MULT16_16_Q15(c1, lpc[2]));
             lpc2[4] = Inlines.MULT16_16_Q15(c1, lpc[3]);
 
-            celt_fir5(x_lp.GetPointer(), lpc2.GetPointer(), x_lp.GetPointer(), halflen, mem.GetPointer());
+            celt_fir5(x_lp, lpc2, x_lp, halflen, mem);
         }
 
         // Fixme: remove pointers and optimize
-        internal static void pitch_search(Pointer<int> x_lp, Pointer<int> y,
+        internal static void pitch_search(Pointer<int> x_lp, int[] y,
                   int len, int max_pitch, BoxedValue<int> pitch)
         {
             int i, j;
             int lag;
-            Pointer<int> best_pitch = new Pointer<int>(new int[] { 0, 0 });
+            int[] best_pitch = new int[] { 0, 0 };
             int maxcorr;
             int xmax, ymax;
             int shift = 0;
@@ -249,9 +248,9 @@ namespace Concentus.Celt
             }
 
             /* Coarse search with 4x decimation */
-            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4, y_lp4, xcorr.GetPointer(), len >> 2, max_pitch >> 2);
+            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4, y_lp4, xcorr, len >> 2, max_pitch >> 2);
 
-            find_best_pitch(xcorr, y_lp4.GetPointer(), len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
+            find_best_pitch(xcorr, y_lp4, len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
 
             /* Finer search with 2x decimation */
             maxcorr = 1;
@@ -302,7 +301,7 @@ namespace Concentus.Celt
 
         private static readonly int[] second_check = { 0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2 };
 
-        internal static int remove_doubling(Pointer<int> x, int maxperiod, int minperiod,
+        internal static int remove_doubling(int[] x, int maxperiod, int minperiod,
             int N, BoxedValue<int> T0_, int prev_period, int prev_gain)
         {
             int k, i, T, T0;
@@ -321,18 +320,19 @@ namespace Concentus.Celt
             T0_.Val /= 2;
             prev_period /= 2;
             N /= 2;
-            x = x.Point(maxperiod);
+            int x_ptr = maxperiod;
             if (T0_.Val >= maxperiod)
                 T0_.Val = maxperiod - 1;
 
             T = T0 = T0_.Val;
             int[] yy_lookup = new int[maxperiod + 1];
-            Kernels.dual_inner_prod(x.Data, x.Offset, x.Data, x.Offset, x.Data, x.Offset - T0, N, xx, xy);
+            Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, xx, xy);
             yy_lookup[0] = xx.Val;
             yy = xx.Val;
             for (i = 1; i <= maxperiod; i++)
             {
-                yy = yy + Inlines.MULT16_16(x[-i], x[-i]) - Inlines.MULT16_16(x[N - i], x[N - i]);
+                int xi = x_ptr - i;
+                yy = yy + Inlines.MULT16_16(x[xi], x[xi]) - Inlines.MULT16_16(x[xi + N], x[xi + N]);
                 yy_lookup[i] = Inlines.MAX32(0, yy);
             }
             yy = yy_lookup[T0];
@@ -375,7 +375,7 @@ namespace Concentus.Celt
                     T1b = Inlines.celt_udiv(2 * second_check[k] * T0 + k, 2 * k);
                 }
                 
-                Kernels.dual_inner_prod(x.Data, x.Offset, x.Data, x.Offset - T1, x.Data, x.Offset - T1b, N, xy, xy2);
+                Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, xy, xy2);
 
                 xy.Val += xy2.Val;
                 yy = yy_lookup[T1] + yy_lookup[T1b];
@@ -432,7 +432,7 @@ namespace Concentus.Celt
 
             for (k = 0; k < 3; k++)
             {
-                xcorr[k] = Kernels.celt_inner_prod(x.Data, x.Offset, x.Data, x.Offset - (T + k - 1), N);
+                xcorr[k] = Kernels.celt_inner_prod(x, x_ptr, x, x_ptr - (T + k - 1), N);
             }
 
             if ((xcorr[2] - xcorr[0]) > Inlines.MULT16_32_Q15(Inlines.QCONST16(.7f, 15), xcorr[1] - xcorr[0]))

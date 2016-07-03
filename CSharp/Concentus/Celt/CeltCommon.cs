@@ -283,7 +283,7 @@ namespace Concentus.Celt
 
         /* Looks for sudden increases of energy to decide whether we need to patch
            the transient decision */
-        internal static int patch_transient_decision(Pointer<int> newE, Pointer<int> oldE, int nbEBands,
+        internal static int patch_transient_decision(int[] newE, int[] oldE, int nbEBands,
               int start, int end, int C)
         {
             int i, c;
@@ -323,8 +323,8 @@ namespace Concentus.Celt
 
         /** Apply window and compute the MDCT for all sub-frames and
             all channels in a frame */
-        internal static void compute_mdcts(CeltMode mode, int shortBlocks, Pointer<int> input,
-                                  Pointer<int> output, int C, int CC, int LM, int upsample)
+        internal static void compute_mdcts(CeltMode mode, int shortBlocks, int[] input,
+                                  int[] output, int C, int CC, int LM, int upsample)
         {
             int overlap = mode.overlap;
             int N;
@@ -350,9 +350,10 @@ namespace Concentus.Celt
                     /* Interleaving the sub-frames while doing the MDCTs */
                     MDCT.clt_mdct_forward(
                         mode.mdct,
-                        input.Data, input.Offset + ((c * ((B * N) + overlap)) + (b * N)),
-                        output.Data,
-                        output.Offset + (b + c * N * B),
+                        input,
+                        ((c * ((B * N) + overlap)) + (b * N)),
+                        output,
+                        (b + c * N * B),
                         mode.window,
                         0,
                         overlap,
@@ -376,13 +377,13 @@ namespace Concentus.Celt
                     int bound = B * N / upsample;
                     for (i = 0; i < bound; i++)
                         output[c * B * N + i] *= upsample;
-                    output.Point(c * B * N + bound).MemSet(0, B * N - bound);
+                    output.GetPointer(c * B * N + bound).MemSet(0, B * N - bound); // fixme: needs offset memset
                 } while (++c < C);
             }
         }
 
         internal static void celt_preemphasis(Pointer<int> pcmp, Pointer<int> inp,
-                                int N, int CC, int upsample, Pointer<int> coef, BoxedValue<int> mem, int clip)
+                                int N, int CC, int upsample, int[] coef, BoxedValue<int> mem, int clip)
         {
             int i;
             int coef0;
@@ -491,7 +492,7 @@ namespace Concentus.Celt
         }
 
         internal static int tf_analysis(CeltMode m, int len, int isTransient,
-              Pointer<int> tf_res, int lambda, Pointer<int> X, int N0, int LM,
+              int[] tf_res, int lambda, int[] X, int N0, int LM,
               BoxedValue<int> tf_sum, int tf_estimate, int tf_chan)
         {
             int i;
@@ -527,7 +528,7 @@ namespace Concentus.Celt
                 N = (m.eBands[i + 1] - m.eBands[i]) << LM;
                 /* band is too narrow to be split down to LM=-1 */
                 narrow = ((m.eBands[i + 1] - m.eBands[i]) == 1) ? 1 : 0;
-                X.Point(tf_chan * N0 + (m.eBands[i] << LM)).MemCopyTo(tmp, 0, N);
+                Array.Copy(X, tf_chan * N0 + (m.eBands[i] << LM), tmp, 0, N);
                 /* Just add the right channel if we're in stereo */
                 /*if (C==2)
                    for (j=0;j<N;j++)
@@ -658,7 +659,7 @@ namespace Concentus.Celt
             return tf_select;
         }
 
-        internal static void tf_encode(int start, int end, int isTransient, Pointer<int> tf_res, int LM, int tf_select, EntropyCoder enc)
+        internal static void tf_encode(int start, int end, int isTransient, int[] tf_res, int LM, int tf_select, EntropyCoder enc)
         {
             int curr, i;
             int tf_select_rsv;
@@ -699,8 +700,8 @@ namespace Concentus.Celt
         }
 
 
-        internal static int alloc_trim_analysis(CeltMode m, Pointer<int> X,
-              Pointer<int> bandLogE, int end, int LM, int C, int N0,
+        internal static int alloc_trim_analysis(CeltMode m, int[] X,
+              int[] bandLogE, int end, int LM, int C, int N0,
               AnalysisInfo analysis, BoxedValue<int> stereo_saving, int tf_estimate,
               int intensity, int surround_trim)
         {
@@ -718,7 +719,7 @@ namespace Concentus.Celt
                 for (i = 0; i < 8; i++)
                 {
                     int partial;
-                    partial = Kernels.celt_inner_prod(X.Data, X.Offset + (m.eBands[i] << LM), X.Data, X.Offset + (N0 + (m.eBands[i] << LM)),
+                    partial = Kernels.celt_inner_prod(X, (m.eBands[i] << LM), X, (N0 + (m.eBands[i] << LM)),
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     sum = Inlines.ADD16(sum, Inlines.EXTRACT16(Inlines.SHR32(partial, 18)));
                 }
@@ -728,7 +729,7 @@ namespace Concentus.Celt
                 for (i = 8; i < intensity; i++)
                 {
                     int partial;
-                    partial = Kernels.celt_inner_prod(X.Data, X.Offset + (m.eBands[i] << LM), X.Data, X.Offset + (N0 + (m.eBands[i] << LM)),
+                    partial = Kernels.celt_inner_prod(X, (m.eBands[i] << LM), X, (N0 + (m.eBands[i] << LM)),
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     minXC = Inlines.MIN16(minXC, Inlines.ABS16(Inlines.EXTRACT16(Inlines.SHR32(partial, 18))));
                 }
@@ -775,7 +776,7 @@ namespace Concentus.Celt
             return trim_index;
         }
 
-        internal static int stereo_analysis(CeltMode m, Pointer<int> X,
+        internal static int stereo_analysis(CeltMode m, int[] X,
               int LM, int N0)
         {
             int i;
@@ -875,10 +876,10 @@ namespace Concentus.Celt
                 return t0;
         }
 
-        internal static int dynalloc_analysis(Pointer<int> bandLogE, Pointer<int> bandLogE2,
-              int nbEBands, int start, int end, int C, Pointer<int> offsets, int lsb_depth, Pointer<short> logN,
-              int isTransient, int vbr, int constrained_vbr, Pointer<short> eBands, int LM,
-              int effectiveBytes, BoxedValue<int> tot_boost_, int lfe, Pointer<int> surround_dynalloc)
+        internal static int dynalloc_analysis(int[] bandLogE, int[] bandLogE2,
+              int nbEBands, int start, int end, int C, int[] offsets, int lsb_depth, short[] logN,
+              int isTransient, int vbr, int constrained_vbr, short[] eBands, int LM,
+              int effectiveBytes, BoxedValue<int> tot_boost_, int lfe, int[] surround_dynalloc)
         {
             int i, c;
             int tot_boost = 0;
@@ -886,7 +887,7 @@ namespace Concentus.Celt
             int[] follower = new int[C * nbEBands];
             int[] noise_floor = new int[C * nbEBands];
 
-            offsets.MemSet(0, nbEBands);
+            Arrays.MemSet<int>(offsets, 0, nbEBands);
             /* Dynamic allocation code */
             maxDepth = (0 - Inlines.QCONST16(31.9f, CeltConstants.DB_SHIFT));
             for (i = 0; i < end; i++)
@@ -929,11 +930,11 @@ namespace Concentus.Celt
                        reduces the impact of the median filter and makes dynalloc use more bits. */
                     offset = Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT);
                     for (i = 2; i < end - 2; i++)
-                        f[i] = Inlines.MAX16(f[i], median_of_5(bandLogE2.Point(c * nbEBands + i - 2)) - offset);
-                    tmp = median_of_3(bandLogE2.Point(c * nbEBands)) - offset;
+                        f[i] = Inlines.MAX16(f[i], median_of_5(bandLogE2.GetPointer(c * nbEBands + i - 2)) - offset);
+                    tmp = median_of_3(bandLogE2.GetPointer(c * nbEBands)) - offset;
                     f[0] = Inlines.MAX16(f[0], tmp);
                     f[1] = Inlines.MAX16(f[1], tmp);
-                    tmp = median_of_3(bandLogE2.Point(c * nbEBands + end - 3)) - offset;
+                    tmp = median_of_3(bandLogE2.GetPointer(c * nbEBands + end - 3)) - offset;
                     f[end - 2] = Inlines.MAX16(f[end - 2], tmp);
                     f[end - 1] = Inlines.MAX16(f[end - 1], tmp);
 
@@ -1012,8 +1013,8 @@ namespace Concentus.Celt
             return maxDepth;
         }
 
-        internal static void deemphasis(Pointer<Pointer<int>> input, Pointer<short> pcm, int N, int C, int downsample, Pointer<int> coef,
-              Pointer<int> mem, int accum)
+        internal static void deemphasis(Pointer<int>[] input, Pointer<short> pcm, int N, int C, int downsample, int[] coef,
+              int[] mem, int accum)
         {
             int c;
             int Nd;
@@ -1084,8 +1085,8 @@ namespace Concentus.Celt
 
         }
 
-        internal static void celt_synthesis(CeltMode mode, Pointer<int> X, Pointer<Pointer<int>> out_syn,
-                            Pointer<int> oldBandE, int start, int effEnd, int C, int CC,
+        internal static void celt_synthesis(CeltMode mode, int[] X, Pointer<int>[] out_syn,
+                            int[] oldBandE, int start, int effEnd, int C, int CC,
                             int isTransient, int LM, int downsample,
                             int silence)
         {
@@ -1121,7 +1122,7 @@ namespace Concentus.Celt
             {
                 /* Copying a mono streams to two channels */
                 Pointer<int> freq2;
-                Bands.denormalise_bands(mode, X, freq.GetPointer(), oldBandE, start, effEnd, M,
+                Bands.denormalise_bands(mode, X.GetPointer(), freq.GetPointer(), oldBandE.GetPointer(), start, effEnd, M,
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
                 freq2 = out_syn[1].Point(overlap / 2);
@@ -1136,10 +1137,10 @@ namespace Concentus.Celt
                 /* Downmixing a stereo stream to mono */
                 Pointer<int> freq2;
                 freq2 = out_syn[0].Point(overlap / 2);
-                Bands.denormalise_bands(mode, X, freq.GetPointer(), oldBandE, start, effEnd, M,
+                Bands.denormalise_bands(mode, X.GetPointer(), freq.GetPointer(), oldBandE.GetPointer(), start, effEnd, M,
                       downsample, silence);
                 /* Use the output buffer as temp array before downmixing. */
-                Bands.denormalise_bands(mode, X.Point(N), freq2, oldBandE.Point(nbEBands), start, effEnd, M,
+                Bands.denormalise_bands(mode, X.GetPointer(N), freq2, oldBandE.GetPointer(nbEBands), start, effEnd, M,
                       downsample, silence);
                 for (i = 0; i < N; i++)
                     freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], freq2[i]));
@@ -1150,7 +1151,7 @@ namespace Concentus.Celt
                 /* Normal case (mono or stereo) */
                 c = 0; do
                 {
-                    Bands.denormalise_bands(mode, X.Point(c * N), freq.GetPointer(), oldBandE.Point(c * nbEBands), start, effEnd, M,
+                    Bands.denormalise_bands(mode, X.GetPointer(c * N), freq.GetPointer(), oldBandE.GetPointer(c * nbEBands), start, effEnd, M,
                           downsample, silence);
                     for (b = 0; b < B; b++)
                         MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[c].Point(NB * b), mode.window, overlap, shift, B);
@@ -1159,7 +1160,7 @@ namespace Concentus.Celt
 
         }
 
-        internal static void tf_decode(int start, int end, int isTransient, Pointer<int> tf_res, int LM, EntropyCoder dec)
+        internal static void tf_decode(int start, int end, int isTransient, int[] tf_res, int LM, EntropyCoder dec)
         {
             int i, curr, tf_select;
             int tf_select_rsv;
@@ -1198,13 +1199,13 @@ namespace Concentus.Celt
             }
         }
 
-        internal static int celt_plc_pitch_search(Pointer<Pointer<int>> decode_mem, int C)
+        internal static int celt_plc_pitch_search(Pointer<int>[] decode_mem, int C)
         {
             BoxedValue<int> pitch_index = new BoxedValue<int>();
             int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
             Pitch.pitch_downsample(decode_mem, lp_pitch_buf,
                   CeltConstants.DECODE_BUFFER_SIZE, C);
-            Pitch.pitch_search(lp_pitch_buf.GetPointer(CeltConstants.PLC_PITCH_LAG_MAX >> 1), lp_pitch_buf.GetPointer(),
+            Pitch.pitch_search(lp_pitch_buf.GetPointer(CeltConstants.PLC_PITCH_LAG_MAX >> 1), lp_pitch_buf,
                   CeltConstants.DECODE_BUFFER_SIZE - CeltConstants.PLC_PITCH_LAG_MAX,
                   CeltConstants.PLC_PITCH_LAG_MAX - CeltConstants.PLC_PITCH_LAG_MIN, pitch_index);
             pitch_index.Val = CeltConstants.PLC_PITCH_LAG_MAX - pitch_index.Val;
@@ -1266,7 +1267,7 @@ namespace Concentus.Celt
 
         internal static void comb_filter(Pointer<int> y, Pointer<int> x, int T0, int T1, int N,
               int g0, int g1, int tapset0, int tapset1,
-            Pointer<int> window, int overlap)
+            int[] window, int overlap)
         {
             int i;
             /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
@@ -1341,7 +1342,7 @@ namespace Concentus.Celt
               new sbyte[]{0, -2, 0, -3,    3, 0, 1,-1},
         };
         
-        internal static void init_caps(CeltMode m, Pointer<int> cap, int LM, int C)
+        internal static void init_caps(CeltMode m, int[] cap, int LM, int C)
         {
             int i;
             for (i = 0; i < m.nbEBands; i++)

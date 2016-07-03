@@ -22,26 +22,30 @@ namespace Concentus
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <param name="C"></param>
-        public delegate void downmix_func<T>(Pointer<T> _x, Pointer<int> sub, int subframe, int offset, int c1, int c2, int C);
+        public delegate void downmix_func<T>(T[] _x, int x_ptr, int[] sub, int subframe, int offset, int c1, int c2, int C);
 
-        internal static void downmix_float(Pointer<float> x, Pointer<int> sub, int subframe, int offset, int c1, int c2, int C)
+        internal static void downmix_float(float[] x, int x_ptr, int[] sub, int subframe, int offset, int c1, int c2, int C)
         {
             int scale;
             int j;
+            int c1x = c1 + x_ptr;
             for (j = 0; j < subframe; j++)
-                sub[j] = Inlines.FLOAT2INT16(x[(j + offset) * C + c1]);
+                sub[j] = Inlines.FLOAT2INT16(x[(j + offset) * C + c1x]);
             if (c2 > -1)
             {
+                int c2x = c2 + x_ptr;
                 for (j = 0; j < subframe; j++)
-                    sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c2]);
+                    sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c2x]);
             }
             else if (c2 == -2)
             {
                 int c;
+                int cx;
                 for (c = 1; c < C; c++)
                 {
+                    cx = c + x_ptr;
                     for (j = 0; j < subframe; j++)
-                        sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c]);
+                        sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + cx]);
                 }
             }
             scale = (1 << CeltConstants.SIG_SHIFT);
@@ -53,7 +57,7 @@ namespace Concentus
                 sub[j] *= scale;
         }
 
-        internal static void downmix_int(Pointer<short> x, Pointer<int> sub, int subframe, int offset, int c1, int c2, int C)
+        internal static void downmix_int(short[] x, int x_ptr, int[] sub, int subframe, int offset, int c1, int c2, int C)
         {
             int scale;
             int j;

@@ -45,8 +45,8 @@ namespace Concentus.Celt
     {
         internal static int hysteresis_decision(
             int val,
-            Pointer<int> thresholds,
-            Pointer<int> hysteresis,
+            int[] thresholds,
+            int[] hysteresis,
             int N,
             int prev)
         {
@@ -101,7 +101,7 @@ namespace Concentus.Celt
         }
 
         /* Compute the amplitude (sqrt energy) in each of the bands */
-        internal static void compute_band_energies(CeltMode m, Pointer<int> X, Pointer<int> bandE, int end, int C, int LM)
+        internal static void compute_band_energies(CeltMode m, int[] X, int[] bandE, int end, int C, int LM)
         {
             int i, c, N;
             short[] eBands = m.eBands;
@@ -115,7 +115,7 @@ namespace Concentus.Celt
                     int j;
                     int maxval = 0;
                     int sum = 0;
-                    maxval = Inlines.celt_maxabs32(X.Data, X.Offset + (c * N + (eBands[i] << LM)), (eBands[i + 1] - eBands[i]) << LM);
+                    maxval = Inlines.celt_maxabs32(X, (c * N + (eBands[i] << LM)), (eBands[i + 1] - eBands[i]) << LM);
                     if (maxval > 0)
                     {
                         int shift = Inlines.celt_ilog2(maxval) - 14 + (((m.logN[i] >> EntropyCoder.BITRES) + LM + 1) >> 1);
@@ -147,7 +147,7 @@ namespace Concentus.Celt
         }
 
         /* Normalise each band such that the energy is one. */
-        internal static void normalise_bands(CeltMode m, Pointer<int> freq, Pointer<int> X, Pointer<int> bandE, int end, int C, int M)
+        internal static void normalise_bands(CeltMode m, int[] freq, int[] X, int[] bandE, int end, int C, int M)
         {
             int i, c, N;
             short[] eBands = m.eBands;
@@ -254,9 +254,9 @@ namespace Concentus.Celt
         }
 
         /* This prevents energy collapse for transients with multiple short MDCTs */
-        internal static void anti_collapse(CeltMode m, Pointer<int> X_, Pointer<byte> collapse_masks, int LM, int C, int size,
-              int start, int end, Pointer<int> logE, Pointer<int> prev1logE,
-              Pointer<int> prev2logE, Pointer<int> pulses, uint seed)
+        internal static void anti_collapse(CeltMode m, int[] X_, byte[] collapse_masks, int LM, int C, int size,
+              int start, int end, int[] logE, int[] prev1logE,
+              int[] prev2logE, int[] pulses, uint seed)
         {
             int c, i, j, k;
             for (i = start; i < end; i++)
@@ -313,7 +313,7 @@ namespace Concentus.Celt
                     r = Inlines.SHR16(Inlines.MIN16(thresh, r), 1);
                     r = (Inlines.SHR32(Inlines.MULT16_16_Q15(sqrt_1, r), shift));
 
-                    X = X_.Point(c * size + (m.eBands[i] << LM));
+                    X = X_.GetPointer(c * size + (m.eBands[i] << LM));
                     for (k = 0; k < 1 << LM; k++)
                     {
                         /* Detect collapse */
@@ -337,7 +337,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void intensity_stereo(CeltMode m, Pointer<int> X, Pointer<int> Y, Pointer<int> bandE, int bandID, int N)
+        internal static void intensity_stereo(CeltMode m, Pointer<int> X, Pointer<int> Y, int[] bandE, int bandID, int N)
         {
             int i = bandID;
             int j;
@@ -421,7 +421,7 @@ namespace Concentus.Celt
         }
 
         /* Decide whether we should spread the pulses in the current frame */
-        internal static int spreading_decision(CeltMode m, Pointer<int> X, BoxedValue<int> average,
+        internal static int spreading_decision(CeltMode m, int[] X, BoxedValue<int> average,
               int last_decision, BoxedValue<int> hf_average, BoxedValue<int> tapset_decision, int update_hf,
               int end, int C, int M)
         {
@@ -448,7 +448,7 @@ namespace Concentus.Celt
                 {
                     int j, N, tmp = 0;
                     int[] tcount = { 0, 0, 0 };
-                    Pointer<int> x = X.Point(M * eBands[i] + (c * N0));
+                    Pointer<int> x = X.GetPointer(M * eBands[i] + (c * N0));
                     N = M * (eBands[i + 1] - eBands[i]);
                     if (N <= 8)
                         continue;
@@ -680,7 +680,7 @@ namespace Concentus.Celt
             public int tf_change;
             public EntropyCoder ec;
             public int remaining_bits;
-            public Pointer<int> bandE;
+            public int[] bandE;
             public uint seed;
         };
 
@@ -713,7 +713,7 @@ namespace Concentus.Celt
             int i;
             int intensity;
             EntropyCoder ec; // porting note: pointer
-            Pointer<int> bandE;
+            int[] bandE;
 
             encode = ctx.encode;
             m = ctx.m;
@@ -1449,9 +1449,9 @@ namespace Concentus.Celt
 
 
         internal static void quant_all_bands(int encode, CeltMode m, int start, int end,
-              Pointer<int> X_, Pointer<int> Y_, Pointer<byte> collapse_masks,
-              Pointer<int> bandE, Pointer<int> pulses, int shortBlocks, int spread,
-              int dual_stereo, int intensity, Pointer<int> tf_res, int total_bits,
+              int[] X_, Pointer<int> Y_, byte[] collapse_masks,
+              int[] bandE, int[] pulses, int shortBlocks, int spread,
+              int dual_stereo, int intensity, int[] tf_res, int total_bits,
               int balance, EntropyCoder ec, int LM, int codedBands,
               BoxedValue<uint> seed)
         {
@@ -1483,7 +1483,7 @@ namespace Concentus.Celt
 
             /* We can use the last band as scratch space because we don't need that
                scratch space for the last band. */
-            lowband_scratch = X_.Point(M * eBands[m.nbEBands - 1]);
+            lowband_scratch = X_.GetPointer(M * eBands[m.nbEBands - 1]);
 
             lowband_offset = 0;
             ctx.bandE = bandE;
@@ -1509,7 +1509,7 @@ namespace Concentus.Celt
                 ctx.i = i;
                 last = (i == end - 1) ? 1 : 0;
 
-                X = X_.Point(M * eBands[i]);
+                X = X_.GetPointer(M * eBands[i]);
                 if (Y_ != null)
                 {
                     Y = Y_.Point(M * eBands[i]);

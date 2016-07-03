@@ -185,7 +185,7 @@ namespace Concentus.Celt
             return (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1));
         }
 
-        internal static uint icwrs(int _n, Pointer<int> _y)
+        internal static uint icwrs(int _n, int[] _y)
         {
             uint i;
             int j;
@@ -205,19 +205,20 @@ namespace Concentus.Celt
             return i;
         }
 
-        internal static void encode_pulses(Pointer<int> _y, int _n, int _k, EntropyCoder _enc)
+        internal static void encode_pulses(int[] _y, int _n, int _k, EntropyCoder _enc)
         {
             Inlines.OpusAssert(_k > 0);
             _enc.enc_uint(icwrs(_n, _y), CELT_PVQ_V(_n, _k));
         }
 
-        internal static int cwrsi(int _n, int _k, uint _i, Pointer<int> _y)
+        internal static int cwrsi(int _n, int _k, uint _i, int[] _y)
         {
             uint p;
             int s;
             int k0;
             short val;
             int yy = 0;
+            int y_ptr = 0;
             Inlines.OpusAssert(_k > 0);
             Inlines.OpusAssert(_n > 1);
 
@@ -257,8 +258,7 @@ namespace Concentus.Celt
 
                     _i -= p;
                     val = Inlines.CHOP16((k0 - _k + s) ^ s);
-                    _y[0] = val;
-                    _y = _y.Point(1);
+                    _y[y_ptr++] = val;
                     yy = Inlines.MAC16_16(yy, val, val);
                 }
                 /*Lots of dimensions case:*/
@@ -270,8 +270,7 @@ namespace Concentus.Celt
                     if (p <= _i && _i < q)
                     {
                         _i -= p;
-                        _y[0] = 0;
-                        _y = _y.Point(1);
+                        _y[y_ptr++] = 0;
                     }
                     else
                     {
@@ -287,8 +286,7 @@ namespace Concentus.Celt
 
                         _i -= p;
                         val = Inlines.CHOP16((k0 - _k + s) ^ s);
-                        _y[0] = val;
-                        _y = _y.Point(1);
+                        _y[y_ptr++] = val;
                         yy = Inlines.MAC16_16(yy, val, val);
                     }
                 }
@@ -307,18 +305,17 @@ namespace Concentus.Celt
             }
 
             val = Inlines.CHOP16((k0 - _k + s) ^ s);
-            _y[0] = val;
-            _y = _y.Point(1);
+            _y[y_ptr++] = val;
             yy = Inlines.MAC16_16(yy, val, val);
             /*_n==1*/
             s = -(int)_i;
             val = Inlines.CHOP16((_k + s) ^ s);
-            _y[0] = val;
+            _y[y_ptr] = val;
             yy = Inlines.MAC16_16(yy, val, val);
             return yy;
         }
 
-        internal static int decode_pulses(Pointer<int> _y, int _n, int _k, EntropyCoder _dec)
+        internal static int decode_pulses(int[] _y, int _n, int _k, EntropyCoder _dec)
         {
             return cwrsi(_n, _k, _dec.dec_uint(CELT_PVQ_V(_n, _k)), _y);
         }

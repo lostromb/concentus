@@ -217,8 +217,8 @@ namespace Concentus.Structs
                         freq[i] = 0;
                 }
 
-                Bands.compute_band_energies(celt_mode, freq.GetPointer(), bandE.GetPointer(), 21, 1, LM);
-                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE.GetPointer(), bandLogE.GetPointer(21 * c), 1);
+                Bands.compute_band_energies(celt_mode, freq, bandE, 21, 1, LM);
+                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE, bandLogE.GetPointer(21 * c), 1);
                 /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
                 for (i = 1; i < 21; i++)
                     bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT));

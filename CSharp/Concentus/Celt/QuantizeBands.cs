@@ -38,8 +38,9 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
-    
+
     internal static class QuantizeBands
     {
         /* prediction coefficients: 0.9, 0.8, 0.65, 0.5 */
@@ -48,7 +49,7 @@ namespace Concentus.Celt
         private static readonly int beta_intra = 4915;
         private static byte[] small_energy_icdf = { 2, 1, 0 };
 
-        internal static int loss_distortion(Pointer<int> eBands, Pointer<int> oldEBands, int start, int end, int len, int C)
+        internal static int loss_distortion(int[] eBands, int[] oldEBands, int start, int end, int len, int C)
         {
             int c, i;
             int dist = 0;
@@ -66,9 +67,9 @@ namespace Concentus.Celt
         }
 
         internal static int quant_coarse_energy_impl(CeltMode m, int start, int end,
-              Pointer<int> eBands, Pointer<int> oldEBands,
+              int[] eBands, int[] oldEBands,
               int budget, int tell,
-              Pointer<byte> prob_model, Pointer<int> error, EntropyCoder enc,
+              byte[] prob_model, int[] error, EntropyCoder enc,
               int C, int LM, int intra, int max_decay, int lfe)
         {
             int i, c;
@@ -168,8 +169,8 @@ namespace Concentus.Celt
         }
 
         internal static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
-              Pointer<int> eBands, Pointer<int> oldEBands, uint budget,
-              Pointer<int> error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
+              int[] eBands, int[] oldEBands, uint budget,
+              int[] error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
               int force_intra, BoxedValue<int> delayedIntra, int two_pass, int loss_rate, int lfe)
         {
             int intra;
@@ -185,7 +186,7 @@ namespace Concentus.Celt
 
             intra = (force_intra != 0 || (two_pass == 0 && delayedIntra.Val > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
             intra_bias = (int)((budget * delayedIntra.Val * loss_rate) / (C * 512));
-            new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C); // opus bug: oldEBands is uninitialized memory on the first call to this function
+            new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
 
             tell = (uint)enc.tell();
             if (tell + 3 > budget)
@@ -204,12 +205,12 @@ namespace Concentus.Celt
 
             oldEBands_intra = new int[C * m.nbEBands];
             error_intra = new int[C * m.nbEBands];
-            oldEBands.MemCopyTo(oldEBands_intra, 0, C * m.nbEBands);
+            Array.Copy(oldEBands, 0, oldEBands_intra, 0, C * m.nbEBands);
 
             if (two_pass != 0 || intra != 0)
             {
-                badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra.GetPointer(), (int)budget,
-                      (int)tell, Tables.e_prob_model[LM][1].GetPointer(), error_intra.GetPointer(), enc, C, LM, 1, max_decay, lfe);
+                badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, (int)budget,
+                      (int)tell, Tables.e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
             }
 
             if (intra == 0)
@@ -242,7 +243,7 @@ namespace Concentus.Celt
                 enc.Assign(enc_start_state);
 
                 badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, (int)budget,
-                      (int)tell, Tables.e_prob_model[LM][intra].GetPointer(), error, enc, C, LM, 0, max_decay, lfe);
+                      (int)tell, Tables.e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
 
                 if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && ((int)enc.tell_frac()) + intra_bias > tell_intra)))
                 {
@@ -252,15 +253,15 @@ namespace Concentus.Celt
                     {
                         intra_buf.MemCopyFrom(intra_bits, 0, (int)(nintra_bytes - nstart_bytes));
                     }
-                    oldEBands.MemCopyFrom(oldEBands_intra, 0,  C * m.nbEBands);
-                    error.MemCopyFrom(error_intra, 0, C * m.nbEBands);
+                    Array.Copy(oldEBands_intra, 0, oldEBands, 0, C * m.nbEBands);
+                    Array.Copy(error_intra, 0, error, 0, C * m.nbEBands);
                     intra = 1;
                 }
             }
             else
             {
-                oldEBands.MemCopyFrom(oldEBands_intra, 0, C * m.nbEBands);
-                error.MemCopyFrom(error_intra, 0, C * m.nbEBands);
+                Array.Copy(oldEBands_intra, 0, oldEBands, 0, C * m.nbEBands);
+                Array.Copy(error_intra, 0, error, 0, C * m.nbEBands);
             }
 
             if (intra != 0)
@@ -274,7 +275,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void quant_fine_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> error, Pointer<int> fine_quant, EntropyCoder enc, int C)
+        internal static void quant_fine_energy(CeltMode m, int start, int end, int[] oldEBands, int[] error, int[] fine_quant, EntropyCoder enc, int C)
         {
             int i, c;
 
@@ -307,7 +308,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void quant_energy_finalise(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> error, Pointer<int> fine_quant, Pointer<int> fine_priority, int bits_left, EntropyCoder enc, int C)
+        internal static void quant_energy_finalise(CeltMode m, int start, int end, int[] oldEBands, int[] error, int[] fine_quant, int[] fine_priority, int bits_left, EntropyCoder enc, int C)
         {
             int i, prio, c;
 
@@ -336,9 +337,9 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_coarse_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, int intra, EntropyCoder dec, int C, int LM)
+        internal static void unquant_coarse_energy(CeltMode m, int start, int end, int[] oldEBands, int intra, EntropyCoder dec, int C, int LM)
         {
-            Pointer<byte> prob_model = Tables.e_prob_model[LM][intra].GetPointer();
+            byte[] prob_model = Tables.e_prob_model[LM][intra];
             int i, c;
             int[] prev = { 0, 0 };
             int coef;
@@ -403,7 +404,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_fine_energy(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> fine_quant, EntropyCoder dec, int C)
+        internal static void unquant_fine_energy(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, EntropyCoder dec, int C)
         {
             int i, c;
             /* Decode finer resolution */
@@ -426,7 +427,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_energy_finalise(CeltMode m, int start, int end, Pointer<int> oldEBands, Pointer<int> fine_quant, Pointer<int> fine_priority, int bits_left, EntropyCoder dec, int C)
+        internal static void unquant_energy_finalise(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, int[] fine_priority, int bits_left, EntropyCoder dec, int C)
         {
             int i, prio, c;
 
@@ -451,8 +452,46 @@ namespace Concentus.Celt
             }
         }
 
+        /// <summary>
+        /// non-pointer case
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="effEnd"></param>
+        /// <param name="end"></param>
+        /// <param name="bandE"></param>
+        /// <param name="bandLogE"></param>
+        /// <param name="C"></param>
         internal static void amp2Log2(CeltMode m, int effEnd, int end,
-              Pointer<int> bandE, Pointer<int> bandLogE, int C)
+              int[] bandE, int[] bandLogE, int C)
+        {
+            int c, i;
+            c = 0;
+            do
+            {
+                for (i = 0; i < effEnd; i++)
+                {
+                    bandLogE[i + c * m.nbEBands] =
+                       (Inlines.celt_log2(Inlines.SHL32(bandE[i + c * m.nbEBands], 2))
+                       - Inlines.SHL16((int)Tables.eMeans[i], 6));
+                }
+                for (i = effEnd; i < end; i++)
+                {
+                    bandLogE[c * m.nbEBands + i] = (0 - Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT));
+                }
+            } while (++c < C);
+        }
+
+        /// <summary>
+        /// only needed in one place
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="effEnd"></param>
+        /// <param name="end"></param>
+        /// <param name="bandE"></param>
+        /// <param name="bandLogE"></param>
+        /// <param name="C"></param>
+        internal static void amp2Log2(CeltMode m, int effEnd, int end,
+              int[] bandE, Pointer<int> bandLogE, int C)
         {
             int c, i;
             c = 0;

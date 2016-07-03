@@ -133,7 +133,7 @@ namespace Concentus.Celt
 
         /** Takes the pitch vector and the decoded residual vector, computes the gain
             that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-        internal static void normalise_residual(Pointer<int> iy, Pointer<int> X,
+        internal static void normalise_residual(int[] iy, Pointer<int> X,
               int N, int Ryy, int gain)
         {
             int i;
@@ -151,7 +151,7 @@ namespace Concentus.Celt
             while (++i < N);
         }
 
-        internal static uint extract_collapse_mask(Pointer<int> iy, int N, int B)
+        internal static uint extract_collapse_mask(int[] iy, int N, int B)
         {
             uint collapse_mask;
             int N0;
@@ -327,9 +327,9 @@ namespace Concentus.Celt
                     iy[j] = -iy[j];
             } while (++j < N);
 
-            CWRS.encode_pulses(iy.GetPointer(), N, K, enc);
+            CWRS.encode_pulses(iy, N, K, enc);
 
-            collapse_mask = extract_collapse_mask(iy.GetPointer(), N, B);
+            collapse_mask = extract_collapse_mask(iy, N, B);
 
             return collapse_mask;
         }
@@ -344,10 +344,10 @@ namespace Concentus.Celt
             int[] iy = new int[N];
             Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
-            Ryy = CWRS.decode_pulses(iy.GetPointer(), N, K, dec);
-            normalise_residual(iy.GetPointer(), X, N, Ryy, gain);
+            Ryy = CWRS.decode_pulses(iy, N, K, dec);
+            normalise_residual(iy, X, N, Ryy, gain);
             exp_rotation(X, N, -1, B, K, spread);
-            collapse_mask = extract_collapse_mask(iy.GetPointer(), N, B);
+            collapse_mask = extract_collapse_mask(iy, N, B);
 
             return collapse_mask;
         }

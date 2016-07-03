@@ -55,7 +55,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// POINTER
         /// </summary>
-        internal Pointer<short> Coefs = null;
+        internal short[] Coefs = null;
 
         internal void Reset()
         {
