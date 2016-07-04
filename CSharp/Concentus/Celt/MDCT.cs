@@ -154,110 +154,95 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void clt_mdct_backward(MDCTLookup l, Pointer<int> input, Pointer<int> output,
+        internal static void clt_mdct_backward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
               int[] window, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;
-            Pointer<short> trig;
+            int trig = 0;
+            int xp1, xp2, yp, yp0, yp1;
 
             N = l.n;
-            trig = l.trig.GetPointer();
             for (i = 0; i < shift; i++)
             {
                 N >>= 1;
-                trig = trig.Point(N);
+                trig += N;
             }
             N2 = N >> 1;
             N4 = N >> 2;
 
             /* Pre-rotate */
+            /* Temp pointers to make it really clear to the compiler what we're doing */
+            xp2 = input_ptr + (stride * (N2 - 1));
+            yp = output_ptr + (overlap >> 1);
+            short[] bitrev = l.kfft[shift].bitrev;
+            int bitrav_ptr = 0;
+            for (i = 0; i < N4; i++)
             {
-                /* Temp pointers to make it really clear to the compiler what we're doing */
-                // FIXME: these can probably go away
-                Pointer<int> xp1 = input;
-                Pointer<int> xp2 = input.Point(stride * (N2 - 1));
-                Pointer<int> yp = output.Point(overlap >> 1);
-                Pointer<short> t = trig;
-                short[] bitrev = l.kfft[shift].bitrev;
-                int bitrav_ptr = 0;
-                for (i = 0; i < N4; i++)
-                {
-                    int rev;
-                    int yr, yi;
-                    rev = bitrev[bitrav_ptr++];
-                    yr = KissFFT.S_MUL(xp2[0], t[i]) + KissFFT.S_MUL(xp1[0], t[N4 + i]);
-                    yi = KissFFT.S_MUL(xp1[0], t[i]) - KissFFT.S_MUL(xp2[0], t[N4 + i]);
-                    /* We swap real and imag because we use an FFT instead of an IFFT. */
-                    yp[2 * rev + 1] = yr;
-                    yp[2 * rev] = yi;
-                    /* Storing the pre-rotation directly in the bitrev order. */
-                    xp1 = xp1.Point(2 * stride);
-                    xp2 = xp2.Point(0 - (2 * stride));
-                }
+                int rev = bitrev[bitrav_ptr++];
+                int ypr = yp + 2 * rev;
+                /* We swap real and imag because we use an FFT instead of an IFFT. */
+                output[ypr + 1] = KissFFT.S_MUL(input[xp2], l.trig[trig + i]) + KissFFT.S_MUL(input[input_ptr], l.trig[trig + N4 + i]); //yr
+                output[ypr] = KissFFT.S_MUL(input[input_ptr], l.trig[trig + i]) - KissFFT.S_MUL(input[xp2], l.trig[trig + N4 + i]); //yi
+                /* Storing the pre-rotation directly in the bitrev order. */
+                input_ptr += (2 * stride);
+                xp2 -= (2 * stride);
             }
             
-            KissFFT.opus_fft_impl(l.kfft[shift], output.Data, output.Offset + (overlap >> 1));
-
+            KissFFT.opus_fft_impl(l.kfft[shift], output, output_ptr + (overlap >> 1));
+            
             /* Post-rotate and de-shuffle from both ends of the buffer at once to make
-               it in-place. */
+                it in-place. */
+            yp0 = output_ptr + (overlap >> 1);
+            yp1 = output_ptr + (overlap >> 1) + N2 - 2;
+            int t = trig;
+
+            /* Loop to (N4+1)>>1 to handle odd N4. When N4 is odd, the
+                middle pair will be computed twice. */
+            int tN4m1 = t + N4 - 1;
+            int tN2m1 = t + N2 - 1;
+            for (i = 0; i < (N4 + 1) >> 1; i++)
             {
-                Pointer<int> yp0 = output.Point((overlap >> 1));
-                Pointer<int> yp1 = output.Point((overlap >> 1) + N2 - 2);
-                Pointer<short> t = trig;
-
-                /* Loop to (N4+1)>>1 to handle odd N4. When N4 is odd, the
-                   middle pair will be computed twice. */
-                for (i = 0; i < (N4 + 1) >> 1; i++)
-                {
-                    int re, im, yr, yi;
-                    short t0, t1;
-                    /* We swap real and imag because we're using an FFT instead of an IFFT. */
-                    re = yp0[1];
-                    im = yp0[0];
-                    t0 = t[i];
-                    t1 = t[N4 + i];
-                    /* We'd scale up by 2 here, but instead it's done when mixing the windows */
-                    yr = KissFFT.S_MUL(re, t0) + KissFFT.S_MUL(im, t1);
-                    yi = KissFFT.S_MUL(re, t1) - KissFFT.S_MUL(im, t0);
-                    /* We swap real and imag because we're using an FFT instead of an IFFT. */
-                    re = yp1[1];
-                    im = yp1[0];
-                    yp0[0] = yr;
-                    yp1[1] = yi;
-
-                    t0 = t[(N4 - i - 1)];
-                    t1 = t[(N2 - i - 1)];
-                    /* We'd scale up by 2 here, but instead it's done when mixing the windows */
-                    yr = KissFFT.S_MUL(re, t0) + KissFFT.S_MUL(im, t1);
-                    yi = KissFFT.S_MUL(re, t1) - KissFFT.S_MUL(im, t0);
-                    yp1[0] = yr;
-                    yp0[1] = yi;
-                    yp0 = yp0.Point(2);
-                    yp1 = yp1.Point(-2);
-                }
+                int re, im, yr, yi;
+                short t0, t1;
+                /* We swap real and imag because we're using an FFT instead of an IFFT. */
+                re = output[yp0 + 1];
+                im = output[yp0];
+                t0 = l.trig[t + i];
+                t1 = l.trig[t + N4 + i];
+                /* We'd scale up by 2 here, but instead it's done when mixing the windows */
+                yr = KissFFT.S_MUL(re, t0) + KissFFT.S_MUL(im, t1);
+                yi = KissFFT.S_MUL(re, t1) - KissFFT.S_MUL(im, t0);
+                /* We swap real and imag because we're using an FFT instead of an IFFT. */
+                re = output[yp1 + 1];
+                im = output[yp1];
+                output[yp0] = yr;
+                output[yp1 + 1] = yi;
+                t0 = l.trig[tN4m1 - i];
+                t1 = l.trig[tN2m1 - i];
+                /* We'd scale up by 2 here, but instead it's done when mixing the windows */
+                yr = KissFFT.S_MUL(re, t0) + KissFFT.S_MUL(im, t1);
+                yi = KissFFT.S_MUL(re, t1) - KissFFT.S_MUL(im, t0);
+                output[yp1] = yr;
+                output[yp0 + 1] = yi;
+                yp0 += 2;
+                yp1 -= 2;
             }
 
             /* Mirror on both sides for TDAC */
-            {
-                // fixme: remove these temps
-                Pointer<int> xp1 = output.Point(overlap - 1);
-                Pointer<int> yp1 = output;
-                Pointer<int> wp1 = window.GetPointer();
-                Pointer<int> wp2 = window.GetPointer(overlap - 1);
+            xp1 = output_ptr + overlap - 1;
+            yp1 = output_ptr;
+            int wp1 = 0;
+            int wp2 = (overlap - 1);
 
-                for (i = 0; i < overlap / 2; i++)
-                {
-                    int x1, x2;
-                    x1 = xp1[0];
-                    x2 = yp1[0];
-                    yp1[0] = Inlines.MULT16_32_Q15(wp2[0], x2) - Inlines.MULT16_32_Q15(wp1[0], x1);
-                    yp1 = yp1.Point(1);
-                    xp1[0] = Inlines.MULT16_32_Q15(wp1[0], x2) + Inlines.MULT16_32_Q15(wp2[0], x1);
-                    xp1 = xp1.Point(-1);
-                    wp1 = wp1.Point(1);
-                    wp2 = wp2.Point(-1);
-                }
+            for (i = 0; i < overlap / 2; i++)
+            {
+                int x1 = output[xp1];
+                int x2 = output[yp1];
+                output[yp1++] = Inlines.MULT16_32_Q15(window[wp2], x2) - Inlines.MULT16_32_Q15(window[wp1], x1);
+                output[xp1--] = Inlines.MULT16_32_Q15(window[wp1], x2) + Inlines.MULT16_32_Q15(window[wp2], x1);
+                wp1++;
+                wp2--;
             }
         }
     }

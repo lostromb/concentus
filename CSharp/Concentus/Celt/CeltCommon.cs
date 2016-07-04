@@ -1128,9 +1128,9 @@ namespace Concentus.Celt
                 freq2 = out_syn[1].Point(overlap / 2);
                 freq2.MemCopyFrom(freq, 0, N);
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq2.Point(b), out_syn[0].Point(NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq2.Data, freq2.Offset + b, out_syn[0].Data, out_syn[0].Offset + (NB * b), mode.window, overlap, shift, B);
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[1].Point(NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[1].Data, out_syn[1].Offset + (NB * b), mode.window, overlap, shift, B);
             }
             else if (CC == 1 && C == 2)
             {
@@ -1145,7 +1145,7 @@ namespace Concentus.Celt
                 for (i = 0; i < N; i++)
                     freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], freq2[i]));
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[0].Point(NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[0].Data, out_syn[0].Offset + (NB * b), mode.window, overlap, shift, B);
             }
             else {
                 /* Normal case (mono or stereo) */
@@ -1154,7 +1154,7 @@ namespace Concentus.Celt
                     Bands.denormalise_bands(mode, X.GetPointer(c * N), freq.GetPointer(), oldBandE.GetPointer(c * nbEBands), start, effEnd, M,
                           downsample, silence);
                     for (b = 0; b < B; b++)
-                        MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[c].Point(NB * b), mode.window, overlap, shift, B);
+                        MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[c].Data, out_syn[c].Offset + (NB * b), mode.window, overlap, shift, B);
                 } while (++c < CC);
             }
 

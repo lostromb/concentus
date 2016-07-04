@@ -318,7 +318,9 @@ namespace ParityTest
                         concentusDecodedWithOffset.Offset,
                         decodedFrameSize,
                         false);
+                    concentusTimer.Start();
                     concentusDecoded = Unpointerize(concentusDecodedWithOffset, concentusDecoded.Length);
+                    concentusTimer.Stop();
 
                     // Decode with Opus
                     unsafe
@@ -326,7 +328,9 @@ namespace ParityTest
                         fixed (short* bdec = opusDecoded)
                         {
                             IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                            opusTimer.Start();
                             int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, decodedFrameSize, 0);
+                            opusTimer.Stop();
                         }
                     }
                 }
@@ -334,7 +338,9 @@ namespace ParityTest
                 {
                     bool useFEC = random.NextDouble() > 0.5;
                     // Decode with Concentus FEC
+                    concentusTimer.Start();
                     int concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, decodedFrameSize, useFEC);
+                    concentusTimer.Stop();
 
                     // Decode with Opus FEC
                     unsafe
@@ -342,7 +348,9 @@ namespace ParityTest
                         fixed (short* bdec = opusDecoded)
                         {
                             IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                            opusTimer.Start();
                             int opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, decodedFrameSize, useFEC ? 1 : 0);
+                            opusTimer.Stop();
                         }
                     }
                 }
