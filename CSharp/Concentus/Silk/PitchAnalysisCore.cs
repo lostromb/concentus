@@ -393,7 +393,7 @@ namespace Concentus.Silk
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE2_EXT;
-                Lag_CB_ptr = Tables.silk_CB_lags_stage2.GetPointer(0);
+                Lag_CB_ptr = Tables.silk_CB_lags_stage2.GetPointer();
                 if (Fs_kHz == 8 && complexity > SilkConstants.SILK_PE_MIN_COMPLEX)
                 {
                     /* If input is 8 khz use a larger codebook here because it is last stage */
@@ -405,7 +405,7 @@ namespace Concentus.Silk
             }
             else {
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE2_10MS;
-                Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms.GetPointer(0);
+                Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms.GetPointer();
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE2_10MS;
             }
 

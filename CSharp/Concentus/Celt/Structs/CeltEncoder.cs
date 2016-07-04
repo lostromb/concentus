@@ -267,7 +267,7 @@ namespace Concentus.Celt.Structs
             overlap = mode.overlap;
             _pre = new int[CC * (N + CeltConstants.COMBFILTER_MAXPERIOD)];
 
-            pre[0] = _pre.GetPointer(0);
+            pre[0] = _pre.GetPointer();
             pre[1] = _pre.GetPointer(N + CeltConstants.COMBFILTER_MAXPERIOD);
 
             c = 0;

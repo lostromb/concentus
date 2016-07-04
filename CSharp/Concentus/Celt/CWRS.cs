@@ -164,7 +164,7 @@ namespace Concentus.Celt
 
         internal static readonly Pointer<uint>[] CELT_PVQ_U_ROW =
         {
-            Tables.CELT_PVQ_U_DATA.GetPointer(0),Tables.CELT_PVQ_U_DATA.GetPointer(176),Tables.CELT_PVQ_U_DATA.GetPointer(351),
+            Tables.CELT_PVQ_U_DATA.GetPointer(),Tables.CELT_PVQ_U_DATA.GetPointer(176),Tables.CELT_PVQ_U_DATA.GetPointer(351),
             Tables.CELT_PVQ_U_DATA.GetPointer(525),Tables.CELT_PVQ_U_DATA.GetPointer(698),Tables.CELT_PVQ_U_DATA.GetPointer(870),
             Tables.CELT_PVQ_U_DATA.GetPointer(1041),Tables.CELT_PVQ_U_DATA.GetPointer(1131),Tables.CELT_PVQ_U_DATA.GetPointer(1178),
             Tables.CELT_PVQ_U_DATA.GetPointer(1207),Tables.CELT_PVQ_U_DATA.GetPointer(1226),Tables.CELT_PVQ_U_DATA.GetPointer(1240),

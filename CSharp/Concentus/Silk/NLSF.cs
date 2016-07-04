@@ -835,7 +835,7 @@ namespace Concentus.Silk
             dd = Inlines.silk_RSHIFT(d, 1);
 
             /* generate even and odd polynomials using convolution */
-            silk_NLSF2A_find_poly(P.GetPointer(), cos_LSF_QA.GetPointer(0), dd);
+            silk_NLSF2A_find_poly(P.GetPointer(), cos_LSF_QA.GetPointer(), dd);
             silk_NLSF2A_find_poly(Q.GetPointer(), cos_LSF_QA.GetPointer(1), dd);
 
             /* convert even and odd polynomials to opus_int32 Q12 filter coefs */

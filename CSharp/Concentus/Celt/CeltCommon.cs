@@ -1126,7 +1126,7 @@ namespace Concentus.Celt
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
                 freq2 = out_syn[1].Point(overlap / 2);
-                freq.GetPointer().MemCopyTo(freq2, N);
+                freq2.MemCopyFrom(freq, 0, N);
                 for (b = 0; b < B; b++)
                     MDCT.clt_mdct_backward(mode.mdct, freq2.Point(b), out_syn[0].Point(NB * b), mode.window, overlap, shift, B);
                 for (b = 0; b < B; b++)

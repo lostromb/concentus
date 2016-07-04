@@ -189,7 +189,7 @@ namespace Concentus.Celt
                 ac[i] -= Inlines.MULT16_32_Q15((2 * i * i), ac[i]);
             }
 
-            CeltLPC.celt_lpc(lpc.GetPointer(0), ac, 4);
+            CeltLPC.celt_lpc(lpc.GetPointer(), ac, 4);
             for (i = 0; i < 4; i++)
             {
                 tmp = Inlines.MULT16_16_Q15(Inlines.QCONST16(.9f, 15), tmp);

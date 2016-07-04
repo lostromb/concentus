@@ -573,7 +573,7 @@ namespace Concentus.Celt
                 }
             }
 
-            tmp.GetPointer().MemCopyTo(X, N);
+            X.MemCopyFrom(tmp, 0, N);
         }
 
         internal static void interleave_hadamard(Pointer<int> X, int N0, int stride, int hadamard)
@@ -605,7 +605,7 @@ namespace Concentus.Celt
                 }
             }
 
-            tmp.GetPointer().MemCopyTo(X, N);
+            X.MemCopyFrom(tmp, 0, N);
         }
 
         internal static void haar1(Pointer<int> X, int N0, int stride)
@@ -1509,6 +1509,7 @@ namespace Concentus.Celt
                 ctx.i = i;
                 last = (i == end - 1) ? 1 : 0;
 
+                // fixme: this is a pointer that gets trickled far fown the band kernels. It might be nice to remove it
                 X = X_.GetPointer(M * eBands[i]);
                 if (Y_ != null)
                 {
