@@ -165,7 +165,7 @@ namespace Concentus
             if (tonal.count == 0)
                 tonal.mem_fill = 240;
 
-            downmix(x, tonal.inmem.GetPointer(tonal.mem_fill), Inlines.IMIN(len, OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill), offset, c1, c2, C);
+            downmix(x.Data, x.Offset, tonal.inmem, tonal.mem_fill, Inlines.IMIN(len, OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill), offset, c1, c2, C);
 
             if (tonal.mem_fill + len < OpusConstants.ANALYSIS_BUF_SIZE)
             {
@@ -193,7 +193,7 @@ namespace Concentus
             Arrays.MemMove<int>(tonal.inmem, OpusConstants.ANALYSIS_BUF_SIZE - 240, 0, 240);
 
             remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
-            downmix(x, tonal.inmem.GetPointer(240), remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
+            downmix(x.Data, x.Offset, tonal.inmem, 240, remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
             tonal.mem_fill = 240 + remaining;
             
             KissFFT.opus_fft(kfft, input.GetPointer(), output.GetPointer());

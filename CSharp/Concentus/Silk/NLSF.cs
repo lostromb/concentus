@@ -673,10 +673,10 @@ namespace Concentus.Silk
 
             // Sort the quantization errors
             tempIndices1 = new int[nSurvivors];
-            Sort.silk_insertion_sort_increasing(err_Q26.GetPointer(), tempIndices1.GetPointer(), psNLSF_CB.nVectors, nSurvivors);
+            Sort.silk_insertion_sort_increasing(err_Q26, tempIndices1, psNLSF_CB.nVectors, nSurvivors);
 
             RD_Q25 = new int[nSurvivors];
-            tempIndices2 = new sbyte[nSurvivors * SilkConstants.MAX_LPC_ORDER];
+            tempIndices2 = new sbyte[nSurvivors * SilkConstants.MAX_LPC_ORDER]; // opt: potential partitioned array
 
             // Loop over survivors
             for (s = 0; s < nSurvivors; s++)
@@ -684,7 +684,7 @@ namespace Concentus.Silk
                 ind1 = tempIndices1[s];
 
                 // Residual after first stage
-                pCB_element = psNLSF_CB.CB1_NLSF_Q8.GetPointer(ind1 * psNLSF_CB.order);
+                pCB_element = psNLSF_CB.CB1_NLSF_Q8.GetPointer(ind1 * psNLSF_CB.order); // opt: potential 1:2 partitioned buffer
                 for (i = 0; i < psNLSF_CB.order; i++)
                 {
                     NLSF_tmp_Q15[i] = Inlines.silk_LSHIFT16((short)pCB_element[i], 7);
@@ -741,7 +741,7 @@ namespace Concentus.Silk
 
             // Find the lowest rate-distortion error
             int[] bestIndex = new int[1];
-            Sort.silk_insertion_sort_increasing(RD_Q25.GetPointer(), bestIndex.GetPointer(), nSurvivors, 1);
+            Sort.silk_insertion_sort_increasing(RD_Q25, bestIndex, nSurvivors, 1);
 
             NLSFIndices[0] = (sbyte)tempIndices1[bestIndex[0]];
             tempIndices2.GetPointer(bestIndex[0] * SilkConstants.MAX_LPC_ORDER).MemCopyTo(NLSFIndices.GetPointer(1), psNLSF_CB.order);

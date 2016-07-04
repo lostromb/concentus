@@ -238,7 +238,7 @@ namespace Concentus.Silk
             /* Sort */
             length_d_srch = Inlines.silk_ADD_LSHIFT32(4, complexity, 1);
             Inlines.OpusAssert(3 * length_d_srch <= SilkConstants.PE_D_SRCH_LENGTH);
-            Sort.silk_insertion_sort_decreasing_int16(C.GetPointer(), d_srch.GetPointer(), CSTRIDE_4KHZ, length_d_srch);
+            Sort.silk_insertion_sort_decreasing_int16(C, d_srch, CSTRIDE_4KHZ, length_d_srch);
 
             /* Escape if correlation is very low already here */
             Cmax = (int)C[0];                                                    /* Q14 */

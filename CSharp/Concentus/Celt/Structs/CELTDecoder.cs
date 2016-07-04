@@ -81,8 +81,8 @@ namespace Concentus.Celt.Structs
         /// val16 oldLogE2[],       Size = 2*mode.nbEBands
         /// val16 backgroundLogE[], Size = 2*mode.nbEBands
         /// </summary>
-        internal int[] decode_mem = null;
-        internal int[] lpc = null;
+        internal int[][] decode_mem = null;
+        internal int[][] lpc = null; // Porting note: Split two-part array into separate arrays (one per channel)
         internal int[] oldEBands = null;
         internal int[] oldLogE = null;
         internal int[] oldLogE2 = null;
@@ -131,8 +131,13 @@ namespace Concentus.Celt.Structs
             this.PartialReset();
 
             // We have to reconstitute the dynamic buffers here. fixme: this could be better implemented
-            this.decode_mem = new int[this.channels * (CeltConstants.DECODE_BUFFER_SIZE + this.mode.overlap)];
-            this.lpc = new int[this.channels * CeltConstants.LPC_ORDER];
+            this.decode_mem = new int[this.channels][];
+            this.lpc = new int[this.channels][];
+            for (int c = 0; c < this.channels; c++)
+            {
+                this.decode_mem[c] = new int[CeltConstants.DECODE_BUFFER_SIZE + this.mode.overlap];
+                this.lpc[c] = new int[CeltConstants.LPC_ORDER];
+            }
             this.oldEBands = new int[2 * this.mode.nbEBands];
             this.oldLogE = new int[2 * this.mode.nbEBands];
             this.oldLogE2 = new int[2 * this.mode.nbEBands];
@@ -194,7 +199,6 @@ namespace Concentus.Celt.Structs
             int c;
             int i;
             int C = this.channels;
-            Pointer<int>[] local_decode_mem = new Pointer<int>[2];
             Pointer<int>[] out_syn = new Pointer<int>[2];
             CeltMode mode;
             int nbEBands;
@@ -209,8 +213,7 @@ namespace Concentus.Celt.Structs
 
             c = 0; do
             {
-                local_decode_mem[c] = this.decode_mem.GetPointer(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
-                out_syn[c] = local_decode_mem[c].Point(CeltConstants.DECODE_BUFFER_SIZE - N);
+                out_syn[c] = this.decode_mem[c].GetPointer(CeltConstants.DECODE_BUFFER_SIZE - N);
             } while (++c < C);
             
             noise_based = (loss_count >= 5 || start != 0) ? 1 : 0;
@@ -258,7 +261,7 @@ namespace Concentus.Celt.Structs
                 c = 0;
                 do
                 {
-                    local_decode_mem[c].Point(N).MemMove(0 - N, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
+                    Arrays.MemMove<int>(this.decode_mem[c], N, 0, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
                 } while (++c < C);
 
                 CeltCommon.celt_synthesis(mode, X, out_syn, this.oldEBands, start, effEnd, C, C, 0, LM, this.downsample, 0);
@@ -274,7 +277,7 @@ namespace Concentus.Celt.Structs
 
                 if (loss_count == 0)
                 {
-                    this.last_pitch_index = pitch_index = CeltCommon.celt_plc_pitch_search(local_decode_mem, C);
+                    this.last_pitch_index = pitch_index = CeltCommon.celt_plc_pitch_search(this.decode_mem, C);
                 }
                 else {
                     pitch_index = this.last_pitch_index;
@@ -289,13 +292,13 @@ namespace Concentus.Celt.Structs
                     int decay;
                     int attenuation;
                     int S1 = 0;
-                    Pointer<int> buf;
+                    int[] buf;
                     int extrapolation_offset;
                     int extrapolation_len;
                     int exc_length;
                     int j;
 
-                    buf = local_decode_mem[c];
+                    buf = this.decode_mem[c];
                     for (i = 0; i < CeltConstants.MAX_PERIOD; i++)
                     {
                         exc[i] = Inlines.ROUND16(buf[CeltConstants.DECODE_BUFFER_SIZE - CeltConstants.MAX_PERIOD + i], CeltConstants.SIG_SHIFT);
@@ -316,7 +319,7 @@ namespace Concentus.Celt.Structs
                             /*ac[i] *= exp(-.5*(2*M_PI*.002*i)*(2*M_PI*.002*i));*/
                             ac[i] -= Inlines.MULT16_32_Q15(2 * i * i, ac[i]);
                         }
-                        CeltLPC.celt_lpc(this.lpc.GetPointer(c * CeltConstants.LPC_ORDER), ac, CeltConstants.LPC_ORDER);
+                        CeltLPC.celt_lpc(this.lpc[c], ac, CeltConstants.LPC_ORDER);
                     }
                     /* We want the excitation for 2 pitch periods in order to look for a
                        decaying signal, but we can't get more than MAX_PERIOD. */
@@ -332,7 +335,7 @@ namespace Concentus.Celt.Structs
                         }
 
                         /* Compute the excitation for exc_length samples before the loss. */
-                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), this.lpc, (c * CeltConstants.LPC_ORDER),
+                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), this.lpc[0], (c * CeltConstants.LPC_ORDER),
                               exc, (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
                     }
 
@@ -359,7 +362,7 @@ namespace Concentus.Celt.Structs
                     /* Move the decoder memory one frame to the left to give us room to
                        add the data for the new frame. We ignore the overlap that extends
                        past the end of the buffer, because we aren't going to use it. */
-                    buf.Point(N).MemMove(0 - N, CeltConstants.DECODE_BUFFER_SIZE - N);
+                    Arrays.MemMove<int>(buf, N, 0, CeltConstants.DECODE_BUFFER_SIZE - N);
 
                     /* Extrapolate from the end of the excitation with a period of
                        "pitch_index", scaling down each period by an additional factor of
@@ -397,8 +400,8 @@ namespace Concentus.Celt.Structs
                             lpc_mem[i] = Inlines.ROUND16(buf[CeltConstants.DECODE_BUFFER_SIZE - N - 1 - i], CeltConstants.SIG_SHIFT);
                         /* Apply the synthesis filter to convert the excitation back into
                            the signal domain. */
-                        CeltLPC.celt_iir(buf.Point(CeltConstants.DECODE_BUFFER_SIZE - N), this.lpc.GetPointer(c * CeltConstants.LPC_ORDER),
-                              buf.Point(CeltConstants.DECODE_BUFFER_SIZE - N), extrapolation_len, CeltConstants.LPC_ORDER,
+                        CeltLPC.celt_iir(buf.GetPointer(CeltConstants.DECODE_BUFFER_SIZE - N), this.lpc[c].GetPointer(),
+                              buf.GetPointer(CeltConstants.DECODE_BUFFER_SIZE - N), extrapolation_len, CeltConstants.LPC_ORDER,
                               lpc_mem);
                     }
 
@@ -441,7 +444,7 @@ namespace Concentus.Celt.Structs
                     /* Apply the pre-filter to the MDCT overlap for the next frame because
                        the post-filter will be re-applied in the decoder after the MDCT
                        overlap. */
-                    CeltCommon.comb_filter(etmp.GetPointer(), buf.Point(CeltConstants.DECODE_BUFFER_SIZE),
+                    CeltCommon.comb_filter(etmp.GetPointer(), buf.GetPointer(CeltConstants.DECODE_BUFFER_SIZE),
                          this.postfilter_period, this.postfilter_period, overlap,
                          -this.postfilter_gain, -this.postfilter_gain,
                          this.postfilter_tapset, this.postfilter_tapset, null, 0);
@@ -474,9 +477,7 @@ namespace Concentus.Celt.Structs
             int[] fine_priority;
             int[] tf_res;
             byte[] collapse_masks;
-            Pointer<int>[] decode_mem = new Pointer<int>[2];
             Pointer<int>[] out_syn = new Pointer<int>[2];
-            int[] lpc;
             int[] oldBandE, oldLogE, oldLogE2, backgroundLogE;
 
             int shortBlocks;
@@ -514,8 +515,7 @@ namespace Concentus.Celt.Structs
             start = this.start;
             end = this.end;
             frame_size *= this.downsample;
-
-            lpc = this.lpc;
+            
             oldBandE = this.oldEBands;
             oldLogE = this.oldLogE;
             oldLogE2 = this.oldLogE2;
@@ -536,8 +536,7 @@ namespace Concentus.Celt.Structs
             N = M * mode.shortMdctSize;
             c = 0; do
             {
-                decode_mem[c] = this.decode_mem.GetPointer(c * (CeltConstants.DECODE_BUFFER_SIZE + overlap));
-                out_syn[c] = decode_mem[c].Point(CeltConstants.DECODE_BUFFER_SIZE - N);
+                out_syn[c] = this.decode_mem[c].GetPointer(CeltConstants.DECODE_BUFFER_SIZE - N);
             } while (++c < CC);
 
             effEnd = end;
@@ -691,7 +690,7 @@ namespace Concentus.Celt.Structs
             c = 0;
             do
             {
-                decode_mem[c].Point(N).MemMove(0 - N, CeltConstants.DECODE_BUFFER_SIZE - N + overlap / 2);
+                Arrays.MemMove<int>(decode_mem[c], N, 0, CeltConstants.DECODE_BUFFER_SIZE - N + overlap / 2);
             } while (++c < CC);
 
             /* Decode fixed codebook */

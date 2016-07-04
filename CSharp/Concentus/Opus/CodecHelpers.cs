@@ -361,7 +361,7 @@ namespace Concentus
                 int j;
                 tmp = CeltConstants.EPSILON;
 
-                downmix(x, x_ptr, sub, subframe, i * subframe + offset, 0, -2, C);
+                downmix(x, x_ptr, sub, 0, subframe, i * subframe + offset, 0, -2, C);
                 if (i == 0)
                     memx = sub[0];
                 for (j = 0; j < subframe; j++)

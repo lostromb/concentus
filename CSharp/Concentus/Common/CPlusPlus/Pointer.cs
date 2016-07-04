@@ -33,8 +33,9 @@ namespace Concentus.Common.CPlusPlus
 {
     using System;
     using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using System.Text;
-    
+
     /// <summary>
     /// This simulates a C++ style pointer as far as can be implemented in C#. It represents a handle
     /// to an array of objects, along with a base offset that represents the address.
@@ -548,6 +549,11 @@ namespace Concentus.Common.CPlusPlus
         /// <returns></returns>
         public static Pointer<E> GetPointer<E>(this E[] memory, int offset = 0)
         {
+            //if (offset == memory.Length / 2)
+            //{
+            //    // This may be a partitioned array. Signal the debugger
+            //    Debugger.Break();
+            //}
             return new Pointer<E>(memory, offset);
         }
     }

@@ -911,7 +911,7 @@ namespace Concentus.Celt
                 {
                     int offset;
                     int tmp;
-                    Pointer<int> f = follower.GetPointer(c * nbEBands);
+                    Pointer<int> f = follower.GetPointer(c * nbEBands); // opt: potential 1:2 partitioned array
                     f[0] = bandLogE2[c * nbEBands];
                     for (i = 1; i < end; i++)
                     {
@@ -1199,7 +1199,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static int celt_plc_pitch_search(Pointer<int>[] decode_mem, int C)
+        internal static int celt_plc_pitch_search(int[][] decode_mem, int C)
         {
             BoxedValue<int> pitch_index = new BoxedValue<int>();
             int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
