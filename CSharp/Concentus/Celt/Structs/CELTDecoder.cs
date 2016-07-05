@@ -335,7 +335,7 @@ namespace Concentus.Celt.Structs
                         }
 
                         /* Compute the excitation for exc_length samples before the loss. */
-                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), this.lpc[0], (c * CeltConstants.LPC_ORDER),
+                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), this.lpc[c], 0,
                               exc, (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
                     }
 

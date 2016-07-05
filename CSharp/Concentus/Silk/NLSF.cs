@@ -382,12 +382,12 @@ namespace Concentus.Silk
         /// <returns>RD value in Q25</returns>
         /// Fixme: Optimize this method!
         internal static int silk_NLSF_del_dec_quant(
-            Pointer<sbyte> indices,
+            sbyte[] indices,
             short[] x_Q10,
             short[] w_Q5,
             byte[] pred_coef_Q8,
             short[] ec_ix,
-            Pointer<byte> ec_rates_Q5,
+            byte[] ec_rates_Q5,
             int quant_step_size_Q16,
             short inv_quant_step_size_Q6,
             int mu_Q20,
@@ -448,7 +448,7 @@ namespace Concentus.Silk
 
             for (i = order - 1; ; i--)
             {
-                rates_Q5 = ec_rates_Q5.Point(ec_ix[i]);
+                rates_Q5 = ec_rates_Q5.GetPointer(ec_ix[i]); // opt: easy pointer to remove
                 pred_coef_Q16 = Inlines.silk_LSHIFT((int)pred_coef_Q8[i], 8);
                 in_Q10 = x_Q10[i];
 
@@ -650,7 +650,7 @@ namespace Concentus.Silk
             int[] err_Q26;
             int[] RD_Q25;
             int[] tempIndices1;
-            sbyte[] tempIndices2;
+            sbyte[][] tempIndices2;
             short[] res_Q15 = new short[psNLSF_CB.order];
             short[] res_Q10 = new short[psNLSF_CB.order];
             short[] NLSF_tmp_Q15 = new short[psNLSF_CB.order];
@@ -676,7 +676,8 @@ namespace Concentus.Silk
             Sort.silk_insertion_sort_increasing(err_Q26, tempIndices1, psNLSF_CB.nVectors, nSurvivors);
 
             RD_Q25 = new int[nSurvivors];
-            tempIndices2 = new sbyte[nSurvivors * SilkConstants.MAX_LPC_ORDER]; // opt: potential partitioned array
+            tempIndices2 = Arrays.InitTwoDimensionalArray<sbyte>(nSurvivors, SilkConstants.MAX_LPC_ORDER); 
+            
 
             // Loop over survivors
             for (s = 0; s < nSurvivors; s++)
@@ -712,12 +713,12 @@ namespace Concentus.Silk
 
                 // Trellis quantizer
                 RD_Q25[s] = silk_NLSF_del_dec_quant(
-                    tempIndices2.GetPointer(s * SilkConstants.MAX_LPC_ORDER),
+                    tempIndices2[s],
                     res_Q10,
                     W_adj_Q5,
                     pred_Q8,
                     ec_ix,
-                    psNLSF_CB.ec_Rates_Q5.GetPointer(),
+                    psNLSF_CB.ec_Rates_Q5,
                     psNLSF_CB.quantStepSize_Q16,
                     psNLSF_CB.invQuantStepSize_Q6,
                     NLSF_mu_Q20,
@@ -744,7 +745,7 @@ namespace Concentus.Silk
             Sort.silk_insertion_sort_increasing(RD_Q25, bestIndex, nSurvivors, 1);
 
             NLSFIndices[0] = (sbyte)tempIndices1[bestIndex[0]];
-            tempIndices2.GetPointer(bestIndex[0] * SilkConstants.MAX_LPC_ORDER).MemCopyTo(NLSFIndices.GetPointer(1), psNLSF_CB.order);
+            Array.Copy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
 
             // Decode
             silk_NLSF_decode(pNLSF_Q15, NLSFIndices, psNLSF_CB);
@@ -779,6 +780,12 @@ namespace Concentus.Silk
             }
         }
 
+        /* This ordering was found to maximize quality. It improves numerical accuracy of
+               silk_NLSF2A_find_poly() compared to "standard" ordering. */
+        private static readonly byte[] ordering16 = { 0, 15, 8, 7, 4, 11, 12, 3, 2, 13, 10, 5, 6, 9, 14, 1 };
+        private static readonly byte[] ordering10 = { 0, 9, 6, 3, 4, 5, 8, 1, 2, 7 };
+
+
         /// <summary>
         /// compute whitening filter coefficients from normalized line spectral frequencies
         /// </summary>
@@ -790,14 +797,10 @@ namespace Concentus.Silk
             short[] NLSF,
             int d)
         {
-            /* This ordering was found to maximize quality. It improves numerical accuracy of
-               silk_NLSF2A_find_poly() compared to "standard" ordering. */
-            byte[] ordering16 = { 0, 15, 8, 7, 4, 11, 12, 3, 2, 13, 10, 5, 6, 9, 14, 1 };
-            byte[] ordering10 = { 0, 9, 6, 3, 4, 5, 8, 1, 2, 7 };
-
+            
             byte[] ordering;
             int k, i, dd;
-            int[] cos_LSF_QA = new int[SilkConstants.SILK_MAX_ORDER_LPC];
+            int[] cos_LSF_QA = new int[SilkConstants.SILK_MAX_ORDER_LPC]; //opt: only initialize d elements
             int[] P = new int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
             int[] Q = new int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
             int[] a32_QA1 = new int[SilkConstants.SILK_MAX_ORDER_LPC];

@@ -870,7 +870,7 @@ namespace Concentus.Structs
 
                         return OpusError.OPUS_INTERNAL_ERROR;
                     }
-                    ret = rp.AddPacket(tmp_data.GetPointer(i * bytes_per_frame), tmp_len);
+                    ret = rp.AddPacket(tmp_data, i * bytes_per_frame, tmp_len);
                     if (ret < 0)
                     {
 
@@ -1427,7 +1427,7 @@ namespace Concentus.Structs
             ret += 1 + redundancy_bytes;
             if (this.use_vbr == 0)
             {
-                if (OpusRepacketizer.PadPacket(data.GetPointer(data_ptr), ret, max_data_bytes) != OpusError.OPUS_OK)
+                if (OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
@@ -1577,7 +1577,7 @@ namespace Concentus.Structs
 
                 return ret;
             }
-            catch (Exception e)
+            catch (ArgumentException e)
             {
                 throw new OpusException("Internal error during encoding: " + e.Message);
             }
