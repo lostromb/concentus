@@ -8,20 +8,19 @@ namespace ConcentusDemo
     public class Program
     {
         private const int input_q = 16;
-        private const int output_q = 17;
+        private const int output_q = 16;
 
-        private static int functionA(int a, int b)
+        private static int functionA(int a, int b, short c)
         {
-            return Inlines.MULT16_32_Q15(a, b);
+            return Inlines.silk_SMLAWB(a, b, c);
         }
 
-        private static int functionB(int a, int b)
+        private const float f16 = (1 / 65536f);
+        private static int functionB(int a, int b, short c)
         {
-            //return ((a * (b >> 16)) << 1) + ((a * (b & 0xFFFF)) >> 15);
-
-            float af = (float)a / (float)(1 << input_q);
-            float bf = (float)b / (float)(1 << input_q);
-            return (int)((af * bf) * (float)(1 << output_q));
+            //return a + (int)(((long)b * c) >> 16);
+            //return a + (int)((float)b * (float)c * f16);
+            return a + (int)(((b >> 8) * (c >> 8)));
         }
 
         public static int ToFixed(float x, int q)
@@ -38,34 +37,37 @@ namespace ConcentusDemo
         {
             Random rand = new Random();
             
-            for (int c = 0; c < 100; c++)
-            {
-                int a = rand.Next(-1000000, 1000000);
-                int b = rand.Next(-1000000, 1000000);
-                Console.WriteLine("{0:F3} (0x{1:x})\t*\t{2:F3} (0x{3:x})\t=\t{4:F3}", ToFloat(a, input_q), a, ToFloat(b, input_q), b, ToFloat(functionA(a, b), output_q));
-                Console.WriteLine("{0:F3} (0x{1:x})\t*\t{2:F3} (0x{3:x})\t=\t{4:F3}", ToFloat(a, input_q), a, ToFloat(b, input_q), b, ToFloat(functionB(a, b), output_q));
-                Console.WriteLine();
-            }
+            //for (int z = 0;  z< 100; z++)
+            //{
+            //    int a = rand.Next(-1000000, 1000000);
+            //    int b = rand.Next(-1000000, 1000000);
+            //    short c = (short)rand.Next(-30000, 30000);
+            //    Console.WriteLine("{0:F3} (0x{1:x})\t+\t{2:F3} (0x{3:x})\t*\t{4:F3} (0x{5:x})\t=\t{6:F3}", ToFloat(a, input_q), a, ToFloat(b, input_q), b, ToFloat(c, input_q), c, ToFloat(functionA(a, b, c), output_q));
+            //    Console.WriteLine("{0:F3} (0x{1:x})\t+\t{2:F3} (0x{3:x})\t*\t{4:F3} (0x{5:x})\t=\t{6:F3}", ToFloat(a, input_q), a, ToFloat(b, input_q), b, ToFloat(c, input_q), c, ToFloat(functionB(a, b, c), output_q));
+            //    Console.WriteLine();
+            //}
 
             Stopwatch timerz = new Stopwatch();
             timerz.Start();
-            for (int c = 0; c < 10000000; c++)
+            int a = rand.Next(-1000000, 1000000);
+            int b = rand.Next(-1000000, 1000000);
+            short c = (short)rand.Next(-30000, 30000);
+            for (long z = 0; z < 10000000000L; z++)
             {
-                int a = rand.Next(-1000000, 1000000);
-                int b = rand.Next(-1000000, 1000000);
-                functionA(a, b);
+                
+                functionA(a, b, c);
             }
             timerz.Stop();
-            Console.WriteLine(timerz.ElapsedTicks);
+            Console.WriteLine(1000 * timerz.ElapsedTicks / Stopwatch.Frequency);
             timerz.Restart();
-            for (int c = 0; c < 10000000; c++)
+            
+            for (long z = 0; z < 10000000000L; z++)
             {
-                int a = rand.Next(-1000000, 1000000);
-                int b = rand.Next(-1000000, 1000000);
-                functionB(a, b);
+                
+                functionB(a, b, c);
             }
             timerz.Stop();
-            Console.WriteLine(timerz.ElapsedTicks);
+            Console.WriteLine(1000 * timerz.ElapsedTicks / Stopwatch.Frequency);
         }
     }
 }
