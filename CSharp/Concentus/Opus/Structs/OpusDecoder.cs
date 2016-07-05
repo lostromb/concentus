@@ -759,7 +759,7 @@ namespace Concentus.Structs
 
                 return ret;
             }
-            catch (Exception e)
+            catch (ArgumentException e)
             {
                 throw new OpusException("Internal error during decoding: " + e.Message);
             }
@@ -825,7 +825,7 @@ namespace Concentus.Structs
 
                 return ret;
             }
-            catch (Exception e)
+            catch (ArgumentException e)
             {
                 throw new OpusException("Internal error during decoding: " + e.Message);
             }

@@ -11,11 +11,11 @@ namespace Concentus.Structs
 {
     public class OpusRepacketizer
     {
-        public byte toc = 0;
-        public int nb_frames = 0;
-        public readonly Pointer<byte>[] frames = new Pointer<byte>[48];
-        public readonly short[] len = new short[48];
-        public int framesize = 0;
+        internal byte toc = 0;
+        internal int nb_frames = 0;
+        internal readonly Pointer<byte>[] frames = new Pointer<byte>[48];
+        internal readonly short[] len = new short[48];
+        internal int framesize = 0;
         
         private OpusRepacketizer() { }
         
@@ -134,9 +134,9 @@ namespace Concentus.Structs
   *                              audio stored in the repacketizer state to more
   *                              than 120 ms.
   */
-        public int AddPacket(Pointer<byte> data, int len)
+        public int AddPacket(byte[] data, int data_offset, int len)
         {
-            return opus_repacketizer_cat_impl(data, len, 0);
+            return opus_repacketizer_cat_impl(data.GetPointer(data_offset), len, 0);
         }
 
         /** Return the total number of frames contained in packet data submitted to
@@ -343,9 +343,9 @@ namespace Concentus.Structs
   * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
   *                                complete output packet.
   */
-        public int CreatePacket(int begin, int end, Pointer<byte> data, int maxlen)
+        public int CreatePacket(int begin, int end, byte[] data, int data_offset, int maxlen)
         {
-            return opus_repacketizer_out_range_impl(begin, end, data, maxlen, 0, 0);
+            return opus_repacketizer_out_range_impl(begin, end, data.GetPointer(data_offset), maxlen, 0, 0);
         }
 
         /** Construct a new packet from data previously submitted to the repacketizer
@@ -377,9 +377,9 @@ namespace Concentus.Structs
   * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
   *                                complete output packet.
   */
-        public int CreatePacket(Pointer<byte> data, int maxlen)
+        public int CreatePacket(byte[] data, int data_offset, int maxlen)
         {
-            return opus_repacketizer_out_range_impl(0, this.nb_frames, data, maxlen, 0, 0);
+            return opus_repacketizer_out_range_impl(0, this.nb_frames, data.GetPointer(data_offset), maxlen, 0, 0);
         }
 
         /** Pads a given Opus packet to a larger size (possibly changing the TOC sequence).
@@ -394,7 +394,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadPacket(Pointer<byte> data, int len, int new_len)
+        public static int PadPacket(byte[] data, int data_offset, int len, int new_len)
         {
             OpusRepacketizer rp = new OpusRepacketizer();
             int ret;
@@ -406,10 +406,10 @@ namespace Concentus.Structs
                 return OpusError.OPUS_BAD_ARG;
             rp.Reset();
             /* Moving payload to the end of the packet so we can do in-place padding */
-            //OPUS_MOVE(data + new_len - len, data, len);
-            data.MemMoveTo(data.Point(new_len - len), len);
-            rp.AddPacket(data.Point(new_len - len), len);
-            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, new_len, 0, 1);
+            Arrays.MemMove<byte>(data, data_offset, data_offset + new_len - len, len);
+            //data.MemMoveTo(data.Point(new_len - len), len);
+            rp.AddPacket(data, data_offset + new_len - len, len);
+            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data.GetPointer(data_offset), new_len, 0, 1);
             if (ret > 0)
                 return OpusError.OPUS_OK;
             else
@@ -427,7 +427,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int UnpadPacket(Pointer<byte> data, int len)
+        public static int UnpadPacket(byte[] data, int data_offset, int len)
         {
             int ret;
             if (len < 1)
@@ -435,10 +435,10 @@ namespace Concentus.Structs
 
             OpusRepacketizer rp = new OpusRepacketizer();
             rp.Reset();
-            ret = rp.AddPacket(data, len);
+            ret = rp.AddPacket(data, data_offset, len);
             if (ret < 0)
                 return ret;
-            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, len, 0, 0);
+            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data.GetPointer(data_offset), len, 0, 0);
             Inlines.OpusAssert(ret > 0 && ret <= len);
 
             return ret;
@@ -458,7 +458,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadMultistreamPacket(Pointer<byte> data, int len, int new_len, int nb_streams)
+        public static int PadMultistreamPacket(byte[] data, int data_offset, int len, int new_len, int nb_streams)
         {
             int s;
             int count;
@@ -479,14 +479,14 @@ namespace Concentus.Structs
             {
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
-                count = OpusPacketInfo.opus_packet_parse_impl(data, len, 1, toc, null,
+                count = OpusPacketInfo.opus_packet_parse_impl(data.GetPointer(data_offset), len, 1, toc, null,
                                                size.GetPointer(), null, packet_offset);
                 if (count < 0)
                     return count;
-                data = data.Point(packet_offset.Val);
+                data_offset += packet_offset.Val;
                 len -= packet_offset.Val;
             }
-            return PadPacket(data, len, len + amount);
+            return PadPacket(data, data_offset, len, len + amount);
         }
 
         // FIXME THIS METHOD FAILS IN TEST_OPUS_ENCODE
@@ -503,7 +503,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int UnpadMultistreamPacket(Pointer<byte> data, int len, int nb_streams)
+        public static int UnpadMultistreamPacket(byte[] data, int data_offset, int len, int nb_streams)
         {
             int s;
             BoxedValue<byte> toc = new BoxedValue<byte>();
@@ -515,7 +515,7 @@ namespace Concentus.Structs
 
             if (len < 1)
                 return OpusError.OPUS_BAD_ARG;
-            dst = data;
+            dst = data.GetPointer(data_offset);
             dst_len = 0;
             /* Unpad all frames */
             for (s = 0; s < nb_streams; s++)
@@ -525,11 +525,11 @@ namespace Concentus.Structs
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
                 rp.Reset();
-                ret = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, toc, null,
+                ret = OpusPacketInfo.opus_packet_parse_impl(data.GetPointer(data_offset), len, self_delimited, toc, null,
                                                size.GetPointer(), null, packet_offset);
                 if (ret < 0)
                     return ret;
-                ret = rp.opus_repacketizer_cat_impl(data, packet_offset.Val, self_delimited);
+                ret = rp.opus_repacketizer_cat_impl(data.GetPointer(data_offset), packet_offset.Val, self_delimited);
                 if (ret < 0)
                     return ret;
                 ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, dst, len, self_delimited, 0);
@@ -538,7 +538,7 @@ namespace Concentus.Structs
                 else
                     dst_len += ret;
                 dst = dst.Point(ret);
-                data = data.Point(packet_offset.Val);
+                data_offset += packet_offset.Val;
                 len -= packet_offset.Val;
             }
             return dst_len;

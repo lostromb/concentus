@@ -253,8 +253,7 @@ namespace Concentus.Celt.Structs
               int prefilter_tapset, BoxedValue<int> pitch, BoxedValue<int> gain, BoxedValue<int> qgain, int enabled, int nbAvailableBytes)
         {
             int c;
-            int[] _pre;
-            Pointer<int>[] pre = new Pointer<int>[2];
+            int[][] pre = new int[CC][];
             CeltMode mode; // [porting note] pointer
             BoxedValue<int> pitch_index = new BoxedValue<int>();
             int gain1;
@@ -265,16 +264,16 @@ namespace Concentus.Celt.Structs
 
             mode = this.mode;
             overlap = mode.overlap;
-            _pre = new int[CC * (N + CeltConstants.COMBFILTER_MAXPERIOD)];
-
-            pre[0] = _pre.GetPointer(0);
-            pre[1] = _pre.GetPointer(N + CeltConstants.COMBFILTER_MAXPERIOD);
+            for (int z = 0; z < CC; z++)
+            {
+                pre[z] = new int[N + CeltConstants.COMBFILTER_MAXPERIOD];
+            }
 
             c = 0;
             do
             {
-                prefilter_mem.GetPointer(c * CeltConstants.COMBFILTER_MAXPERIOD).MemCopyTo(pre[c], CeltConstants.COMBFILTER_MAXPERIOD);
-                input.GetPointer(c * (N + overlap) + overlap).MemCopyTo(pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD), N);
+                Array.Copy(prefilter_mem, c * CeltConstants.COMBFILTER_MAXPERIOD, pre[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
+                Array.Copy(input, c * (N + overlap) + overlap, pre[c], CeltConstants.COMBFILTER_MAXPERIOD, N);
             } while (++c < CC);
 
             if (enabled != 0)
@@ -348,28 +347,27 @@ namespace Concentus.Celt.Structs
             {
                 int offset = mode.shortMdctSize - overlap;
                 this.prefilter_period = Inlines.IMAX(this.prefilter_period, CeltConstants.COMBFILTER_MINPERIOD);
-                // fixme: no need for pointers in all of these copies + moves
-                this.in_mem.GetPointer(c * overlap).MemCopyTo(input.GetPointer(c * (N + overlap)), overlap);
+                Array.Copy(this.in_mem, c * overlap, input, c * (N + overlap), overlap);
                 if (offset != 0)
                 {
-                    CeltCommon.comb_filter(input.GetPointer(c * (N + overlap) + overlap), pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD),
+                    CeltCommon.comb_filter(input.GetPointer(c * (N + overlap) + overlap), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD),
                           this.prefilter_period, this.prefilter_period, offset, -this.prefilter_gain, -this.prefilter_gain,
                           this.prefilter_tapset, this.prefilter_tapset, null, 0);
                 }
 
-                CeltCommon.comb_filter(input.GetPointer(c * (N + overlap) + overlap + offset), pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD + offset),
+                CeltCommon.comb_filter(input.GetPointer(c * (N + overlap) + overlap + offset), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       this.prefilter_period, pitch_index.Val, N - offset, -this.prefilter_gain, -gain1,
                       this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
                 input.GetPointer(c * (N + overlap) + N).MemCopyTo(this.in_mem, c * overlap, overlap);
 
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
                 {
-                    pre[c].Point(N).MemMoveTo(prefilter_mem.GetPointer(c * CeltConstants.COMBFILTER_MAXPERIOD), CeltConstants.COMBFILTER_MAXPERIOD);
+                    Array.Copy(pre[c], N, prefilter_mem, c * CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MAXPERIOD);
                 }
                 else
                 {
-                    prefilter_mem.GetPointer(c * CeltConstants.COMBFILTER_MAXPERIOD + N).MemMoveTo(prefilter_mem.GetPointer(c * CeltConstants.COMBFILTER_MAXPERIOD), CeltConstants.COMBFILTER_MAXPERIOD - N);
-                    pre[c].Point(CeltConstants.COMBFILTER_MAXPERIOD).MemMoveTo(prefilter_mem.GetPointer(c * CeltConstants.COMBFILTER_MAXPERIOD + CeltConstants.COMBFILTER_MAXPERIOD - N), N);
+                    Arrays.MemMove(prefilter_mem, c * CeltConstants.COMBFILTER_MAXPERIOD + N, c * CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MAXPERIOD - N); // opt: prefilter_mem may be a partitioned array
+                    Array.Copy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem, c * CeltConstants.COMBFILTER_MAXPERIOD + CeltConstants.COMBFILTER_MAXPERIOD - N, N);
                 }
             } while (++c < CC);
 
@@ -1111,7 +1109,7 @@ namespace Concentus.Celt.Structs
             Bands.quant_all_bands(1, mode, start, end, X, C == 2 ? X.GetPointer(N) : null, collapse_masks,
                   bandE, pulses, shortBlocks, this.spread_decision,
                   dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
-                  balance, enc, LM, codedBands, boxed_rng);
+                  balance, enc, LM, codedBands, boxed_rng); // opt: X potential 1:2 partitioned array
             this.rng = boxed_rng.Val;
 
             if (anti_collapse_rsv > 0)

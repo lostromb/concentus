@@ -269,7 +269,7 @@ namespace Concentus.Silk
             smooth_coef_Q16 = Inlines.silk_SMULWB(Inlines.silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
             pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0.GetPointer(), frame_length, smooth_coef_Q16);
-            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0.GetPointer(2), frame_length, smooth_coef_Q16);
+            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0.GetPointer(2), frame_length, smooth_coef_Q16); // opt: potential 1:2 partitioned buffer
             
             /* Ratio of the norms of residual and mid signals */
             frac_Q16 = Inlines.silk_SMLABB(HP_ratio_Q14.Val, LP_ratio_Q14.Val, 3);

@@ -44,7 +44,7 @@ namespace Concentus.Celt
     internal static class CeltLPC
     {
         internal static void celt_lpc(
-            Pointer<int> _lpc, /* out: [0...p-1] LPC coefficients      */
+            int[] _lpc, /* out: [0...p-1] LPC coefficients      */
             int[] ac,  /* in:  [0...p] autocorrelation values  */
             int p)
         {

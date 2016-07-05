@@ -138,7 +138,7 @@ namespace Concentus.Celt
         }
 
 
-        internal static void pitch_downsample(Pointer<int>[] x, int[] x_lp, int len, int C)
+        internal static void pitch_downsample(int[][] x, int[] x_lp, int len, int C)
         {
             int i;
             int[] ac = new int[5];
@@ -149,10 +149,10 @@ namespace Concentus.Celt
             int c1 = Inlines.QCONST16(0.8f, 15);
 
             int shift;
-            int maxabs = Inlines.celt_maxabs32(x[0].Data, x[0].Offset, len);
+            int maxabs = Inlines.celt_maxabs32(x[0], 0, len);
             if (C == 2)
             {
-                int maxabs_1 = Inlines.celt_maxabs32(x[1].Data, x[1].Offset, len);
+                int maxabs_1 = Inlines.celt_maxabs32(x[1], 0, len);
                 maxabs = Inlines.MAX32(maxabs, maxabs_1);
             }
             if (maxabs < 1)
@@ -189,7 +189,7 @@ namespace Concentus.Celt
                 ac[i] -= Inlines.MULT16_32_Q15((2 * i * i), ac[i]);
             }
 
-            CeltLPC.celt_lpc(lpc.GetPointer(0), ac, 4);
+            CeltLPC.celt_lpc(lpc, ac, 4);
             for (i = 0; i < 4; i++)
             {
                 tmp = Inlines.MULT16_16_Q15(Inlines.QCONST16(.9f, 15), tmp);

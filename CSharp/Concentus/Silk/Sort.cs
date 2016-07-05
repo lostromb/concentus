@@ -47,7 +47,7 @@ namespace Concentus.Silk
         /// <param name="idx">(O) Index vector for the sorted elements</param>
         /// <param name="L">(I) Vector length</param>
         /// <param name="K">(I) Number of correctly sorted positions</param>
-        internal static void silk_insertion_sort_increasing(Pointer<int> a, Pointer<int> idx, int L, int K)
+        internal static void silk_insertion_sort_increasing(int[] a, int[] idx, int L, int K)
         {
             int value;
             int i, j;
@@ -130,8 +130,8 @@ namespace Concentus.Silk
 
         /* This function is only used by the fixed-point build */
         internal static void silk_insertion_sort_decreasing_int16(
-            Pointer<short> a,                 /* I/O   Unsorted / Sorted vector                                   */
-            Pointer<int> idx,               /* O     Index vector for the sorted elements                       */
+            short[] a,                 /* I/O   Unsorted / Sorted vector                                   */
+            int[] idx,               /* O     Index vector for the sorted elements                       */
     int L,                  /* I     Vector length                                              */
     int K                   /* I     Number of correctly sorted positions                       */
 )

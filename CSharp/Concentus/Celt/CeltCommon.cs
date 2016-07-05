@@ -884,7 +884,7 @@ namespace Concentus.Celt
             int i, c;
             int tot_boost = 0;
             int maxDepth;
-            int[] follower = new int[C * nbEBands];
+            int[][] follower = Arrays.InitTwoDimensionalArray<int>(2, nbEBands);
             int[] noise_floor = new int[C * nbEBands];
 
             Arrays.MemSet<int>(offsets, 0, nbEBands);
@@ -911,7 +911,7 @@ namespace Concentus.Celt
                 {
                     int offset;
                     int tmp;
-                    Pointer<int> f = follower.GetPointer(c * nbEBands);
+                    int[] f = follower[c];
                     f[0] = bandLogE2[c * nbEBands];
                     for (i = 1; i < end; i++)
                     {
@@ -946,24 +946,24 @@ namespace Concentus.Celt
                     for (i = start; i < end; i++)
                     {
                         /* Consider 24 dB "cross-talk" */
-                        follower[nbEBands + i] = Inlines.MAX16(follower[nbEBands + i], follower[i] - Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT));
-                        follower[i] = Inlines.MAX16(follower[i], follower[nbEBands + i] - Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT));
-                        follower[i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[i] - follower[i]) + Inlines.MAX16(0, bandLogE[nbEBands + i] - follower[nbEBands + i]));
+                        follower[1][i] = Inlines.MAX16(follower[1][i], follower[0][i] - Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT));
+                        follower[0][i] = Inlines.MAX16(follower[0][i], follower[1][i] - Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT));
+                        follower[0][i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[i] - follower[0][i]) + Inlines.MAX16(0, bandLogE[nbEBands + i] - follower[1][i]));
                     }
                 }
                 else {
                     for (i = start; i < end; i++)
                     {
-                        follower[i] = Inlines.MAX16(0, bandLogE[i] - follower[i]);
+                        follower[0][i] = Inlines.MAX16(0, bandLogE[i] - follower[0][i]);
                     }
                 }
                 for (i = start; i < end; i++)
-                    follower[i] = Inlines.MAX16(follower[i], surround_dynalloc[i]);
+                    follower[0][i] = Inlines.MAX16(follower[0][i], surround_dynalloc[i]);
                 /* For non-transient CBR/CVBR frames, halve the dynalloc contribution */
                 if ((vbr == 0 || constrained_vbr != 0) && isTransient == 0)
                 {
                     for (i = start; i < end; i++)
-                        follower[i] = Inlines.HALF16(follower[i]);
+                        follower[0][i] = Inlines.HALF16(follower[0][i]);
                 }
                 for (i = start; i < end; i++)
                 {
@@ -972,24 +972,24 @@ namespace Concentus.Celt
                     int boost_bits;
 
                     if (i < 8)
-                        follower[i] *= 2;
+                        follower[0][i] *= 2;
                     if (i >= 12)
-                        follower[i] = Inlines.HALF16(follower[i]);
-                    follower[i] = Inlines.MIN16(follower[i], Inlines.QCONST16(4, CeltConstants.DB_SHIFT));
+                        follower[0][i] = Inlines.HALF16(follower[0][i]);
+                    follower[0][i] = Inlines.MIN16(follower[0][i], Inlines.QCONST16(4, CeltConstants.DB_SHIFT));
 
                     width = C * (eBands[i + 1] - eBands[i]) << LM;
                     if (width < 6)
                     {
-                        boost = (int)Inlines.SHR32((follower[i]), CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower[0][i]), CeltConstants.DB_SHIFT);
                         boost_bits = boost * width << EntropyCoder.BITRES;
                     }
                     else if (width > 48)
                     {
-                        boost = (int)Inlines.SHR32((follower[i]) * 8, CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower[0][i]) * 8, CeltConstants.DB_SHIFT);
                         boost_bits = (boost * width << EntropyCoder.BITRES) / 8;
                     }
                     else {
-                        boost = (int)Inlines.SHR32((follower[i]) * width / 6, CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower[0][i]) * width / 6, CeltConstants.DB_SHIFT);
                         boost_bits = boost * 6 << EntropyCoder.BITRES;
                     }
                     /* For CBR and non-transient CVBR frames, limit dynalloc to 1/4 of the bits */
@@ -1126,11 +1126,11 @@ namespace Concentus.Celt
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
                 freq2 = out_syn[1].Point(overlap / 2);
-                freq.GetPointer().MemCopyTo(freq2, N);
+                freq2.MemCopyFrom(freq, 0, N);
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq2.Point(b), out_syn[0].Point(NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq2.Data, freq2.Offset + b, out_syn[0].Data, out_syn[0].Offset + (NB * b), mode.window, overlap, shift, B);
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[1].Point(NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[1].Data, out_syn[1].Offset + (NB * b), mode.window, overlap, shift, B);
             }
             else if (CC == 1 && C == 2)
             {
@@ -1145,7 +1145,7 @@ namespace Concentus.Celt
                 for (i = 0; i < N; i++)
                     freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], freq2[i]));
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[0].Point(NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[0].Data, out_syn[0].Offset + (NB * b), mode.window, overlap, shift, B);
             }
             else {
                 /* Normal case (mono or stereo) */
@@ -1154,7 +1154,7 @@ namespace Concentus.Celt
                     Bands.denormalise_bands(mode, X.GetPointer(c * N), freq.GetPointer(), oldBandE.GetPointer(c * nbEBands), start, effEnd, M,
                           downsample, silence);
                     for (b = 0; b < B; b++)
-                        MDCT.clt_mdct_backward(mode.mdct, freq.GetPointer(b), out_syn[c].Point(NB * b), mode.window, overlap, shift, B);
+                        MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[c].Data, out_syn[c].Offset + (NB * b), mode.window, overlap, shift, B);
                 } while (++c < CC);
             }
 
@@ -1199,7 +1199,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static int celt_plc_pitch_search(Pointer<int>[] decode_mem, int C)
+        internal static int celt_plc_pitch_search(int[][] decode_mem, int C)
         {
             BoxedValue<int> pitch_index = new BoxedValue<int>();
             int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];

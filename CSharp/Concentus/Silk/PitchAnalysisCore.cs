@@ -238,7 +238,7 @@ namespace Concentus.Silk
             /* Sort */
             length_d_srch = Inlines.silk_ADD_LSHIFT32(4, complexity, 1);
             Inlines.OpusAssert(3 * length_d_srch <= SilkConstants.PE_D_SRCH_LENGTH);
-            Sort.silk_insertion_sort_decreasing_int16(C.GetPointer(), d_srch.GetPointer(), CSTRIDE_4KHZ, length_d_srch);
+            Sort.silk_insertion_sort_decreasing_int16(C, d_srch, CSTRIDE_4KHZ, length_d_srch);
 
             /* Escape if correlation is very low already here */
             Cmax = (int)C[0];                                                    /* Q14 */
@@ -393,7 +393,7 @@ namespace Concentus.Silk
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE2_EXT;
-                Lag_CB_ptr = Tables.silk_CB_lags_stage2.GetPointer(0);
+                Lag_CB_ptr = Tables.silk_CB_lags_stage2.GetPointer();
                 if (Fs_kHz == 8 && complexity > SilkConstants.SILK_PE_MIN_COMPLEX)
                 {
                     /* If input is 8 khz use a larger codebook here because it is last stage */
@@ -405,7 +405,7 @@ namespace Concentus.Silk
             }
             else {
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE2_10MS;
-                Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms.GetPointer(0);
+                Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms.GetPointer();
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE2_10MS;
             }
 

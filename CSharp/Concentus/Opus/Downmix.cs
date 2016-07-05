@@ -22,20 +22,20 @@ namespace Concentus
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <param name="C"></param>
-        public delegate void downmix_func<T>(T[] _x, int x_ptr, int[] sub, int subframe, int offset, int c1, int c2, int C);
+        public delegate void downmix_func<T>(T[] _x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C);
 
-        internal static void downmix_float(float[] x, int x_ptr, int[] sub, int subframe, int offset, int c1, int c2, int C)
+        internal static void downmix_float(float[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
         {
             int scale;
             int j;
             int c1x = c1 + x_ptr;
             for (j = 0; j < subframe; j++)
-                sub[j] = Inlines.FLOAT2INT16(x[(j + offset) * C + c1x]);
+                sub[sub_ptr + j] = Inlines.FLOAT2INT16(x[(j + offset) * C + c1x]);
             if (c2 > -1)
             {
                 int c2x = c2 + x_ptr;
                 for (j = 0; j < subframe; j++)
-                    sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c2x]);
+                    sub[sub_ptr + j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c2x]);
             }
             else if (c2 == -2)
             {
@@ -45,7 +45,7 @@ namespace Concentus
                 {
                     cx = c + x_ptr;
                     for (j = 0; j < subframe; j++)
-                        sub[j] += Inlines.FLOAT2INT16(x[(j + offset) * C + cx]);
+                        sub[sub_ptr + j] += Inlines.FLOAT2INT16(x[(j + offset) * C + cx]);
                 }
             }
             scale = (1 << CeltConstants.SIG_SHIFT);
@@ -54,19 +54,19 @@ namespace Concentus
             else
                 scale /= 2;
             for (j = 0; j < subframe; j++)
-                sub[j] *= scale;
+                sub[sub_ptr + j] *= scale;
         }
 
-        internal static void downmix_int(short[] x, int x_ptr, int[] sub, int subframe, int offset, int c1, int c2, int C)
+        internal static void downmix_int(short[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
         {
             int scale;
             int j;
             for (j = 0; j < subframe; j++)
-                sub[j] = x[(j + offset) * C + c1];
+                sub[j + sub_ptr] = x[(j + offset) * C + c1];
             if (c2 > -1)
             {
                 for (j = 0; j < subframe; j++)
-                    sub[j] += x[(j + offset) * C + c2];
+                    sub[j + sub_ptr] += x[(j + offset) * C + c2];
             }
             else if (c2 == -2)
             {
@@ -74,7 +74,7 @@ namespace Concentus
                 for (c = 1; c < C; c++)
                 {
                     for (j = 0; j < subframe; j++)
-                        sub[j] += x[(j + offset) * C + c];
+                        sub[j + sub_ptr] += x[(j + offset) * C + c];
                 }
             }
             scale = (1 << CeltConstants.SIG_SHIFT);
@@ -83,7 +83,7 @@ namespace Concentus
             else
                 scale /= 2;
             for (j = 0; j < subframe; j++)
-                sub[j] *= scale;
+                sub[j + sub_ptr] *= scale;
         }
 
     }

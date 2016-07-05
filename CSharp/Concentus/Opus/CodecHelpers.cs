@@ -361,7 +361,7 @@ namespace Concentus
                 int j;
                 tmp = CeltConstants.EPSILON;
 
-                downmix(x, x_ptr, sub, subframe, i * subframe + offset, 0, -2, C);
+                downmix(x, x_ptr, sub, 0, subframe, i * subframe + offset, 0, -2, C);
                 if (i == 0)
                     memx = sub[0];
                 for (j = 0; j < subframe; j++)
@@ -454,7 +454,7 @@ namespace Concentus
             frame_rate = Fs / frame_size;
             short_alpha = CeltConstants.Q15ONE - (25 * CeltConstants.Q15ONE / Inlines.IMAX(50, frame_rate));
             xx = xy = yy = 0;
-            for (i = 0; i < frame_size; i += 4)
+            for (i = 0; i < frame_size - 3; i += 4)
             {
                 int pxx = 0;
                 int pxy = 0;

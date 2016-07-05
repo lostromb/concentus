@@ -162,19 +162,15 @@ namespace Concentus.Celt
     year=1986
   }*/
 
-        internal static readonly Pointer<uint>[] CELT_PVQ_U_ROW =
+        internal static readonly uint[] CELT_PVQ_U_ROW =
         {
-            Tables.CELT_PVQ_U_DATA.GetPointer(0),Tables.CELT_PVQ_U_DATA.GetPointer(176),Tables.CELT_PVQ_U_DATA.GetPointer(351),
-            Tables.CELT_PVQ_U_DATA.GetPointer(525),Tables.CELT_PVQ_U_DATA.GetPointer(698),Tables.CELT_PVQ_U_DATA.GetPointer(870),
-            Tables.CELT_PVQ_U_DATA.GetPointer(1041),Tables.CELT_PVQ_U_DATA.GetPointer(1131),Tables.CELT_PVQ_U_DATA.GetPointer(1178),
-            Tables.CELT_PVQ_U_DATA.GetPointer(1207),Tables.CELT_PVQ_U_DATA.GetPointer(1226),Tables.CELT_PVQ_U_DATA.GetPointer(1240),
-            Tables.CELT_PVQ_U_DATA.GetPointer(1248),Tables.CELT_PVQ_U_DATA.GetPointer(1254),Tables.CELT_PVQ_U_DATA.GetPointer(1257)
+            0,176,351,525,698,870,1041,1131,1178,1207,1226,1240,1248,1254,1257
         };
 
         /*U(N,K) = U(K,N) := N>0?K>0?U(N-1,K)+U(N,K-1)+U(N-1,K-1):0:K>0?1:0*/
         private static uint CELT_PVQ_U(int _n, int _k)
         {
-            return (CELT_PVQ_U_ROW[Inlines.IMIN(_n, _k)][Inlines.IMAX(_n, _k)]);
+            return Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[Inlines.IMIN(_n, _k)] + Inlines.IMAX(_n, _k)];
         }
 
 
@@ -228,15 +224,15 @@ namespace Concentus.Celt
                 /*Lots of pulses case:*/
                 if (_k >= _n)
                 {
-                    Pointer<uint> row;
+                    uint row;
                     row = CELT_PVQ_U_ROW[_n];
                     /*Are the pulses in this dimension negative?*/
-                    p = row[_k + 1];
+                    p = Tables.CELT_PVQ_U_DATA[row + _k + 1];
                     s = 0 - (_i >= p ? 1 : 0);
                     _i -= (p & unchecked((uint)s));
                     /*Count how many pulses were placed in this dimension.*/
                     k0 = _k;
-                    q = row[_n];
+                    q = Tables.CELT_PVQ_U_DATA[row + _n];
 
                     if (q > _i)
                     {
@@ -245,12 +241,12 @@ namespace Concentus.Celt
 
                         do
                         {
-                            p = CELT_PVQ_U_ROW[--_k][_n];
+                            p = Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[--_k] + _n];
                         } while (p > _i);
                     }
                     else
                     {
-                        for (p = row[_k]; p > _i; p = row[_k])
+                        for (p = Tables.CELT_PVQ_U_DATA[row + _k]; p > _i; p = Tables.CELT_PVQ_U_DATA[row + _k])
                         {
                             _k--;
                         }
@@ -265,8 +261,8 @@ namespace Concentus.Celt
                 else
                 {
                     /*Are there any pulses in this dimension at all?*/
-                    p = CELT_PVQ_U_ROW[_k][_n];
-                    q = CELT_PVQ_U_ROW[_k + 1][_n];
+                    p = Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[_k] + _n];
+                    q = Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[_k + 1] + _n];
                     if (p <= _i && _i < q)
                     {
                         _i -= p;
@@ -281,7 +277,7 @@ namespace Concentus.Celt
                         k0 = _k;
                         do
                         {
-                            p = CELT_PVQ_U_ROW[--_k][_n];
+                            p = Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[--_k] + _n];
                         } while (p > _i);
 
                         _i -= p;
