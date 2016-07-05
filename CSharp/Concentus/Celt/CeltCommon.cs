@@ -1265,6 +1265,12 @@ namespace Concentus.Celt
 
         }
 
+        private static readonly short[][] gains = {
+                new short[]{ Inlines.QCONST16(0.3066406250f, 15), Inlines.QCONST16(0.2170410156f, 15), Inlines.QCONST16(0.1296386719f, 15)},
+                new short[]{ Inlines.QCONST16(0.4638671875f, 15), Inlines.QCONST16(0.2680664062f, 15), Inlines.QCONST16(0.0f, 15)},
+                new short[]{ Inlines.QCONST16(0.7998046875f, 15), Inlines.QCONST16(0.1000976562f, 15), Inlines.QCONST16(0.0f, 15)}
+            };
+
         internal static void comb_filter(Pointer<int> y, Pointer<int> x, int T0, int T1, int N,
               int g0, int g1, int tapset0, int tapset1,
             int[] window, int overlap)
@@ -1273,12 +1279,7 @@ namespace Concentus.Celt
             /* printf ("%d %d %f %f\n", T0, T1, g0, g1); */
             int g00, g01, g02, g10, g11, g12;
             int x0, x1, x2, x3, x4;
-            short[][] gains = {
-                new short[]{ Inlines.QCONST16(0.3066406250f, 15), Inlines.QCONST16(0.2170410156f, 15), Inlines.QCONST16(0.1296386719f, 15)},
-                new short[]{ Inlines.QCONST16(0.4638671875f, 15), Inlines.QCONST16(0.2680664062f, 15), Inlines.QCONST16(0.0f, 15)},
-                new short[]{ Inlines.QCONST16(0.7998046875f, 15), Inlines.QCONST16(0.1000976562f, 15), Inlines.QCONST16(0.0f, 15)}
-            };
-
+            
             if (g0 == 0 && g1 == 0)
             {
                 /* OPT: Happens to work without the OPUS_MOVE(), but only because the current encoder already copies x to y */

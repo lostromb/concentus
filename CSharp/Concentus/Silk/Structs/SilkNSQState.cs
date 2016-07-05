@@ -96,14 +96,14 @@ namespace Concentus.Silk.Structs
             internal readonly int[] Pred_Q15 = new int[SilkConstants.DECISION_DELAY];
             internal readonly int[] Shape_Q14 = new int[SilkConstants.DECISION_DELAY];
             internal readonly int[] sAR2_Q14 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
-            internal int LF_AR_Q14;
-            internal int Seed;
-            internal int SeedInit;
-            internal int RD_Q10;
+            internal int LF_AR_Q14 = 0;
+            internal int Seed = 0;
+            internal int SeedInit = 0;
+            internal int RD_Q10 = 0;
 
             internal NSQ_del_dec_struct()
             {
-                Reset();
+                //Reset();
             }
 
             internal void Reset()

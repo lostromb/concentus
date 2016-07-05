@@ -925,7 +925,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="p">(I/O) Polynomial</param>
         /// <param name="dd">(I) Polynomial order (= filter order / 2 )</param>
-        internal static void silk_A2NLSF_trans_poly(Pointer<int> p, int dd)
+        internal static void silk_A2NLSF_trans_poly(int[] p, int dd)
         {
             int k, n;
 
@@ -946,7 +946,7 @@ namespace Concentus.Silk
         /// <param name="x">(I) Evaluation point, Q12</param>
         /// <param name="dd">(I) Order</param>
         /// <returns>the polynomial evaluation, in Q16</returns>
-        internal static int silk_A2NLSF_eval_poly(Pointer<int> p, int x, int dd)
+        internal static int silk_A2NLSF_eval_poly(int[] p, int x, int dd)
         {
             int n;
             int x_Q16, y32;
@@ -978,8 +978,8 @@ namespace Concentus.Silk
 
         internal static void silk_A2NLSF_init(
              int[] a_Q16,
-             Pointer<int> P,
-             Pointer<int> Q,
+             int[] P,
+             int[] Q,
              int dd)
         {
             int k;
@@ -1031,20 +1031,20 @@ namespace Concentus.Silk
 
             dd = Inlines.silk_RSHIFT(d, 1);
 
-            silk_A2NLSF_init(a_Q16, P.GetPointer(), Q.GetPointer(), dd);
+            silk_A2NLSF_init(a_Q16, P, Q, dd);
 
             /* Find roots, alternating between P and Q */
             p = P;                          /* Pointer to polynomial */
 
             xlo = Tables.silk_LSFCosTab_Q12[0]; /* Q12*/
-            ylo = silk_A2NLSF_eval_poly(p.GetPointer(), xlo, dd);
+            ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
 
             if (ylo < 0)
             {
                 /* Set the first NLSF to zero and move on to the next */
                 NLSF[0] = 0;
                 p = Q;                      /* Pointer to polynomial */
-                ylo = silk_A2NLSF_eval_poly(p.GetPointer(), xlo, dd);
+                ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
                 root_ix = 1;                /* Index of current root */
             }
             else {
@@ -1057,7 +1057,7 @@ namespace Concentus.Silk
             {
                 /* Evaluate polynomial */
                 xhi = Tables.silk_LSFCosTab_Q12[k]; /* Q12 */
-                yhi = silk_A2NLSF_eval_poly(p.GetPointer(), xhi, dd);
+                yhi = silk_A2NLSF_eval_poly(p, xhi, dd);
 
                 /* Detect zero crossing */
                 if ((ylo <= 0 && yhi >= thr) || (ylo >= 0 && yhi <= -thr))
@@ -1077,7 +1077,7 @@ namespace Concentus.Silk
                     {
                         /* Evaluate polynomial */
                         xmid = Inlines.silk_RSHIFT_ROUND(xlo + xhi, 1);
-                        ymid = silk_A2NLSF_eval_poly(p.GetPointer(), xmid, dd);
+                        ymid = silk_A2NLSF_eval_poly(p, xmid, dd);
 
                         /* Detect zero crossing */
                         if ((ylo <= 0 && ymid >= 0) || (ylo >= 0 && ymid <= 0))
@@ -1153,16 +1153,16 @@ namespace Concentus.Silk
                         /* Error: Apply progressively more bandwidth expansion and run again */
                         Filters.silk_bwexpander_32(a_Q16, d, 65536 - Inlines.silk_SMULBB(10 + i, i)); /* 10_Q16 = 0.00015*/
 
-                        silk_A2NLSF_init(a_Q16, P.GetPointer(), Q.GetPointer(), dd);
+                        silk_A2NLSF_init(a_Q16, P, Q, dd);
                         p = P;                            /* Pointer to polynomial */
                         xlo = Tables.silk_LSFCosTab_Q12[0]; /* Q12*/
-                        ylo = silk_A2NLSF_eval_poly(p.GetPointer(), xlo, dd);
+                        ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
                         if (ylo < 0)
                         {
                             /* Set the first NLSF to zero and move on to the next */
                             NLSF[0] = 0;
                             p = Q;                        /* Pointer to polynomial */
-                            ylo = silk_A2NLSF_eval_poly(p.GetPointer(), xlo, dd);
+                            ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
                             root_ix = 1;                  /* Index of current root */
                         }
                         else {

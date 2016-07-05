@@ -1640,7 +1640,7 @@ namespace Concentus.Celt
                             B,
                             effective_lowband != -1 ? norm.GetPointer(effective_lowband) : null,
                             LM,
-                            last != 0 ? null : norm.GetPointer(M * eBands[i] - norm_offset),
+                            last != 0 ? null : norm.GetPointer(M * eBands[i] - norm_offset), // opt: This allocates a huge number of pointers
                             lowband_scratch,
                             (int)(x_cm | y_cm));
                     }

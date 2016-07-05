@@ -352,13 +352,13 @@ namespace Concentus.Celt.Structs
                 {
                     CeltCommon.comb_filter(input.GetPointer(c * (N + overlap) + overlap), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD),
                           this.prefilter_period, this.prefilter_period, offset, -this.prefilter_gain, -this.prefilter_gain,
-                          this.prefilter_tapset, this.prefilter_tapset, null, 0);
+                          this.prefilter_tapset, this.prefilter_tapset, null, 0); // opt: lots of pointer allocations here
                 }
 
                 CeltCommon.comb_filter(input.GetPointer(c * (N + overlap) + overlap + offset), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       this.prefilter_period, pitch_index.Val, N - offset, -this.prefilter_gain, -gain1,
                       this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
-                input.GetPointer(c * (N + overlap) + N).MemCopyTo(this.in_mem, c * overlap, overlap);
+                Array.Copy(input, c * (N + overlap) + N, this.in_mem, c * overlap, overlap);
 
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
                 {

@@ -1951,7 +1951,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SILK_CONST(float number, int scale)
         {
-            return ((int)((number) * ((long)1 << (scale)) + 0.5));
+            return ((int)((number) * ((long)1 << (scale)) + 0.5)); //fixme: This actually runs on every invocation, it's not a static macro like in C++
         }
 
         /* silk_min() versions with typecast in the function call */
