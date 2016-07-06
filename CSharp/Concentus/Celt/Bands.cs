@@ -101,7 +101,7 @@ namespace Concentus.Celt
         }
 
         /* Compute the amplitude (sqrt energy) in each of the bands */
-        internal static void compute_band_energies(CeltMode m, int[] X, int[] bandE, int end, int C, int LM)
+        internal static void compute_band_energies(CeltMode m, int[][] X, int[] bandE, int end, int C, int LM)
         {
             int i, c, N;
             short[] eBands = m.eBands;
@@ -115,7 +115,7 @@ namespace Concentus.Celt
                     int j;
                     int maxval = 0;
                     int sum = 0;
-                    maxval = Inlines.celt_maxabs32(X, (c * N + (eBands[i] << LM)), (eBands[i + 1] - eBands[i]) << LM);
+                    maxval = Inlines.celt_maxabs32(X[c], (eBands[i] << LM), (eBands[i + 1] - eBands[i]) << LM);
                     if (maxval > 0)
                     {
                         int shift = Inlines.celt_ilog2(maxval) - 14 + (((m.logN[i] >> EntropyCoder.BITRES) + LM + 1) >> 1);
@@ -124,15 +124,15 @@ namespace Concentus.Celt
                         {
                             do
                             {
-                                sum = Inlines.MAC16_16(sum, Inlines.EXTRACT16(Inlines.SHR32(X[j + c * N], shift)),
-                                       Inlines.EXTRACT16(Inlines.SHR32(X[j + c * N], shift)));
+                                sum = Inlines.MAC16_16(sum, Inlines.EXTRACT16(Inlines.SHR32(X[c][j], shift)),
+                                       Inlines.EXTRACT16(Inlines.SHR32(X[c][j], shift)));
                             } while (++j < eBands[i + 1] << LM);
                         }
                         else {
                             do
                             {
-                                sum = Inlines.MAC16_16(sum, Inlines.EXTRACT16(Inlines.SHL32(X[j + c * N], -shift)),
-                                       Inlines.EXTRACT16(Inlines.SHL32(X[j + c * N], -shift)));
+                                sum = Inlines.MAC16_16(sum, Inlines.EXTRACT16(Inlines.SHL32(X[c][j], -shift)),
+                                       Inlines.EXTRACT16(Inlines.SHL32(X[c][j], -shift)));
                             } while (++j < eBands[i + 1] << LM);
                         }
                         /* We're adding one here to ensure the normalized band isn't larger than unity norm */
@@ -147,11 +147,10 @@ namespace Concentus.Celt
         }
 
         /* Normalise each band such that the energy is one. */
-        internal static void normalise_bands(CeltMode m, int[] freq, int[][] X, int[] bandE, int end, int C, int M)
+        internal static void normalise_bands(CeltMode m, int[][] freq, int[][] X, int[] bandE, int end, int C, int M)
         {
-            int i, c, N;
+            int i, c;
             short[] eBands = m.eBands;
-            N = M * m.shortMdctSize;
             c = 0;
             do
             {
@@ -166,7 +165,7 @@ namespace Concentus.Celt
                     g = Inlines.EXTRACT16(Inlines.celt_rcp(Inlines.SHL32(E, 3)));
                     j = M * eBands[i]; do
                     {
-                        X[c][j] = Inlines.MULT16_16_Q15(Inlines.VSHR32(freq[j + c * N], shift - 1), g);
+                        X[c][j] = Inlines.MULT16_16_Q15(Inlines.VSHR32(freq[c][j], shift - 1), g);
                     } while (++j < M * eBands[i + 1]);
                 } while (++i < end);
             } while (++c < C);

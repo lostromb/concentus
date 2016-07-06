@@ -140,6 +140,14 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
+        internal static void MemSetWithOffset<T>(T[] array, T value, int offset, int length)
+        {
+            for (int c = offset; c < offset + length; c++)
+            {
+                array[c] = value;
+            }
+        }
+
         internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)
         {
             if (src_idx == dst_idx || length == 0)

@@ -384,7 +384,7 @@ namespace Concentus.Celt.Structs
             int i, c, N;
             int bits;
             int[] input;
-            int[] freq;
+            int[][] freq;
             int[][] X;
             int[] bandE;
             int[] bandLogE;
@@ -641,7 +641,7 @@ namespace Concentus.Celt.Structs
                 transient_got_disabled = 1;
             }
 
-            freq = new int[CC * N]; /**< Interleaved signal MDCTs */
+            freq = Arrays.InitTwoDimensionalArray<int>(CC, N); /**< Interleaved signal MDCTs */
             bandE = new int[nbEBands * CC];
             bandLogE = new int[nbEBands * CC];
 

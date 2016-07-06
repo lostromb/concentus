@@ -309,7 +309,7 @@ namespace TestOpusEncode
             inbuf = new short[SAMPLES * 2];
             out2buf = new short[MAX_FRAME_SAMP * 3];
             if (inbuf == null || out2buf == null) test_failed();
-
+            
             generate_music(inbuf.GetPointer(), SAMPLES);
 
             for (i = 0; i < 2; i++)

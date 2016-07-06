@@ -321,7 +321,7 @@ namespace Concentus.Celt
         /** Apply window and compute the MDCT for all sub-frames and
             all channels in a frame */
         internal static void compute_mdcts(CeltMode mode, int shortBlocks, int[] input,
-                                  int[] output, int C, int CC, int LM, int upsample)
+                                  int[][] output, int C, int CC, int LM, int upsample)
         {
             int overlap = mode.overlap;
             int N;
@@ -349,8 +349,8 @@ namespace Concentus.Celt
                         mode.mdct,
                         input,
                         ((c * ((B * N) + overlap)) + (b * N)),
-                        output,
-                        (b + c * N * B),
+                        output[c],
+                        b,
                         mode.window,
                         0,
                         overlap,
@@ -363,7 +363,7 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < B * N; i++)
                 {
-                    output[i] = Inlines.ADD32(Inlines.HALF32(output[i]), Inlines.HALF32(output[B * N + i]));
+                    output[0][i] = Inlines.ADD32(Inlines.HALF32(output[0][i]), Inlines.HALF32(output[1][i]));
                 }
             }
             if (upsample != 1)
@@ -373,8 +373,8 @@ namespace Concentus.Celt
                 {
                     int bound = B * N / upsample;
                     for (i = 0; i < bound; i++)
-                        output[c * B * N + i] *= upsample;
-                    output.GetPointer(c * B * N + bound).MemSet(0, B * N - bound); // fixme: needs offset memset
+                        output[c][i] *= upsample;
+                    Arrays.MemSetWithOffset<int>(output[c], 0, bound, B * N - bound);
                 } while (++c < C);
             }
         }

@@ -170,7 +170,7 @@ namespace Concentus.Structs
             int[][] maskLogE = Arrays.InitTwoDimensionalArray<int>(3, 21);
             int[] input;
             short[] x;
-            int[] freq;
+            int[][] freq;
 
             upsample = CeltCommon.resampling_factor(rate);
             frame_size = len * upsample;
@@ -181,7 +181,7 @@ namespace Concentus.Structs
 
             input = new int[frame_size + overlap];
             x = new short[len];
-            freq = new int[frame_size];
+            freq = Arrays.InitTwoDimensionalArray<int>(1, frame_size);
 
             channel_pos(channels, pos);
 
@@ -201,7 +201,7 @@ namespace Concentus.Structs
                     celt_mode.mdct,
                     input,
                     0,
-                    freq,
+                    freq[0],
                     0,
                     celt_mode.window,
                     0,
@@ -212,11 +212,11 @@ namespace Concentus.Structs
                 {
                     int bound = len;
                     for (i = 0; i < bound; i++)
-                        freq[i] *= upsample;
+                        freq[0][i] *= upsample;
                     for (; i < frame_size; i++)
-                        freq[i] = 0;
+                        freq[0][i] = 0;
                 }
-
+                
                 Bands.compute_band_energies(celt_mode, freq, bandE, 21, 1, LM);
                 QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE, bandLogE.GetPointer(21 * c), 1);
                 /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
