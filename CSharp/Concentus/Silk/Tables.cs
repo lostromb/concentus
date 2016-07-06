@@ -995,46 +995,41 @@ namespace Concentus.Silk
 
 
         // from pitch_estimation_tables.c
-
-        //[Porting note] originally represented as a 2D matrix, here it is linearized
-        internal static readonly sbyte[] silk_CB_lags_stage2_10_ms =
+        
+        internal static readonly sbyte[][] silk_CB_lags_stage2_10_ms =
         {
-            0, 1, 0,
-            0, 0, 1
+            new sbyte[] {0, 1, 0 },
+            new sbyte[] {0, 0, 1 }
+        };
+        
+        internal static readonly sbyte[][] silk_CB_lags_stage3_10_ms =
+        {
+             new sbyte[] {0, 0, 1,-1, 1,-1, 2,-2, 2,-2, 3,-3 },
+             new sbyte[] {0, 1, 0, 1,-1, 2,-1, 2,-2, 3,-2, 3 }
+        };
+        
+        internal static readonly sbyte[][] silk_CB_lags_stage2 /*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ]*/ =
+        {
+            new sbyte[] {0, 2,-1,-1,-1, 0, 0, 1, 1, 0, 1 },
+            new sbyte[] {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 },
+            new sbyte[] {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 },
+            new sbyte[] {0,-1, 2, 1, 0, 1, 1, 0, 0,-1,-1 }
+        };
+        
+        internal static readonly sbyte[][] silk_CB_lags_stage3/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ]*/ =
+        {
+            new sbyte[] {0, 0, 1,-1, 0, 1,-1, 0,-1, 1,-2, 2,-2,-2, 2,-3, 2, 3,-3,-4, 3,-4, 4, 4,-5, 5,-6,-5, 6,-7, 6, 5, 8,-9 },
+            new sbyte[] {0, 0, 1, 0, 0, 0, 0, 0, 0, 0,-1, 1, 0, 0, 1,-1, 0, 1,-1,-1, 1,-1, 2, 1,-1, 2,-2,-2, 2,-2, 2, 2, 3,-3 },
+            new sbyte[] {0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,-1, 1, 0, 0, 2, 1,-1, 2,-1,-1, 2,-1, 2, 2,-1, 3,-2,-2,-2, 3 },
+            new sbyte[] {0, 1, 0, 0, 1, 0, 1,-1, 2,-1, 2,-1, 2, 3,-2, 3,-2,-2, 4, 4,-3, 5,-3,-4, 6,-4, 6, 5,-5, 8,-6,-5,-7, 9 }
         };
 
-        //[Porting note] originally represented as a 2D matrix, here it is linearized
-        internal static readonly sbyte[] silk_CB_lags_stage3_10_ms =
-        {
-             0, 0, 1,-1, 1,-1, 2,-2, 2,-2, 3,-3,
-             0, 1, 0, 1,-1, 2,-1, 2,-2, 3,-2, 3
-        };
-
-        //[Porting note] originally represented as a 2D matrix, here it is linearized
         internal static readonly sbyte[][] silk_Lag_range_stage3_10_ms =
         {
             new sbyte[] {-3, 7 },
             new sbyte[] {-2, 7 }
         };
 
-        //[Porting note] originally represented as a 2D matrix, here it is linearized
-        internal static readonly sbyte[] silk_CB_lags_stage2 /*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ]*/ =
-        {
-            0, 2,-1,-1,-1, 0, 0, 1, 1, 0, 1,
-            0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
-            0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0,
-            0,-1, 2, 1, 0, 1, 1, 0, 0,-1,-1
-        };
-
-        //[Porting note] originally represented as a 2D matrix, here it is linearized
-        internal static readonly sbyte[] silk_CB_lags_stage3/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ]*/ =
-        {
-            0, 0, 1,-1, 0, 1,-1, 0,-1, 1,-2, 2,-2,-2, 2,-3, 2, 3,-3,-4, 3,-4, 4, 4,-5, 5,-6,-5, 6,-7, 6, 5, 8,-9,
-            0, 0, 1, 0, 0, 0, 0, 0, 0, 0,-1, 1, 0, 0, 1,-1, 0, 1,-1,-1, 1,-1, 2, 1,-1, 2,-2,-2, 2,-2, 2, 2, 3,-3,
-            0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,-1, 1, 0, 0, 2, 1,-1, 2,-1,-1, 2,-1, 2, 2,-1, 3,-2,-2,-2, 3,
-            0, 1, 0, 0, 1, 0, 1,-1, 2,-1, 2,-1, 2, 3,-2, 3,-2,-2, 4, 4,-3, 5,-3,-4, 6,-4, 6, 5,-5, 8,-6,-5,-7, 9
-        };
-        
         internal static readonly sbyte[][][] silk_Lag_range_stage3 =
         {
             /* Lags to search for low number of stage3 cbks */

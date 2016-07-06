@@ -165,220 +165,228 @@ namespace ParityTest
 
             try
             {
-                while (inputPointer + frameSizeStereo < inputFile.Length)
+                try
                 {
-                    returnVal.FrameCount = frameCount;
-                    Array.Copy(inputFile, inputPointer, inputPacket, 0, frameSizeStereo);
-                    inputPointer += frameSizeStereo;
-
-                    // Should we randomly switch modes?
-                    if (parameters.ForceMode != OpusMode.MODE_AUTO && random.NextDouble() < 0.2)
+                    while (inputPointer + frameSizeStereo <inputFile.Length)
                     {
-                        if (random.NextDouble() < 0.5)
+                        returnVal.FrameCount = frameCount;
+                        Array.Copy(inputFile, inputPointer, inputPacket, 0, frameSizeStereo);
+                        inputPointer += frameSizeStereo;
+
+                        // Should we randomly switch modes?
+                        if (parameters.ForceMode != OpusMode.MODE_AUTO && random.NextDouble() < 0.2)
                         {
-                            concentusEncoder.ForceMode = (OpusMode.MODE_AUTO);
-                            if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.ForceMode = (OpusMode.MODE_AUTO);
-                            opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, OpusConstants.OPUS_AUTO);
-                        }
-                        else
-                        {
-                            concentusEncoder.ForceMode = (parameters.ForceMode);
-                            if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.ForceMode = (parameters.ForceMode);
-                            opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, (int)parameters.ForceMode);
-                        }
-                    }
-
-                    // If bitrate is variable, set it to a random value every few frames
-                    if (parameters.Bitrate < 0 && random.NextDouble() < 0.1)
-                    {
-                        int newBitrate = random.Next(6, parameters.ForceMode == OpusMode.MODE_SILK_ONLY ? 40 : 510);
-                        concentusEncoder.Bitrate = (newBitrate * 1024);
-                        opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_BITRATE_REQUEST, newBitrate * 1024);
-                    }
-
-                    Pointer<short> inputPacketWithOffset = Pointerize(inputPacket);
-                    concentusTimer.Start();
-                    // Encode with Concentus
-                    concentusPacketSize = concentusEncoder.Encode(inputPacketWithOffset.Data, inputPacketWithOffset.Offset, frameSize, outputBuffer, BUFFER_OFFSET, 10000 - BUFFER_OFFSET);
-                    concentusTimer.Stop();
-
-                    if (concentusPacketSize <= 0)
-                    {
-                        returnVal.Message = "Invalid packet produced (" + concentusPacketSize + ") (frame " + frameCount + ")";
-                        returnVal.Passed = false;
-                        returnVal.FailureFrame = inputPacket;
-                        return returnVal;
-                    }
-                    concentusEncoded = new byte[concentusPacketSize];
-                    Array.Copy(outputBuffer, BUFFER_OFFSET, concentusEncoded, 0, concentusPacketSize);
-
-                    // Encode with Opus
-                    byte[] opusEncoded;
-                    unsafe
-                    {
-                        fixed (byte* benc = outputBuffer)
-                        {
-                            byte[] nextFrameBytes = ShortsToBytes(inputPacket);
-                            IntPtr encodedPtr = new IntPtr((void*)(benc));
-                            opusTimer.Start();
-                            int opusPacketSize = opus_encode(opusEncoder, nextFrameBytes, frameSize, encodedPtr, 10000);
-                            opusTimer.Stop();
-                            if (ACTUALLY_COMPARE && opusPacketSize != concentusPacketSize)
+                            if (random.NextDouble() < 0.5)
                             {
-                                returnVal.Message = "Output packet sizes do not match (frame " + frameCount + ")";
+                                concentusEncoder.ForceMode = (OpusMode.MODE_AUTO);
+                                if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.ForceMode = (OpusMode.MODE_AUTO);
+                                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, OpusConstants.OPUS_AUTO);
+                            }
+                            else
+                            {
+                                concentusEncoder.ForceMode = (parameters.ForceMode);
+                                if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.ForceMode = (parameters.ForceMode);
+                                opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, (int)parameters.ForceMode);
+                            }
+                        }
+
+                        // If bitrate is variable, set it to a random value every few frames
+                        if (parameters.Bitrate < 0 && random.NextDouble() < 0.1)
+                        {
+                            int newBitrate = random.Next(6, parameters.ForceMode == OpusMode.MODE_SILK_ONLY ? 40 : 510);
+                            concentusEncoder.Bitrate = (newBitrate * 1024);
+                            opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_BITRATE_REQUEST, newBitrate * 1024);
+                        }
+
+                        Pointer<short> inputPacketWithOffset = Pointerize(inputPacket);
+                        concentusTimer.Start();
+                        // Encode with Concentus
+                        concentusPacketSize = concentusEncoder.Encode(inputPacketWithOffset.Data, inputPacketWithOffset.Offset, frameSize, outputBuffer, BUFFER_OFFSET, 10000 - BUFFER_OFFSET);
+                        concentusTimer.Stop();
+
+                        if (concentusPacketSize <= 0)
+                        {
+                            returnVal.Message = "Invalid packet produced (" + concentusPacketSize + ") (frame " + frameCount + ")";
+                            returnVal.Passed = false;
+                            returnVal.FailureFrame = inputPacket;
+                            return returnVal;
+                        }
+                        concentusEncoded = new byte[concentusPacketSize];
+                        Array.Copy(outputBuffer, BUFFER_OFFSET, concentusEncoded, 0, concentusPacketSize);
+
+                        // Encode with Opus
+                        byte[] opusEncoded;
+                        unsafe
+                        {
+                            fixed (byte* benc = outputBuffer)
+                            {
+                                byte[] nextFrameBytes = ShortsToBytes(inputPacket);
+                                IntPtr encodedPtr = new IntPtr((void*)(benc));
+                                opusTimer.Start();
+                                int opusPacketSize = opus_encode(opusEncoder, nextFrameBytes, frameSize, encodedPtr, 10000);
+                                opusTimer.Stop();
+                                if (ACTUALLY_COMPARE && opusPacketSize != concentusPacketSize)
+                                {
+                                    returnVal.Message = "Output packet sizes do not match (frame " + frameCount + ")";
+                                    returnVal.Passed = false;
+                                    returnVal.FailureFrame = inputPacket;
+                                    return returnVal;
+                                }
+                                opusEncoded = new byte[opusPacketSize];
+                                Array.Copy(outputBuffer, opusEncoded, opusPacketSize);
+                            }
+                        }
+
+                        // Check for encoder parity
+                        for (int c = 0; ACTUALLY_COMPARE && c < concentusPacketSize; c++)
+                        {
+                            if (opusEncoded[c] != concentusEncoded[c])
+                            {
+                                returnVal.Message = "Encoded packets do not match (frame " + frameCount + ")";
                                 returnVal.Passed = false;
                                 returnVal.FailureFrame = inputPacket;
                                 return returnVal;
                             }
-                            opusEncoded = new byte[opusPacketSize];
-                            Array.Copy(outputBuffer, opusEncoded, opusPacketSize);
                         }
-                    }
 
-                    // Check for encoder parity
-                    for (int c = 0; ACTUALLY_COMPARE && c < concentusPacketSize; c++)
-                    {
-                        if (opusEncoded[c] != concentusEncoded[c])
+                        // Ensure that the packet can be parsed back
+                        try
                         {
-                            returnVal.Message = "Encoded packets do not match (frame " + frameCount + ")";
+                            Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
+                            OpusPacketInfo packetInfo = OpusPacketInfo.ParseOpusPacket(concentusEncodedWithOffset.Data, concentusEncodedWithOffset.Offset, concentusPacketSize);
+                        }
+                        catch (OpusException e)
+                        {
+                            returnVal.Message = "PACKETINFO: " + e.Message + " (frame " + frameCount + ")";
                             returnVal.Passed = false;
                             returnVal.FailureFrame = inputPacket;
                             return returnVal;
                         }
-                    }
 
-                    // Ensure that the packet can be parsed back
-                    try
-                    {
-                        Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
-                        OpusPacketInfo packetInfo = OpusPacketInfo.ParseOpusPacket(concentusEncodedWithOffset.Data, concentusEncodedWithOffset.Offset, concentusPacketSize);
-                    }
-                    catch (OpusException e)
-                    {
-                        returnVal.Message = "PACKETINFO: " + e.Message + " (frame " + frameCount + ")";
-                        returnVal.Passed = false;
-                        returnVal.FailureFrame = inputPacket;
-                        return returnVal;
-                    }
-                    
-                    if (concentusEncoderWithoutFEC != null)
-                    {
-                        // Encode again without FEC and verify that there is a difference
-                        int packetSizeWithoutFEC = concentusEncoderWithoutFEC.Encode(inputPacket, 0, frameSize, outputBuffer, 0, 10000);
-                        bool areEqual = concentusPacketSize == packetSizeWithoutFEC;
-                        if (areEqual)
+                        if (concentusEncoderWithoutFEC != null)
                         {
-                            for (int c = 0; c < concentusPacketSize; c++)
+                            // Encode again without FEC and verify that there is a difference
+                            int packetSizeWithoutFEC = concentusEncoderWithoutFEC.Encode(inputPacket, 0, frameSize, outputBuffer, 0, 10000);
+                            bool areEqual = concentusPacketSize == packetSizeWithoutFEC;
+                            if (areEqual)
                             {
-                                areEqual = areEqual && outputBuffer[c] == concentusEncoded[c];
+                                for (int c = 0; c < concentusPacketSize; c++)
+                                {
+                                    areEqual = areEqual && outputBuffer[c] == concentusEncoded[c];
+                                }
+                            }
+                            if (areEqual && frameCount > 0)
+                            {
+                                returnVal.Message = "Enabling FEC did not change the output packet (frame " + frameCount + ")";
+                                returnVal.Passed = false;
+                                returnVal.FailureFrame = inputPacket;
+                                return returnVal;
                             }
                         }
-                        if (areEqual && frameCount > 0)
+                    }
+                }
+                catch (OpusException e)
+                {
+                    returnVal.Message = "ENCODER: " + e.Message + " (frame " + frameCount + ")";
+                    returnVal.Passed = false;
+                    returnVal.FailureFrame = inputPacket;
+                    return returnVal;
+                }
+
+                try
+                {
+                    // Should we simulate dropping the packet?
+                    PacketTransmissionPattern.Dequeue();
+                    bool droppedPacket = false;
+                    if (random.Next(0, 100) < parameters.PacketLossPercent)
+                    {
+                        droppedPacket = true;
+                        PacketTransmissionPattern.Enqueue("X");
+                    }
+                    PacketTransmissionPattern.Enqueue("O");
+
+                    if (!droppedPacket)
+                    {
+                        // Decode with Concentus
+                        Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
+                        Pointer<short> concentusDecodedWithOffset = Pointerize(concentusDecoded);
+                        int concentusOutputFrameSize = concentusDecoder.Decode(
+                            concentusEncodedWithOffset.Data,
+                            concentusEncodedWithOffset.Offset,
+                            concentusPacketSize,
+                            concentusDecodedWithOffset.Data,
+                            concentusDecodedWithOffset.Offset,
+                            decodedFrameSize,
+                            false);
+                        concentusTimer.Start();
+                        concentusDecoded = Unpointerize(concentusDecodedWithOffset, concentusDecoded.Length);
+                        concentusTimer.Stop();
+
+                        // Decode with Opus
+                        unsafe
                         {
-                            returnVal.Message = "Enabling FEC did not change the output packet (frame " + frameCount + ")";
+                            fixed (short* bdec = opusDecoded)
+                            {
+                                IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                                opusTimer.Start();
+                                int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, decodedFrameSize, 0);
+                                opusTimer.Stop();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        bool useFEC = random.NextDouble() > 0.5;
+                        // Decode with Concentus FEC
+                        concentusTimer.Start();
+                        int concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, decodedFrameSize, useFEC);
+                        concentusTimer.Stop();
+
+                        // Decode with Opus FEC
+                        unsafe
+                        {
+                            fixed (short* bdec = opusDecoded)
+                            {
+                                IntPtr decodedPtr = new IntPtr((void*)(bdec));
+                                opusTimer.Start();
+                                int opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, decodedFrameSize, useFEC ? 1 : 0);
+                                opusTimer.Stop();
+                            }
+                        }
+                    }
+
+                    // Check for decoder parity
+                    for (int c = 0; ACTUALLY_COMPARE && c < decodedFrameSizeStereo; c++)
+                    {
+                        if (opusDecoded[c] != concentusDecoded[c])
+                        {
+                            returnVal.Message = "Decoded frames do not match (frame " + frameCount + ")";
+                            if (parameters.PacketLossPercent > 0)
+                            {
+                                StringBuilder packetLossPattern = new StringBuilder();
+                                foreach (string x in PacketTransmissionPattern)
+                                    packetLossPattern.Append(x);
+                                returnVal.Message += " (Packet loss " + packetLossPattern.ToString() + ")";
+                            }
                             returnVal.Passed = false;
                             returnVal.FailureFrame = inputPacket;
                             return returnVal;
                         }
                     }
+                    frameCount++;
+                }
+                catch (OpusException e)
+                {
+                    returnVal.Message = "DECODER: " + e.Message + " (frame " + frameCount + ")";
+                    returnVal.Passed = false;
+                    returnVal.FailureFrame = inputPacket;
+                    return returnVal;
                 }
             }
-            catch (OpusException e)
+            finally
             {
-                returnVal.Message = "ENCODER: " + e.Message + " (frame " + frameCount + ")";
-                returnVal.Passed = false;
-                returnVal.FailureFrame = inputPacket;
-                return returnVal;
-            }
-
-            try
-            {
-                // Should we simulate dropping the packet?
-                PacketTransmissionPattern.Dequeue();
-                bool droppedPacket = false;
-                if (random.Next(0, 100) < parameters.PacketLossPercent)
-                {
-                    droppedPacket = true;
-                    PacketTransmissionPattern.Enqueue("X");
-                }
-                PacketTransmissionPattern.Enqueue("O");
-
-                if (!droppedPacket)
-                {
-                    // Decode with Concentus
-                    Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
-                    Pointer<short> concentusDecodedWithOffset = Pointerize(concentusDecoded);
-                    int concentusOutputFrameSize = concentusDecoder.Decode(
-                        concentusEncodedWithOffset.Data,
-                        concentusEncodedWithOffset.Offset,
-                        concentusPacketSize,
-                        concentusDecodedWithOffset.Data,
-                        concentusDecodedWithOffset.Offset,
-                        decodedFrameSize,
-                        false);
-                    concentusTimer.Start();
-                    concentusDecoded = Unpointerize(concentusDecodedWithOffset, concentusDecoded.Length);
-                    concentusTimer.Stop();
-
-                    // Decode with Opus
-                    unsafe
-                    {
-                        fixed (short* bdec = opusDecoded)
-                        {
-                            IntPtr decodedPtr = new IntPtr((void*)(bdec));
-                            opusTimer.Start();
-                            int opusOutputFrameSize = opus_decode(opusDecoder, concentusEncoded, concentusPacketSize, decodedPtr, decodedFrameSize, 0);
-                            opusTimer.Stop();
-                        }
-                    }
-                }
-                else
-                {
-                    bool useFEC = random.NextDouble() > 0.5;
-                    // Decode with Concentus FEC
-                    concentusTimer.Start();
-                    int concentusOutputFrameSize = concentusDecoder.Decode(null, 0, 0, concentusDecoded, 0, decodedFrameSize, useFEC);
-                    concentusTimer.Stop();
-
-                    // Decode with Opus FEC
-                    unsafe
-                    {
-                        fixed (short* bdec = opusDecoded)
-                        {
-                            IntPtr decodedPtr = new IntPtr((void*)(bdec));
-                            opusTimer.Start();
-                            int opusOutputFrameSize = opus_decode(opusDecoder, null, 0, decodedPtr, decodedFrameSize, useFEC ? 1 : 0);
-                            opusTimer.Stop();
-                        }
-                    }
-                }
-
-                // Check for decoder parity
-                for (int c = 0; ACTUALLY_COMPARE && c < decodedFrameSizeStereo; c++)
-                {
-                    if (opusDecoded[c] != concentusDecoded[c])
-                    {
-                        returnVal.Message = "Decoded frames do not match (frame " + frameCount + ")";
-                        if (parameters.PacketLossPercent > 0)
-                        {
-                            StringBuilder packetLossPattern = new StringBuilder();
-                            foreach (string x in PacketTransmissionPattern)
-                                packetLossPattern.Append(x);
-                            returnVal.Message += " (Packet loss " + packetLossPattern.ToString() + ")";
-                        }
-                        returnVal.Passed = false;
-                        returnVal.FailureFrame = inputPacket;
-                        return returnVal;
-                    }
-                }
-                frameCount++;
-            }
-            catch (OpusException e)
-            {
-                returnVal.Message = "DECODER: " + e.Message + " (frame " + frameCount + ")";
-                returnVal.Passed = false;
-                returnVal.FailureFrame = inputPacket;
-                return returnVal;
+                opus_encoder_destroy(opusEncoder);
+                opus_decoder_destroy(opusDecoder);
             }
 
             returnVal.Passed = true;
