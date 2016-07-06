@@ -280,7 +280,7 @@ namespace Concentus.Celt
 
         /* Looks for sudden increases of energy to decide whether we need to patch
            the transient decision */
-        internal static int patch_transient_decision(int[] newE, int[] oldE, int nbEBands,
+        internal static int patch_transient_decision(int[][] newE, int[] oldE, int nbEBands,
               int start, int end, int C)
         {
             int i, c;
@@ -308,7 +308,7 @@ namespace Concentus.Celt
                 for (i = Inlines.IMAX(2, start); i < end - 1; i++)
                 {
                     int x1, x2;
-                    x1 = Inlines.MAX16(0, newE[i + c * nbEBands]);
+                    x1 = Inlines.MAX16(0, newE[c][i]);
                     x2 = Inlines.MAX16(0, spread_old[i]);
                     mean_diff = Inlines.ADD32(mean_diff, (Inlines.MAX16(0, Inlines.SUB16(x1, x2))));
                 }
@@ -698,7 +698,7 @@ namespace Concentus.Celt
 
 
         internal static int alloc_trim_analysis(CeltMode m, int[][] X,
-              int[] bandLogE, int end, int LM, int C,
+              int[][] bandLogE, int end, int LM, int C,
               AnalysisInfo analysis, BoxedValue<int> stereo_saving, int tf_estimate,
               int intensity, int surround_trim)
         {
@@ -749,7 +749,7 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < end - 1; i++)
                 {
-                    diff += bandLogE[i + c * m.nbEBands] * (int)(2 + 2 * i - end);
+                    diff += bandLogE[c][i] * (int)(2 + 2 * i - end);
                 }
             } while (++c < C);
             diff /= C * (end - 1);
@@ -871,7 +871,7 @@ namespace Concentus.Celt
                 return t0;
         }
 
-        internal static int dynalloc_analysis(int[] bandLogE, int[] bandLogE2,
+        internal static int dynalloc_analysis(int[][] bandLogE, int[][] bandLogE2,
               int nbEBands, int start, int end, int C, int[] offsets, int lsb_depth, short[] logN,
               int isTransient, int vbr, int constrained_vbr, short[] eBands, int LM,
               int effectiveBytes, BoxedValue<int> tot_boost_, int lfe, int[] surround_dynalloc)
@@ -880,7 +880,7 @@ namespace Concentus.Celt
             int tot_boost = 0;
             int maxDepth;
             int[][] follower = Arrays.InitTwoDimensionalArray<int>(2, nbEBands);
-            int[] noise_floor = new int[C * nbEBands];
+            int[] noise_floor = new int[C * nbEBands]; // opt: partitioned array
 
             Arrays.MemSet<int>(offsets, 0, nbEBands);
             /* Dynamic allocation code */
@@ -896,7 +896,7 @@ namespace Concentus.Celt
             c = 0; do
             {
                 for (i = 0; i < end; i++)
-                    maxDepth = Inlines.MAX16(maxDepth, (bandLogE[c * nbEBands + i] - noise_floor[i]));
+                    maxDepth = Inlines.MAX16(maxDepth, (bandLogE[c][i] - noise_floor[i]));
             } while (++c < C);
             /* Make sure that dynamic allocation can't make us bust the budget */
             if (effectiveBytes > 50 && LM >= 1 && lfe == 0)
@@ -907,29 +907,29 @@ namespace Concentus.Celt
                     int offset;
                     int tmp;
                     int[] f = follower[c];
-                    f[0] = bandLogE2[c * nbEBands];
+                    f[0] = bandLogE2[c][0];
                     for (i = 1; i < end; i++)
                     {
                         /* The last band to be at least 3 dB higher than the previous one
                            is the last we'll consider. Otherwise, we run into problems on
                            bandlimited signals. */
-                        if (bandLogE2[c * nbEBands + i] > bandLogE2[c * nbEBands + i - 1] + Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT))
+                        if (bandLogE2[c][i] > bandLogE2[c][i - 1] + Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT))
                             last = i;
-                        f[i] = Inlines.MIN16((f[i - 1] + Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)), bandLogE2[c * nbEBands + i]);
+                        f[i] = Inlines.MIN16((f[i - 1] + Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)), bandLogE2[c][i]);
                     }
                     for (i = last - 1; i >= 0; i--)
-                        f[i] = Inlines.MIN16(f[i], Inlines.MIN16((f[i + 1] + Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)), bandLogE2[c * nbEBands + i]));
+                        f[i] = Inlines.MIN16(f[i], Inlines.MIN16((f[i + 1] + Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)), bandLogE2[c][i]));
 
                     /* Combine with a median filter to avoid dynalloc triggering unnecessarily.
                        The "offset" value controls how conservative we are -- a higher offset
                        reduces the impact of the median filter and makes dynalloc use more bits. */
                     offset = Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT);
                     for (i = 2; i < end - 2; i++)
-                        f[i] = Inlines.MAX16(f[i], median_of_5(bandLogE2.GetPointer(c * nbEBands + i - 2)) - offset);
-                    tmp = median_of_3(bandLogE2.GetPointer(c * nbEBands)) - offset;
+                        f[i] = Inlines.MAX16(f[i], median_of_5(bandLogE2[c].GetPointer(i - 2)) - offset);
+                    tmp = median_of_3(bandLogE2[c].GetPointer()) - offset;
                     f[0] = Inlines.MAX16(f[0], tmp);
                     f[1] = Inlines.MAX16(f[1], tmp);
-                    tmp = median_of_3(bandLogE2.GetPointer(c * nbEBands + end - 3)) - offset;
+                    tmp = median_of_3(bandLogE2[c].GetPointer(end - 3)) - offset;
                     f[end - 2] = Inlines.MAX16(f[end - 2], tmp);
                     f[end - 1] = Inlines.MAX16(f[end - 1], tmp);
 
@@ -943,13 +943,13 @@ namespace Concentus.Celt
                         /* Consider 24 dB "cross-talk" */
                         follower[1][i] = Inlines.MAX16(follower[1][i], follower[0][i] - Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT));
                         follower[0][i] = Inlines.MAX16(follower[0][i], follower[1][i] - Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT));
-                        follower[0][i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[i] - follower[0][i]) + Inlines.MAX16(0, bandLogE[nbEBands + i] - follower[1][i]));
+                        follower[0][i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[0][i] - follower[0][i]) + Inlines.MAX16(0, bandLogE[1][i] - follower[1][i]));
                     }
                 }
                 else {
                     for (i = start; i < end; i++)
                     {
-                        follower[0][i] = Inlines.MAX16(0, bandLogE[i] - follower[0][i]);
+                        follower[0][i] = Inlines.MAX16(0, bandLogE[0][i] - follower[0][i]);
                     }
                 }
                 for (i = start; i < end; i++)

@@ -101,7 +101,7 @@ namespace Concentus.Celt
         }
 
         /* Compute the amplitude (sqrt energy) in each of the bands */
-        internal static void compute_band_energies(CeltMode m, int[][] X, int[] bandE, int end, int C, int LM)
+        internal static void compute_band_energies(CeltMode m, int[][] X, int[][] bandE, int end, int C, int LM)
         {
             int i, c, N;
             short[] eBands = m.eBands;
@@ -136,10 +136,10 @@ namespace Concentus.Celt
                             } while (++j < eBands[i + 1] << LM);
                         }
                         /* We're adding one here to ensure the normalized band isn't larger than unity norm */
-                        bandE[i + c * m.nbEBands] = CeltConstants.EPSILON + Inlines.VSHR32(Inlines.celt_sqrt(sum), -shift);
+                        bandE[c][i] = CeltConstants.EPSILON + Inlines.VSHR32(Inlines.celt_sqrt(sum), -shift);
                     }
                     else {
-                        bandE[i + c * m.nbEBands] = CeltConstants.EPSILON;
+                        bandE[c][i] = CeltConstants.EPSILON;
                     }
                     /*printf ("%f ", bandE[i+c*m->nbEBands]);*/
                 }
@@ -147,7 +147,7 @@ namespace Concentus.Celt
         }
 
         /* Normalise each band such that the energy is one. */
-        internal static void normalise_bands(CeltMode m, int[][] freq, int[][] X, int[] bandE, int end, int C, int M)
+        internal static void normalise_bands(CeltMode m, int[][] freq, int[][] X, int[][] bandE, int end, int C, int M)
         {
             int i, c;
             short[] eBands = m.eBands;
@@ -160,8 +160,8 @@ namespace Concentus.Celt
                     int g;
                     int j, shift;
                     int E;
-                    shift = Inlines.celt_zlog2(bandE[i + c * m.nbEBands]) - 13;
-                    E = Inlines.VSHR32(bandE[i + c * m.nbEBands], shift);
+                    shift = Inlines.celt_zlog2(bandE[c][i]) - 13;
+                    E = Inlines.VSHR32(bandE[c][i], shift);
                     g = Inlines.EXTRACT16(Inlines.celt_rcp(Inlines.SHL32(E, 3)));
                     j = M * eBands[i]; do
                     {
@@ -336,16 +336,16 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void intensity_stereo(CeltMode m, Pointer<int> X, Pointer<int> Y, int[] bandE, int bandID, int N)
+        internal static void intensity_stereo(CeltMode m, Pointer<int> X, Pointer<int> Y, int[][] bandE, int bandID, int N)
         {
             int i = bandID;
             int j;
             int a1, a2;
             int left, right;
             int norm;
-            int shift = Inlines.celt_zlog2(Inlines.MAX32(bandE[i], bandE[i + m.nbEBands])) - 13;
-            left = Inlines.VSHR32(bandE[i], shift);
-            right = Inlines.VSHR32(bandE[i + m.nbEBands], shift);
+            int shift = Inlines.celt_zlog2(Inlines.MAX32(bandE[0][i], bandE[1][i])) - 13;
+            left = Inlines.VSHR32(bandE[0][i], shift);
+            right = Inlines.VSHR32(bandE[1][i], shift);
             norm = CeltConstants.EPSILON + Inlines.celt_sqrt(CeltConstants.EPSILON + Inlines.MULT16_16(left, left) + Inlines.MULT16_16(right, right));
             a1 = Inlines.DIV32_16(Inlines.SHL32(left, 14), norm);
             a2 = Inlines.DIV32_16(Inlines.SHL32(right, 14), norm);
@@ -677,7 +677,7 @@ namespace Concentus.Celt
             public int tf_change;
             public EntropyCoder ec;
             public int remaining_bits;
-            public int[] bandE;
+            public int[][] bandE;
             public uint seed;
         };
 
@@ -710,7 +710,7 @@ namespace Concentus.Celt
             int i;
             int intensity;
             EntropyCoder ec; // porting note: pointer
-            int[] bandE;
+            int[][] bandE;
 
             encode = ctx.encode;
             m = ctx.m;
@@ -1447,7 +1447,7 @@ namespace Concentus.Celt
 
         internal static void quant_all_bands(int encode, CeltMode m, int start, int end,
               int[] X_, Pointer<int> Y_, byte[] collapse_masks,
-              int[] bandE, int[] pulses, int shortBlocks, int spread,
+              int[][] bandE, int[] pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, int[] tf_res, int total_bits,
               int balance, EntropyCoder ec, int LM, int codedBands,
               BoxedValue<uint> seed)
@@ -1506,7 +1506,7 @@ namespace Concentus.Celt
                 ctx.i = i;
                 last = (i == end - 1) ? 1 : 0;
 
-                // fixme: this is a pointer that gets trickled far fown the band kernels. It might be nice to remove it
+                // fixme: this is a pointer that gets trickled far down the band kernels. It might be nice to remove it
                 X = X_.GetPointer(M * eBands[i]);
                 if (Y_ != null)
                 {

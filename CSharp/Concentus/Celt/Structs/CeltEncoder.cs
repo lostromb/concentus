@@ -386,9 +386,9 @@ namespace Concentus.Celt.Structs
             int[] input;
             int[][] freq;
             int[][] X;
-            int[] bandE;
-            int[] bandLogE;
-            int[] bandLogE2;
+            int[][] bandE;
+            int[][] bandLogE;
+            int[][] bandLogE2;
             int[] fine_quant;
             int[] error;
             int[] pulses;
@@ -642,20 +642,27 @@ namespace Concentus.Celt.Structs
             }
 
             freq = Arrays.InitTwoDimensionalArray<int>(CC, N); /**< Interleaved signal MDCTs */
-            bandE = new int[nbEBands * CC];
-            bandLogE = new int[nbEBands * CC];
+            bandE = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
+            bandLogE = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
 
             secondMdct = (shortBlocks != 0 && this.complexity >= 8) ? 1 : 0;
-            bandLogE2 = new int[C * nbEBands];
+            bandLogE2 = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
             //Arrays.MemSet<int>(bandLogE2, 0, C * nbEBands); // not explicitly needed
             if (secondMdct != 0)
             {
                 CeltCommon.compute_mdcts(mode, 0, input, freq, C, CC, LM, this.upsample);
                 Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
                 QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
-                for (i = 0; i < C * nbEBands; i++)
+                for (i = 0; i < nbEBands; i++)
                 {
-                    bandLogE2[i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    bandLogE2[0][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                }
+                if (C == 2)
+                {
+                    for (i = 0; i < nbEBands; i++)
+                    {
+                        bandLogE2[1][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    }
                 }
             }
 
@@ -668,8 +675,8 @@ namespace Concentus.Celt.Structs
             {
                 for (i = 2; i < end; i++)
                 {
-                    bandE[i] = Inlines.IMIN(bandE[i], Inlines.MULT16_32_Q15(Inlines.QCONST16(1e-4f, 15), bandE[0]));
-                    bandE[i] = Inlines.MAX32(bandE[i], CeltConstants.EPSILON);
+                    bandE[0][i] = Inlines.IMIN(bandE[0][i], Inlines.MULT16_32_Q15(Inlines.QCONST16(1e-4f, 15), bandE[0][0]));
+                    bandE[0][i] = Inlines.MAX32(bandE[0][i], CeltConstants.EPSILON);
                 }
             }
 
@@ -760,9 +767,9 @@ namespace Concentus.Celt.Structs
                 int offset = shortBlocks != 0 ? Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT)) : 0;
                 for (i = start; i < end; i++)
                 {
-                    follow = Inlines.MAX16(follow - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT), bandLogE[i] - offset);
+                    follow = Inlines.MAX16(follow - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT), bandLogE[0][i] - offset);
                     if (C == 2)
-                        follow = Inlines.MAX16(follow, bandLogE[i + nbEBands] - offset);
+                        follow = Inlines.MAX16(follow, bandLogE[1][i] - offset);
                     frame_avg += follow;
                 }
                 frame_avg /= (end - start);
@@ -776,7 +783,9 @@ namespace Concentus.Celt.Structs
 
             if (secondMdct == 0)
             {
-                Array.Copy(bandLogE, bandLogE2, C * nbEBands);
+                Array.Copy(bandLogE[0], bandLogE2[0], nbEBands);
+                if (C == 2)
+                    Array.Copy(bandLogE[1], bandLogE2[1], nbEBands);
             }
 
             /* Last chance to catch any transient we might have missed in the
@@ -791,8 +800,13 @@ namespace Concentus.Celt.Structs
                     Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
                     QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
                     /* Compensate for the scaling of short vs long mdcts */
-                    for (i = 0; i < C * nbEBands; i++)
-                        bandLogE2[i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    for (i = 0; i < nbEBands; i++)
+                        bandLogE2[0][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    if (C == 2)
+                    {
+                        for (i = 0; i < nbEBands; i++)
+                            bandLogE2[1][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    }
                     tf_estimate = Inlines.QCONST16(.2f, 14);
                 }
             }

@@ -1484,7 +1484,7 @@ namespace Concentus.Structs
 
                 return ret;
             }
-            catch (ArgumentException e)
+            catch (OutOfMemoryException e)
             {
                 throw new OpusException("Internal error during encoding: " + e.Message);
             }
@@ -1558,7 +1558,7 @@ namespace Concentus.Structs
 
                 return ret;
             }
-            catch (ArgumentException e)
+            catch (OutOfMemoryException e)
             {
                 throw new OpusException("Internal error during encoding: " + e.Message);
             }

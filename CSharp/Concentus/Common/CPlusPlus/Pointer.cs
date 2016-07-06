@@ -549,6 +549,8 @@ namespace Concentus.Common.CPlusPlus
         /// <returns></returns>
         public static Pointer<E> GetPointer<E>(this E[] memory, int offset = 0)
         {
+            if (memory == null)
+                return null;
             //if (offset == memory.Length / 2)
             //{
             //    // This may be a partitioned array. Signal the debugger

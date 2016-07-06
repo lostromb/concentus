@@ -49,7 +49,7 @@ namespace Concentus.Celt
         private static readonly int beta_intra = 4915;
         private static byte[] small_energy_icdf = { 2, 1, 0 };
 
-        internal static int loss_distortion(int[] eBands, int[] oldEBands, int start, int end, int len, int C)
+        internal static int loss_distortion(int[][] eBands, int[] oldEBands, int start, int end, int len, int C)
         {
             int c, i;
             int dist = 0;
@@ -58,7 +58,7 @@ namespace Concentus.Celt
             {
                 for (i = start; i < end; i++)
                 {
-                    int d = Inlines.SUB16(Inlines.SHR16(eBands[i + c * len], 3), Inlines.SHR16(oldEBands[i + c * len], 3)); // opus bug: this reads from uninitialized memory in oldEBands sometimes(?)
+                    int d = Inlines.SUB16(Inlines.SHR16(eBands[c][i], 3), Inlines.SHR16(oldEBands[i + c * len], 3));
                     dist = Inlines.MAC16_16(dist, d, d);
                 }
             } while (++c < C);
@@ -67,7 +67,7 @@ namespace Concentus.Celt
         }
 
         internal static int quant_coarse_energy_impl(CeltMode m, int start, int end,
-              int[] eBands, int[] oldEBands,
+              int[][] eBands, int[] oldEBands,
               int budget, int tell,
               byte[] prob_model, int[] error, EntropyCoder enc,
               int C, int LM, int intra, int max_decay, int lfe)
@@ -106,7 +106,7 @@ namespace Concentus.Celt
                     int f, tmp;
                     int oldE;
                     int decay_bound;
-                    x = eBands[i + c * m.nbEBands];
+                    x = eBands[c][i];
                     oldE = Inlines.MAX16(-Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT), oldEBands[i + c * m.nbEBands]);
                     f = Inlines.SHL32(Inlines.EXTEND32(x), 7) - Inlines.PSHR32(Inlines.MULT16_16(coef, oldE), 8) - prev[c];
                     /* Rounding to nearest integer here is really important! */
@@ -169,7 +169,7 @@ namespace Concentus.Celt
         }
 
         internal static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
-              int[] eBands, int[] oldEBands, uint budget,
+              int[][] eBands, int[] oldEBands, uint budget,
               int[] error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
               int force_intra, BoxedValue<int> delayedIntra, int two_pass, int loss_rate, int lfe)
         {
@@ -462,7 +462,7 @@ namespace Concentus.Celt
         /// <param name="bandLogE"></param>
         /// <param name="C"></param>
         internal static void amp2Log2(CeltMode m, int effEnd, int end,
-              int[] bandE, int[] bandLogE, int C)
+              int[][] bandE, int[][] bandLogE, int C)
         {
             int c, i;
             c = 0;
@@ -470,13 +470,13 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < effEnd; i++)
                 {
-                    bandLogE[i + c * m.nbEBands] =
-                       (Inlines.celt_log2(Inlines.SHL32(bandE[i + c * m.nbEBands], 2))
+                    bandLogE[c][i] =
+                       (Inlines.celt_log2(Inlines.SHL32(bandE[c][i], 2))
                        - Inlines.SHL16((int)Tables.eMeans[i], 6));
                 }
                 for (i = effEnd; i < end; i++)
                 {
-                    bandLogE[c * m.nbEBands + i] = (0 - Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT));
+                    bandLogE[c][i] = (0 - Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT));
                 }
             } while (++c < C);
         }

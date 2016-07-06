@@ -166,7 +166,7 @@ namespace Concentus.Structs
             int upsample;
             int frame_size;
             int channel_offset;
-            int[] bandE = new int[21];
+            int[][] bandE = Arrays.InitTwoDimensionalArray<int>(1, 21);
             int[][] maskLogE = Arrays.InitTwoDimensionalArray<int>(3, 21);
             int[] input;
             short[] x;
@@ -218,7 +218,7 @@ namespace Concentus.Structs
                 }
                 
                 Bands.compute_band_energies(celt_mode, freq, bandE, 21, 1, LM);
-                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE, bandLogE.GetPointer(21 * c), 1);
+                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE[0], bandLogE.GetPointer(21 * c), 1);
                 /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
                 for (i = 1; i < 21; i++)
                     bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT));
