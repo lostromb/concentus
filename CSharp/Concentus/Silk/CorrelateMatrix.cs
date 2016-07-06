@@ -49,7 +49,7 @@ namespace Concentus.Silk
             Pointer<short> t,                                     /* I    Target vector [L]                                                           */
             int L,                                      /* I    Length of vectors                                                           */
             int order,                                  /* I    Max lag for correlation                                                     */
-            Pointer<int> Xt,                                    /* O    Pointer to X'*t correlation vector [order]                                  */
+            int[] Xt,                                    /* O    Pointer to X'*t correlation vector [order]                                  */
             int rshifts                                /* I    Right shifts of correlations                                                */
         )
         {

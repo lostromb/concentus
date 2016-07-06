@@ -118,7 +118,7 @@ namespace Concentus.Silk
                 corr_rshifts[k] = boxed_shifts.Val;
 
                 /* The correlation vector always has lower max abs value than rr and/or RR so head room is assured */
-                CorrelateMatrix.silk_corrVector(lag_ptr, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr.GetPointer(), corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
+                CorrelateMatrix.silk_corrVector(lag_ptr, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
                 if (corr_rshifts[k] > rr_shifts)
                 {
                     rr[k] = Inlines.silk_RSHIFT(rr[k], corr_rshifts[k] - rr_shifts); /* rr[ k ] in Q( -corr_rshifts[ k ] ) */
@@ -134,10 +134,10 @@ namespace Concentus.Silk
                 LinearAlgebra.silk_solve_LDL(WLTP_ptr, SilkConstants.LTP_ORDER, Rr, b_Q16); /* WLTP_ptr and Rr_ptr both in Q(-corr_rshifts[k]) */
 
                 /* Limit and store in Q14 */
-                silk_fit_LTP(b_Q16.GetPointer(), b_Q14_ptr);
+                silk_fit_LTP(b_Q16, b_Q14_ptr);
 
                 /* Calculate residual energy */
-                nrg[k] = ResidualEnergy.silk_residual_energy16_covar(b_Q14_ptr, WLTP_ptr, Rr.GetPointer(), rr[k], SilkConstants.LTP_ORDER, 14); /* nrg in Q( -corr_rshifts[ k ] ) */
+                nrg[k] = ResidualEnergy.silk_residual_energy16_covar(b_Q14_ptr, WLTP_ptr, Rr, rr[k], SilkConstants.LTP_ORDER, 14); /* nrg in Q( -corr_rshifts[ k ] ) */
 
                 /* temp = Wght[ k ] / ( nrg[ k ] * Wght[ k ] + 0.01f * subfr_length ); */
                 extra_shifts = Inlines.silk_min_int(corr_rshifts[k], LTP_CORRS_HEAD_ROOM);
@@ -284,7 +284,7 @@ namespace Concentus.Silk
         /// <param name="LTP_coefs_Q14">[SilkConstants.LTP_ORDER]</param>
         /// <param name=""></param>
         internal static void silk_fit_LTP(
-            Pointer<int> LTP_coefs_Q16,
+            int[] LTP_coefs_Q16,
             Pointer<short> LTP_coefs_Q14
 )
         {
@@ -295,6 +295,5 @@ namespace Concentus.Silk
                 LTP_coefs_Q14[i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(LTP_coefs_Q16[i], 2));
             }
         }
-
     }
 }

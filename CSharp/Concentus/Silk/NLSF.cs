@@ -800,10 +800,10 @@ namespace Concentus.Silk
             
             byte[] ordering;
             int k, i, dd;
-            int[] cos_LSF_QA = new int[SilkConstants.SILK_MAX_ORDER_LPC]; //opt: only initialize d elements
-            int[] P = new int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
-            int[] Q = new int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
-            int[] a32_QA1 = new int[SilkConstants.SILK_MAX_ORDER_LPC];
+            int[] cos_LSF_QA = new int[d];
+            int[] P = new int[d / 2 + 1];
+            int[] Q = new int[d / 2 + 1];
+            int[] a32_QA1 = new int[d];
 
             int Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
             int maxabs, absval, idx = 0, sc_Q16;

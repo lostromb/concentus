@@ -928,19 +928,12 @@ namespace Concentus.Celt.Structs
 
             if (C == 2)
             {
-                // fixme move these to static
-                int[] intensity_thresholds =
-                  /* 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  20  off*/
-                  {  1, 2, 3, 4, 5, 6, 7, 8,16,24,36,44,50,56,62,67,72,79,88,106,134};
-                int[] intensity_histeresis =
-                  {  1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 5, 6,  8, 8};
-
                 /* Always use MS for 2.5 ms frames until we can do a better analysis */
                 if (LM != 0)
                     dual_stereo = CeltCommon.stereo_analysis(mode, X, LM, N);
 
                 this.intensity = Bands.hysteresis_decision((int)(equiv_rate / 1000),
-                      intensity_thresholds, intensity_histeresis, 21, this.intensity);
+                      Tables.intensity_thresholds, Tables.intensity_histeresis, 21, this.intensity);
                 this.intensity = Inlines.IMIN(end, Inlines.IMAX(start, this.intensity));
             }
 

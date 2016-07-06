@@ -1117,5 +1117,11 @@ namespace Concentus.Celt
             -31679, -31887, -32074, -32239, -32381,
             -32501, -32600, -32675, -32729, -32759,
             };
+
+        internal static readonly int[] intensity_thresholds =
+                  /* 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  20  off*/
+                  {  1, 2, 3, 4, 5, 6, 7, 8,16,24,36,44,50,56,62,67,72,79,88,106,134};
+        internal static readonly int[] intensity_histeresis =
+          {  1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 5, 6,  8, 8};
     }
 }

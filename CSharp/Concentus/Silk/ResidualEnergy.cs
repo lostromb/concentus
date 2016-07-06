@@ -43,11 +43,11 @@ namespace Concentus.Silk
         /* Calculates residual energies of input subframes where all subframes have LPC_order   */
         /* of preceding samples                                                                 */
         internal static void silk_residual_energy(
-            Pointer<int> nrgs,                   /* O    Residual energy per subframe  [MAX_NB_SUBFR]                                              */
-            Pointer<int> nrgsQ,                  /* O    Q value per subframe   [MAX_NB_SUBFR]                                                     */
-            Pointer<short> x,                                    /* I    Input signal                                                                */
+            int[] nrgs,                   /* O    Residual energy per subframe  [MAX_NB_SUBFR]                                              */
+            int[] nrgsQ,                  /* O    Q value per subframe   [MAX_NB_SUBFR]                                                     */
+            short[] x,                                    /* I    Input signal                                                                */
             short[][] a_Q12,            /* I    AR coefs for each frame half [2][MAX_LPC_ORDER]                                                */
-            Pointer<int> gains,                  /* I    Quantization gains [SilkConstants.MAX_NB_SUBFR]                                                         */
+            int[] gains,                  /* I    Quantization gains [SilkConstants.MAX_NB_SUBFR]                                                         */
             int subfr_length,                           /* I    Subframe length                                                             */
             int nb_subfr,                               /* I    Number of subframes                                                         */
             int LPC_order                              /* I    LPC order                                                                   */
@@ -57,10 +57,10 @@ namespace Concentus.Silk
             BoxedValue<int> rshift = new BoxedValue<int>();
             Pointer<short> LPC_res_ptr;
             short[] LPC_res;
-            Pointer<short> x_ptr;
+            int x_ptr;
             int tmp32;
             
-            x_ptr = x;
+            x_ptr = 0;
             offset = LPC_order + subfr_length;
 
             /* Filter input to create the LPC residual for each frame half, and measure subframe energies */
@@ -69,7 +69,7 @@ namespace Concentus.Silk
             for (i = 0; i < nb_subfr >> 1; i++)
             {
                 /* Calculate half frame LPC residual signal including preceding samples */
-                Filters.silk_LPC_analysis_filter(LPC_res, 0, x_ptr.Data, x_ptr.Offset, a_Q12[i], 0, (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
+                Filters.silk_LPC_analysis_filter(LPC_res, 0, x, x_ptr, a_Q12[i], 0, (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
 
                 /* Point to first subframe of the just calculated LPC residual signal */
                 LPC_res_ptr = LPC_res.GetPointer(LPC_order);
@@ -87,7 +87,7 @@ namespace Concentus.Silk
                     LPC_res_ptr = LPC_res_ptr.Point(offset);
                 }
                 /* Move to next frame half */
-                x_ptr = x_ptr.Point((SilkConstants.MAX_NB_SUBFR >> 1) * offset);
+                x_ptr += (SilkConstants.MAX_NB_SUBFR >> 1) * offset;
             }
 
             /* Apply the squared subframe gains */
@@ -113,7 +113,7 @@ namespace Concentus.Silk
         internal static int silk_residual_energy16_covar(
             Pointer<short> c,                                     /* I    Prediction vector                                                           */
             Pointer<int> wXX,                                   /* I    Correlation matrix                                                          */
-            Pointer<int> wXx,                                   /* I    Correlation vector                                                          */
+            int[] wXx,                                   /* I    Correlation vector                                                          */
             int wxx,                                    /* I    Signal energy                                                               */
             int D,                                      /* I    Dimension                                                                   */
             int cQ                                      /* I    Q value for c vector 0 - 15                                                 */
