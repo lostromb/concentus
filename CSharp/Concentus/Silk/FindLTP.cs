@@ -126,9 +126,9 @@ namespace Concentus.Silk
                 Inlines.OpusAssert(rr[k] >= 0);
 
                 regu = 1;
-                regu = Inlines.silk_SMLAWB(regu, rr[k], Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16));
-                regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, 0, 0, SilkConstants.LTP_ORDER), Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16));
-                regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER), Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16));
+                regu = Inlines.silk_SMLAWB(regu, rr[k], ((int)((TuningParameters.LTP_DAMPING / 3) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16)*/);
+                regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, 0, 0, SilkConstants.LTP_ORDER), ((int)((TuningParameters.LTP_DAMPING / 3) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16)*/);
+                regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER), ((int)((TuningParameters.LTP_DAMPING / 3) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16)*/);
                 RegularizeCorrelations.silk_regularize_correlations(WLTP_ptr, rr.GetPointer(k), regu, SilkConstants.LTP_ORDER);
 
                 LinearAlgebra.silk_solve_LDL(WLTP_ptr, SilkConstants.LTP_ORDER, Rr, b_Q16); /* WLTP_ptr and Rr_ptr both in Q(-corr_rshifts[k]) */
@@ -258,8 +258,8 @@ namespace Concentus.Silk
 
                 g_Q26 = Inlines.silk_MUL(
                     Inlines.silk_DIV32(
-                        Inlines.SILK_CONST(TuningParameters.LTP_SMOOTHING, 26),
-                        Inlines.silk_RSHIFT(Inlines.SILK_CONST(TuningParameters.LTP_SMOOTHING, 26), 10) + temp32),                          /* Q10 */
+                        ((int)((TuningParameters.LTP_SMOOTHING) * ((long)1 << (26)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_SMOOTHING, 26)*/,
+                        Inlines.silk_RSHIFT(((int)((TuningParameters.LTP_SMOOTHING) * ((long)1 << (26)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_SMOOTHING, 26)*/, 10) + temp32),                          /* Q10 */
                     Inlines.silk_LSHIFT_SAT32(Inlines.silk_SUB_SAT32((int)m_Q12, Inlines.silk_RSHIFT(d_Q14[k], 2)), 4));    /* Q16 */
 
                 temp32 = 0;

@@ -43,7 +43,7 @@ namespace Concentus.Silk
         private const float RC_THRESHOLD = 0.9999f;
 
         private const int QA = 24;
-        private static readonly int A_LIMIT = Inlines.SILK_CONST(0.99975f, QA);
+        private static readonly int A_LIMIT = ((int)((0.99975f) * ((long)1 << (QA)) + 0.5))/*Inlines.SILK_CONST(0.99975f, QA)*/;
 
         /* Compute inverse of LPC prediction gain, and                          */
         /* test if LPC coefficients are stable (all poles within unit circle)   */

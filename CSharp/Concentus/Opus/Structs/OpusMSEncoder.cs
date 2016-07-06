@@ -119,9 +119,9 @@ namespace Concentus.Structs
         }
 
         private static readonly int[] diff_table/*[17]*/ = {
-             Inlines.QCONST16(0.5000000f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.2924813f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.1609640f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.0849625f, CeltConstants.DB_SHIFT),
-             Inlines.QCONST16(0.0437314f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.0221971f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.0111839f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.0056136f, CeltConstants.DB_SHIFT),
-             Inlines.QCONST16(0.0028123f, CeltConstants.DB_SHIFT)
+             ((short)(0.5 + (0.5000000f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.5000000f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.2924813f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.2924813f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.1609640f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.1609640f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0849625f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0849625f, CeltConstants.DB_SHIFT)*/,
+             ((short)(0.5 + (0.0437314f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0437314f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0221971f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0221971f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0111839f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0111839f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0056136f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0056136f, CeltConstants.DB_SHIFT)*/,
+             ((short)(0.5 + (0.0028123f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0028123f, CeltConstants.DB_SHIFT)*/
        };
 
         /* Computes a rough approximation of log2(2^a + 2^b) */
@@ -141,7 +141,7 @@ namespace Concentus.Structs
                 max = b;
                 diff = Inlines.SUB32(Inlines.EXTEND32(b), Inlines.EXTEND32(a));
             }
-            if (!(diff < Inlines.QCONST16(8.0f, CeltConstants.DB_SHIFT)))  /* inverted to catch NaNs */
+            if (!(diff < ((short)(0.5 + (8.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(8.0f, CeltConstants.DB_SHIFT)*/))  /* inverted to catch NaNs */
                 return max;
             low = Inlines.SHR32(diff, CeltConstants.DB_SHIFT - 1);
             frac = Inlines.SHL16(diff - Inlines.SHL16(low, CeltConstants.DB_SHIFT - 1), 16 - CeltConstants.DB_SHIFT);
@@ -187,7 +187,7 @@ namespace Concentus.Structs
 
             for (c = 0; c < 3; c++)
                 for (i = 0; i < 21; i++)
-                    maskLogE[c][i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    maskLogE[c][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
 
             for (c = 0; c < channels; c++)
             {
@@ -221,9 +221,9 @@ namespace Concentus.Structs
                 QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE[0], bandLogE.GetPointer(21 * c), 1);
                 /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
                 for (i = 1; i < 21; i++)
-                    bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT));
+                    bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i - 1] - ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/);
                 for (i = 19; i >= 0; i--)
-                    bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i + 1] - Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT));
+                    bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i + 1] - ((short)(0.5 + (2.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)*/);
                 if (pos[c] == 1)
                 {
                     for (i = 0; i < 21; i++)
@@ -238,15 +238,15 @@ namespace Concentus.Structs
                 {
                     for (i = 0; i < 21; i++)
                     {
-                        maskLogE[0][i] = logSum(maskLogE[0][i], bandLogE[21 * c + i] - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT));
-                        maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21 * c + i] - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT));
+                        maskLogE[0][i] = logSum(maskLogE[0][i], bandLogE[21 * c + i] - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
+                        maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21 * c + i] - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
                     }
                 }
                 Array.Copy(input, frame_size, mem, c * overlap, overlap);
             }
             for (i = 0; i < 21; i++)
                 maskLogE[1][i] = Inlines.MIN32(maskLogE[0][i], maskLogE[2][i]);
-            channel_offset = Inlines.HALF16(Inlines.celt_log2(Inlines.QCONST32(2.0f, 14) / (channels - 1)));
+            channel_offset = Inlines.HALF16(Inlines.celt_log2(((int)(0.5 + (2.0f) * (((int)1) << (14))))/*Inlines.QCONST32(2.0f, 14)*/ / (channels - 1)));
             for (c = 0; c < 3; c++)
                 for (i = 0; i < 21; i++)
                     maskLogE[c][i] += channel_offset;

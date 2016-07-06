@@ -908,7 +908,7 @@ namespace Concentus.Structs
                 hp_freq_smth1 = silk_enc.state_Fxx[0].variable_HP_smth1_Q15;
 
             this.variable_HP_smth2_Q15 = Inlines.silk_SMLAWB(this.variable_HP_smth2_Q15,
-                  hp_freq_smth1 - this.variable_HP_smth2_Q15, Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_SMTH_COEF2, 16));
+                  hp_freq_smth1 - this.variable_HP_smth2_Q15, ((int)((TuningParameters.VARIABLE_HP_SMTH_COEF2) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_SMTH_COEF2, 16)*/);
 
             /* convert from log scale to Hertz */
             cutoff_Hz = Inlines.silk_log2lin(Inlines.silk_RSHIFT(this.variable_HP_smth2_Q15, 8));
@@ -988,7 +988,7 @@ namespace Concentus.Structs
                         {
                             int mask;
                             mask = Inlines.MAX16(Inlines.MIN16(this.energy_masking[21 * c + i],
-                                   Inlines.QCONST16(.5f, 10)), -Inlines.QCONST16(2.0f, 10));
+                                   ((short)(0.5 + (.5f) * (((int)1) << (10))))/*Inlines.QCONST16(.5f, 10)*/), -((short)(0.5 + (2.0f) * (((int)1) << (10))))/*Inlines.QCONST16(2.0f, 10)*/);
                             if (mask > 0)
                                 mask = Inlines.HALF16(mask);
                             mask_sum += mask;
@@ -996,7 +996,7 @@ namespace Concentus.Structs
                     }
                     /* Conservative rate reduction, we cut the masking in half */
                     masking_depth = mask_sum / end * this.channels;
-                    masking_depth += Inlines.QCONST16(.2f, 10);
+                    masking_depth += ((short)(0.5 + (.2f) * (((int)1) << (10))))/*Inlines.QCONST16(.2f, 10)*/;
                     rate_offset = (int)Inlines.PSHR32(Inlines.MULT16_16(srate, masking_depth), 10);
                     rate_offset = Inlines.MAX32(rate_offset, -2 * this.silk_mode.bitRate / 3);
                     /* Split the rate change between the SILK and CELT part for hybrid. */

@@ -136,8 +136,8 @@ namespace Concentus.Silk
 
                 /* Reduce (mainly) low frequencies during harmonic emphasis */
                 B_Q10[0] = Inlines.CHOP16(Inlines.silk_RSHIFT_ROUND(psEncCtrl.GainsPre_Q14[k], 4));
-                tmp_32 = Inlines.silk_SMLABB(Inlines.SILK_CONST(TuningParameters.INPUT_TILT, 26), psEncCtrl.HarmBoost_Q14[k], HarmShapeGain_Q12);   /* Q26 */
-                tmp_32 = Inlines.silk_SMLABB(tmp_32, psEncCtrl.coding_quality_Q14, Inlines.SILK_CONST(TuningParameters.HIGH_RATE_INPUT_TILT, 12));    /* Q26 */
+                tmp_32 = Inlines.silk_SMLABB(((int)((TuningParameters.INPUT_TILT) * ((long)1 << (26)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.INPUT_TILT, 26)*/, psEncCtrl.HarmBoost_Q14[k], HarmShapeGain_Q12);   /* Q26 */
+                tmp_32 = Inlines.silk_SMLABB(tmp_32, psEncCtrl.coding_quality_Q14, ((int)((TuningParameters.HIGH_RATE_INPUT_TILT) * ((long)1 << (12)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.HIGH_RATE_INPUT_TILT, 12)*/);    /* Q26 */
                 tmp_32 = Inlines.silk_SMULWB(tmp_32, -psEncCtrl.GainsPre_Q14[k]);                                                /* Q24 */
                 tmp_32 = Inlines.silk_RSHIFT_ROUND(tmp_32, 14);                                                                     /* Q10 */
                 B_Q10[1] = Inlines.CHOP16(Inlines.silk_SAT16(tmp_32));
@@ -532,7 +532,7 @@ namespace Concentus.Silk
         }
 
         private const int QA = 24;
-        private static readonly int A_LIMIT = Inlines.SILK_CONST(0.99975f, QA);
+        private static readonly int A_LIMIT = ((int)((0.99975f) * ((long)1 << (QA)) + 0.5))/*Inlines.SILK_CONST(0.99975f, QA)*/;
 
         /// <summary>
         /// Compute inverse of LPC prediction gain, and

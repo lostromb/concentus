@@ -93,17 +93,17 @@ namespace Concentus.Celt
                 coded_stereo_bands = Inlines.IMIN(intensity, coded_bands);
                 coded_stereo_dof = (eBands[coded_stereo_bands] << LM) - coded_stereo_bands;
                 /* Maximum fraction of the bits we can save if the signal is mono. */
-                max_frac = Inlines.DIV32_16(Inlines.MULT16_16(Inlines.QCONST16(0.8f, 15), coded_stereo_dof), coded_bins);
-                stereo_saving = Inlines.MIN16(stereo_saving, Inlines.QCONST16(1.0f, 8));
+                max_frac = Inlines.DIV32_16(Inlines.MULT16_16(((short)(0.5 + (0.8f) * (((int)1) << (15))))/*Inlines.QCONST16(0.8f, 15)*/, coded_stereo_dof), coded_bins);
+                stereo_saving = Inlines.MIN16(stereo_saving, ((short)(0.5 + (1.0f) * (((int)1) << (8))))/*Inlines.QCONST16(1.0f, 8)*/);
                 /*printf("%d %d %d ", coded_stereo_dof, coded_bins, tot_boost);*/
                 target -= (int)Inlines.MIN32(Inlines.MULT16_32_Q15(max_frac, target),
-                                Inlines.SHR32(Inlines.MULT16_16(stereo_saving - Inlines.QCONST16(0.1f, 8), (coded_stereo_dof << EntropyCoder.BITRES)), 8));
+                                Inlines.SHR32(Inlines.MULT16_16(stereo_saving - ((short)(0.5 + (0.1f) * (((int)1) << (8))))/*Inlines.QCONST16(0.1f, 8)*/, (coded_stereo_dof << EntropyCoder.BITRES)), 8));
             }
             /* Boost the rate according to dynalloc (minus the dynalloc average for calibration). */
             target += tot_boost - (16 << LM);
             /* Apply transient boost, compensating for average boost. */
             tf_calibration = variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE ?
-                             Inlines.QCONST16(0.02f, 14) : Inlines.QCONST16(0.04f, 14);
+                             ((short)(0.5 + (0.02f) * (((int)1) << (14))))/*Inlines.QCONST16(0.02f, 14)*/ : ((short)(0.5 + (0.04f) * (((int)1) << (14))))/*Inlines.QCONST16(0.04f, 14)*/;
             target += (int)Inlines.SHL32(Inlines.MULT16_32_Q15(tf_estimate - tf_calibration, target), 1);
             
             /* Apply tonality boost */
@@ -143,15 +143,15 @@ namespace Concentus.Celt
                 int rate_factor;
                 rate_factor = Inlines.MAX16(0, (bitrate - 32000));
                 if (constrained_vbr != 0)
-                    rate_factor = Inlines.MIN16(rate_factor, Inlines.QCONST16(0.67f, 15));
+                    rate_factor = Inlines.MIN16(rate_factor, ((short)(0.5 + (0.67f) * (((int)1) << (15))))/*Inlines.QCONST16(0.67f, 15)*/);
                 target = base_target + (int)Inlines.MULT16_32_Q15(rate_factor, target - base_target);
             }
 
-            if (has_surround_mask == 0 && tf_estimate < Inlines.QCONST16(.2f, 14))
+            if (has_surround_mask == 0 && tf_estimate < ((short)(0.5 + (.2f) * (((int)1) << (14))))/*Inlines.QCONST16(.2f, 14)*/)
             {
                 int amount;
                 int tvbr_factor;
-                amount = Inlines.MULT16_16_Q15(Inlines.QCONST16(.0000031f, 30), Inlines.IMAX(0, Inlines.IMIN(32000, 96000 - bitrate)));
+                amount = Inlines.MULT16_16_Q15(((short)(0.5 + (.0000031f) * (((int)1) << (30))))/*Inlines.QCONST16(.0000031f, 30)*/, Inlines.IMAX(0, Inlines.IMIN(32000, 96000 - bitrate)));
                 tvbr_factor = Inlines.SHR32(Inlines.MULT16_16(temporal_vbr, amount), CeltConstants.DB_SHIFT);
                 target += (int)Inlines.MULT16_32_Q15(tvbr_factor, target);
             }
@@ -268,7 +268,7 @@ namespace Concentus.Celt
             /* Arbitrary metric for VBR boost */
             tf_max = Inlines.MAX16(0, (Inlines.celt_sqrt(27 * mask_metric) - 42));
             /* *tf_estimate = 1 + Inlines.MIN16(1, sqrt(Inlines.MAX16(0, tf_max-30))/20); */
-            tf_estimate.Val = (Inlines.celt_sqrt(Inlines.MAX32(0, Inlines.SHL32(Inlines.MULT16_16(Inlines.QCONST16(0.0069f, 14), Inlines.MIN16(163, tf_max)), 14) - Inlines.QCONST32(0.139f, 28))));
+            tf_estimate.Val = (Inlines.celt_sqrt(Inlines.MAX32(0, Inlines.SHL32(Inlines.MULT16_16(((short)(0.5 + (0.0069f) * (((int)1) << (14))))/*Inlines.QCONST16(0.0069f, 14)*/, Inlines.MIN16(163, tf_max)), 14) - ((int)(0.5 + (0.139f) * (((int)1) << (28))))/*Inlines.QCONST32(0.139f, 28)*/)));
             /*printf("%d %f\n", tf_max, mask_metric);*/
 
 #if FUZZING
@@ -292,16 +292,16 @@ namespace Concentus.Celt
             {
                 spread_old[start] = oldE[0][start];
                 for (i = start + 1; i < end; i++)
-                    spread_old[i] = Inlines.MAX16((spread_old[i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)), oldE[0][i]);
+                    spread_old[i] = Inlines.MAX16((spread_old[i - 1] - ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/), oldE[0][i]);
             }
             else {
                 spread_old[start] = Inlines.MAX16(oldE[0][start], oldE[1][start]);
                 for (i = start + 1; i < end; i++)
-                    spread_old[i] = Inlines.MAX16((spread_old[i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)),
+                    spread_old[i] = Inlines.MAX16((spread_old[i - 1] - ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/),
                                           Inlines.MAX16(oldE[0][i], oldE[1][i]));
             }
             for (i = end - 2; i >= start; i--)
-                spread_old[i] = Inlines.MAX16(spread_old[i], (spread_old[i + 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)));
+                spread_old[i] = Inlines.MAX16(spread_old[i], (spread_old[i + 1] - ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/));
             /* Compute mean increase */
             c = 0; do
             {
@@ -315,7 +315,7 @@ namespace Concentus.Celt
             } while (++c < C);
             mean_diff = Inlines.DIV32(mean_diff, C * (end - 1 - Inlines.IMAX(2, start)));
             /*printf("%f %f %d\n", mean_diff, max_diff, count);*/
-            return (mean_diff > Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)) ? 1 : 0;
+            return (mean_diff > ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/) ? 1 : 0;
         }
 
         /** Apply window and compute the MDCT for all sub-frames and
@@ -506,7 +506,7 @@ namespace Concentus.Celt
             int bias;
 
 
-            bias = Inlines.MULT16_16_Q14(Inlines.QCONST16(.04f, 15), Inlines.MAX16((short)(0 - Inlines.QCONST16(.25f, 14)), (Inlines.QCONST16(.5f, 14) - tf_estimate)));
+            bias = Inlines.MULT16_16_Q14(((short)(0.5 + (.04f) * (((int)1) << (15))))/*Inlines.QCONST16(.04f, 15)*/, Inlines.MAX16((short)(0 - ((short)(0.5 + (.25f) * (((int)1) << (14))))/*Inlines.QCONST16(.25f, 14)*/), (((short)(0.5 + (.5f) * (((int)1) << (14))))/*Inlines.QCONST16(.5f, 14)*/ - tf_estimate)));
             /*printf("%f ", bias);*/
 
             metric = new int[len];
@@ -706,7 +706,7 @@ namespace Concentus.Celt
             int diff = 0;
             int c;
             int trim_index;
-            int trim = Inlines.QCONST16(5.0f, 8);
+            int trim = ((short)(0.5 + (5.0f) * (((int)1) << (8))))/*Inlines.QCONST16(5.0f, 8)*/;
             int logXC, logXC2;
             if (C == 2)
             {
@@ -720,8 +720,8 @@ namespace Concentus.Celt
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     sum = Inlines.ADD16(sum, Inlines.EXTRACT16(Inlines.SHR32(partial, 18)));
                 }
-                sum = Inlines.MULT16_16_Q15(Inlines.QCONST16(1.0f / 8, 15), sum);
-                sum = Inlines.MIN16(Inlines.QCONST16(1.0f, 10), Inlines.ABS32(sum));
+                sum = Inlines.MULT16_16_Q15(((short)(0.5 + (1.0f / 8) * (((int)1) << (15))))/*Inlines.QCONST16(1.0f / 8, 15)*/, sum);
+                sum = Inlines.MIN16(((short)(0.5 + (1.0f) * (((int)1) << (10))))/*Inlines.QCONST16(1.0f, 10)*/, Inlines.ABS32(sum));
                 minXC = sum;
                 for (i = 8; i < intensity; i++)
                 {
@@ -730,18 +730,18 @@ namespace Concentus.Celt
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     minXC = Inlines.MIN16(minXC, Inlines.ABS16(Inlines.EXTRACT16(Inlines.SHR32(partial, 18))));
                 }
-                minXC = Inlines.MIN16(Inlines.QCONST16(1.0f, 10), Inlines.ABS32(minXC));
+                minXC = Inlines.MIN16(((short)(0.5 + (1.0f) * (((int)1) << (10))))/*Inlines.QCONST16(1.0f, 10)*/, Inlines.ABS32(minXC));
                 /*printf ("%f\n", sum);*/
                 /* mid-side savings estimations based on the LF average*/
-                logXC = Inlines.celt_log2(Inlines.QCONST32(1.001f, 20) - Inlines.MULT16_16(sum, sum));
+                logXC = Inlines.celt_log2(((int)(0.5 + (1.001f) * (((int)1) << (20))))/*Inlines.QCONST32(1.001f, 20)*/ - Inlines.MULT16_16(sum, sum));
                 /* mid-side savings estimations based on min correlation */
-                logXC2 = Inlines.MAX16(Inlines.HALF16(logXC), Inlines.celt_log2(Inlines.QCONST32(1.001f, 20) - Inlines.MULT16_16(minXC, minXC)));
+                logXC2 = Inlines.MAX16(Inlines.HALF16(logXC), Inlines.celt_log2(((int)(0.5 + (1.001f) * (((int)1) << (20))))/*Inlines.QCONST32(1.001f, 20)*/ - Inlines.MULT16_16(minXC, minXC)));
                 /* Compensate for Q20 vs Q14 input and convert output to Q8 */
-                logXC = (Inlines.PSHR32(logXC - Inlines.QCONST16(6.0f, CeltConstants.DB_SHIFT), CeltConstants.DB_SHIFT - 8));
-                logXC2 = (Inlines.PSHR32(logXC2 - Inlines.QCONST16(6.0f, CeltConstants.DB_SHIFT), CeltConstants.DB_SHIFT - 8));
+                logXC = (Inlines.PSHR32(logXC - ((short)(0.5 + (6.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(6.0f, CeltConstants.DB_SHIFT)*/, CeltConstants.DB_SHIFT - 8));
+                logXC2 = (Inlines.PSHR32(logXC2 - ((short)(0.5 + (6.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(6.0f, CeltConstants.DB_SHIFT)*/, CeltConstants.DB_SHIFT - 8));
 
-                trim += Inlines.MAX16((0 - Inlines.QCONST16(4.0f, 8)), Inlines.MULT16_16_Q15(Inlines.QCONST16(.75f, 15), logXC));
-                stereo_saving.Val = Inlines.MIN16((stereo_saving.Val + Inlines.QCONST16(0.25f, 8)), (0 - Inlines.HALF16(logXC2)));
+                trim += Inlines.MAX16((0 - ((short)(0.5 + (4.0f) * (((int)1) << (8))))/*Inlines.QCONST16(4.0f, 8)*/), Inlines.MULT16_16_Q15(((short)(0.5 + (.75f) * (((int)1) << (15))))/*Inlines.QCONST16(.75f, 15)*/, logXC));
+                stereo_saving.Val = Inlines.MIN16((stereo_saving.Val + ((short)(0.5 + (0.25f) * (((int)1) << (8))))/*Inlines.QCONST16(0.25f, 8)*/), (0 - Inlines.HALF16(logXC2)));
             }
 
             /* Estimate spectral tilt */
@@ -754,13 +754,13 @@ namespace Concentus.Celt
             } while (++c < C);
             diff /= C * (end - 1);
             /*printf("%f\n", diff);*/
-            trim -= Inlines.MAX16(Inlines.NEG16(Inlines.QCONST16(2.0f, 8)), Inlines.MIN16(Inlines.QCONST16(2.0f, 8), (Inlines.SHR16((diff + Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)), CeltConstants.DB_SHIFT - 8) / 6)));
+            trim -= Inlines.MAX16(Inlines.NEG16(((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/), Inlines.MIN16(((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/, (Inlines.SHR16((diff + ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/), CeltConstants.DB_SHIFT - 8) / 6)));
             trim -= Inlines.SHR16(surround_trim, CeltConstants.DB_SHIFT - 8);
             trim = (trim - 2 * Inlines.SHR16(tf_estimate, 14 - 8));
             if (analysis.enabled && analysis.valid != 0)
             {
-                trim -= Inlines.MAX16(-Inlines.QCONST16(2.0f, 8), Inlines.MIN16(Inlines.QCONST16(2.0f, 8),
-                      (int)(Inlines.QCONST16(2.0f, 8) * (analysis.tonality_slope + .05f))));
+                trim -= Inlines.MAX16(-((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/, Inlines.MIN16(((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/,
+                      (int)(((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/ * (analysis.tonality_slope + .05f))));
             }
             trim_index = Inlines.PSHR32(trim, 8);
             trim_index = Inlines.IMAX(0, Inlines.IMIN(10, trim_index));
@@ -794,7 +794,7 @@ namespace Concentus.Celt
                     sumMS = Inlines.ADD32(sumMS, Inlines.ADD32(Inlines.ABS32(M), Inlines.ABS32(S)));
                 }
             }
-            sumMS = Inlines.MULT16_32_Q15(Inlines.QCONST16(0.707107f, 15), sumMS);
+            sumMS = Inlines.MULT16_32_Q15(((short)(0.5 + (0.707107f) * (((int)1) << (15))))/*Inlines.QCONST16(0.707107f, 15)*/, sumMS);
             thetas = 13;
             /* We don't need thetas for lower bands with LM<=1 */
             if (LM <= 1)
@@ -884,14 +884,14 @@ namespace Concentus.Celt
 
             Arrays.MemSet<int>(offsets, 0, nbEBands);
             /* Dynamic allocation code */
-            maxDepth = (0 - Inlines.QCONST16(31.9f, CeltConstants.DB_SHIFT));
+            maxDepth = (0 - ((short)(0.5 + (31.9f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(31.9f, CeltConstants.DB_SHIFT)*/);
             for (i = 0; i < end; i++)
             {
                 /* Noise floor must take into account eMeans, the depth, the width of the bands
                    and the preemphasis filter (approx. square of bark band ID) */
-                noise_floor[i] = (Inlines.MULT16_16(Inlines.QCONST16(0.0625f, CeltConstants.DB_SHIFT), logN[i])
-                      + Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT) + Inlines.SHL16((9 - lsb_depth), CeltConstants.DB_SHIFT) - Inlines.SHL16(Tables.eMeans[i], 6)
-                      + Inlines.MULT16_16(Inlines.QCONST16(0.0062f, CeltConstants.DB_SHIFT), (i + 5) * (i + 5)));
+                noise_floor[i] = (Inlines.MULT16_16(((short)(0.5 + (0.0625f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0625f, CeltConstants.DB_SHIFT)*/, logN[i])
+                      + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/ + Inlines.SHL16((9 - lsb_depth), CeltConstants.DB_SHIFT) - Inlines.SHL16(Tables.eMeans[i], 6)
+                      + Inlines.MULT16_16(((short)(0.5 + (0.0062f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0062f, CeltConstants.DB_SHIFT)*/, (i + 5) * (i + 5)));
             }
             c = 0; do
             {
@@ -913,17 +913,17 @@ namespace Concentus.Celt
                         /* The last band to be at least 3 dB higher than the previous one
                            is the last we'll consider. Otherwise, we run into problems on
                            bandlimited signals. */
-                        if (bandLogE2[c][i] > bandLogE2[c][i - 1] + Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT))
+                        if (bandLogE2[c][i] > bandLogE2[c][i - 1] + ((short)(0.5 + (0.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT)*/)
                             last = i;
-                        f[i] = Inlines.MIN16((f[i - 1] + Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)), bandLogE2[c][i]);
+                        f[i] = Inlines.MIN16((f[i - 1] + ((short)(0.5 + (1.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)*/), bandLogE2[c][i]);
                     }
                     for (i = last - 1; i >= 0; i--)
-                        f[i] = Inlines.MIN16(f[i], Inlines.MIN16((f[i + 1] + Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)), bandLogE2[c][i]));
+                        f[i] = Inlines.MIN16(f[i], Inlines.MIN16((f[i + 1] + ((short)(0.5 + (2.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)*/), bandLogE2[c][i]));
 
                     /* Combine with a median filter to avoid dynalloc triggering unnecessarily.
                        The "offset" value controls how conservative we are -- a higher offset
                        reduces the impact of the median filter and makes dynalloc use more bits. */
-                    offset = Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT);
+                    offset = ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/;
                     for (i = 2; i < end - 2; i++)
                         f[i] = Inlines.MAX16(f[i], median_of_5(bandLogE2[c].GetPointer(i - 2)) - offset);
                     tmp = median_of_3(bandLogE2[c].GetPointer()) - offset;
@@ -941,8 +941,8 @@ namespace Concentus.Celt
                     for (i = start; i < end; i++)
                     {
                         /* Consider 24 dB "cross-talk" */
-                        follower[1][i] = Inlines.MAX16(follower[1][i], follower[0][i] - Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT));
-                        follower[0][i] = Inlines.MAX16(follower[0][i], follower[1][i] - Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT));
+                        follower[1][i] = Inlines.MAX16(follower[1][i], follower[0][i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
+                        follower[0][i] = Inlines.MAX16(follower[0][i], follower[1][i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
                         follower[0][i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[0][i] - follower[0][i]) + Inlines.MAX16(0, bandLogE[1][i] - follower[1][i]));
                     }
                 }
@@ -970,7 +970,7 @@ namespace Concentus.Celt
                         follower[0][i] *= 2;
                     if (i >= 12)
                         follower[0][i] = Inlines.HALF16(follower[0][i]);
-                    follower[0][i] = Inlines.MIN16(follower[0][i], Inlines.QCONST16(4, CeltConstants.DB_SHIFT));
+                    follower[0][i] = Inlines.MIN16(follower[0][i], ((short)(0.5 + (4) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4, CeltConstants.DB_SHIFT)*/);
 
                     width = C * (eBands[i + 1] - eBands[i]) << LM;
                     if (width < 6)
@@ -1261,9 +1261,9 @@ namespace Concentus.Celt
         }
 
         private static readonly short[][] gains = {
-                new short[]{ Inlines.QCONST16(0.3066406250f, 15), Inlines.QCONST16(0.2170410156f, 15), Inlines.QCONST16(0.1296386719f, 15)},
-                new short[]{ Inlines.QCONST16(0.4638671875f, 15), Inlines.QCONST16(0.2680664062f, 15), Inlines.QCONST16(0.0f, 15)},
-                new short[]{ Inlines.QCONST16(0.7998046875f, 15), Inlines.QCONST16(0.1000976562f, 15), Inlines.QCONST16(0.0f, 15)}
+                new short[]{ ((short)(0.5 + (0.3066406250f) * (((int)1) << (15))))/*Inlines.QCONST16(0.3066406250f, 15)*/, ((short)(0.5 + (0.2170410156f) * (((int)1) << (15))))/*Inlines.QCONST16(0.2170410156f, 15)*/, ((short)(0.5 + (0.1296386719f) * (((int)1) << (15))))/*Inlines.QCONST16(0.1296386719f, 15)*/},
+                new short[]{ ((short)(0.5 + (0.4638671875f) * (((int)1) << (15))))/*Inlines.QCONST16(0.4638671875f, 15)*/, ((short)(0.5 + (0.2680664062f) * (((int)1) << (15))))/*Inlines.QCONST16(0.2680664062f, 15)*/, ((short)(0.5 + (0.0f) * (((int)1) << (15))))/*Inlines.QCONST16(0.0f, 15)*/},
+                new short[]{ ((short)(0.5 + (0.7998046875f) * (((int)1) << (15))))/*Inlines.QCONST16(0.7998046875f, 15)*/, ((short)(0.5 + (0.1000976562f) * (((int)1) << (15))))/*Inlines.QCONST16(0.1000976562f, 15)*/, ((short)(0.5 + (0.0f) * (((int)1) << (15))))/*Inlines.QCONST16(0.0f, 15)*/}
             };
 
         internal static void comb_filter(Pointer<int> y, Pointer<int> x, int T0, int T1, int N,

@@ -146,7 +146,7 @@ namespace Concentus.Celt
             int[] lpc = new int[4];
             int[] mem = new int[] { 0, 0, 0, 0, 0 };
             int[] lpc2 = new int[5];
-            int c1 = Inlines.QCONST16(0.8f, 15);
+            int c1 = ((short)(0.5 + (0.8f) * (((int)1) << (15))))/*Inlines.QCONST16(0.8f, 15)*/;
 
             int shift;
             int maxabs = Inlines.celt_maxabs32(x[0], 0, len);
@@ -192,11 +192,11 @@ namespace Concentus.Celt
             CeltLPC.celt_lpc(lpc, ac, 4);
             for (i = 0; i < 4; i++)
             {
-                tmp = Inlines.MULT16_16_Q15(Inlines.QCONST16(.9f, 15), tmp);
+                tmp = Inlines.MULT16_16_Q15(((short)(0.5 + (.9f) * (((int)1) << (15))))/*Inlines.QCONST16(.9f, 15)*/, tmp);
                 lpc[i] = Inlines.MULT16_16_Q15(lpc[i], tmp);
             }
             /* Add a zero */
-            lpc2[0] = (lpc[0] + Inlines.QCONST16(0.8f, CeltConstants.SIG_SHIFT));
+            lpc2[0] = (lpc[0] + ((short)(0.5 + (0.8f) * (((int)1) << (CeltConstants.SIG_SHIFT))))/*Inlines.QCONST16(0.8f, CeltConstants.SIG_SHIFT)*/);
             lpc2[1] = (lpc[1] + Inlines.MULT16_16_Q15(c1, lpc[0]));
             lpc2[2] = (lpc[2] + Inlines.MULT16_16_Q15(c1, lpc[1]));
             lpc2[3] = (lpc[3] + Inlines.MULT16_16_Q15(c1, lpc[2]));
@@ -278,11 +278,11 @@ namespace Concentus.Celt
                 a = xcorr[best_pitch[0] - 1];
                 b = xcorr[best_pitch[0]];
                 c = xcorr[best_pitch[0] + 1];
-                if ((c - a) > Inlines.MULT16_32_Q15(Inlines.QCONST16(.7f, 15), b - a))
+                if ((c - a) > Inlines.MULT16_32_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, b - a))
                 {
                     offset = 1;
                 }
-                else if ((a - c) > Inlines.MULT16_32_Q15(Inlines.QCONST16(.7f, 15), b - c))
+                else if ((a - c) > Inlines.MULT16_32_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, b - c))
                 {
                     offset = -1;
                 }
@@ -399,17 +399,17 @@ namespace Concentus.Celt
                 {
                     cont = 0;
                 }
-                thresh = Inlines.MAX16(Inlines.QCONST16(.3f, 15), (Inlines.MULT16_16_Q15(Inlines.QCONST16(.7f, 15), g0) - cont));
+                thresh = Inlines.MAX16(((short)(0.5 + (.3f) * (((int)1) << (15))))/*Inlines.QCONST16(.3f, 15)*/, (Inlines.MULT16_16_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, g0) - cont));
 
                 /* Bias against very high pitch (very short period) to avoid false-positives
                    due to short-term correlation */
                 if (T1 < 3 * minperiod)
                 {
-                    thresh = Inlines.MAX16(Inlines.QCONST16(.4f, 15), (Inlines.MULT16_16_Q15(Inlines.QCONST16(.85f, 15), g0) - cont));
+                    thresh = Inlines.MAX16(((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/, (Inlines.MULT16_16_Q15(((short)(0.5 + (.85f) * (((int)1) << (15))))/*Inlines.QCONST16(.85f, 15)*/, g0) - cont));
                 }
                 else if (T1 < 2 * minperiod)
                 {
-                    thresh = Inlines.MAX16(Inlines.QCONST16(.5f, 15), (Inlines.MULT16_16_Q15(Inlines.QCONST16(.9f, 15), g0) - cont));
+                    thresh = Inlines.MAX16(((short)(0.5 + (.5f) * (((int)1) << (15))))/*Inlines.QCONST16(.5f, 15)*/, (Inlines.MULT16_16_Q15(((short)(0.5 + (.9f) * (((int)1) << (15))))/*Inlines.QCONST16(.9f, 15)*/, g0) - cont));
                 }
                 if (g1 > thresh)
                 {
@@ -435,11 +435,11 @@ namespace Concentus.Celt
                 xcorr[k] = Kernels.celt_inner_prod(x, x_ptr, x, x_ptr - (T + k - 1), N);
             }
 
-            if ((xcorr[2] - xcorr[0]) > Inlines.MULT16_32_Q15(Inlines.QCONST16(.7f, 15), xcorr[1] - xcorr[0]))
+            if ((xcorr[2] - xcorr[0]) > Inlines.MULT16_32_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, xcorr[1] - xcorr[0]))
             {
                 offset = 1;
             }
-            else if ((xcorr[0] - xcorr[2]) > Inlines.MULT16_32_Q15(Inlines.QCONST16(.7f, 15), xcorr[1] - xcorr[2]))
+            else if ((xcorr[0] - xcorr[2]) > Inlines.MULT16_32_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, xcorr[1] - xcorr[2]))
             {
                 offset = -1;
             }

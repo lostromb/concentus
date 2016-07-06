@@ -126,14 +126,14 @@ namespace Concentus.Common
             return ADD32(ADD32(SHL(MULT16_16(SHR((a), 16), SHR((b), 16)), 1), SHR(MULT16_16SU(SHR((a), 16), ((b) & 0x0000ffff)), 15)), SHR(MULT16_16SU(SHR((b), 16), ((a) & 0x0000ffff)), 15));
         }
 
-        //        /** Compile-time conversion of float constant to 16-bit value */
+        // "Compile-time" (not really) conversion of float constant to 16-bit value
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short QCONST16(float x, int bits)
         {
             return ((short)(0.5 + (x) * (((int)1) << (bits))));
         }
 
-        //        /** Compile-time conversion of float constant to 32-bit value */
+        // "Compile-time" (not really) conversion of float constant to 32-bit value
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int QCONST32(float x, int bits)
         {
@@ -1947,11 +1947,12 @@ namespace Concentus.Common
 
         /// <summary>
         /// Macro to convert floating-point constants to fixed-point by applying a scalar factor
+        /// Because of limitations of the C# JIT, this macro is actually evaluated at runtime and therefore should not be used if you want to maximize performance
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SILK_CONST(float number, int scale)
         {
-            return ((int)((number) * ((long)1 << (scale)) + 0.5)); //fixme: This actually runs on every invocation, it's not a static macro like in C++
+            return ((int)((number) * ((long)1 << (scale)) + 0.5));
         }
 
         /* silk_min() versions with typecast in the function call */

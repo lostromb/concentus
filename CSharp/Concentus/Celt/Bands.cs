@@ -272,7 +272,7 @@ namespace Concentus.Celt
                 depth = Inlines.celt_udiv(1 + pulses[i], (m.eBands[i + 1] - m.eBands[i])) >> LM;
 
                 thresh32 = Inlines.SHR32(Inlines.celt_exp2((0 - Inlines.SHL16((depth), 10 - EntropyCoder.BITRES))), 1);
-                thresh = (Inlines.MULT16_32_Q15(Inlines.QCONST16(0.5f, 15), Inlines.MIN32(32767, thresh32)));
+                thresh = (Inlines.MULT16_32_Q15(((short)(0.5 + (0.5f) * (((int)1) << (15))))/*Inlines.QCONST16(0.5f, 15)*/, Inlines.MIN32(32767, thresh32)));
                 {
                     int t;
                     t = N0 << LM;
@@ -365,8 +365,8 @@ namespace Concentus.Celt
             for (j = 0; j < N; j++)
             {
                 int r, l;
-                l = Inlines.MULT16_16(Inlines.QCONST16(.70710678f, 15), X[j]);
-                r = Inlines.MULT16_16(Inlines.QCONST16(.70710678f, 15), Y[j]);
+                l = Inlines.MULT16_16(((short)(0.5 + (.70710678f) * (((int)1) << (15))))/*Inlines.QCONST16(.70710678f, 15)*/, X[j]);
+                r = Inlines.MULT16_16(((short)(0.5 + (.70710678f) * (((int)1) << (15))))/*Inlines.QCONST16(.70710678f, 15)*/, Y[j]);
                 X[j] = Inlines.EXTRACT16(Inlines.SHR32(Inlines.ADD32(l, r), 15));
                 Y[j] = Inlines.EXTRACT16(Inlines.SHR32(Inlines.SUB32(r, l), 15));
             }
@@ -390,7 +390,7 @@ namespace Concentus.Celt
             mid2 = Inlines.SHR16(mid, 1); // opus bug: was SHR32
             El = Inlines.MULT16_16(mid2, mid2) + side.Val - (2 * xp.Val);
             Er = Inlines.MULT16_16(mid2, mid2) + side.Val + (2 * xp.Val);
-            if (Er < Inlines.QCONST32(6e-4f, 28) || El < Inlines.QCONST32(6e-4f, 28))
+            if (Er < ((int)(0.5 + (6e-4f) * (((int)1) << (28))))/*Inlines.QCONST32(6e-4f, 28)*/ || El < ((int)(0.5 + (6e-4f) * (((int)1) << (28))))/*Inlines.QCONST32(6e-4f, 28)*/)
             {
                 X.MemCopyTo(Y, N);
                 return;
@@ -455,11 +455,11 @@ namespace Concentus.Celt
                         int x2N; /* Q13 */
 
                         x2N = Inlines.MULT16_16(Inlines.MULT16_16_Q15(x[j], x[j]), N);
-                        if (x2N < Inlines.QCONST16(0.25f, 13))
+                        if (x2N < ((short)(0.5 + (0.25f) * (((int)1) << (13))))/*Inlines.QCONST16(0.25f, 13)*/)
                             tcount[0]++;
-                        if (x2N < Inlines.QCONST16(0.0625f, 13))
+                        if (x2N < ((short)(0.5 + (0.0625f) * (((int)1) << (13))))/*Inlines.QCONST16(0.0625f, 13)*/)
                             tcount[1]++;
-                        if (x2N < Inlines.QCONST16(0.015625f, 13))
+                        if (x2N < ((short)(0.5 + (0.015625f) * (((int)1) << (13))))/*Inlines.QCONST16(0.015625f, 13)*/)
                             tcount[2]++;
                     }
 
@@ -613,8 +613,8 @@ namespace Concentus.Celt
                 for (j = 0; j < N0; j++)
                 {
                     int tmp1, tmp2;
-                    tmp1 = Inlines.MULT16_16(Inlines.QCONST16(.70710678f, 15), X[stride * 2 * j + i]);
-                    tmp2 = Inlines.MULT16_16(Inlines.QCONST16(.70710678f, 15), X[stride * (2 * j + 1) + i]);
+                    tmp1 = Inlines.MULT16_16(((short)(0.5 + (.70710678f) * (((int)1) << (15))))/*Inlines.QCONST16(.70710678f, 15)*/, X[stride * 2 * j + i]);
+                    tmp2 = Inlines.MULT16_16(((short)(0.5 + (.70710678f) * (((int)1) << (15))))/*Inlines.QCONST16(.70710678f, 15)*/, X[stride * (2 * j + 1) + i]);
                     X[stride * 2 * j + i] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.ADD32(tmp1, tmp2), 15));
                     X[stride * (2 * j + 1) + i] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.SUB32(tmp1, tmp2), 15));
                 }
@@ -628,8 +628,8 @@ namespace Concentus.Celt
                 for (j = 0; j < N0; j++)
                 {
                     int tmp1, tmp2;
-                    tmp1 = Inlines.MULT16_16(Inlines.QCONST16(.70710678f, 15), X[stride * 2 * j + i]);
-                    tmp2 = Inlines.MULT16_16(Inlines.QCONST16(.70710678f, 15), X[stride * (2 * j + 1) + i]);
+                    tmp1 = Inlines.MULT16_16(((short)(0.5 + (.70710678f) * (((int)1) << (15))))/*Inlines.QCONST16(.70710678f, 15)*/, X[stride * 2 * j + i]);
+                    tmp2 = Inlines.MULT16_16(((short)(0.5 + (.70710678f) * (((int)1) << (15))))/*Inlines.QCONST16(.70710678f, 15)*/, X[stride * (2 * j + 1) + i]);
                     X[stride * 2 * j + i] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.ADD32(tmp1, tmp2), 15));
                     X[stride * (2 * j + 1) + i] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.SUB32(tmp1, tmp2), 15));
                 }
@@ -1132,7 +1132,7 @@ namespace Concentus.Celt
                                     int tmp;
                                     ctx.seed = celt_lcg_rand(ctx.seed);
                                     /* About 48 dB below the "normal" folding level */
-                                    tmp = Inlines.QCONST16(1.0f / 256, 10);
+                                    tmp = ((short)(0.5 + (1.0f / 256) * (((int)1) << (10))))/*Inlines.QCONST16(1.0f / 256, 10)*/;
                                     tmp = (((ctx.seed) & 0x8000) != 0 ? tmp : 0 - tmp);
                                     X[j] = (lowband[j] + tmp);
                                 }

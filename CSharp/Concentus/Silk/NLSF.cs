@@ -168,11 +168,11 @@ namespace Concentus.Silk
                 out_Q10 = Inlines.silk_LSHIFT16((short)indices[i], 10);
                 if (out_Q10 > 0)
                 {
-                    out_Q10 = Inlines.silk_SUB16(out_Q10, Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out_Q10 = Inlines.silk_SUB16(out_Q10, Inlines.CHOP16(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
                 }
                 else if (out_Q10 < 0)
                 {
-                    out_Q10 = Inlines.silk_ADD16(out_Q10, Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out_Q10 = Inlines.silk_ADD16(out_Q10, Inlines.CHOP16(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
                 }
                 out_Q10 = Inlines.CHOP16(Inlines.silk_SMLAWB(pred_Q10, (int)out_Q10, quant_step_size_Q16));
                 x_Q10[i] = out_Q10;
@@ -419,21 +419,21 @@ namespace Concentus.Silk
 
                 if (i > 0)
                 {
-                    out0_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
-                    out1_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out0_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
+                    out1_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
                 }
                 else if (i == 0)
                 {
-                    out1_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out1_Q10 = Inlines.silk_SUB16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
                 }
                 else if (i == -1)
                 {
-                    out0_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out0_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
                 }
                 else
                 {
-                    out0_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
-                    out1_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)));
+                    out0_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out0_Q10), Inlines.CHOP16(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
+                    out1_Q10 = Inlines.silk_ADD16(Inlines.CHOP16(out1_Q10), Inlines.CHOP16(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
                 }
 
                 out0_Q10_table[i + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT] = Inlines.silk_SMULWB((int)out0_Q10, quant_step_size_Q16);
@@ -873,7 +873,7 @@ namespace Concentus.Silk
                 {
                     /* Reduce magnitude of prediction coefficients */
                     maxabs = Inlines.silk_min(maxabs, 163838);  /* ( silk_int32_MAX >> 14 ) + silk_int16_MAX = 163838 */
-                    sc_Q16 = Inlines.SILK_CONST(0.999f, 16) - Inlines.silk_DIV32(Inlines.silk_LSHIFT(maxabs - short.MaxValue, 14),
+                    sc_Q16 = ((int)((0.999f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.999f, 16)*/ - Inlines.silk_DIV32(Inlines.silk_LSHIFT(maxabs - short.MaxValue, 14),
                                                 Inlines.silk_RSHIFT32(Inlines.silk_MUL(maxabs, idx + 1), 2));
                     Filters.silk_bwexpander_32(a32_QA1, d, sc_Q16);
                 }
@@ -902,7 +902,7 @@ namespace Concentus.Silk
 
             for (i = 0; i < SilkConstants.MAX_LPC_STABILIZE_ITERATIONS; i++)
             {
-                if (Filters.silk_LPC_inverse_pred_gain(a_Q12.GetPointer(), d) < Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN, 30))
+                if (Filters.silk_LPC_inverse_pred_gain(a_Q12.GetPointer(), d) < ((int)((1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN) * ((long)1 << (30)) + 0.5))/*Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN, 30)*/)
                 {
                     /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
                     /* on the unscaled coefficients, convert to Q12 and measure again                   */
@@ -1196,14 +1196,14 @@ namespace Concentus.Silk
             short[] pNLSFW0_temp_QW = new short[SilkConstants.MAX_LPC_ORDER];
 
             Inlines.OpusAssert(psEncC.speech_activity_Q8 >= 0);
-            Inlines.OpusAssert(psEncC.speech_activity_Q8 <= Inlines.SILK_CONST(1.0f, 8));
+            Inlines.OpusAssert(psEncC.speech_activity_Q8 <= ((int)((1.0f) * ((long)1 << (8)) + 0.5))/*Inlines.SILK_CONST(1.0f, 8)*/);
             Inlines.OpusAssert(psEncC.useInterpolatedNLSFs == 1 || psEncC.indices.NLSFInterpCoef_Q2 == (1 << 2));
 
             /***********************/
             /* Calculate mu values */
             /***********************/
             /* NLSF_mu  = 0.003 - 0.0015 * psEnc.speech_activity; */
-            NLSF_mu_Q20 = Inlines.silk_SMLAWB(Inlines.SILK_CONST(0.003f, 20), Inlines.SILK_CONST(-0.001f, 28), psEncC.speech_activity_Q8);
+            NLSF_mu_Q20 = Inlines.silk_SMLAWB(((int)((0.003f) * ((long)1 << (20)) + 0.5))/*Inlines.SILK_CONST(0.003f, 20)*/, ((int)((-0.001f) * ((long)1 << (28)) + 0.5))/*Inlines.SILK_CONST(-0.001f, 28)*/, psEncC.speech_activity_Q8);
             if (psEncC.nb_subfr == 2)
             {
                 /* Multiply by 1.5 for 10 ms packets */
@@ -1211,7 +1211,7 @@ namespace Concentus.Silk
             }
 
             Inlines.OpusAssert(NLSF_mu_Q20 > 0);
-            Inlines.OpusAssert(NLSF_mu_Q20 <= Inlines.SILK_CONST(0.005f, 20));
+            Inlines.OpusAssert(NLSF_mu_Q20 <= ((int)((0.005f) * ((long)1 << (20)) + 0.5))/*Inlines.SILK_CONST(0.005f, 20)*/);
 
             /* Calculate NLSF weights */
             // fixme: potential errors here//////////////////////////////////////////////

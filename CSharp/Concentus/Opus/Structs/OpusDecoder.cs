@@ -586,7 +586,7 @@ namespace Concentus.Structs
             if (this.decode_gain != 0)
             {
                 int gain;
-                gain = Inlines.celt_exp2(Inlines.MULT16_16_P15(Inlines.QCONST16(6.48814081e-4f, 25), this.decode_gain));
+                gain = Inlines.celt_exp2(Inlines.MULT16_16_P15(((short)(0.5 + (6.48814081e-4f) * (((int)1) << (25))))/*Inlines.QCONST16(6.48814081e-4f, 25)*/, this.decode_gain));
                 for (i = 0; i < frame_size * this.channels; i++)
                 {
                     int x;

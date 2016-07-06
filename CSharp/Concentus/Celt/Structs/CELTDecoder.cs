@@ -144,7 +144,7 @@ namespace Concentus.Celt.Structs
             this.backgroundLogE = new int[2 * this.mode.nbEBands];
 
             for (i = 0; i < 2 * this.mode.nbEBands; i++)
-                this.oldLogE[i] = this.oldLogE2[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                this.oldLogE[i] = this.oldLogE2[i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
         }
 
         internal int celt_decoder_init(int sampling_rate, int channels)
@@ -231,7 +231,7 @@ namespace Concentus.Celt.Structs
                 X = Arrays.InitTwoDimensionalArray<int>(C, N);   /**< Interleaved normalised MDCTs */
 
                 /* Energy decay */
-                decay = loss_count == 0 ? Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT) : Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT);
+                decay = loss_count == 0 ? ((short)(0.5 + (1.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)*/ : ((short)(0.5 + (0.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT)*/;
                 c = 0; do
                 {
                     for (i = start; i < end; i++)
@@ -281,7 +281,7 @@ namespace Concentus.Celt.Structs
                 }
                 else {
                     pitch_index = this.last_pitch_index;
-                    fade = Inlines.QCONST16(.8f, 15);
+                    fade = ((short)(0.5 + (.8f) * (((int)1) << (15))))/*Inlines.QCONST16(.8f, 15)*/;
                 }
 
                 etmp = new int[overlap];
@@ -595,7 +595,7 @@ namespace Concentus.Celt.Structs
                     qg = (int)dec.dec_bits(3);
                     if (dec.tell() + 2 <= total_bits)
                         postfilter_tapset = dec.dec_icdf(Tables.tapset_icdf, 2);
-                    postfilter_gain = Inlines.QCONST16(.09375f, 15) * (qg + 1);
+                    postfilter_gain = ((short)(0.5 + (.09375f) * (((int)1) << (15))))/*Inlines.QCONST16(.09375f, 15)*/ * (qg + 1);
                 }
                 tell = dec.tell();
             }
@@ -719,7 +719,7 @@ namespace Concentus.Celt.Structs
             if (silence != 0)
             {
                 for (i = 0; i < C * nbEBands; i++)
-                    oldBandE[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    oldBandE[i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
             }
 
             CeltCommon.celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd,
@@ -768,9 +768,9 @@ namespace Concentus.Celt.Structs
                    up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB
                    increase for each update.*/
                 if (this.loss_count < 10)
-                    max_background_increase = M * Inlines.QCONST16(0.001f, CeltConstants.DB_SHIFT);
+                    max_background_increase = M * ((short)(0.5 + (0.001f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.001f, CeltConstants.DB_SHIFT)*/;
                 else
-                    max_background_increase = Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT);
+                    max_background_increase = ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/;
                 for (i = 0; i < 2 * nbEBands; i++)
                     backgroundLogE[i] = Inlines.MIN16(backgroundLogE[i] + max_background_increase, oldBandE[i]);
             }
@@ -783,12 +783,12 @@ namespace Concentus.Celt.Structs
                 for (i = 0; i < start; i++)
                 {
                     oldBandE[c * nbEBands + i] = 0;
-                    oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
                 }
                 for (i = end; i < nbEBands; i++)
                 {
                     oldBandE[c * nbEBands + i] = 0;
-                    oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
                 }
             } while (++c < 2);
             this.rng = dec.rng;

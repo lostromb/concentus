@@ -107,11 +107,11 @@ namespace Concentus.Celt
                     int oldE;
                     int decay_bound;
                     x = eBands[c][i];
-                    oldE = Inlines.MAX16(-Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT), oldEBands[c][i]);
+                    oldE = Inlines.MAX16(-((short)(0.5 + (9.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT)*/, oldEBands[c][i]);
                     f = Inlines.SHL32(Inlines.EXTEND32(x), 7) - Inlines.PSHR32(Inlines.MULT16_16(coef, oldE), 8) - prev[c];
                     /* Rounding to nearest integer here is really important! */
-                    qi = (f + Inlines.QCONST32(.5f, CeltConstants.DB_SHIFT + 7)) >> (CeltConstants.DB_SHIFT + 7);
-                    decay_bound = Inlines.EXTRACT16(Inlines.MAX32(-Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT),
+                    qi = (f + ((int)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(.5f, CeltConstants.DB_SHIFT + 7)*/) >> (CeltConstants.DB_SHIFT + 7);
+                    decay_bound = Inlines.EXTRACT16(Inlines.MAX32(-((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/,
                           Inlines.SUB32((int)oldEBands[c][i], max_decay)));
                     /* Prevent the energy from going down too quickly (e.g. for bands
                        that have just one bin) */
@@ -160,7 +160,7 @@ namespace Concentus.Celt
                     q = (int)Inlines.SHL32(qi, CeltConstants.DB_SHIFT); // opus bug: useless extend32
 
                     tmp = Inlines.PSHR32(Inlines.MULT16_16(coef, oldE), 8) + prev[c] + Inlines.SHL32(q, 7);
-                    tmp = Inlines.MAX32(-Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7), tmp);
+                    tmp = Inlines.MAX32(-((int)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7)*/, tmp);
                     oldEBands[c][i] = (Inlines.PSHR32(tmp, 7));
                     prev[c] = prev[c] + Inlines.SHL32(q, 7) - Inlines.MULT16_16(beta, Inlines.PSHR32(q, 8));
                 } while (++c < C);
@@ -192,14 +192,14 @@ namespace Concentus.Celt
             if (tell + 3 > budget)
                 two_pass = intra = 0;
 
-            max_decay = Inlines.QCONST16(16.0f, CeltConstants.DB_SHIFT);
+            max_decay = ((short)(0.5 + (16.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(16.0f, CeltConstants.DB_SHIFT)*/;
             if (end - start > 10)
             {
                 max_decay = (Inlines.MIN32(max_decay, Inlines.SHL32(nbAvailableBytes, CeltConstants.DB_SHIFT - 3))); // opus bug: useless extend32
             }
             if (lfe != 0)
             {
-                max_decay = Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT);
+                max_decay = ((short)(0.5 + (3.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/;
             }
             enc_start_state.Assign(enc);
 
@@ -303,7 +303,7 @@ namespace Concentus.Celt
                     int q2;
                     int offset;
                     /* Has to be without rounding */
-                    q2 = (error[c][i] + Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)) >> (CeltConstants.DB_SHIFT - fine_quant[i]);
+                    q2 = (error[c][i] + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/) >> (CeltConstants.DB_SHIFT - fine_quant[i]);
                     if (q2 > frac - 1)
                         q2 = frac - 1;
                     if (q2 < 0)
@@ -311,9 +311,9 @@ namespace Concentus.Celt
                     enc.enc_bits((uint)q2, (uint)fine_quant[i]);
                     offset = Inlines.SUB16(
                         (Inlines.SHR32(
-                            Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT),
+                            Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/,
                             fine_quant[i])),
-                        Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT));
+                        ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
                     oldEBands[c][i] += offset;
                     error[c][i] -= offset;
                 } while (++c < C);
@@ -341,7 +341,7 @@ namespace Concentus.Celt
                         int offset;
                         q2 = error[c][i] < 0 ? 0 : 1;
                         enc.enc_bits((uint)q2, 1);
-                        offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)), fine_quant[i] + 1);
+                        offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
                         oldEBands[c][i] += offset;
                         bits_left--;
                     } while (++c < C);
@@ -407,9 +407,9 @@ namespace Concentus.Celt
                     }
                     q = (int)Inlines.SHL32(qi, CeltConstants.DB_SHIFT); // opus bug: useless extend32
 
-                    oldEBands[i + c * m.nbEBands] = Inlines.MAX16((0 - Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT)), oldEBands[i + c * m.nbEBands]);
+                    oldEBands[i + c * m.nbEBands] = Inlines.MAX16((0 - ((short)(0.5 + (9.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT)*/), oldEBands[i + c * m.nbEBands]);
                     tmp = Inlines.PSHR32(Inlines.MULT16_16(coef, oldEBands[i + c * m.nbEBands]), 8) + prev[c] + Inlines.SHL32(q, 7);
-                    tmp = Inlines.MAX32(-Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7), tmp);
+                    tmp = Inlines.MAX32(-((int)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7)*/, tmp);
                     oldEBands[i + c * m.nbEBands] = (Inlines.PSHR32(tmp, 7));
                     prev[c] = prev[c] + Inlines.SHL32(q, 7) - Inlines.MULT16_16(beta, Inlines.PSHR32(q, 8));
                 } while (++c < C);
@@ -432,8 +432,8 @@ namespace Concentus.Celt
                     q2 = (int)dec.dec_bits((uint)fine_quant[i]);
                     offset = Inlines.SUB16((Inlines.SHR32(
                         Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + 
-                        Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT), fine_quant[i])),
-                        Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)); // opus bug: unnecessary extend32
+                        ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/, fine_quant[i])),
+                        ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/); // opus bug: unnecessary extend32
                     oldEBands[i + c * m.nbEBands] += offset;
                 } while (++c < C);
             }
@@ -456,7 +456,7 @@ namespace Concentus.Celt
                         int q2;
                         int offset;
                         q2 = (int)dec.dec_bits(1);
-                        offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)), fine_quant[i] + 1);
+                        offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
                         oldEBands[i + c * m.nbEBands] += offset;
                         bits_left--;
                     } while (++c < C);
@@ -488,7 +488,7 @@ namespace Concentus.Celt
                 }
                 for (i = effEnd; i < end; i++)
                 {
-                    bandLogE[c][i] = (0 - Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT));
+                    bandLogE[c][i] = (0 - ((short)(0.5 + (14.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT)*/);
                 }
             } while (++c < C);
         }
@@ -517,7 +517,7 @@ namespace Concentus.Celt
                 }
                 for (i = effEnd; i < end; i++)
                 {
-                    bandLogE[c * m.nbEBands + i] = (0 - Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT));
+                    bandLogE[c * m.nbEBands + i] = (0 - ((short)(0.5 + (14.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT)*/);
                 }
             } while (++c < C);
         }

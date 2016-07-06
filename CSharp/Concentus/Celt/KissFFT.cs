@@ -74,7 +74,7 @@ namespace Concentus.Celt
             int i;
             {
                 short tw;
-                tw = Inlines.QCONST16(0.7071067812f, 15);
+                tw = ((short)(0.5 + (0.7071067812f) * (((int)1) << (15))))/*Inlines.QCONST16(0.7071067812f, 15)*/;
                 /* We know that m==4 here because the radix-2 is just after a radix-4 */
                 Inlines.OpusAssert(m == 4);
                 for (i = 0; i < N; i++)

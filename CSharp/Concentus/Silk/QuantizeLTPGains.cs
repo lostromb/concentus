@@ -72,7 +72,7 @@ namespace Concentus.Silk
             {
                 /* Safety margin for pitch gain control, to take into account factors
                    such as state rescaling/rewhitening. */
-                int gain_safety = Inlines.SILK_CONST(0.4f, 7);
+                int gain_safety = ((int)((0.4f) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(0.4f, 7)*/;
 
                 cl_ptr_Q5 = Tables.silk_LTP_gain_BITS_Q5_ptrs[k].GetPointer();
                 cbk_ptr_Q7 = Tables.silk_LTP_vq_ptrs_Q7[k];
@@ -87,8 +87,8 @@ namespace Concentus.Silk
                 sum_log_gain_tmp_Q7 = sum_log_gain_Q7.Val;
                 for (j = 0; j < nb_subfr; j++)
                 {
-                    max_gain_Q7 = Inlines.silk_log2lin((Inlines.SILK_CONST(TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f, 7) - sum_log_gain_tmp_Q7)
-                                                + Inlines.SILK_CONST(7, 7)) - gain_safety;
+                    max_gain_Q7 = Inlines.silk_log2lin((((int)((TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f, 7)*/ - sum_log_gain_tmp_Q7)
+                                                + ((int)((7) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(7, 7)*/) - gain_safety;
                     
                     BoxedValue<sbyte> temp_idx_box = new BoxedValue<sbyte>(temp_idx[j]);
                     BoxedValue<int> rate_dist_Q14_subfr_box = new BoxedValue<int>();
@@ -112,7 +112,7 @@ namespace Concentus.Silk
 
                     rate_dist_Q14 = Inlines.silk_ADD_POS_SAT32(rate_dist_Q14, rate_dist_Q14_subfr);
                     sum_log_gain_tmp_Q7 = Inlines.silk_max(0, sum_log_gain_tmp_Q7
-                                            + Inlines.silk_lin2log(gain_safety + gain_Q7) - Inlines.SILK_CONST(7, 7));
+                                            + Inlines.silk_lin2log(gain_safety + gain_Q7) - ((int)((7) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(7, 7)*/);
 
                     b_Q14_ptr = b_Q14_ptr.Point(SilkConstants.LTP_ORDER);
                     W_Q18_ptr = W_Q18_ptr.Point(SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER);
