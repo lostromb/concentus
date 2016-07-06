@@ -65,7 +65,7 @@ namespace Concentus.Silk
             NLSF.silk_NLSF_decode(pNLSF_Q15, psDec.indices.NLSFIndices, psDec.psNLSF_CB);
 
             /* Convert NLSF parameters to AR prediction filter coefficients */
-            NLSF.silk_NLSF2A(psDecCtrl.PredCoef_Q12[1].GetPointer(), pNLSF_Q15, psDec.LPC_order);
+            NLSF.silk_NLSF2A(psDecCtrl.PredCoef_Q12[1], pNLSF_Q15, psDec.LPC_order);
 
             /* If just reset, e.g., because internal Fs changed, do not allow interpolation */
             /* improves the case of packet loss in the first frame after a switch           */
@@ -85,7 +85,7 @@ namespace Concentus.Silk
                 }
 
                 /* Convert NLSF parameters to AR prediction filter coefficients */
-                NLSF.silk_NLSF2A(psDecCtrl.PredCoef_Q12[0].GetPointer(), pNLSF0_Q15, psDec.LPC_order);
+                NLSF.silk_NLSF2A(psDecCtrl.PredCoef_Q12[0], pNLSF0_Q15, psDec.LPC_order);
             }
             else
             {

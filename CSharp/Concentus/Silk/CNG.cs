@@ -182,7 +182,7 @@ namespace Concentus.Silk
                 silk_CNG_exc(CNG_sig_Q10.GetPointer(SilkConstants.MAX_LPC_ORDER), psCNG.CNG_exc_buf_Q14.GetPointer(), gain_Q16, length, ref psCNG.rand_seed);
 
                 /* Convert CNG NLSF to filter representation */
-                NLSF.silk_NLSF2A(A_Q12.GetPointer(), psCNG.CNG_smth_NLSF_Q15, psDec.LPC_order);
+                NLSF.silk_NLSF2A(A_Q12, psCNG.CNG_smth_NLSF_Q15, psDec.LPC_order);
 
                 /* Generate CNG signal, by synthesis filtering */
                 Array.Copy(psCNG.CNG_synth_state, CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);

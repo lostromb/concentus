@@ -793,7 +793,7 @@ namespace Concentus.Silk
         /// <param name="NLSF">(I) normalized line spectral frequencies in Q15, [ d ]</param>
         /// <param name="d">(I) filter order (should be even)</param>
         internal static void silk_NLSF2A(
-            Pointer<short> a_Q12,
+            short[] a_Q12,
             short[] NLSF,
             int d)
         {
@@ -902,7 +902,7 @@ namespace Concentus.Silk
 
             for (i = 0; i < SilkConstants.MAX_LPC_STABILIZE_ITERATIONS; i++)
             {
-                if (Filters.silk_LPC_inverse_pred_gain(a_Q12, d) < Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN, 30))
+                if (Filters.silk_LPC_inverse_pred_gain(a_Q12.GetPointer(), d) < Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN, 30))
                 {
                     /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
                     /* on the unscaled coefficients, convert to Q12 and measure again                   */
@@ -1183,7 +1183,7 @@ namespace Concentus.Silk
         /// <param name="prev_NLSFq_Q15">I    Previous Normalized LSFs (0 - (2^15-1)) [MAX_LPC_ORDER]</param>
         internal static void silk_process_NLSFs(
             SilkChannelEncoder psEncC,
-            short[] PredCoef_Q12,
+            short[][] PredCoef_Q12,
             short[] pNLSF_Q15,
             short[] prev_NLSFq_Q15)
         {
@@ -1244,7 +1244,7 @@ namespace Concentus.Silk
                 NLSF_mu_Q20, psEncC.NLSF_MSVQ_Survivors, psEncC.indices.signalType);
 
             /* Convert quantized NLSFs back to LPC coefficients */
-            silk_NLSF2A(PredCoef_Q12.GetPointer(SilkConstants.MAX_LPC_ORDER), pNLSF_Q15, psEncC.predictLPCOrder);
+            silk_NLSF2A(PredCoef_Q12[1], pNLSF_Q15, psEncC.predictLPCOrder);
 
             if (doInterpolate)
             {
@@ -1253,13 +1253,13 @@ namespace Concentus.Silk
                     psEncC.indices.NLSFInterpCoef_Q2, psEncC.predictLPCOrder);
 
                 /* Convert back to LPC coefficients */
-                silk_NLSF2A(PredCoef_Q12.GetPointer(), pNLSF0_temp_Q15, psEncC.predictLPCOrder);
+                silk_NLSF2A(PredCoef_Q12[0], pNLSF0_temp_Q15, psEncC.predictLPCOrder);
 
             }
             else
             {
                 /* Copy LPC coefficients for first half from second half */
-                Array.Copy(PredCoef_Q12, SilkConstants.MAX_LPC_ORDER, PredCoef_Q12, 0, psEncC.predictLPCOrder);
+                Array.Copy(PredCoef_Q12[1], 0, PredCoef_Q12[0], 0, psEncC.predictLPCOrder);
             }
         }
     }

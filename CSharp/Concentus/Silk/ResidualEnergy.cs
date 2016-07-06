@@ -46,7 +46,7 @@ namespace Concentus.Silk
             Pointer<int> nrgs,                   /* O    Residual energy per subframe  [MAX_NB_SUBFR]                                              */
             Pointer<int> nrgsQ,                  /* O    Q value per subframe   [MAX_NB_SUBFR]                                                     */
             Pointer<short> x,                                    /* I    Input signal                                                                */
-            Pointer<short> a_Q12,            /* I    AR coefs for each frame half [2][MAX_LPC_ORDER] (linearized)                                               */
+            short[][] a_Q12,            /* I    AR coefs for each frame half [2][MAX_LPC_ORDER]                                                */
             Pointer<int> gains,                  /* I    Quantization gains [SilkConstants.MAX_NB_SUBFR]                                                         */
             int subfr_length,                           /* I    Subframe length                                                             */
             int nb_subfr,                               /* I    Number of subframes                                                         */
@@ -69,7 +69,7 @@ namespace Concentus.Silk
             for (i = 0; i < nb_subfr >> 1; i++)
             {
                 /* Calculate half frame LPC residual signal including preceding samples */
-                Filters.silk_LPC_analysis_filter(LPC_res, 0, x_ptr.Data, x_ptr.Offset, a_Q12.Data, a_Q12.Offset + (i * SilkConstants.MAX_LPC_ORDER), (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
+                Filters.silk_LPC_analysis_filter(LPC_res, 0, x_ptr.Data, x_ptr.Offset, a_Q12[i], 0, (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
 
                 /* Point to first subframe of the just calculated LPC residual signal */
                 LPC_res_ptr = LPC_res.GetPointer(LPC_order);

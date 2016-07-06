@@ -183,12 +183,9 @@ namespace Concentus.Silk.Structs
                 SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
                 int[] x_Q3,                                     /* I    Prefiltered input signal        */
                 sbyte[] pulses,                                   /* O    Quantized pulse signal          */
-                short[] PredCoef_Q12,          /* I    Short term prediction coefs [2 * SilkConstants.MAX_LPC_ORDER]    */
-                int PredCoef_Q12_ptr,
+                short[][] PredCoef_Q12,          /* I    Short term prediction coefs [2][SilkConstants.MAX_LPC_ORDER]    */
                 short[] LTPCoef_Q14,    /* I    Long term prediction coefs [SilkConstants.LTP_ORDER * MAX_NB_SUBFR]     */
-                int LTPCoef_Q14_ptr,
                 short[] AR2_Q13, /* I Noise shaping coefs [MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER]            */
-                int AR2_Q13_ptr,
                 int[] HarmShapeGain_Q14,          /* I    Long term shaping coefs [MAX_NB_SUBFR]        */
                 int[] Tilt_Q14,                   /* I    Spectral tilt [MAX_NB_SUBFR]                  */
                 int[] LF_shp_Q14,                 /* I    Low frequency shaping coefs [MAX_NB_SUBFR]    */
@@ -235,9 +232,9 @@ namespace Concentus.Silk.Structs
             pxq = psEncC.ltp_mem_length;
             for (k = 0; k < psEncC.nb_subfr; k++)
             {
-                A_Q12 = PredCoef_Q12_ptr + (((k >> 1) | (1 - LSF_interpolation_flag)) * SilkConstants.MAX_LPC_ORDER);
-                B_Q14 = LTPCoef_Q14_ptr + (k * SilkConstants.LTP_ORDER);
-                AR_shp_Q13 = AR2_Q13_ptr + (k * SilkConstants.MAX_SHAPE_LPC_ORDER);
+                A_Q12 = (((k >> 1) | (1 - LSF_interpolation_flag)));
+                B_Q14 = (k * SilkConstants.LTP_ORDER); // opt: does this indicate a partitioned array?
+                AR_shp_Q13 = (k * SilkConstants.MAX_SHAPE_LPC_ORDER); // opt: same here
 
                 /* Noise shape parameters */
                 Inlines.OpusAssert(HarmShapeGain_Q14[k] >= 0);
@@ -258,7 +255,7 @@ namespace Concentus.Silk.Structs
                         Inlines.OpusAssert(start_idx > 0);
 
                         Filters.silk_LPC_analysis_filter(sLTP, start_idx, this.xq, start_idx + k * psEncC.subfr_length,
-                            PredCoef_Q12, A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
+                            PredCoef_Q12[A_Q12], 0, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
 
                         this.rewhite_flag = 1;
                         this.sLTP_buf_idx = psEncC.ltp_mem_length;
@@ -275,8 +272,8 @@ namespace Concentus.Silk.Structs
                     this.xq,
                     pxq,
                     sLTP_Q15,
-                    PredCoef_Q12,
-                    A_Q12,
+                    PredCoef_Q12[A_Q12],
+                    0,
                     LTPCoef_Q14,
                     B_Q14,
                     AR2_Q13,
@@ -620,7 +617,7 @@ namespace Concentus.Silk.Structs
             SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
             int[] x_Q3,                                     /* I    Prefiltered input signal        */
             sbyte[] pulses,                                   /* O    Quantized pulse signal          */
-            short[] PredCoef_Q12,          /* I    Short term prediction coefs [2 * MAX_LPC_ORDER]    */
+            short[][] PredCoef_Q12,          /* I    Short term prediction coefs [2 * MAX_LPC_ORDER]    */
             short[] LTPCoef_Q14,    /* I    Long term prediction coefs LTP_ORDER * MAX_NB_SUBFR]     */
             short[] AR2_Q13, /* I Noise shaping coefs  [MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER]           */
             int[] HarmShapeGain_Q14,          /* I    Long term shaping coefs [MAX_NB_SUBFR]        */
@@ -713,7 +710,7 @@ namespace Concentus.Silk.Structs
             subfr = 0;
             for (k = 0; k < psEncC.nb_subfr; k++)
             {
-                A_Q12 = (((k >> 1) | (1 - LSF_interpolation_flag)) * SilkConstants.MAX_LPC_ORDER);
+                A_Q12 = (((k >> 1) | (1 - LSF_interpolation_flag)));
 
                 /* Noise shape parameters */
                 Inlines.OpusAssert(HarmShapeGain_Q14[k] >= 0);
@@ -772,7 +769,7 @@ namespace Concentus.Silk.Structs
                         Inlines.OpusAssert(start_idx > 0);
 
                         Filters.silk_LPC_analysis_filter(sLTP, start_idx, this.xq, start_idx + k * psEncC.subfr_length,
-                            PredCoef_Q12, A_Q12, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
+                            PredCoef_Q12[A_Q12], 0, psEncC.ltp_mem_length - start_idx, psEncC.predictLPCOrder);
 
                         this.sLTP_buf_idx = psEncC.ltp_mem_length;
                         this.rewhite_flag = 1;
@@ -806,8 +803,7 @@ namespace Concentus.Silk.Structs
                     pxq,
                     sLTP_Q15,
                     delayedGain_Q10,
-                    PredCoef_Q12,
-                    A_Q12,
+                    PredCoef_Q12[A_Q12],
                     LTPCoef_Q14,
                     k * SilkConstants.LTP_ORDER,
                     AR2_Q13,
@@ -885,7 +881,6 @@ namespace Concentus.Silk.Structs
             int[] sLTP_Q15,             /* I/O  LTP filter state                    */
             int[] delayedGain_Q10,      /* I/O  Gain delay buffer                   */
             short[] a_Q12,                /* I    Short term prediction coefs         */
-            int a_Q12_ptr,
             short[] b_Q14,                /* I    Long term prediction coefs          */
             int b_Q14_ptr,
             short[] AR_shp_Q13,           /* I    Noise shaping coefs                 */
@@ -984,24 +979,24 @@ namespace Concentus.Silk.Structs
                     Inlines.OpusAssert(predictLPCOrder == 10 || predictLPCOrder == 16);
                     /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                     LPC_pred_Q14 = Inlines.silk_RSHIFT(predictLPCOrder, 1);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14], a_Q12[a_Q12_ptr + 0]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 1], a_Q12[a_Q12_ptr + 1]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 2], a_Q12[a_Q12_ptr + 2]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 3], a_Q12[a_Q12_ptr + 3]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 4], a_Q12[a_Q12_ptr + 4]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 5], a_Q12[a_Q12_ptr + 5]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 6], a_Q12[a_Q12_ptr + 6]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 7], a_Q12[a_Q12_ptr + 7]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 8], a_Q12[a_Q12_ptr + 8]);
-                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 9], a_Q12[a_Q12_ptr + 9]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14], a_Q12[0]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 1], a_Q12[1]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 2], a_Q12[2]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 3], a_Q12[3]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 4], a_Q12[4]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 5], a_Q12[5]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 6], a_Q12[6]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 7], a_Q12[7]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 8], a_Q12[8]);
+                    LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 9], a_Q12[9]);
                     if (predictLPCOrder == 16)
                     {
-                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 10], a_Q12[a_Q12_ptr + 10]);
-                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 11], a_Q12[a_Q12_ptr + 11]);
-                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 12], a_Q12[a_Q12_ptr + 12]);
-                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 13], a_Q12[a_Q12_ptr + 13]);
-                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 14], a_Q12[a_Q12_ptr + 14]);
-                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 15], a_Q12[a_Q12_ptr + 15]);
+                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 10], a_Q12[10]);
+                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 11], a_Q12[11]);
+                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 12], a_Q12[12]);
+                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 13], a_Q12[13]);
+                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 14], a_Q12[14]);
+                        LPC_pred_Q14 = Inlines.silk_SMLAWB(LPC_pred_Q14, psDD.sLPC_Q14[psLPC_Q14 - 15], a_Q12[15]);
                     }
                     LPC_pred_Q14 = Inlines.silk_LSHIFT(LPC_pred_Q14, 4);                              /* Q10 . Q14 */
 

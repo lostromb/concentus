@@ -43,8 +43,7 @@ namespace Concentus.Silk.Structs
     {
         /* Prediction and coding parameters */
         internal readonly int[] Gains_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
-        // [porting note] originally a 2D array of [2][MAX_LPC_ORDER], now linearized
-        internal readonly short[] PredCoef_Q12 = new short[2 * SilkConstants.MAX_LPC_ORDER];     /* holds interpolated and final coefficients */
+        internal readonly short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArray<short>(2, SilkConstants.MAX_LPC_ORDER);     /* holds interpolated and final coefficients */
         internal readonly short[] LTPCoef_Q14 = new short[SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR];
         internal int LTP_scale_Q14 = 0;
         internal readonly int[] pitchL = new int[SilkConstants.MAX_NB_SUBFR];
@@ -79,7 +78,8 @@ namespace Concentus.Silk.Structs
         internal void Reset()
         {
             Arrays.MemSet<int>(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<short>(PredCoef_Q12, 0, 2 * SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet<short>(PredCoef_Q12[0], 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet<short>(PredCoef_Q12[1], 0, SilkConstants.MAX_LPC_ORDER);
             Arrays.MemSet<short>(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
             LTP_scale_Q14 = 0;
             Arrays.MemSet<int>(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
