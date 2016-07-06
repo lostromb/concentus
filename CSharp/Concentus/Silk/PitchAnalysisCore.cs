@@ -656,7 +656,8 @@ namespace Concentus.Silk
             int nb_cbk_search, delta, idx, cbk_size;
             int[] scratch_mem;
             int[] xcorr32;
-            sbyte[] Lag_range_ptr, Lag_CB_ptr;
+            sbyte[][] Lag_range_ptr;
+            sbyte[] Lag_CB_ptr;
             
             Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
             Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
@@ -684,8 +685,8 @@ namespace Concentus.Silk
                 lag_counter = 0;
 
                 /* Calculate the correlations for each subframe */
-                lag_low = Inlines.MatrixGet(Lag_range_ptr, k, 0, 2);
-                lag_high = Inlines.MatrixGet(Lag_range_ptr, k, 1, 2);
+                lag_low = Lag_range_ptr[k][0];
+                lag_high = Lag_range_ptr[k][1];
                 Inlines.OpusAssert(lag_high - lag_low + 1 <= SCRATCH_SIZE);
                 CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - start_lag - lag_high), xcorr32.GetPointer(), sf_length, lag_high - lag_low + 1);
                 for (j = lag_low; j <= lag_high; j++)
@@ -695,7 +696,7 @@ namespace Concentus.Silk
                     lag_counter++;
                 }
 
-                delta = Inlines.MatrixGet(Lag_range_ptr, k, 0, 2);
+                delta = Lag_range_ptr[k][0];
                 for (i = 0; i < nb_cbk_search; i++)
                 {
                     /* Fill out the 3 dim array that stores the correlations for */
@@ -732,7 +733,8 @@ namespace Concentus.Silk
             int k, i, j, lag_counter;
             int nb_cbk_search, delta, idx, cbk_size, lag_diff;
             int[] scratch_mem;
-            Pointer<sbyte> Lag_range_ptr, Lag_CB_ptr;
+            sbyte[][] Lag_range_ptr;
+            sbyte[] Lag_CB_ptr;
 
 
             Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
@@ -740,15 +742,15 @@ namespace Concentus.Silk
 
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
-                Lag_range_ptr = Tables.silk_Lag_range_stage3[complexity].GetPointer();
-                Lag_CB_ptr = Tables.silk_CB_lags_stage3.GetPointer();
+                Lag_range_ptr = Tables.silk_Lag_range_stage3[complexity];
+                Lag_CB_ptr = Tables.silk_CB_lags_stage3;
                 nb_cbk_search = Tables.silk_nb_cbk_searchs_stage3[complexity];
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_MAX;
             }
             else {
                 Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
-                Lag_range_ptr = Tables.silk_Lag_range_stage3_10_ms.GetPointer();
-                Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms.GetPointer();
+                Lag_range_ptr = Tables.silk_Lag_range_stage3_10_ms;
+                Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms;
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
                 cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
             }
@@ -760,13 +762,13 @@ namespace Concentus.Silk
                 lag_counter = 0;
 
                 /* Calculate the energy for first lag */
-                basis_ptr = target_ptr.Point(0 - (start_lag + Inlines.MatrixGet(Lag_range_ptr, k, 0, 2)));
+                basis_ptr = target_ptr.Point(0 - (start_lag + Lag_range_ptr[k][0]));
                 energy = Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, sf_length);
                 Inlines.OpusAssert(energy >= 0);
                 scratch_mem[lag_counter] = energy;
                 lag_counter++;
 
-                lag_diff = (Inlines.MatrixGet(Lag_range_ptr, k, 1, 2) - Inlines.MatrixGet(Lag_range_ptr, k, 0, 2) + 1);
+                lag_diff = (Lag_range_ptr[k][1] - Lag_range_ptr[k][0] + 1);
                 for (i = 1; i < lag_diff; i++)
                 {
                     /* remove part outside new window */
@@ -781,7 +783,7 @@ namespace Concentus.Silk
                     lag_counter++;
                 }
 
-                delta = Inlines.MatrixGet(Lag_range_ptr, k, 0, 2);
+                delta = Lag_range_ptr[k][0];
                 for (i = 0; i < nb_cbk_search; i++)
                 {
                     /* Fill out the 3 dim array that stores the correlations for    */

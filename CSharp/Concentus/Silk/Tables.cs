@@ -1011,10 +1011,10 @@ namespace Concentus.Silk
         };
 
         //[Porting note] originally represented as a 2D matrix, here it is linearized
-        internal static readonly sbyte[] silk_Lag_range_stage3_10_ms =
+        internal static readonly sbyte[][] silk_Lag_range_stage3_10_ms =
         {
-            -3, 7,
-            -2, 7
+            new sbyte[] {-3, 7 },
+            new sbyte[] {-2, 7 }
         };
 
         //[Porting note] originally represented as a 2D matrix, here it is linearized
@@ -1034,30 +1034,29 @@ namespace Concentus.Silk
             0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,-1, 1, 0, 0, 2, 1,-1, 2,-1,-1, 2,-1, 2, 2,-1, 3,-2,-2,-2, 3,
             0, 1, 0, 0, 1, 0, 1,-1, 2,-1, 2,-1, 2, 3,-2, 3,-2,-2, 4, 4,-3, 5,-3,-4, 6,-4, 6, 5,-5, 8,-6,-5,-7, 9
         };
-
-        //[Porting note] Similar to the tables above, I have linearized the last 2 dimensions of this table into 1 dimension
-        internal static readonly sbyte[][] silk_Lag_range_stage3 =
+        
+        internal static readonly sbyte[][][] silk_Lag_range_stage3 =
         {
             /* Lags to search for low number of stage3 cbks */
-            new sbyte[] {
-                -5,8,
-                -1,6,
-                -1,6,
-                -4,10
+            new sbyte[][] {
+                new sbyte[] {-5,8 },
+                new sbyte[] {-1,6 },
+                new sbyte[] {-1,6 },
+                new sbyte[] {-4,10 }
             },
             /* Lags to search for middle number of stage3 cbks */
-            new sbyte[] {
-                -6,10,
-                -2,6,
-                -1,6,
-                -5,10
+            new sbyte[][] {
+                new sbyte[] {-6,10 },
+                new sbyte[] {-2,6 },
+                new sbyte[] {-1,6 },
+                new sbyte[] {-5,10 }
             },
             /* Lags to search for max number of stage3 cbks */
-            new sbyte[] {
-                -9,12,
-                -3,7,
-                -2,7,
-                -7,13
+            new sbyte[][] {
+                new sbyte[] {-9,12 },
+                new sbyte[] {-3,7 },
+                new sbyte[] {-2,7 },
+                new sbyte[] {-7,13 }
             }
         };
 
