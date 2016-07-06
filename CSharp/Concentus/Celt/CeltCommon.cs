@@ -162,7 +162,7 @@ namespace Concentus.Celt
             return target;
         }
 
-        internal static int transient_analysis(int[] input, int len, int C,
+        internal static int transient_analysis(int[][] input, int len, int C,
                                   BoxedValue<int> tf_estimate, BoxedValue<int> tf_chan)
         {
             int i;
@@ -189,7 +189,7 @@ namespace Concentus.Celt
                 for (i = 0; i < len; i++)
                 {
                     int x, y;
-                    x = Inlines.SHR32(input[i + c * len], CeltConstants.SIG_SHIFT);
+                    x = Inlines.SHR32(input[c][i], CeltConstants.SIG_SHIFT);
                     y = Inlines.ADD32(mem0, x);
                     mem0 = mem1 + y - Inlines.SHL32(x, 1);
                     mem1 = x - Inlines.SHR32(y, 1);
@@ -280,7 +280,7 @@ namespace Concentus.Celt
 
         /* Looks for sudden increases of energy to decide whether we need to patch
            the transient decision */
-        internal static int patch_transient_decision(int[][] newE, int[] oldE, int nbEBands,
+        internal static int patch_transient_decision(int[][] newE, int[][] oldE, int nbEBands,
               int start, int end, int C)
         {
             int i, c;
@@ -290,15 +290,15 @@ namespace Concentus.Celt
                avoid false detection caused by irrelevant bands */
             if (C == 1)
             {
-                spread_old[start] = oldE[start];
+                spread_old[start] = oldE[0][start];
                 for (i = start + 1; i < end; i++)
-                    spread_old[i] = Inlines.MAX16((spread_old[i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)), oldE[i]);
+                    spread_old[i] = Inlines.MAX16((spread_old[i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)), oldE[0][i]);
             }
             else {
-                spread_old[start] = Inlines.MAX16(oldE[start], oldE[start + nbEBands]);
+                spread_old[start] = Inlines.MAX16(oldE[0][start], oldE[1][start]);
                 for (i = start + 1; i < end; i++)
                     spread_old[i] = Inlines.MAX16((spread_old[i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)),
-                                          Inlines.MAX16(oldE[i], oldE[i + nbEBands]));
+                                          Inlines.MAX16(oldE[0][i], oldE[1][i]));
             }
             for (i = end - 2; i >= start; i--)
                 spread_old[i] = Inlines.MAX16(spread_old[i], (spread_old[i + 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)));
@@ -320,7 +320,7 @@ namespace Concentus.Celt
 
         /** Apply window and compute the MDCT for all sub-frames and
             all channels in a frame */
-        internal static void compute_mdcts(CeltMode mode, int shortBlocks, int[] input,
+        internal static void compute_mdcts(CeltMode mode, int shortBlocks, int[][] input,
                                   int[][] output, int C, int CC, int LM, int upsample)
         {
             int overlap = mode.overlap;
@@ -347,8 +347,8 @@ namespace Concentus.Celt
                     /* Interleaving the sub-frames while doing the MDCTs */
                     MDCT.clt_mdct_forward(
                         mode.mdct,
-                        input,
-                        ((c * ((B * N) + overlap)) + (b * N)),
+                        input[c],
+                        b * N,
                         output[c],
                         b,
                         mode.window,

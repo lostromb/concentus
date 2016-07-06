@@ -1446,7 +1446,7 @@ namespace Concentus.Celt
 
 
         internal static void quant_all_bands(int encode, CeltMode m, int start, int end,
-              int[] X_, Pointer<int> Y_, byte[] collapse_masks,
+              int[] X_, int[] Y_, byte[] collapse_masks,
               int[][] bandE, int[] pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, int[] tf_res, int total_bits,
               int balance, EntropyCoder ec, int LM, int codedBands,
@@ -1510,7 +1510,7 @@ namespace Concentus.Celt
                 X = X_.GetPointer(M * eBands[i]);
                 if (Y_ != null)
                 {
-                    Y = Y_.Point(M * eBands[i]);
+                    Y = Y_.GetPointer(M * eBands[i]);
                 }
                 else
                 {
