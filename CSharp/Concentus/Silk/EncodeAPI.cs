@@ -166,7 +166,7 @@ namespace Concentus.Silk
                 psEnc.sStereo.mid_side_amp_Q0[2] = 0;
                 psEnc.sStereo.mid_side_amp_Q0[3] = 1;
                 psEnc.sStereo.width_prev_Q14 = 0;
-                psEnc.sStereo.smth_width_Q14 = Inlines.CHOP16(Inlines.SILK_CONST(1.0f, 14));
+                psEnc.sStereo.smth_width_Q14 = Inlines.CHOP16(((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/);
                 if (psEnc.nChannelsAPI == 2)
                 {
                     psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
@@ -636,8 +636,8 @@ namespace Concentus.Silk
                         psEnc.nBitsExceeded = Inlines.silk_LIMIT(psEnc.nBitsExceeded, 0, 10000);
 
                         /* Update flag indicating if bandwidth switching is allowed */
-                        speech_act_thr_for_switch_Q8 = Inlines.silk_SMLAWB(Inlines.SILK_CONST(TuningParameters.SPEECH_ACTIVITY_DTX_THRES, 8),
-                                            Inlines.SILK_CONST((1 - TuningParameters.SPEECH_ACTIVITY_DTX_THRES) / TuningParameters.MAX_BANDWIDTH_SWITCH_DELAY_MS, 16 + 8),
+                        speech_act_thr_for_switch_Q8 = Inlines.silk_SMLAWB(((int)((TuningParameters.SPEECH_ACTIVITY_DTX_THRES) * ((long)1 << (8)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.SPEECH_ACTIVITY_DTX_THRES, 8)*/,
+                                            ((int)(((1 - TuningParameters.SPEECH_ACTIVITY_DTX_THRES) / TuningParameters.MAX_BANDWIDTH_SWITCH_DELAY_MS) * ((long)1 << (16 + 8)) + 0.5))/*Inlines.SILK_CONST((1 - TuningParameters.SPEECH_ACTIVITY_DTX_THRES) / TuningParameters.MAX_BANDWIDTH_SWITCH_DELAY_MS, 16 + 8)*/,
                                                 psEnc.timeSinceSwitchAllowed_ms);
                         if (psEnc.state_Fxx[0].speech_activity_Q8 < speech_act_thr_for_switch_Q8)
                         {

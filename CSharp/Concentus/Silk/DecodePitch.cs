@@ -48,35 +48,31 @@ namespace Concentus.Silk
                 int nb_subfr            /* I    number of sub frames                                        */
             )
         {
-            int lag, k, min_lag, max_lag, cbk_size;
-            Pointer<sbyte> Lag_CB_ptr;
+            int lag, k, min_lag, max_lag;
+            sbyte[][] Lag_CB_ptr;
 
             if (Fs_kHz == 8)
             {
                 if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
                 {
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage2.GetPointer();
-                    cbk_size = SilkConstants.PE_NB_CBKS_STAGE2_EXT;
+                    Lag_CB_ptr = Tables.silk_CB_lags_stage2;
                 }
                 else
                 {
                     Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms.GetPointer();
-                    cbk_size = SilkConstants.PE_NB_CBKS_STAGE2_10MS;
+                    Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms;
                 }
             }
             else
             {
                 if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
                 {
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage3.GetPointer();
-                    cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_MAX;
+                    Lag_CB_ptr = Tables.silk_CB_lags_stage3;
                 }
                 else
                 {
                     Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms.GetPointer();
-                    cbk_size = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
+                    Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms;
                 }
             }
 
@@ -86,7 +82,7 @@ namespace Concentus.Silk
 
             for (k = 0; k < nb_subfr; k++)
             {
-                pitch_lags[k] = lag + Inlines.MatrixGet(Lag_CB_ptr, k, contourIndex, cbk_size);
+                pitch_lags[k] = lag + Lag_CB_ptr[k][contourIndex];
                 pitch_lags[k] = Inlines.silk_LIMIT(pitch_lags[k], min_lag, max_lag);
             }
         }

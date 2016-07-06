@@ -90,7 +90,7 @@ namespace Concentus.Silk
                 C0 = Inlines.silk_LSHIFT32((int)C0_64, -rshifts);
             }
 
-            CAb[0] = CAf[0] = C0 + Inlines.silk_SMMUL(Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32), C0) + 1;                                /* Q(-rshifts) */
+            CAb[0] = CAf[0] = C0 + Inlines.silk_SMMUL(((int)((TuningParameters.FIND_LPC_COND_FAC) * ((long)1 << (32)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32)*/, C0) + 1;                                /* Q(-rshifts) */
             Arrays.MemSet<int>(C_first_row, 0, SilkConstants.SILK_MAX_ORDER_LPC);
             if (rshifts > 0)
             {
@@ -126,7 +126,7 @@ namespace Concentus.Silk
             Array.Copy(C_first_row, C_last_row, SilkConstants.SILK_MAX_ORDER_LPC);
 
             /* Initialize */
-            CAb[0] = CAf[0] = C0 + Inlines.silk_SMMUL(Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32), C0) + 1;                                /* Q(-rshifts) */
+            CAb[0] = CAf[0] = C0 + Inlines.silk_SMMUL(((int)((TuningParameters.FIND_LPC_COND_FAC) * ((long)1 << (32)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32)*/, C0) + 1;                                /* Q(-rshifts) */
 
             invGain_Q30 = (int)1 << 30;
             reached_max_gain = 0;
@@ -313,7 +313,7 @@ namespace Concentus.Silk
                     tmp1 = Inlines.silk_SMLAWW(tmp1, Atmp1, Atmp1);                                               /* Q16 */
                     A_Q16[k] = -Atmp1;
                 }
-                res_nrg.Val = Inlines.silk_SMLAWW(nrg, Inlines.silk_SMMUL(Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32), C0), -tmp1);/* Q( -rshifts ) */
+                res_nrg.Val = Inlines.silk_SMLAWW(nrg, Inlines.silk_SMMUL(((int)((TuningParameters.FIND_LPC_COND_FAC) * ((long)1 << (32)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32)*/, C0), -tmp1);/* Q( -rshifts ) */
                 res_nrg_Q.Val = -rshifts;
             }
         }

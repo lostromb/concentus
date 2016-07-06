@@ -146,13 +146,13 @@ namespace Concentus.Silk
             /* Limit on total predictive coding gain */
             if (psEnc.first_frame_after_reset != 0)
             {
-                minInvGain_Q30 = Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN_AFTER_RESET, 30);
+                minInvGain_Q30 = ((int)((1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN_AFTER_RESET) * ((long)1 << (30)) + 0.5))/*Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN_AFTER_RESET, 30)*/;
             }
             else {
-                minInvGain_Q30 = Inlines.silk_log2lin(Inlines.silk_SMLAWB(16 << 7, (int)psEncCtrl.LTPredCodGain_Q7, Inlines.SILK_CONST(1.0f / 3f, 16)));      /* Q16 */
+                minInvGain_Q30 = Inlines.silk_log2lin(Inlines.silk_SMLAWB(16 << 7, (int)psEncCtrl.LTPredCodGain_Q7, ((int)((1.0f / 3f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1.0f / 3f, 16)*/));      /* Q16 */
                 minInvGain_Q30 = Inlines.silk_DIV32_varQ(minInvGain_Q30,
-                    Inlines.silk_SMULWW(Inlines.SILK_CONST(SilkConstants.MAX_PREDICTION_POWER_GAIN, 0),
-                        Inlines.silk_SMLAWB(Inlines.SILK_CONST(0.25f, 18), Inlines.SILK_CONST(0.75f, 18), psEncCtrl.coding_quality_Q14)), 14);
+                    Inlines.silk_SMULWW(((int)((SilkConstants.MAX_PREDICTION_POWER_GAIN) * ((long)1 << (0)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.MAX_PREDICTION_POWER_GAIN, 0)*/,
+                        Inlines.silk_SMLAWB(((int)((0.25f) * ((long)1 << (18)) + 0.5))/*Inlines.SILK_CONST(0.25f, 18)*/, ((int)((0.75f) * ((long)1 << (18)) + 0.5))/*Inlines.SILK_CONST(0.75f, 18)*/, psEncCtrl.coding_quality_Q14)), 14);
             }
 
             /* LPC_in_pre contains the LTP-filtered input for voiced, and the unfiltered input for unvoiced */

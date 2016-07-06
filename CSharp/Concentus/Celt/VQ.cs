@@ -235,14 +235,14 @@ namespace Concentus.Celt
                    to be allocated. 64 is an approximation of infinity here. */
                 if (sum <= K)
                 {
-                    X[0] = Inlines.QCONST16(1.0f, 14);
+                    X[0] = ((short)(0.5 + (1.0f) * (((int)1) << (14))))/*Inlines.QCONST16(1.0f, 14)*/;
                     j = 1;
                     do
                     {
                         X[j] = 0;
                     } while (++j < N);
 
-                    sum = Inlines.QCONST16(1.0f, 14);
+                    sum = ((short)(0.5 + (1.0f) * (((int)1) << (14))))/*Inlines.QCONST16(1.0f, 14)*/;
                 }
 
                 rcp = Inlines.EXTRACT16(Inlines.MULT16_32_Q16((K - 1), Inlines.celt_rcp(sum)));
@@ -400,7 +400,7 @@ namespace Concentus.Celt
             mid = (Inlines.celt_sqrt(Emid));
             side = (Inlines.celt_sqrt(Eside));
             /* 0.63662 = 2/pi */
-            itheta = Inlines.MULT16_16_Q15(Inlines.QCONST16(0.63662f, 15), Inlines.celt_atan2p(side, mid));
+            itheta = Inlines.MULT16_16_Q15(((short)(0.5 + (0.63662f) * (((int)1) << (15))))/*Inlines.QCONST16(0.63662f, 15)*/, Inlines.celt_atan2p(side, mid));
 
             return itheta;
         }

@@ -31,22 +31,21 @@ namespace ConcentusDemo
 
             SetBitrate(_bitrate);
             SetComplexity(_complexity);
-            _encoder.SetVBR(true);
-            _encoder.SetEnableAnalysis(true);
-
+            _encoder.UseVBR = true;
+            _encoder.EnableAnalysis = true;
             _decoder = OpusDecoder.Create(48000, 1);
         }
 
         public void SetBitrate(int bitrate)
         {
             _bitrate = bitrate;
-            _encoder.SetBitrate(_bitrate * 1024);
+            _encoder.Bitrate = (_bitrate * 1024);
         }
 
         public void SetComplexity(int complexity)
         {
             _complexity = complexity;
-            _encoder.SetComplexity(_complexity);
+            _encoder.Complexity = (_complexity);
         }
 
         public void SetFrameSize(double frameSize)

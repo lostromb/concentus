@@ -159,7 +159,7 @@ namespace Concentus.Structs
             short[] buf;
 
             /* Limit frame_size to avoid excessive stack allocations. */
-            Fs = this.GetSampleRate();
+            Fs = this.SampleRate;
             frame_size = Inlines.IMIN(frame_size, Fs / 25 * 3);
             buf = new short[2 * frame_size];
             decoder_ptr = 0;
@@ -326,42 +326,64 @@ namespace Concentus.Structs
 
         #region Getters and setters
 
-        public OpusBandwidth GetBandwidth()
+        public OpusBandwidth Bandwidth
         {
-            if (decoders == null || decoders.Length == 0)
-                throw new InvalidOperationException("Decoder not initialized");
-            return decoders[0].GetBandwidth();
-        }
-
-        public int GetSampleRate()
-        {
-            if (decoders == null || decoders.Length == 0)
-                return OpusError.OPUS_INVALID_STATE;
-            return decoders[0].GetSampleRate();
-        }
-
-        public int GetGain()
-        {
-            if (decoders == null || decoders.Length == 0)
-                return OpusError.OPUS_INVALID_STATE;
-            return decoders[0].GetGain();
-        }
-
-        public int GetLastPacketDuration()
-        {
-            if (decoders == null || decoders.Length == 0)
-                return OpusError.OPUS_INVALID_STATE;
-            return decoders[0].GetLastPacketDuration();
-        }
-
-        public uint GetFinalRange()
-        {
-            uint value = 0;
-            for (int s = 0; s < layout.nb_streams; s++)
+            get
             {
-                value ^= decoders[s].GetFinalRange();
+                if (decoders == null || decoders.Length == 0)
+                    throw new InvalidOperationException("Decoder not initialized");
+                return decoders[0].Bandwidth;
             }
-            return value;
+        }
+
+        public int SampleRate
+        {
+            get
+            {
+                if (decoders == null || decoders.Length == 0)
+                    throw new InvalidOperationException("Decoder not initialized");
+                return decoders[0].SampleRate;
+            }
+        }
+
+        public int Gain
+        {
+            get
+            {
+                if (decoders == null || decoders.Length == 0)
+                    return OpusError.OPUS_INVALID_STATE;
+                return decoders[0].Gain;
+            }
+            set
+            {
+                for (int s = 0; s < layout.nb_streams; s++)
+                {
+                    decoders[s].Gain = value;
+                }
+            }
+        }
+
+        public int LastPacketDuration
+        {
+            get
+            {
+                if (decoders == null || decoders.Length == 0)
+                    return OpusError.OPUS_INVALID_STATE;
+                return decoders[0].LastPacketDuration;
+            }
+        }
+
+        public uint FinalRange
+        {
+            get
+            {
+                uint value = 0;
+                for (int s = 0; s < layout.nb_streams; s++)
+                {
+                    value ^= decoders[s].FinalRange;
+                }
+                return value;
+            }
         }
 
         public void ResetState()
@@ -376,15 +398,7 @@ namespace Concentus.Structs
         {
             return decoders[streamId];
         }
-
-        public void SetGain(int gain)
-        {
-            for (int s = 0; s < layout.nb_streams; s++)
-            {
-                decoders[s].SetGain(gain);
-            }
-        }
-
+        
         #endregion
     }
 }

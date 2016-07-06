@@ -147,7 +147,7 @@ namespace Concentus.Silk
                 {
 
                     B_Q14.MemSet(0, SilkConstants.LTP_ORDER);
-                    B_Q14[SilkConstants.LTP_ORDER / 2] = Inlines.CHOP16(Inlines.SILK_CONST(0.25f, 14));
+                    B_Q14[SilkConstants.LTP_ORDER / 2] = Inlines.CHOP16(((int)((0.25f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(0.25f, 14)*/);
 
                     signalType = SilkConstants.TYPE_VOICED;
                     psDecCtrl.pitchL[k] = psDec.lagPrev;

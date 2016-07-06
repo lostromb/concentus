@@ -586,7 +586,7 @@ namespace Concentus.Structs
             if (this.decode_gain != 0)
             {
                 int gain;
-                gain = Inlines.celt_exp2(Inlines.MULT16_16_P15(Inlines.QCONST16(6.48814081e-4f, 25), this.decode_gain));
+                gain = Inlines.celt_exp2(Inlines.MULT16_16_P15(((short)(0.5 + (6.48814081e-4f) * (((int)1) << (25))))/*Inlines.QCONST16(6.48814081e-4f, 25)*/, this.decode_gain));
                 for (i = 0; i < frame_size * this.channels; i++)
                 {
                     int x;
@@ -831,14 +831,66 @@ namespace Concentus.Structs
             }
         }
 
-        public OpusBandwidth GetBandwidth()
+        public OpusBandwidth Bandwidth
         {
-            return bandwidth;
+            get
+            {
+                return bandwidth;
+            }
         }
 
-        public uint GetFinalRange()
+        public uint FinalRange
         {
-            return rangeFinal;
+            get
+            {
+                return rangeFinal;
+            }
+        }
+
+        public int SampleRate
+        {
+            get
+            {
+                return Fs;
+            }
+        }
+        
+        public int Pitch
+        {
+            get
+            {
+                if (prev_mode == OpusMode.MODE_CELT_ONLY)
+                {
+                    return Celt_Decoder.GetPitch();
+                }
+                else
+                    return DecControl.prevPitchLag;
+            }
+        }
+
+        public int Gain
+        {
+            get
+            {
+                return decode_gain;
+            }
+            set
+            {
+                if (value < -32768 || value > 32767)
+                {
+                    throw new ArgumentException("Gain must be within the range of a signed int16");
+                }
+
+                decode_gain = value;
+            }
+        }
+
+        public int LastPacketDuration
+        {
+            get
+            {
+                return last_packet_duration;
+            }
         }
 
         public void ResetState()
@@ -848,41 +900,6 @@ namespace Concentus.Structs
             DecodeAPI.silk_InitDecoder(SilkDecoder);
             stream_channels = channels;
             frame_size = Fs / 400;
-        }
-
-        public int GetSampleRate()
-        {
-            return Fs;
-        }
-
-        public int GetPitch()
-        {
-            if (prev_mode == OpusMode.MODE_CELT_ONLY)
-            {
-                return Celt_Decoder.GetPitch();
-            }
-            else
-                return DecControl.prevPitchLag;
-        }
-
-        public int GetGain()
-        {
-            return decode_gain;
-        }
-
-        public void SetGain(int gain)
-        {
-            if (gain < -32768 || gain > 32767)
-            {
-                throw new ArgumentException("Gain must be within the range of a signed int16");
-            }
-
-            decode_gain = gain;
-        }
-
-        public int GetLastPacketDuration()
-        {
-            return last_packet_duration;
         }
     }
 }

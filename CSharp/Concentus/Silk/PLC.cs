@@ -54,8 +54,8 @@ namespace Concentus.Silk
         )
         {
             psDec.sPLC.pitchL_Q8 = Inlines.silk_LSHIFT(psDec.frame_length, 8 - 1);
-            psDec.sPLC.prevGain_Q16[0] = Inlines.SILK_CONST(1, 16);
-            psDec.sPLC.prevGain_Q16[1] = Inlines.SILK_CONST(1, 16);
+            psDec.sPLC.prevGain_Q16[0] = ((int)((1) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/;
+            psDec.sPLC.prevGain_Q16[1] = ((int)((1) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/;
             psDec.sPLC.subfr_length = 20;
             psDec.sPLC.nb_subfr = 2;
         }
@@ -276,7 +276,7 @@ namespace Concentus.Silk
             }
 
             /* LPC concealment. Apply BWE to previous LPC */
-            BWExpander.silk_bwexpander(psPLC.prevLPC_Q12, psDec.LPC_order, Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16));
+            BWExpander.silk_bwexpander(psPLC.prevLPC_Q12, psDec.LPC_order, ((int)((SilkConstants.BWE_COEF) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16)*/);
             
             /* First Lost frame */
             if (psDec.lossCnt == 0)

@@ -98,7 +98,7 @@ namespace Concentus.Silk
             scale = boxed_scale.Val;
 
             /* Add white noise, as fraction of energy */
-            auto_corr[0] = Inlines.silk_SMLAWB(auto_corr[0], auto_corr[0], Inlines.SILK_CONST(TuningParameters.FIND_PITCH_WHITE_NOISE_FRACTION, 16)) + 1;
+            auto_corr[0] = Inlines.silk_SMLAWB(auto_corr[0], auto_corr[0], ((int)((TuningParameters.FIND_PITCH_WHITE_NOISE_FRACTION) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_PITCH_WHITE_NOISE_FRACTION, 16)*/) + 1;
 
             /* Calculate the reflection coefficients using schur */
             res_nrg = Schur.silk_schur(rc_Q15, auto_corr, psEnc.pitchEstimationLPCOrder);
@@ -116,7 +116,7 @@ namespace Concentus.Silk
             }
 
             /* Do BWE */
-            BWExpander.silk_bwexpander(A_Q12, psEnc.pitchEstimationLPCOrder, Inlines.SILK_CONST(TuningParameters.FIND_PITCH_BANDWIDTH_EXPANSION, 16));
+            BWExpander.silk_bwexpander(A_Q12, psEnc.pitchEstimationLPCOrder, ((int)((TuningParameters.FIND_PITCH_BANDWIDTH_EXPANSION) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_PITCH_BANDWIDTH_EXPANSION, 16)*/);
 
             /*****************************************/
             /* LPC analysis filtering                */
@@ -126,11 +126,11 @@ namespace Concentus.Silk
             if (psEnc.indices.signalType != SilkConstants.TYPE_NO_VOICE_ACTIVITY && psEnc.first_frame_after_reset == 0)
             {
                 /* Threshold for pitch estimator */
-                thrhld_Q13 = Inlines.SILK_CONST(0.6f, 13);
-                thrhld_Q13 = Inlines.silk_SMLABB(thrhld_Q13, Inlines.SILK_CONST(-0.004f, 13), psEnc.pitchEstimationLPCOrder);
-                thrhld_Q13 = Inlines.silk_SMLAWB(thrhld_Q13, Inlines.SILK_CONST(-0.1f, 21), psEnc.speech_activity_Q8);
-                thrhld_Q13 = Inlines.silk_SMLABB(thrhld_Q13, Inlines.SILK_CONST(-0.15f, 13), Inlines.silk_RSHIFT(psEnc.prevSignalType, 1));
-                thrhld_Q13 = Inlines.silk_SMLAWB(thrhld_Q13, Inlines.SILK_CONST(-0.1f, 14), psEnc.input_tilt_Q15);
+                thrhld_Q13 = ((int)((0.6f) * ((long)1 << (13)) + 0.5))/*Inlines.SILK_CONST(0.6f, 13)*/;
+                thrhld_Q13 = Inlines.silk_SMLABB(thrhld_Q13, ((int)((-0.004f) * ((long)1 << (13)) + 0.5))/*Inlines.SILK_CONST(-0.004f, 13)*/, psEnc.pitchEstimationLPCOrder);
+                thrhld_Q13 = Inlines.silk_SMLAWB(thrhld_Q13, ((int)((-0.1f) * ((long)1 << (21)) + 0.5))/*Inlines.SILK_CONST(-0.1f, 21)*/, psEnc.speech_activity_Q8);
+                thrhld_Q13 = Inlines.silk_SMLABB(thrhld_Q13, ((int)((-0.15f) * ((long)1 << (13)) + 0.5))/*Inlines.SILK_CONST(-0.15f, 13)*/, Inlines.silk_RSHIFT(psEnc.prevSignalType, 1));
+                thrhld_Q13 = Inlines.silk_SMLAWB(thrhld_Q13, ((int)((-0.1f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(-0.1f, 14)*/, psEnc.input_tilt_Q15);
                 thrhld_Q13 = Inlines.silk_SAT16(thrhld_Q13);
 
                 /*****************************************/

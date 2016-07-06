@@ -104,7 +104,7 @@ namespace Concentus.Silk
             Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
 
             status = 1;
-            diag_min_value = Inlines.silk_max_32(Inlines.silk_SMMUL(Inlines.silk_ADD_SAT32(A[0], A[Inlines.silk_SMULBB(M, M) - 1]), Inlines.SILK_CONST(TuningParameters.FIND_LTP_COND_FAC, 31)), 1 << 9);
+            diag_min_value = Inlines.silk_max_32(Inlines.silk_SMMUL(Inlines.silk_ADD_SAT32(A[0], A[Inlines.silk_SMULBB(M, M) - 1]), ((int)((TuningParameters.FIND_LTP_COND_FAC) * ((long)1 << (31)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LTP_COND_FAC, 31)*/), 1 << 9);
             for (loop_count = 0; loop_count < M && status == 1; loop_count++)
             {
                 status = 0;

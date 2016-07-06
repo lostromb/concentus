@@ -244,6 +244,25 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void TestBug4()
+        {
+            RunParityTest(new TestParameters()
+            {
+                Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_VOIP,
+                Bitrate = 16,
+                Channels = 1,
+                Complexity = 0,
+                ConstrainedVBR = false,
+                ForceMode = Concentus.Enums.OpusMode.MODE_CELT_ONLY,
+                FrameSize = 60,
+                PacketLossPercent = 20,
+                SampleRate = 12000,
+                UseDTX = true,
+                UseVBR = false
+            });
+        }
+
+        [TestMethod]
         public void TestDecodeTo8Khz()
         {
             RunParityTest(new TestParameters()

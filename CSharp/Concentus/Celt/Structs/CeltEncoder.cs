@@ -107,11 +107,11 @@ namespace Concentus.Celt.Structs
         /// val16 oldLogE[],       Size = channels*mode.nbEBands
         /// val16 oldLogE2[],      Size = channels*mode.nbEBands
         /// </summary>
-        internal int[] in_mem = null;
-        internal int[] prefilter_mem = null;
-        internal int[] oldBandE = null;
-        internal int[] oldLogE = null;
-        internal int[] oldLogE2 = null;
+        internal int[][] in_mem = null;
+        internal int[][] prefilter_mem = null;
+        internal int[][] oldBandE = null;
+        internal int[][] oldLogE = null;
+        internal int[][] oldLogE2 = null;
 
         private void Reset()
         {
@@ -181,15 +181,22 @@ namespace Concentus.Celt.Structs
             this.PartialReset();
 
             // We have to reconstitute the dynamic buffers here.
-            this.in_mem = new int[this.channels * this.mode.overlap];
-            this.prefilter_mem = new int[this.channels * CeltConstants.COMBFILTER_MAXPERIOD];
-            this.oldBandE = new int[this.channels * this.mode.nbEBands];
-            this.oldLogE = new int[this.channels * this.mode.nbEBands];
-            this.oldLogE2 = new int[this.channels * this.mode.nbEBands];
+            this.in_mem = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.overlap);
+            this.prefilter_mem = Arrays.InitTwoDimensionalArray<int>(this.channels, CeltConstants.COMBFILTER_MAXPERIOD);
+            this.oldBandE = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
+            this.oldLogE = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
+            this.oldLogE2 = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
 
-            for (i = 0; i < this.channels * this.mode.nbEBands; i++)
+            for (i = 0; i < this.mode.nbEBands; i++)
             {
-                this.oldLogE[i] = this.oldLogE2[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                this.oldLogE[0][i] = this.oldLogE2[0][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+            }
+            if (this.channels == 2)
+            {
+                for (i = 0; i < this.mode.nbEBands; i++)
+                {
+                    this.oldLogE[1][i] = this.oldLogE2[1][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+                }
             }
             this.vbr_offset = 0;
             this.delayedIntra = 1;
@@ -249,7 +256,7 @@ namespace Concentus.Celt.Structs
             return OpusError.OPUS_OK;
         }
         
-        internal int run_prefilter(int[] input, int[] prefilter_mem, int CC, int N,
+        internal int run_prefilter(int[][] input, int[][] prefilter_mem, int CC, int N,
               int prefilter_tapset, BoxedValue<int> pitch, BoxedValue<int> gain, BoxedValue<int> qgain, int enabled, int nbAvailableBytes)
         {
             int c;
@@ -272,8 +279,8 @@ namespace Concentus.Celt.Structs
             c = 0;
             do
             {
-                Array.Copy(prefilter_mem, c * CeltConstants.COMBFILTER_MAXPERIOD, pre[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
-                Array.Copy(input, c * (N + overlap) + overlap, pre[c], CeltConstants.COMBFILTER_MAXPERIOD, N);
+                Array.Copy(prefilter_mem[c], 0, pre[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
+                Array.Copy(input[c], overlap, pre[c], CeltConstants.COMBFILTER_MAXPERIOD, N);
             } while (++c < CC);
 
             if (enabled != 0)
@@ -290,7 +297,7 @@ namespace Concentus.Celt.Structs
                       N, pitch_index, this.prefilter_period, this.prefilter_gain);
                 if (pitch_index.Val > CeltConstants.COMBFILTER_MAXPERIOD - 2)
                     pitch_index.Val = CeltConstants.COMBFILTER_MAXPERIOD - 2;
-                gain1 = Inlines.MULT16_16_Q15(Inlines.QCONST16(.7f, 15), gain1);
+                gain1 = Inlines.MULT16_16_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, gain1);
                 /*printf("%d %d %f %f\n", pitch_change, pitch_index, gain1, st.analysis.tonality);*/
                 if (this.loss_rate > 2)
                     gain1 = Inlines.HALF32(gain1);
@@ -305,22 +312,22 @@ namespace Concentus.Celt.Structs
             }
 
             /* Gain threshold for enabling the prefilter/postfilter */
-            pf_threshold = Inlines.QCONST16(.2f, 15);
+            pf_threshold = ((short)(0.5 + (.2f) * (((int)1) << (15))))/*Inlines.QCONST16(.2f, 15)*/;
 
             /* Adjusting the threshold based on rate and continuity */
             if (Inlines.abs(pitch_index.Val - this.prefilter_period) * 10 > pitch_index.Val)
-                pf_threshold += Inlines.QCONST16(.2f, 15);
+                pf_threshold += ((short)(0.5 + (.2f) * (((int)1) << (15))))/*Inlines.QCONST16(.2f, 15)*/;
             if (nbAvailableBytes < 25)
-                pf_threshold += Inlines.QCONST16(.1f, 15);
+                pf_threshold += ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
             if (nbAvailableBytes < 35)
-                pf_threshold += Inlines.QCONST16(.1f, 15);
-            if (this.prefilter_gain > Inlines.QCONST16(.4f, 15))
-                pf_threshold -= Inlines.QCONST16(.1f, 15);
-            if (this.prefilter_gain > Inlines.QCONST16(.55f, 15))
-                pf_threshold -= Inlines.QCONST16(.1f, 15);
+                pf_threshold += ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
+            if (this.prefilter_gain > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/)
+                pf_threshold -= ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
+            if (this.prefilter_gain > ((short)(0.5 + (.55f) * (((int)1) << (15))))/*Inlines.QCONST16(.55f, 15)*/)
+                pf_threshold -= ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
 
             /* Hard threshold at 0.2 */
-            pf_threshold = Inlines.MAX16(pf_threshold, Inlines.QCONST16(.2f, 15));
+            pf_threshold = Inlines.MAX16(pf_threshold, ((short)(0.5 + (.2f) * (((int)1) << (15))))/*Inlines.QCONST16(.2f, 15)*/);
 
             if (gain1 < pf_threshold)
             {
@@ -332,12 +339,12 @@ namespace Concentus.Celt.Structs
             {
                 /*This block is not gated by a total bits check only because
                   of the nbAvailableBytes check above.*/
-                if (Inlines.ABS32(gain1 - this.prefilter_gain) < Inlines.QCONST16(.1f, 15))
+                if (Inlines.ABS32(gain1 - this.prefilter_gain) < ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/)
                     gain1 = this.prefilter_gain;
 
                 qg = ((gain1 + 1536) >> 10) / 3 - 1;
                 qg = Inlines.IMAX(0, Inlines.IMIN(7, qg));
-                gain1 = Inlines.QCONST16(0.09375f, 15) * (qg + 1);
+                gain1 = ((short)(0.5 + (0.09375f) * (((int)1) << (15))))/*Inlines.QCONST16(0.09375f, 15)*/ * (qg + 1);
                 pf_on = 1;
             }
             /*printf("%d %f\n", pitch_index, gain1);*/
@@ -347,27 +354,27 @@ namespace Concentus.Celt.Structs
             {
                 int offset = mode.shortMdctSize - overlap;
                 this.prefilter_period = Inlines.IMAX(this.prefilter_period, CeltConstants.COMBFILTER_MINPERIOD);
-                Array.Copy(this.in_mem, c * overlap, input, c * (N + overlap), overlap);
+                Array.Copy(this.in_mem[c], 0, input[c], 0, overlap);
                 if (offset != 0)
                 {
-                    CeltCommon.comb_filter(input.GetPointer(c * (N + overlap) + overlap), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD),
+                    CeltCommon.comb_filter(input[c].GetPointer(overlap), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD),
                           this.prefilter_period, this.prefilter_period, offset, -this.prefilter_gain, -this.prefilter_gain,
                           this.prefilter_tapset, this.prefilter_tapset, null, 0); // opt: lots of pointer allocations here
                 }
 
-                CeltCommon.comb_filter(input.GetPointer(c * (N + overlap) + overlap + offset), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD + offset),
+                CeltCommon.comb_filter(input[c].GetPointer(overlap + offset), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       this.prefilter_period, pitch_index.Val, N - offset, -this.prefilter_gain, -gain1,
                       this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
-                Array.Copy(input, c * (N + overlap) + N, this.in_mem, c * overlap, overlap);
+                Array.Copy(input[c], N, this.in_mem[c], 0, overlap);
 
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
                 {
-                    Array.Copy(pre[c], N, prefilter_mem, c * CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MAXPERIOD);
+                    Array.Copy(pre[c], N, prefilter_mem[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
                 }
                 else
                 {
-                    Arrays.MemMove(prefilter_mem, c * CeltConstants.COMBFILTER_MAXPERIOD + N, c * CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MAXPERIOD - N); // opt: prefilter_mem may be a partitioned array
-                    Array.Copy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem, c * CeltConstants.COMBFILTER_MAXPERIOD + CeltConstants.COMBFILTER_MAXPERIOD - N, N);
+                    Arrays.MemMove(prefilter_mem[c], N, 0, CeltConstants.COMBFILTER_MAXPERIOD - N);
+                    Array.Copy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem[c], CeltConstants.COMBFILTER_MAXPERIOD - N, N);
                 }
             } while (++c < CC);
 
@@ -383,14 +390,14 @@ namespace Concentus.Celt.Structs
         {
             int i, c, N;
             int bits;
-            int[] input;
-            int[] freq;
+            int[][] input;
+            int[][] freq;
             int[][] X;
-            int[] bandE;
-            int[] bandLogE;
-            int[] bandLogE2;
+            int[][] bandE;
+            int[][] bandLogE;
+            int[][] bandLogE2;
             int[] fine_quant;
-            int[] error;
+            int[][] error;
             int[] pulses;
             int[] cap;
             int[] offsets;
@@ -541,7 +548,7 @@ namespace Concentus.Celt.Structs
             if (effEnd > mode.effEBands)
                 effEnd = mode.effEBands;
 
-            input = new int[CC * (N + overlap)];
+            input = Arrays.InitTwoDimensionalArray<int>(CC, N + overlap);
 
             sample_max = Inlines.MAX32(this.overlap_max, Inlines.celt_maxabs32(pcm.Data, pcm.Offset, C * (N - overlap) / this.upsample));
             this.overlap_max = Inlines.celt_maxabs32(pcm.Data, pcm.Offset + (C * (N - overlap) / this.upsample), C * overlap / this.upsample);
@@ -575,7 +582,7 @@ namespace Concentus.Celt.Structs
             {
                 int need_clip = 0;
                 BoxedValue<int> preemph_mem_boxed = new BoxedValue<int>(this.preemph_memE[c]);
-                CeltCommon.celt_preemphasis(pcm.Point(c), input.GetPointer(c * (N + overlap) + overlap), N, CC, this.upsample,
+                CeltCommon.celt_preemphasis(pcm.Point(c), input[c].GetPointer(overlap), N, CC, this.upsample,
                             mode.preemph, preemph_mem_boxed, need_clip);
                 this.preemph_memE[c] = preemph_mem_boxed.Val;
             } while (++c < CC);
@@ -596,7 +603,7 @@ namespace Concentus.Celt.Structs
                 gain1 = boxed_gain1.Val;
                 qg = boxed_qg.Val;
 
-                if ((gain1 > Inlines.QCONST16(.4f, 15) || this.prefilter_gain > Inlines.QCONST16(.4f, 15)) && (this.analysis.valid == 0 || this.analysis.tonality > .3)
+                if ((gain1 > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/ || this.prefilter_gain > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/) && (this.analysis.valid == 0 || this.analysis.tonality > .3)
                       && (pitch_index > 1.26 * this.prefilter_period || pitch_index < .79 * this.prefilter_period))
                     pitch_change = 1;
                 if (pf_on == 0)
@@ -641,21 +648,28 @@ namespace Concentus.Celt.Structs
                 transient_got_disabled = 1;
             }
 
-            freq = new int[CC * N]; /**< Interleaved signal MDCTs */
-            bandE = new int[nbEBands * CC];
-            bandLogE = new int[nbEBands * CC];
+            freq = Arrays.InitTwoDimensionalArray<int>(CC, N); /**< Interleaved signal MDCTs */
+            bandE = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
+            bandLogE = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
 
             secondMdct = (shortBlocks != 0 && this.complexity >= 8) ? 1 : 0;
-            bandLogE2 = new int[C * nbEBands];
+            bandLogE2 = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
             //Arrays.MemSet<int>(bandLogE2, 0, C * nbEBands); // not explicitly needed
             if (secondMdct != 0)
             {
                 CeltCommon.compute_mdcts(mode, 0, input, freq, C, CC, LM, this.upsample);
                 Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
                 QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
-                for (i = 0; i < C * nbEBands; i++)
+                for (i = 0; i < nbEBands; i++)
                 {
-                    bandLogE2[i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    bandLogE2[0][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                }
+                if (C == 2)
+                {
+                    for (i = 0; i < nbEBands; i++)
+                    {
+                        bandLogE2[1][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    }
                 }
             }
 
@@ -668,8 +682,8 @@ namespace Concentus.Celt.Structs
             {
                 for (i = 2; i < end; i++)
                 {
-                    bandE[i] = Inlines.IMIN(bandE[i], Inlines.MULT16_32_Q15(Inlines.QCONST16(1e-4f, 15), bandE[0]));
-                    bandE[i] = Inlines.MAX32(bandE[i], CeltConstants.EPSILON);
+                    bandE[0][i] = Inlines.IMIN(bandE[0][i], Inlines.MULT16_32_Q15(((short)(0.5 + (1e-4f) * (((int)1) << (15))))/*Inlines.QCONST16(1e-4f, 15)*/, bandE[0][0]));
+                    bandE[0][i] = Inlines.MAX32(bandE[0][i], CeltConstants.EPSILON);
                 }
             }
 
@@ -693,7 +707,7 @@ namespace Concentus.Celt.Structs
                     {
                         int mask;
                         mask = Inlines.MAX16(Inlines.MIN16(this.energy_mask[nbEBands * c + i],
-                               Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)), -Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT));
+                               ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/), -((short)(0.5 + (2.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)*/);
                         if (mask > 0)
                             mask = Inlines.HALF16(mask);
                         mask_avg += Inlines.MULT16_16(mask, eBands[i + 1] - eBands[i]);
@@ -703,11 +717,11 @@ namespace Concentus.Celt.Structs
                 }
                 Inlines.OpusAssert(count > 0);
                 mask_avg = Inlines.DIV32_16(mask_avg, count);
-                mask_avg += Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT);
+                mask_avg += ((short)(0.5 + (.2f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT)*/;
                 diff = diff * 6 / (C * (mask_end - 1) * (mask_end + 1) * mask_end);
                 /* Again, being conservative */
                 diff = Inlines.HALF32(diff);
-                diff = Inlines.MAX32(Inlines.MIN32(diff, Inlines.QCONST32(.031f, CeltConstants.DB_SHIFT)), 0 - Inlines.QCONST32(.031f, CeltConstants.DB_SHIFT));
+                diff = Inlines.MAX32(Inlines.MIN32(diff, ((int)(0.5 + (.031f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST32(.031f, CeltConstants.DB_SHIFT)*/), 0 - ((int)(0.5 + (.031f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST32(.031f, CeltConstants.DB_SHIFT)*/);
                 /* Find the band that's in the middle of the coded spectrum */
                 for (midband = 0; eBands[midband + 1] < eBands[mask_end] / 2; midband++) ;
                 count_dynalloc = 0;
@@ -720,11 +734,11 @@ namespace Concentus.Celt.Structs
                         unmask = Inlines.MAX16(this.energy_mask[i], this.energy_mask[nbEBands + i]);
                     else
                         unmask = this.energy_mask[i];
-                    unmask = Inlines.MIN16(unmask, Inlines.QCONST16(.0f, CeltConstants.DB_SHIFT));
+                    unmask = Inlines.MIN16(unmask, ((short)(0.5 + (.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.0f, CeltConstants.DB_SHIFT)*/);
                     unmask -= lin;
-                    if (unmask > Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT))
+                    if (unmask > ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/)
                     {
-                        surround_dynalloc[i] = unmask - Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT);
+                        surround_dynalloc[i] = unmask - ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/;
                         count_dynalloc++;
                     }
                 }
@@ -732,7 +746,7 @@ namespace Concentus.Celt.Structs
                 {
                     /* If we need dynalloc in many bands, it's probably because our
                        initial masking rate was too low. */
-                    mask_avg += Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT);
+                    mask_avg += ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/;
                     if (mask_avg > 0)
                     {
                         /* Something went really wrong in the original calculations,
@@ -743,10 +757,10 @@ namespace Concentus.Celt.Structs
                     }
                     else {
                         for (i = 0; i < mask_end; i++)
-                            surround_dynalloc[i] = Inlines.MAX16(0, surround_dynalloc[i] - Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT));
+                            surround_dynalloc[i] = Inlines.MAX16(0, surround_dynalloc[i] - ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/);
                     }
                 }
-                mask_avg += Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT);
+                mask_avg += ((short)(0.5 + (.2f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT)*/;
                 /* Convert to 1/64th units used for the trim */
                 surround_trim = 64 * diff;
                 /*printf("%d %d ", mask_avg, surround_trim);*/
@@ -755,20 +769,20 @@ namespace Concentus.Celt.Structs
             /* Temporal VBR (but not for LFE) */
             if (this.lfe == 0)
             {
-                int follow = -Inlines.QCONST16(10.0f, CeltConstants.DB_SHIFT);
+                int follow = -((short)(0.5 + (10.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(10.0f, CeltConstants.DB_SHIFT)*/;
                 int frame_avg = 0;
                 int offset = shortBlocks != 0 ? Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT)) : 0;
                 for (i = start; i < end; i++)
                 {
-                    follow = Inlines.MAX16(follow - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT), bandLogE[i] - offset);
+                    follow = Inlines.MAX16(follow - ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/, bandLogE[0][i] - offset);
                     if (C == 2)
-                        follow = Inlines.MAX16(follow, bandLogE[i + nbEBands] - offset);
+                        follow = Inlines.MAX16(follow, bandLogE[1][i] - offset);
                     frame_avg += follow;
                 }
                 frame_avg /= (end - start);
                 temporal_vbr = Inlines.SUB16(frame_avg, this.spec_avg);
-                temporal_vbr = Inlines.MIN16(Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT), Inlines.MAX16(-Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT), temporal_vbr));
-                this.spec_avg += Inlines.CHOP16(Inlines.MULT16_16_Q15(Inlines.QCONST16(.02f, 15), temporal_vbr));
+                temporal_vbr = Inlines.MIN16(((short)(0.5 + (3.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/, Inlines.MAX16(-((short)(0.5 + (1.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)*/, temporal_vbr));
+                this.spec_avg += Inlines.CHOP16(Inlines.MULT16_16_Q15(((short)(0.5 + (.02f) * (((int)1) << (15))))/*Inlines.QCONST16(.02f, 15)*/, temporal_vbr));
             }
             /*for (i=0;i<21;i++)
                printf("%f ", bandLogE[i]);
@@ -776,7 +790,9 @@ namespace Concentus.Celt.Structs
 
             if (secondMdct == 0)
             {
-                Array.Copy(bandLogE, bandLogE2, C * nbEBands);
+                Array.Copy(bandLogE[0], bandLogE2[0], nbEBands);
+                if (C == 2)
+                    Array.Copy(bandLogE[1], bandLogE2[1], nbEBands);
             }
 
             /* Last chance to catch any transient we might have missed in the
@@ -791,9 +807,14 @@ namespace Concentus.Celt.Structs
                     Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
                     QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
                     /* Compensate for the scaling of short vs long mdcts */
-                    for (i = 0; i < C * nbEBands; i++)
-                        bandLogE2[i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
-                    tf_estimate = Inlines.QCONST16(.2f, 14);
+                    for (i = 0; i < nbEBands; i++)
+                        bandLogE2[0][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    if (C == 2)
+                    {
+                        for (i = 0; i < nbEBands; i++)
+                            bandLogE2[1][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    }
+                    tf_estimate = ((short)(0.5 + (.2f) * (((int)1) << (14))))/*Inlines.QCONST16(.2f, 14)*/;
                 }
             }
 
@@ -833,7 +854,7 @@ namespace Concentus.Celt.Structs
                 tf_select = 0;
             }
 
-            error = new int[C * nbEBands];
+            error = Arrays.InitTwoDimensionalArray<int>(C, nbEBands);
             BoxedValue<int> boxed_delayedIntra = new BoxedValue<int>(this.delayedIntra);
             QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE,
                   this.oldBandE, (uint)total_bits, error, enc,
@@ -1016,7 +1037,7 @@ namespace Concentus.Celt.Structs
                     alpha = Inlines.celt_rcp(Inlines.SHL32((this.vbr_count + 20), 16));
                 }
                 else
-                    alpha = Inlines.QCONST16(.001f, 15);
+                    alpha = ((short)(0.5 + (.001f) * (((int)1) << (15))))/*Inlines.QCONST16(.001f, 15)*/;
                 /* How many bits have we used in excess of what we're allowed */
                 if (this.constrained_vbr != 0)
                     this.vbr_reservoir += target - vbr_rate;
@@ -1097,10 +1118,10 @@ namespace Concentus.Celt.Structs
             /* Residual quantisation */
             collapse_masks = new byte[C * nbEBands];
             BoxedValue<uint> boxed_rng = new BoxedValue<uint>(this.rng);
-            Bands.quant_all_bands(1, mode, start, end, X[0], C == 2 ? X[1].GetPointer() : null, collapse_masks,
+            Bands.quant_all_bands(1, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   bandE, pulses, shortBlocks, this.spread_decision,
                   dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
-                  balance, enc, LM, codedBands, boxed_rng); // opt: X potential 1:2 partitioned array
+                  balance, enc, LM, codedBands, boxed_rng);
             this.rng = boxed_rng.Val;
 
             if (anti_collapse_rsv > 0)
@@ -1116,8 +1137,17 @@ namespace Concentus.Celt.Structs
 
             if (silence != 0)
             {
-                for (i = 0; i < C * nbEBands; i++)
-                    this.oldBandE[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                for (i = 0; i < nbEBands; i++)
+                {
+                    this.oldBandE[0][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+                }
+                if (C == 2)
+                {
+                    for (i = 0; i < nbEBands; i++)
+                    {
+                        this.oldBandE[1][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+                    }
+                }
             }
 
             this.prefilter_period = pitch_index;
@@ -1126,19 +1156,31 @@ namespace Concentus.Celt.Structs
 
             if (CC == 2 && C == 1)
             {
-                Array.Copy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
+                Array.Copy(oldBandE[0], 0, oldBandE[1], 0, nbEBands);
             }
 
             if (isTransient == 0)
             {
-                Array.Copy(oldLogE, oldLogE2, CC * nbEBands);
-                Array.Copy(oldBandE, oldLogE, CC * nbEBands);
+                Array.Copy(oldLogE[0], 0, oldLogE2[0], 0, nbEBands);
+                Array.Copy(oldBandE[0], 0, oldLogE[0], 0, nbEBands);
+                if (CC == 2)
+                {
+                    Array.Copy(oldLogE[1], 0, oldLogE2[1], 0, nbEBands);
+                    Array.Copy(oldBandE[1], 0, oldLogE[1], 0, nbEBands);
+                }
             }
             else
             {
-                for (i = 0; i < CC * nbEBands; i++)
+                for (i = 0; i < nbEBands; i++)
                 {
-                    oldLogE[i] = Inlines.MIN16(oldLogE[i], oldBandE[i]);
+                    oldLogE[0][i] = Inlines.MIN16(oldLogE[0][i], oldBandE[0][i]);
+                }
+                if (CC == 2)
+                {
+                    for (i = 0; i < nbEBands; i++)
+                    {
+                        oldLogE[1][i] = Inlines.MIN16(oldLogE[1][i], oldBandE[1][i]);
+                    }
                 }
             }
 
@@ -1148,13 +1190,13 @@ namespace Concentus.Celt.Structs
             {
                 for (i = 0; i < start; i++)
                 {
-                    oldBandE[c * nbEBands + i] = 0;
-                    oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    oldBandE[c][i] = 0;
+                    oldLogE[c][i] = oldLogE2[c][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
                 }
                 for (i = end; i < nbEBands; i++)
                 {
-                    oldBandE[c * nbEBands + i] = 0;
-                    oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    oldBandE[c][i] = 0;
+                    oldLogE[c][i] = oldLogE2[c][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
                 }
             } while (++c < CC);
 
@@ -1287,11 +1329,6 @@ namespace Concentus.Celt.Structs
         internal void SetEnergyMask(int[] value)
         {
             this.energy_mask = value;
-        }
-
-        internal void SetEnableAnalysis(bool value)
-        {
-            this.analysis.enabled = value;
         }
 
 #endregion

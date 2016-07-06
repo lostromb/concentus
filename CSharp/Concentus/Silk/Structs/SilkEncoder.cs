@@ -91,7 +91,7 @@ namespace Concentus.Silk.Structs
             // Clear the entire encoder state
             psEnc.Reset();
 
-            psEnc.variable_HP_smth1_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ, 16)) - (16 << 7), 8);
+            psEnc.variable_HP_smth1_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(((int)((TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ, 16)*/) - (16 << 7), 8);
             psEnc.variable_HP_smth2_Q15 = psEnc.variable_HP_smth1_Q15;
 
             // Used to deactivate LSF interpolation, pitch prediction

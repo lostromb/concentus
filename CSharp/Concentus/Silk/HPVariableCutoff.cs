@@ -60,7 +60,7 @@ namespace Concentus.Silk
                 /* adjustment based on quality */
                 quality_Q15 = psEncC1.input_quality_bands_Q15[0];
                 pitch_freq_log_Q7 = Inlines.silk_SMLAWB(pitch_freq_log_Q7, Inlines.silk_SMULWB(Inlines.silk_LSHIFT(-quality_Q15, 2), quality_Q15),
-                      pitch_freq_log_Q7 - (Inlines.silk_lin2log(Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ, 16)) - (16 << 7)));
+                      pitch_freq_log_Q7 - (Inlines.silk_lin2log(((int)((TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ, 16)*/) - (16 << 7)));
 
                 /* delta_freq = pitch_freq_log - psEnc.variable_HP_smth1; */
                 delta_freq_Q7 = pitch_freq_log_Q7 - Inlines.silk_RSHIFT(psEncC1.variable_HP_smth1_Q15, 8);
@@ -73,12 +73,12 @@ namespace Concentus.Silk
                 /* limit delta, to reduce impact of outliers in pitch estimation */
                 delta_freq_Q7 = Inlines.silk_LIMIT_32(
                     delta_freq_Q7,
-                    0 - Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MAX_DELTA_FREQ, 7),
-                    Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MAX_DELTA_FREQ, 7));
+                    0 - ((int)((TuningParameters.VARIABLE_HP_MAX_DELTA_FREQ) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MAX_DELTA_FREQ, 7)*/,
+                    ((int)((TuningParameters.VARIABLE_HP_MAX_DELTA_FREQ) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MAX_DELTA_FREQ, 7)*/);
 
                 /* update smoother */
                 psEncC1.variable_HP_smth1_Q15 = Inlines.silk_SMLAWB(psEncC1.variable_HP_smth1_Q15,
-                      Inlines.silk_SMULBB(psEncC1.speech_activity_Q8, delta_freq_Q7), Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_SMTH_COEF1, 16));
+                      Inlines.silk_SMULBB(psEncC1.speech_activity_Q8, delta_freq_Q7), ((int)((TuningParameters.VARIABLE_HP_SMTH_COEF1) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_SMTH_COEF1, 16)*/);
 
                 /* limit frequency range */
                 psEncC1.variable_HP_smth1_Q15 = Inlines.silk_LIMIT_32(psEncC1.variable_HP_smth1_Q15,

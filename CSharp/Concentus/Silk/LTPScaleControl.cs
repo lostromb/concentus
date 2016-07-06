@@ -54,7 +54,7 @@ namespace Concentus.Silk
                 /* Only scale if first frame in packet */
                 round_loss = psEnc.PacketLoss_perc + psEnc.nFramesPerPacket;
                 psEnc.indices.LTP_scaleIndex = (sbyte)Inlines.silk_LIMIT(
-                    Inlines.silk_SMULWB(Inlines.silk_SMULBB(round_loss, psEncCtrl.LTPredCodGain_Q7), Inlines.SILK_CONST(0.1f, 9)), 0, 2);
+                    Inlines.silk_SMULWB(Inlines.silk_SMULBB(round_loss, psEncCtrl.LTPredCodGain_Q7), ((int)((0.1f) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(0.1f, 9)*/), 0, 2);
             }
             else {
                 /* Default is minimum scaling */

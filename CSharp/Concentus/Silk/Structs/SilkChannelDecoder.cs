@@ -171,8 +171,8 @@ namespace Concentus.Silk.Structs
         private void silk_PLC_Reset()
         {
             this.sPLC.pitchL_Q8 = Inlines.silk_LSHIFT(this.frame_length, 8 - 1);
-            this.sPLC.prevGain_Q16[0] = Inlines.SILK_CONST(1, 16);
-            this.sPLC.prevGain_Q16[1] = Inlines.SILK_CONST(1, 16);
+            this.sPLC.prevGain_Q16[0] = ((int)((1) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/;
+            this.sPLC.prevGain_Q16[1] = ((int)((1) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/;
             this.sPLC.subfr_length = 20;
             this.sPLC.nb_subfr = 2;
         }

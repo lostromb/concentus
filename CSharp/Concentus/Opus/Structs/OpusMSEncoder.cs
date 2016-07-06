@@ -119,9 +119,9 @@ namespace Concentus.Structs
         }
 
         private static readonly int[] diff_table/*[17]*/ = {
-             Inlines.QCONST16(0.5000000f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.2924813f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.1609640f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.0849625f, CeltConstants.DB_SHIFT),
-             Inlines.QCONST16(0.0437314f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.0221971f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.0111839f, CeltConstants.DB_SHIFT), Inlines.QCONST16(0.0056136f, CeltConstants.DB_SHIFT),
-             Inlines.QCONST16(0.0028123f, CeltConstants.DB_SHIFT)
+             ((short)(0.5 + (0.5000000f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.5000000f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.2924813f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.2924813f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.1609640f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.1609640f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0849625f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0849625f, CeltConstants.DB_SHIFT)*/,
+             ((short)(0.5 + (0.0437314f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0437314f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0221971f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0221971f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0111839f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0111839f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0056136f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0056136f, CeltConstants.DB_SHIFT)*/,
+             ((short)(0.5 + (0.0028123f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0028123f, CeltConstants.DB_SHIFT)*/
        };
 
         /* Computes a rough approximation of log2(2^a + 2^b) */
@@ -141,7 +141,7 @@ namespace Concentus.Structs
                 max = b;
                 diff = Inlines.SUB32(Inlines.EXTEND32(b), Inlines.EXTEND32(a));
             }
-            if (!(diff < Inlines.QCONST16(8.0f, CeltConstants.DB_SHIFT)))  /* inverted to catch NaNs */
+            if (!(diff < ((short)(0.5 + (8.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(8.0f, CeltConstants.DB_SHIFT)*/))  /* inverted to catch NaNs */
                 return max;
             low = Inlines.SHR32(diff, CeltConstants.DB_SHIFT - 1);
             frac = Inlines.SHL16(diff - Inlines.SHL16(low, CeltConstants.DB_SHIFT - 1), 16 - CeltConstants.DB_SHIFT);
@@ -166,11 +166,11 @@ namespace Concentus.Structs
             int upsample;
             int frame_size;
             int channel_offset;
-            int[] bandE = new int[21];
+            int[][] bandE = Arrays.InitTwoDimensionalArray<int>(1, 21);
             int[][] maskLogE = Arrays.InitTwoDimensionalArray<int>(3, 21);
             int[] input;
             short[] x;
-            int[] freq;
+            int[][] freq;
 
             upsample = CeltCommon.resampling_factor(rate);
             frame_size = len * upsample;
@@ -181,13 +181,13 @@ namespace Concentus.Structs
 
             input = new int[frame_size + overlap];
             x = new short[len];
-            freq = new int[frame_size];
+            freq = Arrays.InitTwoDimensionalArray<int>(1, frame_size);
 
             channel_pos(channels, pos);
 
             for (c = 0; c < 3; c++)
                 for (i = 0; i < 21; i++)
-                    maskLogE[c][i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    maskLogE[c][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
 
             for (c = 0; c < channels; c++)
             {
@@ -201,7 +201,7 @@ namespace Concentus.Structs
                     celt_mode.mdct,
                     input,
                     0,
-                    freq,
+                    freq[0],
                     0,
                     celt_mode.window,
                     0,
@@ -212,18 +212,18 @@ namespace Concentus.Structs
                 {
                     int bound = len;
                     for (i = 0; i < bound; i++)
-                        freq[i] *= upsample;
+                        freq[0][i] *= upsample;
                     for (; i < frame_size; i++)
-                        freq[i] = 0;
+                        freq[0][i] = 0;
                 }
-
+                
                 Bands.compute_band_energies(celt_mode, freq, bandE, 21, 1, LM);
-                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE, bandLogE.GetPointer(21 * c), 1);
+                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE[0], bandLogE.GetPointer(21 * c), 1);
                 /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
                 for (i = 1; i < 21; i++)
-                    bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i - 1] - Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT));
+                    bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i - 1] - ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/);
                 for (i = 19; i >= 0; i--)
-                    bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i + 1] - Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT));
+                    bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i + 1] - ((short)(0.5 + (2.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)*/);
                 if (pos[c] == 1)
                 {
                     for (i = 0; i < 21; i++)
@@ -238,15 +238,15 @@ namespace Concentus.Structs
                 {
                     for (i = 0; i < 21; i++)
                     {
-                        maskLogE[0][i] = logSum(maskLogE[0][i], bandLogE[21 * c + i] - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT));
-                        maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21 * c + i] - Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT));
+                        maskLogE[0][i] = logSum(maskLogE[0][i], bandLogE[21 * c + i] - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
+                        maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21 * c + i] - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
                     }
                 }
                 Array.Copy(input, frame_size, mem, c * overlap, overlap);
             }
             for (i = 0; i < 21; i++)
                 maskLogE[1][i] = Inlines.MIN32(maskLogE[0][i], maskLogE[2][i]);
-            channel_offset = Inlines.HALF16(Inlines.celt_log2(Inlines.QCONST32(2.0f, 14) / (channels - 1)));
+            channel_offset = Inlines.HALF16(Inlines.celt_log2(((int)(0.5 + (2.0f) * (((int)1) << (14))))/*Inlines.QCONST32(2.0f, 14)*/ / (channels - 1)));
             for (c = 0; c < 3; c++)
                 for (i = 0; i < 21; i++)
                     maskLogE[c][i] += channel_offset;
@@ -306,14 +306,14 @@ namespace Concentus.Structs
                 ret = this.encoders[encoder_ptr].opus_init_encoder(Fs, 2, application);
                 if (ret != OpusError.OPUS_OK) return ret;
                 if (i == this.lfe_stream)
-                    this.encoders[encoder_ptr].SetLFE(1);
+                    this.encoders[encoder_ptr].IsLFE = true;
                 encoder_ptr += 1;
             }
             for (; i < this.layout.nb_streams; i++)
             {
                 ret = this.encoders[encoder_ptr].opus_init_encoder(Fs, 1, application);
                 if (i == this.lfe_stream)
-                    this.encoders[encoder_ptr].SetLFE(1);
+                    this.encoders[encoder_ptr].IsLFE = true;
                 if (ret != OpusError.OPUS_OK) return ret;
                 encoder_ptr += 1;
             }
@@ -487,8 +487,8 @@ namespace Concentus.Structs
             int lfe_ratio;     /* Q8 */
             int rate_sum = 0;
 
-            ptr = this.encoders[0];// (char*)st + align(sizeof(OpusMSEncoder));
-            Fs = ptr.GetSampleRate();
+            ptr = this.encoders[0];
+            Fs = ptr.SampleRate;
 
             if (this.bitrate_bps > this.layout.nb_channels * 40000)
                 stream_offset = 20000;
@@ -583,8 +583,8 @@ namespace Concentus.Structs
             }
 
             encoder_ptr = 0;
-            Fs = this.encoders[encoder_ptr].GetSampleRate();
-            vbr = this.encoders[encoder_ptr].GetVBR() ? 1 : 0;
+            Fs = this.encoders[encoder_ptr].SampleRate;
+            vbr = this.encoders[encoder_ptr].UseVBR ? 1 : 0;
             celt_mode = this.encoders[encoder_ptr].GetCeltMode();
 
             {
@@ -592,7 +592,7 @@ namespace Concentus.Structs
                 int channels;
 
                 channels = this.layout.nb_streams + this.layout.nb_coupled_streams;
-                delay_compensation = this.encoders[encoder_ptr].GetLookahead();
+                delay_compensation = this.encoders[encoder_ptr].Lookahead;
                 delay_compensation -= Fs / 400;
                 frame_size = CodecHelpers.compute_frame_size(pcm, pcm_ptr, analysis_frame_size,
                       this.variable_duration, channels, Fs, this.bitrate_bps,
@@ -646,7 +646,7 @@ namespace Concentus.Structs
             {
                 OpusEncoder enc = this.encoders[encoder_ptr];
                 encoder_ptr += 1;
-                enc.SetBitrate(bitrates[s]);
+                enc.Bitrate = (bitrates[s]);
                 if (this.surround != 0)
                 {
                     int equiv_rate;
@@ -654,18 +654,18 @@ namespace Concentus.Structs
                     if (frame_size * 50 < Fs)
                         equiv_rate -= 60 * (Fs / frame_size - 50) * this.layout.nb_channels;
                     if (equiv_rate > 10000 * this.layout.nb_channels)
-                        enc.SetBandwidth(OpusBandwidth.OPUS_BANDWIDTH_FULLBAND);
+                        enc.Bandwidth = (OpusBandwidth.OPUS_BANDWIDTH_FULLBAND);
                     else if (equiv_rate > 7000 * this.layout.nb_channels)
-                        enc.SetBandwidth(OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND);
+                        enc.Bandwidth = (OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND);
                     else if (equiv_rate > 5000 * this.layout.nb_channels)
-                        enc.SetBandwidth(OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
+                        enc.Bandwidth= (OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
                     else
-                        enc.SetBandwidth(OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND);
+                        enc.Bandwidth = (OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND);
                     if (s < this.layout.nb_coupled_streams)
                     {
                         /* To preserve the spatial image, force stereo CELT on coupled streams */
-                        enc.SetForceMode(OpusMode.MODE_CELT_ONLY);
-                        enc.SetForceChannels(2);
+                        enc.ForceMode = (OpusMode.MODE_CELT_ONLY);
+                        enc.ForceChannels = (2);
                     }
                 }
             }
@@ -729,7 +729,7 @@ namespace Concentus.Structs
                 /* Repacketizer will add one or two bytes for self-delimited frames */
                 if (s != this.layout.nb_streams - 1) curr_max -= curr_max > 253 ? 2 : 1;
                 if (vbr == 0 && s == this.layout.nb_streams - 1)
-                    enc.SetBitrate(curr_max * (8 * Fs / frame_size));
+                    enc.Bitrate = (curr_max * (8 * Fs / frame_size));
                 len = enc.opus_encode_native(buf, 0, frame_size, tmp_data, 0, curr_max, lsb_depth,
                       pcm, pcm_ptr, analysis_frame_size, c1, c2, this.layout.nb_channels, downmix, float_api);
                 if (len < 0)
@@ -813,247 +813,303 @@ namespace Concentus.Structs
 
         #region Getters and Setters
 
-        public void SetBitrate(int value)
+        public int Bitrate
         {
-            if (value < 0 && value != OpusConstants.OPUS_AUTO && value != OpusConstants.OPUS_BITRATE_MAX)
+            get
             {
-                throw new ArgumentException("Invalid bitrate");
+                int s;
+                int value = 0;
+                int encoder_ptr = 0;
+                for (s = 0; s < layout.nb_streams; s++)
+                {
+                    OpusEncoder enc = encoders[encoder_ptr++];
+                    value += enc.Bitrate;
+                }
+                return value;
             }
-            bitrate_bps = value;
-        }
-
-        public int GetBitrate()
-        {
-            int s;
-            int value = 0;
-            int encoder_ptr = 0;
-            for (s = 0; s < layout.nb_streams; s++)
+            set
             {
-                OpusEncoder enc = encoders[encoder_ptr++];
-                value += enc.GetBitrate();
-            }
-            return value;
-        }
-
-        public OpusApplication GetApplication()
-        {
-            return encoders[0].GetApplication();
-        }
-        
-        public int GetForceChannels()
-        {
-            return encoders[0].GetForceChannels();
-        }
-
-        public OpusBandwidth GetMaxBandwidth()
-        {
-            return encoders[0].GetMaxBandwidth();
-        }
-
-        public OpusBandwidth GetBandwidth()
-        {
-            return encoders[0].GetBandwidth();
-        }
-
-        public bool GetUseDTX()
-        {
-            return encoders[0].GetUseDTX();
-        }
-
-        public int GetComplexity()
-        {
-            return encoders[0].GetComplexity();
-        }
-
-        public bool GetUseInbandFEC()
-        {
-            return encoders[0].GetUseInbandFEC();
-        }
-        
-        public int GetPacketLossPercent()
-        {
-            return encoders[0].GetPacketLossPercent();
-        }
-
-        public bool GetVBR()
-        {
-            return encoders[0].GetVBR();
-        }
-
-        public int GetVoiceRatio()
-        {
-            return encoders[0].GetVoiceRatio();
-        }
-
-        public bool GetVBRConstraint()
-        {
-            return encoders[0].GetVBRConstraint();
-        }
-
-        public OpusSignal GetSignalType()
-        {
-            return encoders[0].GetSignalType();
-        }
-
-        public int GetLookahead()
-        {
-            return encoders[0].GetLookahead();
-        }
-
-        public int GetSampleRate()
-        {
-            return encoders[0].GetSampleRate();
-        }
-
-        public uint GetFinalRange()
-        {
-            int s;
-            uint value = 0;
-            int encoder_ptr = 0;
-            for (s = 0; s < layout.nb_streams; s++)
-            {
-                value ^= encoders[encoder_ptr++].GetFinalRange();
-            }
-            return value;
-        }
-
-        public int GetLSBDepth()
-        {
-            return encoders[0].GetLSBDepth();
-        }
-
-        public bool GetPredictionDisabled()
-        {
-            return encoders[0].GetPredictionDisabled();
-        }
-
-        public void SetLSBDepth(int value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetLSBDepth(value);
-            }
-        }
-
-        public void SetComplexity(int value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetComplexity(value);
-            }
-        }
-
-        public void SetVBR(bool value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetVBR(value);
-            }
-        }
-
-        public void SetVBRConstraint(bool value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetVBRConstraint(value);
-            }
-        }
-
-        public void SetMaxBandwidth(OpusBandwidth value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetMaxBandwidth(value);
-            }
-        }
-
-        public void SetBandwidth(OpusBandwidth value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetBandwidth(value);
-            }
-        }
-
-        public void SetSignalType(OpusSignal value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetSignalType(value);
-            }
-        }
-
-        public void SetApplication(OpusApplication value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetApplication(value);
-            }
-        }
-
-        public void SetUseInbandFEC(bool value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetUseInbandFEC(value);
-            }
-        }
-
-        public void SetPacketLossPercent(int value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetPacketLossPercent(value);
-            }
-        }
-
-        public void SetUseDTX(bool value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetUseDTX(value);
-            }
-        }
-
-        public void SetForceMode(OpusMode value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetForceMode(value);
-            }
-        }
-
-        public void SetForceChannels(int value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetForceChannels(value);
-            }
-        }
-
-        public void SetPredictionDisabled(bool value)
-        {
-            for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-            {
-                encoders[encoder_ptr].SetPredictionDisabled(value);
+                if (value < 0 && value != OpusConstants.OPUS_AUTO && value != OpusConstants.OPUS_BITRATE_MAX)
+                {
+                    throw new ArgumentException("Invalid bitrate");
+                }
+                bitrate_bps = value;
             }
         }
         
+        public OpusApplication Application
+        {
+            get
+            {
+                return encoders[0].Application;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].Application = (value);
+                }
+            }
+        }
+
+        public int ForceChannels
+        {
+            get
+            {
+                return encoders[0].ForceChannels;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].ForceChannels = (value);
+                }
+            }
+        }
+
+        public OpusBandwidth MaxBandwidth
+        {
+            get
+            {
+                return encoders[0].MaxBandwidth;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].MaxBandwidth = (value);
+                }
+            }
+        }
+
+        public OpusBandwidth Bandwidth
+        {
+            get
+            {
+                return encoders[0].Bandwidth;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].Bandwidth = (value);
+                }
+            }
+        }
+
+        public bool UseDTX
+        {
+            get
+            {
+                return encoders[0].UseDTX;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].UseDTX = (value);
+                }
+            }
+        }
+
+        public int Complexity
+        {
+            get
+            {
+                return encoders[0].Complexity;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].Complexity = (value);
+                }
+            }
+        }
+
+        public OpusMode ForceMode
+        {
+            get
+            {
+                return encoders[0].ForceMode;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].ForceMode = (value);
+                }
+            }
+        }
+
+        public bool UseInbandFEC
+        {
+            get
+            {
+                return encoders[0].UseInbandFEC;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].UseInbandFEC = (value);
+                }
+            }
+        }
+        
+        public int PacketLossPercent
+        {
+            get
+            {
+                return encoders[0].PacketLossPercent;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].PacketLossPercent = (value);
+                }
+            }
+        }
+
+        public bool UseVBR
+        {
+            get
+            {
+                return encoders[0].UseVBR;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].UseVBR = value;
+                }
+            }
+        }
+
+        public bool UseConstrainedVBR
+        {
+            get
+            {
+                return encoders[0].UseConstrainedVBR;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].UseConstrainedVBR = (value);
+                }
+            }
+        }
+
+        public int VoiceRatio
+        {
+            get
+            {
+                return encoders[0].VoiceRatio;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].VoiceRatio = (value);
+                }
+            }
+        }
+
+        public OpusSignal SignalType
+        {
+            get
+            {
+                return encoders[0].SignalType;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].SignalType = (value);
+                }
+            }
+        }
+
+        public int Lookahead
+        {
+            get
+            {
+                return encoders[0].Lookahead;
+            }
+        }
+
+        public int SampleRate
+        {
+            get
+            {
+                return encoders[0].SampleRate;
+            }
+        }
+
+        public uint FinalRange
+        {
+            get
+            {
+                int s;
+                uint value = 0;
+                int encoder_ptr = 0;
+                for (s = 0; s < layout.nb_streams; s++)
+                {
+                    value ^= encoders[encoder_ptr++].FinalRange;
+                }
+                return value;
+            }
+        }
+        
+        public int LSBDepth
+        {
+            get
+            {
+                return encoders[0].LSBDepth;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].LSBDepth = (value);
+                }
+            }
+        }
+
+        public bool PredictionDisabled
+        {
+            get
+            {
+                return encoders[0].PredictionDisabled;
+            }
+            set
+            {
+                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+                {
+                    encoders[encoder_ptr].PredictionDisabled = (value);
+                }
+            }
+        }
+
+        public OpusFramesize ExpertFrameDuration
+        {
+            get
+            {
+                return variable_duration;
+            }
+            set
+            {
+                variable_duration = value;
+            }
+        }
+
         public OpusEncoder GetMultistreamEncoderState(int streamId)
         {
             if (streamId >= layout.nb_streams)
                 throw new ArgumentException("Requested stream doesn't exist");
             return encoders[streamId];
-        }
-
-        public void SetExpertFrameDuration(OpusFramesize value)
-        {
-            variable_duration = value;
-        }
-
-        public OpusFramesize GetExpertFrameDuration()
-        {
-            return variable_duration;
         }
 
         #endregion

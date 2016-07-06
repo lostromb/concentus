@@ -53,11 +53,11 @@ namespace Concentus
             int[] A_Q28 = new int[2];
             int Fc_Q19, r_Q28, r_Q22;
 
-            Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19));
-            Fc_Q19 = Inlines.silk_DIV32_16(Inlines.silk_SMULBB(Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19), cutoff_Hz), Fs / 1000);
+            Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / ((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/);
+            Fc_Q19 = Inlines.silk_DIV32_16(Inlines.silk_SMULBB(((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/, cutoff_Hz), Fs / 1000);
             Inlines.OpusAssert(Fc_Q19 > 0 && Fc_Q19 < 32768);
 
-            r_Q28 = Inlines.SILK_CONST(1.0f, 28) - Inlines.silk_MUL(Inlines.SILK_CONST(0.92f, 9), Fc_Q19);
+            r_Q28 = ((int)((1.0f) * ((long)1 << (28)) + 0.5))/*Inlines.SILK_CONST(1.0f, 28)*/ - Inlines.silk_MUL(((int)((0.92f) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(0.92f, 9)*/, Fc_Q19);
 
             /* b = r * [ 1; -2; 1 ]; */
             /* a = [ 1; -2 * r * ( 1 - 0.5 * Fc^2 ); r^2 ]; */
@@ -67,7 +67,7 @@ namespace Concentus
 
             /* -r * ( 2 - Fc * Fc ); */
             r_Q22 = Inlines.silk_RSHIFT(r_Q28, 6);
-            A_Q28[0] = Inlines.silk_SMULWW(r_Q22, Inlines.silk_SMULWW(Fc_Q19, Fc_Q19) - Inlines.SILK_CONST(2.0f, 22));
+            A_Q28[0] = Inlines.silk_SMULWW(r_Q22, Inlines.silk_SMULWW(Fc_Q19, Fc_Q19) - ((int)((2.0f) * ((long)1 << (22)) + 0.5))/*Inlines.SILK_CONST(2.0f, 22)*/);
             A_Q28[1] = Inlines.silk_SMULWW(r_Q22, r_Q22);
 
             Filters.silk_biquad_alt(input, input_ptr, B_Q28, A_Q28, hp_mem, 0, output, output_ptr, len, channels);
@@ -488,7 +488,7 @@ namespace Concentus
             mem.XX = Inlines.MAX32(0, mem.XX);
             mem.XY = Inlines.MAX32(0, mem.XY);
             mem.YY = Inlines.MAX32(0, mem.YY);
-            if (Inlines.MAX32(mem.XX, mem.YY) > Inlines.QCONST16(8e-4f, 18))
+            if (Inlines.MAX32(mem.XX, mem.YY) > ((short)(0.5 + (8e-4f) * (((int)1) << (18))))/*Inlines.QCONST16(8e-4f, 18)*/)
             {
                 sqrt_xx = Inlines.celt_sqrt(mem.XX);
                 sqrt_yy = Inlines.celt_sqrt(mem.YY);
@@ -499,11 +499,11 @@ namespace Concentus
                 corr = Inlines.SHR32(Inlines.frac_div32(mem.XY, CeltConstants.EPSILON + Inlines.MULT16_16(sqrt_xx, sqrt_yy)), 16);
                 /* Approximate loudness difference */
                 ldiff = CeltConstants.Q15ONE * Inlines.ABS16(qrrt_xx - qrrt_yy) / (CeltConstants.EPSILON + qrrt_xx + qrrt_yy);
-                width = Inlines.MULT16_16_Q15(Inlines.celt_sqrt(Inlines.QCONST32(1.0f, 30) - Inlines.MULT16_16(corr, corr)), ldiff);
+                width = Inlines.MULT16_16_Q15(Inlines.celt_sqrt(((int)(0.5 + (1.0f) * (((int)1) << (30))))/*Inlines.QCONST32(1.0f, 30)*/ - Inlines.MULT16_16(corr, corr)), ldiff);
                 /* Smoothing over one second */
                 mem.smoothed_width += (width - mem.smoothed_width) / frame_rate;
                 /* Peak follower */
-                mem.max_follower = Inlines.MAX16(mem.max_follower - Inlines.QCONST16(.02f, 15) / frame_rate, mem.smoothed_width);
+                mem.max_follower = Inlines.MAX16(mem.max_follower - ((short)(0.5 + (.02f) * (((int)1) << (15))))/*Inlines.QCONST16(.02f, 15)*/ / frame_rate, mem.smoothed_width);
             }
             else {
                 width = 0;

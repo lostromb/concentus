@@ -506,17 +506,17 @@ namespace Concentus.Silk.Structs
 
                 if (this.fs_kHz == 16)
                 {
-                    this.mu_LTP_Q9 = Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_WB, 9);
+                    this.mu_LTP_Q9 = ((int)((TuningParameters.MU_LTP_QUANT_WB) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_WB, 9)*/;
                     this.pitch_lag_low_bits_iCDF = Tables.silk_uniform8_iCDF;
                 }
                 else if (this.fs_kHz == 12)
                 {
-                    this.mu_LTP_Q9 = Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_MB, 9);
+                    this.mu_LTP_Q9 = ((int)((TuningParameters.MU_LTP_QUANT_MB) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_MB, 9)*/;
                     this.pitch_lag_low_bits_iCDF = Tables.silk_uniform6_iCDF;
                 }
                 else
                 {
-                    this.mu_LTP_Q9 = Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_NB, 9);
+                    this.mu_LTP_Q9 = ((int)((TuningParameters.MU_LTP_QUANT_NB) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_NB, 9)*/;
                     this.pitch_lag_low_bits_iCDF = Tables.silk_uniform4_iCDF;
                 }
             }
@@ -542,7 +542,7 @@ namespace Concentus.Silk.Structs
             if (Complexity < 2)
             {
                 this.pitchEstimationComplexity = SilkConstants.SILK_PE_MIN_COMPLEX;
-                this.pitchEstimationThreshold_Q16 = Inlines.SILK_CONST(0.8f, 16);
+                this.pitchEstimationThreshold_Q16 = ((int)((0.8f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.8f, 16)*/;
                 this.pitchEstimationLPCOrder = 6;
                 this.shapingLPCOrder = 8;
                 this.la_shape = 3 * this.fs_kHz;
@@ -555,7 +555,7 @@ namespace Concentus.Silk.Structs
             else if (Complexity < 4)
             {
                 this.pitchEstimationComplexity = SilkConstants.SILK_PE_MID_COMPLEX;
-                this.pitchEstimationThreshold_Q16 = Inlines.SILK_CONST(0.76f, 16);
+                this.pitchEstimationThreshold_Q16 = ((int)((0.76f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.76f, 16)*/;
                 this.pitchEstimationLPCOrder = 8;
                 this.shapingLPCOrder = 10;
                 this.la_shape = 5 * this.fs_kHz;
@@ -568,7 +568,7 @@ namespace Concentus.Silk.Structs
             else if (Complexity < 6)
             {
                 this.pitchEstimationComplexity = SilkConstants.SILK_PE_MID_COMPLEX;
-                this.pitchEstimationThreshold_Q16 = Inlines.SILK_CONST(0.74f, 16);
+                this.pitchEstimationThreshold_Q16 = ((int)((0.74f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.74f, 16)*/;
                 this.pitchEstimationLPCOrder = 10;
                 this.shapingLPCOrder = 12;
                 this.la_shape = 5 * this.fs_kHz;
@@ -576,12 +576,12 @@ namespace Concentus.Silk.Structs
                 this.useInterpolatedNLSFs = 1;
                 this.LTPQuantLowComplexity = 0;
                 this.NLSF_MSVQ_Survivors = 8;
-                this.warping_Q16 = this.fs_kHz * Inlines.SILK_CONST(TuningParameters.WARPING_MULTIPLIER, 16);
+                this.warping_Q16 = this.fs_kHz * ((int)((TuningParameters.WARPING_MULTIPLIER) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.WARPING_MULTIPLIER, 16)*/;
             }
             else if (Complexity < 8)
             {
                 this.pitchEstimationComplexity = SilkConstants.SILK_PE_MID_COMPLEX;
-                this.pitchEstimationThreshold_Q16 = Inlines.SILK_CONST(0.72f, 16);
+                this.pitchEstimationThreshold_Q16 = ((int)((0.72f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.72f, 16)*/;
                 this.pitchEstimationLPCOrder = 12;
                 this.shapingLPCOrder = 14;
                 this.la_shape = 5 * this.fs_kHz;
@@ -589,11 +589,11 @@ namespace Concentus.Silk.Structs
                 this.useInterpolatedNLSFs = 1;
                 this.LTPQuantLowComplexity = 0;
                 this.NLSF_MSVQ_Survivors = 16;
-                this.warping_Q16 = this.fs_kHz * Inlines.SILK_CONST(TuningParameters.WARPING_MULTIPLIER, 16);
+                this.warping_Q16 = this.fs_kHz * ((int)((TuningParameters.WARPING_MULTIPLIER) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.WARPING_MULTIPLIER, 16)*/;
             }
             else {
                 this.pitchEstimationComplexity = SilkConstants.SILK_PE_MAX_COMPLEX;
-                this.pitchEstimationThreshold_Q16 = Inlines.SILK_CONST(0.7f, 16);
+                this.pitchEstimationThreshold_Q16 = ((int)((0.7f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.7f, 16)*/;
                 this.pitchEstimationLPCOrder = 16;
                 this.shapingLPCOrder = 16;
                 this.la_shape = 5 * this.fs_kHz;
@@ -601,7 +601,7 @@ namespace Concentus.Silk.Structs
                 this.useInterpolatedNLSFs = 1;
                 this.LTPQuantLowComplexity = 0;
                 this.NLSF_MSVQ_Survivors = 32;
-                this.warping_Q16 = this.fs_kHz * Inlines.SILK_CONST(TuningParameters.WARPING_MULTIPLIER, 16);
+                this.warping_Q16 = this.fs_kHz * ((int)((TuningParameters.WARPING_MULTIPLIER) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.WARPING_MULTIPLIER, 16)*/;
             }
 
             /* Do not allow higher pitch estimation LPC order than predict LPC order */
@@ -649,7 +649,7 @@ namespace Concentus.Silk.Structs
                     LBRR_rate_thres_bps = SilkConstants.LBRR_WB_MIN_RATE_BPS;
                 }
 
-                LBRR_rate_thres_bps = Inlines.silk_SMULWB(Inlines.silk_MUL(LBRR_rate_thres_bps, 125 - Inlines.silk_min(this.PacketLoss_perc, 25)), Inlines.SILK_CONST(0.01f, 16));
+                LBRR_rate_thres_bps = Inlines.silk_SMULWB(Inlines.silk_MUL(LBRR_rate_thres_bps, 125 - Inlines.silk_min(this.PacketLoss_perc, 25)), ((int)((0.01f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.01f, 16)*/);
 
                 if (TargetRate_bps > LBRR_rate_thres_bps)
                 {
@@ -661,7 +661,7 @@ namespace Concentus.Silk.Structs
                     }
                     else
                     {
-                        this.LBRR_GainIncreases = Inlines.silk_max_int(7 - Inlines.silk_SMULWB((int)this.PacketLoss_perc, Inlines.SILK_CONST(0.4f, 16)), 2);
+                        this.LBRR_GainIncreases = Inlines.silk_max_int(7 - Inlines.silk_SMULWB((int)this.PacketLoss_perc, ((int)((0.4f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.4f, 16)*/), 2);
                     }
                     this.LBRR_enabled = 1;
                 }
@@ -854,7 +854,7 @@ namespace Concentus.Silk.Structs
             /**************************************************/
             /* Convert speech activity into VAD and DTX flags */
             /**************************************************/
-            if (this.speech_activity_Q8 < Inlines.SILK_CONST(TuningParameters.SPEECH_ACTIVITY_DTX_THRES, 8))
+            if (this.speech_activity_Q8 < ((int)((TuningParameters.SPEECH_ACTIVITY_DTX_THRES) * ((long)1 << (8)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.SPEECH_ACTIVITY_DTX_THRES, 8)*/)
             {
                 this.indices.signalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
                 this.noSpeechCounter++;
@@ -969,7 +969,7 @@ namespace Concentus.Silk.Structs
 
                 /* Loop over quantizer and entropy coding to control bitrate */
                 maxIter = 6;
-                gainMult_Q8 = (short)(Inlines.SILK_CONST(1, 8));
+                gainMult_Q8 = (short)(((int)((1) * ((long)1 << (8)) + 0.5))/*Inlines.SILK_CONST(1, 8)*/);
                 found_lower = 0;
                 found_upper = 0;
                 gainsID = GainQuantization.silk_gains_ID(this.indices.GainsIndices, this.nb_subfr);
@@ -1116,11 +1116,11 @@ namespace Concentus.Silk.Structs
                     {
                         /* Adjust gain according to high-rate rate/distortion curve */
                         int gain_factor_Q16;
-                        gain_factor_Q16 = Inlines.silk_log2lin(Inlines.silk_LSHIFT(nBits - maxBits, 7) / this.frame_length + Inlines.SILK_CONST(16, 7));
-                        gain_factor_Q16 = Inlines.silk_min_32(gain_factor_Q16, Inlines.SILK_CONST(2, 16));
+                        gain_factor_Q16 = Inlines.silk_log2lin(Inlines.silk_LSHIFT(nBits - maxBits, 7) / this.frame_length + ((int)((16) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(16, 7)*/);
+                        gain_factor_Q16 = Inlines.silk_min_32(gain_factor_Q16, ((int)((2) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(2, 16)*/);
                         if (nBits > maxBits)
                         {
-                            gain_factor_Q16 = Inlines.silk_max_32(gain_factor_Q16, Inlines.SILK_CONST(1.3f, 16));
+                            gain_factor_Q16 = Inlines.silk_max_32(gain_factor_Q16, ((int)((1.3f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1.3f, 16)*/);
                         }
 
                         gainMult_Q8 = Inlines.CHOP16(Inlines.silk_SMULWB(gain_factor_Q16, (int)gainMult_Q8));
@@ -1197,7 +1197,7 @@ namespace Concentus.Silk.Structs
             /*******************************************/
             /* Control use of inband LBRR              */
             /*******************************************/
-            if (this.LBRR_enabled != 0 && this.speech_activity_Q8 > Inlines.SILK_CONST(TuningParameters.LBRR_SPEECH_ACTIVITY_THRES, 8))
+            if (this.LBRR_enabled != 0 && this.speech_activity_Q8 > ((int)((TuningParameters.LBRR_SPEECH_ACTIVITY_THRES) * ((long)1 << (8)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LBRR_SPEECH_ACTIVITY_THRES, 8)*/)
             {
                 this.LBRR_flags[this.nFramesEncoded] = 1;
 
