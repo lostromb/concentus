@@ -596,11 +596,7 @@ namespace Concentus.Structs
                 delay_compensation -= Fs / 400;
                 frame_size = CodecHelpers.compute_frame_size(pcm, pcm_ptr, analysis_frame_size,
                       this.variable_duration, channels, Fs, this.bitrate_bps,
-                      delay_compensation, downmix
-#if ENABLE_ANALYSIS
-            , this.subframe_mem
-#endif
-            );
+                      delay_compensation, downmix, this.subframe_mem, this.encoders[encoder_ptr].analysis.enabled);
             }
 
             if (400 * frame_size < Fs)

@@ -81,10 +81,9 @@ namespace Concentus.Celt
                 coded_bins += eBands[Inlines.IMIN(intensity, coded_bands)] << LM;
 
             target = base_target;
-#if ENABLE_ANALYSIS
-            if (analysis.valid != 0 && analysis.activity < .4)
+            if (analysis.enabled && analysis.valid != 0 && analysis.activity < .4)
                 target -= (int)((coded_bins << EntropyCoder.BITRES) * (.4f - analysis.activity));
-#endif
+
             /* Stereo savings */
             if (C == 2)
             {
@@ -106,10 +105,9 @@ namespace Concentus.Celt
             tf_calibration = variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE ?
                              Inlines.QCONST16(0.02f, 14) : Inlines.QCONST16(0.04f, 14);
             target += (int)Inlines.SHL32(Inlines.MULT16_32_Q15(tf_estimate - tf_calibration, target), 1);
-
-#if ENABLE_ANALYSIS
+            
             /* Apply tonality boost */
-            if (analysis.valid != 0 && lfe == 0)
+            if (analysis.enabled && analysis.valid != 0 && lfe == 0)
             {
                 int tonal_target;
                 float tonal;
@@ -121,7 +119,6 @@ namespace Concentus.Celt
                     tonal_target += (int)((coded_bins << EntropyCoder.BITRES) * .8f);
                 target = tonal_target;
             }
-#endif
 
             if (has_surround_mask != 0 && lfe == 0)
             {
@@ -760,13 +757,11 @@ namespace Concentus.Celt
             trim -= Inlines.MAX16(Inlines.NEG16(Inlines.QCONST16(2.0f, 8)), Inlines.MIN16(Inlines.QCONST16(2.0f, 8), (Inlines.SHR16((diff + Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)), CeltConstants.DB_SHIFT - 8) / 6)));
             trim -= Inlines.SHR16(surround_trim, CeltConstants.DB_SHIFT - 8);
             trim = (trim - 2 * Inlines.SHR16(tf_estimate, 14 - 8));
-#if ENABLE_ANALYSIS
-            if (analysis.valid != 0)
+            if (analysis.enabled && analysis.valid != 0)
             {
                 trim -= Inlines.MAX16(-Inlines.QCONST16(2.0f, 8), Inlines.MIN16(Inlines.QCONST16(2.0f, 8),
                       (int)(Inlines.QCONST16(2.0f, 8) * (analysis.tonality_slope + .05f))));
             }
-#endif
             trim_index = Inlines.PSHR32(trim, 8);
             trim_index = Inlines.IMAX(0, Inlines.IMIN(10, trim_index));
             /*printf("%d\n", trim_index);*/

@@ -36,6 +36,7 @@ namespace Concentus.Celt.Structs
 {
     internal class AnalysisInfo
     {
+        internal bool enabled = false;
         internal int valid = 0;
         internal float tonality = 0;
         internal float tonality_slope = 0;

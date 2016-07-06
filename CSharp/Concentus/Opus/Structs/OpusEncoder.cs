@@ -206,10 +206,7 @@ namespace Concentus.Structs
         public void ResetState()
         {
             EncControlState dummy = new EncControlState();
-#if ENABLE_ANALYSIS
             analysis.Reset();
-#endif
-
             PartialReset();
 
             Celt_Encoder.ResetState();
@@ -353,10 +350,8 @@ namespace Concentus.Structs
             this.first = 1;
             this.mode = OpusMode.MODE_HYBRID;
             this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
-
-#if ENABLE_ANALYSIS
+            
             Analysis.tonality_analysis_init(this.analysis);
-#endif
 
             return OpusError.OPUS_OK;
         }
@@ -427,11 +422,9 @@ namespace Concentus.Structs
             int total_buffer;
             int stereo_width;
             CeltMode celt_mode;
-#if ENABLE_ANALYSIS
             AnalysisInfo analysis_info = new AnalysisInfo(); // porting note: stack var
             int analysis_read_pos_bak = -1;
             int analysis_read_subframe_bak = -1;
-#endif
             int[] tmp_prefill;
 
             max_data_bytes = Inlines.IMIN(1276, out_data_bytes);
@@ -455,50 +448,49 @@ namespace Concentus.Structs
 
             lsb_depth = Inlines.IMIN(lsb_depth, this.lsb_depth);
             celt_mode = celt_enc.GetMode();
-#if ENABLE_ANALYSIS
-            analysis_info.valid = 0;
-            if (this.silk_mode.complexity >= 7 && this.Fs == 48000)
-            {
-                analysis_read_pos_bak = this.analysis.read_pos;
-                analysis_read_subframe_bak = this.analysis.read_subframe;
-                Analysis.run_analysis<T>(this.analysis,
-                    celt_mode,
-                    analysis_pcm != null ? analysis_pcm.GetPointer(analysis_pcm_ptr) : null,
-                    analysis_size,
-                    frame_size,
-                    c1,
-                    c2,
-                    analysis_channels,
-                    this.Fs,
-                    lsb_depth,
-                    downmix,
-                    analysis_info);
-            }
-#endif
-
             this.voice_ratio = -1;
 
-#if ENABLE_ANALYSIS
-            this.detected_bandwidth = 0;
-            if (analysis_info.valid != 0)
+            if (this.analysis.enabled)
             {
-                int analysis_bandwidth;
-                if (this.signal_type == OpusSignal.OPUS_SIGNAL_AUTO)
-                    this.voice_ratio = (int)Math.Floor(.5f + 100 * (1 - analysis_info.music_prob));
+                analysis_info.valid = 0;
+                if (this.silk_mode.complexity >= 7 && this.Fs == 48000)
+                {
+                    analysis_read_pos_bak = this.analysis.read_pos;
+                    analysis_read_subframe_bak = this.analysis.read_subframe;
+                    Analysis.run_analysis<T>(this.analysis,
+                        celt_mode,
+                        analysis_pcm != null ? analysis_pcm.GetPointer(analysis_pcm_ptr) : null,
+                        analysis_size,
+                        frame_size,
+                        c1,
+                        c2,
+                        analysis_channels,
+                        this.Fs,
+                        lsb_depth,
+                        downmix,
+                        analysis_info);
+                }
 
-                analysis_bandwidth = analysis_info.bandwidth;
-                if (analysis_bandwidth <= 12)
-                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
-                else if (analysis_bandwidth <= 14)
-                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
-                else if (analysis_bandwidth <= 16)
-                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
-                else if (analysis_bandwidth <= 18)
-                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-                else
-                    this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+                this.detected_bandwidth = 0;
+                if (analysis_info.valid != 0)
+                {
+                    int analysis_bandwidth;
+                    if (this.signal_type == OpusSignal.OPUS_SIGNAL_AUTO)
+                        this.voice_ratio = (int)Math.Floor(.5f + 100 * (1 - analysis_info.music_prob));
+
+                    analysis_bandwidth = analysis_info.bandwidth;
+                    if (analysis_bandwidth <= 12)
+                        this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                    else if (analysis_bandwidth <= 14)
+                        this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+                    else if (analysis_bandwidth <= 16)
+                        this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+                    else if (analysis_bandwidth <= 18)
+                        this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+                    else
+                        this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+                }
             }
-#endif
 
             if (this.channels == 2 && this.force_channels != 1)
                 stereo_width = CodecHelpers.compute_stereo_width(pcm, pcm_ptr, frame_size, this.Fs, this.width_mem);
@@ -826,14 +818,12 @@ namespace Concentus.Structs
                 OpusRepacketizer rp;
                 int bytes_per_frame;
                 int repacketize_len;
-
-#if ENABLE_ANALYSIS
-                if (analysis_read_pos_bak != -1)
+                
+                if (this.analysis.enabled && analysis_read_pos_bak != -1)
                 {
                     this.analysis.read_pos = analysis_read_pos_bak;
                     this.analysis.read_subframe = analysis_read_subframe_bak;
                 }
-#endif
 
                 nb_frames = frame_size > this.Fs / 25 ? 3 : 2;
                 bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
@@ -1209,14 +1199,12 @@ namespace Concentus.Structs
                     if (this.use_vbr != 0)
                     {
                         int bonus = 0;
-#if ENABLE_ANALYSIS
-                        if (this.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size != this.Fs / 50)
+                        if (this.analysis.enabled && this.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size != this.Fs / 50)
                         {
                             bonus = (60 * this.stream_channels + 40) * (this.Fs / frame_size - 50);
                             if (analysis_info.valid != 0)
                                 bonus = (int)(bonus * (1.0f + .5f * analysis_info.tonality));
                         }
-#endif
                         celt_enc.SetVBR(true);
                         celt_enc.SetVBRConstraint(this.vbr_constraint != 0);
                         celt_enc.SetBitrate(this.bitrate_bps + bonus);
@@ -1319,10 +1307,11 @@ namespace Concentus.Structs
                 enc.enc_shrink((uint)nb_compr_bytes);
             }
 
-#if ENABLE_ANALYSIS
-            if (redundancy != 0 || this.mode != OpusMode.MODE_SILK_ONLY)
+            if (this.analysis.enabled && redundancy != 0 || this.mode != OpusMode.MODE_SILK_ONLY)
+            {
                 celt_enc.SetAnalysis(analysis_info);
-#endif
+                celt_enc.SetEnableAnalysis(this.analysis.enabled);
+            }
             /* 5 ms redundant frame for CELT.SILK */
             if (redundancy != 0 && celt_to_silk != 0)
             {
@@ -1470,11 +1459,7 @@ namespace Concentus.Structs
 
             int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, pcm_offset, frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
-                  delay_compensation, Downmix.downmix_int
-#if ENABLE_ANALYSIS
-                  , this.analysis.subframe_mem
-#endif
-                  );
+                  delay_compensation, Downmix.downmix_int, this.analysis.subframe_mem, this.analysis.enabled);
 
             // Check that input pcm length is >= frame_size
             if (pcm_offset + internal_frame_size > in_pcm.Length)
@@ -1543,12 +1528,8 @@ namespace Concentus.Structs
 
             internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, pcm_offset, frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
-                  delay_compensation, Downmix.downmix_float
-#if ENABLE_ANALYSIS
-                  , this.analysis.subframe_mem
-#endif
-                  );
-
+                  delay_compensation, Downmix.downmix_float, this.analysis.subframe_mem, this.analysis.enabled);
+                  
             // Check that input pcm length is >= frame_size
             if (pcm_offset + internal_frame_size > in_pcm.Length)
             {
@@ -1858,6 +1839,16 @@ namespace Concentus.Structs
         {
             energy_masking = value;
             Celt_Encoder.SetEnergyMask(value);
+        }
+
+        public bool GetEnableAnalysis()
+        {
+            return analysis.enabled;
+        }
+
+        public void SetEnableAnalysis(bool value)
+        {
+            analysis.enabled = value;
         }
 
         internal CeltMode GetCeltMode()

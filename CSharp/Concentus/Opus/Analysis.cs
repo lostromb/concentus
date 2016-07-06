@@ -14,7 +14,6 @@ namespace Concentus
 {
     internal static class Analysis
     {
-#if ENABLE_ANALYSIS
         private const double M_PI = 3.141592653;
         private const float cA = 0.43157974f;
         private const float cB = 0.67848403f;
@@ -195,7 +194,7 @@ namespace Concentus
             remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
             downmix(x.Data, x.Offset, tonal.inmem, 240, remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
             tonal.mem_fill = 240 + remaining;
-            
+
             KissFFT.opus_fft(kfft, input.GetPointer(), output.GetPointer());
 
             for (i = 1; i < N2; i++)
@@ -266,7 +265,7 @@ namespace Concentus
                     tE += binE * tonality[i];
                     nE += binE * 2.0f * (.5f - noisiness[i]);
                 }
-                
+
                 tonal.E[tonal.E_count][b] = E;
                 frame_noisiness += nE / (1e-15f + E);
 
@@ -400,129 +399,132 @@ namespace Concentus
             features[23] = info.tonality_slope;
             features[24] = tonal.lowECount;
 
-#if ENABLE_ANALYSIS
-            mlp.mlp_process(Tables.net, features, frame_probs);
-            frame_probs[0] = .5f * (frame_probs[0] + 1);
-            /* Curve fitting between the MLP probability and the actual probability */
-            frame_probs[0] = .01f + 1.21f * frame_probs[0] * frame_probs[0] - .23f * (float)Math.Pow(frame_probs[0], 10);
-            /* Probability of active audio (as opposed to silence) */
-            frame_probs[1] = .5f * frame_probs[1] + .5f;
-            /* Consider that silence has a 50-50 probability. */
-            frame_probs[0] = frame_probs[1] * frame_probs[0] + (1 - frame_probs[1]) * .5f;
-
-            /*printf("%f %f ", frame_probs[0], frame_probs[1]);*/
+            if (info.enabled)
             {
-                /* Probability of state transition */
-                float tau;
-                /* Represents independence of the MLP probabilities, where
-                   beta=1 means fully independent. */
-                float beta;
-                /* Denormalized probability of speech (p0) and music (p1) after update */
-                float p0, p1;
-                /* Probabilities for "all speech" and "all music" */
-                float s0, m0;
-                /* Probability sum for renormalisation */
-                float psum;
-                /* Instantaneous probability of speech and music, with beta pre-applied. */
-                float speech0;
-                float music0;
+                mlp.mlp_process(Tables.net, features, frame_probs);
+                frame_probs[0] = .5f * (frame_probs[0] + 1);
+                /* Curve fitting between the MLP probability and the actual probability */
+                frame_probs[0] = .01f + 1.21f * frame_probs[0] * frame_probs[0] - .23f * (float)Math.Pow(frame_probs[0], 10);
+                /* Probability of active audio (as opposed to silence) */
+                frame_probs[1] = .5f * frame_probs[1] + .5f;
+                /* Consider that silence has a 50-50 probability. */
+                frame_probs[0] = frame_probs[1] * frame_probs[0] + (1 - frame_probs[1]) * .5f;
 
-                /* One transition every 3 minutes of active audio */
-                tau = .00005f * frame_probs[1];
-                beta = .05f;
-                //if (1)
+                /*printf("%f %f ", frame_probs[0], frame_probs[1]);*/
                 {
-                    /* Adapt beta based on how "unexpected" the new prob is */
-                    float p, q;
-                    p = Inlines.MAX16(.05f, Inlines.MIN16(.95f, frame_probs[0]));
-                    q = Inlines.MAX16(.05f, Inlines.MIN16(.95f, tonal.music_prob));
-                    beta = .01f + .05f * Inlines.ABS16(p - q) / (p * (1 - q) + q * (1 - p));
-                }
-                /* p0 and p1 are the probabilities of speech and music at this frame
-                   using only information from previous frame and applying the
-                   state transition model */
-                p0 = (1 - tonal.music_prob) * (1 - tau) + tonal.music_prob * tau;
-                p1 = tonal.music_prob * (1 - tau) + (1 - tonal.music_prob) * tau;
-                /* We apply the current probability with exponent beta to work around
-                   the fact that the probability estimates aren't independent. */
-                p0 *= (float)Math.Pow(1 - frame_probs[0], beta);
-                p1 *= (float)Math.Pow(frame_probs[0], beta);
-                /* Normalise the probabilities to get the Marokv probability of music. */
-                tonal.music_prob = p1 / (p0 + p1);
-                info.music_prob = tonal.music_prob;
+                    /* Probability of state transition */
+                    float tau;
+                    /* Represents independence of the MLP probabilities, where
+                       beta=1 means fully independent. */
+                    float beta;
+                    /* Denormalized probability of speech (p0) and music (p1) after update */
+                    float p0, p1;
+                    /* Probabilities for "all speech" and "all music" */
+                    float s0, m0;
+                    /* Probability sum for renormalisation */
+                    float psum;
+                    /* Instantaneous probability of speech and music, with beta pre-applied. */
+                    float speech0;
+                    float music0;
 
-                /* This chunk of code deals with delayed decision. */
-                psum = 1e-20f;
-                /* Instantaneous probability of speech and music, with beta pre-applied. */
-                speech0 = (float)Math.Pow(1 - frame_probs[0], beta);
-                music0 = (float)Math.Pow(frame_probs[0], beta);
-                if (tonal.count == 1)
-                {
-                    tonal.pspeech[0] = 0.5f;
-                    tonal.pmusic[0] = 0.5f;
-                }
-                /* Updated probability of having only speech (s0) or only music (m0),
-                   before considering the new observation. */
-                s0 = tonal.pspeech[0] + tonal.pspeech[1];
-                m0 = tonal.pmusic[0] + tonal.pmusic[1];
-                /* Updates s0 and m0 with instantaneous probability. */
-                tonal.pspeech[0] = s0 * (1 - tau) * speech0;
-                tonal.pmusic[0] = m0 * (1 - tau) * music0;
-                /* Propagate the transition probabilities */
-                for (i = 1; i < OpusConstants.DETECT_SIZE - 1; i++)
-                {
-                    tonal.pspeech[i] = tonal.pspeech[i + 1] * speech0;
-                    tonal.pmusic[i] = tonal.pmusic[i + 1] * music0;
-                }
-                /* Probability that the latest frame is speech, when all the previous ones were music. */
-                tonal.pspeech[OpusConstants.DETECT_SIZE - 1] = m0 * tau * speech0;
-                /* Probability that the latest frame is music, when all the previous ones were speech. */
-                tonal.pmusic[OpusConstants.DETECT_SIZE - 1] = s0 * tau * music0;
-
-                /* Renormalise probabilities to 1 */
-                for (i = 0; i < OpusConstants.DETECT_SIZE; i++)
-                    psum += tonal.pspeech[i] + tonal.pmusic[i];
-                psum = 1.0f / psum;
-                for (i = 0; i < OpusConstants.DETECT_SIZE; i++)
-                {
-                    tonal.pspeech[i] *= psum;
-                    tonal.pmusic[i] *= psum;
-                }
-                psum = tonal.pmusic[0];
-                for (i = 1; i < OpusConstants.DETECT_SIZE; i++)
-                    psum += tonal.pspeech[i];
-
-                /* Estimate our confidence in the speech/music decisions */
-                if (frame_probs[1] > .75)
-                {
-                    if (tonal.music_prob > .9)
+                    /* One transition every 3 minutes of active audio */
+                    tau = .00005f * frame_probs[1];
+                    beta = .05f;
+                    //if (1)
                     {
-                        float adapt;
-                        adapt = 1.0f / (++tonal.music_confidence_count);
-                        tonal.music_confidence_count = Inlines.IMIN(tonal.music_confidence_count, 500);
-                        tonal.music_confidence += adapt * Inlines.MAX16(-.2f, frame_probs[0] - tonal.music_confidence);
+                        /* Adapt beta based on how "unexpected" the new prob is */
+                        float p, q;
+                        p = Inlines.MAX16(.05f, Inlines.MIN16(.95f, frame_probs[0]));
+                        q = Inlines.MAX16(.05f, Inlines.MIN16(.95f, tonal.music_prob));
+                        beta = .01f + .05f * Inlines.ABS16(p - q) / (p * (1 - q) + q * (1 - p));
                     }
-                    if (tonal.music_prob < .1)
+                    /* p0 and p1 are the probabilities of speech and music at this frame
+                       using only information from previous frame and applying the
+                       state transition model */
+                    p0 = (1 - tonal.music_prob) * (1 - tau) + tonal.music_prob * tau;
+                    p1 = tonal.music_prob * (1 - tau) + (1 - tonal.music_prob) * tau;
+                    /* We apply the current probability with exponent beta to work around
+                       the fact that the probability estimates aren't independent. */
+                    p0 *= (float)Math.Pow(1 - frame_probs[0], beta);
+                    p1 *= (float)Math.Pow(frame_probs[0], beta);
+                    /* Normalise the probabilities to get the Marokv probability of music. */
+                    tonal.music_prob = p1 / (p0 + p1);
+                    info.music_prob = tonal.music_prob;
+
+                    /* This chunk of code deals with delayed decision. */
+                    psum = 1e-20f;
+                    /* Instantaneous probability of speech and music, with beta pre-applied. */
+                    speech0 = (float)Math.Pow(1 - frame_probs[0], beta);
+                    music0 = (float)Math.Pow(frame_probs[0], beta);
+                    if (tonal.count == 1)
                     {
-                        float adapt;
-                        adapt = 1.0f / (++tonal.speech_confidence_count);
-                        tonal.speech_confidence_count = Inlines.IMIN(tonal.speech_confidence_count, 500);
-                        tonal.speech_confidence += adapt * Inlines.MIN16(.2f, frame_probs[0] - tonal.speech_confidence);
+                        tonal.pspeech[0] = 0.5f;
+                        tonal.pmusic[0] = 0.5f;
+                    }
+                    /* Updated probability of having only speech (s0) or only music (m0),
+                       before considering the new observation. */
+                    s0 = tonal.pspeech[0] + tonal.pspeech[1];
+                    m0 = tonal.pmusic[0] + tonal.pmusic[1];
+                    /* Updates s0 and m0 with instantaneous probability. */
+                    tonal.pspeech[0] = s0 * (1 - tau) * speech0;
+                    tonal.pmusic[0] = m0 * (1 - tau) * music0;
+                    /* Propagate the transition probabilities */
+                    for (i = 1; i < OpusConstants.DETECT_SIZE - 1; i++)
+                    {
+                        tonal.pspeech[i] = tonal.pspeech[i + 1] * speech0;
+                        tonal.pmusic[i] = tonal.pmusic[i + 1] * music0;
+                    }
+                    /* Probability that the latest frame is speech, when all the previous ones were music. */
+                    tonal.pspeech[OpusConstants.DETECT_SIZE - 1] = m0 * tau * speech0;
+                    /* Probability that the latest frame is music, when all the previous ones were speech. */
+                    tonal.pmusic[OpusConstants.DETECT_SIZE - 1] = s0 * tau * music0;
+
+                    /* Renormalise probabilities to 1 */
+                    for (i = 0; i < OpusConstants.DETECT_SIZE; i++)
+                        psum += tonal.pspeech[i] + tonal.pmusic[i];
+                    psum = 1.0f / psum;
+                    for (i = 0; i < OpusConstants.DETECT_SIZE; i++)
+                    {
+                        tonal.pspeech[i] *= psum;
+                        tonal.pmusic[i] *= psum;
+                    }
+                    psum = tonal.pmusic[0];
+                    for (i = 1; i < OpusConstants.DETECT_SIZE; i++)
+                        psum += tonal.pspeech[i];
+
+                    /* Estimate our confidence in the speech/music decisions */
+                    if (frame_probs[1] > .75)
+                    {
+                        if (tonal.music_prob > .9)
+                        {
+                            float adapt;
+                            adapt = 1.0f / (++tonal.music_confidence_count);
+                            tonal.music_confidence_count = Inlines.IMIN(tonal.music_confidence_count, 500);
+                            tonal.music_confidence += adapt * Inlines.MAX16(-.2f, frame_probs[0] - tonal.music_confidence);
+                        }
+                        if (tonal.music_prob < .1)
+                        {
+                            float adapt;
+                            adapt = 1.0f / (++tonal.speech_confidence_count);
+                            tonal.speech_confidence_count = Inlines.IMIN(tonal.speech_confidence_count, 500);
+                            tonal.speech_confidence += adapt * Inlines.MIN16(.2f, frame_probs[0] - tonal.speech_confidence);
+                        }
+                    }
+                    else {
+                        if (tonal.music_confidence_count == 0)
+                            tonal.music_confidence = .9f;
+                        if (tonal.speech_confidence_count == 0)
+                            tonal.speech_confidence = .1f;
                     }
                 }
-                else {
-                    if (tonal.music_confidence_count == 0)
-                        tonal.music_confidence = .9f;
-                    if (tonal.speech_confidence_count == 0)
-                        tonal.speech_confidence = .1f;
-                }
+                if (tonal.last_music != ((tonal.music_prob > .5f) ? 1 : 0))
+                    tonal.last_transition = 0;
+                tonal.last_music = (tonal.music_prob > .5f) ? 1 : 0;
             }
-            if (tonal.last_music != ((tonal.music_prob > .5f) ? 1 : 0))
-                tonal.last_transition = 0;
-            tonal.last_music = (tonal.music_prob > .5f) ? 1 : 0;
-#else
-            info.music_prob = 0;
-#endif
+            else
+            {
+                info.music_prob = 0;
+            }
 
             info.bandwidth = bandwidth;
             info.noisiness = frame_noisiness;
@@ -557,6 +559,5 @@ namespace Concentus
             analysis_info.valid = 0;
             tonality_get_info(analysis, analysis_info, frame_size);
         }
-#endif
     }
 }

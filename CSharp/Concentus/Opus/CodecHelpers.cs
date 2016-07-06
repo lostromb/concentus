@@ -412,14 +412,11 @@ namespace Concentus
 
         internal static int compute_frame_size<T>(T[] analysis_pcm, int analysis_pcm_ptr, int frame_size,
               OpusFramesize variable_duration, int C, int Fs, int bitrate_bps,
-              int delay_compensation, Downmix.downmix_func<T> downmix
-#if ENABLE_ANALYSIS
-              , float[] subframe_mem
-#endif
+              int delay_compensation, Downmix.downmix_func<T> downmix, float[] subframe_mem, bool analysis_enabled
               )
         {
-#if ENABLE_ANALYSIS
-            if (variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size >= Fs / 200)
+
+            if (analysis_enabled && variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE && frame_size >= Fs / 200)
             {
                 int LM = 3;
                 LM = optimize_framesize(analysis_pcm, analysis_pcm_ptr, frame_size, C, Fs, bitrate_bps,
@@ -429,7 +426,6 @@ namespace Concentus
                 frame_size = (Fs / 400 << LM);
             }
             else
-#endif
             {
                 frame_size = frame_size_select(frame_size, variable_duration, Fs);
             }

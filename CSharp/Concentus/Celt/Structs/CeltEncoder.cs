@@ -1055,9 +1055,8 @@ namespace Concentus.Celt.Structs
             anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;
             bits -= anti_collapse_rsv;
             signalBandwidth = end - 1;
-
-#if ENABLE_ANALYSIS
-            if (this.analysis.valid != 0)
+            
+            if (this.analysis.enabled && this.analysis.valid != 0)
             {
                 int min_bandwidth;
                 if (equiv_rate < (int)32000 * C)
@@ -1072,7 +1071,6 @@ namespace Concentus.Celt.Structs
                     min_bandwidth = 20;
                 signalBandwidth = Inlines.IMAX(this.analysis.bandwidth, min_bandwidth);
             }
-#endif
 
             if (this.lfe != 0)
             {
@@ -1289,6 +1287,11 @@ namespace Concentus.Celt.Structs
         internal void SetEnergyMask(int[] value)
         {
             this.energy_mask = value;
+        }
+
+        internal void SetEnableAnalysis(bool value)
+        {
+            this.analysis.enabled = value;
         }
 
 #endregion

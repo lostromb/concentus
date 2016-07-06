@@ -12,6 +12,7 @@ namespace Concentus.Structs
 {
     internal class TonalityAnalysisState
     {
+        internal bool enabled = false;
         internal readonly float[] angle = new float[240];
         internal readonly float[] d_angle = new float[240];
         internal readonly float[] d2_angle = new float[240];
