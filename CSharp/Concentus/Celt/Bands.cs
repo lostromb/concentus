@@ -147,7 +147,7 @@ namespace Concentus.Celt
         }
 
         /* Normalise each band such that the energy is one. */
-        internal static void normalise_bands(CeltMode m, int[] freq, int[] X, int[] bandE, int end, int C, int M)
+        internal static void normalise_bands(CeltMode m, int[] freq, int[][] X, int[] bandE, int end, int C, int M)
         {
             int i, c, N;
             short[] eBands = m.eBands;
@@ -166,14 +166,14 @@ namespace Concentus.Celt
                     g = Inlines.EXTRACT16(Inlines.celt_rcp(Inlines.SHL32(E, 3)));
                     j = M * eBands[i]; do
                     {
-                        X[j + c * N] = Inlines.MULT16_16_Q15(Inlines.VSHR32(freq[j + c * N], shift - 1), g);
+                        X[c][j] = Inlines.MULT16_16_Q15(Inlines.VSHR32(freq[j + c * N], shift - 1), g);
                     } while (++j < M * eBands[i + 1]);
                 } while (++i < end);
             } while (++c < C);
         }
 
         /* De-normalise the energy to produce the synthesis from the unit-energy bands */
-        internal static void denormalise_bands(CeltMode m, Pointer<int> X,
+        internal static void denormalise_bands(CeltMode m, int[] X,
               Pointer<int> freq, Pointer<int> bandLogE, int start,
               int end, int M, int downsample, int silence)
         {
@@ -192,7 +192,7 @@ namespace Concentus.Celt
                 start = end = 0;
             }
             f = freq;
-            x = X.Point(M * eBands[start]);
+            x = X.GetPointer(M * eBands[start]);
 
             for (i = 0; i < M * eBands[start]; i++)
             {
@@ -254,7 +254,7 @@ namespace Concentus.Celt
         }
 
         /* This prevents energy collapse for transients with multiple short MDCTs */
-        internal static void anti_collapse(CeltMode m, int[] X_, byte[] collapse_masks, int LM, int C, int size,
+        internal static void anti_collapse(CeltMode m, int[][] X_, byte[] collapse_masks, int LM, int C, int size,
               int start, int end, int[] logE, int[] prev1logE,
               int[] prev2logE, int[] pulses, uint seed)
         {
@@ -313,7 +313,7 @@ namespace Concentus.Celt
                     r = Inlines.SHR16(Inlines.MIN16(thresh, r), 1);
                     r = (Inlines.SHR32(Inlines.MULT16_16_Q15(sqrt_1, r), shift));
 
-                    X = X_.GetPointer(c * size + (m.eBands[i] << LM));
+                    X = X_[c].GetPointer(m.eBands[i] << LM);
                     for (k = 0; k < 1 << LM; k++)
                     {
                         /* Detect collapse */
@@ -421,19 +421,17 @@ namespace Concentus.Celt
         }
 
         /* Decide whether we should spread the pulses in the current frame */
-        internal static int spreading_decision(CeltMode m, int[] X, BoxedValue<int> average,
+        internal static int spreading_decision(CeltMode m, int[][] X, BoxedValue<int> average,
               int last_decision, BoxedValue<int> hf_average, BoxedValue<int> tapset_decision, int update_hf,
               int end, int C, int M)
         {
-            int i, c, N0;
+            int i, c;
             int sum = 0, nbBands = 0;
             short[] eBands = m.eBands;
             int decision;
             int hf_sum = 0;
 
             Inlines.OpusAssert(end > 0);
-
-            N0 = M * m.shortMdctSize;
 
             if (M * (eBands[end] - eBands[end - 1]) <= 8)
             {
@@ -448,7 +446,7 @@ namespace Concentus.Celt
                 {
                     int j, N, tmp = 0;
                     int[] tcount = { 0, 0, 0 };
-                    Pointer<int> x = X.GetPointer(M * eBands[i] + (c * N0));
+                    Pointer<int> x = X[c].GetPointer(M * eBands[i]);
                     N = M * (eBands[i + 1] - eBands[i]);
                     if (N <= 8)
                         continue;

@@ -250,7 +250,7 @@ namespace UnitTests
             {
                 Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO,
                 Bitrate = -1,
-                Channels = 2,
+                Channels = 1,
                 Complexity = 10,
                 ForceMode = Concentus.Enums.OpusMode.MODE_AUTO,
                 FrameSize = 20,
@@ -267,7 +267,7 @@ namespace UnitTests
             {
                 Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO,
                 Bitrate = -1,
-                Channels = 2,
+                Channels = 1,
                 Complexity = 10,
                 ForceMode = Concentus.Enums.OpusMode.MODE_AUTO,
                 FrameSize = 20,
@@ -284,7 +284,7 @@ namespace UnitTests
             {
                 Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO,
                 Bitrate = -1,
-                Channels = 2,
+                Channels = 1,
                 Complexity = 10,
                 ForceMode = Concentus.Enums.OpusMode.MODE_AUTO,
                 FrameSize = 20,
@@ -301,7 +301,7 @@ namespace UnitTests
             {
                 Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO,
                 Bitrate = -1,
-                Channels = 1,
+                Channels = 2,
                 Complexity = 10,
                 ForceMode = Concentus.Enums.OpusMode.MODE_AUTO,
                 FrameSize = 20,
@@ -318,7 +318,7 @@ namespace UnitTests
             {
                 Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO,
                 Bitrate = -1,
-                Channels = 1,
+                Channels = 2,
                 Complexity = 10,
                 ForceMode = Concentus.Enums.OpusMode.MODE_AUTO,
                 FrameSize = 20,
@@ -335,7 +335,7 @@ namespace UnitTests
             {
                 Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO,
                 Bitrate = -1,
-                Channels = 1,
+                Channels = 2,
                 Complexity = 10,
                 ForceMode = Concentus.Enums.OpusMode.MODE_AUTO,
                 FrameSize = 20,

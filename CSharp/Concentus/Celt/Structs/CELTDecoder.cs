@@ -220,7 +220,7 @@ namespace Concentus.Celt.Structs
             if (noise_based != 0)
             {
                 /* Noise-based PLC/CNG */
-                int[] X;
+                int[][] X;
                 uint seed;
                 int end;
                 int effEnd;
@@ -228,7 +228,7 @@ namespace Concentus.Celt.Structs
                 end = this.end;
                 effEnd = Inlines.IMAX(start, Inlines.IMIN(end, mode.effEBands));
 
-                X = new int[C * N];   /**< Interleaved normalised MDCTs */
+                X = Arrays.InitTwoDimensionalArray<int>(C, N);   /**< Interleaved normalised MDCTs */
 
                 /* Energy decay */
                 decay = loss_count == 0 ? Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT) : Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT);
@@ -245,15 +245,15 @@ namespace Concentus.Celt.Structs
                         int j;
                         int boffs;
                         int blen;
-                        boffs = N * c + (eBands[i] << LM);
+                        boffs = (eBands[i] << LM);
                         blen = (eBands[i + 1] - eBands[i]) << LM;
                         for (j = 0; j < blen; j++)
                         {
                             seed = Bands.celt_lcg_rand(seed);
-                            X[boffs + j] = (unchecked((int)seed) >> 20);
+                            X[c][boffs + j] = (unchecked((int)seed) >> 20);
                         }
 
-                        VQ.renormalise_vector(X.GetPointer(boffs), blen, CeltConstants.Q15ONE);
+                        VQ.renormalise_vector(X[c].GetPointer(), blen, CeltConstants.Q15ONE);
                     }
                 }
                 this.rng = seed;
@@ -469,7 +469,7 @@ namespace Concentus.Celt.Structs
             int c, i, N;
             int spread_decision;
             int bits;
-            int[] X;
+            int[][] X;
             int[] fine_quant;
             int[] pulses;
             int[] cap;
@@ -696,10 +696,10 @@ namespace Concentus.Celt.Structs
             /* Decode fixed codebook */
             collapse_masks = new byte[C * nbEBands];
 
-            X = new int[C * N];   /**< Interleaved normalised MDCTs */
+            X = Arrays.InitTwoDimensionalArray<int>(C, N);   /**< Interleaved normalised MDCTs */
 
             BoxedValue<uint> boxed_rng = new BoxedValue<uint>(this.rng);
-            Bands.quant_all_bands(0, mode, start, end, X, C == 2 ? X.GetPointer(N) : null, collapse_masks,
+            Bands.quant_all_bands(0, mode, start, end, X[0], C == 2 ? X[1].GetPointer() : null, collapse_masks,
                   null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
                   len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, boxed_rng);
             this.rng = boxed_rng.Val;

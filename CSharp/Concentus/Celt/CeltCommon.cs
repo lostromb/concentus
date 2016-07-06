@@ -492,7 +492,7 @@ namespace Concentus.Celt
         }
 
         internal static int tf_analysis(CeltMode m, int len, int isTransient,
-              int[] tf_res, int lambda, int[] X, int N0, int LM,
+              int[] tf_res, int lambda, int[][] X, int N0, int LM,
               BoxedValue<int> tf_sum, int tf_estimate, int tf_chan)
         {
             int i;
@@ -528,7 +528,7 @@ namespace Concentus.Celt
                 N = (m.eBands[i + 1] - m.eBands[i]) << LM;
                 /* band is too narrow to be split down to LM=-1 */
                 narrow = ((m.eBands[i + 1] - m.eBands[i]) == 1) ? 1 : 0;
-                Array.Copy(X, tf_chan * N0 + (m.eBands[i] << LM), tmp, 0, N);
+                Array.Copy(X[tf_chan], (m.eBands[i] << LM), tmp, 0, N);
                 /* Just add the right channel if we're in stereo */
                 /*if (C==2)
                    for (j=0;j<N;j++)
@@ -700,8 +700,8 @@ namespace Concentus.Celt
         }
 
 
-        internal static int alloc_trim_analysis(CeltMode m, int[] X,
-              int[] bandLogE, int end, int LM, int C, int N0,
+        internal static int alloc_trim_analysis(CeltMode m, int[][] X,
+              int[] bandLogE, int end, int LM, int C,
               AnalysisInfo analysis, BoxedValue<int> stereo_saving, int tf_estimate,
               int intensity, int surround_trim)
         {
@@ -719,7 +719,7 @@ namespace Concentus.Celt
                 for (i = 0; i < 8; i++)
                 {
                     int partial;
-                    partial = Kernels.celt_inner_prod(X, (m.eBands[i] << LM), X, (N0 + (m.eBands[i] << LM)),
+                    partial = Kernels.celt_inner_prod(X[0], (m.eBands[i] << LM), X[1], (m.eBands[i] << LM),
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     sum = Inlines.ADD16(sum, Inlines.EXTRACT16(Inlines.SHR32(partial, 18)));
                 }
@@ -729,7 +729,7 @@ namespace Concentus.Celt
                 for (i = 8; i < intensity; i++)
                 {
                     int partial;
-                    partial = Kernels.celt_inner_prod(X, (m.eBands[i] << LM), X, (N0 + (m.eBands[i] << LM)),
+                    partial = Kernels.celt_inner_prod(X[0], (m.eBands[i] << LM), X[1], (m.eBands[i] << LM),
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     minXC = Inlines.MIN16(minXC, Inlines.ABS16(Inlines.EXTRACT16(Inlines.SHR32(partial, 18))));
                 }
@@ -776,8 +776,8 @@ namespace Concentus.Celt
             return trim_index;
         }
 
-        internal static int stereo_analysis(CeltMode m, int[] X,
-              int LM, int N0)
+        internal static int stereo_analysis(CeltMode m, int[][] X,
+              int LM)
         {
             int i;
             int thetas;
@@ -791,8 +791,8 @@ namespace Concentus.Celt
                 {
                     int L, R, M, S;
                     /* We cast to 32-bit first because of the -32768 case */
-                    L = Inlines.EXTEND32(X[j]);
-                    R = Inlines.EXTEND32(X[N0 + j]);
+                    L = Inlines.EXTEND32(X[0][j]);
+                    R = Inlines.EXTEND32(X[1][j]);
                     M = Inlines.ADD32(L, R);
                     S = Inlines.SUB32(L, R);
                     sumLR = Inlines.ADD32(sumLR, Inlines.ADD32(Inlines.ABS32(L), Inlines.ABS32(R)));
@@ -1085,7 +1085,7 @@ namespace Concentus.Celt
 
         }
 
-        internal static void celt_synthesis(CeltMode mode, int[] X, Pointer<int>[] out_syn,
+        internal static void celt_synthesis(CeltMode mode, int[][] X, Pointer<int>[] out_syn,
                             int[] oldBandE, int start, int effEnd, int C, int CC,
                             int isTransient, int LM, int downsample,
                             int silence)
@@ -1122,7 +1122,7 @@ namespace Concentus.Celt
             {
                 /* Copying a mono streams to two channels */
                 Pointer<int> freq2;
-                Bands.denormalise_bands(mode, X.GetPointer(), freq.GetPointer(), oldBandE.GetPointer(), start, effEnd, M,
+                Bands.denormalise_bands(mode, X[0], freq.GetPointer(), oldBandE.GetPointer(), start, effEnd, M,
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
                 freq2 = out_syn[1].Point(overlap / 2);
@@ -1137,10 +1137,10 @@ namespace Concentus.Celt
                 /* Downmixing a stereo stream to mono */
                 Pointer<int> freq2;
                 freq2 = out_syn[0].Point(overlap / 2);
-                Bands.denormalise_bands(mode, X.GetPointer(), freq.GetPointer(), oldBandE.GetPointer(), start, effEnd, M,
+                Bands.denormalise_bands(mode, X[0], freq.GetPointer(), oldBandE.GetPointer(), start, effEnd, M,
                       downsample, silence);
                 /* Use the output buffer as temp array before downmixing. */
-                Bands.denormalise_bands(mode, X.GetPointer(N), freq2, oldBandE.GetPointer(nbEBands), start, effEnd, M,
+                Bands.denormalise_bands(mode, X[1], freq2, oldBandE.GetPointer(nbEBands), start, effEnd, M,
                       downsample, silence);
                 for (i = 0; i < N; i++)
                     freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], freq2[i]));
@@ -1151,7 +1151,7 @@ namespace Concentus.Celt
                 /* Normal case (mono or stereo) */
                 c = 0; do
                 {
-                    Bands.denormalise_bands(mode, X.GetPointer(c * N), freq.GetPointer(), oldBandE.GetPointer(c * nbEBands), start, effEnd, M,
+                    Bands.denormalise_bands(mode, X[c], freq.GetPointer(), oldBandE.GetPointer(c * nbEBands), start, effEnd, M,
                           downsample, silence);
                     for (b = 0; b < B; b++)
                         MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[c].Data, out_syn[c].Offset + (NB * b), mode.window, overlap, shift, B);

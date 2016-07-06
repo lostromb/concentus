@@ -385,7 +385,7 @@ namespace Concentus.Celt.Structs
             int bits;
             int[] input;
             int[] freq;
-            int[] X;
+            int[][] X;
             int[] bandE;
             int[] bandLogE;
             int[] bandLogE2;
@@ -676,7 +676,7 @@ namespace Concentus.Celt.Structs
             QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
 
             surround_dynalloc = new int[C * nbEBands];
-            Arrays.MemSet<int>(surround_dynalloc, 0, end); // fixme: not strictly needed
+            //Arrays.MemSet<int>(surround_dynalloc, 0, end); // not strictly needed
             /* This computes how much masking takes place between surround channels */
             if (start == 0 && this.energy_mask != null && this.lfe == 0)
             {
@@ -800,7 +800,7 @@ namespace Concentus.Celt.Structs
             if (LM > 0 && enc.tell() + 3 <= total_bits)
                 enc.enc_bit_logp(isTransient, 3);
 
-            X = new int[C * N];         /**< Interleaved normalised MDCTs */
+            X = Arrays.InitTwoDimensionalArray<int>(C, N);         /**< Interleaved normalised MDCTs */
 
             /* Band normalisation */
             Bands.normalise_bands(mode, freq, X, bandE, effEnd, C, M);
@@ -930,7 +930,7 @@ namespace Concentus.Celt.Structs
             {
                 /* Always use MS for 2.5 ms frames until we can do a better analysis */
                 if (LM != 0)
-                    dual_stereo = CeltCommon.stereo_analysis(mode, X, LM, N);
+                    dual_stereo = CeltCommon.stereo_analysis(mode, X, LM);
 
                 this.intensity = Bands.hysteresis_decision((int)(equiv_rate / 1000),
                       Tables.intensity_thresholds, Tables.intensity_histeresis, 21, this.intensity);
@@ -948,7 +948,7 @@ namespace Concentus.Celt.Structs
                 {
                     BoxedValue<int> boxed_stereo_saving = new BoxedValue<int>(this.stereo_saving);
                     alloc_trim = CeltCommon.alloc_trim_analysis(mode, X, bandLogE,
-                       end, LM, C, N, this.analysis, boxed_stereo_saving, tf_estimate,
+                       end, LM, C, this.analysis, boxed_stereo_saving, tf_estimate,
                        this.intensity, surround_trim);
                     this.stereo_saving = boxed_stereo_saving.Val;
                 }
@@ -1099,7 +1099,7 @@ namespace Concentus.Celt.Structs
             /* Residual quantisation */
             collapse_masks = new byte[C * nbEBands];
             BoxedValue<uint> boxed_rng = new BoxedValue<uint>(this.rng);
-            Bands.quant_all_bands(1, mode, start, end, X, C == 2 ? X.GetPointer(N) : null, collapse_masks,
+            Bands.quant_all_bands(1, mode, start, end, X[0], C == 2 ? X[1].GetPointer() : null, collapse_masks,
                   bandE, pulses, shortBlocks, this.spread_decision,
                   dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
                   balance, enc, LM, codedBands, boxed_rng); // opt: X potential 1:2 partitioned array
