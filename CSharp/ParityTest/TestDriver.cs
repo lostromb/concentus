@@ -46,21 +46,21 @@ namespace ParityTest
 
             if (parameters.Bitrate > 0)
             {
-                concentusEncoder.SetBitrate(parameters.Bitrate * 1024);
+                concentusEncoder.Bitrate = (parameters.Bitrate * 1024);
             }
-            concentusEncoder.SetComplexity(parameters.Complexity);
-            concentusEncoder.SetUseDTX(parameters.UseDTX);
+            concentusEncoder.Complexity = (parameters.Complexity);
+            concentusEncoder.UseDTX = (parameters.UseDTX);
             if (parameters.PacketLossPercent > 0)
             {
-                concentusEncoder.SetPacketLossPercent(parameters.PacketLossPercent);
-                concentusEncoder.SetUseInbandFEC(true);
+                concentusEncoder.PacketLossPercent = (parameters.PacketLossPercent);
+                concentusEncoder.UseInbandFEC = (true);
             }
             if (parameters.ForceMode != OpusMode.MODE_AUTO)
             {
-                concentusEncoder.SetForceMode(parameters.ForceMode);
+                concentusEncoder.ForceMode = (parameters.ForceMode);
             }
-            concentusEncoder.SetVBR(parameters.UseVBR);
-            concentusEncoder.SetVBRConstraint(parameters.ConstrainedVBR);
+            concentusEncoder.UseVBR = (parameters.UseVBR);
+            concentusEncoder.UseConstrainedVBR = (parameters.ConstrainedVBR);
             return concentusEncoder;
         }
 
@@ -116,7 +116,7 @@ namespace ParityTest
                 if (parameters.PacketLossPercent > 0)
                 {
                     concentusEncoderWithoutFEC = CreateConcentusEncoder(parameters);
-                    concentusEncoderWithoutFEC.SetUseInbandFEC(false);
+                    concentusEncoderWithoutFEC.UseInbandFEC = (false);
                 }
             }
             catch (OpusException e)
@@ -176,14 +176,14 @@ namespace ParityTest
                     {
                         if (random.NextDouble() < 0.5)
                         {
-                            concentusEncoder.SetForceMode(OpusMode.MODE_AUTO);
-                            if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.SetForceMode(OpusMode.MODE_AUTO);
+                            concentusEncoder.ForceMode = (OpusMode.MODE_AUTO);
+                            if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.ForceMode = (OpusMode.MODE_AUTO);
                             opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, OpusConstants.OPUS_AUTO);
                         }
                         else
                         {
-                            concentusEncoder.SetForceMode(parameters.ForceMode);
-                            if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.SetForceMode(parameters.ForceMode);
+                            concentusEncoder.ForceMode = (parameters.ForceMode);
+                            if (concentusEncoderWithoutFEC != null) concentusEncoderWithoutFEC.ForceMode = (parameters.ForceMode);
                             opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_FORCE_MODE_REQUEST, (int)parameters.ForceMode);
                         }
                     }
@@ -192,7 +192,7 @@ namespace ParityTest
                     if (parameters.Bitrate < 0 && random.NextDouble() < 0.1)
                     {
                         int newBitrate = random.Next(6, parameters.ForceMode == OpusMode.MODE_SILK_ONLY ? 40 : 510);
-                        concentusEncoder.SetBitrate(newBitrate * 1024);
+                        concentusEncoder.Bitrate = (newBitrate * 1024);
                         opus_encoder_ctl(opusEncoder, OpusControl.OPUS_SET_BITRATE_REQUEST, newBitrate * 1024);
                     }
 

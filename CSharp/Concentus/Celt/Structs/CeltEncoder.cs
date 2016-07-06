@@ -1289,11 +1289,6 @@ namespace Concentus.Celt.Structs
             this.energy_mask = value;
         }
 
-        internal void SetEnableAnalysis(bool value)
-        {
-            this.analysis.enabled = value;
-        }
-
 #endregion
     }
 }

@@ -1309,8 +1309,8 @@ namespace Concentus.Structs
 
             if (this.analysis.enabled && redundancy != 0 || this.mode != OpusMode.MODE_SILK_ONLY)
             {
+                analysis_info.enabled = this.analysis.enabled;
                 celt_enc.SetAnalysis(analysis_info);
-                celt_enc.SetEnableAnalysis(this.analysis.enabled);
             }
             /* 5 ms redundant frame for CELT.SILK */
             if (redundancy != 0 && celt_to_silk != 0)
@@ -1568,287 +1568,332 @@ namespace Concentus.Structs
         
         #region Getters and Setters
 
-        public void SetApplication(OpusApplication value)
+        public OpusApplication Application
         {
-            if (first == 0 && application != value)
+            get
             {
-                throw new ArgumentException("Unsupported application");
+                return application;
             }
-
-            application = value;
-        }
-
-        public OpusApplication GetApplication()
-        {
-            return application;
-        }
-
-        public void SetBitrate(int bitrate)
-        {
-            if (bitrate != OpusConstants.OPUS_AUTO && bitrate != OpusConstants.OPUS_BITRATE_MAX)
+            set
             {
-                if (bitrate <= 0)
-                    throw new ArgumentException("Bitrate must be positive");
-                else if (bitrate <= 500)
-                    bitrate = 500;
-                else if (bitrate > (int)300000 * channels)
-                    bitrate = (int)300000 * channels;
+                if (first == 0 && application != value)
+                {
+                    throw new ArgumentException("Unsupported application");
+                }
+
+                application = value;
             }
-
-            user_bitrate_bps = bitrate;
         }
 
-        public int GetBitrate()
+        public int Bitrate
         {
-            return user_bitrate_to_bitrate(prev_framesize, 1276);
-        }
-
-        public void SetForceChannels(int value)
-        {
-            if ((value < 1 || value > channels) && value != OpusConstants.OPUS_AUTO)
+            get
             {
-                throw new ArgumentException("Force channels must be <= num. of channels");
+                return user_bitrate_to_bitrate(prev_framesize, 1276);
             }
-
-            force_channels = value;
-        }
-
-        public int GetForceChannels()
-        {
-            return force_channels;
-        }
-
-        public void SetMaxBandwidth(OpusBandwidth value)
-        {
-            max_bandwidth = value;
-            if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+            set
             {
-                silk_mode.maxInternalSampleRate = 8000;
+                if (value != OpusConstants.OPUS_AUTO && value != OpusConstants.OPUS_BITRATE_MAX)
+                {
+                    if (value <= 0)
+                        throw new ArgumentException("Bitrate must be positive");
+                    else if (value <= 500)
+                        value = 500;
+                    else if (value > (int)300000 * channels)
+                        value = (int)300000 * channels;
+                }
+
+                user_bitrate_bps = value;
             }
-            else if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+        }
+
+        public int ForceChannels
+        {
+            get
             {
-                silk_mode.maxInternalSampleRate = 12000;
+                return force_channels;
             }
-            else {
-                silk_mode.maxInternalSampleRate = 16000;
-            }
-        }
-
-        public OpusBandwidth GetMaxBandwidth()
-        {
-            return max_bandwidth;
-        }
-
-        public void SetBandwidth(OpusBandwidth value)
-        {
-            user_bandwidth = value;
-            if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+            set
             {
-                silk_mode.maxInternalSampleRate = 8000;
+                if ((value < 1 || value > channels) && value != OpusConstants.OPUS_AUTO)
+                {
+                    throw new ArgumentException("Force channels must be <= num. of channels");
+                }
+
+                force_channels = value;
             }
-            else if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+        }
+
+        public OpusBandwidth MaxBandwidth
+        {
+            get
             {
-                silk_mode.maxInternalSampleRate = 12000;
+                return max_bandwidth;
             }
-            else {
-                silk_mode.maxInternalSampleRate = 16000;
-            }
-        }
-
-        public OpusBandwidth GetBandwidth()
-        {
-            return bandwidth;
-        }
-
-        public void SetUseDTX(bool value)
-        {
-            silk_mode.useDTX = value ? 1 : 0;
-        }
-
-        public bool GetUseDTX()
-        {
-            return silk_mode.useDTX != 0;
-        }
-
-        public void SetComplexity(int value)
-        {
-            if (value < 0 || value > 10)
+            set
             {
-                throw new ArgumentException("Complexity must be between 0 and 10");
+                max_bandwidth = value;
+                if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+                {
+                    silk_mode.maxInternalSampleRate = 8000;
+                }
+                else if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+                {
+                    silk_mode.maxInternalSampleRate = 12000;
+                }
+                else {
+                    silk_mode.maxInternalSampleRate = 16000;
+                }
             }
-            silk_mode.complexity = value;
-            Celt_Encoder.SetComplexity(value);
         }
 
-        public int GetComplexity()
+        public OpusBandwidth Bandwidth
         {
-            return silk_mode.complexity;
-        }
-
-        public void SetUseInbandFEC(bool value)
-        {
-            silk_mode.useInBandFEC = value ? 1 : 0;
-        }
-
-        public bool GetUseInbandFEC()
-        {
-            return silk_mode.useInBandFEC != 0;
-        }
-
-        public void SetPacketLossPercent(int value)
-        {
-            if (value < 0 || value > 100)
+            get
             {
-                throw new ArgumentException("Packet loss must be between 0 and 100");
+                return bandwidth;
             }
-            silk_mode.packetLossPercentage = value;
-            Celt_Encoder.SetPacketLossPercent(value);
-        }
-
-        public int GetPacketLossPercent()
-        {
-            return silk_mode.packetLossPercentage;
-        }
-
-        public void SetVBR(bool value)
-        {
-            use_vbr = value ? 1 : 0;
-            silk_mode.useCBR = value ? 0 : 1;
-        }
-
-        public bool GetVBR()
-        {
-            return use_vbr != 0;
-        }
-
-        /** Configures the encoder's expected percentage of voice
-  * opposed to music or other signals.
-  *
-  * @note This interface is currently more aspiration than actuality. It's
-  * ultimately expected to bias an automatic signal classifier, but it currently
-  * just shifts the static bitrate to mode mapping around a little bit.
-  *
-  * @param[in] x <tt>int</tt>:   Voice percentage in the range 0-100, inclusive.
-  * @hideinitializer */
-        public void SetVoiceRatio(int value)
-        {
-            if (value < -1 || value > 100)
+            set
             {
-                throw new ArgumentException("Voice ratio must be between -1 and 100");
+                user_bandwidth = value;
+                if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+                {
+                    silk_mode.maxInternalSampleRate = 8000;
+                }
+                else if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+                {
+                    silk_mode.maxInternalSampleRate = 12000;
+                }
+                else {
+                    silk_mode.maxInternalSampleRate = 16000;
+                }
             }
-
-            voice_ratio = value;
         }
 
-        /** Gets the encoder's configured voice ratio value, @see OPUS_SET_VOICE_RATIO
-  *
-  * @param[out] x <tt>int*</tt>:  Voice percentage in the range 0-100, inclusive.
-  * @hideinitializer */
-        public int GetVoiceRatio()
+        public bool UseDTX
         {
-            return voice_ratio;
-        }
-
-        public void SetVBRConstraint(bool value)
-        {
-            vbr_constraint = value ? 1 : 0;
-        }
-
-        public bool GetVBRConstraint()
-        {
-            return vbr_constraint != 0;
-        }
-
-        public void SetSignalType(OpusSignal value)
-        {
-            signal_type = value;
-        }
-
-        public OpusSignal GetSignalType()
-        {
-            return signal_type;
-        }
-
-        public int GetLookahead()
-        {
-            int returnVal = Fs / 400;
-            if (application != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-                returnVal += delay_compensation;
-
-            return returnVal;
-        }
-
-        public int GetSampleRate()
-        {
-            return Fs;
-        }
-
-        public uint GetFinalRange()
-        {
-            return rangeFinal;
-        }
-
-        public void SetLSBDepth(int value)
-        {
-            if (value < 8 || value > 24)
+            get
             {
-                throw new ArgumentException("LSB depth must be between 8 and 24");
+                return silk_mode.useDTX != 0;
             }
-
-            lsb_depth = value;
+            set
+            {
+                silk_mode.useDTX = value ? 1 : 0;
+            }
         }
 
-        public int GetLSBDepth()
+        public int Complexity
         {
-            return lsb_depth;
+            get
+            {
+                return silk_mode.complexity;
+            }
+            set
+            {
+                if (value < 0 || value > 10)
+                {
+                    throw new ArgumentException("Complexity must be between 0 and 10");
+                }
+                silk_mode.complexity = value;
+                Celt_Encoder.SetComplexity(value);
+            }
         }
 
-        public void SetExpertFrameDuration(OpusFramesize value)
+        public bool UseInbandFEC
         {
-            variable_duration = value;
-            Celt_Encoder.SetExpertFrameDuration(value);
+            get
+            {
+                return silk_mode.useInBandFEC != 0;
+            }
+            set
+            {
+                silk_mode.useInBandFEC = value ? 1 : 0;
+            }
         }
 
-        public OpusFramesize GetExpertFrameDuration()
+        public int PacketLossPercent
         {
-            return variable_duration;
+            get
+            {
+                return silk_mode.packetLossPercentage;
+            }
+            set
+            {
+                if (value < 0 || value > 100)
+                {
+                    throw new ArgumentException("Packet loss must be between 0 and 100");
+                }
+                silk_mode.packetLossPercentage = value;
+                Celt_Encoder.SetPacketLossPercent(value);
+            }
         }
 
-        public void SetPredictionDisabled(bool value)
+        public bool UseVBR
         {
-            silk_mode.reducedDependency = value ? 1 : 0;
+            get
+            {
+                return use_vbr != 0;
+            }
+            set
+            {
+                use_vbr = value ? 1 : 0;
+                silk_mode.useCBR = value ? 0 : 1;
+            }
         }
 
-        public bool GetPredictionDisabled()
+        public int VoiceRatio
         {
-            return silk_mode.reducedDependency != 0;
+            get
+            {
+                return voice_ratio;
+            }
+            set
+            {
+                if (value < -1 || value > 100)
+                {
+                    throw new ArgumentException("Voice ratio must be between -1 and 100");
+                }
+
+                voice_ratio = value;
+            }
         }
 
-        public void SetForceMode(OpusMode value)
+        public bool UseConstrainedVBR
         {
-            user_forced_mode = value;
+            get
+            {
+                return vbr_constraint != 0;
+            }
+            set
+            {
+                vbr_constraint = value ? 1 : 0;
+            }
         }
 
-        public void SetLFE(int value)
+        public OpusSignal SignalType
         {
-            lfe = value;
-            Celt_Encoder.SetLFE(value);
+            get
+            {
+                return signal_type;
+            }
+            set
+            {
+                signal_type = value;
+            }
         }
 
-        public void SetEnergyMask(int[] value)
+        public int Lookahead
+        {
+            get
+            {
+                int returnVal = Fs / 400;
+                if (application != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+                    returnVal += delay_compensation;
+
+                return returnVal;
+            }
+        }
+
+        public int SampleRate
+        {
+            get
+            {
+                return Fs;
+            }
+        }
+        
+        public uint FinalRange
+        {
+            get
+            {
+                return rangeFinal;
+            }
+        }
+
+        public int LSBDepth
+        {
+            get
+            {
+                return lsb_depth;
+            }
+            set
+            {
+                if (value < 8 || value > 24)
+                {
+                    throw new ArgumentException("LSB depth must be between 8 and 24");
+                }
+
+                lsb_depth = value;
+            }
+        }
+
+        public OpusFramesize ExpertFrameDuration
+        {
+            get
+            {
+                return variable_duration;
+
+            }
+            set
+            {
+                variable_duration = value;
+                Celt_Encoder.SetExpertFrameDuration(value);
+            }
+        }
+        
+        public OpusMode ForceMode
+        {
+            get
+            {
+                return user_forced_mode;
+            }
+            set
+            {
+                user_forced_mode = value;
+            }
+        }
+
+        public bool IsLFE
+        {
+            get
+            {
+                return lfe != 0;
+            }
+            set
+            {
+                lfe = value ? 1 : 0;
+                Celt_Encoder.SetLFE(value ? 1 : 0);
+            }
+        }
+
+        public bool PredictionDisabled
+        {
+            get
+            {
+                return silk_mode.reducedDependency != 0;
+            }
+            set
+            {
+                silk_mode.reducedDependency = value ? 1 : 0;
+            }
+        }
+
+        public bool EnableAnalysis
+        {
+            get
+            {
+                return analysis.enabled;
+            }
+            set
+            {
+                analysis.enabled = value;
+            }
+        }
+        
+        internal void SetEnergyMask(int[] value)
         {
             energy_masking = value;
             Celt_Encoder.SetEnergyMask(value);
-        }
-
-        public bool GetEnableAnalysis()
-        {
-            return analysis.enabled;
-        }
-
-        public void SetEnableAnalysis(bool value)
-        {
-            analysis.enabled = value;
         }
 
         internal CeltMode GetCeltMode()

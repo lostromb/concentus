@@ -179,13 +179,13 @@ namespace TestOpusEncode
             //fwrite(inbuf, 1, SAMPLES*2*2, foo);
             //fclose(foo);*/
 
-            enc.SetBandwidth(OpusBandwidth.OPUS_BANDWIDTH_AUTO);
+            enc.Bandwidth = (OpusBandwidth.OPUS_BANDWIDTH_AUTO);
 
             for (rc = 0; rc < 3; rc++)
             {
-                enc.SetVBR(rc < 2);
-                enc.SetVBRConstraint(rc == 1);
-                enc.SetUseInbandFEC(rc == 0);
+                enc.UseVBR = (rc < 2);
+                enc.UseConstrainedVBR = (rc == 1);
+                enc.UseInbandFEC = (rc == 0);
 
                 int[] modes = { 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2 };
                 int[] rates = { 6000, 12000, 48000, 16000, 32000, 48000, 64000, 512000, 13000, 24000, 48000, 64000, 96000 };
@@ -220,7 +220,7 @@ namespace TestOpusEncode
                         if (fast_rand() % 10 == 0)
                         {
                             int complex = (int)(fast_rand() % 11);
-                            enc.SetComplexity(complex);
+                            enc.Complexity = (complex);
                         }
 
                         if (fast_rand() % 50 == 0)
@@ -228,13 +228,13 @@ namespace TestOpusEncode
                             dec.ResetState();
                         }
                         
-                        enc.SetUseInbandFEC(rc == 0);
-                        enc.SetForceMode(OpusMode.MODE_SILK_ONLY + modes[j]);
-                        enc.SetUseDTX((fast_rand() & 1) != 0);
-                        enc.SetBitrate(rate);
-                        enc.SetForceChannels(rates[j] >= 64000 ? 2 : 1);
-                        enc.SetComplexity((count >> 2) % 11);
-                        enc.SetPacketLossPercent((int)((fast_rand() & 15) & (fast_rand() % 15)));
+                        enc.UseInbandFEC = (rc == 0);
+                        enc.ForceMode = (OpusMode.MODE_SILK_ONLY + modes[j]);
+                        enc.UseDTX = ((fast_rand() & 1) != 0);
+                        enc.Bitrate = (rate);
+                        enc.ForceChannels = (rates[j] >= 64000 ? 2 : 1);
+                        enc.Complexity = ((count >> 2) % 11);
+                        enc.PacketLossPercent = ((int)((fast_rand() & 15) & (fast_rand() % 15)));
 
                         bw = modes[j] == 0 ? OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + (int)(fast_rand() % 3) :
                             modes[j] == 1 ? OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND + (int)(fast_rand() & 1) :
@@ -242,10 +242,10 @@ namespace TestOpusEncode
 
                         if (modes[j] == 2 && bw == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
                             bw += 3;
-                        enc.SetBandwidth(bw);
+                        enc.Bandwidth = (bw);
                         len = enc.Encode(inbuf.Data, i << 1, frame_size, packet.Data, 0, MAX_PACKET);
                         if (len < 0 || len > MAX_PACKET) test_failed();
-                        enc_final_range = enc.GetFinalRange();
+                        enc_final_range = enc.FinalRange;
                         if ((fast_rand() & 3) == 0)
                         {
                             if (OpusRepacketizer.PadPacket(packet.Data, packet.Offset, len, len + 1) != OpusError.OPUS_OK) test_failed();
@@ -263,7 +263,7 @@ namespace TestOpusEncode
                         }
                         out_samples = dec.Decode(packet.Data, 0, len, outbuf.Data, i << 1, MAX_FRAME_SAMP, false);
                         if (out_samples != frame_size) test_failed();
-                        dec_final_range = dec.GetFinalRange();
+                        dec_final_range = dec.FinalRange;
                         if (enc_final_range != dec_final_range) test_failed();
                         /*LBRR decode*/
                         out_samples = dec_err[0].Decode(packet.Data, 0, len, out2buf.Data, 0, frame_size, ((int)fast_rand() & 3) != 0);
@@ -356,15 +356,15 @@ namespace TestOpusEncode
             if (err.Val != OpusError.OPUS_OK || MSdec_err == null) test_failed();
 
             /*Some multistream encoder API tests*/
-            i = MSenc.GetBitrate();
-            i = MSenc.GetLSBDepth();
+            i = MSenc.Bitrate;
+            i = MSenc.LSBDepth;
             if (i < 16) test_failed();
 
             {
                 OpusEncoder tmp_enc;
                 tmp_enc = MSenc.GetMultistreamEncoderState(1);
                 if (tmp_enc == null) test_failed();
-                j = tmp_enc.GetLSBDepth();
+                j = tmp_enc.LSBDepth;
                 if (i != j) test_failed();
                 try
                 {
@@ -380,27 +380,27 @@ namespace TestOpusEncode
 
             for (rc = 0; rc < 3; rc++)
             {
-                MSenc.SetVBR(rc < 2);
-                MSenc.SetVBRConstraint(rc == 1);
-                MSenc.SetUseInbandFEC(rc == 0);
+                MSenc.UseVBR = (rc < 2);
+                MSenc.UseConstrainedVBR = (rc == 1);
+                MSenc.UseInbandFEC = (rc == 0);
                 for (j = 0; j < 16; j++)
                 {
                     int rate;
-                    MSenc.SetUseInbandFEC(rc == 0 && j == 1);
-                    MSenc.SetForceMode(modes[j]);
+                    MSenc.UseInbandFEC = (rc == 0 && j == 1);
+                    MSenc.ForceMode = (modes[j]);
                     rate = rates[j] + ((int)fast_rand() % rates[j]);
-                    MSenc.SetUseDTX((fast_rand() & 1U) != 0);
-                    MSenc.SetBitrate(rate);
+                    MSenc.UseDTX = ((fast_rand() & 1U) != 0);
+                    MSenc.Bitrate = (rate);
                     count = i = 0;
                     do
                     {
                         int len, out_samples, frame_size;
                         bool loss;
-                        bool pred = MSenc.GetPredictionDisabled();
-                        MSenc.SetPredictionDisabled((int)(fast_rand() & 15) < (pred ? 11 : 4));
+                        bool pred = MSenc.PredictionDisabled;
+                        MSenc.PredictionDisabled = ((int)(fast_rand() & 15) < (pred ? 11 : 4));
                         frame_size = frame[j];
-                        MSenc.SetComplexity((count >> 2) % 11);
-                        MSenc.SetPacketLossPercent(((int)fast_rand() & 15) & ((int)fast_rand() % 15));
+                        MSenc.Complexity = ((count >> 2) % 11);
+                        MSenc.PacketLossPercent = (((int)fast_rand() & 15) & ((int)fast_rand() % 15));
                         if ((fast_rand() & 255) == 0)
                         {
                             MSenc.ResetState();
@@ -416,7 +416,7 @@ namespace TestOpusEncode
                         }
                         len = MSenc.EncodeMultistream(inbuf, i << 1, frame_size, packet, 0, MAX_PACKET);
                         if (len < 0 || len > MAX_PACKET) test_failed();
-                        enc_final_range = MSenc.GetFinalRange();
+                        enc_final_range = MSenc.FinalRange;
                         if ((fast_rand() & 3) == 0)
                         {
                             if (OpusRepacketizer.PadMultistreamPacket(packet, 0, len, len + 1, 2) != OpusError.OPUS_OK) test_failed();
@@ -434,7 +434,7 @@ namespace TestOpusEncode
                         //}
                         out_samples = MSdec.DecodeMultistream(packet, 0, len, out2buf, 0, MAX_FRAME_SAMP, 0);
                         if (out_samples != frame_size * 6) test_failed();
-                        dec_final_range = MSdec.GetFinalRange();
+                        dec_final_range = MSdec.FinalRange;
                         if (enc_final_range != dec_final_range) test_failed();
                         /*LBRR decode*/
                         loss = (fast_rand() & 63) == 0;
