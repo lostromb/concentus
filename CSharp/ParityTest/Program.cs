@@ -30,7 +30,7 @@ namespace ParityTest
             OpusApplication[] Applications = new OpusApplication[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
             int[] Bitrates = new int[] { -1, 6, 16, 20, 32, 64, 500 };
             int[] Channels = new int[] { 1, 2 };
-            int[] Complexities = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+            int[] Complexities = new int[] { 0, 2, 4, 6, 8, 10 };
             int[] SampleRates = new int[] { 8000, 12000, 16000, 24000, 48000 };
             double[] FrameSizes = new double[] { 2.5, 5, 10, 20, 40, 60 };
             int[] PacketLosses = new int[] { 0, 20 };
