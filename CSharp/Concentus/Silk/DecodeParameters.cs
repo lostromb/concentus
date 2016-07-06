@@ -51,7 +51,7 @@ namespace Concentus.Silk
             int i, k, Ix;
             short[] pNLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER]; // fixme use psdec.order
             short[] pNLSF0_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
-            sbyte[] cbk_ptr_Q7;
+            sbyte[][] cbk_ptr_Q7;
 
             /* Dequant Gains */
             BoxedValue<sbyte> boxedLastGainIndex = new BoxedValue<sbyte>(psDec.LastGainIndex);
@@ -119,7 +119,7 @@ namespace Concentus.Silk
                     Ix = psDec.indices.LTPIndex[k];
                     for (i = 0; i < SilkConstants.LTP_ORDER; i++)
                     {
-                        psDecCtrl.LTPCoef_Q14[k * SilkConstants.LTP_ORDER + i] = Inlines.CHOP16(Inlines.silk_LSHIFT(cbk_ptr_Q7[Ix * SilkConstants.LTP_ORDER + i], 7));
+                        psDecCtrl.LTPCoef_Q14[k * SilkConstants.LTP_ORDER + i] = Inlines.CHOP16(Inlines.silk_LSHIFT(cbk_ptr_Q7[Ix][i], 7));
                     }
                 }
 

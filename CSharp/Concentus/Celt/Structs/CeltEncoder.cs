@@ -110,8 +110,8 @@ namespace Concentus.Celt.Structs
         internal int[][] in_mem = null;
         internal int[][] prefilter_mem = null;
         internal int[][] oldBandE = null;
-        internal int[] oldLogE = null;
-        internal int[] oldLogE2 = null;
+        internal int[][] oldLogE = null;
+        internal int[][] oldLogE2 = null;
 
         private void Reset()
         {
@@ -184,12 +184,19 @@ namespace Concentus.Celt.Structs
             this.in_mem = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.overlap);
             this.prefilter_mem = Arrays.InitTwoDimensionalArray<int>(this.channels, CeltConstants.COMBFILTER_MAXPERIOD);
             this.oldBandE = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
-            this.oldLogE = new int[this.channels * this.mode.nbEBands];
-            this.oldLogE2 = new int[this.channels * this.mode.nbEBands];
+            this.oldLogE = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
+            this.oldLogE2 = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
 
-            for (i = 0; i < this.channels * this.mode.nbEBands; i++)
+            for (i = 0; i < this.mode.nbEBands; i++)
             {
-                this.oldLogE[i] = this.oldLogE2[i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                this.oldLogE[0][i] = this.oldLogE2[0][i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+            }
+            if (this.channels == 2)
+            {
+                for (i = 0; i < this.mode.nbEBands; i++)
+                {
+                    this.oldLogE[1][i] = this.oldLogE2[1][i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                }
             }
             this.vbr_offset = 0;
             this.delayedIntra = 1;
@@ -1114,7 +1121,7 @@ namespace Concentus.Celt.Structs
             Bands.quant_all_bands(1, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   bandE, pulses, shortBlocks, this.spread_decision,
                   dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
-                  balance, enc, LM, codedBands, boxed_rng); // opt: X potential 1:2 partitioned array
+                  balance, enc, LM, codedBands, boxed_rng);
             this.rng = boxed_rng.Val;
 
             if (anti_collapse_rsv > 0)
@@ -1154,22 +1161,25 @@ namespace Concentus.Celt.Structs
 
             if (isTransient == 0)
             {
-                Array.Copy(oldLogE, oldLogE2, CC * nbEBands);
-                Array.Copy(oldBandE[0], 0, oldLogE, 0, nbEBands);
+                Array.Copy(oldLogE[0], 0, oldLogE2[0], 0, nbEBands);
+                Array.Copy(oldBandE[0], 0, oldLogE[0], 0, nbEBands);
                 if (CC == 2)
-                    Array.Copy(oldBandE[1], 0, oldLogE, nbEBands, nbEBands);
+                {
+                    Array.Copy(oldLogE[1], 0, oldLogE2[1], 0, nbEBands);
+                    Array.Copy(oldBandE[1], 0, oldLogE[1], 0, nbEBands);
+                }
             }
             else
             {
                 for (i = 0; i < nbEBands; i++)
                 {
-                    oldLogE[i] = Inlines.MIN16(oldLogE[i], oldBandE[0][i]);
+                    oldLogE[0][i] = Inlines.MIN16(oldLogE[0][i], oldBandE[0][i]);
                 }
                 if (CC == 2)
                 {
                     for (i = 0; i < nbEBands; i++)
                     {
-                        oldLogE[i + nbEBands] = Inlines.MIN16(oldLogE[i + nbEBands], oldBandE[1][i]);
+                        oldLogE[1][i] = Inlines.MIN16(oldLogE[1][i], oldBandE[1][i]);
                     }
                 }
             }
@@ -1181,12 +1191,12 @@ namespace Concentus.Celt.Structs
                 for (i = 0; i < start; i++)
                 {
                     oldBandE[c][i] = 0;
-                    oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    oldLogE[c][i] = oldLogE2[c][i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
                 }
                 for (i = end; i < nbEBands; i++)
                 {
                     oldBandE[c][i] = 0;
-                    oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
+                    oldLogE[c][i] = oldLogE2[c][i] = -Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT);
                 }
             } while (++c < CC);
 
