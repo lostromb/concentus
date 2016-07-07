@@ -1,6 +1,7 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
-   Copyright (c) 2007-2010 Xiph.Org Foundation
-   Originally written by Jean-Marc Valin, Gregory Maxwell, and the Opus open-source contributors
+﻿/* Copyright (c) 2003-2004, Mark Borgerding
+   Copyright (c) 2007-2008 CSIRO
+   Copyright (c) 2007-2011 Xiph.Org Foundation
+   Modified from KISS-FFT by Jean-Marc Valin
    Ported to C# by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without

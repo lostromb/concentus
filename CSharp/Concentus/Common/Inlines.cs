@@ -1,7 +1,6 @@
 ﻿/* Copyright (c) 2006-2011 Skype Limited. 
    Copyright (c) 2007-2008 CSIRO
-   Copyright (c) 2007-2010 Xiph.Org Foundation
-   All Rights Reserved
+   Copyright (c) 2007-2011 Xiph.Org Foundation
    Ported to C# by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without

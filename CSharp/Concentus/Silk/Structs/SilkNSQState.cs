@@ -127,24 +127,24 @@ namespace Concentus.Silk.Structs
             }
         }
 
-        private class NSQ_sample_struct
+        private struct NSQ_sample_struct
         {
-            internal int Q_Q10 = 0;
-            internal int RD_Q10 = 0;
-            internal int xq_Q14 = 0;
-            internal int LF_AR_Q14 = 0;
-            internal int sLTP_shp_Q14 = 0;
-            internal int LPC_exc_Q14 = 0;
+            internal int Q_Q10;
+            internal int RD_Q10;
+            internal int xq_Q14;
+            internal int LF_AR_Q14;
+            internal int sLTP_shp_Q14;
+            internal int LPC_exc_Q14;
             
-            internal void Assign(NSQ_sample_struct other)
-            {
-                this.Q_Q10 = other.Q_Q10;
-                this.RD_Q10 = other.RD_Q10;
-                this.xq_Q14 = other.xq_Q14;
-                this.LF_AR_Q14 = other.LF_AR_Q14;
-                this.sLTP_shp_Q14 = other.sLTP_shp_Q14;
-                this.LPC_exc_Q14 = other.LPC_exc_Q14;
-            }
+            //internal void Assign(NSQ_sample_struct other)
+            //{
+            //    this.Q_Q10 = other.Q_Q10;
+            //    this.RD_Q10 = other.RD_Q10;
+            //    this.xq_Q14 = other.xq_Q14;
+            //    this.LF_AR_Q14 = other.LF_AR_Q14;
+            //    this.sLTP_shp_Q14 = other.sLTP_shp_Q14;
+            //    this.LPC_exc_Q14 = other.LPC_exc_Q14;
+            //}
         }
 
         internal void silk_NSQ
@@ -1163,7 +1163,7 @@ namespace Concentus.Silk.Structs
                 if (RDmin_Q10 < RDmax_Q10)
                 {
                     psDelDec[RDmax_ind].PartialCopyFrom(psDelDec[RDmin_ind], i);
-                    sampleStates[RDmax_ind * 2].Assign(sampleStates[RDmin_ind * 2 + 1]);
+                    sampleStates[RDmax_ind * 2] = (sampleStates[RDmin_ind * 2 + 1]); // porting note: this uses struct copy-on-assign semantics
                 }
 
                 /* Write samples from winner to output and long-term filter states */
