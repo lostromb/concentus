@@ -201,10 +201,8 @@ int opus_packet_parse_impl(const unsigned char *data, opus_int32 len,
    opus_int32 pad = 0;
    const unsigned char *data0 = data;
 
-   if (size==NULL || len<0)
+   if (size==NULL)
       return OPUS_BAD_ARG;
-   if (len == 0)
-	   return OPUS_INVALID_PACKET;
 
    framesize = opus_packet_get_samples_per_frame(data, 48000);
 

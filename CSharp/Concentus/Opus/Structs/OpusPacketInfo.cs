@@ -302,10 +302,8 @@ namespace Concentus.Structs
             int pad = 0;
             Pointer<byte> data0 = data;
 
-            if (size == null || len < 0)
+            if (size == null)
                 return OpusError.OPUS_BAD_ARG;
-            if (len == 0)
-                return OpusError.OPUS_INVALID_PACKET;
 
             framesize = GetNumSamplesPerFrame(data.Data, data.Offset, 48000);
 

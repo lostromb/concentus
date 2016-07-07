@@ -535,16 +535,6 @@ namespace Concentus.Structs
             this.bitrate_bps = user_bitrate_to_bitrate(frame_size, max_data_bytes);
 
             frame_rate = this.Fs / frame_size;
-            if (this.use_vbr == 0)
-            {
-                int cbrBytes;
-                /* Multiply by 3 to make sure the division is exact. */
-                int frame_rate3 = 3 * this.Fs / frame_size;
-                /* We need to make sure that "int" values always fit in 16 bits. */
-                cbrBytes = Inlines.IMIN((3 * this.bitrate_bps / 8 + frame_rate3 / 2) / frame_rate3, max_data_bytes);
-                this.bitrate_bps = cbrBytes * (int)frame_rate3 * 8 / 3;
-                max_data_bytes = cbrBytes;
-            }
             if (max_data_bytes < 3 || this.bitrate_bps < 3 * frame_rate * 8
                || (frame_rate < 50 && (max_data_bytes * frame_rate < 300 || this.bitrate_bps < 2400)))
             {
@@ -561,17 +551,18 @@ namespace Concentus.Structs
                     bw = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
                 else if (tocmode == OpusMode.MODE_CELT_ONLY && bw == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
                     bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
-                else if (tocmode == OpusMode.MODE_HYBRID && bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
+                else if (bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
                 data[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
-                ret = 1;
-                if (this.use_vbr == 0)
-                {
-                    ret = OpusRepacketizer.PadPacket(data, 0, ret, max_data_bytes);
-                    if (ret == OpusError.OPUS_OK)
-                        ret = max_data_bytes;
-                }
-                return ret;
+
+                return 1;
+            }
+            if (this.use_vbr == 0)
+            {
+                int cbrBytes;
+                cbrBytes = Inlines.IMIN((this.bitrate_bps + 4 * frame_rate) / (8 * frame_rate), max_data_bytes);
+                this.bitrate_bps = cbrBytes * (8 * frame_rate);
+                max_data_bytes = cbrBytes;
             }
             max_rate = frame_rate * max_data_bytes * 8;
 

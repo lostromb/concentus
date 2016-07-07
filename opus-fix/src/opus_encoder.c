@@ -873,7 +873,7 @@ opus_val16 compute_stereo_width(const opus_val16 *pcm, int frame_size, opus_int3
    frame_rate = Fs/frame_size;
    short_alpha = Q15ONE - 25*Q15ONE/IMAX(50,frame_rate);
    xx=xy=yy=0;
-   for (i=0;i<frame_size - 3;i+=4)
+   for (i=0;i<frame_size;i+=4)
    {
       opus_val32 pxx=0;
       opus_val32 pxy=0;
@@ -1050,16 +1050,6 @@ opus_int32 opus_encode_native(OpusEncoder *st, const opus_val16 *pcm, int frame_
     st->bitrate_bps = user_bitrate_to_bitrate(st, frame_size, max_data_bytes);
 
     frame_rate = st->Fs/frame_size;
-	if (!st->use_vbr)
-	{
-		int cbrBytes;
-		/* Multiply by 3 to make sure the division is exact. */
-		int frame_rate3 = 3 * st->Fs / frame_size;
-		/* We need to make sure that "int" values always fit in 16 bits. */
-		cbrBytes = IMIN((3 * st->bitrate_bps / 8 + frame_rate3 / 2) / frame_rate3, max_data_bytes);
-		st->bitrate_bps = cbrBytes*(opus_int32)frame_rate3 * 8 / 3;
-		max_data_bytes = cbrBytes;
-	}
     if (max_data_bytes<3 || st->bitrate_bps < 3*frame_rate*8
        || (frame_rate<50 && (max_data_bytes*frame_rate<300 || st->bitrate_bps < 2400)))
     {
@@ -1076,18 +1066,18 @@ opus_int32 opus_encode_native(OpusEncoder *st, const opus_val16 *pcm, int frame_
           bw=OPUS_BANDWIDTH_WIDEBAND;
        else if (tocmode==MODE_CELT_ONLY&&bw==OPUS_BANDWIDTH_MEDIUMBAND)
           bw=OPUS_BANDWIDTH_NARROWBAND;
-       else if (tocmode == MODE_HYBRID&&bw<=OPUS_BANDWIDTH_SUPERWIDEBAND)
+       else if (bw<=OPUS_BANDWIDTH_SUPERWIDEBAND)
           bw=OPUS_BANDWIDTH_SUPERWIDEBAND;
        data[0] = gen_toc(tocmode, frame_rate, bw, st->stream_channels);
-	   ret = 1;
-		if (!st->use_vbr)
-		{
-			ret = opus_packet_pad(data, ret, max_data_bytes);
-			if (ret == OPUS_OK)
-				ret = max_data_bytes;
-		}
        RESTORE_STACK;
-	   return ret;
+       return 1;
+    }
+    if (!st->use_vbr)
+    {
+       int cbrBytes;
+       cbrBytes = IMIN( (st->bitrate_bps + 4*frame_rate)/(8*frame_rate) , max_data_bytes);
+       st->bitrate_bps = cbrBytes * (8*frame_rate);
+       max_data_bytes = cbrBytes;
     }
     max_rate = frame_rate*max_data_bytes*8;
 
