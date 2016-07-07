@@ -352,7 +352,6 @@ namespace Concentus.Celt
                         output[c],
                         b,
                         mode.window,
-                        0,
                         overlap,
                         shift,
                         B);

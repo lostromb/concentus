@@ -37,6 +37,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class Filters
@@ -412,8 +413,8 @@ namespace Concentus.Silk
         /// <param name="ind"></param>
         /// <param name="fac_Q16"></param>
         internal static void silk_LP_interpolate_filter_taps(
-            Pointer<int> B_Q28,
-            Pointer<int> A_Q28,
+            int[] B_Q28,
+            int[] A_Q28,
             int ind,
             int fac_Q16)
         {
@@ -473,14 +474,14 @@ namespace Concentus.Silk
                 }
                 else
                 {
-                    B_Q28.MemCopyFrom(Tables.silk_Transition_LP_B_Q28[ind], 0, SilkConstants.TRANSITION_NB);
-                    A_Q28.MemCopyFrom(Tables.silk_Transition_LP_A_Q28[ind], 0, SilkConstants.TRANSITION_NA);
+                    Array.Copy(Tables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                    Array.Copy(Tables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
                 }
             }
             else
             {
-                B_Q28.MemCopyFrom(Tables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, SilkConstants.TRANSITION_NB);
-                A_Q28.MemCopyFrom(Tables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, SilkConstants.TRANSITION_NA);
+                Array.Copy(Tables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                Array.Copy(Tables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
             }
         }
         
@@ -617,7 +618,7 @@ namespace Concentus.Silk
         /// <param name="A_Q12">Prediction coefficients, Q12 [order]</param>
         /// <param name="order">I   Prediction order</param>
         /// <returns>inverse prediction gain in energy domain, Q30</returns>
-        internal static int silk_LPC_inverse_pred_gain(Pointer<short> A_Q12, int order)
+        internal static int silk_LPC_inverse_pred_gain(short[] A_Q12, int order)
         {
             int k;
             int[][] Atmp_QA = new int[2][];

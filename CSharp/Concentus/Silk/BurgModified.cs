@@ -110,7 +110,7 @@ namespace Concentus.Silk
                     int i;
                     int d;
                     x_offset = x_ptr + s * subfr_length;
-                    CeltPitchXCorr.pitch_xcorr(x.GetPointer(x_offset), x.GetPointer(x_offset + 1), xcorr.GetPointer(), subfr_length - D, D);
+                    CeltPitchXCorr.pitch_xcorr(x.GetPointer(x_offset), x.GetPointer(x_offset + 1), xcorr, subfr_length - D, D);
                     for (n = 1; n < D + 1; n++)
                     {
                         for (i = n + subfr_length - D, d = 0; i < subfr_length; i++)

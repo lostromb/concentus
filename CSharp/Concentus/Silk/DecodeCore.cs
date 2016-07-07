@@ -48,7 +48,7 @@ namespace Concentus.Silk
                 SilkChannelDecoder psDec,                         /* I/O  Decoder state                               */
                 SilkDecoderControl psDecCtrl,                     /* I    Decoder control                             */
                 Pointer<short> xq,                           /* O    Decoded speech                              */
-                Pointer<short> pulses     /* I    Pulse signal [MAX_FRAME_LENGTH]                               */
+                short[] pulses     /* I    Pulse signal [MAX_FRAME_LENGTH]                               */
             )
         {
             int i, k, lag = 0, start_idx, sLTP_buf_idx, NLSF_interpolation_flag, signalType;

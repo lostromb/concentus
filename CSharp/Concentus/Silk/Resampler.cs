@@ -228,33 +228,33 @@ namespace Concentus.Silk
 
             nSamples = S.Fs_in_kHz - S.inputDelay;
 
-            Pointer<short> delayBufPtr = S.delayBuf.GetPointer();
+            short[] delayBufPtr = S.delayBuf;
 
             /* Copy to delay buffer */
-            input.MemCopyTo(delayBufPtr.Point(S.inputDelay), nSamples);
+            input.MemCopyTo(delayBufPtr, S.inputDelay, nSamples);
 
             switch (S.resampler_function)
             {
                 case USE_silk_resampler_private_up2_HQ_wrapper:
-                    silk_resampler_private_up2_HQ(S.sIIR, output, delayBufPtr, S.Fs_in_kHz);
+                    silk_resampler_private_up2_HQ(S.sIIR, output, delayBufPtr.GetPointer(), S.Fs_in_kHz);
                     silk_resampler_private_up2_HQ(S.sIIR, output.Point(S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
                     break;
                 case USE_silk_resampler_private_IIR_FIR:
-                    silk_resampler_private_IIR_FIR(S, output, delayBufPtr, S.Fs_in_kHz);
+                    silk_resampler_private_IIR_FIR(S, output, delayBufPtr.GetPointer(), S.Fs_in_kHz);
                     silk_resampler_private_IIR_FIR(S, output.Point(S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
                     break;
                 case USE_silk_resampler_private_down_FIR:
-                    silk_resampler_private_down_FIR(S, output, delayBufPtr, S.Fs_in_kHz);
+                    silk_resampler_private_down_FIR(S, output, delayBufPtr.GetPointer(), S.Fs_in_kHz);
                     silk_resampler_private_down_FIR(S, output.Point(S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
                     break;
                 default:
-                    delayBufPtr.MemCopyTo(output, S.Fs_in_kHz);
+                    delayBufPtr.GetPointer().MemCopyTo(output, S.Fs_in_kHz);
                     input.Point(nSamples).MemCopyTo(output.Point(S.Fs_out_kHz), (inLen - S.Fs_in_kHz));
                     break;
             }
 
             /* Copy to delay buffer */
-            input.Point(inLen - S.inputDelay).MemCopyTo(delayBufPtr, S.inputDelay);
+            input.Point(inLen - S.inputDelay).MemCopyTo(delayBufPtr, 0, S.inputDelay);
 
             return SilkError.SILK_NO_ERROR;
         }

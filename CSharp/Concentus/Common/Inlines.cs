@@ -2283,6 +2283,12 @@ namespace Concentus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Pointer<T> MatrixGetPointer<T>(T[] Matrix_base_adr, int row, int column, int N)
+        {
+            return Matrix_base_adr.GetPointer(((row) * (N)) + (column));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr[((row) * (N)) + (column)];
@@ -2504,9 +2510,7 @@ namespace Concentus.Common
         public static void silk_interpolate(
             short[] xi,
             short[] x0,
-            int x0_ptr,
             short[] x1,
-            int x1_ptr,
             int ifact_Q2,
             int d)
         {
@@ -2517,7 +2521,7 @@ namespace Concentus.Common
 
             for (i = 0; i < d; i++)
             {
-                xi[i] = (short)silk_ADD_RSHIFT(x0[i + x0_ptr], silk_SMULBB(x1[i + x1_ptr] - x0[i + x0_ptr], ifact_Q2), 2);
+                xi[i] = (short)silk_ADD_RSHIFT(x0[i], silk_SMULBB(x1[i] - x0[i], ifact_Q2), 2);
             }
         }
 

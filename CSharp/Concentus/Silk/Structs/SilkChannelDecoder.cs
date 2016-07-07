@@ -300,7 +300,7 @@ namespace Concentus.Silk.Structs
                 /*********************************************/
                 /* Decode quantization indices of excitation */
                 /*********************************************/
-                DecodePulses.silk_decode_pulses(psRangeDec, pulses.GetPointer(), this.indices.signalType,
+                DecodePulses.silk_decode_pulses(psRangeDec, pulses, this.indices.signalType,
                         this.indices.quantOffsetType, this.frame_length);
 
                 /********************************************/
@@ -311,7 +311,7 @@ namespace Concentus.Silk.Structs
                 /********************************************************/
                 /* Run inverse NSQ                                      */
                 /********************************************************/
-                DecodeCore.silk_decode_core(this, thisCtrl, pOut, pulses.GetPointer());
+                DecodeCore.silk_decode_core(this, thisCtrl, pOut, pulses);
 
                 /********************************************************/
                 /* Update PLC state                                     */

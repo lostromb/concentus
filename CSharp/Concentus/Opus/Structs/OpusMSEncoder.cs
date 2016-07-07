@@ -204,7 +204,6 @@ namespace Concentus.Structs
                     freq[0],
                     0,
                     celt_mode.window,
-                    0,
                     overlap,
                     celt_mode.maxLM - LM,
                     1);

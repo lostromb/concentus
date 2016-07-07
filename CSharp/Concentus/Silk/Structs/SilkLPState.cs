@@ -93,7 +93,7 @@ namespace Concentus.Silk.Structs
                 Inlines.OpusAssert(ind < SilkConstants.TRANSITION_INT_NUM);
 
                 /* Interpolate filter coefficients */
-                Filters.silk_LP_interpolate_filter_taps(B_Q28.GetPointer(), A_Q28.GetPointer(), ind, fac_Q16);
+                Filters.silk_LP_interpolate_filter_taps(B_Q28, A_Q28, ind, fac_Q16);
 
                 /* Update transition frame number for next frame */
                 this.transition_frame_no = Inlines.silk_LIMIT(this.transition_frame_no + this.mode, 0, SilkConstants.TRANSITION_FRAMES);

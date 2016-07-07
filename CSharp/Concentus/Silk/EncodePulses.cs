@@ -94,7 +94,7 @@ namespace Concentus.Silk
             int[] pulses_comb = new int[8];
             Pointer<int> abs_pulses_ptr;
             Pointer<sbyte> pulses_ptr;
-            Pointer<byte> nBits_ptr;
+            byte[] nBits_ptr;
 
             Arrays.MemSet<int>(pulses_comb, 0, 8);
 
@@ -169,7 +169,7 @@ namespace Concentus.Silk
             minSumBits_Q5 = int.MaxValue;
             for (k = 0; k < SilkConstants.N_RATE_LEVELS - 1; k++)
             {
-                nBits_ptr = Tables.silk_pulses_per_block_BITS_Q5[k].GetPointer();
+                nBits_ptr = Tables.silk_pulses_per_block_BITS_Q5[k];
                 sumBits_Q5 = Tables.silk_rate_levels_BITS_Q5[signalType >> 1][k];
                 for (i = 0; i < iter; i++)
                 {
@@ -248,7 +248,7 @@ namespace Concentus.Silk
             /****************/
             /* Encode signs */
             /****************/
-            CodeSigns.silk_encode_signs(psRangeEnc, pulses, frame_length, signalType, quantOffsetType, sum_pulses.GetPointer());
+            CodeSigns.silk_encode_signs(psRangeEnc, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
         }
     }
 }

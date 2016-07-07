@@ -110,7 +110,7 @@ namespace Concentus.Silk
                 status = 0;
                 for (j = 0; j < M; j++)
                 {
-                    ptr1 = Inlines.MatrixGetPointer(L_Q16.GetPointer(), j, 0, M);
+                    ptr1 = Inlines.MatrixGetPointer(L_Q16, j, 0, M);
                     tmp_32 = 0;
                     for (i = 0; i < j; i++)
                     {
@@ -144,7 +144,7 @@ namespace Concentus.Silk
 
                     Inlines.MatrixSet(L_Q16, j, j, M, 65536); /* 1.0 in Q16 */
                     ptr1 = Inlines.MatrixGetPointer(A, j, 0, M);
-                    ptr2 = Inlines.MatrixGetPointer(L_Q16.GetPointer(), j + 1, 0, M);
+                    ptr2 = Inlines.MatrixGetPointer(L_Q16, j + 1, 0, M);
                     for (i = j + 1; i < M; i++)
                     {
                         tmp_32 = 0;
@@ -201,7 +201,7 @@ namespace Concentus.Silk
 
             for (i = 0; i < M; i++)
             {
-                ptr32 = Inlines.MatrixGetPointer(L_Q16.GetPointer(), i, 0, M);
+                ptr32 = Inlines.MatrixGetPointer(L_Q16, i, 0, M);
                 tmp_32 = 0;
                 for (j = 0; j < i; j++)
                 {
@@ -225,7 +225,7 @@ namespace Concentus.Silk
 
             for (i = M - 1; i >= 0; i--)
             {
-                ptr32 = Inlines.MatrixGetPointer(L_Q16.GetPointer(), 0, i, M);
+                ptr32 = Inlines.MatrixGetPointer(L_Q16, 0, i, M);
                 tmp_32 = 0;
                 for (j = M - 1; j > i; j--)
                 {

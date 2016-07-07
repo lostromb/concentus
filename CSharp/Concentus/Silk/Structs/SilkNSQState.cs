@@ -95,30 +95,15 @@ namespace Concentus.Silk.Structs
             internal readonly int[] Xq_Q14 = new int[SilkConstants.DECISION_DELAY];
             internal readonly int[] Pred_Q15 = new int[SilkConstants.DECISION_DELAY];
             internal readonly int[] Shape_Q14 = new int[SilkConstants.DECISION_DELAY];
-            internal readonly int[] sAR2_Q14 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
+            internal int[] sAR2_Q14;
             internal int LF_AR_Q14 = 0;
             internal int Seed = 0;
             internal int SeedInit = 0;
             internal int RD_Q10 = 0;
 
-            internal NSQ_del_dec_struct()
+            internal NSQ_del_dec_struct(int shapingOrder)
             {
-                //Reset();
-            }
-
-            internal void Reset()
-            {
-                Arrays.MemSet<int>(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-                Arrays.MemSet<int>(RandState, 0, SilkConstants.DECISION_DELAY);
-                Arrays.MemSet<int>(Q_Q10, 0, SilkConstants.DECISION_DELAY);
-                Arrays.MemSet<int>(Xq_Q14, 0, SilkConstants.DECISION_DELAY);
-                Arrays.MemSet<int>(Pred_Q15, 0, SilkConstants.DECISION_DELAY);
-                Arrays.MemSet<int>(Shape_Q14, 0, SilkConstants.DECISION_DELAY);
-                Arrays.MemSet<int>(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
-                LF_AR_Q14 = 0;
-                Seed = 0;
-                SeedInit = 0;
-                RD_Q10 = 0;
+                sAR2_Q14 = new int[shapingOrder];
             }
 
             internal void PartialCopyFrom(NSQ_del_dec_struct other, int q14Offset)
@@ -129,7 +114,7 @@ namespace Concentus.Silk.Structs
                 Array.Copy(other.Xq_Q14, Xq_Q14, SilkConstants.DECISION_DELAY);
                 Array.Copy(other.Pred_Q15, Pred_Q15, SilkConstants.DECISION_DELAY);
                 Array.Copy(other.Shape_Q14, Shape_Q14, SilkConstants.DECISION_DELAY);
-                Array.Copy(other.sAR2_Q14, sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
+                Array.Copy(other.sAR2_Q14, sAR2_Q14, sAR2_Q14.Length);
                 LF_AR_Q14 = other.LF_AR_Q14;
                 Seed = other.Seed;
                 SeedInit = other.SeedInit;
@@ -144,28 +129,13 @@ namespace Concentus.Silk.Structs
 
         private class NSQ_sample_struct
         {
-            internal int Q_Q10;
-            internal int RD_Q10;
-            internal int xq_Q14;
-            internal int LF_AR_Q14;
-            internal int sLTP_shp_Q14;
-            internal int LPC_exc_Q14;
-
-            internal NSQ_sample_struct()
-            {
-                Reset();
-            }
-
-            internal void Reset()
-            {
-                Q_Q10 = 0;
-                RD_Q10 = 0;
-                xq_Q14 = 0;
-                LF_AR_Q14 = 0;
-                sLTP_shp_Q14 = 0;
-                LPC_exc_Q14 = 0;
-            }
-
+            internal int Q_Q10 = 0;
+            internal int RD_Q10 = 0;
+            internal int xq_Q14 = 0;
+            internal int LF_AR_Q14 = 0;
+            internal int sLTP_shp_Q14 = 0;
+            internal int LPC_exc_Q14 = 0;
+            
             internal void Assign(NSQ_sample_struct other)
             {
                 this.Q_Q10 = other.Q_Q10;
@@ -273,7 +243,6 @@ namespace Concentus.Silk.Structs
                     pxq,
                     sLTP_Q15,
                     PredCoef_Q12[A_Q12],
-                    0,
                     LTPCoef_Q14,
                     B_Q14,
                     AR2_Q13,
@@ -314,7 +283,6 @@ namespace Concentus.Silk.Structs
                 int xq_ptr,
                 int[] sLTP_Q15,             /* I/O  LTP state                       */
                 short[] a_Q12,                /* I    Short term prediction coefs     */
-                int a_Q12_ptr,
                 short[] b_Q14,                /* I    Long term prediction coefs      */
                 int b_Q14_ptr,
                 short[] AR_shp_Q13,           /* I    Noise shaping AR coefs          */
@@ -356,24 +324,24 @@ namespace Concentus.Silk.Structs
                 Inlines.OpusAssert(predictLPCOrder == 10 || predictLPCOrder == 16);
                 /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                 LPC_pred_Q10 = Inlines.silk_RSHIFT(predictLPCOrder, 1);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 0], a_Q12[a_Q12_ptr]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 1], a_Q12[a_Q12_ptr + 1]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 2], a_Q12[a_Q12_ptr + 2]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 3], a_Q12[a_Q12_ptr + 3]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 4], a_Q12[a_Q12_ptr + 4]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 5], a_Q12[a_Q12_ptr + 5]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 6], a_Q12[a_Q12_ptr + 6]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 7], a_Q12[a_Q12_ptr + 7]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 8], a_Q12[a_Q12_ptr + 8]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 9], a_Q12[a_Q12_ptr + 9]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 0], a_Q12[0]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 1], a_Q12[1]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 2], a_Q12[2]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 3], a_Q12[3]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 4], a_Q12[4]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 5], a_Q12[5]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 6], a_Q12[6]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 7], a_Q12[7]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 8], a_Q12[8]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 9], a_Q12[9]);
                 if (predictLPCOrder == 16)
                 {
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 10], a_Q12[a_Q12_ptr + 10]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 11], a_Q12[a_Q12_ptr + 11]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 12], a_Q12[a_Q12_ptr + 12]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 13], a_Q12[a_Q12_ptr + 13]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 14], a_Q12[a_Q12_ptr + 14]);
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 15], a_Q12[a_Q12_ptr + 15]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 10], a_Q12[10]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 11], a_Q12[11]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 12], a_Q12[12]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 13], a_Q12[13]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 14], a_Q12[14]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, this.sLPC_Q14[psLPC_Q14 - 15], a_Q12[15]);
                 }
 
                 /* Long-term prediction */
@@ -654,8 +622,7 @@ namespace Concentus.Silk.Structs
             psDelDec = new NSQ_del_dec_struct[psEncC.nStatesDelayedDecision];
             for (int c = 0; c < psEncC.nStatesDelayedDecision; c++)
             {
-                psDelDec[c] = new NSQ_del_dec_struct();
-                psDelDec[c].Reset();
+                psDelDec[c] = new NSQ_del_dec_struct(psEncC.shapingLPCOrder);
             }
 
             for (k = 0; k < psEncC.nStatesDelayedDecision; k++)
@@ -667,7 +634,7 @@ namespace Concentus.Silk.Structs
                 psDD.LF_AR_Q14 = this.sLF_AR_shp_Q14;
                 psDD.Shape_Q14[0] = this.sLTP_shp_Q14[psEncC.ltp_mem_length - 1];
                 Array.Copy(this.sLPC_Q14, psDD.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
-                Array.Copy(this.sAR2_Q14, psDD.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
+                Array.Copy(this.sAR2_Q14, psDD.sAR2_Q14, psEncC.shapingLPCOrder);
             }
 
             offset_Q10 = Tables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
@@ -856,7 +823,7 @@ namespace Concentus.Silk.Structs
                 this.sLTP_shp_Q14[this.sLTP_shp_buf_idx - decisionDelay + i] = psDD.Shape_Q14[last_smple_idx];
             }
             Array.Copy(psDD.sLPC_Q14, psEncC.subfr_length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
-            Array.Copy(psDD.sAR2_Q14, 0, this.sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
+            Array.Copy(psDD.sAR2_Q14, 0, this.sAR2_Q14, 0, psEncC.shapingLPCOrder);
 
             /* Update states */
             this.sLF_AR_shp_Q14 = psDD.LF_AR_Q14;
@@ -1327,7 +1294,7 @@ namespace Concentus.Silk.Structs
                     {
                         psDD.sLPC_Q14[i] = Inlines.silk_SMULWW(gain_adj_Q16, psDD.sLPC_Q14[i]);
                     }
-                    for (i = 0; i < SilkConstants.MAX_SHAPE_LPC_ORDER; i++)
+                    for (i = 0; i < psEncC.shapingLPCOrder; i++)
                     {
                         psDD.sAR2_Q14[i] = Inlines.silk_SMULWW(gain_adj_Q16, psDD.sAR2_Q14[i]);
                     }

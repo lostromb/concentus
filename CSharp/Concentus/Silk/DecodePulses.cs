@@ -45,7 +45,7 @@ namespace Concentus.Silk
         /*********************************************/
         internal static void silk_decode_pulses(
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
-            Pointer<short> pulses,                       /* O    Excitation signal                           */
+            short[] pulses,                       /* O    Excitation signal                           */
             int signalType,                     /* I    Sigtype                                     */
             int quantOffsetType,                /* I    quantOffsetType                             */
             int frame_length                    /* I    Frame length                                */
@@ -95,11 +95,11 @@ namespace Concentus.Silk
             {
                 if (sum_pulses[i] > 0)
                 {
-                    ShellCoder.silk_shell_decoder(pulses.Point(Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH)), psRangeDec, sum_pulses[i]);
+                    ShellCoder.silk_shell_decoder(pulses.GetPointer(Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH)), psRangeDec, sum_pulses[i]);
                 }
                 else
                 {
-                    pulses.Point(Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH)).MemSet(0, SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                    Arrays.MemSetWithOffset<short>(pulses, 0, Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH), SilkConstants.SHELL_CODEC_FRAME_LENGTH);
                 }
             }
 
@@ -111,7 +111,7 @@ namespace Concentus.Silk
                 if (nLshifts[i] > 0)
                 {
                     nLS = nLshifts[i];
-                    pulses_ptr = pulses.Point(Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH));
+                    pulses_ptr = pulses.GetPointer(Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH));
                     for (k = 0; k < SilkConstants.SHELL_CODEC_FRAME_LENGTH; k++)
                     {
                         abs_q = pulses_ptr[k];
@@ -130,7 +130,7 @@ namespace Concentus.Silk
             /****************************************/
             /* Decode and add signs to pulse signal */
             /****************************************/
-            CodeSigns.silk_decode_signs(psRangeDec, pulses, frame_length, signalType, quantOffsetType, sum_pulses.GetPointer());
+            CodeSigns.silk_decode_signs(psRangeDec, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
         }
     }
 }

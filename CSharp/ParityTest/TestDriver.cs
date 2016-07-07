@@ -167,7 +167,7 @@ namespace ParityTest
             {
                 try
                 {
-                    while (inputPointer + frameSizeStereo <inputFile.Length)
+                    while (inputPointer + frameSizeStereo < inputFile.Length)
                     {
                         returnVal.FrameCount = frameCount;
                         Array.Copy(inputFile, inputPointer, inputPacket, 0, frameSizeStereo);

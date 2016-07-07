@@ -80,7 +80,7 @@ namespace Concentus.Celt
         internal static int pitch_xcorr(
             Pointer<short> _x,
             Pointer<short> _y,
-            Pointer<int> xcorr,
+            int[] xcorr,
             int len,
             int max_pitch)
         {

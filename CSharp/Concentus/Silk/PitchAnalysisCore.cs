@@ -184,7 +184,7 @@ namespace Concentus.Silk
 
                 basis_ptr = target_ptr.Point(0 - MIN_LAG_4KHZ);
 
-                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - MAX_LAG_4KHZ), xcorr32.GetPointer(), SF_LENGTH_8KHZ, MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1);
+                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - MAX_LAG_4KHZ), xcorr32, SF_LENGTH_8KHZ, MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1);
 
                 /* Calculate first vector products before loop */
                 cross_corr = xcorr32[MAX_LAG_4KHZ - MIN_LAG_4KHZ];
@@ -555,7 +555,7 @@ namespace Concentus.Silk
                     cross_corr_st3[c] = new silk_pe_stage3_vals();
                 }
                 silk_P_Ana_calc_corr_st3(cross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
-                silk_P_Ana_calc_energy_st3(energies_st3, input_frame_ptr.GetPointer(), start_lag, sf_length, nb_subfr, complexity);
+                silk_P_Ana_calc_energy_st3(energies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
 
                 lag_counter = 0;
                 Inlines.OpusAssert(lag == Inlines.silk_SAT16(lag));
@@ -682,7 +682,7 @@ namespace Concentus.Silk
                 lag_low = Lag_range_ptr[k][0];
                 lag_high = Lag_range_ptr[k][1];
                 Inlines.OpusAssert(lag_high - lag_low + 1 <= SCRATCH_SIZE);
-                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - start_lag - lag_high), xcorr32.GetPointer(), sf_length, lag_high - lag_low + 1);
+                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - start_lag - lag_high), xcorr32, sf_length, lag_high - lag_low + 1);
                 for (j = lag_low; j <= lag_high; j++)
                 {
                     Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);
@@ -715,7 +715,7 @@ namespace Concentus.Silk
         /********************************************************************/
         static void silk_P_Ana_calc_energy_st3(
             silk_pe_stage3_vals[] energies_st3,                 /* O 3 DIM energy array */
-            Pointer<short> frame,                          /* I vector to calc energy in    */
+            short[] frame,                          /* I vector to calc energy in    */
             int start_lag,                        /* I lag offset to search around */
             int sf_length,                        /* I length of one 5 ms subframe */
             int nb_subfr,                         /* I number of subframes         */
@@ -748,7 +748,7 @@ namespace Concentus.Silk
             }
             scratch_mem = new int[SCRATCH_SIZE];
 
-            target_ptr = frame.Point(Inlines.silk_LSHIFT(sf_length, 2));
+            target_ptr = frame.GetPointer(Inlines.silk_LSHIFT(sf_length, 2));
             for (k = 0; k < nb_subfr; k++)
             {
                 lag_counter = 0;

@@ -63,7 +63,7 @@ namespace Concentus.Silk
         /// <param name="pCB_Q8">(I) Codebook vectors [K*LPC_order]</param>
         /// <param name="K">(I) Number of codebook vectors</param>
         /// <param name="LPC_order">(I) Number of LPCs</param>
-        internal static void silk_NLSF_VQ(Pointer<int> err_Q26, Pointer<short> in_Q15, Pointer<byte> pCB_Q8, int K, int LPC_order)
+        internal static void silk_NLSF_VQ(int[] err_Q26, short[] in_Q15, byte[] pCB_Q8, int K, int LPC_order)
         {
             int diff_Q15, sum_error_Q30, sum_error_Q26;
             int pCB_idx = 0;
@@ -669,7 +669,7 @@ namespace Concentus.Silk
 
             // First stage: VQ
             err_Q26 = new int[psNLSF_CB.nVectors];
-            silk_NLSF_VQ(err_Q26.GetPointer(), pNLSF_Q15.GetPointer(), psNLSF_CB.CB1_NLSF_Q8.GetPointer(), psNLSF_CB.nVectors, psNLSF_CB.order);
+            silk_NLSF_VQ(err_Q26, pNLSF_Q15, psNLSF_CB.CB1_NLSF_Q8, psNLSF_CB.nVectors, psNLSF_CB.order);
 
             // Sort the quantization errors
             tempIndices1 = new int[nSurvivors];
@@ -902,7 +902,7 @@ namespace Concentus.Silk
 
             for (i = 0; i < SilkConstants.MAX_LPC_STABILIZE_ITERATIONS; i++)
             {
-                if (Filters.silk_LPC_inverse_pred_gain(a_Q12.GetPointer(), d) < ((int)((1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN) * ((long)1 << (30)) + 0.5))/*Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN, 30)*/)
+                if (Filters.silk_LPC_inverse_pred_gain(a_Q12, d) < ((int)((1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN) * ((long)1 << (30)) + 0.5))/*Inlines.SILK_CONST(1.0f / SilkConstants.MAX_PREDICTION_POWER_GAIN, 30)*/)
                 {
                     /* Prediction coefficients are (too close to) unstable; apply bandwidth expansion   */
                     /* on the unscaled coefficients, convert to Q12 and measure again                   */
@@ -1014,7 +1014,7 @@ namespace Concentus.Silk
         /// <param name="NLSF">(O) Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d]</param>
         /// <param name="a_Q16">(I/O) Monic whitening filter coefficients in Q16 [d]</param>
         /// <param name="d">(I) Filter order (must be even)</param>
-        internal static void silk_A2NLSF(Pointer<short> NLSF, int[] a_Q16, int d)
+        internal static void silk_A2NLSF(short[] NLSF, int[] a_Q16, int d)
         {
             int i, k, m, dd, root_ix, ffrac;
             int xlo, xhi, xmid;
@@ -1222,7 +1222,7 @@ namespace Concentus.Silk
             if (doInterpolate)
             {
                 /* Calculate the interpolated NLSF vector for the first half */
-                Inlines.silk_interpolate(pNLSF0_temp_Q15, prev_NLSFq_Q15, 0, pNLSF_Q15, 0,
+                Inlines.silk_interpolate(pNLSF0_temp_Q15, prev_NLSFq_Q15, pNLSF_Q15,
                     psEncC.indices.NLSFInterpCoef_Q2, psEncC.predictLPCOrder);
 
                 /* Calculate first half NLSF weights for the interpolated NLSFs */
@@ -1249,7 +1249,7 @@ namespace Concentus.Silk
             if (doInterpolate)
             {
                 /* Calculate the interpolated, quantized LSF vector for the first half */
-                Inlines.silk_interpolate(pNLSF0_temp_Q15, prev_NLSFq_Q15, 0, pNLSF_Q15, 0,
+                Inlines.silk_interpolate(pNLSF0_temp_Q15, prev_NLSFq_Q15, pNLSF_Q15,
                     psEncC.indices.NLSFInterpCoef_Q2, psEncC.predictLPCOrder);
 
                 /* Convert back to LPC coefficients */

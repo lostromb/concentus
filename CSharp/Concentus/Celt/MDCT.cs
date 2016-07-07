@@ -44,7 +44,7 @@ namespace Concentus.Celt
     {
         /* Forward MDCT trashes the input array */
         internal static void clt_mdct_forward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
-            int[] window, int window_ptr, int overlap, int shift, int stride)
+            int[] window, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;
@@ -78,8 +78,8 @@ namespace Concentus.Celt
                 int xp1 = input_ptr + (overlap >> 1);
                 int xp2 = input_ptr + N2 - 1 + (overlap >> 1);
                 int yp = 0;
-                int wp1 = window_ptr + (overlap >> 1);
-                int wp2 = window_ptr + ((overlap >> 1) - 1);
+                int wp1 = (overlap >> 1);
+                int wp2 = ((overlap >> 1) - 1);
                 for (i = 0; i < ((overlap + 3) >> 2); i++)
                 {
                     /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
@@ -90,8 +90,8 @@ namespace Concentus.Celt
                     wp1 += 2;
                     wp2 -= 2;
                 }
-                wp1 = window_ptr;
-                wp2 = window_ptr + (overlap - 1);
+                wp1 = 0;
+                wp2 = (overlap - 1);
                 for (; i < N4 - ((overlap + 3) >> 2); i++)
                 {
                     /* Real part arranged as a-bR, Imag part arranged as -c-dR */

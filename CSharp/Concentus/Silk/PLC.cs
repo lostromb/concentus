@@ -191,8 +191,8 @@ namespace Concentus.Silk
             BoxedValue<int> shift1,
             BoxedValue<int> energy2,
             BoxedValue<int> shift2,
-            Pointer<int> exc_Q14,
-            Pointer<int> prevGain_Q10,
+            int[] exc_Q14,
+            int[] prevGain_Q10,
             int subfr_length,
             int nb_subfr)
         {
@@ -234,7 +234,7 @@ namespace Concentus.Silk
             Pointer<int> pred_lag_ptr;
             int LPC_pred_Q10, LTP_pred_Q12;
             short rand_scale_Q14;
-            Pointer<short> B_Q14;
+            short[] B_Q14;
             Pointer<int> sLPC_Q14_ptr;
             short[] sLTP = new short[psDec.ltp_mem_length];
             int[] sLTP_Q14 = new int[psDec.ltp_mem_length + psDec.frame_length];
@@ -249,7 +249,7 @@ namespace Concentus.Silk
                 Arrays.MemSet<short>(psPLC.prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             }
 
-            silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14.GetPointer(), prevGain_Q10.GetPointer(), psDec.subfr_length, psDec.nb_subfr);
+            silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
 
             if (Inlines.silk_RSHIFT(energy1.Val, shift2.Val) < Inlines.silk_RSHIFT(energy2.Val, shift1.Val))
             {
@@ -262,7 +262,7 @@ namespace Concentus.Silk
             }
 
             /* Set up Gain to random noise component */
-            B_Q14 = psPLC.LTPCoef_Q14.GetPointer();
+            B_Q14 = psPLC.LTPCoef_Q14;
             rand_scale_Q14 = psPLC.randScale_Q14;
 
             /* Set up attenuation gains */

@@ -54,7 +54,7 @@ namespace Concentus.Silk
         {
             int j, k, cbk_size;
             sbyte[] temp_idx = new sbyte[SilkConstants.MAX_NB_SUBFR];
-            Pointer<byte> cl_ptr_Q5;
+            byte[] cl_ptr_Q5;
             sbyte[][] cbk_ptr_Q7;
             byte[] cbk_gain_ptr_Q7;
             Pointer<short> b_Q14_ptr;
@@ -74,14 +74,14 @@ namespace Concentus.Silk
                    such as state rescaling/rewhitening. */
                 int gain_safety = ((int)((0.4f) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(0.4f, 7)*/;
 
-                cl_ptr_Q5 = Tables.silk_LTP_gain_BITS_Q5_ptrs[k].GetPointer();
+                cl_ptr_Q5 = Tables.silk_LTP_gain_BITS_Q5_ptrs[k];
                 cbk_ptr_Q7 = Tables.silk_LTP_vq_ptrs_Q7[k];
                 cbk_gain_ptr_Q7 = Tables.silk_LTP_vq_gain_ptrs_Q7[k];
                 cbk_size = Tables.silk_LTP_vq_sizes[k];
 
                 /* Set up pointer to first subframe */
-                W_Q18_ptr = W_Q18.GetPointer();
-                b_Q14_ptr = B_Q14.GetPointer();
+                W_Q18_ptr = W_Q18.GetPointer(0);
+                b_Q14_ptr = B_Q14.GetPointer(0);
 
                 rate_dist_Q14 = 0;
                 sum_log_gain_tmp_Q7 = sum_log_gain_Q7.Val;

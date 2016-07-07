@@ -56,8 +56,8 @@ namespace Concentus.Silk
             int[] local_gains = new int[SilkConstants.MAX_NB_SUBFR];
             int[] Wght_Q15 = new int[SilkConstants.MAX_NB_SUBFR];
             short[] NLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
-            Pointer<short> x_ptr;
-            Pointer<short> x_pre_ptr;
+            int x_ptr;
+            int x_pre_ptr;
             short[] LPC_in_pre;
             int tmp, min_gain_Q16, minInvGain_Q30;
             int[] LTP_corrs_rshift = new int[SilkConstants.MAX_NB_SUBFR];
@@ -128,14 +128,14 @@ namespace Concentus.Silk
                 /* UNVOICED */
                 /************/
                 /* Create signal with prepended subframes, scaled by inverse gains */
-                x_ptr = x.Point(0 - psEnc.predictLPCOrder);
-                x_pre_ptr = LPC_in_pre.GetPointer();
+                x_ptr = x.Offset - psEnc.predictLPCOrder;
+                x_pre_ptr = 0;
                 for (i = 0; i < psEnc.nb_subfr; i++)
                 {
-                    Inlines.silk_scale_copy_vector16(x_pre_ptr.Data, x_pre_ptr.Offset, x_ptr.Data, x_ptr.Offset, invGains_Q16[i],
+                    Inlines.silk_scale_copy_vector16(LPC_in_pre, x_pre_ptr, x.Data, x_ptr, invGains_Q16[i],
                         psEnc.subfr_length + psEnc.predictLPCOrder);
-                    x_pre_ptr = x_pre_ptr.Point(psEnc.subfr_length + psEnc.predictLPCOrder);
-                    x_ptr = x_ptr.Point(psEnc.subfr_length);
+                    x_pre_ptr += psEnc.subfr_length + psEnc.predictLPCOrder;
+                    x_ptr += psEnc.subfr_length;
                 }
 
                Arrays.MemSet<short>(psEncCtrl.LTPCoef_Q14, 0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);
