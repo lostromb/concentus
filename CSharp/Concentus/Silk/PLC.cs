@@ -213,8 +213,13 @@ namespace Concentus.Silk
             }
 
             /* Find the subframe with lowest energy of the last two and use that as random noise generator */
-            SumSqrShift.silk_sum_sqr_shift(energy1, shift1, exc_buf, subfr_length);
-            SumSqrShift.silk_sum_sqr_shift(energy2, shift2, exc_buf.GetPointer(subfr_length), subfr_length);
+            int tmp_e, tmp_shift;
+            SumSqrShift.silk_sum_sqr_shift(out tmp_e, out tmp_shift, exc_buf, subfr_length);
+            energy1.Val = tmp_e;
+            shift1.Val = tmp_shift;
+            SumSqrShift.silk_sum_sqr_shift(out tmp_e, out tmp_shift, exc_buf.GetPointer(subfr_length), subfr_length);
+            energy2.Val = tmp_e;
+            shift2.Val = tmp_shift;
         }
 
         internal static void silk_PLC_conceal(
@@ -422,18 +427,13 @@ namespace Concentus.Silk
         )
         {
             int i;
-            BoxedValue<int> energy_shift = new BoxedValue<int>();
-            BoxedValue<int> energy = new BoxedValue<int>();
+            int energy_shift, energy;
             PLCStruct psPLC = psDec.sPLC;
 
             if (psDec.lossCnt != 0)
             {
                 /* Calculate energy in concealed residual */
-                BoxedValue<int> boxedEnergy = new BoxedValue<int>(psPLC.conc_energy);
-                BoxedValue<int> boxedShift = new BoxedValue<int>(psPLC.conc_energy_shift);
-                SumSqrShift.silk_sum_sqr_shift(boxedEnergy, boxedShift, frame, length);
-                psPLC.conc_energy = boxedEnergy.Val;
-                psPLC.conc_energy_shift = boxedShift.Val;
+                SumSqrShift.silk_sum_sqr_shift(out psPLC.conc_energy, out psPLC.conc_energy_shift, frame, length);
 
                 psPLC.last_frame_lost = 1;
             }
@@ -442,20 +442,20 @@ namespace Concentus.Silk
                 if (psDec.sPLC.last_frame_lost != 0)
                 {
                     /* Calculate residual in decoded signal if last frame was lost */
-                    SumSqrShift.silk_sum_sqr_shift(energy, energy_shift, frame, length);
+                    SumSqrShift.silk_sum_sqr_shift(out energy, out energy_shift, frame, length);
 
                     /* Normalize energies */
-                    if (energy_shift.Val > psPLC.conc_energy_shift)
+                    if (energy_shift > psPLC.conc_energy_shift)
                     {
-                        psPLC.conc_energy = Inlines.silk_RSHIFT(psPLC.conc_energy, energy_shift.Val - psPLC.conc_energy_shift);
+                        psPLC.conc_energy = Inlines.silk_RSHIFT(psPLC.conc_energy, energy_shift - psPLC.conc_energy_shift);
                     }
-                    else if (energy_shift.Val < psPLC.conc_energy_shift)
+                    else if (energy_shift < psPLC.conc_energy_shift)
                     {
-                        energy.Val = Inlines.silk_RSHIFT(energy.Val, psPLC.conc_energy_shift - energy_shift.Val);
+                        energy = Inlines.silk_RSHIFT(energy, psPLC.conc_energy_shift - energy_shift);
                     }
 
                     /* Fade in the energy difference */
-                    if (energy.Val > psPLC.conc_energy)
+                    if (energy > psPLC.conc_energy)
                     {
                         int frac_Q24, LZ;
                         int gain_Q16, slope_Q16;
@@ -463,9 +463,9 @@ namespace Concentus.Silk
                         LZ = Inlines.silk_CLZ32(psPLC.conc_energy);
                         LZ = LZ - 1;
                         psPLC.conc_energy = Inlines.silk_LSHIFT(psPLC.conc_energy, LZ);
-                        energy.Val = Inlines.silk_RSHIFT(energy.Val, Inlines.silk_max_32(24 - LZ, 0));
+                        energy = Inlines.silk_RSHIFT(energy, Inlines.silk_max_32(24 - LZ, 0));
 
-                        frac_Q24 = Inlines.silk_DIV32(psPLC.conc_energy, Inlines.silk_max(energy.Val, 1));
+                        frac_Q24 = Inlines.silk_DIV32(psPLC.conc_energy, Inlines.silk_max(energy, 1));
 
                         gain_Q16 = Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(frac_Q24), 4);
                         slope_Q16 = Inlines.silk_DIV32_16(((int)1 << 16) - gain_Q16, length);

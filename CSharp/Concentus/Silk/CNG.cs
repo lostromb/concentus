@@ -116,7 +116,7 @@ namespace Concentus.Silk
         {
             int i, subfr;
             int sum_Q6, max_Gain_Q16, gain_Q16;
-            short[] A_Q12 = new short[SilkConstants.MAX_LPC_ORDER]; // fixme: psDec.LPC_order?
+            short[] A_Q12 = new short[psDec.LPC_order];
             CNGState psCNG = psDec.sCNG;
 
             if (psDec.fs_kHz != psCNG.fs_kHz)

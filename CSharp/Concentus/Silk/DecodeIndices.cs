@@ -51,8 +51,8 @@ namespace Concentus.Silk
         {
             int i, k, Ix;
             int decode_absolute_lagIndex, delta_lagIndex;
-            short[] ec_ix = new short[SilkConstants.MAX_LPC_ORDER]; // fixme: psDec.lpcOrder?
-            byte[] pred_Q8 = new byte[SilkConstants.MAX_LPC_ORDER];
+            short[] ec_ix = new short[psDec.LPC_order];
+            byte[] pred_Q8 = new byte[psDec.LPC_order];
 
             /*******************************************/
             /* Decode signal type and quantizer offset */

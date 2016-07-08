@@ -158,11 +158,7 @@ namespace Concentus.Silk
             *******************************************************************************/
 
             /* Inner product is calculated with different lengths, so scale for the worst case */
-            BoxedValue<int> boxed_energy = new BoxedValue<int>();
-            BoxedValue<int> boxed_shift = new BoxedValue<int>();
-            SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_4kHz, frame_length_4kHz);
-            energy = boxed_energy.Val;
-            shift = boxed_shift.Val;
+            SumSqrShift.silk_sum_sqr_shift(out energy, out shift, frame_4kHz, frame_length_4kHz);
             if (shift > 0)
             {
                 shift = Inlines.silk_RSHIFT(shift, 1);
@@ -317,12 +313,7 @@ namespace Concentus.Silk
             ** Scale signal down to avoid correlations measures from overflowing
             *******************************************************************************/
             /* find scaling as max scaling for each subframe */
-            // fixme see if these are really necessary
-            boxed_shift.Val = 0;
-            boxed_energy.Val = 0;
-            SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_8kHz, frame_length_8kHz);
-            energy = boxed_energy.Val;
-            shift = boxed_shift.Val;
+            SumSqrShift.silk_sum_sqr_shift(out energy, out shift, frame_8kHz, frame_length_8kHz);
             if (shift > 0)
             {
                 shift = Inlines.silk_RSHIFT(shift, 1);
@@ -488,9 +479,7 @@ namespace Concentus.Silk
                 /* Scale input signal down to avoid correlations measures from overflowing */
                 /***************************************************************************/
                 /* find scaling as max scaling for each subframe */
-                SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame, frame_length);
-                energy = boxed_energy.Val;
-                shift = boxed_shift.Val;
+                SumSqrShift.silk_sum_sqr_shift(out energy, out shift, frame, frame_length);
                 if (shift > 0)
                 {
                     scratch_mem = new short[frame_length];

@@ -47,7 +47,7 @@ namespace Concentus
     internal static class Downmix
     {
         /// <summary>
-        /// fixme: refactor this out
+        /// 
         /// </summary>
         /// <typeparam name="T">The type of signal being handled (either short or float)</typeparam>
         /// <param name="_x"></param>

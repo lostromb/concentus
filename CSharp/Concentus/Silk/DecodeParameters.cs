@@ -49,8 +49,8 @@ namespace Concentus.Silk
         )
         {
             int i, k, Ix;
-            short[] pNLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER]; // fixme use psdec.order
-            short[] pNLSF0_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
+            short[] pNLSF_Q15 = new short[psDec.LPC_order];
+            short[] pNLSF0_Q15 = new short[psDec.LPC_order];
             sbyte[][] cbk_ptr_Q7;
 
             /* Dequant Gains */

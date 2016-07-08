@@ -567,7 +567,7 @@ namespace Concentus.Structs
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
-                    ret = OpusRepacketizer.PadPacket(data, 0, ret, max_data_bytes);
+                    ret = OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes);
                     if (ret == OpusError.OPUS_OK)
                         ret = max_data_bytes;
                 }
@@ -1137,6 +1137,7 @@ namespace Concentus.Structs
                     EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk.GetPointer(), this.encoder_buffer, null, zero, 1);
                 }
 
+                // fixme: another wasterful conversion
                 for (i = 0; i < frame_size * this.channels; i++)
                 {
                     pcm_silk[i] = (short)(pcm_buf[total_buffer * this.channels + i]);

@@ -41,8 +41,6 @@ namespace Concentus.Silk
 
     internal static class FindPredCoefs
     {
-        // fixme: this is a priority for testing
-
         internal static void silk_find_pred_coefs(
             SilkChannelEncoder psEnc,                                 /* I/O  encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I/O  encoder control                                                             */

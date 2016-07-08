@@ -37,8 +37,7 @@ namespace Concentus.Silk
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
     using System.Diagnostics;
-
-    // fixme: lots of obvious optimizations to be made here
+    
     internal static class LinearAlgebra
     {
         /* Solves Ax = b, assuming A is symmetric */

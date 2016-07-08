@@ -287,11 +287,10 @@ namespace Concentus.Structs
 
             for (c = 0; c < channels; c++)
             {
-                Pointer<int> mask;
+                int[] mask;
                 if (pos[c] != 0)
                 {
-                    // fixme: I think this 2-d array needs to be linearized
-                    mask = maskLogE[pos[c] - 1].GetPointer();
+                    mask = maskLogE[pos[c] - 1];
                     for (i = 0; i < 21; i++)
                         bandLogE[21 * c + i] = bandLogE[21 * c + i] - mask[i];
                 }

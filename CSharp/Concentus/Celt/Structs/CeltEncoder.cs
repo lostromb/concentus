@@ -234,8 +234,7 @@ namespace Concentus.Celt.Structs
             this.force_intra = 0;
             this.complexity = 5;
             this.lsb_depth = 24;
-
-            // fixme is this necessary if we just call encoder_ctrl right there anyways?
+            
             //this.in_mem = new int[channels * mode.overlap);
             //this.prefilter_mem = new int[channels * CeltConstants.COMBFILTER_MAXPERIOD);
             //this.oldBandE = new int[channels * mode.nbEBands);
@@ -505,7 +504,7 @@ namespace Concentus.Celt.Structs
                     tmp += tell;
                 if (this.bitrate != OpusConstants.OPUS_BITRATE_MAX)
                     nbCompressedBytes = Inlines.IMAX(2, Inlines.IMIN(nbCompressedBytes,
-                          (tmp + 4 * mode.Fs) / (8 * mode.Fs) - (this.signalling != 0 ? 1 : 0))); // fixme - this used weird syntax originally, double-check it
+                          (tmp + 4 * mode.Fs) / (8 * mode.Fs) - (this.signalling != 0 ? 1 : 0)));
                 effectiveBytes = nbCompressedBytes;
             }
             if (this.bitrate != OpusConstants.OPUS_BITRATE_MAX)

@@ -108,7 +108,7 @@ namespace Concentus.Silk
             {
                 Inlines.OpusAssert(frame_length == 12 * 10); /* Make sure only happens for 10 ms @ 12 kHz */
                 iter++;
-                pulses.GetPointer(frame_length).MemSet(0, SilkConstants.SHELL_CODEC_FRAME_LENGTH); // fixme: memset needs an offset
+                Arrays.MemSetWithOffset<sbyte>(pulses, 0, frame_length, SilkConstants.SHELL_CODEC_FRAME_LENGTH);
             }
 
             /* Take the absolute value of the pulses */

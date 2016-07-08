@@ -181,8 +181,7 @@ namespace Concentus.Celt.Structs
             this.signalling = 1;
 
             this.loss_count = 0;
-
-            // fixme is this necessary if we just call decoder_ctrl right there anyways?
+            
             //this.decode_mem = new int[channels * (CeltConstants.DECODE_BUFFER_SIZE + mode.overlap));
             //this.lpc = new int[channels * CeltConstants.LPC_ORDER);
             //this.oldEBands = new int[2 * mode.nbEBands);

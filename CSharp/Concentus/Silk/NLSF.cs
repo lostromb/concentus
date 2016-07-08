@@ -1214,7 +1214,6 @@ namespace Concentus.Silk
             Inlines.OpusAssert(NLSF_mu_Q20 <= ((int)((0.005f) * ((long)1 << (20)) + 0.5))/*Inlines.SILK_CONST(0.005f, 20)*/);
 
             /* Calculate NLSF weights */
-            // fixme: potential errors here//////////////////////////////////////////////
             silk_NLSF_VQ_weights_laroia(pNLSFW_QW, pNLSF_Q15, psEncC.predictLPCOrder);
 
             /* Update NLSF weights for interpolated NLSFs */

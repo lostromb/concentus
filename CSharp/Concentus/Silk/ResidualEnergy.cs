@@ -54,7 +54,7 @@ namespace Concentus.Silk
             )
         {
             int offset, i, j, lz1, lz2;
-            BoxedValue<int> rshift = new BoxedValue<int>();
+            int rshift, energy;
             Pointer<short> LPC_res_ptr;
             short[] LPC_res;
             int x_ptr;
@@ -76,12 +76,11 @@ namespace Concentus.Silk
                 for (j = 0; j < (SilkConstants.MAX_NB_SUBFR >> 1); j++)
                 {
                     /* Measure subframe energy */
-                    BoxedValue<int> boxed_energy = new BoxedValue<int>();
-                    SumSqrShift.silk_sum_sqr_shift(boxed_energy, rshift, LPC_res_ptr, subfr_length);
-                    nrgs[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = boxed_energy.Val;
+                    SumSqrShift.silk_sum_sqr_shift(out energy, out rshift, LPC_res_ptr, subfr_length);
+                    nrgs[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = energy;
 
                     /* Set Q values for the measured energy */
-                    nrgsQ[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = 0 - rshift.Val;
+                    nrgsQ[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = 0 - rshift;
 
                     /* Move to next subframe */
                     LPC_res_ptr = LPC_res_ptr.Point(offset);

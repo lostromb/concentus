@@ -144,22 +144,19 @@ namespace Concentus.Silk
             int smooth_coef_Q16)
         {
             int scale;
-            BoxedValue<int> scale1 = new BoxedValue<int>(); // fixme this can probably have better perf
-            BoxedValue<int> scale2 = new BoxedValue<int>();
-            BoxedValue<int> nrgx = new BoxedValue<int>();
-            BoxedValue<int> nrgy = new BoxedValue<int>();
+            int nrgx, nrgy, scale1, scale2;
             int corr, pred_Q13, pred2_Q10;
 
             /* Find predictor */
-            SumSqrShift.silk_sum_sqr_shift(nrgx, scale1, x, length);
-            SumSqrShift.silk_sum_sqr_shift(nrgy, scale2, y, length);
-            scale = Inlines.silk_max_int(scale1.Val, scale2.Val);
+            SumSqrShift.silk_sum_sqr_shift(out nrgx, out scale1, x, length);
+            SumSqrShift.silk_sum_sqr_shift(out nrgy, out scale2, y, length);
+            scale = Inlines.silk_max_int(scale1, scale2);
             scale = scale + (scale & 1);          /* make even */
-            nrgy.Val = Inlines.silk_RSHIFT32(nrgy.Val, scale - scale2.Val);
-            nrgx.Val = Inlines.silk_RSHIFT32(nrgx.Val, scale - scale1.Val);
-            nrgx.Val = Inlines.silk_max_int(nrgx.Val, 1);
+            nrgy = Inlines.silk_RSHIFT32(nrgy, scale - scale2);
+            nrgx = Inlines.silk_RSHIFT32(nrgx, scale - scale1);
+            nrgx = Inlines.silk_max_int(nrgx, 1);
             corr = Inlines.silk_inner_prod_aligned_scale(x, y, scale, length);
-            pred_Q13 = Inlines.silk_DIV32_varQ(corr, nrgx.Val, 13);
+            pred_Q13 = Inlines.silk_DIV32_varQ(corr, nrgx, 13);
             pred_Q13 = Inlines.silk_LIMIT(pred_Q13, -(1 << 14), 1 << 14);
             pred2_Q10 = Inlines.silk_SMULWB(pred_Q13, pred_Q13);
 
@@ -170,12 +167,12 @@ namespace Concentus.Silk
             Inlines.OpusAssert(smooth_coef_Q16 < 32768);
             scale = Inlines.silk_RSHIFT(scale, 1);
             mid_res_amp_Q0[0] = Inlines.silk_SMLAWB(mid_res_amp_Q0[0],
-                Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgx.Val), scale) - mid_res_amp_Q0[0], smooth_coef_Q16);
+                Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgx), scale) - mid_res_amp_Q0[0], smooth_coef_Q16);
             /* Residual energy = nrgy - 2 * pred * corr + pred^2 * nrgx */
-            nrgy.Val = Inlines.silk_SUB_LSHIFT32(nrgy.Val, Inlines.silk_SMULWB(corr, pred_Q13), 3 + 1);
-            nrgy.Val = Inlines.silk_ADD_LSHIFT32(nrgy.Val, Inlines.silk_SMULWB(nrgx.Val, pred2_Q10), 6);
+            nrgy = Inlines.silk_SUB_LSHIFT32(nrgy, Inlines.silk_SMULWB(corr, pred_Q13), 3 + 1);
+            nrgy = Inlines.silk_ADD_LSHIFT32(nrgy, Inlines.silk_SMULWB(nrgx, pred2_Q10), 6);
             mid_res_amp_Q0[1] = Inlines.silk_SMLAWB(mid_res_amp_Q0[1],
-                Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgy.Val), scale) - mid_res_amp_Q0[1], smooth_coef_Q16);
+                Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgy), scale) - mid_res_amp_Q0[1], smooth_coef_Q16);
 
             /* Ratio of smoothed residual and mid norms */
             ratio_Q14.Val = Inlines.silk_DIV32_varQ(mid_res_amp_Q0[1], Inlines.silk_max(mid_res_amp_Q0[0], 1), 14);

@@ -326,9 +326,6 @@ namespace Concentus.Structs
             {
                 /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
                    padding from opus_packet_pad or opus_packet_unpad(). */
-                // fixme: what is this?
-                //Inlines.OpusAssert(frames[i].Offset + len[i] <= data.Offset || ptr.Offset <= frames[i].Offset);
-                // OPUS_MOVE(ptr, frames[i], len[i]);
                 frames[i].MemMoveTo(ptr, len[i]);
                 ptr = ptr.Point(len[i]);
             }
@@ -336,6 +333,7 @@ namespace Concentus.Structs
             if (pad != 0)
             {
                 /* Fill padding with zeros. */
+                //Arrays.MemSetWithOffset<byte>(ptr.Data, 0, ptr.Offset, data.Offset + maxlen - ptr.Offset);
                 // FIXME why did they not just use a MemSet(0) here?
                 while (ptr.Offset < data.Offset + maxlen)
                 {

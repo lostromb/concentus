@@ -57,7 +57,7 @@ namespace Concentus.Silk
             int[] Aold_QA;
             int[] Anew_QA;
 
-            Anew_QA = A_QA[order & 1]; // FIXME should this array be linearized?
+            Anew_QA = A_QA[order & 1];
 
             invGain_Q30 = (int)1 << 30;
             for (k = order - 1; k > 0; k--)

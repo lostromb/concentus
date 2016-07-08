@@ -49,8 +49,8 @@ namespace Concentus.Silk
         /// <param name="x">I   Input vector</param>
         /// <param name="len">I   Length of input vector</param>
         internal static void silk_sum_sqr_shift(
-            BoxedValue<int> energy,
-            BoxedValue<int> shift,
+            out int energy,
+            out int shift,
             Pointer<short> x,
             int len)
         {
@@ -103,8 +103,8 @@ namespace Concentus.Silk
             }
 
             /* Output arguments */
-            shift.Val = shft;
-            energy.Val = nrg;
+            shift = shft;
+            energy = nrg;
         }
 
         /// <summary>
@@ -117,8 +117,8 @@ namespace Concentus.Silk
         /// <param name="x">I   Input vector</param>
         /// <param name="len">I   Length of input vector</param>
         internal static void silk_sum_sqr_shift(
-            BoxedValue<int> energy,
-            BoxedValue<int> shift,
+            out int energy,
+            out int shift,
             short[] x,
             int len)
         {
@@ -171,8 +171,8 @@ namespace Concentus.Silk
             }
 
             /* Output arguments */
-            shift.Val = shft;
-            energy.Val = nrg;
+            shift = shft;
+            energy = nrg;
         }
     }
 }

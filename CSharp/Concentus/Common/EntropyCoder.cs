@@ -702,7 +702,6 @@ namespace Concentus.Common
         /// This is a faster version of ec_tell_frac() that takes advantage
         /// of the low(1/8 bit) resolution to use just a linear function
         /// followed by a lookup to determine the exact transition thresholds.
-        /// FIXME: THIS NEEDS TESTING
         /// </summary>
         /// <param name="this"></param>
         /// <returns></returns>

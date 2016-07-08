@@ -1150,6 +1150,11 @@ namespace Concentus.Celt
 
         private static readonly byte[] bit_interleave_table = { 0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3 };
 
+        private static readonly byte[] bit_deinterleave_table ={
+                           0x00,0x03,0x0C,0x0F,0x30,0x33,0x3C,0x3F,
+                           0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF
+                     };
+
         /* This function is responsible for encoding and decoding a band for the mono case. */
         internal static uint quant_band(band_ctx ctx, Pointer<int> X,
               int N, int b, int B, Pointer<int> lowband,
@@ -1251,11 +1256,6 @@ namespace Concentus.Celt
 
                 for (k = 0; k < recombine; k++)
                 {
-                    // fixme: this is static
-                    byte[] bit_deinterleave_table ={
-                           0x00,0x03,0x0C,0x0F,0x30,0x33,0x3C,0x3F,
-                           0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF
-                     };
                     cm = bit_deinterleave_table[cm];
                     haar1(X, N0 >> k, 1 << k);
                 }
@@ -1598,8 +1598,6 @@ namespace Concentus.Celt
                 }
                 if (dual_stereo != 0)
                 {
-                    // fixme: if ctx is mutated by this function, it shouldn't
-                    // propagate to this level of code because of copy-by-value. check that
                     x_cm = quant_band(ctx,
                         X,
                         N,

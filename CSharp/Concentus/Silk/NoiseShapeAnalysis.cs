@@ -238,11 +238,7 @@ namespace Concentus.Silk
                 pitch_res_ptr = pitch_res;
                 for (k = 0; k < Inlines.silk_SMULBB(SilkConstants.SUB_FRAME_LENGTH_MS, psEnc.nb_subfr) / 2; k++)
                 {
-                    BoxedValue<int> nrg_boxed = new BoxedValue<int>();
-                    BoxedValue<int> scale_boxed = new BoxedValue<int>(scale);
-                    SumSqrShift.silk_sum_sqr_shift(nrg_boxed, scale_boxed, pitch_res_ptr, nSamples);
-                    nrg = nrg_boxed.Val;
-                    scale = scale_boxed.Val;
+                    SumSqrShift.silk_sum_sqr_shift(out nrg, out scale, pitch_res_ptr, nSamples);
                     nrg += Inlines.silk_RSHIFT(nSamples, scale);           /* Q(-scale)*/
 
                     log_energy_Q7 = Inlines.silk_lin2log(nrg);

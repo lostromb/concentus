@@ -356,32 +356,7 @@ namespace Concentus.Silk
                 outH[k] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SUB32(out_2, out_1), 11));
             }
         }
-
-        ///// <summary>
-        ///// Chirp (bandwidth expand) LP AR filter
-        ///// </summary>
-        ///// <param name="ar">I/O  AR filter to be expanded (without leading 1)</param>
-        ///// <param name="d">I    Length of ar</param>
-        ///// <param name="chirp_Q16">I    Chirp factor (typically in the range 0 to 1) FIXME Should this be an int?</param>
-        //internal static void silk_bwexpander(
-        //    Pointer<short> ar,
-        //    int d,
-        //    int chirp_Q16)
-        //{
-        //    int i;
-        //    int chirp_minus_one_Q16 = chirp_Q16 - 65536;
-
-        //    /* NB: Dont use silk_SMULWB, instead of silk_RSHIFT_ROUND( silk_MUL(), 16 ), below.  */
-        //    /* Bias in silk_SMULWB can lead to unstable filters                                */
-        //    for (i = 0; i < d - 1; i++)
-        //    {
-        //        ar[i] = (short)Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, ar[i]), 16);
-        //        chirp_Q16 += Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, chirp_minus_one_Q16), 16);
-        //    }
-
-        //    ar[d - 1] = (short)Inlines.silk_RSHIFT_ROUND(Inlines.silk_MUL(chirp_Q16, ar[d - 1]), 16);
-        //}
-
+        
         /// <summary>
         /// Chirp (bandwidth expand) LP AR filter
         /// </summary>

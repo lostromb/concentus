@@ -228,7 +228,6 @@ namespace Concentus.Celt
                 /* Backward pass to compute the pre-echo threshold */
                 for (i = len2 - 1; i >= 0; i--)
                 {
-                    /* FIXME: Use PSHR16() instead */
                     tmp[i] = (mem0 + Inlines.PSHR32(tmp[i] - mem0, 3));
                     mem0 = tmp[i];
                     maxE = Inlines.MAX16(maxE, (mem0));

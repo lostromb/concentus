@@ -98,12 +98,8 @@ namespace Concentus.Silk
             for (k = 0; k < nb_subfr; k++)
             {
                 lag_ptr = r_ptr.Point(0 - (lag[k] + SilkConstants.LTP_ORDER / 2));
-
-                BoxedValue<int> boxed_energy = new BoxedValue<int>();
-                BoxedValue<int> boxed_shifts = new BoxedValue<int>();
-                SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shifts, r_ptr, subfr_length); /* rr[ k ] in Q( -rr_shifts ) */
-                rr[k] = boxed_energy.Val;
-                rr_shifts = boxed_shifts.Val;
+                
+                SumSqrShift.silk_sum_sqr_shift(out rr[k], out rr_shifts, r_ptr, subfr_length); /* rr[ k ] in Q( -rr_shifts ) */
 
                 /* Assure headroom */
                 LZs = Inlines.silk_CLZ32(rr[k]);
@@ -113,7 +109,7 @@ namespace Concentus.Silk
                     rr_shifts += (LTP_CORRS_HEAD_ROOM - LZs);
                 }
                 corr_rshifts[k] = rr_shifts;
-                boxed_shifts.Val = corr_rshifts[k];
+                BoxedValue<int> boxed_shifts = new BoxedValue<int>(corr_rshifts[k]);
                 CorrelateMatrix.silk_corrMatrix(lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP_ptr, boxed_shifts);  /* WLTP_ptr in Q( -corr_rshifts[ k ] ) */
                 corr_rshifts[k] = boxed_shifts.Val;
 

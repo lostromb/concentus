@@ -97,13 +97,9 @@ namespace Concentus.Silk
             int i, j, lag, head_room_rshifts;
             int energy, rshifts_local;
             Pointer<short> ptr1, ptr2;
-
-            BoxedValue<int> boxed_energy = new BoxedValue<int>();
-            BoxedValue<int> boxed_rshift = new BoxedValue<int>();
+            
             /* Calculate energy to find shift used to fit in 32 bits */
-            SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_rshift, x, L + order - 1);
-            energy = boxed_energy.Val;
-            rshifts_local = boxed_rshift.Val;
+            SumSqrShift.silk_sum_sqr_shift(out energy, out rshifts_local, x, L + order - 1);
             /* Add shifts to get the desired head room */
             head_room_rshifts = Inlines.silk_max(head_room - Inlines.silk_CLZ32(energy), 0);
 
