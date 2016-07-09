@@ -207,7 +207,7 @@ namespace Concentus.Celt
         }
 
         // Fixme: remove pointers and optimize
-        internal static void pitch_search(Pointer<int> x_lp, int[] y,
+        internal static void pitch_search(int[] x_lp, int x_lp_ptr, int[] y,
                   int len, int max_pitch, BoxedValue<int> pitch)
         {
             int i, j;
@@ -228,7 +228,7 @@ namespace Concentus.Celt
 
             /* Downsample by 2 again */
             for (j = 0; j < len >> 2; j++)
-                x_lp4[j] = x_lp[2 * j];
+                x_lp4[j] = x_lp[x_lp_ptr + (2 * j)];
             for (j = 0; j < lag >> 2; j++)
                 y_lp4[j] = y[2 * j];
 
@@ -265,7 +265,7 @@ namespace Concentus.Celt
                 }
                 sum = 0;
                 for (j = 0; j < len >> 1; j++)
-                    sum += Inlines.SHR32(Inlines.MULT16_16(x_lp[j], y[i + j]), shift);
+                    sum += Inlines.SHR32(Inlines.MULT16_16(x_lp[x_lp_ptr + j], y[i + j]), shift);
                 
                 xcorr[i] = Inlines.MAX32(-1, sum);
                 maxcorr = Inlines.MAX32(maxcorr, sum);

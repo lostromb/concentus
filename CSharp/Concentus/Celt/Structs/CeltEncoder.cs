@@ -291,8 +291,8 @@ namespace Concentus.Celt.Structs
                 Concentus.Celt.Pitch.pitch_downsample(pre, pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
                 /* Don't search for the fir last 1.5 octave of the range because
                    there's too many false-positives due to short-term correlation */
-                Concentus.Celt.Pitch.pitch_search(pitch_buf.GetPointer(CeltConstants.COMBFILTER_MAXPERIOD >> 1), pitch_buf, N,
-                      CeltConstants.COMBFILTER_MAXPERIOD - 3 * CeltConstants.COMBFILTER_MINPERIOD, pitch_index);
+                Concentus.Celt.Pitch.pitch_search(pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD >> 1, pitch_buf, N,
+                      CeltConstants.COMBFILTER_MAXPERIOD - 3 * CeltConstants.COMBFILTER_MINPERIOD, pitch_index); // opt: this creates lots of pointers
                 pitch_index.Val = CeltConstants.COMBFILTER_MAXPERIOD - pitch_index.Val;
                 gain1 = Concentus.Celt.Pitch.remove_doubling(pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MINPERIOD,
                       N, pitch_index, this.prefilter_period, this.prefilter_gain);
