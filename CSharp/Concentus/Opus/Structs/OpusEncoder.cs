@@ -1622,7 +1622,7 @@ namespace Concentus.Structs
             {
                 if (first == 0 && application != value)
                 {
-                    throw new ArgumentException("Unsupported application");
+                    throw new ArgumentException("Unsupported application (fixme: this error is vague)");
                 }
 
                 application = value;

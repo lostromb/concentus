@@ -15,6 +15,10 @@ namespace ConcentusDemo
         private int _bitrate = 64;
         private int _complexity = 5;
         private double _frameSize = 20;
+        private int _packetLoss = 0;
+        private bool _vbr = false;
+        private bool _cvbr = false;
+        private OpusApplication _application = OpusApplication.OPUS_APPLICATION_AUDIO;
 
         private BasicBufferShort _incomingSamples = new BasicBufferShort(48000);
 
@@ -31,7 +35,7 @@ namespace ConcentusDemo
 
             SetBitrate(_bitrate);
             SetComplexity(_complexity);
-            _encoder.UseVBR = true;
+            SetVBRMode(_vbr, _cvbr);
             _encoder.EnableAnalysis = true;
             _decoder = OpusDecoder.Create(48000, 1);
         }
@@ -51,6 +55,35 @@ namespace ConcentusDemo
         public void SetFrameSize(double frameSize)
         {
             _frameSize = frameSize;
+        }
+
+        public void SetPacketLoss(int loss)
+        {
+            _packetLoss = loss;
+            if (loss > 0)
+            {
+                _encoder.PacketLossPercent = _packetLoss;
+                _encoder.UseInbandFEC = true;
+            }
+            else
+            {
+                _encoder.PacketLossPercent = 0;
+                _encoder.UseInbandFEC = false;
+            }
+        }
+
+        public void SetApplication(OpusApplication application)
+        {
+            _application = application;
+            _encoder.Application = _application;
+        }
+
+        public void SetVBRMode(bool vbr, bool constrained)
+        {
+            _vbr = vbr;
+            _cvbr = constrained;
+            _encoder.UseVBR = vbr;
+            _encoder.UseConstrainedVBR = constrained;
         }
 
         private int GetFrameSize()
@@ -97,7 +130,7 @@ namespace ConcentusDemo
             if (outCursor > 0)
             {
                 _statistics.EncodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            } 
+            }
 
             byte[] finalOutput = new byte[outCursor];
             Array.Copy(scratchBuffer, 0, finalOutput, 0, outCursor);
@@ -110,10 +143,23 @@ namespace ConcentusDemo
             
             short[] outputBuffer = new short[frameSize];
 
-            _timer.Reset();
-            _timer.Start();
-            int thisFrameSize = _decoder.Decode(inputPacket, 0, inputPacket.Length, outputBuffer, 0, frameSize, false);
-            _timer.Stop();
+            bool lostPacket = new Random().Next(0, 100) < _packetLoss;
+            if (!lostPacket)
+            {
+                // Normal decoding
+                _timer.Reset();
+                _timer.Start();
+                int thisFrameSize = _decoder.Decode(inputPacket, 0, inputPacket.Length, outputBuffer, 0, frameSize, false);
+                _timer.Stop();
+            }
+            else
+            {
+                // packet loss path
+                _timer.Reset();
+                _timer.Start();
+                int thisFrameSize = _decoder.Decode(null, 0, 0, outputBuffer, 0, frameSize, true);
+                _timer.Stop();
+            }
 
             short[] finalOutput = new short[frameSize];
             Array.Copy(outputBuffer, finalOutput, finalOutput.Length);
@@ -138,6 +184,27 @@ namespace ConcentusDemo
                 _statistics.Mode = "Unknown";
             }
             _statistics.DecodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);
+            OpusBandwidth curBandwidth = OpusPacketInfo.GetBandwidth(inputPacket, 0);
+            if (curBandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+            {
+                _statistics.Bandwidth = 8000;
+            }
+            else if (curBandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+            {
+                _statistics.Bandwidth = 12000;
+            }
+            else if (curBandwidth == OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+            {
+                _statistics.Bandwidth = 16000;
+            }
+            else if (curBandwidth == OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
+            {
+                _statistics.Bandwidth = 24000;
+            }
+            else
+            {
+                _statistics.Bandwidth = 48000;
+            }
 
             return new AudioChunk(finalOutput, 48000);
         }

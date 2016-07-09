@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ConcentusDemo"
         mc:Ignorable="d"
-        Title="Concentus Interactive Demo" Height="344.068" Width="429.041" Initialized="Window_Initialized" Background="#FF252525" Foreground="White">
+        Title="Concentus Interactive Demo" Height="446.068" Width="453.041" Initialized="Window_Initialized" Background="#FF252525" Foreground="White">
     <Window.Resources>
         <SolidColorBrush x:Key="GreenButtonBg" Color="#FF488B39"/>
         <SolidColorBrush x:Key="GreyButtonBg" Color="#FF595959"/>
@@ -26,6 +26,11 @@
             <Slider x:Name="framesizeSlider" Height="35" Maximum="5" Minimum="0" Value="3" TickPlacement="Both" TickFrequency="1" VerticalAlignment="Center" Margin="100,0" SmallChange="1" ValueChanged="framesizeSlider_ValueChanged"/>
             <Label x:Name="framesizeDisplay" Content="20.0 ms" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" Foreground="White" />
         </Grid>
+        <Grid x:Name="PacketLossPanel" Margin="0,0,0,0" VerticalAlignment="Center">
+            <Label Content="Packet Loss" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" />
+            <Slider x:Name="packetLossSlider" Height="35" Maximum="50" Minimum="0" Value="0" TickPlacement="Both" TickFrequency="5" VerticalAlignment="Center" Margin="100,0" SmallChange="1" ValueChanged="packetLossSlider_ValueChanged"/>
+            <Label x:Name="packetLossDisplay" Content="0%" VerticalAlignment="Center" Width="90" HorizontalAlignment="Right" Foreground="White" />
+        </Grid>
         <Grid x:Name="LibraryPanel" Margin="0,0,0,0" VerticalAlignment="Center">
             <Label Content="Library" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" />
             <Grid Margin="100,0,0,0">
@@ -35,6 +40,19 @@
                 </Grid.ColumnDefinitions>
                 <Button x:Name="libConcentusButton" Content="Concentus (C#)" Grid.Column="0" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="{DynamicResource GreenButtonBg}" Foreground="White" BorderBrush="#FFC5C5C5" Click="libConcentusButton_Click" />
                 <Button x:Name="libOpusButton" Content="Opus (C)" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="White" Background="{DynamicResource GreyButtonBg}" BorderBrush="#FFC5C5C5" Click="libOpusButton_Click" />
+            </Grid>
+        </Grid>
+        <Grid x:Name="VBRPanel" Margin="0,0,0,0" VerticalAlignment="Center">
+            <Label Content="Rate Control" Width="90"  HorizontalContentAlignment="Right" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="White" />
+            <Grid Margin="100,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="cbrButton" Content="CBR" Grid.Column="0" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="White" Background="{DynamicResource GreenButtonBg}" BorderBrush="#FFC5C5C5" Click="cbrButton_Click" />
+                <Button x:Name="vbrButton" Content="VBR" Grid.Column="1" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="White" Background="{DynamicResource GreyButtonBg}" BorderBrush="#FFC5C5C5" Click="vbrButton_Click" />
+                <Button x:Name="cvbrButton" Content="CVBR" Grid.Column="2" Height="26" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="White" Background="{DynamicResource GreyButtonBg}" BorderBrush="#FFC5C5C5" Click="cvbrButton_Click" />
             </Grid>
         </Grid>
         <Grid x:Name="InputFilePanel" Margin="0,0,0,0" VerticalAlignment="Center">

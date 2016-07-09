@@ -8,7 +8,7 @@ namespace ConcentusDemo
 {
     public class CodecStatistics
     {
-        private double _avgDecay = 0.01;
+        private double _avgDecay = 0.003;
 
         private double _averageBitrate = 0;
 

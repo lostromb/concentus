@@ -55,6 +55,10 @@ namespace ConcentusDemo
         private int _bitrate = 64;
         private int _complexity = 5;
         private double _frameSize = 20;
+        private int _packetLoss = 0;
+        private int _application = OPUS_APPLICATION_AUDIO;
+        private bool _vbr = false;
+        private bool _cvbr = false;
 
         private BasicBufferShort _incomingSamples = new BasicBufferShort(48000);
 
@@ -76,7 +80,7 @@ namespace ConcentusDemo
             
             SetBitrate(_bitrate);
             SetComplexity(_complexity);
-            opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_VBR_REQUEST, 1);
+            SetVBRMode(_vbr, _cvbr);
 
             _decoder = opus_decoder_create(48000, 1, out error);
             if ((int)error != 0)
@@ -100,6 +104,35 @@ namespace ConcentusDemo
         public void SetFrameSize(double frameSize)
         {
             _frameSize = frameSize;
+        }
+
+        public void SetPacketLoss(int loss)
+        {
+            _packetLoss = loss;
+            if (loss > 0)
+            {
+                opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_PACKET_LOSS_PERC_REQUEST, _packetLoss);
+                opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_INBAND_FEC_REQUEST, 1);
+            }
+            else
+            {
+                opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_PACKET_LOSS_PERC_REQUEST, 0);
+                opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_INBAND_FEC_REQUEST, 0);
+            }
+        }
+
+        public void SetApplication(OpusApplication application)
+        {
+            _application = (int)application;
+            opus_encoder_ctl(_encoder, (int)OpusControl.OPUS_SET_APPLICATION_REQUEST, _application);
+        }
+
+        public void SetVBRMode(bool vbr, bool constrained)
+        {
+            _vbr = vbr;
+            _cvbr = constrained;
+            opus_encoder_ctl(_encoder, (int)OpusControl.OPUS_SET_VBR_REQUEST, vbr ? 1 : 0);
+            opus_encoder_ctl(_encoder, (int)OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, constrained ? 1 : 0);
         }
 
         private int GetFrameSize()
@@ -167,17 +200,37 @@ namespace ConcentusDemo
 
             short[] outputBuffer = new short[frameSize];
 
-            _timer.Reset();
-            _timer.Start();
-            unsafe
+            bool lostPacket = new Random().Next(0, 100) < _packetLoss;
+            if (!lostPacket)
             {
-                fixed (short* bdec = outputBuffer)
+                // normal decoding
+                _timer.Reset();
+                _timer.Start();
+                unsafe
                 {
-                    IntPtr decodedPtr = new IntPtr((byte*)(bdec));
-                    int thisFrameSize = opus_decode(_decoder, inputPacket, inputPacket.Length, decodedPtr, frameSize, 0);
+                    fixed (short* bdec = outputBuffer)
+                    {
+                        IntPtr decodedPtr = new IntPtr((byte*)(bdec));
+                        int thisFrameSize = opus_decode(_decoder, inputPacket, inputPacket.Length, decodedPtr, frameSize, 0);
+                    }
                 }
+                _timer.Stop();
             }
-            _timer.Stop();
+            else
+            {
+                // packet loss path
+                _timer.Reset();
+                _timer.Start();
+                unsafe
+                {
+                    fixed (short* bdec = outputBuffer)
+                    {
+                        IntPtr decodedPtr = new IntPtr((byte*)(bdec));
+                        int thisFrameSize = opus_decode(_decoder, null, 0, decodedPtr, frameSize, 1);
+                    }
+                }
+                _timer.Stop();
+            }
 
             short[] finalOutput = new short[frameSize];
             Array.Copy(outputBuffer, finalOutput, finalOutput.Length);

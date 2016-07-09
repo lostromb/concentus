@@ -551,11 +551,11 @@ namespace Concentus.Common.CPlusPlus
         {
             if (memory == null)
                 return null;
-            if (Debugger.IsAttached && offset == memory.Length / 2)
-            {
-                // This may be a partitioned array. Signal the debugger
-                Debugger.Break();
-            }
+            //if (Debugger.IsAttached && offset == memory.Length / 2)
+            //{
+            //    // This may be a partitioned array. Signal the debugger
+            //    Debugger.Break();
+            //}
             return new Pointer<E>(memory, offset);
         }
     }
