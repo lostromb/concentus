@@ -408,18 +408,20 @@ namespace Concentus.Silk
         }
 
         internal static Pointer<short> silk_resampler_private_down_FIR_INTERPOL(
-            Pointer<short> output,
-            Pointer<int> buf,
-            Pointer<short> FIR_Coefs,
+            short[] output,
+            int output_ptr,
+            int[] buf,
+            short[] FIR_Coefs,
+            int FIR_Coefs_ptr,
             int FIR_Order,
             int FIR_Fracs,
             int max_index_Q16,
             int index_increment_Q16)
         {
             int index_Q16, res_Q6;
-            Pointer<int> buf_ptr;
+            int buf_ptr;
             int interpol_ind;
-            Pointer<short> interpol_ptr;
+            int interpol_ptr;
 
             switch (FIR_Order)
             {
@@ -427,92 +429,89 @@ namespace Concentus.Silk
                     for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16)
                     {
                         /* Integer part gives pointer to buffered input */
-                        buf_ptr = buf.Point(Inlines.silk_RSHIFT(index_Q16, 16));
+                        buf_ptr = Inlines.silk_RSHIFT(index_Q16, 16);
 
                         /* Fractional part gives interpolation coefficients */
                         interpol_ind = Inlines.silk_SMULWB(index_Q16 & 0xFFFF, FIR_Fracs);
 
                         /* Inner product */
-                        interpol_ptr = FIR_Coefs.Point(SilkConstants.RESAMPLER_DOWN_ORDER_FIR0 / 2 * interpol_ind);
-                        res_Q6 = Inlines.silk_SMULWB(buf_ptr[0], interpol_ptr[0]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[1], interpol_ptr[1]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[2], interpol_ptr[2]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[3], interpol_ptr[3]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[4], interpol_ptr[4]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[5], interpol_ptr[5]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[6], interpol_ptr[6]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[7], interpol_ptr[7]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[8], interpol_ptr[8]);
-                        interpol_ptr = FIR_Coefs.Point(SilkConstants.RESAMPLER_DOWN_ORDER_FIR0 / 2 * (FIR_Fracs - 1 - interpol_ind));
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[17], interpol_ptr[0]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[16], interpol_ptr[1]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[15], interpol_ptr[2]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[14], interpol_ptr[3]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[13], interpol_ptr[4]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[12], interpol_ptr[5]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[11], interpol_ptr[6]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[10], interpol_ptr[7]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[9], interpol_ptr[8]);
+                        interpol_ptr = FIR_Coefs_ptr + (SilkConstants.RESAMPLER_DOWN_ORDER_FIR0 / 2 * interpol_ind);
+                        res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr + 0], FIR_Coefs[interpol_ptr + 0]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 1], FIR_Coefs[interpol_ptr + 1]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 2], FIR_Coefs[interpol_ptr + 2]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 3], FIR_Coefs[interpol_ptr + 3]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 4], FIR_Coefs[interpol_ptr + 4]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 5], FIR_Coefs[interpol_ptr + 5]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 6], FIR_Coefs[interpol_ptr + 6]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 7], FIR_Coefs[interpol_ptr + 7]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 8], FIR_Coefs[interpol_ptr + 8]);
+                        interpol_ptr = FIR_Coefs_ptr + (SilkConstants.RESAMPLER_DOWN_ORDER_FIR0 / 2 * (FIR_Fracs - 1 - interpol_ind));
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 17], FIR_Coefs[interpol_ptr + 0]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 16], FIR_Coefs[interpol_ptr + 1]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 15], FIR_Coefs[interpol_ptr + 2]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 14], FIR_Coefs[interpol_ptr + 3]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 13], FIR_Coefs[interpol_ptr + 4]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 12], FIR_Coefs[interpol_ptr + 5]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 11], FIR_Coefs[interpol_ptr + 6]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 10], FIR_Coefs[interpol_ptr + 7]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 9], FIR_Coefs[interpol_ptr + 8]);
 
                         /* Scale down, saturate and store in output array */
-                        output[0] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
-                        output = output.Point(1);
+                        output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
                     }
                     break;
                 case SilkConstants.RESAMPLER_DOWN_ORDER_FIR1:
                     for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16)
                     {
                         /* Integer part gives pointer to buffered input */
-                        buf_ptr = buf.Point(Inlines.silk_RSHIFT(index_Q16, 16));
+                        buf_ptr = Inlines.silk_RSHIFT(index_Q16, 16);
 
                         /* Inner product */
-                        res_Q6 = Inlines.silk_SMULWB(Inlines.silk_ADD32(buf_ptr[0], buf_ptr[23]), FIR_Coefs[0]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[1], buf_ptr[22]), FIR_Coefs[1]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[2], buf_ptr[21]), FIR_Coefs[2]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[3], buf_ptr[20]), FIR_Coefs[3]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[4], buf_ptr[19]), FIR_Coefs[4]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[5], buf_ptr[18]), FIR_Coefs[5]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[6], buf_ptr[17]), FIR_Coefs[6]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[7], buf_ptr[16]), FIR_Coefs[7]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[8], buf_ptr[15]), FIR_Coefs[8]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[9], buf_ptr[14]), FIR_Coefs[9]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[10], buf_ptr[13]), FIR_Coefs[10]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[11], buf_ptr[12]), FIR_Coefs[11]);
+                        res_Q6 = Inlines.silk_SMULWB(Inlines.silk_ADD32(buf[buf_ptr + 0], buf[buf_ptr + 23]), FIR_Coefs[FIR_Coefs_ptr + 0]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 1], buf[buf_ptr + 22]), FIR_Coefs[FIR_Coefs_ptr + 1]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 2], buf[buf_ptr + 21]), FIR_Coefs[FIR_Coefs_ptr + 2]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 3], buf[buf_ptr + 20]), FIR_Coefs[FIR_Coefs_ptr + 3]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 4], buf[buf_ptr + 19]), FIR_Coefs[FIR_Coefs_ptr + 4]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 5], buf[buf_ptr + 18]), FIR_Coefs[FIR_Coefs_ptr + 5]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 6], buf[buf_ptr + 17]), FIR_Coefs[FIR_Coefs_ptr + 6]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 7], buf[buf_ptr + 16]), FIR_Coefs[FIR_Coefs_ptr + 7]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 8], buf[buf_ptr + 15]), FIR_Coefs[FIR_Coefs_ptr + 8]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 9], buf[buf_ptr + 14]), FIR_Coefs[FIR_Coefs_ptr + 9]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 10], buf[buf_ptr + 13]), FIR_Coefs[FIR_Coefs_ptr + 10]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 11], buf[buf_ptr + 12]), FIR_Coefs[FIR_Coefs_ptr + 11]);
 
                         /* Scale down, saturate and store in output array */
-                        output[0] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
-                        output = output.Point(1);
+                        output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
                     }
                     break;
                 case SilkConstants.RESAMPLER_DOWN_ORDER_FIR2:
                     for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16)
                     {
                         /* Integer part gives pointer to buffered input */
-                        buf_ptr = buf.Point(Inlines.silk_RSHIFT(index_Q16, 16));
+                        buf_ptr = Inlines.silk_RSHIFT(index_Q16, 16);
 
                         /* Inner product */
-                        res_Q6 = Inlines.silk_SMULWB(Inlines.silk_ADD32(buf_ptr[0], buf_ptr[35]), FIR_Coefs[0]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[1], buf_ptr[34]), FIR_Coefs[1]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[2], buf_ptr[33]), FIR_Coefs[2]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[3], buf_ptr[32]), FIR_Coefs[3]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[4], buf_ptr[31]), FIR_Coefs[4]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[5], buf_ptr[30]), FIR_Coefs[5]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[6], buf_ptr[29]), FIR_Coefs[6]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[7], buf_ptr[28]), FIR_Coefs[7]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[8], buf_ptr[27]), FIR_Coefs[8]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[9], buf_ptr[26]), FIR_Coefs[9]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[10], buf_ptr[25]), FIR_Coefs[10]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[11], buf_ptr[24]), FIR_Coefs[11]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[12], buf_ptr[23]), FIR_Coefs[12]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[13], buf_ptr[22]), FIR_Coefs[13]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[14], buf_ptr[21]), FIR_Coefs[14]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[15], buf_ptr[20]), FIR_Coefs[15]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[16], buf_ptr[19]), FIR_Coefs[16]);
-                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf_ptr[17], buf_ptr[18]), FIR_Coefs[17]);
+                        res_Q6 = Inlines.silk_SMULWB(Inlines.silk_ADD32(buf[buf_ptr + 0], buf[buf_ptr + 35]), FIR_Coefs[FIR_Coefs_ptr + 0]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 1], buf[buf_ptr + 34]), FIR_Coefs[FIR_Coefs_ptr + 1]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 2], buf[buf_ptr + 33]), FIR_Coefs[FIR_Coefs_ptr + 2]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 3], buf[buf_ptr + 32]), FIR_Coefs[FIR_Coefs_ptr + 3]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 4], buf[buf_ptr + 31]), FIR_Coefs[FIR_Coefs_ptr + 4]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 5], buf[buf_ptr + 30]), FIR_Coefs[FIR_Coefs_ptr + 5]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 6], buf[buf_ptr + 29]), FIR_Coefs[FIR_Coefs_ptr + 6]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 7], buf[buf_ptr + 28]), FIR_Coefs[FIR_Coefs_ptr + 7]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 8], buf[buf_ptr + 27]), FIR_Coefs[FIR_Coefs_ptr + 8]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 9], buf[buf_ptr + 26]), FIR_Coefs[FIR_Coefs_ptr + 9]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 10], buf[buf_ptr + 25]), FIR_Coefs[FIR_Coefs_ptr + 10]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 11], buf[buf_ptr + 24]), FIR_Coefs[FIR_Coefs_ptr + 11]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 12], buf[buf_ptr + 23]), FIR_Coefs[FIR_Coefs_ptr + 12]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 13], buf[buf_ptr + 22]), FIR_Coefs[FIR_Coefs_ptr + 13]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 14], buf[buf_ptr + 21]), FIR_Coefs[FIR_Coefs_ptr + 14]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 15], buf[buf_ptr + 20]), FIR_Coefs[FIR_Coefs_ptr + 15]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 16], buf[buf_ptr + 19]), FIR_Coefs[FIR_Coefs_ptr + 16]);
+                        res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 17], buf[buf_ptr + 18]), FIR_Coefs[FIR_Coefs_ptr + 17]);
 
                         /* Scale down, saturate and store in output array */
-                        output[0] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
-                        output = output.Point(1);
+                        output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
                     }
                     break;
                 default:
@@ -520,7 +519,7 @@ namespace Concentus.Silk
                     break;
             }
 
-            return output;
+            return output.GetPointer(output_ptr);
         }
 
         /// <summary>
@@ -539,12 +538,9 @@ namespace Concentus.Silk
             int nSamplesIn;
             int max_index_Q16, index_increment_Q16;
             int[] buf = new int[S.batchSize + S.FIR_Order];
-            Pointer<short> FIR_Coefs;
 
             /* Copy buffered samples to start of buffer */
             Array.Copy(S.sFIR_i32, buf, S.FIR_Order);
-
-            FIR_Coefs = S.Coefs.GetPointer(2);
 
             /* Iterate over blocks of frameSizeIn input samples */
             index_increment_Q16 = S.invRatio_Q16;
@@ -558,7 +554,7 @@ namespace Concentus.Silk
                 max_index_Q16 = Inlines.silk_LSHIFT32(nSamplesIn, 16);
 
                 /* Interpolate filtered signal */
-                output = silk_resampler_private_down_FIR_INTERPOL(output, buf.GetPointer(), FIR_Coefs, S.FIR_Order,
+                output = silk_resampler_private_down_FIR_INTERPOL(output.Data, output.Offset, buf, S.Coefs, 2, S.FIR_Order,
                     S.FIR_Fracs, max_index_Q16, index_increment_Q16);
 
                 input = input.Point(nSamplesIn);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Concentus.Enums;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -100,6 +101,16 @@ namespace ConcentusDemo
             }
         }
 
+        private void packetLossSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (packetLossDisplay != null && packetLossDisplay.IsInitialized)
+            {
+                int newPacketLoss = (int)Math.Round(e.NewValue);
+                _worker.UpdatePacketLoss(newPacketLoss);
+                packetLossDisplay.Content = string.Format("{0:F1}%", newPacketLoss);
+            }
+        }
+
         private delegate void StringDelegate(string value);
 
         private void UpdateStatisticsLabel(string content)
@@ -110,7 +121,7 @@ namespace ConcentusDemo
         private void UpdateStatisticsDisplay(object state)
         {
             CodecStatistics stats = _worker.GetStatistics();
-            Dispatcher.Invoke(new StringDelegate(UpdateStatisticsLabel), string.Format("Encoding at {0:F1}x realtime\r\nDecoding at {1:F1}x realtime\r\nActual bitrate {2:F1}Kbit/s\r\n{3} mode", stats.EncodeSpeed, stats.DecodeSpeed, stats.Bitrate, stats.Mode));
+            Dispatcher.Invoke(new StringDelegate(UpdateStatisticsLabel), string.Format("Encoding at {0:F1}x realtime\r\nDecoding at {1:F1}x realtime\r\nActual bitrate {2:F1}Kbit/s\r\n{3} mode\r\n{4} Hz", stats.EncodeSpeed, stats.DecodeSpeed, stats.Bitrate, stats.Mode, stats.Bandwidth));
         }
 
         private void libConcentusButton_Click(object sender, RoutedEventArgs e)
@@ -152,6 +163,30 @@ namespace ConcentusDemo
             sample1Button.Background = this.Resources["GreyButtonBg"] as Brush;
             sample2Button.Background = this.Resources["GreyButtonBg"] as Brush;
             sample3Button.Background = this.Resources["GreenButtonBg"] as Brush;
+        }
+
+        private void cbrButton_Click(object sender, RoutedEventArgs e)
+        {
+            _worker.UpdateVBR(false, false);
+            cbrButton.Background = this.Resources["GreenButtonBg"] as Brush;
+            vbrButton.Background = this.Resources["GreyButtonBg"] as Brush;
+            cvbrButton.Background = this.Resources["GreyButtonBg"] as Brush;
+        }
+
+        private void vbrButton_Click(object sender, RoutedEventArgs e)
+        {
+            _worker.UpdateVBR(true, false);
+            cbrButton.Background = this.Resources["GreyButtonBg"] as Brush;
+            vbrButton.Background = this.Resources["GreenButtonBg"] as Brush;
+            cvbrButton.Background = this.Resources["GreyButtonBg"] as Brush;
+        }
+
+        private void cvbrButton_Click(object sender, RoutedEventArgs e)
+        {
+            _worker.UpdateVBR(true, true);
+            cbrButton.Background = this.Resources["GreyButtonBg"] as Brush;
+            vbrButton.Background = this.Resources["GreyButtonBg"] as Brush;
+            cvbrButton.Background = this.Resources["GreenButtonBg"] as Brush;
         }
     }
 }

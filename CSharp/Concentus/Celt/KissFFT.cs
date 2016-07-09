@@ -128,32 +128,32 @@ namespace Concentus.Celt
             if (m == 1)
             {
                 /* Degenerate case where all the twiddles are 1. */
-                int[] scratch = new int[4];
+                int scratch0, scratch1, scratch2, scratch3;
                 for (i = 0; i < N; i++)
                 {
-                    scratch[0] = Fout[fout_ptr + 0] - Fout[fout_ptr + 4];
-                    scratch[1] = Fout[fout_ptr + 1] - Fout[fout_ptr + 5];
+                    scratch0 = Fout[fout_ptr + 0] - Fout[fout_ptr + 4];
+                    scratch1 = Fout[fout_ptr + 1] - Fout[fout_ptr + 5];
                     Fout[fout_ptr + 0] += Fout[fout_ptr + 4];
                     Fout[fout_ptr + 1] += Fout[fout_ptr + 5];
-                    scratch[2] = Fout[fout_ptr + 2] + Fout[fout_ptr + 6];
-                    scratch[3] = Fout[fout_ptr + 3] + Fout[fout_ptr + 7];
-                    Fout[fout_ptr + 4] = Fout[fout_ptr + 0] - scratch[2];
-                    Fout[fout_ptr + 5] = Fout[fout_ptr + 1] - scratch[3];
-                    Fout[fout_ptr + 0] += scratch[2];
-                    Fout[fout_ptr + 1] += scratch[3];
-                    scratch[2] = Fout[fout_ptr + 2] - Fout[fout_ptr + 6];
-                    scratch[3] = Fout[fout_ptr + 3] - Fout[fout_ptr + 7];
-                    Fout[fout_ptr + 2] = scratch[0] + scratch[3];
-                    Fout[fout_ptr + 3] = scratch[1] - scratch[2];
-                    Fout[fout_ptr + 6] = scratch[0] - scratch[3];
-                    Fout[fout_ptr + 7] = scratch[1] + scratch[2];
+                    scratch2 = Fout[fout_ptr + 2] + Fout[fout_ptr + 6];
+                    scratch3 = Fout[fout_ptr + 3] + Fout[fout_ptr + 7];
+                    Fout[fout_ptr + 4] = Fout[fout_ptr + 0] - scratch2;
+                    Fout[fout_ptr + 5] = Fout[fout_ptr + 1] - scratch3;
+                    Fout[fout_ptr + 0] += scratch2;
+                    Fout[fout_ptr + 1] += scratch3;
+                    scratch2 = Fout[fout_ptr + 2] - Fout[fout_ptr + 6];
+                    scratch3 = Fout[fout_ptr + 3] - Fout[fout_ptr + 7];
+                    Fout[fout_ptr + 2] = scratch0 + scratch3;
+                    Fout[fout_ptr + 3] = scratch1 - scratch2;
+                    Fout[fout_ptr + 6] = scratch0 - scratch3;
+                    Fout[fout_ptr + 7] = scratch1 + scratch2;
                     fout_ptr += 8;
                 }
             }
             else
             {
                 int j;
-                int[] scratch = new int[12];
+                int scratch0, scratch1, scratch2, scratch3, scratch4, scratch5, scratch6, scratch7, scratch8, scratch9, scratch10, scratch11;
                 int tw1, tw2, tw3;
                 int Fout_beg = fout_ptr;
                 for (i = 0; i < N; i++)
@@ -166,31 +166,31 @@ namespace Concentus.Celt
                     /* m is guaranteed to be a multiple of 4. */
                     for (j = 0; j < m; j++)
                     {
-                        scratch[0] = (S_MUL(Fout[m1], st.twiddles[tw1    ]) - S_MUL(Fout[m1 + 1], st.twiddles[tw1 + 1]));
-                        scratch[1] = (S_MUL(Fout[m1], st.twiddles[tw1 + 1]) + S_MUL(Fout[m1 + 1], st.twiddles[tw1]));
-                        scratch[2] = (S_MUL(Fout[m2], st.twiddles[tw2    ]) - S_MUL(Fout[m2 + 1], st.twiddles[tw2 + 1]));
-                        scratch[3] = (S_MUL(Fout[m2], st.twiddles[tw2 + 1]) + S_MUL(Fout[m2 + 1], st.twiddles[tw2]));
-                        scratch[4] = (S_MUL(Fout[m3], st.twiddles[tw3    ]) - S_MUL(Fout[m3 + 1], st.twiddles[tw3 + 1]));
-                        scratch[5] = (S_MUL(Fout[m3], st.twiddles[tw3 + 1]) + S_MUL(Fout[m3 + 1], st.twiddles[tw3]));
-                        scratch[10] = Fout[fout_ptr] - scratch[2];
-                        scratch[11] = Fout[fout_ptr + 1] - scratch[3];
-                        Fout[fout_ptr] += scratch[2];
-                        Fout[fout_ptr + 1] += scratch[3];
-                        scratch[6] = scratch[0] + scratch[4];
-                        scratch[7] = scratch[1] + scratch[5];
-                        scratch[8] = scratch[0] - scratch[4];
-                        scratch[9] = scratch[1] - scratch[5];
-                        Fout[m2] = Fout[fout_ptr] - scratch[6];
-                        Fout[m2 + 1] = Fout[fout_ptr + 1] - scratch[7];
+                        scratch0 = (S_MUL(Fout[m1], st.twiddles[tw1    ]) - S_MUL(Fout[m1 + 1], st.twiddles[tw1 + 1]));
+                        scratch1 = (S_MUL(Fout[m1], st.twiddles[tw1 + 1]) + S_MUL(Fout[m1 + 1], st.twiddles[tw1]));
+                        scratch2 = (S_MUL(Fout[m2], st.twiddles[tw2    ]) - S_MUL(Fout[m2 + 1], st.twiddles[tw2 + 1]));
+                        scratch3 = (S_MUL(Fout[m2], st.twiddles[tw2 + 1]) + S_MUL(Fout[m2 + 1], st.twiddles[tw2]));
+                        scratch4 = (S_MUL(Fout[m3], st.twiddles[tw3    ]) - S_MUL(Fout[m3 + 1], st.twiddles[tw3 + 1]));
+                        scratch5 = (S_MUL(Fout[m3], st.twiddles[tw3 + 1]) + S_MUL(Fout[m3 + 1], st.twiddles[tw3]));
+                        scratch10 = Fout[fout_ptr] - scratch2;
+                        scratch11 = Fout[fout_ptr + 1] - scratch3;
+                        Fout[fout_ptr] += scratch2;
+                        Fout[fout_ptr + 1] += scratch3;
+                        scratch6 = scratch0 + scratch4;
+                        scratch7 = scratch1 + scratch5;
+                        scratch8 = scratch0 - scratch4;
+                        scratch9 = scratch1 - scratch5;
+                        Fout[m2] = Fout[fout_ptr] - scratch6;
+                        Fout[m2 + 1] = Fout[fout_ptr + 1] - scratch7;
                         tw1 += fstride * 2;
                         tw2 += fstride * 4;
                         tw3 += fstride * 6;
-                        Fout[fout_ptr] += scratch[6];
-                        Fout[fout_ptr + 1] += scratch[7];
-                        Fout[m1] = scratch[10] + scratch[9];
-                        Fout[m1 + 1] = scratch[11] - scratch[8];
-                        Fout[m3] = scratch[10] - scratch[9];
-                        Fout[m3 + 1] = scratch[11] + scratch[8];
+                        Fout[fout_ptr] += scratch6;
+                        Fout[fout_ptr + 1] += scratch7;
+                        Fout[m1] = scratch10 + scratch9;
+                        Fout[m1 + 1] = scratch11 - scratch8;
+                        Fout[m3] = scratch10 - scratch9;
+                        Fout[m3 + 1] = scratch11 + scratch8;
                         fout_ptr += 2;
                         m1 += 2;
                         m2 += 2;
@@ -215,8 +215,8 @@ namespace Concentus.Celt
             int m1 = 2 * m;
             int m2 = 4 * m;
             int tw1, tw2;
-            int[] scratch = new int[8];
-           
+            int scratch0, scratch1, scratch2, scratch3, scratch4, scratch5, scratch6, scratch7;
+
             int Fout_beg = fout_ptr;
 
             for (i = 0; i < N; i++)
@@ -227,33 +227,33 @@ namespace Concentus.Celt
                 k = m;
                 do
                 {
-                    scratch[2] = (S_MUL(Fout[fout_ptr + m1], st.twiddles[tw1]) - S_MUL(Fout[fout_ptr + m1 + 1], st.twiddles[tw1 + 1]));
-                    scratch[3] = (S_MUL(Fout[fout_ptr + m1], st.twiddles[tw1 + 1]) + S_MUL(Fout[fout_ptr + m1 + 1], st.twiddles[tw1]));
-                    scratch[4] = (S_MUL(Fout[fout_ptr + m2], st.twiddles[tw2]) - S_MUL(Fout[fout_ptr + m2 + 1], st.twiddles[tw2 + 1]));
-                    scratch[5] = (S_MUL(Fout[fout_ptr + m2], st.twiddles[tw2 + 1]) + S_MUL(Fout[fout_ptr + m2 + 1], st.twiddles[tw2]));
+                    scratch2 = (S_MUL(Fout[fout_ptr + m1], st.twiddles[tw1]) - S_MUL(Fout[fout_ptr + m1 + 1], st.twiddles[tw1 + 1]));
+                    scratch3 = (S_MUL(Fout[fout_ptr + m1], st.twiddles[tw1 + 1]) + S_MUL(Fout[fout_ptr + m1 + 1], st.twiddles[tw1]));
+                    scratch4 = (S_MUL(Fout[fout_ptr + m2], st.twiddles[tw2]) - S_MUL(Fout[fout_ptr + m2 + 1], st.twiddles[tw2 + 1]));
+                    scratch5 = (S_MUL(Fout[fout_ptr + m2], st.twiddles[tw2 + 1]) + S_MUL(Fout[fout_ptr + m2 + 1], st.twiddles[tw2]));
 
-                    scratch[6] = scratch[2] + scratch[4];
-                    scratch[7] = scratch[3] + scratch[5];
-                    scratch[0] = scratch[2] - scratch[4];
-                    scratch[1] = scratch[3] - scratch[5];
+                    scratch6 = scratch2 + scratch4;
+                    scratch7 = scratch3 + scratch5;
+                    scratch0 = scratch2 - scratch4;
+                    scratch1 = scratch3 - scratch5;
 
                     tw1 += fstride * 2;
                     tw2 += fstride * 4;
 
-                    Fout[fout_ptr + m1] = Fout[fout_ptr + 0] - HALF_OF(scratch[6]);
-                    Fout[fout_ptr + m1 + 1] = Fout[fout_ptr + 1] - HALF_OF(scratch[7]);
+                    Fout[fout_ptr + m1] = Fout[fout_ptr + 0] - HALF_OF(scratch6);
+                    Fout[fout_ptr + m1 + 1] = Fout[fout_ptr + 1] - HALF_OF(scratch7);
 
-                    scratch[0] = S_MUL(scratch[0], -28378);
-                    scratch[1] = S_MUL(scratch[1], -28378);
+                    scratch0 = S_MUL(scratch0, -28378);
+                    scratch1 = S_MUL(scratch1, -28378);
 
-                    Fout[fout_ptr + 0] += scratch[6];
-                    Fout[fout_ptr + 1] += scratch[7];
+                    Fout[fout_ptr + 0] += scratch6;
+                    Fout[fout_ptr + 1] += scratch7;
 
-                    Fout[fout_ptr + m2] = Fout[fout_ptr + m1] + scratch[1];
-                    Fout[fout_ptr + m2 + 1] = Fout[fout_ptr + m1 + 1] - scratch[0];
+                    Fout[fout_ptr + m2] = Fout[fout_ptr + m1] + scratch1;
+                    Fout[fout_ptr + m2 + 1] = Fout[fout_ptr + m1 + 1] - scratch0;
 
-                    Fout[fout_ptr + m1] -= scratch[1];
-                    Fout[fout_ptr + m1 + 1] += scratch[0];
+                    Fout[fout_ptr + m1] -= scratch1;
+                    Fout[fout_ptr + m1 + 1] += scratch0;
 
                     fout_ptr += 2;
                 } while ((--k) != 0);
@@ -272,8 +272,12 @@ namespace Concentus.Celt
         {
             int Fout0, Fout1, Fout2, Fout3, Fout4;
             int i, u;
-            int[] scratch = new int[26];
-            
+            int scratch0, scratch1, scratch2, scratch3, scratch4, scratch5,
+                scratch6, scratch7, scratch8, scratch9, scratch10, scratch11,
+                scratch12,scratch13, scratch14, scratch15, scratch16, scratch17,
+                scratch18, scratch19, scratch20, scratch21, scratch22, scratch23,
+                scratch24, scratch25;
+
             int Fout_beg = fout_ptr;
 
             short ya_r = 10126;
@@ -295,55 +299,55 @@ namespace Concentus.Celt
                 /* For non-custom modes, m is guaranteed to be a multiple of 4. */
                 for (u = 0; u < m; ++u)
                 {
-                    scratch[0] = Fout[Fout0 + 0];
-                    scratch[1] = Fout[Fout0 + 1];
+                    scratch0 = Fout[Fout0 + 0];
+                    scratch1 = Fout[Fout0 + 1];
 
-                    scratch[2] = (S_MUL(Fout[Fout1 + 0], st.twiddles[tw1]) -     S_MUL(Fout[Fout1 + 1], st.twiddles[tw1 + 1]));
-                    scratch[3] = (S_MUL(Fout[Fout1 + 0], st.twiddles[tw1 + 1]) + S_MUL(Fout[Fout1 + 1], st.twiddles[tw1]));
-                    scratch[4] = (S_MUL(Fout[Fout2 + 0], st.twiddles[tw2]) -     S_MUL(Fout[Fout2 + 1], st.twiddles[tw2 + 1]));
-                    scratch[5] = (S_MUL(Fout[Fout2 + 0], st.twiddles[tw2 + 1]) + S_MUL(Fout[Fout2 + 1], st.twiddles[tw2]));
-                    scratch[6] = (S_MUL(Fout[Fout3 + 0], st.twiddles[tw3]) -     S_MUL(Fout[Fout3 + 1], st.twiddles[tw3 + 1]));
-                    scratch[7] = (S_MUL(Fout[Fout3 + 0], st.twiddles[tw3 + 1]) + S_MUL(Fout[Fout3 + 1], st.twiddles[tw3]));
-                    scratch[8] = (S_MUL(Fout[Fout4 + 0], st.twiddles[tw4]) -     S_MUL(Fout[Fout4 + 1], st.twiddles[tw4 + 1]));
-                    scratch[9] = (S_MUL(Fout[Fout4 + 0], st.twiddles[tw4 + 1]) + S_MUL(Fout[Fout4 + 1], st.twiddles[tw4]));
+                    scratch2 = (S_MUL(Fout[Fout1 + 0], st.twiddles[tw1]) -     S_MUL(Fout[Fout1 + 1], st.twiddles[tw1 + 1]));
+                    scratch3 = (S_MUL(Fout[Fout1 + 0], st.twiddles[tw1 + 1]) + S_MUL(Fout[Fout1 + 1], st.twiddles[tw1]));
+                    scratch4 = (S_MUL(Fout[Fout2 + 0], st.twiddles[tw2]) -     S_MUL(Fout[Fout2 + 1], st.twiddles[tw2 + 1]));
+                    scratch5 = (S_MUL(Fout[Fout2 + 0], st.twiddles[tw2 + 1]) + S_MUL(Fout[Fout2 + 1], st.twiddles[tw2]));
+                    scratch6 = (S_MUL(Fout[Fout3 + 0], st.twiddles[tw3]) -     S_MUL(Fout[Fout3 + 1], st.twiddles[tw3 + 1]));
+                    scratch7 = (S_MUL(Fout[Fout3 + 0], st.twiddles[tw3 + 1]) + S_MUL(Fout[Fout3 + 1], st.twiddles[tw3]));
+                    scratch8 = (S_MUL(Fout[Fout4 + 0], st.twiddles[tw4]) -     S_MUL(Fout[Fout4 + 1], st.twiddles[tw4 + 1]));
+                    scratch9 = (S_MUL(Fout[Fout4 + 0], st.twiddles[tw4 + 1]) + S_MUL(Fout[Fout4 + 1], st.twiddles[tw4]));
 
                     tw1 += (2 * fstride);
                     tw2 += (4 * fstride);
                     tw3 += (6 * fstride);
                     tw4 += (8 * fstride);
 
-                    scratch[14] = scratch[2] + scratch[8];
-                    scratch[15] = scratch[3] + scratch[9];
-                    scratch[20] = scratch[2] - scratch[8];
-                    scratch[21] = scratch[3] - scratch[9];
-                    scratch[16] = scratch[4] + scratch[6];
-                    scratch[17] = scratch[5] + scratch[7];
-                    scratch[18] = scratch[4] - scratch[6];
-                    scratch[19] = scratch[5] - scratch[7];
+                    scratch14 = scratch2 + scratch8;
+                    scratch15 = scratch3 + scratch9;
+                    scratch20 = scratch2 - scratch8;
+                    scratch21 = scratch3 - scratch9;
+                    scratch16 = scratch4 + scratch6;
+                    scratch17 = scratch5 + scratch7;
+                    scratch18 = scratch4 - scratch6;
+                    scratch19 = scratch5 - scratch7;
 
-                    Fout[Fout0 + 0] += scratch[14] + scratch[16];
-                    Fout[Fout0 + 1] += scratch[15] + scratch[17];
+                    Fout[Fout0 + 0] += scratch14 + scratch16;
+                    Fout[Fout0 + 1] += scratch15 + scratch17;
 
-                    scratch[10] = scratch[0] + S_MUL(scratch[14], ya_r) + S_MUL(scratch[16], yb_r);
-                    scratch[11] = scratch[1] + S_MUL(scratch[15], ya_r) + S_MUL(scratch[17], yb_r);
+                    scratch10 = scratch0 + S_MUL(scratch14, ya_r) + S_MUL(scratch16, yb_r);
+                    scratch11 = scratch1 + S_MUL(scratch15, ya_r) + S_MUL(scratch17, yb_r);
 
-                    scratch[12] = S_MUL(scratch[21], ya_i) + S_MUL(scratch[19], yb_i);
-                    scratch[13] = 0 - S_MUL(scratch[20], ya_i) - S_MUL(scratch[18], yb_i);
+                    scratch12 = S_MUL(scratch21, ya_i) + S_MUL(scratch19, yb_i);
+                    scratch13 = 0 - S_MUL(scratch20, ya_i) - S_MUL(scratch18, yb_i);
 
-                    Fout[Fout1 + 0] = scratch[10] - scratch[12];
-                    Fout[Fout1 + 1] = scratch[11] - scratch[13];
-                    Fout[Fout4 + 0] = scratch[10] + scratch[12];
-                    Fout[Fout4 + 1] = scratch[11] + scratch[13];
+                    Fout[Fout1 + 0] = scratch10 - scratch12;
+                    Fout[Fout1 + 1] = scratch11 - scratch13;
+                    Fout[Fout4 + 0] = scratch10 + scratch12;
+                    Fout[Fout4 + 1] = scratch11 + scratch13;
 
-                    scratch[22] = scratch[0] + S_MUL(scratch[14], yb_r) + S_MUL(scratch[16], ya_r);
-                    scratch[23] = scratch[1] + S_MUL(scratch[15], yb_r) + S_MUL(scratch[17], ya_r);
-                    scratch[24] = 0 - S_MUL(scratch[21], yb_i) + S_MUL(scratch[19], ya_i);
-                    scratch[25] = S_MUL(scratch[20], yb_i) - S_MUL(scratch[18], ya_i);
+                    scratch22 = scratch0 + S_MUL(scratch14, yb_r) + S_MUL(scratch16, ya_r);
+                    scratch23 = scratch1 + S_MUL(scratch15, yb_r) + S_MUL(scratch17, ya_r);
+                    scratch24 = 0 - S_MUL(scratch21, yb_i) + S_MUL(scratch19, ya_i);
+                    scratch25 = S_MUL(scratch20, yb_i) - S_MUL(scratch18, ya_i);
 
-                    Fout[Fout2 + 0] = scratch[22] + scratch[24];
-                    Fout[Fout2 + 1] = scratch[23] + scratch[25];
-                    Fout[Fout3 + 0] = scratch[22] - scratch[24];
-                    Fout[Fout3 + 1] = scratch[23] - scratch[25];
+                    Fout[Fout2 + 0] = scratch22 + scratch24;
+                    Fout[Fout2 + 1] = scratch23 + scratch25;
+                    Fout[Fout3 + 0] = scratch22 - scratch24;
+                    Fout[Fout3 + 1] = scratch23 - scratch25;
 
                     Fout0 += 2;
                     Fout1 += 2;

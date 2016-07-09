@@ -1198,7 +1198,7 @@ namespace Concentus.Celt
             int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
             Pitch.pitch_downsample(decode_mem, lp_pitch_buf,
                   CeltConstants.DECODE_BUFFER_SIZE, C);
-            Pitch.pitch_search(lp_pitch_buf.GetPointer(CeltConstants.PLC_PITCH_LAG_MAX >> 1), lp_pitch_buf,
+            Pitch.pitch_search(lp_pitch_buf, CeltConstants.PLC_PITCH_LAG_MAX >> 1, lp_pitch_buf,
                   CeltConstants.DECODE_BUFFER_SIZE - CeltConstants.PLC_PITCH_LAG_MAX,
                   CeltConstants.PLC_PITCH_LAG_MAX - CeltConstants.PLC_PITCH_LAG_MIN, out pitch_index);
             pitch_index = CeltConstants.PLC_PITCH_LAG_MAX - pitch_index;

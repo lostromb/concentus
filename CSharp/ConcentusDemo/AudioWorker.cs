@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Concentus.Enums;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,6 +38,10 @@ namespace ConcentusDemo
         private int _complexity = 5;
         private int _bitrate = 64;
         private double _frameSize = 20;
+        private int _packetLoss = 0;
+        private OpusApplication _application = OpusApplication.OPUS_APPLICATION_AUDIO;
+        private bool _useVBR = false;
+        private bool _useCVBR = false;
         private bool _codecParamChanged = true;
         
         public AudioWorker()
@@ -74,6 +79,9 @@ namespace ConcentusDemo
                     _currentCodec.SetBitrate(_bitrate);
                     _currentCodec.SetComplexity(_complexity);
                     _currentCodec.SetFrameSize(_frameSize);
+                    _currentCodec.SetPacketLoss(_packetLoss);
+                    _currentCodec.SetApplication(_application);
+                    _currentCodec.SetVBRMode(_useVBR, _useCVBR);
                     _codecParamChanged = false;
                 }
 
@@ -112,6 +120,31 @@ namespace ConcentusDemo
         {
             _codecParamLock.WaitOne();
             _frameSize = frameSize;
+            _codecParamChanged = true;
+            _codecParamLock.ReleaseMutex();
+        }
+
+        public void UpdatePacketLoss(int packetLoss)
+        {
+            _codecParamLock.WaitOne();
+            _packetLoss = packetLoss;
+            _codecParamChanged = true;
+            _codecParamLock.ReleaseMutex();
+        }
+
+        public void UpdateApplication(OpusApplication app)
+        {
+            _codecParamLock.WaitOne();
+            _application = app;
+            _codecParamChanged = true;
+            _codecParamLock.ReleaseMutex();
+        }
+
+        public void UpdateVBR(bool vbr, bool constrained)
+        {
+            _codecParamLock.WaitOne();
+            _useVBR = vbr;
+            _useCVBR = constrained;
             _codecParamChanged = true;
             _codecParamLock.ReleaseMutex();
         }

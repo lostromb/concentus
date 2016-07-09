@@ -188,7 +188,7 @@ namespace Concentus.Silk
                 normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, SF_LENGTH_8KHZ));
                 normalizer = Inlines.silk_ADD32(normalizer, Inlines.silk_SMULBB(SF_LENGTH_8KHZ, 4000));
 
-                Inlines.MatrixSet(C.GetPointer(), k, 0, CSTRIDE_4KHZ,
+                Inlines.MatrixSet(C, k, 0, CSTRIDE_4KHZ,
                     (short)Inlines.silk_DIV32_varQ(cross_corr, normalizer, 13 + 1));                      /* Q13 */
 
                 /* From now on normalizer is computed recursively */
@@ -203,7 +203,7 @@ namespace Concentus.Silk
                         Inlines.silk_SMULBB(basis_ptr[0], basis_ptr[0]) -
                         Inlines.silk_SMULBB(basis_ptr[SF_LENGTH_8KHZ], basis_ptr[SF_LENGTH_8KHZ]));
 
-                    Inlines.MatrixSet(C.GetPointer(), k, d - MIN_LAG_4KHZ, CSTRIDE_4KHZ,
+                    Inlines.MatrixSet(C, k, d - MIN_LAG_4KHZ, CSTRIDE_4KHZ,
                         (short)Inlines.silk_DIV32_varQ(cross_corr, normalizer, 13 + 1));                  /* Q13 */
                 }
                 /* Update target pointer */
@@ -342,14 +342,14 @@ namespace Concentus.Silk
                     if (cross_corr > 0)
                     {
                         energy_basis = Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, SF_LENGTH_8KHZ);
-                        Inlines.MatrixSet(C.GetPointer(), k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ,
+                        Inlines.MatrixSet(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ,
                             (short)Inlines.silk_DIV32_varQ(cross_corr,
                                                          Inlines.silk_ADD32(energy_target,
                                                                      energy_basis),
                                                          13 + 1));                                      /* Q13 */
                     }
                     else {
-                        Inlines.MatrixSet<short>(C.GetPointer(), k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ, 0);
+                        Inlines.MatrixSet<short>(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ, 0);
                     }
                 }
                 target_ptr = target_ptr.Point(SF_LENGTH_8KHZ);

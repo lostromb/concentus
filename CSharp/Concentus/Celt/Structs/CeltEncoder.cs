@@ -234,7 +234,7 @@ namespace Concentus.Celt.Structs
             this.force_intra = 0;
             this.complexity = 5;
             this.lsb_depth = 24;
-            
+
             //this.in_mem = new int[channels * mode.overlap);
             //this.prefilter_mem = new int[channels * CeltConstants.COMBFILTER_MAXPERIOD);
             //this.oldBandE = new int[channels * mode.nbEBands);
@@ -290,7 +290,7 @@ namespace Concentus.Celt.Structs
                 Concentus.Celt.Pitch.pitch_downsample(pre, pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
                 /* Don't search for the fir last 1.5 octave of the range because
                    there's too many false-positives due to short-term correlation */
-                Concentus.Celt.Pitch.pitch_search(pitch_buf.GetPointer(CeltConstants.COMBFILTER_MAXPERIOD >> 1), pitch_buf, N,
+                Concentus.Celt.Pitch.pitch_search(pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD >> 1, pitch_buf, N,
                       CeltConstants.COMBFILTER_MAXPERIOD - 3 * CeltConstants.COMBFILTER_MINPERIOD, out pitch_index);
                 pitch_index = CeltConstants.COMBFILTER_MAXPERIOD - pitch_index;
                 gain1 = Concentus.Celt.Pitch.remove_doubling(pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MINPERIOD,
@@ -864,7 +864,7 @@ namespace Concentus.Celt.Structs
                 }
                 else
                 {
-                    this.spread_decision = Bands.spreading_decision(mode, X,
+                        this.spread_decision = Bands.spreading_decision(mode, X,
                             ref this.tonal_average, this.spread_decision, ref this.hf_average,
                             ref this.tapset_decision, (pf_on != 0 && shortBlocks == 0) ? 1 : 0, effEnd, C, M);
 
@@ -875,7 +875,7 @@ namespace Concentus.Celt.Structs
             }
 
             offsets = new int[nbEBands];
-            
+
             maxDepth = CeltCommon.dynalloc_analysis(bandLogE, bandLogE2, nbEBands, start, end, C, offsets,
                   this.lsb_depth, mode.logN, isTransient, this.vbr, this.constrained_vbr,
                   eBands, LM, effectiveBytes, out tot_boost, this.lfe, surround_dynalloc);
@@ -1069,7 +1069,7 @@ namespace Concentus.Celt.Structs
             {
                 signalBandwidth = 1;
             }
-            
+
             codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
                   alloc_trim, ref this.intensity, ref dual_stereo, bits, out balance, pulses,
                   fine_quant, fine_priority, C, LM, enc, 1, this.lastCodedBands, signalBandwidth);
