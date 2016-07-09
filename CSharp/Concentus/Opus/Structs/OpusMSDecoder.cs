@@ -148,10 +148,11 @@ namespace Concentus.Structs
         {
             int s;
             int count;
-            BoxedValue<byte> toc = new BoxedValue<byte>();
+            byte toc;
             short[] size = new short[48];
             int samples = 0;
-            BoxedValue<int> packet_offset = new BoxedValue<int>();
+            int packet_offset;
+            int dummy;
 
             for (s = 0; s < nb_streams; s++)
             {
@@ -159,17 +160,17 @@ namespace Concentus.Structs
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
 
-                count = OpusPacketInfo.opus_packet_parse_impl(data, len, (s != nb_streams - 1) ? 1 : 0, toc, null,
-                                               size.GetPointer(), null, packet_offset);
+                count = OpusPacketInfo.opus_packet_parse_impl(data, len, (s != nb_streams - 1) ? 1 : 0, out toc, null,
+                                               size.GetPointer(), out dummy, out packet_offset);
                 if (count < 0)
                     return count;
 
-                tmp_samples = OpusPacketInfo.GetNumSamples(data.Data, data.Offset, packet_offset.Val, Fs);
+                tmp_samples = OpusPacketInfo.GetNumSamples(data.Data, data.Offset, packet_offset, Fs);
                 if (s != 0 && samples != tmp_samples)
                     return OpusError.OPUS_INVALID_PACKET;
                 samples = tmp_samples;
-                data = data.Point(packet_offset.Val);
-                len -= packet_offset.Val;
+                data = data.Point(packet_offset);
+                len -= packet_offset;
             }
 
             return samples;
@@ -232,12 +233,12 @@ namespace Concentus.Structs
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
-                BoxedValue<int> packet_offset = new BoxedValue<int>(0);
+                int packet_offset;
                 ret = dec.opus_decode_native(
                     data.GetPointer(data_ptr), len, buf.GetPointer(), frame_size, decode_fec,
-                    (s != this.layout.nb_streams - 1) ? 1 : 0, packet_offset, soft_clip);
-                data_ptr += packet_offset.Val;
-                len -= packet_offset.Val;
+                    (s != this.layout.nb_streams - 1) ? 1 : 0, out packet_offset, soft_clip);
+                data_ptr += packet_offset;
+                len -= packet_offset;
                 if (ret <= 0)
                 {
                     return ret;

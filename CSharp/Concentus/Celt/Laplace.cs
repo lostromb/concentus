@@ -62,10 +62,10 @@ namespace Concentus.Celt
             return Inlines.CHOP32U((ft * (int)(16384 - decay)) >> 15);
         }
 
-        internal static void ec_laplace_encode(EntropyCoder enc, BoxedValue<int> value, uint fs, int decay)
+        internal static void ec_laplace_encode(EntropyCoder enc, ref int value, uint fs, int decay)
         {
             uint fl;
-            int val = value.Val;
+            int val = value;
             fl = 0;
             if (val != 0)
             {
@@ -94,7 +94,7 @@ namespace Concentus.Celt
                     di = Inlines.IMIN(val - i, ndi_max - 1);
                     fl += (uint)(2 * di + 1 + s) * LAPLACE_MINP;
                     fs = Inlines.IMIN(LAPLACE_MINP, 32768 - fl);
-                    value.Val = (i + di + s) ^ s;
+                    value = (i + di + s) ^ s;
                 }
                 else
                 {

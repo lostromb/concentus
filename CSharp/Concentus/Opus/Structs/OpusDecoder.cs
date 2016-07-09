@@ -432,10 +432,8 @@ namespace Concentus.Structs
                 {
                     /* Call SILK decoder */
                     int first_frame = (decoded_samples == 0) ? 1 : 0;
-                    BoxedValue<int> boxed_frame_size = new BoxedValue<int>();
                     silk_ret = DecodeAPI.silk_Decode(silk_dec, this.DecControl,
-                                            lost_flag, first_frame, dec, pcm_ptr, boxed_frame_size);
-                    silk_frame_size = boxed_frame_size.Val;
+                                            lost_flag, first_frame, dec, pcm_ptr, out silk_frame_size);
                     if (silk_ret != 0)
                     {
                         if (lost_flag != 0)
@@ -643,12 +641,13 @@ namespace Concentus.Structs
 
         internal int opus_decode_native(Pointer<byte> data,
           int len, Pointer<short> pcm, int frame_size, int decode_fec,
-          int self_delimited, BoxedValue<int> packet_offset, int soft_clip)
+          int self_delimited, out int packet_offset, int soft_clip)
         {
             int i, nb_samples;
             int count, offset;
             byte toc;
             int packet_frame_size, packet_stream_channels;
+            packet_offset = 0;
             OpusBandwidth packet_bandwidth;
             OpusMode packet_mode;
             /* 48 x 2.5 ms = 120 ms */
@@ -681,13 +680,9 @@ namespace Concentus.Structs
             packet_bandwidth = OpusPacketInfo.GetBandwidth(data.Data, data.Offset);
             packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data.Data, data.Offset, this.Fs);
             packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data.Data, data.Offset);
-
-            BoxedValue<byte> boxed_toc = new BoxedValue<byte>();
-            BoxedValue<int> boxed_offset = new BoxedValue<int>();
-            count = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, boxed_toc, null,
-                                           size.GetPointer(), boxed_offset, packet_offset);
-            toc = boxed_toc.Val;
-            offset = boxed_offset.Val;
+            
+            count = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, out toc, null,
+                                           size.GetPointer(), out offset, out packet_offset);
 
             if (count < 0)
                 return count;
@@ -696,16 +691,17 @@ namespace Concentus.Structs
 
             if (decode_fec != 0)
             {
+                int dummy;
                 int duration_copy;
                 int ret;
                 /* If no FEC can be present, run the PLC (recursive call) */
                 if (frame_size < packet_frame_size || packet_mode == OpusMode.MODE_CELT_ONLY || this.mode == OpusMode.MODE_CELT_ONLY)
-                    return opus_decode_native(null, 0, pcm, frame_size, 0, 0, null, soft_clip);
+                    return opus_decode_native(null, 0, pcm, frame_size, 0, 0, out dummy, soft_clip);
                 /* Otherwise, run the PLC on everything except the size for which we might have FEC */
                 duration_copy = this.last_packet_duration;
                 if (frame_size - packet_frame_size != 0)
                 {
-                    ret = opus_decode_native(null, 0, pcm, frame_size - packet_frame_size, 0, 0, null, soft_clip);
+                    ret = opus_decode_native(null, 0, pcm, frame_size - packet_frame_size, 0, 0, out dummy, soft_clip);
                     if (ret < 0)
                     {
                         this.last_packet_duration = duration_copy;
@@ -782,7 +778,8 @@ namespace Concentus.Structs
 
             try
             {
-                int ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, out_pcm.GetPointer(out_pcm_offset), frame_size, decode_fec ? 1 : 0, 0, null, 0);
+                int dummy;
+                int ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, out_pcm.GetPointer(out_pcm_offset), frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
 
                 if (ret < 0)
                 {
@@ -842,7 +839,8 @@ namespace Concentus.Structs
 
             try
             {
-                ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, output.GetPointer(), frame_size, decode_fec ? 1 : 0, 0, null, 0);
+                int dummy;
+                ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, output.GetPointer(), frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
 
                 if (ret < 0)
                 {

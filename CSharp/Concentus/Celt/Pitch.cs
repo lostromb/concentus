@@ -208,7 +208,7 @@ namespace Concentus.Celt
 
         // Fixme: remove pointers and optimize
         internal static void pitch_search(Pointer<int> x_lp, int[] y,
-                  int len, int max_pitch, BoxedValue<int> pitch)
+                  int len, int max_pitch, out int pitch)
         {
             int i, j;
             int lag;
@@ -297,39 +297,36 @@ namespace Concentus.Celt
                 offset = 0;
             }
 
-            pitch.Val = 2 * best_pitch[0] - offset;
+            pitch = 2 * best_pitch[0] - offset;
         }
 
         private static readonly int[] second_check = { 0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2 };
 
         internal static int remove_doubling(int[] x, int maxperiod, int minperiod,
-            int N, BoxedValue<int> T0_, int prev_period, int prev_gain)
+            int N, ref int T0_, int prev_period, int prev_gain)
         {
             int k, i, T, T0;
             int g, g0;
             int pg;
-            int yy;
-            BoxedValue<int> xx = new BoxedValue<int>();
-            BoxedValue<int> xy = new BoxedValue<int>();
-            BoxedValue<int> xy2 = new BoxedValue<int>();
+            int yy, xx, xy, xy2;
             int[] xcorr = new int[3];
             int best_xy, best_yy;
             int offset;
             int minperiod0 = minperiod;
             maxperiod /= 2;
             minperiod /= 2;
-            T0_.Val /= 2;
+            T0_ /= 2;
             prev_period /= 2;
             N /= 2;
             int x_ptr = maxperiod;
-            if (T0_.Val >= maxperiod)
-                T0_.Val = maxperiod - 1;
+            if (T0_ >= maxperiod)
+                T0_ = maxperiod - 1;
 
-            T = T0 = T0_.Val;
+            T = T0 = T0_;
             int[] yy_lookup = new int[maxperiod + 1];
-            Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, xx, xy);
-            yy_lookup[0] = xx.Val;
-            yy = xx.Val;
+            Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, out xx, out xy);
+            yy_lookup[0] = xx;
+            yy = xx;
             for (i = 1; i <= maxperiod; i++)
             {
                 int xi = x_ptr - i;
@@ -337,16 +334,16 @@ namespace Concentus.Celt
                 yy_lookup[i] = Inlines.MAX32(0, yy);
             }
             yy = yy_lookup[T0];
-            best_xy = xy.Val;
+            best_xy = xy;
             best_yy = yy;
 
             {
                 int x2y2;
                 int sh, t;
-                x2y2 = 1 + Inlines.HALF32(Inlines.MULT32_32_Q31(xx.Val, yy));
+                x2y2 = 1 + Inlines.HALF32(Inlines.MULT32_32_Q31(xx, yy));
                 sh = Inlines.celt_ilog2(x2y2) >> 1;
                 t = Inlines.VSHR32(x2y2, 2 * (sh - 7));
-                g = (Inlines.VSHR32(Inlines.MULT16_32_Q15(Inlines.celt_rsqrt_norm(t), xy.Val), sh + 1));
+                g = (Inlines.VSHR32(Inlines.MULT16_32_Q15(Inlines.celt_rsqrt_norm(t), xy), sh + 1));
                 g0 = g;
             }
 
@@ -376,25 +373,25 @@ namespace Concentus.Celt
                     T1b = Inlines.celt_udiv(2 * second_check[k] * T0 + k, 2 * k);
                 }
                 
-                Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, xy, xy2);
+                Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, out xy, out xy2);
 
-                xy.Val += xy2.Val;
+                xy += xy2;
                 yy = yy_lookup[T1] + yy_lookup[T1b];
 
                 {
                     int x2y2;
                     int sh, t;
-                    x2y2 = 1 + Inlines.MULT32_32_Q31(xx.Val, yy);
+                    x2y2 = 1 + Inlines.MULT32_32_Q31(xx, yy);
                     sh = Inlines.celt_ilog2(x2y2) >> 1;
                     t = Inlines.VSHR32(x2y2, 2 * (sh - 7));
-                    g1 = (Inlines.VSHR32(Inlines.MULT16_32_Q15(Inlines.celt_rsqrt_norm(t), xy.Val), sh + 1));
+                    g1 = (Inlines.VSHR32(Inlines.MULT16_32_Q15(Inlines.celt_rsqrt_norm(t), xy), sh + 1));
                 }
 
                 if (Inlines.abs(T1 - prev_period) <= 1)
                     cont = prev_gain;
                 else if (Inlines.abs(T1 - prev_period) <= 2 && 5 * k * k < T0)
                 {
-                    cont = Inlines.HALF16(prev_gain); // opus bug: this was half32
+                    cont = Inlines.HALF16(prev_gain);
                 }
                 else
                 {
@@ -414,7 +411,7 @@ namespace Concentus.Celt
                 }
                 if (g1 > thresh)
                 {
-                    best_xy = xy.Val;
+                    best_xy = xy;
                     best_yy = yy;
                     T = T1;
                     g = g1;
@@ -454,11 +451,11 @@ namespace Concentus.Celt
                 pg = g;
             }
 
-            T0_.Val = 2 * T + offset;
+            T0_ = 2 * T + offset;
 
-            if (T0_.Val < minperiod0)
+            if (T0_ < minperiod0)
             {
-                T0_.Val = minperiod0;
+                T0_ = minperiod0;
             }
 
             return pg;

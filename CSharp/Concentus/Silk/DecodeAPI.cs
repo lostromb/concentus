@@ -74,7 +74,7 @@ namespace Concentus.Silk
             int newPacketFlag,      /* I    Indicates first decoder call for this packet    */
             EntropyCoder psRangeDec,        /* I/O  Compressor data structure                       */
             Pointer<short> samplesOut,        /* O    Decoded output speech vector                    */
-            BoxedValue<int> nSamplesOut       /* O    Number of samples decoded                       */
+            out int nSamplesOut       /* O    Number of samples decoded                       */
         )
         {
             int i, n, decode_only_middle = 0, ret = SilkError.SILK_NO_ERROR;
@@ -90,6 +90,7 @@ namespace Concentus.Silk
             int has_side;
             int stereo_to_mono;
             int delay_stack_alloc;
+            nSamplesOut = 0;
 
             Inlines.OpusAssert(decControl.nChannelsInternal == 1 || decControl.nChannelsInternal == 2);
 
@@ -364,12 +365,12 @@ namespace Concentus.Silk
             }
 
             /* Number of output samples */
-            nSamplesOut.Val = Inlines.silk_DIV32(nSamplesOutDec.Val * decControl.API_sampleRate, Inlines.silk_SMULBB(channel_state[0].fs_kHz, 1000));
+            nSamplesOut = Inlines.silk_DIV32(nSamplesOutDec.Val * decControl.API_sampleRate, Inlines.silk_SMULBB(channel_state[0].fs_kHz, 1000));
 
             /* Set up pointers to temp buffers */
             if (decControl.nChannelsAPI == 2)
             {
-                samplesOut2_tmp = Pointer.Malloc<short>(nSamplesOut.Val);
+                samplesOut2_tmp = Pointer.Malloc<short>(nSamplesOut);
                 resample_out_ptr = samplesOut2_tmp;
             }
             else {
@@ -392,7 +393,7 @@ namespace Concentus.Silk
                 /* Interleave if stereo output and stereo stream */
                 if (decControl.nChannelsAPI == 2)
                 {
-                    for (i = 0; i < nSamplesOut.Val; i++)
+                    for (i = 0; i < nSamplesOut; i++)
                     {
                         samplesOut[n + 2 * i] = resample_out_ptr[i];
                     }
@@ -408,13 +409,13 @@ namespace Concentus.Silk
                        we weren't doing collapsing when switching to mono */
                     ret += Resampler.silk_resampler(channel_state[1].resampler_state, resample_out_ptr, samplesOut1_tmp[0].Point(1), nSamplesOutDec.Val);
 
-                    for (i = 0; i < nSamplesOut.Val; i++)
+                    for (i = 0; i < nSamplesOut; i++)
                     {
                         samplesOut[1 + 2 * i] = resample_out_ptr[i];
                     }
                 }
                 else {
-                    for (i = 0; i < nSamplesOut.Val; i++)
+                    for (i = 0; i < nSamplesOut; i++)
                     {
                         samplesOut[1 + 2 * i] = samplesOut[0 + 2 * i];
                     }

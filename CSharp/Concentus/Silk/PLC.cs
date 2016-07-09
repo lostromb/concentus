@@ -187,10 +187,10 @@ namespace Concentus.Silk
         /// <param name="subfr_length">I</param>
         /// <param name="nb_subfr">I</param>
         internal static void silk_PLC_energy(
-            BoxedValue<int> energy1,
-            BoxedValue<int> shift1,
-            BoxedValue<int> energy2,
-            BoxedValue<int> shift2,
+            out int energy1,
+            out int shift1,
+            out int energy2,
+            out int shift2,
             int[] exc_Q14,
             int[] prevGain_Q10,
             int subfr_length,
@@ -213,13 +213,8 @@ namespace Concentus.Silk
             }
 
             /* Find the subframe with lowest energy of the last two and use that as random noise generator */
-            int tmp_e, tmp_shift;
-            SumSqrShift.silk_sum_sqr_shift(out tmp_e, out tmp_shift, exc_buf, subfr_length);
-            energy1.Val = tmp_e;
-            shift1.Val = tmp_shift;
-            SumSqrShift.silk_sum_sqr_shift(out tmp_e, out tmp_shift, exc_buf.GetPointer(subfr_length), subfr_length);
-            energy2.Val = tmp_e;
-            shift2.Val = tmp_shift;
+            SumSqrShift.silk_sum_sqr_shift(out energy1, out shift1, exc_buf, subfr_length);
+            SumSqrShift.silk_sum_sqr_shift(out energy2, out shift2, exc_buf.GetPointer(subfr_length), subfr_length);
         }
 
         internal static void silk_PLC_conceal(
@@ -231,10 +226,7 @@ namespace Concentus.Silk
             int i, j, k;
             int lag, idx, sLTP_buf_idx;
             int rand_seed, harm_Gain_Q15, rand_Gain_Q15, inv_gain_Q30;
-            BoxedValue<int> energy1 = new BoxedValue<int>();
-            BoxedValue<int> energy2 = new BoxedValue<int>();
-            BoxedValue<int> shift1 = new BoxedValue<int>();
-            BoxedValue<int> shift2 = new BoxedValue<int>();
+            int energy1, energy2, shift1, shift2;
             Pointer<int> rand_ptr;
             Pointer<int> pred_lag_ptr;
             int LPC_pred_Q10, LTP_pred_Q12;
@@ -254,9 +246,9 @@ namespace Concentus.Silk
                 Arrays.MemSet<short>(psPLC.prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             }
 
-            silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
+            silk_PLC_energy(out energy1, out shift1, out energy2, out shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
 
-            if (Inlines.silk_RSHIFT(energy1.Val, shift2.Val) < Inlines.silk_RSHIFT(energy2.Val, shift1.Val))
+            if (Inlines.silk_RSHIFT(energy1, shift2) < Inlines.silk_RSHIFT(energy2, shift1))
             {
                 /* First sub-frame has lowest energy */
                 rand_ptr = psDec.exc_Q14.GetPointer(Inlines.silk_max_int(0, (psPLC.nb_subfr - 1) * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE));

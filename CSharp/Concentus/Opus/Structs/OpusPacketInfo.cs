@@ -82,12 +82,12 @@ namespace Concentus.Structs
             // Find the number of frames first
             int numFrames = GetNumFrames(packet, packet_offset, len);
 
-            BoxedValue<int> payload_offset = new BoxedValue<int>();
-            BoxedValue<byte> out_toc = new BoxedValue<byte>();
+            int payload_offset;
+            byte out_toc;
             Pointer<Pointer<byte>> frames = Pointer.Malloc<Pointer<byte>>(numFrames);
             Pointer<short> size = Pointer.Malloc<short>(numFrames);
-            BoxedValue<int> packetOffset = new BoxedValue<int>();
-            int error = opus_packet_parse_impl(packet.GetPointer(packet_offset), len, 0, out_toc, frames, size, payload_offset, packetOffset);
+            int packetOffset;
+            int error = opus_packet_parse_impl(packet.GetPointer(packet_offset), len, 0, out out_toc, frames, size, out payload_offset, out packetOffset);
             if (error < 0)
             {
                 throw new OpusException("An error occurred while parsing the packet", error);
@@ -102,7 +102,7 @@ namespace Concentus.Structs
                 copiedFrames.Add(nextFrame);
             }
 
-            return new OpusPacketInfo(out_toc.Val, copiedFrames, payload_offset.Val);
+            return new OpusPacketInfo(out_toc, copiedFrames, payload_offset);
         }
         
         /// <summary>
@@ -289,9 +289,9 @@ namespace Concentus.Structs
         }
 
         internal static int opus_packet_parse_impl(Pointer<byte> data, int len,
-              int self_delimited, BoxedValue<byte> out_toc,
+              int self_delimited, out byte out_toc,
               Pointer<Pointer<byte>> frames, Pointer<short> size,
-              BoxedValue<int> payload_offset, BoxedValue<int> packet_offset)
+              out int payload_offset, out int packet_offset)
         {
             int i, bytes;
             int count;
@@ -301,6 +301,9 @@ namespace Concentus.Structs
             int last_size;
             int pad = 0;
             Pointer<byte> data0 = data;
+            out_toc = 0;
+            payload_offset = 0;
+            packet_offset = 0;
 
             if (size == null || len < 0)
                 return OpusError.OPUS_BAD_ARG;
@@ -438,8 +441,7 @@ namespace Concentus.Structs
                 size[count - 1] = (short)last_size;
             }
 
-            if (payload_offset != null)
-                payload_offset.Val = (int)(data.Offset - data0.Offset);
+            payload_offset = (int)(data.Offset - data0.Offset);
 
             for (i = 0; i < count; i++)
             {
@@ -448,22 +450,21 @@ namespace Concentus.Structs
                 data = data.Point(size[i]);
             }
 
-            if (packet_offset != null)
-                packet_offset.Val = pad + (int)(data.Offset - data0.Offset);
+            packet_offset = pad + (int)(data.Offset - data0.Offset);
 
-            if (out_toc != null)
-                out_toc.Val = toc;
+            out_toc = toc;
 
             return count;
         }
 
         // used internally
         internal static int opus_packet_parse(Pointer<byte> data, int len,
-              BoxedValue<byte> out_toc, Pointer<Pointer<byte>> frames,
-              Pointer<short> size, BoxedValue<int> payload_offset)
+              out byte out_toc, Pointer<Pointer<byte>> frames,
+              Pointer<short> size, out int payload_offset)
         {
-            return OpusPacketInfo.opus_packet_parse_impl(data, len, 0, out_toc,
-                                          frames, size, payload_offset, null);
+            int dummy;
+            return OpusPacketInfo.opus_packet_parse_impl(data, len, 0, out out_toc,
+                                          frames, size, out payload_offset, out dummy);
         }
     }
 }

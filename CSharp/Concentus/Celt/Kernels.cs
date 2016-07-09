@@ -333,7 +333,7 @@ namespace Concentus.Celt
             return xy;
         }
         
-        internal static void dual_inner_prod(int[] x, int x_ptr, int[] y01,int y01_ptr, int[] y02, int y02_ptr, int N, BoxedValue<int> xy1, BoxedValue<int> xy2)
+        internal static void dual_inner_prod(int[] x, int x_ptr, int[] y01,int y01_ptr, int[] y02, int y02_ptr, int N, out int xy1, out int xy2)
         {
             int i;
             int xy01 = 0;
@@ -343,8 +343,8 @@ namespace Concentus.Celt
                 xy01 = Inlines.MAC16_16(xy01, x[x_ptr + i], y01[y01_ptr + i]);
                 xy02 = Inlines.MAC16_16(xy02, x[x_ptr + i], y02[y02_ptr + i]);
             }
-            xy1.Val = xy01;
-            xy2.Val = xy02;
+            xy1 = xy01;
+            xy2 = xy02;
         }
     }
 }

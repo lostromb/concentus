@@ -140,9 +140,7 @@ namespace Concentus.Celt
                     {
                         int pi;
                         pi = 2 * Inlines.IMIN(i, 20);
-                        BoxedValue<int> qi_Boxed = new BoxedValue<int>(qi);
-                        Laplace.ec_laplace_encode(enc, qi_Boxed, (((uint)prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
-                        qi = qi_Boxed.Val;
+                        Laplace.ec_laplace_encode(enc, ref qi, (((uint)prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
                     }
                     else if (budget - tell >= 2)
                     {
@@ -172,7 +170,7 @@ namespace Concentus.Celt
         internal static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
               int[][] eBands, int[][] oldEBands, uint budget,
               int[][] error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
-              int force_intra, BoxedValue<int> delayedIntra, int two_pass, int loss_rate, int lfe)
+              int force_intra, ref int delayedIntra, int two_pass, int loss_rate, int lfe)
         {
             int intra;
             int max_decay;
@@ -185,8 +183,8 @@ namespace Concentus.Celt
             int new_distortion;
 
 
-            intra = (force_intra != 0 || (two_pass == 0 && delayedIntra.Val > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
-            intra_bias = (int)((budget * delayedIntra.Val * loss_rate) / (C * 512));
+            intra = (force_intra != 0 || (two_pass == 0 && delayedIntra > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
+            intra_bias = (int)((budget * delayedIntra * loss_rate) / (C * 512));
             new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
 
             tell = (uint)enc.tell();
@@ -279,11 +277,11 @@ namespace Concentus.Celt
 
             if (intra != 0)
             {
-                delayedIntra.Val = new_distortion;
+                delayedIntra = new_distortion;
             }
             else
             {
-                delayedIntra.Val = Inlines.ADD32(Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(pred_coef[LM], pred_coef[LM]), delayedIntra.Val),
+                delayedIntra = Inlines.ADD32(Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(pred_coef[LM], pred_coef[LM]), delayedIntra),
                     new_distortion);
             }
         }

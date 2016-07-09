@@ -163,7 +163,7 @@ namespace Concentus.Celt
         }
 
         internal static int transient_analysis(int[][] input, int len, int C,
-                                  BoxedValue<int> tf_estimate, BoxedValue<int> tf_chan)
+                                  out int tf_estimate, out int tf_chan)
         {
             int i;
             int[] tmp;
@@ -173,7 +173,7 @@ namespace Concentus.Celt
             int c;
             int tf_max;
             int len2;
-
+            tf_chan = 0;
             tmp = new int[len];
 
             len2 = len / 2;
@@ -258,7 +258,7 @@ namespace Concentus.Celt
                 unmask = 64 * unmask * 4 / (6 * (len2 - 17));
                 if (unmask > mask_metric)
                 {
-                    tf_chan.Val = c;
+                    tf_chan = c;
                     mask_metric = unmask;
                 }
             }
@@ -267,7 +267,7 @@ namespace Concentus.Celt
             /* Arbitrary metric for VBR boost */
             tf_max = Inlines.MAX16(0, (Inlines.celt_sqrt(27 * mask_metric) - 42));
             /* *tf_estimate = 1 + Inlines.MIN16(1, sqrt(Inlines.MAX16(0, tf_max-30))/20); */
-            tf_estimate.Val = (Inlines.celt_sqrt(Inlines.MAX32(0, Inlines.SHL32(Inlines.MULT16_16(((short)(0.5 + (0.0069f) * (((int)1) << (14))))/*Inlines.QCONST16(0.0069f, 14)*/, Inlines.MIN16(163, tf_max)), 14) - ((int)(0.5 + (0.139f) * (((int)1) << (28))))/*Inlines.QCONST32(0.139f, 28)*/)));
+            tf_estimate = (Inlines.celt_sqrt(Inlines.MAX32(0, Inlines.SHL32(Inlines.MULT16_16(((short)(0.5 + (0.0069f) * (((int)1) << (14))))/*Inlines.QCONST16(0.0069f, 14)*/, Inlines.MIN16(163, tf_max)), 14) - ((int)(0.5 + (0.139f) * (((int)1) << (28))))/*Inlines.QCONST32(0.139f, 28)*/)));
             /*printf("%d %f\n", tf_max, mask_metric);*/
 
 #if FUZZING
@@ -378,7 +378,7 @@ namespace Concentus.Celt
         }
 
         internal static void celt_preemphasis(Pointer<int> pcmp, Pointer<int> inp,
-                                int N, int CC, int upsample, int[] coef, BoxedValue<int> mem, int clip)
+                                int N, int CC, int upsample, int[] coef, ref int mem, int clip)
         {
             int i;
             int coef0;
@@ -386,7 +386,7 @@ namespace Concentus.Celt
             int Nu;
 
             coef0 = coef[0];
-            m = mem.Val;
+            m = mem;
 
             /* Fast path for the normal 48kHz case and no clipping */
             if (coef[1] == 0 && upsample == 1 && clip == 0)
@@ -398,7 +398,7 @@ namespace Concentus.Celt
                     inp[i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                     m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
                 }
-                mem.Val = m;
+                mem = m;
                 return;
             }
 
@@ -420,7 +420,7 @@ namespace Concentus.Celt
                 m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
             }
 
-            mem.Val = m;
+            mem = m;
         }
 
         internal static void celt_preemphasis(Pointer<short> pcmp, Pointer<int> inp,
@@ -488,7 +488,7 @@ namespace Concentus.Celt
 
         internal static int tf_analysis(CeltMode m, int len, int isTransient,
               int[] tf_res, int lambda, int[][] X, int N0, int LM,
-              BoxedValue<int> tf_sum, int tf_estimate, int tf_chan)
+              out int tf_sum, int tf_estimate, int tf_chan)
         {
             int i;
             int[] metric;
@@ -513,7 +513,7 @@ namespace Concentus.Celt
             path0 = new int[len];
             path1 = new int[len];
 
-            tf_sum.Val = 0;
+            tf_sum = 0;
             for (i = 0; i < len; i++)
             {
                 int k, N;
@@ -568,7 +568,7 @@ namespace Concentus.Celt
                     metric[i] = 2 * best_level;
                 else
                     metric[i] = -2 * best_level;
-                tf_sum.Val += (isTransient != 0 ? LM : 0) - metric[i] / 2;
+                tf_sum += (isTransient != 0 ? LM : 0) - metric[i] / 2;
                 /* For bands that can't be split to -1, set the metric to the half-way point to avoid
                    biasing the decision */
                 if (narrow != 0 && (metric[i] == 0 || metric[i] == -2 * LM))
@@ -697,7 +697,7 @@ namespace Concentus.Celt
 
         internal static int alloc_trim_analysis(CeltMode m, int[][] X,
               int[][] bandLogE, int end, int LM, int C,
-              AnalysisInfo analysis, BoxedValue<int> stereo_saving, int tf_estimate,
+              AnalysisInfo analysis, ref int stereo_saving, int tf_estimate,
               int intensity, int surround_trim)
         {
             int i;
@@ -739,7 +739,7 @@ namespace Concentus.Celt
                 logXC2 = (Inlines.PSHR32(logXC2 - ((short)(0.5 + (6.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(6.0f, CeltConstants.DB_SHIFT)*/, CeltConstants.DB_SHIFT - 8));
 
                 trim += Inlines.MAX16((0 - ((short)(0.5 + (4.0f) * (((int)1) << (8))))/*Inlines.QCONST16(4.0f, 8)*/), Inlines.MULT16_16_Q15(((short)(0.5 + (.75f) * (((int)1) << (15))))/*Inlines.QCONST16(.75f, 15)*/, logXC));
-                stereo_saving.Val = Inlines.MIN16((stereo_saving.Val + ((short)(0.5 + (0.25f) * (((int)1) << (8))))/*Inlines.QCONST16(0.25f, 8)*/), (0 - Inlines.HALF16(logXC2)));
+                stereo_saving = Inlines.MIN16((stereo_saving + ((short)(0.5 + (0.25f) * (((int)1) << (8))))/*Inlines.QCONST16(0.25f, 8)*/), (0 - Inlines.HALF16(logXC2)));
             }
 
             /* Estimate spectral tilt */
@@ -872,7 +872,7 @@ namespace Concentus.Celt
         internal static int dynalloc_analysis(int[][] bandLogE, int[][] bandLogE2,
               int nbEBands, int start, int end, int C, int[] offsets, int lsb_depth, short[] logN,
               int isTransient, int vbr, int constrained_vbr, short[] eBands, int LM,
-              int effectiveBytes, BoxedValue<int> tot_boost_, int lfe, int[] surround_dynalloc)
+              int effectiveBytes, out int tot_boost_, int lfe, int[] surround_dynalloc)
         {
             int i, c;
             int tot_boost = 0;
@@ -1001,7 +1001,7 @@ namespace Concentus.Celt
                 }
             }
 
-            tot_boost_.Val = tot_boost;
+            tot_boost_ = tot_boost;
 
             return maxDepth;
         }
@@ -1194,16 +1194,16 @@ namespace Concentus.Celt
 
         internal static int celt_plc_pitch_search(int[][] decode_mem, int C)
         {
-            BoxedValue<int> pitch_index = new BoxedValue<int>();
+            int pitch_index;
             int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
             Pitch.pitch_downsample(decode_mem, lp_pitch_buf,
                   CeltConstants.DECODE_BUFFER_SIZE, C);
             Pitch.pitch_search(lp_pitch_buf.GetPointer(CeltConstants.PLC_PITCH_LAG_MAX >> 1), lp_pitch_buf,
                   CeltConstants.DECODE_BUFFER_SIZE - CeltConstants.PLC_PITCH_LAG_MAX,
-                  CeltConstants.PLC_PITCH_LAG_MAX - CeltConstants.PLC_PITCH_LAG_MIN, pitch_index);
-            pitch_index.Val = CeltConstants.PLC_PITCH_LAG_MAX - pitch_index.Val;
+                  CeltConstants.PLC_PITCH_LAG_MAX - CeltConstants.PLC_PITCH_LAG_MIN, out pitch_index);
+            pitch_index = CeltConstants.PLC_PITCH_LAG_MAX - pitch_index;
 
-            return pitch_index.Val;
+            return pitch_index;
         }
 
         internal static int resampling_factor(int rate)

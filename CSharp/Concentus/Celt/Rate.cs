@@ -95,8 +95,8 @@ namespace Concentus.Celt
         }
 
         internal static int interp_bits2pulses(CeltMode m, int start, int end, int skip_start,
-              int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, BoxedValue<int> _balance,
-              int skip_rsv, BoxedValue<int> intensity, int intensity_rsv, BoxedValue<int> dual_stereo, int dual_stereo_rsv, int[] bits,
+              int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, out int _balance,
+              int skip_rsv, ref int intensity, int intensity_rsv, ref int dual_stereo, int dual_stereo_rsv, int[] bits,
               int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
         {
             int psum;
@@ -248,20 +248,20 @@ namespace Concentus.Celt
             {
                 if (encode != 0)
                 {
-                    intensity.Val = Inlines.IMIN(intensity.Val, codedBands);
-                    ec.enc_uint((uint)(intensity.Val - start), (uint)(codedBands + 1 - start));
+                    intensity = Inlines.IMIN(intensity, codedBands);
+                    ec.enc_uint((uint)(intensity - start), (uint)(codedBands + 1 - start));
                 }
                 else
                 {
-                    intensity.Val = start + (int)ec.dec_uint((uint)(codedBands + 1 - start));
+                    intensity = start + (int)ec.dec_uint((uint)(codedBands + 1 - start));
                 }
             }
             else
             {
-                intensity.Val = 0;
+                intensity = 0;
             }
 
-            if (intensity.Val <= start)
+            if (intensity <= start)
             {
                 total += dual_stereo_rsv;
                 dual_stereo_rsv = 0;
@@ -270,16 +270,16 @@ namespace Concentus.Celt
             {
                 if (encode != 0)
                 {
-                    ec.enc_bit_logp(dual_stereo.Val, 1);
+                    ec.enc_bit_logp(dual_stereo, 1);
                 }
                 else
                 {
-                    dual_stereo.Val = ec.dec_bit_logp(1);
+                    dual_stereo = ec.dec_bit_logp(1);
                 }
             }
             else
             {
-                dual_stereo.Val = 0;
+                dual_stereo = 0;
             }
 
             /* Allocate the remaining bits */
@@ -315,7 +315,7 @@ namespace Concentus.Celt
                     bits[j] = bit - excess;
 
                     /* Compensate for the extra DoF in stereo */
-                    den = (C * N + ((C == 2 && N > 2 && (dual_stereo.Val == 0) && j < intensity.Val) ? 1 : 0));
+                    den = (C * N + ((C == 2 && N > 2 && (dual_stereo == 0) && j < intensity) ? 1 : 0));
 
                     NClogN = den * (m.logN[j] + logM);
 
@@ -381,7 +381,7 @@ namespace Concentus.Celt
             }
             /* Save any remaining bits over the cap for the rebalancing in
                 quant_all_bands(). */
-            _balance.Val = balance;
+            _balance = balance;
 
             /* The skipped bands use all their bits for fine energy. */
             for (; j < end; j++)
@@ -395,8 +395,8 @@ namespace Concentus.Celt
             return codedBands;
         }
 
-        internal static int compute_allocation(CeltMode m, int start, int end, int[] offsets, int[] cap, int alloc_trim, BoxedValue<int> intensity, BoxedValue<int> dual_stereo,
-              int total, BoxedValue<int> balance, int[] pulses, int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
+        internal static int compute_allocation(CeltMode m, int start, int end, int[] offsets, int[] cap, int alloc_trim, ref int intensity, ref int dual_stereo,
+              int total, out int balance, int[] pulses, int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
         {
             int lo, hi, len, j;
             int codedBands;
@@ -513,7 +513,7 @@ namespace Concentus.Celt
             }
 
             codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
-                  total, balance, skip_rsv, intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
+                  total, out balance, skip_rsv, ref intensity, intensity_rsv, ref dual_stereo, dual_stereo_rsv,
                   pulses, ebits, fine_priority, C, LM, ec, encode, prev, signalBandwidth);
 
             return codedBands;

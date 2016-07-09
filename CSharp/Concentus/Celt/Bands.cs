@@ -375,21 +375,20 @@ namespace Concentus.Celt
         static void stereo_merge(Pointer<int> X, Pointer<int> Y, int mid, int N)
         {
             int j;
-            BoxedValue<int> xp = new BoxedValue<int>();
-            BoxedValue<int> side = new BoxedValue<int>();
+            int xp, side;
             int El, Er;
             int mid2;
             int kl, kr;
             int t, lgain, rgain;
 
             /* Compute the norm of X+Y and X-Y as |X|^2 + |Y|^2 +/- sum(xy) */
-            Kernels.dual_inner_prod(Y.Data, Y.Offset, X.Data, X.Offset, Y.Data, Y.Offset, N, xp, side);
+            Kernels.dual_inner_prod(Y.Data, Y.Offset, X.Data, X.Offset, Y.Data, Y.Offset, N, out xp, out side);
             /* Compensating for the mid normalization */
-            xp.Val = Inlines.MULT16_32_Q15(mid, xp.Val);
+            xp = Inlines.MULT16_32_Q15(mid, xp);
             /* mid and side are in Q15, not Q14 like X and Y */
             mid2 = Inlines.SHR16(mid, 1); // opus bug: was SHR32
-            El = Inlines.MULT16_16(mid2, mid2) + side.Val - (2 * xp.Val);
-            Er = Inlines.MULT16_16(mid2, mid2) + side.Val + (2 * xp.Val);
+            El = Inlines.MULT16_16(mid2, mid2) + side - (2 * xp);
+            Er = Inlines.MULT16_16(mid2, mid2) + side + (2 * xp);
             if (Er < ((int)(0.5 + (6e-4f) * (((int)1) << (28))))/*Inlines.QCONST32(6e-4f, 28)*/ || El < ((int)(0.5 + (6e-4f) * (((int)1) << (28))))/*Inlines.QCONST32(6e-4f, 28)*/)
             {
                 X.MemCopyTo(Y, N);
@@ -420,8 +419,8 @@ namespace Concentus.Celt
         }
 
         /* Decide whether we should spread the pulses in the current frame */
-        internal static int spreading_decision(CeltMode m, int[][] X, BoxedValue<int> average,
-              int last_decision, BoxedValue<int> hf_average, BoxedValue<int> tapset_decision, int update_hf,
+        internal static int spreading_decision(CeltMode m, int[][] X, ref int average,
+              int last_decision, ref int hf_average, ref int tapset_decision, int update_hf,
               int end, int C, int M)
         {
             int i, c;
@@ -482,28 +481,28 @@ namespace Concentus.Celt
                     hf_sum = Inlines.celt_udiv(hf_sum, C * (4 - m.nbEBands + end));
                 }
 
-                hf_average.Val = (hf_average.Val + hf_sum) >> 1;
-                hf_sum = hf_average.Val;
+                hf_average = (hf_average + hf_sum) >> 1;
+                hf_sum = hf_average;
 
-                if (tapset_decision.Val == 2)
+                if (tapset_decision == 2)
                 {
                     hf_sum += 4;
                 }
-                else if (tapset_decision.Val == 0)
+                else if (tapset_decision == 0)
                 {
                     hf_sum -= 4;
                 }
                 if (hf_sum > 22)
                 {
-                    tapset_decision.Val = 2;
+                    tapset_decision = 2;
                 }
                 else if (hf_sum > 18)
                 {
-                    tapset_decision.Val = 1;
+                    tapset_decision = 1;
                 }
                 else
                 {
-                    tapset_decision.Val = 0;
+                    tapset_decision = 0;
                 }
             }
 
@@ -512,8 +511,8 @@ namespace Concentus.Celt
             sum = Inlines.celt_udiv(sum, nbBands);
 
             /* Recursive averaging */
-            sum = (sum + average.Val) >> 1;
-            average.Val = sum;
+            sum = (sum + average) >> 1;
+            average = sum;
 
             /* Hysteresis */
             sum = (3 * sum + (((3 - last_decision) << 7) + 64) + 2) >> 2;
@@ -692,9 +691,9 @@ namespace Concentus.Celt
         };
 
         internal static void compute_theta(band_ctx ctx, split_ctx sctx,
-               Pointer<int> X, Pointer<int> Y, int N, BoxedValue<int> b, int B, int B0,
+               Pointer<int> X, Pointer<int> Y, int N, ref int b, int B, int B0,
               int LM,
-              int stereo, BoxedValue<int> fill)
+              int stereo, ref int fill)
         {
             int qn;
             int itheta = 0;
@@ -722,7 +721,7 @@ namespace Concentus.Celt
             /* Decide on the resolution to give to the split parameter theta */
             pulse_cap = m.logN[i] + LM * (1 << EntropyCoder.BITRES);
             offset = (pulse_cap >> 1) - (stereo != 0 && N == 2 ? CeltConstants.QTHETA_OFFSET_TWOPHASE : CeltConstants.QTHETA_OFFSET);
-            qn = compute_qn(N, b.Val, offset, pulse_cap, stereo);
+            qn = compute_qn(N, b, offset, pulse_cap, stereo);
             if (stereo != 0 && i >= intensity)
             {
                 qn = 1;
@@ -866,7 +865,7 @@ namespace Concentus.Celt
                     }
                     intensity_stereo(m, X, Y, bandE, i, N);
                 }
-                if (b.Val > 2 << EntropyCoder.BITRES && ctx.remaining_bits > 2 << EntropyCoder.BITRES)
+                if (b > 2 << EntropyCoder.BITRES && ctx.remaining_bits > 2 << EntropyCoder.BITRES)
                 {
                     if (encode != 0)
                     {
@@ -882,20 +881,20 @@ namespace Concentus.Celt
                 itheta = 0;
             }
             qalloc = (int)ec.tell_frac() - tell;
-            b.Val -= qalloc;
+            b -= qalloc;
 
             if (itheta == 0)
             {
                 imid = 32767;
                 iside = 0;
-                fill.Val &= (1 << B) - 1;
+                fill &= (1 << B) - 1;
                 delta = -16384;
             }
             else if (itheta == 16384)
             {
                 imid = 0;
                 iside = 32767;
-                fill.Val &= ((1 << B) - 1) << B;
+                fill &= ((1 << B) - 1) << B;
                 delta = 16384;
             }
             else {
@@ -1008,12 +1007,8 @@ namespace Concentus.Celt
                 }
 
                 B = (B + 1) >> 1;
-
-                BoxedValue<int> boxed_b = new BoxedValue<int>(b);
-                BoxedValue<int> boxed_fill = new BoxedValue<int>(fill);
-                compute_theta(ctx, sctx, X, Y, N, boxed_b, B, B0, LM, 0, boxed_fill);
-                b = boxed_b.Val;
-                fill = boxed_fill.Val;
+                
+                compute_theta(ctx, sctx, X, Y, N, ref b, B, B0, LM, 0, ref fill);
 
                 imid = sctx.imid;
                 iside = sctx.iside;
@@ -1306,13 +1301,8 @@ namespace Concentus.Celt
             }
 
             orig_fill = fill;
-
-            BoxedValue<int> boxed_b = new BoxedValue<int>(b);
-            BoxedValue<int> boxed_fill = new BoxedValue<int>(fill);
-            compute_theta(ctx, sctx, X, Y, N, boxed_b, B, B,
-                  LM, 1, boxed_fill);
-            b = boxed_b.Val;
-            fill = boxed_fill.Val;
+            
+            compute_theta(ctx, sctx, X, Y, N, ref b, B, B, LM, 1, ref fill);
 
             inv = sctx.inv;
             imid = sctx.imid;
@@ -1450,7 +1440,7 @@ namespace Concentus.Celt
               int[][] bandE, int[] pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, int[] tf_res, int total_bits,
               int balance, EntropyCoder ec, int LM, int codedBands,
-              BoxedValue<uint> seed)
+              ref uint seed)
         {
             int i;
             int remaining_bits;
@@ -1488,7 +1478,7 @@ namespace Concentus.Celt
             ctx.encode = encode;
             ctx.intensity = intensity;
             ctx.m = m;
-            ctx.seed = seed.Val;
+            ctx.seed = seed;
             ctx.spread = spread;
             for (i = start; i < end; i++)
             {
@@ -1664,7 +1654,7 @@ namespace Concentus.Celt
                 update_lowband = (b > (N << EntropyCoder.BITRES)) ? 1 : 0;
             }
 
-            seed.Val = ctx.seed;
+            seed = ctx.seed;
         }
     }
 }

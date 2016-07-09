@@ -674,16 +674,10 @@ namespace Concentus.Celt.Structs
 
             pulses = new int[nbEBands];
             fine_priority = new int[nbEBands];
-
-            BoxedValue<int> boxed_intensity = new BoxedValue<int>(intensity);
-            BoxedValue<int> boxed_dual_stereo = new BoxedValue<int>(dual_stereo);
-            BoxedValue<int> boxed_balance = new BoxedValue<int>();
+            
             codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
-                  alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
+                  alloc_trim, ref intensity, ref dual_stereo, bits, out balance, pulses,
                   fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
-            intensity = boxed_intensity.Val;
-            dual_stereo = boxed_dual_stereo.Val;
-            balance = boxed_balance.Val;
 
             QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, C);
 
@@ -697,12 +691,10 @@ namespace Concentus.Celt.Structs
             collapse_masks = new byte[C * nbEBands];
 
             X = Arrays.InitTwoDimensionalArray<int>(C, N);   /**< Interleaved normalised MDCTs */
-
-            BoxedValue<uint> boxed_rng = new BoxedValue<uint>(this.rng);
+            
             Bands.quant_all_bands(0, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
-                  len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, boxed_rng);
-            this.rng = boxed_rng.Val;
+                  len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, ref this.rng);
 
             if (anti_collapse_rsv > 0)
             {
