@@ -50,89 +50,9 @@ using System.Runtime.CompilerServices;
 
 namespace Concentus.Structs
 {
-    /** @defgroup opus_encoder Opus Encoder
-  * @{
-  *
-  * @brief This page describes the process and functions used to encode Opus.
-  *
-  * Since Opus is a stateful codec, the encoding process starts with creating an encoder
-  * state. This can be done with:
-  *
-  * @code
-  * int          error;
-  * OpusEncoder *enc;
-  * enc = opus_encoder_create(Fs, channels, application, &error);
-  * @endcode
-  *
-  * From this point, @c enc can be used for encoding an audio stream. An encoder state
-  * @b must @b not be used for more than one stream at the same time. Similarly, the encoder
-  * state @b must @b not be re-initialized for each frame.
-  *
-  * While opus_encoder_create() allocates memory for the state, it's also possible
-  * to initialize pre-allocated memory:
-  *
-  * @code
-  * int          size;
-  * int          error;
-  * OpusEncoder *enc;
-  * size = opus_encoder_get_size(channels);
-  * enc = malloc(size);
-  * error = opus_encoder_init(enc, Fs, channels, application);
-  * @endcode
-  *
-  * where opus_encoder_get_size() returns the required size for the encoder state. Note that
-  * future versions of this code may change the size, so no assuptions should be made about it.
-  *
-  * The encoder state is always continuous in memory and only a shallow copy is sufficient
-  * to copy it (e.g. memcpy())
-  *
-  * It is possible to change some of the encoder's settings using the opus_encoder_ctl()
-  * interface. All these settings already default to the recommended value, so they should
-  * only be changed when necessary. The most common settings one may want to change are:
-  *
-  * @code
-  * opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate));
-  * opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(complexity));
-  * opus_encoder_ctl(enc, OPUS_SET_SIGNAL(signal_type));
-  * @endcode
-  *
-  * where
-  *
-  * @arg bitrate is in bits per second (b/s)
-  * @arg complexity is a value from 1 to 10, where 1 is the lowest complexity and 10 is the highest
-  * @arg signal_type is either OPUS_AUTO (default), OPUS_SIGNAL_VOICE, or OPUS_SIGNAL_MUSIC
-  *
-  * See @ref opus_encoderctls and @ref opus_genericctls for a complete list of parameters that can be set or queried. Most parameters can be set or changed at any time during a stream.
-  *
-  * To encode a frame, opus_encode() or opus_encode_float() must be called with exactly one frame (2.5, 5, 10, 20, 40 or 60 ms) of audio data:
-  * @code
-  * len = opus_encode(enc, audio_frame, frame_size, packet, max_packet);
-  * @endcode
-  *
-  * where
-  * <ul>
-  * <li>audio_frame is the audio data in opus_int16 (or float for opus_encode_float())</li>
-  * <li>frame_size is the duration of the frame in samples (per channel)</li>
-  * <li>packet is the byte array to which the compressed data is written</li>
-  * <li>max_packet is the maximum number of bytes that can be written in the packet (4000 bytes is recommended).
-  *     Do not use max_packet to control VBR target bitrate, instead use the #OPUS_SET_BITRATE CTL.</li>
-  * </ul>
-  *
-  * opus_encode() and opus_encode_float() return the number of bytes actually written to the packet.
-  * The return value <b>can be negative</b>, which indicates that an error has occurred. If the return value
-  * is 1 byte, then the packet does not need to be transmitted (DTX).
-  *
-  * Once the encoder state if no longer needed, it can be destroyed with
-  *
-  * @code
-  * opus_encoder_destroy(enc);
-  * @endcode
-  *
-  * If the encoder was created with opus_encoder_init() rather than opus_encoder_create(),
-  * then no action is required aside from potentially freeing the memory that was manually
-  * allocated for it (calling free(enc) for the example above)
-  *
-  */
+    /// <summary>
+    /// The Opus encoder structure
+    /// </summary>
     public class OpusEncoder
     {
         #region Encoder state
@@ -287,7 +207,7 @@ namespace Concentus.Structs
         /// disables the speech-optimized mode in exchange for slightly reduced delay.
         /// This mode can only be set on an newly initialized or freshly reset encoder
         /// because it changes the codec delay.</param>
-        /// <returns></returns>
+        /// <returns>The created encoder</returns>
         public static OpusEncoder Create(int Fs, int channels, OpusApplication application)
         {
             int ret;
@@ -1470,7 +1390,7 @@ namespace Concentus.Structs
 
             return ret;
         }
-        
+
         /// <summary>
         /// Encodes an Opus frame.
         /// </summary>
@@ -1483,8 +1403,8 @@ namespace Concentus.Structs
         /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
         /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
-        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use SetBitrate for that)</param>
-        /// <returns>The length of the encoded packet</returns>
+        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use he Bitrate parameter for that)</param>
+        /// <returns>The length of the encoded packet, in bytes</returns>
         public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
@@ -1548,8 +1468,8 @@ namespace Concentus.Structs
         /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
         /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
-        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use SetBitrate for that)</param>
-        /// <returns>The length of the encoded packet</returns>
+        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
+        /// <returns>The length of the encoded packet, in bytes</returns>
         public int Encode(float[] in_pcm, int pcm_offset, int frame_size,
                               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
@@ -1613,6 +1533,11 @@ namespace Concentus.Structs
         
         #region Getters and Setters
 
+        /// <summary>
+        /// Gets or sets the application (or signal type) of the input signal. This hints
+        /// to the encoder what type of details we want to preserve in the encoding.
+        /// This cannot be changed after the encoder has started
+        /// </summary>
         public OpusApplication Application
         {
             get
@@ -1623,13 +1548,16 @@ namespace Concentus.Structs
             {
                 if (first == 0 && application != value)
                 {
-                    throw new ArgumentException("Unsupported application (fixme: this error is vague)");
+                    throw new ArgumentException("Application cannot be changed after encoding has started");
                 }
 
                 application = value;
             }
         }
 
+        /// <summary>
+        /// Gets or sets the bitrate for encoder, in bits per second. Valid bitrates are be between 6K (6144) and 510K (522240)
+        /// </summary>
         public int Bitrate
         {
             get
@@ -1652,6 +1580,10 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of channels to be encoded. This can be used to force a downmix from stereo to mono if stereo
+        /// separation is not important
+        /// </summary>
         public int ForceChannels
         {
             get
@@ -1669,6 +1601,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum bandwidth to be used by the encoder.
+        /// </summary>
         public OpusBandwidth MaxBandwidth
         {
             get
@@ -1692,6 +1627,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets the "preferred" encoded bandwidth
+        /// </summary>
         public OpusBandwidth Bandwidth
         {
             get
@@ -1715,6 +1653,11 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a flag to enable Discontinuous Transmission mode. This mode is only available in the SILK encoder
+        /// (Bitrate &lt; 40Kbit/s and/or ForceMode == SILK). When enabled, the encoder detects silence and background noise
+        /// and reduces the number of output packets, with up to 600ms in between separate packet transmissions.
+        /// </summary>
         public bool UseDTX
         {
             get
@@ -1727,6 +1670,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets the encoder complexity, between 0 and 10
+        /// </summary>
         public int Complexity
         {
             get
@@ -1744,6 +1690,11 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a flag to enable Forward Error Correction. This mode is only available in the SILK encoder
+        /// (Bitrate &lt; 40Kbit/s and/or ForceMode == SILK). When enabled, lost packets can be partially recovered
+        /// by decoding data stored in the following packet.
+        /// </summary>
         public bool UseInbandFEC
         {
             get
@@ -1756,6 +1707,10 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets the expected amount of packet loss in the transmission medium, from 0 to 100.
+        /// Only applies if UseInbandFEC is also enabled, and the encoder is in SILK mode.
+        /// </summary>
         public int PacketLossPercent
         {
             get
@@ -1773,6 +1728,10 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a flag to enable Variable Bitrate encoding. This is recommended as it generally improves audio quality
+        /// with little impact on average bitrate
+        /// </summary>
         public bool UseVBR
         {
             get
@@ -1786,6 +1745,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets the "voice ratio". This is not implemented, but the idea is to hint the amount of voice vs. music in the input signal
+        /// </summary>
         public int VoiceRatio
         {
             get
@@ -1803,6 +1765,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a flag to enable constrained VBR. This only applies when the encoder is in CELT mode (i.e. high bitrates)
+        /// </summary>
         public bool UseConstrainedVBR
         {
             get
@@ -1815,6 +1780,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a hint to the encoder for what type of audio is being processed, voice or music 
+        /// </summary>
         public OpusSignal SignalType
         {
             get
@@ -1827,6 +1795,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets the number of samples of audio that are being stored in a buffer and are therefore contributing to latency.
+        /// </summary>
         public int Lookahead
         {
             get
@@ -1839,6 +1810,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets the encoder's input sample rate.
+        /// </summary>
         public int SampleRate
         {
             get
@@ -1855,6 +1829,10 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets the bit resolution of the input audio signal. Though the encoder always uses 16-bit internally, this can help
+        /// it make better decisions about bandwidth and cutoff values
+        /// </summary>
         public int LSBDepth
         {
             get
@@ -1872,6 +1850,10 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a fixed length for each encoded frame. Typically, the encoder just chooses a frame duration based on the input length
+        /// and the current internal mode. This can be used to enforce an exact length if it is required by your application (e.g. monotonous transmission)
+        /// </summary>
         public OpusFramesize ExpertFrameDuration
         {
             get
@@ -1885,7 +1867,13 @@ namespace Concentus.Structs
                 Celt_Encoder.SetExpertFrameDuration(value);
             }
         }
-        
+
+        /// <summary>
+        /// Gets or sets a user-forced mode for the encoder. There are three modes, SILK, HYBRID, and CELT. Silk can only encode below 40Kbit/s and is best suited
+        /// for speech. Silk also has modes such as FEC which may be desirable. Celt sounds better at higher bandwidth and is comparable to AAC.
+        /// Hybrid is used to create a smooth transition between the two modes. Note that this value may not always be honored due to other factors such
+        /// as frame size and bitrate.
+        /// </summary>
         public OpusMode ForceMode
         {
             get
@@ -1898,6 +1886,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating that this stream is a low-frequency channel. This is used when encoding 5.1 surround audio.
+        /// </summary>
         public bool IsLFE
         {
             get
@@ -1911,6 +1902,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a flag to enable prediction, which does something.
+        /// </summary>
         public bool PredictionDisabled
         {
             get
@@ -1923,6 +1917,10 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether neural net analysis functions should be enabled, increasing encode quality
+        /// at the expense of speed.
+        /// </summary>
         public bool EnableAnalysis
         {
             get

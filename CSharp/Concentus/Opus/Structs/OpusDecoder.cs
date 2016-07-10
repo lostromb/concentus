@@ -48,68 +48,20 @@ using System.Threading.Tasks;
 
 namespace Concentus.Structs
 {
-    /** @defgroup opus_decoder Opus Decoder
-  * @{
-  *
-  * @brief This page describes the process and functions used to decode Opus.
-  *
-  * The decoding process also starts with creating a decoder
-  * state. This can be done with:
-  * @code
-  * int          error;
-  * OpusDecoder *dec;
-  * dec = opus_decoder_create(Fs, channels, &error);
-  * @endcode
-  * where
-  * @li Fs is the sampling rate and must be 8000, 12000, 16000, 24000, or 48000
-  * @li channels is the number of channels (1 or 2)
-  * @li error will hold the error code in case of failure (or #OPUS_OK on success)
-  * @li the return value is a newly created decoder state to be used for decoding
-  *
-  * While opus_decoder_create() allocates memory for the state, it's also possible
-  * to initialize pre-allocated memory:
-  * @code
-  * int          size;
-  * int          error;
-  * OpusDecoder *dec;
-  * size = opus_decoder_get_size(channels);
-  * dec = malloc(size);
-  * error = opus_decoder_init(dec, Fs, channels);
-  * @endcode
-  * where opus_decoder_get_size() returns the required size for the decoder state. Note that
-  * future versions of this code may change the size, so no assuptions should be made about it.
-  *
-  * The decoder state is always continuous in memory and only a shallow copy is sufficient
-  * to copy it (e.g. memcpy())
-  *
-  * To decode a frame, opus_decode() or opus_decode_float() must be called with a packet of compressed audio data:
-  * @code
-  * frame_size = opus_decode(dec, packet, len, decoded, max_size, 0);
-  * @endcode
-  * where
-  *
-  * @li packet is the byte array containing the compressed data
-  * @li len is the exact number of bytes contained in the packet
-  * @li decoded is the decoded audio data in opus_int16 (or float for opus_decode_float())
-  * @li max_size is the max duration of the frame in samples (per channel) that can fit into the decoded_frame array
-  *
-  * opus_decode() and opus_decode_float() return the number of samples (per channel) decoded from the packet.
-  * If that value is negative, then an error has occurred. This can occur if the packet is corrupted or if the audio
-  * buffer is too small to hold the decoded audio.
-  *
-  * Opus is a stateful codec with overlapping blocks and as a result Opus
-  * packets are not coded independently of each other. Packets must be
-  * passed into the decoder serially and in the correct order for a correct
-  * decode. Lost packets can be replaced with loss concealment by calling
-  * the decoder with a null pointer and zero length for the missing packet.
-  *
-  * A single codec state may only be accessed from a single thread at
-  * a time and any required locking must be performed by the caller. Separate
-  * streams must be decoded with separate decoder states and can be decoded
-  * in parallel unless the library was compiled with NONTHREADSAFE_PSEUDOSTACK
-  * defined.
-  *
-  */
+    /// <summary>
+    /// The Opus decoder structure.
+    /// 
+    ///  Opus is a stateful codec with overlapping blocks and as a result Opus
+    ///  packets are not coded independently of each other. Packets must be
+    ///  passed into the decoder serially and in the correct order for a correct
+    ///  decode. Lost packets can be replaced with loss concealment by calling
+    ///  the decoder with a null reference and zero length for the missing packet.
+    /// 
+    ///  A single codec state may only be accessed from a single thread at
+    ///  a time and any required locking must be performed by the caller. Separate
+    ///  streams must be decoded with separate decoder states and can be decoded
+    ///  in parallel.
+    /// </summary>
     public class OpusDecoder
     {
         internal int channels;
