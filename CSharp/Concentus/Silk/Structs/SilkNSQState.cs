@@ -44,7 +44,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Buffer for quantized output signal
         /// </summary>
-        internal readonly short[] xq = new short[2 * SilkConstants.MAX_FRAME_LENGTH];
+        internal readonly short[] xq = new short[2 * SilkConstants.MAX_FRAME_LENGTH]; //opt: make these arrays variable-sized since construction cost is significant here
         internal readonly int[] sLTP_shp_Q14 = new int[2 * SilkConstants.MAX_FRAME_LENGTH];
         internal readonly int[] sLPC_Q14 = new int[SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH];
         internal readonly int[] sAR2_Q14 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];

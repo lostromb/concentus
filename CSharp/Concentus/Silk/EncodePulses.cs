@@ -49,25 +49,49 @@ namespace Concentus.Silk
         /// <param name="len">I    number of output values</param>
         /// <returns>return ok</returns>
         internal static int combine_and_check(
-            Pointer<int> pulses_comb,
-            Pointer<int> pulses_in,
+            int[] pulses_comb,
+            int pulses_comb_ptr,
+            int[] pulses_in,
+            int pulses_in_ptr,
             int max_pulses,
             int len)
         {
-            int k, sum;
-
-            for (k = 0; k < len; k++)
+            for (int k = 0; k < len; k++)
             {
-                sum = pulses_in[2 * k] + pulses_in[2 * k + 1];
-
+                int k2p = 2 * k + pulses_in_ptr;
+                int sum = pulses_in[k2p] + pulses_in[k2p + 1];
                 if (sum > max_pulses)
                 {
                     return 1;
                 }
+                pulses_comb[pulses_comb_ptr + k] = sum;
+            }
+            return 0;
+        }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pulses_comb">(O)</param>
+        /// <param name="pulses_in">(I)</param>
+        /// <param name="max_pulses"> I    max value for sum of pulses</param>
+        /// <param name="len">I    number of output values</param>
+        /// <returns>return ok</returns>
+        internal static int combine_and_check(
+            int[] pulses_comb,
+            int[] pulses_in,
+            int max_pulses,
+            int len)
+        {
+            for (int k = 0; k < len; k++)
+            {
+                int sum = pulses_in[2 * k] + pulses_in[2 * k + 1];
+                if (sum > max_pulses)
+                {
+                    return 1;
+                }
                 pulses_comb[k] = sum;
             }
-
             return 0;
         }
 
@@ -92,7 +116,7 @@ namespace Concentus.Silk
             int[] sum_pulses;
             int[] nRshifts;
             int[] pulses_comb = new int[8];
-            Pointer<int> abs_pulses_ptr;
+            int abs_pulses_ptr;
             Pointer<sbyte> pulses_ptr;
             byte[] nBits_ptr;
 
@@ -127,7 +151,7 @@ namespace Concentus.Silk
             /* Calc sum pulses per shell code frame */
             sum_pulses = new int[iter];
             nRshifts = new int[iter];
-            abs_pulses_ptr = abs_pulses.GetPointer();
+            abs_pulses_ptr = 0;
             for (i = 0; i < iter; i++)
             {
                 nRshifts[i] = 0;
@@ -135,21 +159,21 @@ namespace Concentus.Silk
                 while (true)
                 {
                     /* 1+1 . 2 */
-                    scale_down = combine_and_check(pulses_comb.GetPointer(), abs_pulses_ptr, Tables.silk_max_pulses_table[0], 8);
+                    scale_down = combine_and_check(pulses_comb, 0, abs_pulses, abs_pulses_ptr, Tables.silk_max_pulses_table[0], 8);
                     /* 2+2 . 4 */
-                    scale_down += combine_and_check(pulses_comb.GetPointer(), pulses_comb.GetPointer(), Tables.silk_max_pulses_table[1], 4);
+                    scale_down += combine_and_check(pulses_comb, pulses_comb, Tables.silk_max_pulses_table[1], 4);
                     /* 4+4 . 8 */
-                    scale_down += combine_and_check(pulses_comb.GetPointer(), pulses_comb.GetPointer(), Tables.silk_max_pulses_table[2], 2);
+                    scale_down += combine_and_check(pulses_comb, pulses_comb, Tables.silk_max_pulses_table[2], 2);
                     /* 8+8 . 16 */
-                    scale_down += combine_and_check(sum_pulses.GetPointer(i), pulses_comb.GetPointer(), Tables.silk_max_pulses_table[3], 1);
+                    scale_down += combine_and_check(sum_pulses, i, pulses_comb, 0, Tables.silk_max_pulses_table[3], 1);
                     
                     if (scale_down != 0)
                     {
                         /* We need to downscale the quantization signal */
                         nRshifts[i]++;
-                        for (k = 0; k < SilkConstants.SHELL_CODEC_FRAME_LENGTH; k++)
+                        for (k = abs_pulses_ptr; k < abs_pulses_ptr + SilkConstants.SHELL_CODEC_FRAME_LENGTH; k++)
                         {
-                            abs_pulses_ptr[k] = Inlines.silk_RSHIFT(abs_pulses_ptr[k], 1);
+                            abs_pulses[k] = Inlines.silk_RSHIFT(abs_pulses[k], 1);
                         }
                     }
                     else
@@ -159,7 +183,7 @@ namespace Concentus.Silk
                     }
                 }
 
-                abs_pulses_ptr = abs_pulses_ptr.Point(SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                abs_pulses_ptr += SilkConstants.SHELL_CODEC_FRAME_LENGTH;
             }
 
             /**************/

@@ -407,7 +407,7 @@ namespace Concentus.Silk
             int[] RD_Q25 = new int[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
             int[] RD_min_Q25 = new int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
             int[] RD_max_Q25 = new int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
-            Pointer<byte> rates_Q5;
+            int rates_Q5;
 
             int[] out0_Q10_table = new int[2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT];
             int[] out1_Q10_table = new int[2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT];
@@ -448,7 +448,6 @@ namespace Concentus.Silk
 
             for (i = order - 1; ; i--)
             {
-                rates_Q5 = ec_rates_Q5.GetPointer(ec_ix[i]); // opt: easy pointer to remove
                 pred_coef_Q16 = Inlines.silk_LSHIFT((int)pred_coef_Q8[i], 8);
                 in_Q10 = x_Q10[i];
 
@@ -459,6 +458,7 @@ namespace Concentus.Silk
                     ind_tmp = Inlines.silk_SMULWB((int)inv_quant_step_size_Q6, res_Q10);
                     ind_tmp = Inlines.silk_LIMIT(ind_tmp, 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT, SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT - 1);
                     ind[j][i] = (sbyte)ind_tmp;
+                    rates_Q5 = ec_ix[i] + ind_tmp;
 
                     // compute outputs for ind_tmp and ind_tmp + 1
                     out0_Q10 = out0_Q10_table[ind_tmp + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT];
@@ -474,7 +474,7 @@ namespace Concentus.Silk
                     {
                         if (ind_tmp + 1 == SilkConstants.NLSF_QUANT_MAX_AMPLITUDE)
                         {
-                            rate0_Q5 = rates_Q5[ind_tmp + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE];
+                            rate0_Q5 = ec_rates_Q5[rates_Q5 + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE];
                             rate1_Q5 = 280;
                         }
                         else
@@ -488,7 +488,7 @@ namespace Concentus.Silk
                         if (ind_tmp == 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE)
                         {
                             rate0_Q5 = 280;
-                            rate1_Q5 = rates_Q5[ind_tmp + 1 + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE];
+                            rate1_Q5 = ec_rates_Q5[rates_Q5 + 1 + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE];
                         }
                         else
                         {
@@ -498,8 +498,8 @@ namespace Concentus.Silk
                     }
                     else
                     {
-                        rate0_Q5 = rates_Q5[ind_tmp + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE];
-                        rate1_Q5 = rates_Q5[ind_tmp + 1 + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE];
+                        rate0_Q5 = ec_rates_Q5[rates_Q5 + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE];
+                        rate1_Q5 = ec_rates_Q5[rates_Q5 + 1 + SilkConstants.NLSF_QUANT_MAX_AMPLITUDE];
                     }
 
                     RD_tmp_Q25 = RD_Q25[j];
