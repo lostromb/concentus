@@ -444,7 +444,7 @@ namespace Concentus.Celt.Structs
                     /* Apply the pre-filter to the MDCT overlap for the next frame because
                        the post-filter will be re-applied in the decoder after the MDCT
                        overlap. */
-                    CeltCommon.comb_filter(etmp.GetPointer(), buf.GetPointer(CeltConstants.DECODE_BUFFER_SIZE),
+                    CeltCommon.comb_filter(etmp, 0, buf, CeltConstants.DECODE_BUFFER_SIZE,
                          this.postfilter_period, this.postfilter_period, overlap,
                          -this.postfilter_gain, -this.postfilter_gain,
                          this.postfilter_tapset, this.postfilter_tapset, null, 0);
@@ -721,14 +721,17 @@ namespace Concentus.Celt.Structs
             {
                 this.postfilter_period = Inlines.IMAX(this.postfilter_period, CeltConstants.COMBFILTER_MINPERIOD);
                 this.postfilter_period_old = Inlines.IMAX(this.postfilter_period_old, CeltConstants.COMBFILTER_MINPERIOD);
-                CeltCommon.comb_filter(out_syn[c], out_syn[c], this.postfilter_period_old, this.postfilter_period, mode.shortMdctSize,
+                CeltCommon.comb_filter(out_syn[c].Data, out_syn[c].Offset, out_syn[c].Data, out_syn[c].Offset, this.postfilter_period_old, this.postfilter_period, mode.shortMdctSize,
                       this.postfilter_gain_old, this.postfilter_gain, this.postfilter_tapset_old, this.postfilter_tapset,
                       mode.window, overlap);
                 if (LM != 0)
                 {
-                    CeltCommon.comb_filter(out_syn[c].Point(mode.shortMdctSize), out_syn[c].Point(mode.shortMdctSize), this.postfilter_period, postfilter_pitch, N - mode.shortMdctSize,
-                          this.postfilter_gain, postfilter_gain, this.postfilter_tapset, postfilter_tapset,
-                          mode.window, overlap);
+                    CeltCommon.comb_filter(
+                        out_syn[c].Data, out_syn[c].Offset + (mode.shortMdctSize),
+                        out_syn[c].Data, out_syn[c].Offset + (mode.shortMdctSize),
+                        this.postfilter_period, postfilter_pitch, N - mode.shortMdctSize,
+                        this.postfilter_gain, postfilter_gain, this.postfilter_tapset, postfilter_tapset,
+                        mode.window, overlap);
                 }
 
             } while (++c < CC);

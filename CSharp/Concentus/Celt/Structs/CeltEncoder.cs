@@ -357,12 +357,12 @@ namespace Concentus.Celt.Structs
                 Array.Copy(this.in_mem[c], 0, input[c], 0, overlap);
                 if (offset != 0)
                 {
-                    CeltCommon.comb_filter(input[c].GetPointer(overlap), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD),
+                    CeltCommon.comb_filter(input[c], (overlap), pre[c], (CeltConstants.COMBFILTER_MAXPERIOD),
                           this.prefilter_period, this.prefilter_period, offset, -this.prefilter_gain, -this.prefilter_gain,
                           this.prefilter_tapset, this.prefilter_tapset, null, 0); // opt: lots of pointer allocations here
                 }
 
-                CeltCommon.comb_filter(input[c].GetPointer(overlap + offset), pre[c].GetPointer(CeltConstants.COMBFILTER_MAXPERIOD + offset),
+                CeltCommon.comb_filter(input[c], (overlap + offset), pre[c], (CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       this.prefilter_period, pitch_index, N - offset, -this.prefilter_gain, -gain1,
                       this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
                 Array.Copy(input[c], N, this.in_mem[c], 0, overlap);
