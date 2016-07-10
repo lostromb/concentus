@@ -1642,7 +1642,7 @@ namespace Concentus.Celt
                             last != 0 ? null : norm.GetPointer(M * eBands[i] - norm_offset),
                             CeltConstants.Q15ONE,
                             lowband_scratch,
-                            (int)(x_cm | y_cm));
+                            (int)(x_cm | y_cm)); // opt: lots of pointers are created here too
                     }
                     y_cm = x_cm;
                 }
