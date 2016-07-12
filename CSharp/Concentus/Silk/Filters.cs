@@ -133,15 +133,15 @@ namespace Concentus.Silk
 
                 /* Short term FIR filtering*/
                 silk_warped_LPC_analysis_filter(P.sAR_shp, st_res_Q2, AR1_shp_Q13.Data, AR1_shp_Q13.Offset, px.Data, px.Offset,
-                    Inlines.CHOP16(psEnc.warping_Q16), psEnc.subfr_length, psEnc.shapingLPCOrder);
+                    (short)(psEnc.warping_Q16), psEnc.subfr_length, psEnc.shapingLPCOrder);
 
                 /* Reduce (mainly) low frequencies during harmonic emphasis */
-                B_Q10[0] = Inlines.CHOP16(Inlines.silk_RSHIFT_ROUND(psEncCtrl.GainsPre_Q14[k], 4));
+                B_Q10[0] = (short)(Inlines.silk_RSHIFT_ROUND(psEncCtrl.GainsPre_Q14[k], 4));
                 tmp_32 = Inlines.silk_SMLABB(((int)((TuningParameters.INPUT_TILT) * ((long)1 << (26)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.INPUT_TILT, 26)*/, psEncCtrl.HarmBoost_Q14[k], HarmShapeGain_Q12);   /* Q26 */
                 tmp_32 = Inlines.silk_SMLABB(tmp_32, psEncCtrl.coding_quality_Q14, ((int)((TuningParameters.HIGH_RATE_INPUT_TILT) * ((long)1 << (12)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.HIGH_RATE_INPUT_TILT, 12)*/);    /* Q26 */
                 tmp_32 = Inlines.silk_SMULWB(tmp_32, -psEncCtrl.GainsPre_Q14[k]);                                                /* Q24 */
                 tmp_32 = Inlines.silk_RSHIFT_ROUND(tmp_32, 14);                                                                     /* Q10 */
-                B_Q10[1] = Inlines.CHOP16(Inlines.silk_SAT16(tmp_32));
+                B_Q10[1] = (short)(Inlines.silk_SAT16(tmp_32));
                 x_filt_Q12[0] = Inlines.silk_MLA(Inlines.silk_MUL(st_res_Q2[0], B_Q10[0]), P.sHarmHP_Q2, B_Q10[1]);
                 for (j = 1; j < psEnc.subfr_length; j++)
                 {
@@ -494,7 +494,7 @@ namespace Concentus.Silk
             Inlines.OpusAssert(d <= SilkConstants.SILK_MAX_ORDER_LPC);
             for (j = 0; j < d; j++)
             {
-                num[j] = Inlines.CHOP16(0 - B[B_ptr + j]);
+                num[j] = (short)(0 - B[B_ptr + j]);
             }
             for (j = 0; j < d; j++)
             {

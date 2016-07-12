@@ -283,7 +283,7 @@ namespace Concentus.Structs
                 return -1;
             }
             else {
-                size.Val = Inlines.CHOP16(4 * data[1] + data[0]);
+                size.Val = (short)(4 * data[1] + data[0]);
                 return 2;
             }
         }

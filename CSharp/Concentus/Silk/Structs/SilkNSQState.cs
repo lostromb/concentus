@@ -811,7 +811,7 @@ namespace Concentus.Silk.Structs
 
             /* Copy final part of signals from winner state to output and long-term filter states */
             psDD = psDelDec[Winner_ind];
-            psIndices.Seed = Inlines.CHOP8(psDD.SeedInit);
+            psIndices.Seed = (sbyte)(psDD.SeedInit);
             last_smple_idx = smpl_buf_idx + decisionDelay;
             Gain_Q10 = Inlines.silk_RSHIFT32(Gains_Q16[psEncC.nb_subfr - 1], 6);
             for (i = 0; i < decisionDelay; i++)

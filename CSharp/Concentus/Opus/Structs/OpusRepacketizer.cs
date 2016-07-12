@@ -277,7 +277,7 @@ namespace Concentus.Structs
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
                     ptr[0] = (byte)((this.toc & 0xFC) | 0x3);
                     ptr = ptr.Point(1);
-                    ptr[0] = Inlines.CHOP8U(count | 0x80);
+                    ptr[0] = (byte)(count | 0x80);
                     ptr = ptr.Point(1);
                 }
                 else
@@ -287,7 +287,7 @@ namespace Concentus.Structs
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
                     ptr[0] = (byte)((this.toc & 0xFC) | 0x3);
                     ptr = ptr.Point(1);
-                    ptr[0] = Inlines.CHOP8U(count);
+                    ptr[0] = (byte)(count);
                     ptr = ptr.Point(1);
                 }
 

@@ -253,7 +253,7 @@ namespace Concentus.Celt
                     }
 
                     _i -= p;
-                    val = Inlines.CHOP16((k0 - _k + s) ^ s);
+                    val = (short)((k0 - _k + s) ^ s);
                     _y[y_ptr++] = val;
                     yy = Inlines.MAC16_16(yy, val, val);
                 }
@@ -281,7 +281,7 @@ namespace Concentus.Celt
                         } while (p > _i);
 
                         _i -= p;
-                        val = Inlines.CHOP16((k0 - _k + s) ^ s);
+                        val = (short)((k0 - _k + s) ^ s);
                         _y[y_ptr++] = val;
                         yy = Inlines.MAC16_16(yy, val, val);
                     }
@@ -300,12 +300,12 @@ namespace Concentus.Celt
                 _i -= (2 * (uint)_k - 1);
             }
 
-            val = Inlines.CHOP16((k0 - _k + s) ^ s);
+            val = (short)((k0 - _k + s) ^ s);
             _y[y_ptr++] = val;
             yy = Inlines.MAC16_16(yy, val, val);
             /*_n==1*/
             s = -(int)_i;
-            val = Inlines.CHOP16((_k + s) ^ s);
+            val = (short)((_k + s) ^ s);
             _y[y_ptr] = val;
             yy = Inlines.MAC16_16(yy, val, val);
             return yy;

@@ -88,7 +88,7 @@ namespace Concentus.Silk
                     LTP_res_ptr[i] = (short)Inlines.silk_SAT16((int)x_ptr[i] - LTP_est);
 
                     /* Scale residual */
-                    LTP_res_ptr[i] = Inlines.CHOP16(Inlines.silk_SMULWB(invGains_Q16[k], LTP_res_ptr[i]));
+                    LTP_res_ptr[i] = (short)(Inlines.silk_SMULWB(invGains_Q16[k], LTP_res_ptr[i]));
 
                     x_lag_ptr = x_lag_ptr.Point(1);
                 }

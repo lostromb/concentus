@@ -131,7 +131,7 @@ namespace Concentus.Silk
                 }
 
                 Arrays.MemSet<short>(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
-                psPLC.LTPCoef_Q14[SilkConstants.LTP_ORDER / 2] = Inlines.CHOP16(LTP_Gain_Q14);
+                psPLC.LTPCoef_Q14[SilkConstants.LTP_ORDER / 2] = (short)(LTP_Gain_Q14);
 
                 /* Limit LT coefs */
                 if (LTP_Gain_Q14 < SilkConstants.V_PITCH_GAIN_START_MIN_Q14)
@@ -143,7 +143,7 @@ namespace Concentus.Silk
                     scale_Q10 = Inlines.silk_DIV32(tmp, Inlines.silk_max(LTP_Gain_Q14, 1));
                     for (i = 0; i < SilkConstants.LTP_ORDER; i++)
                     {
-                        psPLC.LTPCoef_Q14[i] = Inlines.CHOP16(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(psPLC.LTPCoef_Q14[i], scale_Q10), 10));
+                        psPLC.LTPCoef_Q14[i] = (short)(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(psPLC.LTPCoef_Q14[i], scale_Q10), 10));
                     }
                 }
                 else if (LTP_Gain_Q14 > SilkConstants.V_PITCH_GAIN_START_MAX_Q14)
@@ -155,7 +155,7 @@ namespace Concentus.Silk
                     scale_Q14 = Inlines.silk_DIV32(tmp, Inlines.silk_max(LTP_Gain_Q14, 1));
                     for (i = 0; i < SilkConstants.LTP_ORDER; i++)
                     {
-                        psPLC.LTPCoef_Q14[i] = Inlines.CHOP16(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(psPLC.LTPCoef_Q14[i], scale_Q14), 14));
+                        psPLC.LTPCoef_Q14[i] = (short)(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(psPLC.LTPCoef_Q14[i], scale_Q14), 14));
                     }
                 }
             }
@@ -166,7 +166,7 @@ namespace Concentus.Silk
 
             /* Save LPC coeficients */
             Array.Copy(psDecCtrl.PredCoef_Q12[1], psPLC.prevLPC_Q12, psDec.LPC_order);
-            psPLC.prevLTP_scale_Q14 = Inlines.CHOP16(psDecCtrl.LTP_scale_Q14);
+            psPLC.prevLTP_scale_Q14 = (short)(psDecCtrl.LTP_scale_Q14);
 
             /* Save last two gains */
             Array.Copy(psDecCtrl.Gains_Q16, psDec.nb_subfr - 2, psPLC.prevGain_Q16, 0, 2);
@@ -350,10 +350,10 @@ namespace Concentus.Silk
                 /* Gradually reduce LTP gain */
                 for (j = 0; j < SilkConstants.LTP_ORDER; j++)
                 {
-                    B_Q14[j] = Inlines.CHOP16(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(harm_Gain_Q15, B_Q14[j]), 15));
+                    B_Q14[j] = (short)(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(harm_Gain_Q15, B_Q14[j]), 15));
                 }
                 /* Gradually reduce excitation gain */
-                rand_scale_Q14 = Inlines.CHOP16(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(rand_scale_Q14, rand_Gain_Q15), 15));
+                rand_scale_Q14 = (short)(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(rand_scale_Q14, rand_Gain_Q15), 15));
 
                 /* Slowly increase pitch lag */
                 psPLC.pitchL_Q8 = Inlines.silk_SMLAWB(psPLC.pitchL_Q8, psPLC.pitchL_Q8, SilkConstants.PITCH_DRIFT_FAC_Q16);
@@ -466,7 +466,7 @@ namespace Concentus.Silk
 
                         for (i = 0; i < length; i++)
                         {
-                            frame[i] = Inlines.CHOP16(Inlines.silk_SMULWB(gain_Q16, frame[i]));
+                            frame[i] = (short)(Inlines.silk_SMULWB(gain_Q16, frame[i]));
                             gain_Q16 += slope_Q16;
                             if (gain_Q16 > (int)1 << 16)
                             {

@@ -80,7 +80,7 @@ namespace Concentus.Silk
                 /* the previous NLSF1, and the current NLSF1                                   */
                 for (i = 0; i < psDec.LPC_order; i++)
                 {
-                    pNLSF0_Q15[i] = Inlines.CHOP16(psDec.prevNLSF_Q15[i] + Inlines.silk_RSHIFT(Inlines.silk_MUL(psDec.indices.NLSFInterpCoef_Q2,
+                    pNLSF0_Q15[i] = (short)(psDec.prevNLSF_Q15[i] + Inlines.silk_RSHIFT(Inlines.silk_MUL(psDec.indices.NLSFInterpCoef_Q2,
                         pNLSF_Q15[i] - psDec.prevNLSF_Q15[i]), 2));
                 }
 
@@ -119,7 +119,7 @@ namespace Concentus.Silk
                     Ix = psDec.indices.LTPIndex[k];
                     for (i = 0; i < SilkConstants.LTP_ORDER; i++)
                     {
-                        psDecCtrl.LTPCoef_Q14[k * SilkConstants.LTP_ORDER + i] = Inlines.CHOP16(Inlines.silk_LSHIFT(cbk_ptr_Q7[Ix][i], 7));
+                        psDecCtrl.LTPCoef_Q14[k * SilkConstants.LTP_ORDER + i] = (short)(Inlines.silk_LSHIFT(cbk_ptr_Q7[Ix][i], 7));
                     }
                 }
 

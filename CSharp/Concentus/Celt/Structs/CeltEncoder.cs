@@ -770,7 +770,7 @@ namespace Concentus.Celt.Structs
                 frame_avg /= (end - start);
                 temporal_vbr = Inlines.SUB16(frame_avg, this.spec_avg);
                 temporal_vbr = Inlines.MIN16(((short)(0.5 + (3.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/, Inlines.MAX16(-((short)(0.5 + (1.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)*/, temporal_vbr));
-                this.spec_avg += Inlines.CHOP16(Inlines.MULT16_16_Q15(((short)(0.5 + (.02f) * (((int)1) << (15))))/*Inlines.QCONST16(.02f, 15)*/, temporal_vbr));
+                this.spec_avg += (short)(Inlines.MULT16_16_Q15(((short)(0.5 + (.02f) * (((int)1) << (15))))/*Inlines.QCONST16(.02f, 15)*/, temporal_vbr));
             }
             /*for (i=0;i<21;i++)
                printf("%f ", bandLogE[i]);

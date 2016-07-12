@@ -276,7 +276,7 @@ namespace Concentus.Silk
             /* Convolution */
             for (i = D_COMP_MAX - 1; i >= MIN_LAG_8KHZ; i--)
             {
-                d_comp[i - D_COMP_MIN] += Inlines.CHOP16(d_comp[i - 1 - D_COMP_MIN] + d_comp[i - 2 - D_COMP_MIN]);
+                d_comp[i - D_COMP_MIN] += (short)(d_comp[i - 1 - D_COMP_MIN] + d_comp[i - 2 - D_COMP_MIN]);
             }
 
             length_d_srch = 0;
@@ -292,7 +292,7 @@ namespace Concentus.Silk
             /* Convolution */
             for (i = D_COMP_MAX - 1; i >= MIN_LAG_8KHZ; i--)
             {
-                d_comp[i - D_COMP_MIN] += Inlines.CHOP16(d_comp[i - 1 - D_COMP_MIN] + d_comp[i - 2 - D_COMP_MIN] + d_comp[i - 3 - D_COMP_MIN]);
+                d_comp[i - D_COMP_MIN] += (short)(d_comp[i - 1 - D_COMP_MIN] + d_comp[i - 2 - D_COMP_MIN] + d_comp[i - 3 - D_COMP_MIN]);
             }
 
             length_d_comp = 0;
