@@ -60,8 +60,8 @@ namespace Concentus
             }
             if (mode == OpusMode.MODE_SILK_ONLY)
             {
-                toc = Inlines.CHOP8U((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND) << 5);
-                toc |= Inlines.CHOP8U((period - 2) << 3);
+                toc = (byte)((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND) << 5);
+                toc |= (byte)((period - 2) << 3);
             }
             else if (mode == OpusMode.MODE_CELT_ONLY)
             {
@@ -69,16 +69,16 @@ namespace Concentus
                 if (tmp < 0)
                     tmp = 0;
                 toc = 0x80;
-                toc |= Inlines.CHOP8U(tmp << 5);
-                toc |= Inlines.CHOP8U(period << 3);
+                toc |= (byte)(tmp << 5);
+                toc |= (byte)(period << 3);
             }
             else /* Hybrid */
             {
                 toc = 0x60;
-                toc |= Inlines.CHOP8U((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND) << 4);
-                toc |= Inlines.CHOP8U((period - 2) << 3);
+                toc |= (byte)((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND) << 4);
+                toc |= (byte)((period - 2) << 3);
             }
-            toc |= Inlines.CHOP8U((channels == 2 ? 1 : 0) << 2);
+            toc |= (byte)((channels == 2 ? 1 : 0) << 2);
             return toc;
         }
 
@@ -561,7 +561,7 @@ namespace Concentus
                 for (i = 0; i < overlap; i++)
                 {
                     int w = Inlines.MULT16_16_Q15(window[i * inc], window[i * inc]);
-                    output[i * channels + c] = Inlines.CHOP16(Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, in2[i * channels + c]),
+                    output[i * channels + c] = (short)(Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, in2[i * channels + c]),
                                    CeltConstants.Q15ONE - w, in1[i * channels + c]), 15));
                 }
             }

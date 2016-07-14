@@ -267,7 +267,7 @@ namespace Concentus.Silk
                 temp32 = Inlines.silk_DIV32(g_Q26, temp32);                           /* Q14 . Q12 */
                 for (i = 0; i < SilkConstants.LTP_ORDER; i++)
                 {
-                    b_Q14_ptr[i] = Inlines.CHOP16(Inlines.silk_LIMIT_32((int)b_Q14_ptr[i] + Inlines.silk_SMULWB(Inlines.silk_LSHIFT_SAT32(temp32, 4), delta_b_Q14[i]), -16000, 28000));
+                    b_Q14_ptr[i] = (short)(Inlines.silk_LIMIT_32((int)b_Q14_ptr[i] + Inlines.silk_SMULWB(Inlines.silk_LSHIFT_SAT32(temp32, 4), delta_b_Q14[i]), -16000, 28000));
                 }
                 b_Q14_ptr = b_Q14_ptr.Point(SilkConstants.LTP_ORDER);
             }

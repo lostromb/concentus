@@ -120,7 +120,7 @@ namespace Concentus.Silk
                             abs_q = Inlines.silk_LSHIFT(abs_q, 1);
                             abs_q += psRangeDec.dec_icdf(Tables.silk_lsb_iCDF, 8);
                         }
-                        pulses_ptr[k] = Inlines.CHOP16(abs_q);
+                        pulses_ptr[k] = (short)(abs_q);
                     }
                     /* Mark the number of pulses non-zero for sign decoding. */
                     sum_pulses[i] |= nLS << 5;

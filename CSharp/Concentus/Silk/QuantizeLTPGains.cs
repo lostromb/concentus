@@ -141,7 +141,7 @@ namespace Concentus.Silk
             {
                 for (k = 0; k < SilkConstants.LTP_ORDER; k++)
                 {
-                    B_Q14[j * SilkConstants.LTP_ORDER + k] = Inlines.CHOP16(Inlines.silk_LSHIFT(cbk_ptr_Q7[cbk_index[j]][k], 7));
+                    B_Q14[j * SilkConstants.LTP_ORDER + k] = (short)(Inlines.silk_LSHIFT(cbk_ptr_Q7[cbk_index[j]][k], 7));
                 }
             }
 

@@ -372,7 +372,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short MULT16_16_16(short a, short b)
         {
-            return CHOP16(((((short)(a)) * ((short)(b)))));
+            return (short)(((((short)(a)) * ((short)(b)))));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -464,7 +464,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short MULT16_16_Q11(short a, short b)
         {
-            return CHOP16((SHR(MULT16_16((a), (b)), 11)));
+            return (short)((SHR(MULT16_16((a), (b)), 11)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -477,7 +477,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short MULT16_16_Q13(short a, short b)
         {
-            return CHOP16((SHR(MULT16_16((a), (b)), 13)));
+            return (short)((SHR(MULT16_16((a), (b)), 13)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -490,7 +490,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short MULT16_16_Q14(short a, short b)
         {
-            return CHOP16((SHR(MULT16_16((a), (b)), 14)));
+            return (short)((SHR(MULT16_16((a), (b)), 14)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -503,7 +503,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short MULT16_16_Q15(short a, short b)
         {
-            return CHOP16((SHR(MULT16_16((a), (b)), 15)));
+            return (short)((SHR(MULT16_16((a), (b)), 15)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -516,7 +516,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short MULT16_16_P13(short a, short b)
         {
-            return CHOP16((SHR(ADD32(4096, MULT16_16((a), (b))), 13)));
+            return (short)((SHR(ADD32(4096, MULT16_16((a), (b))), 13)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -529,7 +529,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short MULT16_16_P14(short a, short b)
         {
-            return CHOP16((SHR(ADD32(8192, MULT16_16((a), (b))), 14)));
+            return (short)((SHR(ADD32(8192, MULT16_16((a), (b))), 14)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -542,7 +542,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short MULT16_16_P15(short a, short b)
         {
-            return CHOP16((SHR(ADD32(16384, MULT16_16((a), (b))), 15)));
+            return (short)((SHR(ADD32(16384, MULT16_16((a), (b))), 15)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -556,7 +556,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short DIV32_16(int a, short b)
         {
-            return CHOP16(((short)(((int)(a)) / ((short)(b)))));
+            return (short)(((short)(((int)(a)) / ((short)(b)))));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -706,7 +706,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ABS16(short x)
         {
-            return CHOP16(((x) < 0 ? (-(x)) : (x)));
+            return (short)(((x) < 0 ? (-(x)) : (x)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -859,7 +859,7 @@ namespace Concentus.Common
                 return 32767;
             k = (celt_ilog2(x) >> 1) - 7;
             x = VSHR32(x, 2 * k);
-            n = CHOP16(x - 32768);
+            n = (short)(x - 32768);
             rt = ADD16(sqrt_C[0], MULT16_16_Q15(n, ADD16(sqrt_C[1], MULT16_16_Q15(n, ADD16(sqrt_C[2],
                        MULT16_16_Q15(n, ADD16(sqrt_C[3], MULT16_16_Q15(n, (sqrt_C[4])))))))));
             rt = VSHR32(rt, 7 - k);
@@ -971,7 +971,7 @@ namespace Concentus.Common
             i = celt_ilog2(x);
             n = VSHR32(x, i - 15) - 32768 - 16384;
             frac = ADD16(log2_C0, MULT16_16_Q15(n, ADD16(15746, MULT16_16_Q15(n, ADD16(-5217, MULT16_16_Q15(n, ADD16(2545, MULT16_16_Q15(n, -1401))))))));
-            return SHL16(CHOP16(i - 13), 10) + SHR16(frac, 4);
+            return SHL16((short)(i - 13), 10) + SHR16(frac, 4);
 #else
             return (int)((float)(1 << 10) * (float)Math.Log10(x / (float)(1 << 14)) / (float)Math.Log10(2));
 #endif
@@ -996,7 +996,7 @@ namespace Concentus.Common
                 return 0x7f000000;
             else if (integer < -15)
                 return 0;
-            frac = CHOP16(celt_exp2_frac(CHOP16(x - SHL16(CHOP16(integer), 10))));
+            frac = (short)(celt_exp2_frac((short)(x - SHL16((short)(integer), 10))));
             return VSHR32(EXTEND32(frac), -integer - 2);
         }
         
@@ -1386,86 +1386,12 @@ namespace Concentus.Common
             return a > int.MaxValue ? int.MaxValue : ((a) < int.MinValue ? int.MinValue : (int)(a));
         }
 
-        // Truncation macros defined for safety while porting //
-#if DEBUG_MACROS
-        public static sbyte CHOP8(int a)
-        {
-            return checked((sbyte)a);
-        }
-
-        public static byte CHOP8U(int a)
-        {
-            return checked((byte)a);
-        }
-
-        public static sbyte CHOP8(long a)
-        {
-            return checked((sbyte)a);
-        }
-
-        public static short CHOP16(int a)
-        {
-            return checked((short)a);
-        }
-
-        public static short CHOP16(long a)
-        {
-            return checked((short)a);
-        }
-
-        public static int CHOP32(long a)
-        {
-            return checked((int)a);
-        }
-
-        public static uint CHOP32U(long a)
-        {
-            return checked((uint)a);
-        }
-#else
-        public static sbyte CHOP8(int a)
-        {
-            return ((sbyte)a);
-        }
-
-        public static byte CHOP8U(int a)
-        {
-            return ((byte)a);
-        }
-
-        public static sbyte CHOP8(long a)
-        {
-            return ((sbyte)a);
-        }
-
-        public static short CHOP16(int a)
-        {
-            return ((short)a);
-        }
-
-        public static short CHOP16(long a)
-        {
-            return ((short)a);
-        }
-
-        public static int CHOP32(long a)
-        {
-            return ((int)a);
-        }
-
-        public static uint CHOP32U(long a)
-        {
-            return ((uint)a);
-        }
-#endif
-
         /// <summary>
         /// //////////////////
         /// </summary>
         /// <param name="a16"></param>
         /// <param name="b16"></param>
         /// <returns></returns>
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short silk_ADD_SAT16(short a16, short b16)
         {
@@ -2189,7 +2115,7 @@ namespace Concentus.Common
             b32_nrm = silk_LSHIFT(b32, b_headrm);                                       /* Q: b_headrm                */
 
             /* Inverse of b32, with 14 bits of precision */
-            b32_inv = silk_DIV32_16(int.MaxValue >> 2, CHOP16(silk_RSHIFT(b32_nrm, 16)));   /* Q: 29 + 16 - b_headrm    */
+            b32_inv = silk_DIV32_16(int.MaxValue >> 2, (short)(silk_RSHIFT(b32_nrm, 16)));   /* Q: 29 + 16 - b_headrm    */
 
             /* First approximation */
             result = silk_LSHIFT(b32_inv, 16);                                          /* Q: 61 - b_headrm            */
@@ -2567,7 +2493,7 @@ namespace Concentus.Common
         {
             for (int i = 0; i < dataSize; i++)
             {
-                data_out[data_out_ptr + i] = CHOP16(silk_SMULWB(gain_Q16, data_in[data_in_ptr + i]));
+                data_out[data_out_ptr + i] = (short)(silk_SMULWB(gain_Q16, data_in[data_in_ptr + i]));
             }
         }
 
@@ -2582,7 +2508,7 @@ namespace Concentus.Common
         {
             for (int i = data1_ptr; i < data1_ptr + dataSize; i++)
             {
-                data1[i] = CHOP32(silk_RSHIFT64(silk_SMULL(data1[i], gain_Q26), 8));    /* OUTPUT: Q18 */
+                data1[i] = (int)(silk_RSHIFT64(silk_SMULL(data1[i], gain_Q26), 8));    /* OUTPUT: Q18 */
             }
         }
 

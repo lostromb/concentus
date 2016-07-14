@@ -1302,9 +1302,9 @@ namespace Concentus.Celt
                 x0 = x[x_ptr + i - T1 + 2];
                 f = Inlines.MULT16_16_Q15(window[i], window[i]);
                 y[y_ptr + i] = x[x_ptr + i]
-                    + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(Inlines.CHOP16(CeltConstants.Q15ONE - f), g00), x[x_ptr + i - T0])
-                    + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(Inlines.CHOP16(CeltConstants.Q15ONE - f), g01), Inlines.ADD32(x[x_ptr + i - T0 + 1], x[x_ptr + i - T0 - 1]))
-                    + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(Inlines.CHOP16(CeltConstants.Q15ONE - f), g02), Inlines.ADD32(x[x_ptr + i - T0 + 2], x[x_ptr + i - T0 - 2]))
+                    + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15((short)(CeltConstants.Q15ONE - f), g00), x[x_ptr + i - T0])
+                    + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15((short)(CeltConstants.Q15ONE - f), g01), Inlines.ADD32(x[x_ptr + i - T0 + 1], x[x_ptr + i - T0 - 1]))
+                    + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15((short)(CeltConstants.Q15ONE - f), g02), Inlines.ADD32(x[x_ptr + i - T0 + 2], x[x_ptr + i - T0 - 2]))
                     + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(f, g10), x2)
                     + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(f, g11), Inlines.ADD32(x1, x3))
                     + Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(f, g12), Inlines.ADD32(x0, x4));

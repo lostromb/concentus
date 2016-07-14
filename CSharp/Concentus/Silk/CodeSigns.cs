@@ -136,7 +136,7 @@ namespace Concentus.Silk
                         if (q_ptr[j] > 0)
                         {
                             /* attach sign */
-                            q_ptr[j] *= Inlines.CHOP16(silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
+                            q_ptr[j] *= (short)(silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
                         }
                     }
                 }

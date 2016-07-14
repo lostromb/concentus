@@ -69,11 +69,11 @@ namespace Concentus.Silk
                 cb_row_Q7 = cb_Q7[cb_row_Q7_ptr++];
                 gain_tmp_Q7 = cb_gain_Q7[k];
 
-                diff_Q14[0] = Inlines.CHOP16(in_Q14[0] - Inlines.silk_LSHIFT(cb_row_Q7[0], 7));
-                diff_Q14[1] = Inlines.CHOP16(in_Q14[1] - Inlines.silk_LSHIFT(cb_row_Q7[1], 7));
-                diff_Q14[2] = Inlines.CHOP16(in_Q14[2] - Inlines.silk_LSHIFT(cb_row_Q7[2], 7));
-                diff_Q14[3] = Inlines.CHOP16(in_Q14[3] - Inlines.silk_LSHIFT(cb_row_Q7[3], 7));
-                diff_Q14[4] = Inlines.CHOP16(in_Q14[4] - Inlines.silk_LSHIFT(cb_row_Q7[4], 7));
+                diff_Q14[0] = (short)(in_Q14[0] - Inlines.silk_LSHIFT(cb_row_Q7[0], 7));
+                diff_Q14[1] = (short)(in_Q14[1] - Inlines.silk_LSHIFT(cb_row_Q7[1], 7));
+                diff_Q14[2] = (short)(in_Q14[2] - Inlines.silk_LSHIFT(cb_row_Q7[2], 7));
+                diff_Q14[3] = (short)(in_Q14[3] - Inlines.silk_LSHIFT(cb_row_Q7[3], 7));
+                diff_Q14[4] = (short)(in_Q14[4] - Inlines.silk_LSHIFT(cb_row_Q7[4], 7));
 
                 /* Weighted rate */
                 sum1_Q14 = Inlines.silk_SMULBB(mu_Q9, cl_Q5[k]);

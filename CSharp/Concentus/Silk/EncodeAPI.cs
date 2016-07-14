@@ -166,7 +166,7 @@ namespace Concentus.Silk
                 psEnc.sStereo.mid_side_amp_Q0[2] = 0;
                 psEnc.sStereo.mid_side_amp_Q0[3] = 1;
                 psEnc.sStereo.width_prev_Q14 = 0;
-                psEnc.sStereo.smth_width_Q14 = Inlines.CHOP16(((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/);
+                psEnc.sStereo.smth_width_Q14 = (short)(((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/);
                 if (psEnc.nChannelsAPI == 2)
                 {
                     psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
@@ -254,7 +254,7 @@ namespace Concentus.Silk
             nSamplesFromInputMax =
                     Inlines.silk_DIV32_16(nSamplesToBufferMax *
                                        psEnc.state_Fxx[0].API_fs_Hz,
-                                   Inlines.CHOP16(psEnc.state_Fxx[0].fs_kHz * 1000));
+                                   (short)(psEnc.state_Fxx[0].fs_kHz * 1000));
 
             buf = new short[nSamplesFromInputMax];
 
@@ -329,7 +329,7 @@ namespace Concentus.Silk
                         for (n = 0; n < psEnc.state_Fxx[0].frame_length; n++)
                         {
                             psEnc.state_Fxx[0].inputBuf[psEnc.state_Fxx[0].inputBufIx + n + 2] =
-                                  Inlines.CHOP16(Inlines.silk_RSHIFT(psEnc.state_Fxx[0].inputBuf[psEnc.state_Fxx[0].inputBufIx + n + 2]
+                                  (short)(Inlines.silk_RSHIFT(psEnc.state_Fxx[0].inputBuf[psEnc.state_Fxx[0].inputBufIx + n + 2]
                                             + psEnc.state_Fxx[1].inputBuf[psEnc.state_Fxx[1].inputBufIx + n + 2], 1));
                         }
                     }
@@ -367,7 +367,7 @@ namespace Concentus.Silk
                     {
                         /* Create space at start of payload for VAD and FEC flags */
                         byte[] iCDF = { 0, 0 };
-                        iCDF[0] = Inlines.CHOP8U(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
+                        iCDF[0] = (byte)(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         psRangeEnc.enc_icdf(0, iCDF, 8);
 
                         /* Encode any LBRR data from previous packet */

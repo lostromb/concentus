@@ -244,8 +244,8 @@ namespace Concentus.Silk
             for (n = 0; n < frame_length; n++)
             {
                 sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(mid[n] + mid[n + 2], mid[n + 1], 1), 2); // opus bug: was ADD_LSHIFT, but the intermediate calculation would overflow
-                LP_mid[n] = Inlines.CHOP16(sum);
-                HP_mid[n] = Inlines.CHOP16(mid[n + 1] - sum);
+                LP_mid[n] = (short)(sum);
+                HP_mid[n] = (short)(mid[n + 1] - sum);
             }
 
             /* LP and HP filter side signal */
@@ -254,8 +254,8 @@ namespace Concentus.Silk
             for (n = 0; n < frame_length; n++)
             {
                 sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(side[n] + side[n + 2], side[n + 1], 1), 2);
-                LP_side[n] = Inlines.CHOP16(sum);
-                HP_side[n] = Inlines.CHOP16(side[n + 1] - sum);
+                LP_side[n] = (short)(sum);
+                HP_side[n] = (short)(side[n + 1] - sum);
             }
 
             /* Find energies and predictors */
@@ -358,7 +358,7 @@ namespace Concentus.Silk
             /* Make sure to keep on encoding until the tapered output has been transmitted */
             if (mid_only_flag.Val == 1)
             {
-                state.silent_side_len += Inlines.CHOP16(frame_length - SilkConstants.STEREO_INTERP_LEN_MS * fs_kHz);
+                state.silent_side_len += (short)(frame_length - SilkConstants.STEREO_INTERP_LEN_MS * fs_kHz);
                 if (state.silent_side_len < SilkConstants.LA_SHAPE_MS * fs_kHz)
                 {
                     mid_only_flag.Val = 0;
@@ -462,8 +462,8 @@ namespace Concentus.Silk
                 sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)x1[n + 1], 11), pred1_Q13);        /* Q8  */
                 x2[n + 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
             }
-            state.pred_prev_Q13[0] = Inlines.CHOP16(pred_Q13[0]);
-            state.pred_prev_Q13[1] = Inlines.CHOP16(pred_Q13[1]);
+            state.pred_prev_Q13[0] = (short)(pred_Q13[0]);
+            state.pred_prev_Q13[1] = (short)(pred_Q13[1]);
 
             /* Convert to left/right signals */
             for (n = 0; n < frame_length; n++)
@@ -526,8 +526,8 @@ namespace Concentus.Silk
                 }
 
             done:
-                ix[n][2] = Inlines.CHOP8(Inlines.silk_DIV32_16(ix[n][0], 3));
-                ix[n][0] = (sbyte)(ix[n][0] - Inlines.CHOP8(ix[n][2] * 3));
+                ix[n][2] = (sbyte)(Inlines.silk_DIV32_16(ix[n][0], 3));
+                ix[n][0] = (sbyte)(ix[n][0] - (sbyte)(ix[n][2] * 3));
                 pred_Q13[n] = quant_pred_Q13;
             }
 

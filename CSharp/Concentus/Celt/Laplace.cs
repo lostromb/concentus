@@ -59,7 +59,7 @@ namespace Concentus.Celt
         {
             uint ft;
             ft = 32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0;
-            return Inlines.CHOP32U((ft * (int)(16384 - decay)) >> 15);
+            return (uint)((ft * (int)(16384 - decay)) >> 15);
         }
 
         internal static void ec_laplace_encode(EntropyCoder enc, ref int value, uint fs, int decay)
@@ -81,7 +81,7 @@ namespace Concentus.Celt
                 {
                     fs *= 2;
                     fl += fs + 2 * LAPLACE_MINP;
-                    fs = Inlines.CHOP32U((fs * (int)decay) >> 15);
+                    fs = (uint)((fs * (int)decay) >> 15);
                 }
 
                 /* Everything beyond that has probability LAPLACE_MINP. */
@@ -99,7 +99,7 @@ namespace Concentus.Celt
                 else
                 {
                     fs += LAPLACE_MINP;
-                    fl += Inlines.CHOP32U(fs & ~s);
+                    fl += (uint)(fs & ~s);
                 }
                 Inlines.OpusAssert(fl + fs <= 32768);
                 Inlines.OpusAssert(fs > 0);
@@ -126,7 +126,7 @@ namespace Concentus.Celt
                 {
                     fs *= 2;
                     fl += fs;
-                    fs = Inlines.CHOP32U(((fs - 2 * LAPLACE_MINP) * (int)decay) >> 15);
+                    fs = (uint)(((fs - 2 * LAPLACE_MINP) * (int)decay) >> 15);
                     fs += LAPLACE_MINP;
                     val++;
                 }
@@ -136,7 +136,7 @@ namespace Concentus.Celt
                     int di;
                     di = (int)(fm - fl) >> (LAPLACE_LOG_MINP + 1);
                     val += di;
-                    fl += Inlines.CHOP32U(2 * di * LAPLACE_MINP);
+                    fl += (uint)(2 * di * LAPLACE_MINP);
                 }
                 if (fm < fl + fs)
                     val = -val;

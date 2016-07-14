@@ -90,12 +90,12 @@ namespace Concentus.Silk
         {
             int i, NLSF_step_Q15, NLSF_acc_Q15;
 
-            NLSF_step_Q15 = Inlines.silk_DIV32_16(short.MaxValue, Inlines.CHOP16(psDec.LPC_order + 1));
+            NLSF_step_Q15 = Inlines.silk_DIV32_16(short.MaxValue, (short)(psDec.LPC_order + 1));
             NLSF_acc_Q15 = 0;
             for (i = 0; i < psDec.LPC_order; i++)
             {
                 NLSF_acc_Q15 += NLSF_step_Q15;
-                psDec.sCNG.CNG_smth_NLSF_Q15[i] = Inlines.CHOP16(NLSF_acc_Q15);
+                psDec.sCNG.CNG_smth_NLSF_Q15[i] = (short)(NLSF_acc_Q15);
             }
             psDec.sCNG.CNG_smth_Gain_Q16 = 0;
             psDec.sCNG.rand_seed = 3176576;
@@ -134,7 +134,7 @@ namespace Concentus.Silk
                 /* Smoothing of LSF's  */
                 for (i = 0; i < psDec.LPC_order; i++)
                 {
-                    psCNG.CNG_smth_NLSF_Q15[i] += Inlines.CHOP16(Inlines.silk_SMULWB((int)psDec.prevNLSF_Q15[i] - (int)psCNG.CNG_smth_NLSF_Q15[i], SilkConstants.CNG_NLSF_SMTH_Q16));
+                    psCNG.CNG_smth_NLSF_Q15[i] += (short)(Inlines.silk_SMULWB((int)psDec.prevNLSF_Q15[i] - (int)psCNG.CNG_smth_NLSF_Q15[i], SilkConstants.CNG_NLSF_SMTH_Q16));
                 }
 
                 /* Find the subframe with the highest gain */
@@ -216,7 +216,7 @@ namespace Concentus.Silk
                     /* Update states */
                     CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i] = Inlines.silk_ADD_LSHIFT(CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i], sum_Q6, 4);
 
-                    frame[i] = Inlines.silk_ADD_SAT16(frame[i], Inlines.CHOP16(Inlines.silk_RSHIFT_ROUND(CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i], 10)));
+                    frame[i] = Inlines.silk_ADD_SAT16(frame[i], (short)(Inlines.silk_RSHIFT_ROUND(CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i], 10)));
                 }
 
                 Array.Copy(CNG_sig_Q10, length, psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);

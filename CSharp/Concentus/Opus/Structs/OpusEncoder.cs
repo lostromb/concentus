@@ -1225,7 +1225,7 @@ namespace Concentus.Structs
                     g2 = g2 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g2, 1);
                     CodecHelpers.stereo_fade(pcm_buf, g1, g2, celt_mode.overlap,
                           frame_size, this.channels, celt_mode.window, this.Fs);
-                    this.hybrid_stereo_width_Q14 = Inlines.CHOP16(this.silk_mode.stereoWidth_Q14);
+                    this.hybrid_stereo_width_Q14 = (short)(this.silk_mode.stereoWidth_Q14);
                 }
             }
 

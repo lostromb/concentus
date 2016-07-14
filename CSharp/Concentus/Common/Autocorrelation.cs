@@ -102,7 +102,7 @@ namespace Concentus.Common
                 {
                     for (i = 0; i < n; i++)
                     {
-                        xx[i] = Inlines.CHOP16(Inlines.PSHR32(xptr[i], shift));
+                        xx[i] = (short)(Inlines.PSHR32(xptr[i], shift));
                     }
                     xptr = xx;
                 }
@@ -282,13 +282,13 @@ namespace Concentus.Common
             {
                 for (i = 0; i < order + 1; i++)
                 {
-                    corr[i] = Inlines.CHOP32(Inlines.silk_LSHIFT64(corr_QC[i], lsh));
+                    corr[i] = (int)(Inlines.silk_LSHIFT64(corr_QC[i], lsh));
                 }
             }
             else {
                 for (i = 0; i < order + 1; i++)
                 {
-                    corr[i] = Inlines.CHOP32(Inlines.silk_RSHIFT64(corr_QC[i], -lsh));
+                    corr[i] = (int)(Inlines.silk_RSHIFT64(corr_QC[i], -lsh));
                 }
             }
             Inlines.OpusAssert(corr_QC[0] >= 0); /* If breaking, decrease QC*/

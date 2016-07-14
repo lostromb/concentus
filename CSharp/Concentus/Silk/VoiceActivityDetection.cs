@@ -64,7 +64,7 @@ namespace Concentus.Silk
             /* Initialize array with approx pink noise levels (psd proportional to inverse of frequency) */
             for (b = 0; b < SilkConstants.VAD_N_BANDS; b++)
             {
-                psSilk_VAD.NoiseLevelBias[b] = Inlines.silk_max_32(Inlines.silk_DIV32_16(SilkConstants.VAD_NOISE_LEVELS_BIAS, Inlines.CHOP16(b + 1)), 1);
+                psSilk_VAD.NoiseLevelBias[b] = Inlines.silk_max_32(Inlines.silk_DIV32_16(SilkConstants.VAD_NOISE_LEVELS_BIAS, (short)(b + 1)), 1);
             }
 
             /* Initialize state */
@@ -154,12 +154,12 @@ namespace Concentus.Silk
             /*********************************************/
             /* HP filter on lowest band (differentiator) */
             /*********************************************/
-            X[decimated_framelength - 1] = Inlines.CHOP16(Inlines.silk_RSHIFT(X[decimated_framelength - 1], 1));
+            X[decimated_framelength - 1] = (short)(Inlines.silk_RSHIFT(X[decimated_framelength - 1], 1));
             HPstateTmp = X[decimated_framelength - 1];
 
             for (i = decimated_framelength - 1; i > 0; i--)
             {
-                X[i - 1] = Inlines.CHOP16(Inlines.silk_RSHIFT(X[i - 1], 1));
+                X[i - 1] = (short)(Inlines.silk_RSHIFT(X[i - 1], 1));
                 X[i] -= X[i - 1];
             }
 
@@ -348,7 +348,7 @@ namespace Concentus.Silk
             /* Initially faster smoothing */
             if (psSilk_VAD.counter < 1000)
             { /* 1000 = 20 sec */
-                min_coef = Inlines.silk_DIV32_16(short.MaxValue, Inlines.CHOP16(Inlines.silk_RSHIFT(psSilk_VAD.counter, 4) + 1));
+                min_coef = Inlines.silk_DIV32_16(short.MaxValue, (short)(Inlines.silk_RSHIFT(psSilk_VAD.counter, 4) + 1));
             }
             else
             {

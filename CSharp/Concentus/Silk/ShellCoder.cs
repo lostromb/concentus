@@ -108,8 +108,8 @@ namespace Concentus.Silk
         {
             if (p > 0)
             {
-                p_child1[child1_ptr] = Inlines.CHOP16(psRangeDec.dec_icdf(shell_table, (Tables.silk_shell_code_table_offsets[p]), 8));
-                p_child2[0] = Inlines.CHOP16(p - p_child1[child1_ptr]);
+                p_child1[child1_ptr] = (short)(psRangeDec.dec_icdf(shell_table, (Tables.silk_shell_code_table_offsets[p]), 8));
+                p_child2[0] = (short)(p - p_child1[child1_ptr]);
             }
             else
             {

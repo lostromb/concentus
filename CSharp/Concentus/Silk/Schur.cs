@@ -90,10 +90,10 @@ namespace Concentus.Silk
                 {
                     if (C[k + 1][0] > 0)
                     {
-                        rc_Q15[k] = Inlines.CHOP16(0 - ((int)((.99f) * ((long)1 << (15)) + 0.5))/*Inlines.SILK_CONST(.99f, 15)*/);
+                        rc_Q15[k] = (short)(0 - ((int)((.99f) * ((long)1 << (15)) + 0.5))/*Inlines.SILK_CONST(.99f, 15)*/);
                     }
                     else {
-                        rc_Q15[k] = Inlines.CHOP16(((int)((.99f) * ((long)1 << (15)) + 0.5))/*Inlines.SILK_CONST(.99f, 15)*/);
+                        rc_Q15[k] = (short)(((int)((.99f) * ((long)1 << (15)) + 0.5))/*Inlines.SILK_CONST(.99f, 15)*/);
                     }
                     k++;
                     break;

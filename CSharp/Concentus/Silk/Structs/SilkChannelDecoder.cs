@@ -158,7 +158,7 @@ namespace Concentus.Silk.Structs
             for (i = 0; i < this.LPC_order; i++)
             {
                 NLSF_acc_Q15 += NLSF_step_Q15;
-                this.sCNG.CNG_smth_NLSF_Q15[i] = Inlines.CHOP16(NLSF_acc_Q15);
+                this.sCNG.CNG_smth_NLSF_Q15[i] = (short)(NLSF_acc_Q15);
             }
             this.sCNG.CNG_smth_Gain_Q16 = 0;
             this.sCNG.rand_seed = 3176576;

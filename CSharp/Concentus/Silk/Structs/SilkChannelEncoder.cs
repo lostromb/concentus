@@ -907,7 +907,7 @@ namespace Concentus.Silk.Structs
             LastGainIndex_copy2 = 0;
             nBits_lower = nBits_upper = gainMult_lower = gainMult_upper = 0;
 
-            this.indices.Seed = Inlines.CHOP8(this.frameCounter++ & 3);
+            this.indices.Seed = (sbyte)(this.frameCounter++ & 3);
 
             /**************************************************************/
             /* Set up Input Pointers, and insert frame in input buffer   */
@@ -1123,20 +1123,20 @@ namespace Concentus.Silk.Structs
                             gain_factor_Q16 = Inlines.silk_max_32(gain_factor_Q16, ((int)((1.3f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1.3f, 16)*/);
                         }
 
-                        gainMult_Q8 = Inlines.CHOP16(Inlines.silk_SMULWB(gain_factor_Q16, (int)gainMult_Q8));
+                        gainMult_Q8 = (short)(Inlines.silk_SMULWB(gain_factor_Q16, (int)gainMult_Q8));
                     }
                     else
                     {
                         /* Adjust gain by interpolating */
-                        gainMult_Q8 = Inlines.CHOP16(gainMult_lower + Inlines.silk_DIV32_16(Inlines.silk_MUL(gainMult_upper - gainMult_lower, maxBits - nBits_lower), nBits_upper - nBits_lower));
+                        gainMult_Q8 = (short)(gainMult_lower + Inlines.silk_DIV32_16(Inlines.silk_MUL(gainMult_upper - gainMult_lower, maxBits - nBits_lower), nBits_upper - nBits_lower));
                         /* New gain multplier must be between 25% and 75% of old range (note that gainMult_upper < gainMult_lower) */
                         if (gainMult_Q8 > Inlines.silk_ADD_RSHIFT32(gainMult_lower, gainMult_upper - gainMult_lower, 2))
                         {
-                            gainMult_Q8 = Inlines.CHOP16(Inlines.silk_ADD_RSHIFT32(gainMult_lower, gainMult_upper - gainMult_lower, 2));
+                            gainMult_Q8 = (short)(Inlines.silk_ADD_RSHIFT32(gainMult_lower, gainMult_upper - gainMult_lower, 2));
                         }
                         else if (gainMult_Q8 < Inlines.silk_SUB_RSHIFT32(gainMult_upper, gainMult_upper - gainMult_lower, 2))
                         {
-                            gainMult_Q8 = Inlines.CHOP16(Inlines.silk_SUB_RSHIFT32(gainMult_upper, gainMult_upper - gainMult_lower, 2));
+                            gainMult_Q8 = (short)(Inlines.silk_SUB_RSHIFT32(gainMult_upper, gainMult_upper - gainMult_lower, 2));
                         }
                     }
 
@@ -1214,8 +1214,8 @@ namespace Concentus.Silk.Structs
                     this.LBRRprevLastGainIndex = this.sShape.LastGainIndex;
 
                     /* Increase Gains to get target LBRR rate */
-                    psIndices_LBRR.GainsIndices[0] = Inlines.CHOP8(psIndices_LBRR.GainsIndices[0] + this.LBRR_GainIncreases);
-                    psIndices_LBRR.GainsIndices[0] = Inlines.CHOP8(Inlines.silk_min_int(psIndices_LBRR.GainsIndices[0], SilkConstants.N_LEVELS_QGAIN - 1));
+                    psIndices_LBRR.GainsIndices[0] = (sbyte)(psIndices_LBRR.GainsIndices[0] + this.LBRR_GainIncreases);
+                    psIndices_LBRR.GainsIndices[0] = (sbyte)(Inlines.silk_min_int(psIndices_LBRR.GainsIndices[0], SilkConstants.N_LEVELS_QGAIN - 1));
                 }
 
                 /* Decode to get gains in sync with decoder         */

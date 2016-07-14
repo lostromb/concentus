@@ -370,8 +370,8 @@ namespace Concentus.Silk
         {
             nVectors = 32,
             order = 10,
-            quantStepSize_Q16 = Inlines.CHOP16(((int)((0.18f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.18f, 16)*/),
-            invQuantStepSize_Q6 = Inlines.CHOP16(((int)((1.0f / 0.18f) * ((long)1 << (6)) + 0.5))/*Inlines.SILK_CONST(1.0f / 0.18f, 6)*/),
+            quantStepSize_Q16 = (short)(((int)((0.18f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.18f, 16)*/),
+            invQuantStepSize_Q6 = (short)(((int)((1.0f / 0.18f) * ((long)1 << (6)) + 0.5))/*Inlines.SILK_CONST(1.0f / 0.18f, 6)*/),
             CB1_NLSF_Q8 = silk_NLSF_CB1_NB_MB_Q8,
             CB1_iCDF = silk_NLSF_CB1_iCDF_NB_MB,
             pred_Q8 = silk_NLSF_PRED_NB_MB_Q8,
@@ -535,8 +535,8 @@ namespace Concentus.Silk
         {
             nVectors = 32,
             order = 16,
-            quantStepSize_Q16 = Inlines.CHOP16(((int)((0.15f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.15f, 16)*/),
-            invQuantStepSize_Q6 = Inlines.CHOP16(((int)((1.0f / 0.15f) * ((long)1 << (6)) + 0.5))/*Inlines.SILK_CONST(1.0f / 0.15f, 6)*/),
+            quantStepSize_Q16 = (short)(((int)((0.15f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.15f, 16)*/),
+            invQuantStepSize_Q6 = (short)(((int)((1.0f / 0.15f) * ((long)1 << (6)) + 0.5))/*Inlines.SILK_CONST(1.0f / 0.15f, 6)*/),
             CB1_NLSF_Q8 = silk_NLSF_CB1_WB_Q8,
             CB1_iCDF = silk_NLSF_CB1_iCDF_WB,
             pred_Q8 = silk_NLSF_PRED_WB_Q8,
