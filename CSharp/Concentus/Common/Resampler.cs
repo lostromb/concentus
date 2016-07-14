@@ -106,7 +106,7 @@ namespace Concentus.Common
         private SpeexResampler() { }
 
         #endregion
-        
+
         #region Helper classes and tables
 
         private class FuncDef
@@ -119,7 +119,7 @@ namespace Concentus.Common
 
             public double[] table;
             public int oversample;
-            
+
             public static readonly double[] kaiser12_table/*[68]*/ = {
                 0.99859849, 1.00000000, 0.99859849, 0.99440475, 0.98745105, 0.97779076,
                 0.96549770, 0.95066529, 0.93340547, 0.91384741, 0.89213598, 0.86843014,
@@ -215,7 +215,7 @@ namespace Concentus.Common
         /// <summary>
         /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer<short>, int *, Pointer<short>, Pointer<int>);
         /// </summary>
-        private delegate int resampler_basic_func(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len);
+        private delegate int resampler_basic_func(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len);
 
         private static short WORD2INT(float x)
         {
@@ -226,21 +226,21 @@ namespace Concentus.Common
         private static double compute_func(float x, FuncDef func)
         {
             float y, frac;
-            double[] interp = new double[4];
+            double interp0, interp1, interp2, interp3;
             int ind;
             y = x * func.oversample;
             ind = (int)Math.Floor(y);
             frac = (y - ind);
             /* CSE with handle the repeated powers */
-            interp[3] = -0.1666666667 * frac + 0.1666666667 * (frac * frac * frac);
-            interp[2] = frac + 0.5 * (frac * frac) - 0.5 * (frac * frac * frac);
+            interp3 = -0.1666666667 * frac + 0.1666666667 * (frac * frac * frac);
+            interp2 = frac + 0.5 * (frac * frac) - 0.5 * (frac * frac * frac);
             /*interp[2] = 1.f - 0.5f*frac - frac*frac + 0.5f*frac*frac*frac;*/
-            interp[0] = -0.3333333333 * frac + 0.5 * (frac * frac) - 0.1666666667 * (frac * frac * frac);
+            interp0 = -0.3333333333 * frac + 0.5 * (frac * frac) - 0.1666666667 * (frac * frac * frac);
             /* Just to make sure we don't have rounding problems */
-            interp[1] = 1.0f - interp[3] - interp[2] - interp[0];
+            interp1 = 1.0f - interp3 - interp2 - interp0;
 
             /*sum = frac*accum[1] + (1-frac)*accum[2];*/
-            return interp[0] * func.table[ind] + interp[1] * func.table[ind + 1] + interp[2] * func.table[ind + 2] + interp[3] * func.table[ind + 3];
+            return interp0 * func.table[ind] + interp1 * func.table[ind + 1] + interp2 * func.table[ind + 2] + interp3 * func.table[ind + 3];
         }
 
         /* The slow way of computing a sinc for the table. Should improve that some day */
@@ -256,54 +256,44 @@ namespace Concentus.Common
             return WORD2INT(32768.0f * cutoff * (float)Math.Sin((float)Math.PI * xx) / ((float)Math.PI * xx) * (float)compute_func(Math.Abs(2.0f * x / N), window_func));
         }
 
-        private static void cubic_coef(short x, short[] interp/*[4]*/)
+        private static void cubic_coef(short x, out short interp0, out short interp1, out short interp2, out short interp3)
         {
             /* Compute interpolation coefficients. I'm not sure whether this corresponds to cubic interpolation
             but I know it's MMSE-optimal on a sinc */
             short x2, x3;
             x2 = Inlines.MULT16_16_P15(x, x);
             x3 = Inlines.MULT16_16_P15(x, x2);
-            interp[0] = (short)Inlines.PSHR32(Inlines.MULT16_16(Inlines.QCONST16(-0.16667f, 15), x) + Inlines.MULT16_16(Inlines.QCONST16(0.16667f, 15), x3), 15);
-            interp[1] = Inlines.EXTRACT16(Inlines.EXTEND32(x) + Inlines.SHR32(Inlines.SUB32(Inlines.EXTEND32(x2), Inlines.EXTEND32(x3)), 1));
-            interp[3] = (short)Inlines.PSHR32(Inlines.MULT16_16(Inlines.QCONST16(-0.33333f, 15), x) + Inlines.MULT16_16(Inlines.QCONST16(.5f, 15), x2) - Inlines.MULT16_16(Inlines.QCONST16(0.16667f, 15), x3), 15);
+            interp0 = (short)Inlines.PSHR32(Inlines.MULT16_16(Inlines.QCONST16(-0.16667f, 15), x) + Inlines.MULT16_16(Inlines.QCONST16(0.16667f, 15), x3), 15);
+            interp1 = Inlines.EXTRACT16(Inlines.EXTEND32(x) + Inlines.SHR32(Inlines.SUB32(Inlines.EXTEND32(x2), Inlines.EXTEND32(x3)), 1));
+            interp3 = (short)Inlines.PSHR32(Inlines.MULT16_16(Inlines.QCONST16(-0.33333f, 15), x) + Inlines.MULT16_16(Inlines.QCONST16(.5f, 15), x2) - Inlines.MULT16_16(Inlines.QCONST16(0.16667f, 15), x3), 15);
             /* Just to make sure we don't have rounding problems */
-            interp[2] = (short)(CeltConstants.Q15_ONE - interp[0] - interp[1] - interp[3]);
-            if (interp[2] < 32767)
-                interp[2] += 1;
+            interp2 = (short)(CeltConstants.Q15_ONE - interp0 - interp1 - interp3);
+            if (interp2 < 32767)
+                interp2 += 1;
         }
 
-        private int resampler_basic_direct_single(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
+        private int resampler_basic_direct_single(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
         {
             int N = this.filt_len;
             int out_sample = 0;
             int last_sample = this.last_sample[channel_index];
             int samp_frac_num = this.samp_frac_num[channel_index];
-            Pointer<short> sinc_table = this.sinc_table.GetPointer();
+
             int sum;
 
             while (!(last_sample >= in_len || out_sample >= out_len))
             {
-                Pointer<short> sinct = sinc_table.Point((int)samp_frac_num * N);
-                Pointer<short> iptr = input.Point(last_sample);
+                int sinct = (int)samp_frac_num * N;
+                int iptr = input_ptr + last_sample;
 
                 int j;
                 sum = 0;
-                for (j = 0; j < N; j++) sum += Inlines.MULT16_16(sinct[j], iptr[j]);
+                for (j = 0; j < N; j++)
+                {
+                    sum += Inlines.MULT16_16(this.sinc_table[sinct + j], input[iptr + j]);
+                }
 
-                /*    This code is slower on most DSPs which have only 2 accumulators.
-                      Plus this this forces truncation to 32 bits and you lose the HW guard bits.
-                      I think we can trust the compiler and let it vectorize and/or unroll itself.
-                      spx_word32_t accum[4] = {0,0,0,0};
-                      for(j=0;j<N;j+=4) {
-                        accum[0] += MULT16_16(sinct[j], iptr[j]);
-                        accum[1] += MULT16_16(sinct[j+1], iptr[j+1]);
-                        accum[2] += MULT16_16(sinct[j+2], iptr[j+2]);
-                        accum[3] += MULT16_16(sinct[j+3], iptr[j+3]);
-                      }
-                      sum = accum[0] + accum[1] + accum[2] + accum[3];
-                */
-
-                output[this.out_stride * out_sample++] = Inlines.SATURATE16(Inlines.PSHR32(sum, 15));
+                output[output_ptr + (this.out_stride * out_sample++)] = Inlines.SATURATE16(Inlines.PSHR32(sum, 15));
                 last_sample += this.int_advance;
                 samp_frac_num += (int)this.frac_advance;
                 if (samp_frac_num >= this.den_rate)
@@ -318,7 +308,7 @@ namespace Concentus.Common
             return out_sample;
         }
 
-        private int resampler_basic_interpolate_single(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
+        private int resampler_basic_interpolate_single(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
         {
             int N = this.filt_len;
             int out_sample = 0;
@@ -328,29 +318,34 @@ namespace Concentus.Common
 
             while (!(last_sample >= in_len || out_sample >= out_len))
             {
-                Pointer<short> iptr = input.Point(last_sample);
+                int iptr = input_ptr + last_sample;
 
                 int offset = samp_frac_num * this.oversample / this.den_rate;
                 short frac = (short)Inlines.PDIV32(Inlines.SHL32((samp_frac_num * this.oversample) % this.den_rate, 15), this.den_rate);
-                short[] interp = new short[4];
-
-
+                short interp0, interp1, interp2, interp3;
+                
                 int j;
-                int[] accum = { 0, 0, 0, 0 };
+                int accum0 = 0;
+                int accum1 = 0;
+                int accum2 = 0;
+                int accum3 = 0;
 
                 for (j = 0; j < N; j++)
                 {
-                    short curr_in = iptr[j];
-                    accum[0] += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset - 2]);
-                    accum[1] += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset - 1]);
-                    accum[2] += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset]);
-                    accum[3] += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset + 1]);
+                    short curr_in = input[iptr + j];
+                    accum0 += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset - 2]);
+                    accum1 += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset - 1]);
+                    accum2 += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset]);
+                    accum3 += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset + 1]);
                 }
 
-                cubic_coef(frac, interp);
-                sum = Inlines.MULT16_32_Q15(interp[0], Inlines.SHR32(accum[0], 1)) + Inlines.MULT16_32_Q15(interp[1], Inlines.SHR32(accum[1], 1)) + Inlines.MULT16_32_Q15(interp[2], Inlines.SHR32(accum[2], 1)) + Inlines.MULT16_32_Q15(interp[3], Inlines.SHR32(accum[3], 1));
+                cubic_coef(frac, out interp0, out interp1, out interp2, out interp3);
+                sum =   Inlines.MULT16_32_Q15(interp0, Inlines.SHR32(accum0, 1)) + 
+                        Inlines.MULT16_32_Q15(interp1, Inlines.SHR32(accum1, 1)) + 
+                        Inlines.MULT16_32_Q15(interp2, Inlines.SHR32(accum2, 1)) + 
+                        Inlines.MULT16_32_Q15(interp3, Inlines.SHR32(accum3, 1));
 
-                output[out_stride * out_sample++] = Inlines.SATURATE16(Inlines.PSHR32(sum, 14));
+                output[output_ptr + (out_stride * out_sample++)] = Inlines.SATURATE16(Inlines.PSHR32(sum, 14));
                 last_sample += int_advance;
                 samp_frac_num += (int)frac_advance;
                 if (samp_frac_num >= den_rate)
@@ -523,18 +518,18 @@ namespace Concentus.Common
             }
         }
 
-        private void speex_resampler_process_native(int channel_index, ref int in_len, Pointer<short> output, ref int out_len)
+        private void speex_resampler_process_native(int channel_index, ref int in_len, short[] output, int output_ptr, ref int out_len)
         {
             int j = 0;
             int N = this.filt_len;
             int out_sample = 0;
-            Pointer<short> mem = this.mem.GetPointer(channel_index * this.mem_alloc_size);
+            int mem_ptr = channel_index * this.mem_alloc_size;
             int ilen;
 
             this.started = 1;
 
             /* Call the right resampler through the function ptr */
-            out_sample = this.resampler_ptr(channel_index, mem, ref in_len, output, ref out_len);
+            out_sample = this.resampler_ptr(channel_index, this.mem, mem_ptr, ref in_len, output, output_ptr, ref out_len);
 
             if (this.last_sample[channel_index] < (int)in_len)
                 in_len = this.last_sample[channel_index];
@@ -543,17 +538,17 @@ namespace Concentus.Common
 
             ilen = in_len;
 
-            for (j = 0; j < N - 1; ++j)
-                mem[j] = mem[j + ilen];
+            for (j = mem_ptr; j < N - 1 + mem_ptr; ++j)
+                this.mem[j] = this.mem[j + ilen];
         }
 
-        private int speex_resampler_magic(int channel_index, BoxedValue<Pointer<short>> output, int out_len)
+        private int speex_resampler_magic(int channel_index, short[] output, ref int output_ptr, int out_len)
         {
             int tmp_in_len = this.magic_samples[channel_index];
-            Pointer<short> mem = this.mem.GetPointer(channel_index * this.mem_alloc_size);
+            int mem_ptr = channel_index * this.mem_alloc_size;
             int N = this.filt_len;
 
-            this.speex_resampler_process_native(channel_index, ref tmp_in_len, output.Val, ref out_len);
+            this.speex_resampler_process_native(channel_index, ref tmp_in_len, output, output_ptr, ref out_len);
 
             this.magic_samples[channel_index] -= tmp_in_len;
 
@@ -561,10 +556,10 @@ namespace Concentus.Common
             if (this.magic_samples[channel_index] != 0)
             {
                 int i;
-                for (i = 0; i < this.magic_samples[channel_index]; i++)
-                    mem[N - 1 + i] = mem[N - 1 + i + tmp_in_len];
+                for (i = mem_ptr; i < this.magic_samples[channel_index] + mem_ptr; i++)
+                    this.mem[N - 1 + i] = this.mem[N - 1 + i + tmp_in_len];
             }
-            output.Val = output.Val.Point(out_len * this.out_stride);
+            output_ptr += out_len * this.out_stride;
             return out_len;
         }
 
@@ -637,7 +632,7 @@ namespace Concentus.Common
 
             st.Quality = quality;
             st.SetRateFraction(ratio_num, ratio_den, in_rate, out_rate);
-            
+
             st.update_filter();
 
             st.initialised = 1;
@@ -650,26 +645,28 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
         /// <param name="input">Input buffer</param>
+        /// <param name="input_ptr">Offset to start from when reading input</param>
         /// <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
         /// will be set to the number of input samples actually processed</param>
         /// <param name="output">Output buffer</param>
+        /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
-        /// of output samples actually written</param>
-        public void Process(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
+        /// of output samples actually produced</param>
+        public void Process(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
         {
             int j;
             int ilen = in_len;
             int olen = out_len;
-            Pointer<short> x = this.mem.GetPointer(channel_index * this.mem_alloc_size);
+            int x = channel_index * this.mem_alloc_size;
             int filt_offs = this.filt_len - 1;
             int xlen = this.mem_alloc_size - filt_offs;
             int istride = this.in_stride;
 
             if (this.magic_samples[channel_index] != 0)
             {
-                BoxedValue<Pointer<short>> boxed_output = new BoxedValue<Pointer<short>>(output);
-                olen -= this.speex_resampler_magic(channel_index, boxed_output, olen);
-                output = boxed_output.Val;
+
+                olen -= this.speex_resampler_magic(channel_index, output, ref output_ptr, olen);
+
             }
             if (this.magic_samples[channel_index] == 0)
             {
@@ -681,18 +678,20 @@ namespace Concentus.Common
                     if (input != null)
                     {
                         for (j = 0; j < ichunk; ++j)
-                            x[j + filt_offs] = input[j * istride];
+                            this.mem[x + j + filt_offs] = input[input_ptr + j * istride];
                     }
                     else {
                         for (j = 0; j < ichunk; ++j)
-                            x[j + filt_offs] = 0;
+
+                            this.mem[x + j + filt_offs] = 0;
                     }
-                    this.speex_resampler_process_native(channel_index, ref ichunk, output, ref ochunk);
+                    this.speex_resampler_process_native(channel_index, ref ichunk, output, output_ptr, ref ochunk);
                     ilen -= ichunk;
                     olen -= ochunk;
-                    output = output.Point(ochunk * this.out_stride);
+                    output_ptr += ochunk * this.out_stride;
                     if (input != null)
-                        input = input.Point(ichunk * istride);
+
+                        input_ptr += ichunk * istride;
                 }
             }
             in_len -= ilen;
@@ -704,37 +703,40 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
         /// <param name="input">Input buffer</param>
+        /// <param name="input_ptr">Offset to start from when reading input</param>
         /// <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
         /// will be set to the number of input samples actually processed</param>
         /// <param name="output">Output buffer</param>
+        /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
-        /// of output samples actually written</param>
-        public void Process(int channel_index, Pointer<float> input, ref int in_len, Pointer<float> output, ref int out_len)
+        /// of output samples actually produced</param>
+        public void Process(int channel_index, float[] input, int input_ptr, ref int in_len, float[] output, int output_ptr, ref int out_len)
         {
             int j;
             int istride_save = this.in_stride;
             int ostride_save = this.out_stride;
             int ilen = in_len;
             int olen = out_len;
-            Pointer<short> x = this.mem.GetPointer(channel_index * this.mem_alloc_size);
+            int x = channel_index * this.mem_alloc_size;
             int xlen = this.mem_alloc_size - (this.filt_len - 1);
             int ylen = (olen < FIXED_STACK_ALLOC) ? olen : FIXED_STACK_ALLOC;
-            Pointer<short> ystack = new Pointer<short>(new short[ylen]);
+            short[] ystack = new short[ylen];
 
             this.out_stride = 1;
 
             while (ilen != 0 && olen != 0)
             {
-                Pointer<short> y = ystack;
+
+                int y = 0;
                 int ichunk = (ilen > xlen) ? xlen : ilen;
                 int ochunk = (olen > ylen) ? ylen : olen;
                 int omagic = 0;
 
                 if (this.magic_samples[channel_index] != 0)
                 {
-                    BoxedValue<Pointer<short>> boxed_y = new BoxedValue<Pointer<short>>(y);
-                    omagic = this.speex_resampler_magic(channel_index, boxed_y, ochunk);
-                    y = boxed_y.Val;
+
+                    omagic = this.speex_resampler_magic(channel_index, ystack, ref y, ochunk);
+
                     ochunk -= omagic;
                     olen -= omagic;
                 }
@@ -743,14 +745,14 @@ namespace Concentus.Common
                     if (input != null)
                     {
                         for (j = 0; j < ichunk; ++j)
-                            x[j + this.filt_len - 1] = WORD2INT(input[j * istride_save]);
+                            this.mem[x + j + this.filt_len - 1] = WORD2INT(input[input_ptr + j * istride_save]);
                     }
                     else {
                         for (j = 0; j < ichunk; ++j)
-                            x[j + this.filt_len - 1] = 0;
+                            this.mem[x + j + this.filt_len - 1] = 0;
                     }
 
-                    this.speex_resampler_process_native(channel_index, ref ichunk, y, ref ochunk);
+                    this.speex_resampler_process_native(channel_index, ref ichunk, ystack, y, ref ochunk);
                 }
                 else {
                     ichunk = 0;
@@ -758,13 +760,13 @@ namespace Concentus.Common
                 }
 
                 for (j = 0; j < ochunk + omagic; ++j)
-                    output[j * ostride_save] = ystack[j];
+                    output[output_ptr + j * ostride_save] = ystack[j];
 
                 ilen -= ichunk;
                 olen -= ochunk;
-                output = output.Point((ochunk + omagic) * ostride_save);
+                output_ptr += ((ochunk + omagic) * ostride_save);
                 if (input != null)
-                    input = input.Point(ichunk * istride_save);
+                    input_ptr += ichunk * istride_save;
             }
             this.out_stride = ostride_save;
             in_len -= ilen;
@@ -772,15 +774,17 @@ namespace Concentus.Common
         }
 
         /// <summary>
-        /// Resamples an interleaved int array. The stride is determined by the number of channels of the resampler.
+        /// Resamples an interleaved int array. The stride is automatically determined by the number of channels of the resampler.
         /// </summary>
         /// <param name="input">Input buffer</param>
+        /// <param name="input_ptr">Offset to start from when reading input</param>
         /// <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
         /// value will be set to the number of input samples actually processed</param>
         /// <param name="output">Output buffer</param>
+        /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
-        /// will be set to the number of samples per channel actually output</param>
-        public void ProcessInterleaved(Pointer<float> input, ref int in_len, Pointer<float> output, ref int out_len)
+        /// will be set to the number of samples per channel actually produced</param>
+        public void ProcessInterleaved(float[] input, int input_ptr, ref int in_len, float[] output, int output_ptr, ref int out_len)
         {
             int i;
             int istride_save, ostride_save;
@@ -794,24 +798,26 @@ namespace Concentus.Common
                 out_len = bak_out_len;
                 in_len = bak_in_len;
                 if (input != null)
-                    this.Process(i, input.Point(i), ref in_len, output.Point(i), ref out_len);
+                    this.Process(i, input, input_ptr + i, ref in_len, output, output_ptr + i, ref out_len);
                 else
-                    this.Process(i, null, ref in_len, output.Point(i), ref out_len);
+                    this.Process(i, null, 0, ref in_len, output, output_ptr + i, ref out_len);
             }
             this.in_stride = istride_save;
             this.out_stride = ostride_save;
         }
 
         /// <summary>
-        /// Resamples an interleaved float array. The stride is determined by the number of channels of the resampler.
+        /// Resamples an interleaved float array. The stride is automatically determined by the number of channels of the resampler.
         /// </summary>
         /// <param name="input">Input buffer</param>
+        /// <param name="input_ptr">Offset to start from when reading input</param>
         /// <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
         /// value will be set to the number of input samples actually processed</param>
         /// <param name="output">Output buffer</param>
+        /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
-        /// will be set to the number of samples per channel actually output</param>
-        public void ProcessInterleaved(Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
+        /// will be set to the number of samples per channel actually produced</param>
+        public void ProcessInterleaved(short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
         {
             int i;
             int istride_save, ostride_save;
@@ -825,9 +831,9 @@ namespace Concentus.Common
                 out_len = bak_out_len;
                 in_len = bak_in_len;
                 if (input != null)
-                    this.Process(i, input.Point(i), ref in_len, output.Point(i), ref out_len);
+                    this.Process(i, input, input_ptr + i, ref in_len, output, output_ptr + i, ref out_len);
                 else
-                    this.Process(i, null, ref in_len, output.Point(i), ref out_len);
+                    this.Process(i, null, 0, ref in_len, output, output_ptr + i, ref out_len);
             }
             this.in_stride = istride_save;
             this.out_stride = ostride_save;
@@ -849,7 +855,7 @@ namespace Concentus.Common
         }
 
         /// <summary>
-        /// Resets the resampler so a new (unrelated) stream can be processed.
+        /// Clears the resampler buffers so a new (unrelated) stream can be processed.
         /// </summary>
         public void ResetMem()
         {

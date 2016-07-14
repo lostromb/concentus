@@ -38,14 +38,14 @@ namespace ConcentusDemo
         {
             int sourceFreq = 48000;
             int targetFreq = 8000;
-            SpeexResampler resampler = SpeexResampler.Create(1, sourceFreq, targetFreq, 10);
-            byte[] sineSweep = File.ReadAllBytes(@"C:\Users\lostromb\Documents\Visual Studio 2015\Projects\Durandal\old junk\Sine Sweep 48k.raw");
+            SpeexResampler resampler = SpeexResampler.Create(2, sourceFreq, targetFreq, 10);
+            byte[] sineSweep = File.ReadAllBytes(@"C:\Users\lostromb\Documents\Visual Studio 2015\Projects\Durandal\old junk\Sine Sweep Stereo 48k.raw");
             short[] samples = BytesToShorts(sineSweep);
             short[] resampled = new short[(int)((long)samples.Length * (long)targetFreq / (long)sourceFreq)];
-            int in_len = samples.Length;
-            int out_len = resampled.Length;
-            resampler.Process(0, samples.GetPointer(), ref in_len, resampled.GetPointer(), ref out_len);
-            byte[] resampledBytes = ShortsToBytes(resampled, 0, out_len);
+            int in_len = samples.Length / 2;
+            int out_len = resampled.Length / 2;
+            resampler.ProcessInterleaved(samples, 0, ref in_len, resampled, 0, ref out_len);
+            byte[] resampledBytes = ShortsToBytes(resampled, 0, out_len * 2);
             File.WriteAllBytes(@"C:\Users\lostromb\Documents\Visual Studio 2015\Projects\Durandal\old junk\Resampled.raw", resampledBytes);
         }
 
