@@ -35,6 +35,11 @@ namespace ConcentusDemo
 
         public static void Main(string[] args)
         {
+            SpeexResampler resampler = SpeexResampler.speex_resampler_init(1, 44100, 16000, 10, null);
+        }
+
+        public static void TestFastMath()
+        {
             Random rand = new Random();
             
             //for (int z = 0;  z< 100; z++)

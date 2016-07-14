@@ -301,6 +301,12 @@ namespace Concentus.Common
             return PSHR32((x), (a));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int PDIV32(int a, int b)
+        {
+            return a / b;
+        }
+
         //        /** Divide by two */
         // fixme: can this be optimized?
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
