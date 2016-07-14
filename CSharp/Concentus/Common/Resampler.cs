@@ -68,6 +68,8 @@ namespace Concentus.Common
     {
         private const int FIXED_STACK_ALLOC = 8192;
 
+        #region Encoder state
+
         private int in_rate = 0;
         private int out_rate = 0;
         private int num_rate = 0;
@@ -86,29 +88,26 @@ namespace Concentus.Common
         private int started = 0;
 
         /* These are per-channel */
-        private Pointer<int> last_sample = null;
-        private Pointer<int> samp_frac_num = null;
-        private Pointer<int> magic_samples = null;
+        private int[] last_sample = null;
+        private int[] samp_frac_num = null;
+        private int[] magic_samples = null;
 
-        private Pointer<short> mem = null;
-        private Pointer<short> sinc_table = null;
+        private short[] mem = null;
+        private short[] sinc_table = null;
         private int sinc_table_length = 0;
         private resampler_basic_func resampler_ptr = null;
 
         int in_stride = 0;
         int out_stride = 0;
 
+        /// <summary>
+        /// Create() is the only way to make a resampler instance publically
+        /// </summary>
         private SpeexResampler() { }
 
-        /// <summary>
-        /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer<short>, int *, Pointer<short>, Pointer<int>);
-        /// </summary>
-        private delegate int resampler_basic_func(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len);
+        #endregion
         
-        private static short WORD2INT(float x)
-        {
-            return x < short.MinValue ? short.MinValue : (x > short.MaxValue ? short.MaxValue : (short)x);
-        }
+        #region Helper classes and tables
 
         private class FuncDef
         {
@@ -121,7 +120,6 @@ namespace Concentus.Common
             public double[] table;
             public int oversample;
             
-            #region Tables
             public static readonly double[] kaiser12_table/*[68]*/ = {
                 0.99859849, 1.00000000, 0.99859849, 0.99440475, 0.98745105, 0.97779076,
                 0.96549770, 0.95066529, 0.93340547, 0.91384741, 0.89213598, 0.86843014,
@@ -167,7 +165,6 @@ namespace Concentus.Common
                 0.43647969, 0.39120616, 0.34752997, 0.30580127, 0.26632152, 0.22934058,
                 0.19505503, 0.16360756, 0.13508755, 0.10953262, 0.08693120, 0.06722600,
                 0.05031820, 0.03607231, 0.02432151, 0.01487334, 0.00752000, 0.00000000};
-            #endregion
         };
 
         private class QualityMapping
@@ -211,13 +208,18 @@ namespace Concentus.Common
             };
         }
 
-        private static class SpeexError
+        #endregion
+
+        #region Private code
+
+        /// <summary>
+        /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer<short>, int *, Pointer<short>, Pointer<int>);
+        /// </summary>
+        private delegate int resampler_basic_func(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len);
+
+        private static short WORD2INT(float x)
         {
-            public const int RESAMPLER_ERR_SUCCESS = 0;
-            public const int RESAMPLER_ERR_ALLOC_FAILED = -1;
-            public const int RESAMPLER_ERR_BAD_STATE = -2;
-            public const int RESAMPLER_ERR_INVALID_ARG = -3;
-            public const int RESAMPLER_ERR_PTR_OVERLAP = -4;
+            return x < short.MinValue ? short.MinValue : (x > short.MaxValue ? short.MaxValue : (short)x);
         }
 
         /*8,24,40,56,80,104,128,160,200,256,320*/
@@ -276,7 +278,7 @@ namespace Concentus.Common
             int out_sample = 0;
             int last_sample = this.last_sample[channel_index];
             int samp_frac_num = this.samp_frac_num[channel_index];
-            Pointer<short> sinc_table = this.sinc_table;
+            Pointer<short> sinc_table = this.sinc_table.GetPointer();
             int sum;
 
             while (!(last_sample >= in_len || out_sample >= out_len))
@@ -399,10 +401,10 @@ namespace Concentus.Common
             {
                 int i;
                 if (this.sinc_table == null)
-                    this.sinc_table = new Pointer<short>(new short[this.filt_len * this.den_rate]);
+                    this.sinc_table = new short[this.filt_len * this.den_rate];
                 else if (this.sinc_table_length < this.filt_len * this.den_rate)
                 {
-                    this.sinc_table = new Pointer<short>(new short[this.filt_len * this.den_rate]);
+                    this.sinc_table = new short[this.filt_len * this.den_rate];
                     this.sinc_table_length = this.filt_len * this.den_rate;
                 }
                 for (i = 0; i < this.den_rate; i++)
@@ -419,10 +421,10 @@ namespace Concentus.Common
             else {
                 int i;
                 if (this.sinc_table == null)
-                    this.sinc_table = new Pointer<short>(new short[this.filt_len * this.oversample + 8]);
+                    this.sinc_table = new short[this.filt_len * this.oversample + 8];
                 else if (this.sinc_table_length < this.filt_len * this.oversample + 8)
                 {
-                    this.sinc_table = new Pointer<short>(new short[this.filt_len * this.oversample + 8]);
+                    this.sinc_table = new short[this.filt_len * this.oversample + 8];
                     this.sinc_table_length = this.filt_len * this.oversample + 8;
                 }
                 for (i = -4; i < (int)(this.oversample * this.filt_len + 4); i++)
@@ -441,7 +443,7 @@ namespace Concentus.Common
             {
                 int i;
                 this.mem_alloc_size = this.filt_len - 1 + this.buffer_size;
-                this.mem = new Pointer<short>(new short[this.nb_channels * this.mem_alloc_size]);
+                this.mem = new short[this.nb_channels * this.mem_alloc_size];
                 for (i = 0; i < this.nb_channels * this.mem_alloc_size; i++)
                     this.mem[i] = 0;
                 /*speex_warning("init filter");*/
@@ -450,7 +452,7 @@ namespace Concentus.Common
             {
                 int i;
                 this.mem_alloc_size = this.filt_len - 1 + this.buffer_size;
-                this.mem = new Pointer<short>(new short[this.nb_channels * this.mem_alloc_size]);
+                this.mem = new short[this.nb_channels * this.mem_alloc_size];
                 for (i = 0; i < this.nb_channels * this.mem_alloc_size; i++)
                     this.mem[i] = 0;
                 /*speex_warning("reinit filter");*/
@@ -464,7 +466,7 @@ namespace Concentus.Common
                 if ((this.filt_len - 1 + this.buffer_size) > this.mem_alloc_size)
                 {
                     this.mem_alloc_size = this.filt_len - 1 + this.buffer_size;
-                    this.mem = new Pointer<short>(new short[this.nb_channels * this.mem_alloc_size]);
+                    this.mem = new short[this.nb_channels * this.mem_alloc_size];
                 }
                 for (i = this.nb_channels - 1; i >= 0; i--)
                 {
@@ -521,11 +523,80 @@ namespace Concentus.Common
             }
         }
 
+        private void speex_resampler_process_native(int channel_index, ref int in_len, Pointer<short> output, ref int out_len)
+        {
+            int j = 0;
+            int N = this.filt_len;
+            int out_sample = 0;
+            Pointer<short> mem = this.mem.GetPointer(channel_index * this.mem_alloc_size);
+            int ilen;
+
+            this.started = 1;
+
+            /* Call the right resampler through the function ptr */
+            out_sample = this.resampler_ptr(channel_index, mem, ref in_len, output, ref out_len);
+
+            if (this.last_sample[channel_index] < (int)in_len)
+                in_len = this.last_sample[channel_index];
+            out_len = out_sample;
+            this.last_sample[channel_index] -= in_len;
+
+            ilen = in_len;
+
+            for (j = 0; j < N - 1; ++j)
+                mem[j] = mem[j + ilen];
+        }
+
+        private int speex_resampler_magic(int channel_index, BoxedValue<Pointer<short>> output, int out_len)
+        {
+            int tmp_in_len = this.magic_samples[channel_index];
+            Pointer<short> mem = this.mem.GetPointer(channel_index * this.mem_alloc_size);
+            int N = this.filt_len;
+
+            this.speex_resampler_process_native(channel_index, ref tmp_in_len, output.Val, ref out_len);
+
+            this.magic_samples[channel_index] -= tmp_in_len;
+
+            /* If we couldn't process all "magic" input samples, save the rest for next time */
+            if (this.magic_samples[channel_index] != 0)
+            {
+                int i;
+                for (i = 0; i < this.magic_samples[channel_index]; i++)
+                    mem[N - 1 + i] = mem[N - 1 + i + tmp_in_len];
+            }
+            output.Val = output.Val.Point(out_len * this.out_stride);
+            return out_len;
+        }
+
+        #endregion
+
+        #region Public API
+
+        /// <summary>
+        /// Create a new resampler with integer input and output rates (in hertz).
+        /// </summary>
+        /// <param name="nb_channels">The number of channels to be processed</param>
+        /// <param name="in_rate">Input sampling rate, in hertz</param>
+        /// <param name="out_rate">Output sampling rate, in hertz</param>
+        /// <param name="quality">Resampling quality, from 0 to 10</param>
+        /// <returns>A newly created restampler</returns>
         public static SpeexResampler Create(int nb_channels, int in_rate, int out_rate, int quality)
         {
             return Create(nb_channels, in_rate, out_rate, in_rate, out_rate, quality);
         }
 
+        /// <summary>
+        /// Create a new resampler with fractional input/output rates. The sampling 
+        /// rate ratio is an arbitrary rational number with both the numerator and
+        /// denominator being 32-bit integers.
+        /// </summary>
+        /// <param name="nb_channels">The number of channels to be processed</param>
+        /// <param name="ratio_num">Numerator of sampling rate ratio</param>
+        /// <param name="ratio_den">Denominator of sampling rate ratio</param>
+        /// <param name="in_rate">Input sample rate rounded to the nearest integer (in hz)</param>
+        /// <param name="out_rate">Output sample rate rounded to the nearest integer (in hz)</param>
+        /// <param name="quality">Resampling quality, from 0 to 10</param>
+        /// <returns>A newly created restampler</returns>
         public static SpeexResampler Create(int nb_channels, int ratio_num, int ratio_den, int in_rate, int out_rate, int quality)
         {
             int i;
@@ -554,9 +625,9 @@ namespace Concentus.Common
             st.buffer_size = 160;
 
             /* Per channel data */
-            st.last_sample = new Pointer<int>(new int[nb_channels]);
-            st.magic_samples = new Pointer<int>(new int[nb_channels]);
-            st.samp_frac_num = new Pointer<int>(new int[nb_channels]);
+            st.last_sample = new int[nb_channels];
+            st.magic_samples = new int[nb_channels];
+            st.samp_frac_num = new int[nb_channels];
             for (i = 0; i < nb_channels; i++)
             {
                 st.last_sample[i] = 0;
@@ -574,59 +645,22 @@ namespace Concentus.Common
             return st;
         }
 
-        private int speex_resampler_process_native(int channel_index, ref int in_len, Pointer<short> output, ref int out_len)
-        {
-            int j = 0;
-            int N = this.filt_len;
-            int out_sample = 0;
-            Pointer<short> mem = this.mem.Point(channel_index * this.mem_alloc_size);
-            int ilen;
-
-            this.started = 1;
-
-            /* Call the right resampler through the function ptr */
-            out_sample = this.resampler_ptr(channel_index, mem, ref in_len, output, ref out_len);
-
-            if (this.last_sample[channel_index] < (int)in_len)
-                in_len = this.last_sample[channel_index];
-            out_len = out_sample;
-            this.last_sample[channel_index] -= in_len;
-
-            ilen = in_len;
-
-            for (j = 0; j < N - 1; ++j)
-                mem[j] = mem[j + ilen];
-
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
-        }
-
-        private int speex_resampler_magic(int channel_index, BoxedValue<Pointer<short>> output, int out_len)
-        {
-            int tmp_in_len = this.magic_samples[channel_index];
-            Pointer<short> mem = this.mem.Point(channel_index * this.mem_alloc_size);
-            int N = this.filt_len;
-            
-            this.speex_resampler_process_native(channel_index, ref tmp_in_len, output.Val, ref out_len);
-
-            this.magic_samples[channel_index] -= tmp_in_len;
-
-            /* If we couldn't process all "magic" input samples, save the rest for next time */
-            if (this.magic_samples[channel_index] != 0)
-            {
-                int i;
-                for (i = 0; i < this.magic_samples[channel_index]; i++)
-                    mem[N - 1 + i] = mem[N - 1 + i + tmp_in_len];
-            }
-            output.Val = output.Val.Point(out_len * this.out_stride);
-            return out_len;
-        }
-
-        public int Process(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
+        /// <summary>
+        /// Resample an int array. The input and output buffers must *not* overlap
+        /// </summary>
+        /// <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
+        /// <param name="input">Input buffer</param>
+        /// <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
+        /// will be set to the number of input samples actually processed</param>
+        /// <param name="output">Output buffer</param>
+        /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
+        /// of output samples actually written</param>
+        public void Process(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
         {
             int j;
             int ilen = in_len;
             int olen = out_len;
-            Pointer<short> x = this.mem.Point(channel_index * this.mem_alloc_size);
+            Pointer<short> x = this.mem.GetPointer(channel_index * this.mem_alloc_size);
             int filt_offs = this.filt_len - 1;
             int xlen = this.mem_alloc_size - filt_offs;
             int istride = this.in_stride;
@@ -663,17 +697,26 @@ namespace Concentus.Common
             }
             in_len -= ilen;
             out_len -= olen;
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
-        public int Process(int channel_index, Pointer<float> input, BoxedValue<int> in_len, Pointer<float> output, BoxedValue<int> out_len)
+        /// <summary>
+        /// Resample a float array array. The input and output buffers must *not* overlap
+        /// </summary>
+        /// <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
+        /// <param name="input">Input buffer</param>
+        /// <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
+        /// will be set to the number of input samples actually processed</param>
+        /// <param name="output">Output buffer</param>
+        /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
+        /// of output samples actually written</param>
+        public void Process(int channel_index, Pointer<float> input, ref int in_len, Pointer<float> output, ref int out_len)
         {
             int j;
             int istride_save = this.in_stride;
             int ostride_save = this.out_stride;
-            int ilen = in_len.Val;
-            int olen = out_len.Val;
-            Pointer<short> x = this.mem.Point(channel_index * this.mem_alloc_size);
+            int ilen = in_len;
+            int olen = out_len;
+            Pointer<short> x = this.mem.GetPointer(channel_index * this.mem_alloc_size);
             int xlen = this.mem_alloc_size - (this.filt_len - 1);
             int ylen = (olen < FIXED_STACK_ALLOC) ? olen : FIXED_STACK_ALLOC;
             Pointer<short> ystack = new Pointer<short>(new short[ylen]);
@@ -724,36 +767,20 @@ namespace Concentus.Common
                     input = input.Point(ichunk * istride_save);
             }
             this.out_stride = ostride_save;
-            in_len.Val -= ilen;
-            out_len.Val -= olen;
-
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
+            in_len -= ilen;
+            out_len -= olen;
         }
 
-        public int ProcessInterleaved(Pointer<float> input, BoxedValue<int> in_len, Pointer<float> output, BoxedValue<int> out_len)
-        {
-            int i;
-            int istride_save, ostride_save;
-            int bak_out_len = out_len.Val;
-            int bak_in_len = in_len.Val;
-            istride_save = this.in_stride;
-            ostride_save = this.out_stride;
-            this.in_stride = this.out_stride = this.nb_channels;
-            for (i = 0; i < this.nb_channels; i++)
-            {
-                out_len.Val = bak_out_len;
-                in_len.Val = bak_in_len;
-                if (input != null)
-                    this.Process(i, input.Point(i), in_len, output.Point(i), out_len);
-                else
-                    this.Process(i, null, in_len, output.Point(i), out_len);
-            }
-            this.in_stride = istride_save;
-            this.out_stride = ostride_save;
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
-        }
-
-        public int ProcessInterleaved(Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
+        /// <summary>
+        /// Resamples an interleaved int array. The stride is determined by the number of channels of the resampler.
+        /// </summary>
+        /// <param name="input">Input buffer</param>
+        /// <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
+        /// value will be set to the number of input samples actually processed</param>
+        /// <param name="output">Output buffer</param>
+        /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
+        /// will be set to the number of samples per channel actually output</param>
+        public void ProcessInterleaved(Pointer<float> input, ref int in_len, Pointer<float> output, ref int out_len)
         {
             int i;
             int istride_save, ostride_save;
@@ -773,27 +800,109 @@ namespace Concentus.Common
             }
             this.in_stride = istride_save;
             this.out_stride = ostride_save;
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
-        public int SetRates(int in_rate, int out_rate)
+        /// <summary>
+        /// Resamples an interleaved float array. The stride is determined by the number of channels of the resampler.
+        /// </summary>
+        /// <param name="input">Input buffer</param>
+        /// <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
+        /// value will be set to the number of input samples actually processed</param>
+        /// <param name="output">Output buffer</param>
+        /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
+        /// will be set to the number of samples per channel actually output</param>
+        public void ProcessInterleaved(Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
         {
-            return this.SetRateFraction(in_rate, out_rate, in_rate, out_rate);
+            int i;
+            int istride_save, ostride_save;
+            int bak_out_len = out_len;
+            int bak_in_len = in_len;
+            istride_save = this.in_stride;
+            ostride_save = this.out_stride;
+            this.in_stride = this.out_stride = this.nb_channels;
+            for (i = 0; i < this.nb_channels; i++)
+            {
+                out_len = bak_out_len;
+                in_len = bak_in_len;
+                if (input != null)
+                    this.Process(i, input.Point(i), ref in_len, output.Point(i), ref out_len);
+                else
+                    this.Process(i, null, ref in_len, output.Point(i), ref out_len);
+            }
+            this.in_stride = istride_save;
+            this.out_stride = ostride_save;
         }
 
+        /// <summary>
+        /// Make sure that the first samples to go out of the resamplers don't have 
+        /// leading zeros. This is only useful before starting to use a newly created
+        /// resampler. It is recommended to use that when resampling an audio file, as
+        /// it will generate a file with the same length.For real-time processing,
+        /// it is probably easier not to use this call (so that the output duration
+        /// is the same for the first frame).
+        /// </summary>
+        public void SkipZeroes()
+        {
+            int i;
+            for (i = 0; i < this.nb_channels; i++)
+                this.last_sample[i] = this.filt_len / 2;
+        }
+
+        /// <summary>
+        /// Resets the resampler so a new (unrelated) stream can be processed.
+        /// </summary>
+        public void ResetMem()
+        {
+            int i;
+            for (i = 0; i < this.nb_channels; i++)
+            {
+                this.last_sample[i] = 0;
+                this.magic_samples[i] = 0;
+                this.samp_frac_num[i] = 0;
+            }
+            for (i = 0; i < this.nb_channels * (this.filt_len - 1); i++)
+                this.mem[i] = 0;
+        }
+
+        #endregion
+
+        #region Getters and Setters
+
+        /// <summary>
+        /// Sets the input and output rates
+        /// </summary>
+        /// <param name="in_rate">Input sampling rate, in hertz</param>
+        /// <param name="out_rate">Output sampling rate, in hertz</param>
+        public void SetRates(int in_rate, int out_rate)
+        {
+            this.SetRateFraction(in_rate, out_rate, in_rate, out_rate);
+        }
+
+        /// <summary>
+        /// Get the current input/output sampling rates (integer value).
+        /// </summary>
+        /// <param name="in_rate">(Output) Sampling rate of input</param>
+        /// <param name="out_rate">(Output) Sampling rate of output</param>
         public void GetRates(out int in_rate, out int out_rate)
         {
             in_rate = this.in_rate;
             out_rate = this.out_rate;
         }
 
-        public int SetRateFraction(int ratio_num, int ratio_den, int in_rate, int out_rate)
+        /// <summary>
+        /// Sets the input/output sampling rates and resampling ration (fractional values in Hz supported)
+        /// </summary>
+        /// <param name="ratio_num">Numerator of the sampling rate ratio</param>
+        /// <param name="ratio_den">Denominator of the sampling rate ratio</param>
+        /// <param name="in_rate">Input sampling rate rounded to the nearest integer (in Hz)</param>
+        /// <param name="out_rate">Output sampling rate rounded to the nearest integer (in Hz)</param>
+        public void SetRateFraction(int ratio_num, int ratio_den, int in_rate, int out_rate)
         {
             int fact;
             int old_den;
             int i;
             if (this.in_rate == in_rate && this.out_rate == out_rate && this.num_rate == ratio_num && this.den_rate == ratio_den)
-                return SpeexError.RESAMPLER_ERR_SUCCESS;
+                return;
 
             old_den = this.den_rate;
             this.in_rate = in_rate;
@@ -823,15 +932,23 @@ namespace Concentus.Common
 
             if (this.initialised != 0)
                 this.update_filter();
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
+        /// <summary>
+        /// Gets the current resampling ratio. This will be reduced to the least common denominator
+        /// </summary>
+        /// <param name="ratio_num">(Output) numerator of the sampling rate ratio</param>
+        /// <param name="ratio_den">(Output) denominator of the sampling rate ratio</param>
         public void GetRateFraction(out int ratio_num, out int ratio_den)
         {
             ratio_num = this.num_rate;
             ratio_den = this.den_rate;
         }
 
+        /// <summary>
+        /// Gets or sets the resampling quality between 0 and 10, where 0 has poor 
+        /// quality and 10 has very high quality.
+        /// </summary>
         public int Quality
         {
             get
@@ -850,6 +967,9 @@ namespace Concentus.Common
             }
         }
 
+        /// <summary>
+        /// Gets or sets the input stride
+        /// </summary>
         public int InputStride
         {
             get
@@ -862,6 +982,9 @@ namespace Concentus.Common
             }
         }
 
+        /// <summary>
+        /// Gets or sets the output stride
+        /// </summary>
         public int OutputStride
         {
             get
@@ -874,6 +997,9 @@ namespace Concentus.Common
             }
         }
 
+        /// <summary>
+        /// Get the latency introduced by the resampler measured in input samples.
+        /// </summary>
         public int InputLatency
         {
             get
@@ -882,6 +1008,9 @@ namespace Concentus.Common
             }
         }
 
+        /// <summary>
+        /// Gets the latency introduced by the resampler measured in output samples.
+        /// </summary>
         public int OutputLatency
         {
             get
@@ -890,24 +1019,6 @@ namespace Concentus.Common
             }
         }
 
-        public void SkipZeroes()
-        {
-            int i;
-            for (i = 0; i < this.nb_channels; i++)
-                this.last_sample[i] = this.filt_len / 2;
-        }
-
-        public void ResetMem()
-        {
-            int i;
-            for (i = 0; i < this.nb_channels; i++)
-            {
-                this.last_sample[i] = 0;
-                this.magic_samples[i] = 0;
-                this.samp_frac_num[i] = 0;
-            }
-            for (i = 0; i < this.nb_channels * (this.filt_len - 1); i++)
-                this.mem[i] = 0;
-        }
+        #endregion
     }
 }
