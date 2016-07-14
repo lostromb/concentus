@@ -1,7 +1,8 @@
 ﻿/* Copyright (C) 2007-2008 Jean-Marc Valin
    Copyright (C) 2008      Thorvald Natvig
+   Ported to C# by Logan Stromberg
       
-   File: resample.c
+   File: Resampler.cs
    Arbitrary resampling code
 
    Redistribution and use in source and binary forms, with or without
@@ -65,15 +66,7 @@ namespace Concentus.Common
 {
     public class SpeexResampler
     {
-        //typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer<short>, int *, Pointer<short>, Pointer<int>);
-        private delegate int resampler_basic_func(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len);
-        
         private const int FIXED_STACK_ALLOC = 8192;
-        
-        private static short WORD2INT(float x)
-        {
-            return x < short.MinValue ? short.MinValue : (x > short.MaxValue ? short.MaxValue : (short)x);
-        }
 
         private int in_rate = 0;
         private int out_rate = 0;
@@ -105,9 +98,21 @@ namespace Concentus.Common
         int in_stride = 0;
         int out_stride = 0;
 
+        private SpeexResampler() { }
+
+        /// <summary>
+        /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer<short>, int *, Pointer<short>, Pointer<int>);
+        /// </summary>
+        private delegate int resampler_basic_func(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len);
+        
+        private static short WORD2INT(float x)
+        {
+            return x < short.MinValue ? short.MinValue : (x > short.MaxValue ? short.MaxValue : (short)x);
+        }
+
         private class FuncDef
         {
-            private FuncDef(double[] t, int os)
+            public FuncDef(double[] t, int os)
             {
                 table = t;
                 oversample = os;
@@ -115,14 +120,9 @@ namespace Concentus.Common
 
             public double[] table;
             public int oversample;
-
-            public static readonly FuncDef KAISER12 = new FuncDef(kaiser12_table, 64);
-            public static readonly FuncDef KAISER10 = new FuncDef(kaiser10_table, 32);
-            public static readonly FuncDef KAISER8 = new FuncDef(kaiser8_table, 32);
-            public static readonly FuncDef KAISER6 = new FuncDef(kaiser6_table, 32);
-
+            
             #region Tables
-            private static readonly double[] kaiser12_table/*[68]*/ = {
+            public static readonly double[] kaiser12_table/*[68]*/ = {
                 0.99859849, 1.00000000, 0.99859849, 0.99440475, 0.98745105, 0.97779076,
                 0.96549770, 0.95066529, 0.93340547, 0.91384741, 0.89213598, 0.86843014,
                 0.84290116, 0.81573067, 0.78710866, 0.75723148, 0.72629970, 0.69451601,
@@ -144,7 +144,7 @@ namespace Concentus.Common
             0.03111947, 0.02127838, 0.01402878, 0.00886058, 0.00531256, 0.00298291,
             0.00153438, 0.00069463, 0.00025272, 0.0000527734, 0.00000500, 0.00000000};
             */
-            private static readonly double[] kaiser10_table/*[36]*/ = {
+            public static readonly double[] kaiser10_table/*[36]*/ = {
                 0.99537781, 1.00000000, 0.99537781, 0.98162644, 0.95908712, 0.92831446,
                 0.89005583, 0.84522401, 0.79486424, 0.74011713, 0.68217934, 0.62226347,
                 0.56155915, 0.50119680, 0.44221549, 0.38553619, 0.33194107, 0.28205962,
@@ -152,7 +152,7 @@ namespace Concentus.Common
                 0.05731132, 0.04193980, 0.02979584, 0.02044510, 0.01345224, 0.00839739,
                 0.00488951, 0.00257636, 0.00115101, 0.00035515, 0.00000000, 0.00000000};
 
-            private static readonly double[] kaiser8_table/*[36]*/ = {
+            public static readonly double[] kaiser8_table/*[36]*/ = {
                 0.99635258, 1.00000000, 0.99635258, 0.98548012, 0.96759014, 0.94302200,
                 0.91223751, 0.87580811, 0.83439927, 0.78875245, 0.73966538, 0.68797126,
                 0.63451750, 0.58014482, 0.52566725, 0.47185369, 0.41941150, 0.36897272,
@@ -160,7 +160,7 @@ namespace Concentus.Common
                 0.10562887, 0.08273982, 0.06335451, 0.04724088, 0.03412321, 0.02369490,
                 0.01563093, 0.00959968, 0.00527363, 0.00233883, 0.00050000, 0.00000000};
 
-            private static readonly double[] kaiser6_table/*[36]*/ = {
+            public static readonly double[] kaiser6_table/*[36]*/ = {
                 0.99733006, 1.00000000, 0.99733006, 0.98935595, 0.97618418, 0.95799003,
                 0.93501423, 0.90755855, 0.87598009, 0.84068475, 0.80211977, 0.76076565,
                 0.71712752, 0.67172623, 0.62508937, 0.57774224, 0.53019925, 0.48295561,
@@ -188,26 +188,26 @@ namespace Concentus.Common
             }
 
             /* This table maps conversion quality to private parameters. There are two
-       reasons that explain why the up-sampling bandwidth is larger than the 
-       down-sampling bandwidth:
-       1) When up-sampling, we can assume that the spectrum is already attenuated
-          close to the Nyquist rate (from an A/D or a previous resampling filter)
-       2) Any aliasing that occurs very close to the Nyquist rate will be masked
-          by the sinusoids/noise just below the Nyquist rate (guaranteed only for
-          up-sampling).
-    */
-            internal static readonly QualityMapping[] quality_map = {
-            new QualityMapping(  8,  4, 0.830f, 0.860f, FuncDef.KAISER6 ), /* Q0 */
-            new QualityMapping( 16,  4, 0.850f, 0.880f, FuncDef.KAISER6 ), /* Q1 */
-            new QualityMapping( 32,  4, 0.882f, 0.910f, FuncDef.KAISER6 ), /* Q2 */  /* 82.3% cutoff ( ~60 dB stop) 6  */
-            new QualityMapping( 48,  8, 0.895f, 0.917f, FuncDef.KAISER8 ), /* Q3 */  /* 84.9% cutoff ( ~80 dB stop) 8  */
-            new QualityMapping( 64,  8, 0.921f, 0.940f, FuncDef.KAISER8 ), /* Q4 */  /* 88.7% cutoff ( ~80 dB stop) 8  */
-            new QualityMapping( 80, 16, 0.922f, 0.940f, FuncDef.KAISER10), /* Q5 */  /* 89.1% cutoff (~100 dB stop) 10 */
-            new QualityMapping( 96, 16, 0.940f, 0.945f, FuncDef.KAISER10), /* Q6 */  /* 91.5% cutoff (~100 dB stop) 10 */
-            new QualityMapping(128, 16, 0.950f, 0.950f, FuncDef.KAISER10), /* Q7 */  /* 93.1% cutoff (~100 dB stop) 10 */
-            new QualityMapping(160, 16, 0.960f, 0.960f, FuncDef.KAISER10), /* Q8 */  /* 94.5% cutoff (~100 dB stop) 10 */
-            new QualityMapping(192, 32, 0.968f, 0.968f, FuncDef.KAISER12), /* Q9 */  /* 95.5% cutoff (~100 dB stop) 10 */
-            new QualityMapping(256, 32, 0.975f, 0.975f, FuncDef.KAISER12), /* Q10 */ /* 96.6% cutoff (~100 dB stop) 10 */
+               reasons that explain why the up-sampling bandwidth is larger than the 
+               down-sampling bandwidth:
+               1) When up-sampling, we can assume that the spectrum is already attenuated
+                  close to the Nyquist rate (from an A/D or a previous resampling filter)
+               2) Any aliasing that occurs very close to the Nyquist rate will be masked
+                  by the sinusoids/noise just below the Nyquist rate (guaranteed only for
+                  up-sampling).
+            */
+            public static readonly QualityMapping[] quality_map = {
+                new QualityMapping(  8,  4, 0.830f, 0.860f, new FuncDef(FuncDef.kaiser6_table, 32) ), /* Q0 */
+                new QualityMapping( 16,  4, 0.850f, 0.880f, new FuncDef(FuncDef.kaiser6_table, 32) ), /* Q1 */
+                new QualityMapping( 32,  4, 0.882f, 0.910f, new FuncDef(FuncDef.kaiser6_table, 32) ), /* Q2 */  /* 82.3% cutoff ( ~60 dB stop) 6  */
+                new QualityMapping( 48,  8, 0.895f, 0.917f, new FuncDef(FuncDef.kaiser8_table, 32) ), /* Q3 */  /* 84.9% cutoff ( ~80 dB stop) 8  */
+                new QualityMapping( 64,  8, 0.921f, 0.940f, new FuncDef(FuncDef.kaiser8_table, 32) ), /* Q4 */  /* 88.7% cutoff ( ~80 dB stop) 8  */
+                new QualityMapping( 80, 16, 0.922f, 0.940f, new FuncDef(FuncDef.kaiser10_table, 32)), /* Q5 */  /* 89.1% cutoff (~100 dB stop) 10 */
+                new QualityMapping( 96, 16, 0.940f, 0.945f, new FuncDef(FuncDef.kaiser10_table, 32)), /* Q6 */  /* 91.5% cutoff (~100 dB stop) 10 */
+                new QualityMapping(128, 16, 0.950f, 0.950f, new FuncDef(FuncDef.kaiser10_table, 32)), /* Q7 */  /* 93.1% cutoff (~100 dB stop) 10 */
+                new QualityMapping(160, 16, 0.960f, 0.960f, new FuncDef(FuncDef.kaiser10_table, 32)), /* Q8 */  /* 94.5% cutoff (~100 dB stop) 10 */
+                new QualityMapping(192, 32, 0.968f, 0.968f, new FuncDef(FuncDef.kaiser12_table, 64)), /* Q9 */  /* 95.5% cutoff (~100 dB stop) 10 */
+                new QualityMapping(256, 32, 0.975f, 0.975f, new FuncDef(FuncDef.kaiser12_table, 64)), /* Q10 */ /* 96.6% cutoff (~100 dB stop) 10 */
             };
         }
 
@@ -240,7 +240,6 @@ namespace Concentus.Common
             /*sum = frac*accum[1] + (1-frac)*accum[2];*/
             return interp[0] * func.table[ind] + interp[1] * func.table[ind + 1] + interp[2] * func.table[ind + 2] + interp[3] * func.table[ind + 3];
         }
-
 
         /* The slow way of computing a sinc for the table. Should improve that some day */
         private static short sinc(float cutoff, float x, int N, FuncDef window_func)
@@ -522,20 +521,18 @@ namespace Concentus.Common
             }
         }
 
-        public static SpeexResampler speex_resampler_init(int nb_channels, int in_rate, int out_rate, int quality, BoxedValue<int> err)
+        public static SpeexResampler Create(int nb_channels, int in_rate, int out_rate, int quality)
         {
-            return speex_resampler_init_frac(nb_channels, in_rate, out_rate, in_rate, out_rate, quality, err);
+            return Create(nb_channels, in_rate, out_rate, in_rate, out_rate, quality);
         }
 
-        public static SpeexResampler speex_resampler_init_frac(int nb_channels, int ratio_num, int ratio_den, int in_rate, int out_rate, int quality, BoxedValue<int> err)
+        public static SpeexResampler Create(int nb_channels, int ratio_num, int ratio_den, int in_rate, int out_rate, int quality)
         {
             int i;
             SpeexResampler st;
             if (quality > 10 || quality < 0)
             {
-                if (err != null)
-                    err.Val = SpeexError.RESAMPLER_ERR_INVALID_ARG;
-                return null;
+                throw new ArgumentException("Quality must be between 0 and 10");
             }
             st = new SpeexResampler();
             st.initialised = 0;
@@ -567,15 +564,12 @@ namespace Concentus.Common
                 st.samp_frac_num[i] = 0;
             }
 
-            st.speex_resampler_set_quality(quality);
-            st.speex_resampler_set_rate_frac(ratio_num, ratio_den, in_rate, out_rate);
-
-
+            st.Quality = quality;
+            st.SetRateFraction(ratio_num, ratio_den, in_rate, out_rate);
+            
             st.update_filter();
 
             st.initialised = 1;
-            if (err != null)
-                err.Val = SpeexError.RESAMPLER_ERR_SUCCESS;
 
             return st;
         }
@@ -627,11 +621,11 @@ namespace Concentus.Common
             return out_len;
         }
 
-        public int speex_resampler_process_int(int channel_index, Pointer<short> input, BoxedValue<int> in_len, Pointer<short> output, BoxedValue<int> out_len)
+        public int Process(int channel_index, Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
         {
             int j;
-            int ilen = in_len.Val;
-            int olen = out_len.Val;
+            int ilen = in_len;
+            int olen = out_len;
             Pointer<short> x = this.mem.Point(channel_index * this.mem_alloc_size);
             int filt_offs = this.filt_len - 1;
             int xlen = this.mem_alloc_size - filt_offs;
@@ -667,12 +661,12 @@ namespace Concentus.Common
                         input = input.Point(ichunk * istride);
                 }
             }
-            in_len.Val -= ilen;
-            out_len.Val -= olen;
+            in_len -= ilen;
+            out_len -= olen;
             return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
-        public int speex_resampler_process_float(int channel_index, Pointer<float> input, BoxedValue<int> in_len, Pointer<float> output, BoxedValue<int> out_len)
+        public int Process(int channel_index, Pointer<float> input, BoxedValue<int> in_len, Pointer<float> output, BoxedValue<int> out_len)
         {
             int j;
             int istride_save = this.in_stride;
@@ -736,7 +730,7 @@ namespace Concentus.Common
             return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
-        public int speex_resampler_process_interleaved_float(Pointer<float> input, BoxedValue<int> in_len, Pointer<float> output, BoxedValue<int> out_len)
+        public int ProcessInterleaved(Pointer<float> input, BoxedValue<int> in_len, Pointer<float> output, BoxedValue<int> out_len)
         {
             int i;
             int istride_save, ostride_save;
@@ -750,50 +744,50 @@ namespace Concentus.Common
                 out_len.Val = bak_out_len;
                 in_len.Val = bak_in_len;
                 if (input != null)
-                    this.speex_resampler_process_float(i, input.Point(i), in_len, output.Point(i), out_len);
+                    this.Process(i, input.Point(i), in_len, output.Point(i), out_len);
                 else
-                    this.speex_resampler_process_float(i, null, in_len, output.Point(i), out_len);
+                    this.Process(i, null, in_len, output.Point(i), out_len);
             }
             this.in_stride = istride_save;
             this.out_stride = ostride_save;
             return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
-        public int speex_resampler_process_interleaved_int(Pointer<short> input, BoxedValue<int> in_len, Pointer<short> output, BoxedValue<int> out_len)
+        public int ProcessInterleaved(Pointer<short> input, ref int in_len, Pointer<short> output, ref int out_len)
         {
             int i;
             int istride_save, ostride_save;
-            int bak_out_len = out_len.Val;
-            int bak_in_len = in_len.Val;
+            int bak_out_len = out_len;
+            int bak_in_len = in_len;
             istride_save = this.in_stride;
             ostride_save = this.out_stride;
             this.in_stride = this.out_stride = this.nb_channels;
             for (i = 0; i < this.nb_channels; i++)
             {
-                out_len.Val = bak_out_len;
-                in_len.Val = bak_in_len;
+                out_len = bak_out_len;
+                in_len = bak_in_len;
                 if (input != null)
-                    this.speex_resampler_process_int(i, input.Point(i), in_len, output.Point(i), out_len);
+                    this.Process(i, input.Point(i), ref in_len, output.Point(i), ref out_len);
                 else
-                    this.speex_resampler_process_int(i, null, in_len, output.Point(i), out_len);
+                    this.Process(i, null, ref in_len, output.Point(i), ref out_len);
             }
             this.in_stride = istride_save;
             this.out_stride = ostride_save;
             return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
-        public int speex_resampler_set_rate(int in_rate, int out_rate)
+        public int SetRates(int in_rate, int out_rate)
         {
-            return this.speex_resampler_set_rate_frac(in_rate, out_rate, in_rate, out_rate);
+            return this.SetRateFraction(in_rate, out_rate, in_rate, out_rate);
         }
 
-        public void speex_resampler_get_rate(out int in_rate, out int out_rate)
+        public void GetRates(out int in_rate, out int out_rate)
         {
             in_rate = this.in_rate;
             out_rate = this.out_rate;
         }
 
-        public int speex_resampler_set_rate_frac(int ratio_num, int ratio_den, int in_rate, int out_rate)
+        public int SetRateFraction(int ratio_num, int ratio_den, int in_rate, int out_rate)
         {
             int fact;
             int old_den;
@@ -832,68 +826,78 @@ namespace Concentus.Common
             return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
-        public void speex_resampler_get_ratio(out int ratio_num, out int ratio_den)
+        public void GetRateFraction(out int ratio_num, out int ratio_den)
         {
             ratio_num = this.num_rate;
             ratio_den = this.den_rate;
         }
 
-        public int speex_resampler_set_quality(int quality)
+        public int Quality
         {
-            if (quality > 10 || quality < 0)
-                return SpeexError.RESAMPLER_ERR_INVALID_ARG;
-            if (this.quality == quality)
-                return SpeexError.RESAMPLER_ERR_SUCCESS;
-            this.quality = quality;
-            if (this.initialised != 0)
-                this.update_filter();
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
+            get
+            {
+                return this.quality;
+            }
+            set
+            {
+                if (value > 10 || value < 0)
+                    throw new ArgumentException("Quality must be between 0 and 10");
+                if (this.quality == value)
+                    return;
+                this.quality = value;
+                if (this.initialised != 0)
+                    this.update_filter();
+            }
         }
 
-        public int speex_resampler_get_quality()
+        public int InputStride
         {
-            return this.quality;
+            get
+            {
+                return this.in_stride;
+            }
+            set
+            {
+                this.in_stride = value;
+            }
         }
 
-        public void speex_resampler_set_input_stride(int stride)
+        public int OutputStride
         {
-            this.in_stride = stride;
+            get
+            {
+                return this.out_stride;
+            }
+            set
+            {
+                this.out_stride = value;
+            }
         }
 
-        public int speex_resampler_get_input_stride()
+        public int InputLatency
         {
-            return this.in_stride;
+            get
+            {
+                return this.filt_len / 2;
+            }
         }
 
-        public void speex_resampler_set_output_stride(int stride)
+        public int OutputLatency
         {
-            this.out_stride = stride;
+            get
+            {
+                return ((this.filt_len / 2) * this.den_rate + (this.num_rate >> 1)) / this.num_rate;
+            }
         }
 
-        public int speex_resampler_get_output_stride()
-        {
-            return this.out_stride;
-        }
-
-        public int speex_resampler_get_input_latency()
-        {
-            return this.filt_len / 2;
-        }
-
-        public int speex_resampler_get_output_latency()
-        {
-            return ((this.filt_len / 2) * this.den_rate + (this.num_rate >> 1)) / this.num_rate;
-        }
-
-        public int speex_resampler_skip_zeros()
+        public void SkipZeroes()
         {
             int i;
             for (i = 0; i < this.nb_channels; i++)
                 this.last_sample[i] = this.filt_len / 2;
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
 
-        public int speex_resampler_reset_mem()
+        public void ResetMem()
         {
             int i;
             for (i = 0; i < this.nb_channels; i++)
@@ -904,7 +908,6 @@ namespace Concentus.Common
             }
             for (i = 0; i < this.nb_channels * (this.filt_len - 1); i++)
                 this.mem[i] = 0;
-            return SpeexError.RESAMPLER_ERR_SUCCESS;
         }
     }
 }

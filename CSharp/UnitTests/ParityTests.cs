@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.IO;
 using ParityTest;
+using Concentus.Enums;
+using System.Linq;
 
 namespace UnitTests
 {
@@ -362,6 +364,137 @@ namespace UnitTests
                 DecoderChannels = 1,
                 DecoderSampleRate = 24000
             });
+        }
+
+        [TestMethod]
+        public void ShotgunTest()
+        {
+            OpusApplication[] Applications = new OpusApplication[] { OpusApplication.OPUS_APPLICATION_AUDIO, OpusApplication.OPUS_APPLICATION_VOIP, OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY };
+            int[] Bitrates = new int[] { -1, 6, 16, 20, 32, 64, 500 };
+            int[] Channels = new int[] { 1, 2 };
+            int[] Complexities = new int[] { 0, 2, 4, 6, 8, 10 };
+            int[] SampleRates = new int[] { 8000, 12000, 16000, 24000, 48000 };
+            double[] FrameSizes = new double[] { 2.5, 5, 10, 20, 40, 60 };
+            int[] PacketLosses = new int[] { 0, 20 };
+            OpusMode[] ForceModes = new OpusMode[] { OpusMode.MODE_AUTO, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_SILK_ONLY };
+            bool[] DTXModes = new bool[] { false, true };
+            int[] VBRModes = new int[] { 0, 1, 2 };
+
+            IList<TestParameters> allTests = new List<TestParameters>();
+
+            for (int app_idx = 0; app_idx < Applications.Length; app_idx++)
+            {
+                for (int plc_idx = 0; plc_idx < PacketLosses.Length; plc_idx++)
+                {
+                    for (int chan_idx = 0; chan_idx < Channels.Length; chan_idx++)
+                    {
+                        for (int sr_idx = 0; sr_idx < SampleRates.Length; sr_idx++)
+                        {
+                            for (int fs_idx = 0; fs_idx < FrameSizes.Length; fs_idx++)
+                            {
+                                for (int cpx_idx = 0; cpx_idx < Complexities.Length; cpx_idx++)
+                                {
+                                    for (int bit_idx = 0; bit_idx < Bitrates.Length; bit_idx++)
+                                    {
+                                        for (int fm_idx = 0; fm_idx < ForceModes.Length; fm_idx++)
+                                        {
+                                            for (int dtx_idx = 0; dtx_idx < DTXModes.Length; dtx_idx++)
+                                            {
+                                                for (int vbr_idx = 0; vbr_idx < VBRModes.Length; vbr_idx++)
+                                                {
+                                                    TestParameters newParams = new TestParameters()
+                                                    {
+                                                        Application = Applications[app_idx],
+                                                        Bitrate = Bitrates[bit_idx],
+                                                        Channels = Channels[chan_idx],
+                                                        Complexity = Complexities[cpx_idx],
+                                                        PacketLossPercent = PacketLosses[plc_idx],
+                                                        SampleRate = SampleRates[sr_idx],
+                                                        FrameSize = FrameSizes[fs_idx],
+                                                        ForceMode = ForceModes[fm_idx],
+                                                        UseDTX = DTXModes[dtx_idx]
+                                                    };
+                                                    if (VBRModes[vbr_idx] == 0)
+                                                    {
+                                                        newParams.UseVBR = false;
+                                                        newParams.ConstrainedVBR = false;
+                                                    }
+                                                    else if (VBRModes[vbr_idx] == 1)
+                                                    {
+                                                        newParams.UseVBR = true;
+                                                        newParams.ConstrainedVBR = false;
+                                                    }
+                                                    else if (VBRModes[vbr_idx] == 2)
+                                                    {
+                                                        newParams.UseVBR = true;
+                                                        newParams.ConstrainedVBR = true;
+                                                    }
+
+                                                    // Validate params
+                                                    if (newParams.Bitrate > 40 || newParams.FrameSize < 10)
+                                                    {
+                                                        // No FEC outside of SILK mode
+                                                        if (newParams.PacketLossPercent > 0)
+                                                        {
+                                                            continue;
+                                                        }
+                                                        // No DTX outside of SILK mode
+                                                        if (newParams.UseDTX)
+                                                        {
+                                                            continue;
+                                                        }
+                                                        if (newParams.ForceMode == OpusMode.MODE_SILK_ONLY)
+                                                        {
+                                                            continue;
+                                                        }
+                                                    }
+                                                    // Constrained VBR only applies to CELT
+                                                    if (newParams.ForceMode == OpusMode.MODE_SILK_ONLY && newParams.ConstrainedVBR)
+                                                    {
+                                                        continue;
+                                                    }
+                                                    // 12Khz + 2.5ms triggers an opus bug for now
+                                                    if (newParams.SampleRate == 12000 && newParams.FrameSize < 5)
+                                                    {
+                                                        continue;
+                                                    }
+
+                                                    allTests.Add(newParams);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            TestParameters[] allTestsRandom = allTests.ToArray();
+            int numTestCases = allTests.Count;
+
+            // Shuffle the test list
+            TestParameters temp;
+            int a;
+            int b;
+            Random rand = new Random();
+            for (int c = 0; c < numTestCases; c++)
+            {
+                a = rand.Next(numTestCases);
+                b = rand.Next(numTestCases);
+                temp = allTestsRandom[a];
+                allTestsRandom[a] = allTestsRandom[b];
+                allTestsRandom[b] = temp;
+            }
+            
+            int testsRun = 0;
+            foreach (TestParameters p in allTestsRandom)
+            {
+                testsRun++;
+                TestResults response = TestDriver.RunTest(p, GetTestSample(p));
+                if (testsRun > 200) break;
+            }
         }
     }
 }
