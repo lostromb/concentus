@@ -220,7 +220,7 @@ namespace Concentus
         private const int MAX_DYNAMIC_FRAMESIZE = 24;
 
         /* Estimates how much the bitrate will be boosted based on the sub-frame energy */
-        internal static float transient_boost(Pointer<float> E, Pointer<float> E_1, int LM, int maxM)
+        internal static float transient_boost(float[] E, int E_ptr, float[] E_1, int LM, int maxM)
         {
             int i;
             int M;
@@ -228,7 +228,7 @@ namespace Concentus
             float metric;
 
             M = Inlines.IMIN(maxM, (1 << LM) + 1);
-            for (i = 0; i < M; i++)
+            for (i = E_ptr; i < M + E_ptr; i++)
             {
                 sumE += E[i];
                 sumE_1 += E_1[i];
@@ -287,7 +287,7 @@ namespace Concentus
             }
             for (i = 0; i < 4; i++)
             {
-                cost[0][1 << i] = (frame_cost + rate * (1 << i)) * (1 + factor * transient_boost(E.GetPointer(), E_1.GetPointer(), i, N + 1));
+                cost[0][1 << i] = (frame_cost + rate * (1 << i)) * (1 + factor * transient_boost(E, 0, E_1, i, N + 1));
                 states[0][1 << i] = i;
             }
             for (i = 1; i < N; i++)
@@ -318,7 +318,7 @@ namespace Concentus
                             min_cost = tmp;
                         }
                     }
-                    curr_cost = (frame_cost + rate * (1 << j)) * (1 + factor * transient_boost(E.GetPointer(i), E_1.GetPointer(i), j, N - i + 1));
+                    curr_cost = (frame_cost + rate * (1 << j)) * (1 + factor * transient_boost(E, i, E_1, j, N - i + 1));
                     cost[i][1 << j] = min_cost;
                     /* If part of the frame is outside the analysis window, only count part of the cost */
                     if (N - i < (1 << j))

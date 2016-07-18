@@ -174,7 +174,7 @@ namespace Concentus.Celt
 
         /* De-normalise the energy to produce the synthesis from the unit-energy bands */
         internal static void denormalise_bands(CeltMode m, int[] X,
-              int[] freq, int freq_ptr, Pointer<int> bandLogE, int start,
+              int[] freq, int freq_ptr, int[] bandLogE, int bandLogE_ptr, int start,
               int end, int M, int downsample, int silence)
         {
             int i, N;
@@ -208,7 +208,7 @@ namespace Concentus.Celt
 
                 j = M * eBands[i];
                 band_end = M * eBands[i + 1];
-                lg = Inlines.ADD16(bandLogE[i], Inlines.SHL16(Tables.eMeans[i], 6));
+                lg = Inlines.ADD16(bandLogE[bandLogE_ptr + i], Inlines.SHL16(Tables.eMeans[i], 6));
 
                 /* Handle the integer part of the log energy */
                 shift = 16 - (lg >> CeltConstants.DB_SHIFT);

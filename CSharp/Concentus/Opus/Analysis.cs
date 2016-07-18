@@ -166,10 +166,10 @@ namespace Concentus
             Pointer<float> d2A = tonal.d2_angle.GetPointer();
             Pointer<float> tonality;
             Pointer<float> noisiness;
-            Pointer<float> band_tonality = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-            Pointer<float> logE = Pointer.Malloc<float>(OpusConstants.NB_TBANDS);
-            Pointer<float> BFCC = Pointer.Malloc<float>(8);
-            Pointer<float> features = Pointer.Malloc<float>(25);
+            float[] band_tonality = new float[OpusConstants.NB_TBANDS];
+            float[] logE = new float[OpusConstants.NB_TBANDS];
+            float[] BFCC = new float[8];
+            float[] features = new float[25];
             float frame_tonality;
             float max_frame_tonality;
             /*float tw_sum=0;*/
