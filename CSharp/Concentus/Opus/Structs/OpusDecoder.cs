@@ -199,7 +199,7 @@ namespace Concentus.Structs
         private static readonly byte[] SILENCE = { 0xFF, 0xFF };
 
         internal int opus_decode_frame(Pointer<byte> data,
-      int len, Pointer<short> pcm, int frame_size, int decode_fec)
+      int len, short[] pcm, int pcm_ptr, int frame_size, int decode_fec)
         {
             SilkDecoder silk_dec;
             CeltDecoder celt_dec;
@@ -262,7 +262,7 @@ namespace Concentus.Structs
                 if (mode == 0)
                 {
                     /* If we haven't got any packet yet, all we can do is return zeros */
-                    for (i = 0; i < audiosize * this.channels; i++)
+                    for (i = pcm_ptr; i < pcm_ptr + (audiosize * this.channels); i++)
                         pcm[i] = 0;
 
                     return audiosize;
@@ -274,13 +274,13 @@ namespace Concentus.Structs
                 {
                     do
                     {
-                        int ret = opus_decode_frame(null, 0, pcm, Inlines.IMIN(audiosize, F20), 0);
+                        int ret = opus_decode_frame(null, 0, pcm, pcm_ptr, Inlines.IMIN(audiosize, F20), 0);
                         if (ret < 0)
                         {
 
                             return ret;
                         }
-                        pcm = pcm.Point(ret * this.channels);
+                        pcm_ptr += ret * this.channels;
                         audiosize -= ret;
                     } while (audiosize > 0);
 
@@ -317,7 +317,7 @@ namespace Concentus.Structs
             if (transition != 0 && mode == OpusMode.MODE_CELT_ONLY)
             {
                 pcm_transition = pcm_transition_celt;
-                opus_decode_frame(null, 0, pcm_transition.GetPointer(), Inlines.IMIN(F5, audiosize), 0);
+                opus_decode_frame(null, 0, pcm_transition, 0, Inlines.IMIN(F5, audiosize), 0);
             }
             if (audiosize > frame_size)
             {
@@ -337,12 +337,12 @@ namespace Concentus.Structs
             if (mode != OpusMode.MODE_CELT_ONLY)
             {
                 int lost_flag, decoded_samples;
-                Pointer<short> pcm_ptr;
+                Pointer<short> pcm_ptr2;
 
                 if (celt_accum != 0)
-                    pcm_ptr = pcm;
+                    pcm_ptr2 = pcm.GetPointer(pcm_ptr);
                 else
-                    pcm_ptr = pcm_silk.GetPointer();
+                    pcm_ptr2 = pcm_silk.GetPointer();
 
                 if (this.prev_mode == OpusMode.MODE_CELT_ONLY)
                     DecodeAPI.silk_InitDecoder(silk_dec);
@@ -385,7 +385,7 @@ namespace Concentus.Structs
                     /* Call SILK decoder */
                     int first_frame = (decoded_samples == 0) ? 1 : 0;
                     silk_ret = DecodeAPI.silk_Decode(silk_dec, this.DecControl,
-                                            lost_flag, first_frame, dec, pcm_ptr, out silk_frame_size);
+                                            lost_flag, first_frame, dec, pcm_ptr2, out silk_frame_size);
                     if (silk_ret != 0)
                     {
                         if (lost_flag != 0)
@@ -393,14 +393,14 @@ namespace Concentus.Structs
                             /* PLC failure should not be fatal */
                             silk_frame_size = frame_size;
                             for (i = 0; i < frame_size * this.channels; i++)
-                                pcm_ptr[i] = 0;
+                                pcm_ptr2[i] = 0;
                         }
                         else {
 
                             return OpusError.OPUS_INTERNAL_ERROR;
                         }
                     }
-                    pcm_ptr = pcm_ptr.Point(silk_frame_size * this.channels);
+                    pcm_ptr2 = pcm_ptr2.Point(silk_frame_size * this.channels);
                     decoded_samples += silk_frame_size;
                 } while (decoded_samples < frame_size);
             }
@@ -472,7 +472,7 @@ namespace Concentus.Structs
             if (transition != 0 && mode != OpusMode.MODE_CELT_ONLY)
             {
                 pcm_transition = pcm_transition_silk;
-                opus_decode_frame(null, 0, pcm_transition.GetPointer(), Inlines.IMIN(F5, audiosize), 0);
+                opus_decode_frame(null, 0, pcm_transition, 0, Inlines.IMIN(F5, audiosize), 0);
             }
 
             /* Only allocation memory for redundancy if/when needed */
@@ -499,13 +499,13 @@ namespace Concentus.Structs
                     celt_dec.ResetState();
                 /* Decode CELT */
                 celt_ret = celt_dec.celt_decode_with_ec(decode_fec != 0 ? null : data,
-                                               len, pcm, celt_frame_size, dec, celt_accum);
+                                               len, pcm.GetPointer(pcm_ptr), celt_frame_size, dec, celt_accum);
             }
             else
             {
                 if (celt_accum == 0)
                 {
-                    for (i = 0; i < frame_size * this.channels; i++)
+                    for (i = pcm_ptr; i < (frame_size * this.channels) + pcm_ptr; i++)
                         pcm[i] = 0;
                 }
                 /* For hybrid . SILK transitions, we let the CELT MDCT
@@ -513,14 +513,14 @@ namespace Concentus.Structs
                 if (this.prev_mode == OpusMode.MODE_HYBRID && !(redundancy != 0 && celt_to_silk != 0 && this.prev_redundancy != 0))
                 {
                     celt_dec.SetStartBand(0);
-                    celt_dec.celt_decode_with_ec(SILENCE.GetPointer(), 2, pcm, F2_5, null, celt_accum);
+                    celt_dec.celt_decode_with_ec(SILENCE.GetPointer(), 2, pcm.GetPointer(pcm_ptr), F2_5, null, celt_accum);
                 }
             }
 
             if (mode != OpusMode.MODE_CELT_ONLY && celt_accum == 0)
             {
                 for (i = 0; i < frame_size * this.channels; i++)
-                    pcm[i] = Inlines.SAT16(Inlines.ADD32(pcm[i], pcm_silk[i]));
+                    pcm[pcm_ptr + i] = Inlines.SAT16(Inlines.ADD32(pcm[pcm_ptr + i], pcm_silk[i]));
             }
 
             window = celt_dec.GetMode().window.GetPointer();
@@ -533,18 +533,18 @@ namespace Concentus.Structs
 
                 celt_dec.celt_decode_with_ec(data.Point(len), redundancy_bytes, redundant_audio.GetPointer(), F5, null, 0);
                 redundant_rng = celt_dec.GetFinalRange();
-                CodecHelpers.smooth_fade(pcm.Point(this.channels * (frame_size - F2_5)), redundant_audio.GetPointer(this.channels * F2_5),
-                           pcm.Point(this.channels * (frame_size - F2_5)), F2_5, this.channels, window, this.Fs);
+                CodecHelpers.smooth_fade(pcm.GetPointer(pcm_ptr + this.channels * (frame_size - F2_5)), redundant_audio.GetPointer(this.channels * F2_5),
+                           pcm.GetPointer(pcm_ptr + this.channels * (frame_size - F2_5)), F2_5, this.channels, window, this.Fs);
             }
             if (redundancy != 0 && celt_to_silk != 0)
             {
                 for (c = 0; c < this.channels; c++)
                 {
                     for (i = 0; i < F2_5; i++)
-                        pcm[this.channels * i + c] = redundant_audio[this.channels * i + c];
+                        pcm[this.channels * i + c + pcm_ptr] = redundant_audio[this.channels * i + c];
                 }
-                CodecHelpers.smooth_fade(redundant_audio.GetPointer(this.channels * F2_5), pcm.Point(this.channels * F2_5),
-                            pcm.Point(this.channels * F2_5), F2_5, this.channels, window, this.Fs);
+                CodecHelpers.smooth_fade(redundant_audio.GetPointer(this.channels * F2_5), pcm.GetPointer(pcm_ptr + (this.channels * F2_5)),
+                            pcm.GetPointer(pcm_ptr + (this.channels * F2_5)), F2_5, this.channels, window, this.Fs);
             }
             if (transition != 0)
             {
@@ -552,8 +552,8 @@ namespace Concentus.Structs
                 {
                     for (i = 0; i < this.channels * F2_5; i++)
                         pcm[i] = pcm_transition[i];
-                    CodecHelpers.smooth_fade(pcm_transition.GetPointer(this.channels * F2_5), pcm.Point(this.channels * F2_5),
-                                pcm.Point(this.channels * F2_5), F2_5,
+                    CodecHelpers.smooth_fade(pcm_transition.GetPointer(this.channels * F2_5), pcm.GetPointer(pcm_ptr + (this.channels * F2_5)),
+                                pcm.GetPointer(pcm_ptr + (this.channels * F2_5)), F2_5,
                                 this.channels, window, this.Fs);
                 }
                 else {
@@ -562,8 +562,8 @@ namespace Concentus.Structs
                        a bit of temporal aliasing, but it shouldn't be too bad and
                        that's pretty much the best we can do. In any case, generating this
                        transition it pretty silly in the first place */
-                    CodecHelpers.smooth_fade(pcm_transition.GetPointer(), pcm,
-                                pcm, F2_5,
+                    CodecHelpers.smooth_fade(pcm_transition.GetPointer(), pcm.GetPointer(pcm_ptr),
+                                pcm.GetPointer(pcm_ptr), F2_5,
                                 this.channels, window, this.Fs);
                 }
             }
@@ -572,7 +572,7 @@ namespace Concentus.Structs
             {
                 int gain;
                 gain = Inlines.celt_exp2(Inlines.MULT16_16_P15(((short)(0.5 + (6.48814081e-4f) * (((int)1) << (25))))/*Inlines.QCONST16(6.48814081e-4f, 25)*/, this.decode_gain));
-                for (i = 0; i < frame_size * this.channels; i++)
+                for (i = pcm_ptr; i < pcm_ptr + (frame_size * this.channels); i++)
                 {
                     int x;
                     x = Inlines.MULT16_32_P16(pcm[i], gain);
@@ -616,7 +616,7 @@ namespace Concentus.Structs
                 do
                 {
                     int ret;
-                    ret = opus_decode_frame(null, 0, pcm.Point(pcm_count * this.channels), frame_size - pcm_count, 0);
+                    ret = opus_decode_frame(null, 0, pcm.Data, pcm.Offset + (pcm_count * this.channels), frame_size - pcm_count, 0);
                     if (ret < 0)
                         return ret;
                     pcm_count += ret;
@@ -666,7 +666,7 @@ namespace Concentus.Structs
                 this.bandwidth = packet_bandwidth;
                 this.frame_size = packet_frame_size;
                 this.stream_channels = packet_stream_channels;
-                ret = opus_decode_frame(data, size[0], pcm.Point(this.channels * (frame_size - packet_frame_size)),
+                ret = opus_decode_frame(data, size[0], pcm.Data, pcm.Offset + (this.channels * (frame_size - packet_frame_size)),
                       packet_frame_size, 1);
                 if (ret < 0)
                     return ret;
@@ -689,7 +689,7 @@ namespace Concentus.Structs
             for (i = 0; i < count; i++)
             {
                 int ret;
-                ret = opus_decode_frame(data, size[i], pcm.Point(nb_samples * this.channels), frame_size - nb_samples, 0);
+                ret = opus_decode_frame(data, size[i], pcm.Data, pcm.Offset + (nb_samples * this.channels), frame_size - nb_samples, 0);
                 if (ret < 0)
                     return ret;
                 Inlines.OpusAssert(ret == packet_frame_size);

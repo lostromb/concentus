@@ -72,7 +72,7 @@ namespace Concentus
             return sign * y;
         }
 
-        internal static void mlp_process(MLP m, Pointer<float> input, Pointer<float> output)
+        internal static void mlp_process(MLP m, float[] input, Pointer<float> output)
         {
             int j;
             float[] hidden = new float[MAX_NEURONS];

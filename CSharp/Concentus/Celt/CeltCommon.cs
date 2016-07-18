@@ -801,27 +801,27 @@ namespace Concentus.Celt
                   > Inlines.MULT16_32_Q15((m.eBands[13] << (LM + 1)), sumLR)) ? 1 : 0;
         }
 
-        internal static int median_of_5(Pointer<int> x)
+        internal static int median_of_5(int[] x, int x_ptr)
         {
             int t0, t1, t2, t3, t4;
-            t2 = x[2];
-            if (x[0] > x[1])
+            t2 = x[x_ptr + 2];
+            if (x[x_ptr] > x[x_ptr + 1])
             {
-                t0 = x[1];
-                t1 = x[0];
+                t0 = x[x_ptr + 1];
+                t1 = x[x_ptr];
             }
             else {
-                t0 = x[0];
-                t1 = x[1];
+                t0 = x[x_ptr];
+                t1 = x[x_ptr + 1];
             }
-            if (x[3] > x[4])
+            if (x[x_ptr + 3] > x[x_ptr + 4])
             {
-                t3 = x[4];
-                t4 = x[3];
+                t3 = x[x_ptr + 4];
+                t4 = x[x_ptr + 3];
             }
             else {
-                t3 = x[3];
-                t4 = x[4];
+                t3 = x[x_ptr + 3];
+                t4 = x[x_ptr + 4];
             }
             if (t0 > t3)
             {
@@ -848,19 +848,19 @@ namespace Concentus.Celt
             }
         }
 
-        internal static int median_of_3(Pointer<int> x)
+        internal static int median_of_3(int[] x, int x_ptr)
         {
             int t0, t1, t2;
-            if (x[0] > x[1])
+            if (x[x_ptr] > x[x_ptr + 1])
             {
-                t0 = x[1];
-                t1 = x[0];
+                t0 = x[x_ptr + 1];
+                t1 = x[x_ptr];
             }
             else {
-                t0 = x[0];
-                t1 = x[1];
+                t0 = x[x_ptr];
+                t1 = x[x_ptr + 1];
             }
-            t2 = x[2];
+            t2 = x[x_ptr + 2];
             if (t1 < t2)
                 return t1;
             else if (t0 < t2)
@@ -923,11 +923,11 @@ namespace Concentus.Celt
                        reduces the impact of the median filter and makes dynalloc use more bits. */
                     offset = ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/;
                     for (i = 2; i < end - 2; i++)
-                        f[i] = Inlines.MAX16(f[i], median_of_5(bandLogE2[c].GetPointer(i - 2)) - offset);
-                    tmp = median_of_3(bandLogE2[c].GetPointer()) - offset;
+                        f[i] = Inlines.MAX16(f[i], median_of_5(bandLogE2[c], i - 2) - offset);
+                    tmp = median_of_3(bandLogE2[c], 0) - offset;
                     f[0] = Inlines.MAX16(f[0], tmp);
                     f[1] = Inlines.MAX16(f[1], tmp);
-                    tmp = median_of_3(bandLogE2[c].GetPointer(end - 3)) - offset;
+                    tmp = median_of_3(bandLogE2[c], end - 3) - offset;
                     f[end - 2] = Inlines.MAX16(f[end - 2], tmp);
                     f[end - 1] = Inlines.MAX16(f[end - 1], tmp);
 
