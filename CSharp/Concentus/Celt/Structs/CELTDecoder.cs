@@ -253,7 +253,7 @@ namespace Concentus.Celt.Structs
                             X[c][boffs + j] = (unchecked((int)seed) >> 20);
                         }
 
-                        VQ.renormalise_vector(X[c].GetPointer(), blen, CeltConstants.Q15ONE);
+                        VQ.renormalise_vector(X[c], 0, blen, CeltConstants.Q15ONE);
                     }
                 }
                 this.rng = seed;
