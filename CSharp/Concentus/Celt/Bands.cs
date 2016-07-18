@@ -174,12 +174,12 @@ namespace Concentus.Celt
 
         /* De-normalise the energy to produce the synthesis from the unit-energy bands */
         internal static void denormalise_bands(CeltMode m, int[] X,
-              Pointer<int> freq, Pointer<int> bandLogE, int start,
+              int[] freq, int freq_ptr, Pointer<int> bandLogE, int start,
               int end, int M, int downsample, int silence)
         {
             int i, N;
             int bound;
-            Pointer<int> f;
+            int f;
             Pointer<int> x;
             short[] eBands = m.eBands;
             N = M * m.shortMdctSize;
@@ -191,13 +191,12 @@ namespace Concentus.Celt
                 bound = 0;
                 start = end = 0;
             }
-            f = freq;
+            f = freq_ptr;
             x = X.GetPointer(M * eBands[start]);
 
             for (i = 0; i < M * eBands[start]; i++)
             {
-                f[0] = 0;
-                f = f.Point(1);
+                freq[f++] = 0;
             }
 
             for (i = start; i < end; i++)
@@ -235,22 +234,21 @@ namespace Concentus.Celt
                     }
                     do
                     {
-                        f[0] = Inlines.SHR32(Inlines.MULT16_16(x[0], g), -shift);
+                        freq[f] = Inlines.SHR32(Inlines.MULT16_16(x[0], g), -shift);
                     } while (++j < band_end);
                 }
                 else
                 {
                     do
                     {
-                        f[0] = Inlines.SHR32(Inlines.MULT16_16(x[0], g), shift);
+                        freq[f++] = Inlines.SHR32(Inlines.MULT16_16(x[0], g), shift);
                         x = x.Point(1);
-                        f = f.Point(1);
                     } while (++j < band_end);
                 }
             }
 
             Inlines.OpusAssert(start <= end);
-            freq.Point(bound).MemSet(0, N - bound);
+            Arrays.MemSetWithOffset<int>(freq, 0, freq_ptr + bound, N - bound);
         }
 
         /* This prevents energy collapse for transients with multiple short MDCTs */
@@ -971,13 +969,14 @@ namespace Concentus.Celt
             sctx.qalloc = qalloc;
         }
 
-        internal static uint quant_band_n1(band_ctx ctx, Pointer<int> X, Pointer<int> Y, int b,
+        internal static uint quant_band_n1(band_ctx ctx, int[] X, int X_ptr, int[] Y, int Y_ptr, int b,
                  int[] lowband_out, int lowband_out_ptr)
         {
             int resynth = ctx.encode == 0 ? 1 : 0;
             int c;
             int stereo;
-            Pointer<int> x = X;
+            int[] x = X;
+            int x_ptr = X_ptr;
             int encode;
             EntropyCoder ec; // porting note: pointer
 
@@ -993,7 +992,7 @@ namespace Concentus.Celt
                 {
                     if (encode != 0)
                     {
-                        sign = x[0] < 0 ? 1 : 0;
+                        sign = x[x_ptr] < 0 ? 1 : 0;
                         ec.enc_bits((uint)sign, 1);
                     }
                     else
@@ -1004,8 +1003,9 @@ namespace Concentus.Celt
                     b -= 1 << EntropyCoder.BITRES;
                 }
                 if (resynth != 0)
-                    x[0] = sign != 0 ? 0 - CeltConstants.NORM_SCALING : CeltConstants.NORM_SCALING;
+                    x[x_ptr] = sign != 0 ? 0 - CeltConstants.NORM_SCALING : CeltConstants.NORM_SCALING;
                 x = Y;
+                x_ptr = Y_ptr;
             } while (++c < 1 + stereo);
             if (lowband_out != null)
             {
@@ -1209,7 +1209,7 @@ namespace Concentus.Celt
                      };
 
         /* This function is responsible for encoding and decoding a band for the mono case. */
-        internal static uint quant_band(band_ctx ctx, Pointer<int> X,
+        internal static uint quant_band(band_ctx ctx, int[] X, int X_ptr,
               int N, int b, int B, int[] lowband, int lowband_ptr,
               int LM, int[] lowband_out, int lowband_out_ptr,
               int gain, int[] lowband_scratch, int lowband_scratch_ptr, int fill)
@@ -1237,7 +1237,7 @@ namespace Concentus.Celt
             /* Special case for one sample */
             if (N == 1)
             {
-                return quant_band_n1(ctx, X, null, b, lowband_out, lowband_out_ptr);
+                return quant_band_n1(ctx, X, X_ptr, null, 0, b, lowband_out, lowband_out_ptr);
             }
 
             if (tf_change > 0)
@@ -1254,7 +1254,7 @@ namespace Concentus.Celt
             for (k = 0; k < recombine; k++)
             {
                 if (encode != 0)
-                    haar1(X, N >> k, 1 << k);
+                    haar1(X, X_ptr, N >> k, 1 << k);
                 if (lowband != null)
                     haar1(lowband, lowband_ptr, N >> k, 1 << k);
                 fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2;
@@ -1266,7 +1266,7 @@ namespace Concentus.Celt
             while ((N_B & 1) == 0 && tf_change < 0)
             {
                 if (encode != 0)
-                    haar1(X, N_B, B);
+                    haar1(X, X_ptr, N_B, B);
                 if (lowband != null)
                     haar1(lowband, lowband_ptr, N_B, B);
                 fill |= fill << B;
@@ -1282,19 +1282,19 @@ namespace Concentus.Celt
             if (B0 > 1)
             {
                 if (encode != 0)
-                    deinterleave_hadamard(X, N_B >> recombine, B0 << recombine, longBlocks);
+                    deinterleave_hadamard(X.GetPointer(X_ptr), N_B >> recombine, B0 << recombine, longBlocks);
                 if (lowband != null)
                     deinterleave_hadamard(lowband, lowband_ptr, N_B >> recombine, B0 << recombine, longBlocks);
             }
 
-            cm = quant_partition(ctx, X, N, b, B, lowband, lowband_ptr, LM, gain, fill);
+            cm = quant_partition(ctx, X.GetPointer(X_ptr), N, b, B, lowband, lowband_ptr, LM, gain, fill);
 
             /* This code is used by the decoder and by the resynthesis-enabled encoder */
             if (resynth != 0)
             {
                 /* Undo the sample reorganization going from time order to frequency order */
                 if (B0 > 1)
-                    interleave_hadamard(X, N_B >> recombine, B0 << recombine, longBlocks);
+                    interleave_hadamard(X.GetPointer(X_ptr), N_B >> recombine, B0 << recombine, longBlocks);
 
                 /* Undo time-freq changes that we did earlier */
                 N_B = N_B0;
@@ -1330,7 +1330,7 @@ namespace Concentus.Celt
         }
 
         /* This function is responsible for encoding and decoding a band for the stereo case. */
-        internal static uint quant_band_stereo(band_ctx ctx, Pointer<int> X, Pointer<int> Y,
+        internal static uint quant_band_stereo(band_ctx ctx, int[] X, int X_ptr, int[] Y, int Y_ptr,
               int N, int b, int B, int[] lowband, int lowband_ptr,
               int LM, int[] lowband_out, int lowband_out_ptr,
               int[] lowband_scratch, int lowband_scratch_ptr, int fill)
@@ -1354,12 +1354,12 @@ namespace Concentus.Celt
             /* Special case for one sample */
             if (N == 1)
             {
-                return quant_band_n1(ctx, X, Y, b, lowband_out, lowband_out_ptr);
+                return quant_band_n1(ctx, X, X_ptr, Y, Y_ptr, b, lowband_out, lowband_out_ptr);
             }
 
             orig_fill = fill;
             
-            compute_theta(ctx, sctx, X, Y, N, ref b, B, B, LM, 1, ref fill);
+            compute_theta(ctx, sctx, X.GetPointer(X_ptr), Y.GetPointer(Y_ptr), N, ref b, B, B, LM, 1, ref fill);
 
             inv = sctx.inv;
             imid = sctx.imid;
@@ -1387,8 +1387,8 @@ namespace Concentus.Celt
                 c = itheta > 8192 ? 1 : 0;
                 ctx.remaining_bits -= qalloc + sbits;
 
-                x2 = c != 0 ? Y : X;
-                y2 = c != 0 ? X : Y;
+                x2 = c != 0 ? Y.GetPointer(Y_ptr) : X.GetPointer(X_ptr);
+                y2 = c != 0 ? X.GetPointer(X_ptr) : Y.GetPointer(Y_ptr);
                 if (sbits != 0)
                 {
                     if (encode != 0)
@@ -1405,7 +1405,7 @@ namespace Concentus.Celt
                 sign = 1 - 2 * sign;
                 /* We use orig_fill here because we want to fold the side, but if
                    itheta==16384, we'll have cleared the low bits of fill. */
-                cm = quant_band(ctx, x2, N, mbits, B, lowband, lowband_ptr,
+                cm = quant_band(ctx, x2.Data, x2.Offset, N, mbits, B, lowband, lowband_ptr,
                       LM, lowband_out, lowband_out_ptr, CeltConstants.Q15ONE, lowband_scratch, lowband_scratch_ptr, orig_fill);
 
                 /* We don't split N=2 bands, so cm is either 1 or 0 (for a fold-collapse),
@@ -1415,16 +1415,16 @@ namespace Concentus.Celt
                 if (resynth != 0)
                 {
                     int tmp;
-                    X[0] = Inlines.MULT16_16_Q15(mid, X[0]);
-                    X[1] = Inlines.MULT16_16_Q15(mid, X[1]);
-                    Y[0] = Inlines.MULT16_16_Q15(side, Y[0]);
-                    Y[1] = Inlines.MULT16_16_Q15(side, Y[1]);
-                    tmp = X[0];
-                    X[0] = Inlines.SUB16(tmp, Y[0]);
-                    Y[0] = Inlines.ADD16(tmp, Y[0]);
-                    tmp = X[1];
-                    X[1] = Inlines.SUB16(tmp, Y[1]);
-                    Y[1] = Inlines.ADD16(tmp, Y[1]);
+                    X[X_ptr] = Inlines.MULT16_16_Q15(mid, X[X_ptr]);
+                    X[X_ptr + 1] = Inlines.MULT16_16_Q15(mid, X[X_ptr + 1]);
+                    Y[Y_ptr] = Inlines.MULT16_16_Q15(side, Y[Y_ptr]);
+                    Y[Y_ptr + 1] = Inlines.MULT16_16_Q15(side, Y[Y_ptr + 1]);
+                    tmp = X[X_ptr];
+                    X[X_ptr] = Inlines.SUB16(tmp, Y[Y_ptr]);
+                    Y[Y_ptr] = Inlines.ADD16(tmp, Y[Y_ptr]);
+                    tmp = X[X_ptr + 1];
+                    X[X_ptr + 1] = Inlines.SUB16(tmp, Y[Y_ptr + 1]);
+                    Y[Y_ptr + 1] = Inlines.ADD16(tmp, Y[Y_ptr + 1]);
                 }
             }
             else
@@ -1441,7 +1441,7 @@ namespace Concentus.Celt
                 {
                     /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
                        mid for folding later. */
-                    cm = quant_band(ctx, X, N, mbits, B,
+                    cm = quant_band(ctx, X, X_ptr, N, mbits, B,
                           lowband, lowband_ptr, LM, lowband_out, lowband_out_ptr,
                           CeltConstants.Q15ONE, lowband_scratch, lowband_scratch_ptr, fill);
                     rebalance = mbits - (rebalance - ctx.remaining_bits);
@@ -1450,7 +1450,7 @@ namespace Concentus.Celt
 
                     /* For a stereo split, the high bits of fill are always zero, so no
                        folding will be done to the side. */
-                    cm |= quant_band(ctx, Y, N, sbits, B,
+                    cm |= quant_band(ctx, Y, Y_ptr, N, sbits, B,
                           null, 0, LM, null, 0,
                           side, null, 0, fill >> B);
                 }
@@ -1458,7 +1458,7 @@ namespace Concentus.Celt
                 {
                     /* For a stereo split, the high bits of fill are always zero, so no
                        folding will be done to the side. */
-                    cm = quant_band(ctx, Y, N, sbits, B,
+                    cm = quant_band(ctx, Y, Y_ptr, N, sbits, B,
                           null, 0, LM, null, 0,
                           side, null, 0, fill >> B);
                     rebalance = sbits - (rebalance - ctx.remaining_bits);
@@ -1466,7 +1466,7 @@ namespace Concentus.Celt
                         mbits += rebalance - (3 << EntropyCoder.BITRES);
                     /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
                        mid for folding later. */
-                    cm |= quant_band(ctx, X, N, mbits, B,
+                    cm |= quant_band(ctx, X, X_ptr, N, mbits, B,
                           lowband, lowband_ptr, LM, lowband_out, lowband_out_ptr,
                           CeltConstants.Q15ONE, lowband_scratch, lowband_scratch_ptr, fill);
                 }
@@ -1478,7 +1478,7 @@ namespace Concentus.Celt
             {
                 if (N != 2)
                 {
-                    stereo_merge(X, Y, mid, N);
+                    stereo_merge(X.GetPointer(X_ptr), Y.GetPointer(Y_ptr), mid, N);
                 }
                 if (inv != 0)
                 {
@@ -1546,7 +1546,9 @@ namespace Concentus.Celt
                 int N;
                 int curr_balance;
                 int effective_lowband = -1;
-                Pointer<int> X, Y;
+                int[] X, Y;
+                int X_ptr, Y_ptr;
+                Y_ptr = 0;
                 int tf_change = 0;
                 uint x_cm;
                 uint y_cm;
@@ -1554,12 +1556,13 @@ namespace Concentus.Celt
 
                 ctx.i = i;
                 last = (i == end - 1) ? 1 : 0;
-
-                // fixme: this is a pointer that gets trickled far down the band kernels. It might be nice to remove it
-                X = X_.GetPointer(M * eBands[i]);
+                
+                X = X_;
+                X_ptr = (M * eBands[i]);
                 if (Y_ != null)
                 {
-                    Y = Y_.GetPointer(M * eBands[i]);
+                    Y = Y_;
+                    Y_ptr = (M * eBands[i]);
                 }
                 else
                 {
@@ -1592,10 +1595,12 @@ namespace Concentus.Celt
                 ctx.tf_change = tf_change;
                 if (i >= m.effEBands)
                 {
-                    X = norm.GetPointer();
+                    X = norm;
+                    X_ptr = 0;
                     if (Y_ != null)
                     {
-                        Y = norm.GetPointer();
+                        Y = norm;
+                        Y_ptr = 0;
                     }
                     lowband_scratch = null;
                 }
@@ -1649,6 +1654,7 @@ namespace Concentus.Celt
                 {
                     x_cm = quant_band(ctx,
                         X,
+                        X_ptr,
                         N,
                         b / 2,
                         B,
@@ -1664,6 +1670,7 @@ namespace Concentus.Celt
                     y_cm = quant_band(
                         ctx,
                         Y,
+                        Y_ptr,
                         N,
                         b / 2,
                         B,
@@ -1684,7 +1691,9 @@ namespace Concentus.Celt
                         x_cm = quant_band_stereo(
                             ctx,
                             X,
+                            X_ptr,
                             Y,
+                            Y_ptr,
                             N,
                             b,
                             B,
@@ -1702,6 +1711,7 @@ namespace Concentus.Celt
                         x_cm = quant_band(
                             ctx,
                             X,
+                            X_ptr,
                             N,
                             b,
                             B,
