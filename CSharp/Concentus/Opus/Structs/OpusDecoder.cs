@@ -591,8 +591,8 @@ namespace Concentus.Structs
             return celt_ret < 0 ? celt_ret : audiosize;
         }
 
-        internal int opus_decode_native(Pointer<byte> data,
-          int len, Pointer<short> pcm, int frame_size, int decode_fec,
+        internal int opus_decode_native(byte[] data, int data_ptr,
+          int len, short[] pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
           int self_delimited, out int packet_offset, int soft_clip)
         {
             int i, nb_samples;
@@ -616,7 +616,7 @@ namespace Concentus.Structs
                 do
                 {
                     int ret;
-                    ret = opus_decode_frame(null, 0, pcm.Data, pcm.Offset + (pcm_count * this.channels), frame_size - pcm_count, 0);
+                    ret = opus_decode_frame(null, 0, pcm_out, pcm_out_ptr + (pcm_count * this.channels), frame_size - pcm_count, 0);
                     if (ret < 0)
                         return ret;
                     pcm_count += ret;
@@ -628,10 +628,10 @@ namespace Concentus.Structs
             else if (len < 0)
                 return OpusError.OPUS_BAD_ARG;
 
-            packet_mode = OpusPacketInfo.GetEncoderMode(data.Data, data.Offset);
-            packet_bandwidth = OpusPacketInfo.GetBandwidth(data.Data, data.Offset);
-            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data.Data, data.Offset, this.Fs);
-            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data.Data, data.Offset);
+            packet_mode = OpusPacketInfo.GetEncoderMode(data, data_ptr);
+            packet_bandwidth = OpusPacketInfo.GetBandwidth(data, data_ptr);
+            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, this.Fs);
+            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data, data_ptr);
             
             count = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, out toc, null,
                                            size.GetPointer(), out offset, out packet_offset);
@@ -639,7 +639,7 @@ namespace Concentus.Structs
             if (count < 0)
                 return count;
 
-            data = data.Point(offset);
+            data_ptr += offset;
 
             if (decode_fec != 0)
             {
@@ -648,12 +648,12 @@ namespace Concentus.Structs
                 int ret;
                 /* If no FEC can be present, run the PLC (recursive call) */
                 if (frame_size < packet_frame_size || packet_mode == OpusMode.MODE_CELT_ONLY || this.mode == OpusMode.MODE_CELT_ONLY)
-                    return opus_decode_native(null, 0, pcm, frame_size, 0, 0, out dummy, soft_clip);
+                    return opus_decode_native(null, 0, 0, pcm_out, pcm_out_ptr, frame_size, 0, 0, out dummy, soft_clip);
                 /* Otherwise, run the PLC on everything except the size for which we might have FEC */
                 duration_copy = this.last_packet_duration;
                 if (frame_size - packet_frame_size != 0)
                 {
-                    ret = opus_decode_native(null, 0, pcm, frame_size - packet_frame_size, 0, 0, out dummy, soft_clip);
+                    ret = opus_decode_native(null, 0, 0, pcm_out, pcm_out_ptr, frame_size - packet_frame_size, 0, 0, out dummy, soft_clip);
                     if (ret < 0)
                     {
                         this.last_packet_duration = duration_copy;
@@ -666,7 +666,7 @@ namespace Concentus.Structs
                 this.bandwidth = packet_bandwidth;
                 this.frame_size = packet_frame_size;
                 this.stream_channels = packet_stream_channels;
-                ret = opus_decode_frame(data, size[0], pcm.Data, pcm.Offset + (this.channels * (frame_size - packet_frame_size)),
+                ret = opus_decode_frame(data.GetPointer(data_ptr), size[0], pcm_out, pcm_out_ptr + (this.channels * (frame_size - packet_frame_size)),
                       packet_frame_size, 1);
                 if (ret < 0)
                     return ret;
@@ -689,11 +689,11 @@ namespace Concentus.Structs
             for (i = 0; i < count; i++)
             {
                 int ret;
-                ret = opus_decode_frame(data, size[i], pcm.Data, pcm.Offset + (nb_samples * this.channels), frame_size - nb_samples, 0);
+                ret = opus_decode_frame(data.GetPointer(data_ptr), size[i], pcm_out, pcm_out_ptr + (nb_samples * this.channels), frame_size - nb_samples, 0);
                 if (ret < 0)
                     return ret;
                 Inlines.OpusAssert(ret == packet_frame_size);
-                data = data.Point(size[i]);
+                data_ptr += size[i];
                 nb_samples += ret;
             }
             this.last_packet_duration = nb_samples;
@@ -731,7 +731,7 @@ namespace Concentus.Structs
             try
             {
                 int dummy;
-                int ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, out_pcm.GetPointer(out_pcm_offset), frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
+                int ret = opus_decode_native(in_data, in_data_offset, len, out_pcm, out_pcm_offset, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
 
                 if (ret < 0)
                 {
@@ -792,7 +792,7 @@ namespace Concentus.Structs
             try
             {
                 int dummy;
-                ret = opus_decode_native(in_data.GetPointer(in_data_offset), len, output.GetPointer(), frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
+                ret = opus_decode_native(in_data, in_data_offset, len, output, 0, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
 
                 if (ret < 0)
                 {

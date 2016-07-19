@@ -143,7 +143,7 @@ namespace Concentus.Structs
           int frame_size
         );
 
-        internal static int opus_multistream_packet_validate(Pointer<byte> data,
+        internal static int opus_multistream_packet_validate(byte[] data, int data_ptr,
             int len, int nb_streams, int Fs)
         {
             int s;
@@ -165,11 +165,11 @@ namespace Concentus.Structs
                 if (count < 0)
                     return count;
 
-                tmp_samples = OpusPacketInfo.GetNumSamples(data.Data, data.Offset, packet_offset, Fs);
+                tmp_samples = OpusPacketInfo.GetNumSamples(data, data_ptr, packet_offset, Fs);
                 if (s != 0 && samples != tmp_samples)
                     return OpusError.OPUS_INVALID_PACKET;
                 samples = tmp_samples;
-                data = data.Point(packet_offset);
+                data_ptr += packet_offset;
                 len -= packet_offset;
             }
 
@@ -212,7 +212,7 @@ namespace Concentus.Structs
             }
             if (do_plc == 0)
             {
-                int ret = opus_multistream_packet_validate(data.GetPointer(data_ptr), len, this.layout.nb_streams, Fs);
+                int ret = opus_multistream_packet_validate(data, data_ptr, len, this.layout.nb_streams, Fs);
                 if (ret < 0)
                 {
                     return ret;
@@ -235,7 +235,7 @@ namespace Concentus.Structs
                 }
                 int packet_offset;
                 ret = dec.opus_decode_native(
-                    data.GetPointer(data_ptr), len, buf.GetPointer(), frame_size, decode_fec,
+                    data, data_ptr, len, buf, 0, frame_size, decode_fec,
                     (s != this.layout.nb_streams - 1) ? 1 : 0, out packet_offset, soft_clip);
                 data_ptr += packet_offset;
                 len -= packet_offset;
