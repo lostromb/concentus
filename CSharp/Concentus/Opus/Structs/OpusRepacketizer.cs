@@ -191,13 +191,13 @@ namespace Concentus.Structs
         }
 
         internal int opus_repacketizer_out_range_impl(int begin, int end,
-              Pointer<byte> data, int maxlen, int self_delimited, int pad)
+              byte[] data, int data_ptr, int maxlen, int self_delimited, int pad)
         {
             int i, count;
             int tot_size;
             Pointer<short> len;
             Pointer<Pointer<byte>> frames;
-            Pointer<byte> ptr;
+            int ptr;
 
             if (begin < 0 || begin >= end || end > this.nb_frames)
             {
@@ -214,15 +214,14 @@ namespace Concentus.Structs
             else
                 tot_size = 0;
 
-            ptr = data;
+            ptr = data_ptr;
             if (count == 1)
             {
                 /* Code 0 */
                 tot_size += len[0] + 1;
                 if (tot_size > maxlen)
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
-                ptr[0] = (byte)(this.toc & 0xFC);
-                ptr = ptr.Point(1);
+                data[ptr++] = (byte)(this.toc & 0xFC);
             }
             else if (count == 2)
             {
@@ -232,17 +231,15 @@ namespace Concentus.Structs
                     tot_size += 2 * len[0] + 1;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    ptr[0] = (byte)((this.toc & 0xFC) | 0x1);
-                    ptr = ptr.Point(1);
+                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x1);
                 }
                 else {
                     /* Code 2 */
                     tot_size += len[0] + len[1] + 2 + (len[0] >= 252 ? 1 : 0);
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    ptr[0] = (byte)((this.toc & 0xFC) | 0x2);
-                    ptr = ptr.Point(1);
-                    ptr = ptr.Point(OpusPacketInfo.encode_size(len[0], ptr));
+                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x2);
+                    ptr += OpusPacketInfo.encode_size(len[0], data, ptr);
                 }
             }
             if (count > 2 || (pad != 0 && tot_size < maxlen))
@@ -252,7 +249,7 @@ namespace Concentus.Structs
                 int pad_amount = 0;
 
                 /* Restart the process for the padding case */
-                ptr = data;
+                ptr = data_ptr;
                 if (self_delimited != 0)
                     tot_size = 1 + (len[count - 1] >= 252 ? 1 : 0);
                 else
@@ -275,20 +272,16 @@ namespace Concentus.Structs
 
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    ptr[0] = (byte)((this.toc & 0xFC) | 0x3);
-                    ptr = ptr.Point(1);
-                    ptr[0] = (byte)(count | 0x80);
-                    ptr = ptr.Point(1);
+                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x3);
+                    data[ptr++] = (byte)(count | 0x80);
                 }
                 else
                 {
                     tot_size += count * len[0] + 2;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    ptr[0] = (byte)((this.toc & 0xFC) | 0x3);
-                    ptr = ptr.Point(1);
-                    ptr[0] = (byte)(count);
-                    ptr = ptr.Point(1);
+                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x3);
+                    data[ptr++] = (byte)(count);
                 }
 
                 pad_amount = pad != 0 ? (maxlen - tot_size) : 0;
@@ -296,30 +289,28 @@ namespace Concentus.Structs
                 if (pad_amount != 0)
                 {
                     int nb_255s;
-                    data[1] |= 0x40;
+                    data[data_ptr + 1] |= 0x40;
                     nb_255s = (pad_amount - 1) / 255;
                     for (i = 0; i < nb_255s; i++)
                     {
-                        ptr[0] = 255;
-                        ptr = ptr.Point(1);
+                        data[ptr++] = 255;
                     }
 
-                    ptr[0] = (byte)(pad_amount - 255 * nb_255s - 1);
-                    ptr = ptr.Point(1);
+                    data[ptr++] = (byte)(pad_amount - 255 * nb_255s - 1);
                     tot_size += pad_amount;
                 }
 
                 if (vbr != 0)
                 {
                     for (i = 0; i < count - 1; i++)
-                        ptr = ptr.Point(OpusPacketInfo.encode_size(len[i], ptr));
+                        ptr += (OpusPacketInfo.encode_size(len[i], data, ptr));
                 }
             }
 
             if (self_delimited != 0)
             {
-                int sdlen = OpusPacketInfo.encode_size(len[count - 1], ptr);
-                ptr = ptr.Point(sdlen);
+                int sdlen = OpusPacketInfo.encode_size(len[count - 1], data, ptr);
+                ptr += (sdlen);
             }
 
             /* Copy the actual data */
@@ -327,8 +318,8 @@ namespace Concentus.Structs
             {
                 /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
                    padding from opus_packet_pad or opus_packet_unpad(). */
-                frames[i].MemMoveTo(ptr, len[i]);
-                ptr = ptr.Point(len[i]);
+                frames[i].MemMoveTo(data.GetPointer(ptr), len[i]);
+                ptr += len[i];
             }
 
             if (pad != 0)
@@ -336,10 +327,9 @@ namespace Concentus.Structs
                 /* Fill padding with zeros. */
                 //Arrays.MemSetWithOffset<byte>(ptr.Data, 0, ptr.Offset, data.Offset + maxlen - ptr.Offset);
                 // FIXME why did they not just use a MemSet(0) here?
-                while (ptr.Offset < data.Offset + maxlen)
+                while (ptr < data_ptr + maxlen)
                 {
-                    ptr[0] = 0;
-                    ptr = ptr.Point(1);
+                    data[ptr++] = 0;
                 }
             }
 
@@ -379,7 +369,7 @@ namespace Concentus.Structs
   */
         public int CreatePacket(int begin, int end, byte[] data, int data_offset, int maxlen)
         {
-            return opus_repacketizer_out_range_impl(begin, end, data.GetPointer(data_offset), maxlen, 0, 0);
+            return opus_repacketizer_out_range_impl(begin, end, data, data_offset, maxlen, 0, 0);
         }
 
         /** Construct a new packet from data previously submitted to the repacketizer
@@ -413,7 +403,7 @@ namespace Concentus.Structs
   */
         public int CreatePacket(byte[] data, int data_offset, int maxlen)
         {
-            return opus_repacketizer_out_range_impl(0, this.nb_frames, data.GetPointer(data_offset), maxlen, 0, 0);
+            return opus_repacketizer_out_range_impl(0, this.nb_frames, data, data_offset, maxlen, 0, 0);
         }
 
         /** Pads a given Opus packet to a larger size (possibly changing the TOC sequence).
@@ -443,7 +433,7 @@ namespace Concentus.Structs
             Arrays.MemMove<byte>(data, data_offset, data_offset + new_len - len, len);
             //data.MemMoveTo(data.Point(new_len - len), len);
             rp.AddPacket(data, data_offset + new_len - len, len);
-            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data.GetPointer(data_offset), new_len, 0, 1);
+            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, data_offset, new_len, 0, 1);
             if (ret > 0)
                 return OpusError.OPUS_OK;
             else
@@ -472,7 +462,7 @@ namespace Concentus.Structs
             ret = rp.AddPacket(data, data_offset, len);
             if (ret < 0)
                 return ret;
-            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data.GetPointer(data_offset), len, 0, 0);
+            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, data_offset, len, 0, 0);
             Inlines.OpusAssert(ret > 0 && ret <= len);
 
             return ret;
@@ -568,7 +558,7 @@ namespace Concentus.Structs
                 ret = rp.opus_repacketizer_cat_impl(data.GetPointer(data_offset), packet_offset, self_delimited);
                 if (ret < 0)
                     return ret;
-                ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, dst, len, self_delimited, 0);
+                ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, dst.Data, dst.Offset, len, self_delimited, 0);
                 if (ret < 0)
                     return ret;
                 else

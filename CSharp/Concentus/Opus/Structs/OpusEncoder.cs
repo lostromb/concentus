@@ -835,7 +835,7 @@ namespace Concentus.Structs
                     repacketize_len = out_data_bytes;
                 else
                     repacketize_len = Inlines.IMIN(3 * this.bitrate_bps / (3 * 8 * 50 / nb_frames), out_data_bytes);
-                ret = rp.opus_repacketizer_out_range_impl(0, nb_frames, data.GetPointer(data_ptr), repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
+                ret = rp.opus_repacketizer_out_range_impl(0, nb_frames, data, data_ptr, repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
                 if (ret < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
