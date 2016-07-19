@@ -251,16 +251,16 @@ namespace Concentus.Structs
             return mode;
         }
 
-        internal static int encode_size(int size, Pointer<byte> data)
+        internal static int encode_size(int size, byte[] data, int data_ptr)
         {
             if (size < 252)
             {
-                data[0] = (byte)size;
+                data[data_ptr] = (byte)size;
                 return 1;
             }
             else {
-                data[0] = (byte)(252 + (size & 0x3));
-                data[1] = (byte)((size - (int)data[0]) >> 2);
+                data[data_ptr] = (byte)(252 + (size & 0x3));
+                data[data_ptr + 1] = (byte)((size - (int)data[data_ptr]) >> 2);
                 return 2;
             }
         }

@@ -508,7 +508,7 @@ namespace Concentus.Structs
                     for (i = pcm_ptr; i < (frame_size * this.channels) + pcm_ptr; i++)
                         pcm[i] = 0;
                 }
-                /* For hybrid . SILK transitions, we let the CELT MDCT
+                /* For hybrid -> SILK transitions, we let the CELT MDCT
                    do a fade-out by decoding a silence frame */
                 if (this.prev_mode == OpusMode.MODE_HYBRID && !(redundancy != 0 && celt_to_silk != 0 && this.prev_redundancy != 0))
                 {
