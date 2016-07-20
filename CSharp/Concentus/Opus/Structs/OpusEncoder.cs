@@ -861,7 +861,7 @@ namespace Concentus.Structs
 
             data_ptr += 1;
 
-            enc.enc_init(data.GetPointer(data_ptr), (uint)(max_data_bytes - 1));
+            enc.enc_init(data, data_ptr, (uint)(max_data_bytes - 1));
 
             pcm_buf = new int[(total_buffer + frame_size) * this.channels];
             Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);

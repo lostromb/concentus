@@ -513,7 +513,7 @@ namespace Concentus.Celt.Structs
             if (enc == null)
             {
                 enc = new EntropyCoder();
-                enc.enc_init(compressed, (uint)nbCompressedBytes);
+                enc.enc_init(compressed.Data, compressed.Offset, (uint)nbCompressedBytes);
             }
 
             if (vbr_rate > 0)

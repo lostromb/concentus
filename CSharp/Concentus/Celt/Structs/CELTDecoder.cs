@@ -556,7 +556,7 @@ namespace Concentus.Celt.Structs
                 // If no entropy decoder was passed into this function, we need to create
                 // a new one here for local use only. It only exists in this function scope.
                 dec = new EntropyCoder();
-                dec.dec_init(data, (uint)len);
+                dec.dec_init(data.Data, data.Offset, (uint)len);
             }
 
             if (C == 1)
