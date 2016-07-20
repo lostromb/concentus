@@ -253,7 +253,7 @@ namespace Concentus.Structs
             {
                 audiosize = this.frame_size;
                 mode = this.mode;
-                dec.dec_init(data, (uint)len);
+                dec.dec_init(data.Data, data.Offset, (uint)len);
             }
             else {
                 audiosize = frame_size;
