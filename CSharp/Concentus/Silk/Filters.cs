@@ -273,7 +273,7 @@ namespace Concentus.Silk
             int[] A_Q28,
             int[] S,
             int S_ptr,
-            int[] output,
+            short[] output,
             int output_ptr,
             int len,
             int stride)

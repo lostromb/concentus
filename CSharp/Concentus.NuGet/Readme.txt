@@ -40,7 +40,7 @@ Here is what you can replace it with:
 
 	int thisPacketSize = encoder.Encode(inputAudioSamples, 0, frameSize, outputBuffer, 0, outputBuffer.Length); // this throws OpusException on a failure, rather than returning a negative number
 
-And there is the decoder path:
+And here is the decoder path:
 
 	OpusDecoder decoder = OpusDecoder.Create(48000, 1);
 

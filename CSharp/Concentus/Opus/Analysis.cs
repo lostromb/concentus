@@ -154,18 +154,18 @@ namespace Concentus
         /// <param name="C"></param>
         /// <param name="lsb_depth"></param>
         /// <param name="downmix"></param>
-        internal static void tonality_analysis<T>(TonalityAnalysisState tonal, CeltMode celt_mode, Pointer<T> x, int len, int offset, int c1, int c2, int C, int lsb_depth, Downmix.downmix_func<T> downmix)
+        internal static void tonality_analysis<T>(TonalityAnalysisState tonal, CeltMode celt_mode, T[] x, int x_ptr, int len, int offset, int c1, int c2, int C, int lsb_depth, Downmix.downmix_func<T> downmix)
         {
             int i, b;
             FFTState kfft;
             int[] input;
             int[] output;
             int N = 480, N2 = 240;
-            Pointer<float> A = tonal.angle.GetPointer();
-            Pointer<float> dA = tonal.d_angle.GetPointer();
-            Pointer<float> d2A = tonal.d2_angle.GetPointer();
-            Pointer<float> tonality;
-            Pointer<float> noisiness;
+            float[] A = tonal.angle;
+            float[] dA = tonal.d_angle;
+            float[] d2A = tonal.d2_angle;
+            float[] tonality;
+            float[] noisiness;
             float[] band_tonality = new float[OpusConstants.NB_TBANDS];
             float[] logE = new float[OpusConstants.NB_TBANDS];
             float[] BFCC = new float[8];
@@ -199,7 +199,7 @@ namespace Concentus
             if (tonal.count == 0)
                 tonal.mem_fill = 240;
 
-            downmix(x.Data, x.Offset, tonal.inmem, tonal.mem_fill, Inlines.IMIN(len, OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill), offset, c1, c2, C);
+            downmix(x, x_ptr, tonal.inmem, tonal.mem_fill, Inlines.IMIN(len, OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill), offset, c1, c2, C);
 
             if (tonal.mem_fill + len < OpusConstants.ANALYSIS_BUF_SIZE)
             {
@@ -214,8 +214,8 @@ namespace Concentus
 
             input = new int[960];
             output = new int[960];
-            tonality = Pointer.Malloc<float>(240);
-            noisiness = Pointer.Malloc<float>(240);
+            tonality = new float[240];
+            noisiness = new float[240];
             for (i = 0; i < N2; i++)
             {
                 float w = Tables.analysis_window[i];
@@ -227,7 +227,7 @@ namespace Concentus
             Arrays.MemMove<int>(tonal.inmem, OpusConstants.ANALYSIS_BUF_SIZE - 240, 0, 240);
 
             remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
-            downmix(x.Data, x.Offset, tonal.inmem, 240, remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
+            downmix(x, x_ptr, tonal.inmem, 240, remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
             tonal.mem_fill = 240 + remaining;
 
             KissFFT.opus_fft(kfft, input.GetPointer(), output.GetPointer());
@@ -566,7 +566,7 @@ namespace Concentus
             info.valid = 1;
         }
 
-        internal static void run_analysis<T>(TonalityAnalysisState analysis, CeltMode celt_mode, Pointer<T> analysis_pcm,
+        internal static void run_analysis<T>(TonalityAnalysisState analysis, CeltMode celt_mode, T[] analysis_pcm, int analysis_pcm_ptr,
                          int analysis_frame_size, int frame_size, int c1, int c2, int C, int Fs,
                          int lsb_depth, Downmix.downmix_func<T> downmix, AnalysisInfo analysis_info)
         {
@@ -582,7 +582,7 @@ namespace Concentus
                 offset = analysis.analysis_offset;
                 do
                 {
-                    tonality_analysis(analysis, celt_mode, analysis_pcm, Inlines.IMIN(480, pcm_len), offset, c1, c2, C, lsb_depth, downmix);
+                    tonality_analysis(analysis, celt_mode, analysis_pcm, analysis_pcm_ptr, Inlines.IMIN(480, pcm_len), offset, c1, c2, C, lsb_depth, downmix);
                     offset += 480;
                     pcm_len -= 480;
                 } while (pcm_len > 0);
