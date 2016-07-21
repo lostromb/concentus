@@ -377,7 +377,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void celt_preemphasis(Pointer<int> pcmp, Pointer<int> inp,
+        internal static void celt_preemphasis(short[] pcmp, int pcmp_ptr, int[] inp, int inp_ptr,
                                 int N, int CC, int upsample, int[] coef, ref int mem, int clip)
         {
             int i;
@@ -393,9 +393,9 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < N; i++)
                 {
-                    int x = pcmp[CC * i];
+                    int x = pcmp[pcmp_ptr + (CC * i)];
                     /* Apply pre-emphasis */
-                    inp[i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
+                    inp[inp_ptr + i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                     m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
                 }
                 mem = m;
@@ -405,18 +405,18 @@ namespace Concentus.Celt
             Nu = N / upsample;
             if (upsample != 1)
             {
-                inp.MemSet(0, N);
+                Arrays.MemSetWithOffset<int>(inp, 0, inp_ptr, N);
             }
             for (i = 0; i < Nu; i++)
-                inp[i * upsample] = pcmp[CC * i];
+                inp[inp_ptr + (i * upsample)] = pcmp[pcmp_ptr + (CC * i)];
 
 
             for (i = 0; i < N; i++)
             {
                 int x;
-                x = (inp[i]);
+                x = (inp[inp_ptr + i]);
                 /* Apply pre-emphasis */
-                inp[i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
+                inp[inp_ptr + i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                 m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
             }
 
@@ -1006,7 +1006,7 @@ namespace Concentus.Celt
             return maxDepth;
         }
 
-        internal static void deemphasis(Pointer<int>[] input, Pointer<short> pcm, int N, int C, int downsample, int[] coef,
+        internal static void deemphasis(Pointer<int>[] input, short[] pcm, int pcm_ptr, int N, int C, int downsample, int[] coef,
               int[] mem, int accum)
         {
             int c;
@@ -1020,10 +1020,10 @@ namespace Concentus.Celt
             {
                 int j;
                 Pointer<int> x;
-                Pointer<short> y;
+                int y;
                 int m = mem[c];
                 x = input[c];
-                y = pcm.Point(c);
+                y = pcm_ptr + c;
                 if (downsample > 1)
                 {
                     /* Shortcut for the standard (non-custom modes) case */
@@ -1043,7 +1043,7 @@ namespace Concentus.Celt
                         {
                             int tmp = x[j] + m + CeltConstants.VERY_SMALL;
                             m = Inlines.MULT16_32_Q15(coef0, tmp);
-                            y[j * C] = Inlines.SAT16(Inlines.ADD32(y[j * C], Inlines.SIG2WORD16(tmp)));
+                            pcm[y + (j * C)] = Inlines.SAT16(Inlines.ADD32(pcm[y + (j * C)], Inlines.SIG2WORD16(tmp)));
                         }
                     }
                     else
@@ -1060,7 +1060,7 @@ namespace Concentus.Celt
                             {
                                 m = Inlines.MULT16_32_Q15(coef0, tmp);
                             }
-                            y[j * C] = Inlines.SIG2WORD16(tmp);
+                            pcm[y + (j * C)] = Inlines.SIG2WORD16(tmp);
                         }
                     }
                 }
@@ -1071,7 +1071,7 @@ namespace Concentus.Celt
                     /* Perform down-sampling */
                     {
                         for (j = 0; j < Nd; j++)
-                            y[j * C] = Inlines.SIG2WORD16(scratch[j * downsample]);
+                            pcm[y + (j * C)] = Inlines.SIG2WORD16(scratch[j * downsample]);
                     }
                 }
             } while (++c < C);
@@ -1132,7 +1132,7 @@ namespace Concentus.Celt
                 Bands.denormalise_bands(mode, X[0], freq, 0, oldBandE, 0, start, effEnd, M,
                       downsample, silence);
                 /* Use the output buffer as temp array before downmixing. */
-                Bands.denormalise_bands(mode, X[1], out_syn[0].Data, out_syn[0].Offset + (overlap / 2), oldBandE, nbEBands, start, effEnd, M,
+                Bands.denormalise_bands(mode, X[1], out_syn[0].Data, freq2, oldBandE, nbEBands, start, effEnd, M,
                       downsample, silence);
                 for (i = 0; i < N; i++)
                     freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], out_syn[0].Data[freq2 + i]));
