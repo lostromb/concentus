@@ -386,7 +386,7 @@ namespace Concentus.Celt.Structs
         }
 
         
-        internal int celt_encode_with_ec(Pointer<int> pcm, int frame_size, Pointer<byte> compressed, int nbCompressedBytes, EntropyCoder enc)
+        internal int celt_encode_with_ec(short[] pcm, int pcm_ptr, int frame_size, Pointer<byte> compressed, int nbCompressedBytes, EntropyCoder enc)
         {
             int i, c, N;
             int bits;
@@ -513,7 +513,7 @@ namespace Concentus.Celt.Structs
             if (enc == null)
             {
                 enc = new EntropyCoder();
-                enc.enc_init(compressed, (uint)nbCompressedBytes);
+                enc.enc_init(compressed.Data, compressed.Offset, (uint)nbCompressedBytes);
             }
 
             if (vbr_rate > 0)
@@ -550,8 +550,8 @@ namespace Concentus.Celt.Structs
 
             input = Arrays.InitTwoDimensionalArray<int>(CC, N + overlap);
 
-            sample_max = Inlines.MAX32(this.overlap_max, Inlines.celt_maxabs32(pcm.Data, pcm.Offset, C * (N - overlap) / this.upsample));
-            this.overlap_max = Inlines.celt_maxabs32(pcm.Data, pcm.Offset + (C * (N - overlap) / this.upsample), C * overlap / this.upsample);
+            sample_max = Inlines.MAX32(this.overlap_max, Inlines.celt_maxabs32(pcm, pcm_ptr, C * (N - overlap) / this.upsample));
+            this.overlap_max = Inlines.celt_maxabs32(pcm, pcm_ptr + (C * (N - overlap) / this.upsample), C * overlap / this.upsample);
             sample_max = Inlines.MAX32(sample_max, this.overlap_max);
             silence = (sample_max == 0) ? 1 : 0;
 #if FUZZING
@@ -581,7 +581,7 @@ namespace Concentus.Celt.Structs
             do
             {
                 int need_clip = 0;
-                CeltCommon.celt_preemphasis(pcm.Point(c), input[c].GetPointer(overlap), N, CC, this.upsample,
+                CeltCommon.celt_preemphasis(pcm, pcm_ptr + c, input[c], overlap, N, CC, this.upsample,
                             mode.preemph, ref this.preemph_memE[c], need_clip);
             } while (++c < CC);
 

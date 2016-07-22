@@ -231,7 +231,7 @@ namespace Concentus.Celt
 
                 nstart_bytes = enc_start_state.range_bytes();
                 nintra_bytes = enc_intra_state.range_bytes();
-                intra_buf = enc_intra_state.get_buffer().Point(nstart_bytes);
+                intra_buf = enc_intra_state.buf.GetPointer(enc_intra_state.buf_ptr + (int)nstart_bytes);
                 save_bytes = nintra_bytes - nstart_bytes;
 
                 if (save_bytes != 0)

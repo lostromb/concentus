@@ -120,7 +120,7 @@ namespace Concentus.Silk
         internal static int silk_Encode(
             SilkEncoder psEnc,
             EncControlState encControl,
-            Pointer<short> samplesIn,
+            short[] samplesIn,
             int nSamplesIn,
             EntropyCoder psRangeEnc,
             BoxedValue<int> nBytesOut,
@@ -258,6 +258,7 @@ namespace Concentus.Silk
 
             buf = new short[nSamplesFromInputMax];
 
+            int samplesIn_ptr = 0;
             while (true)
             {
                 nSamplesToBuffer = psEnc.state_Fxx[0].frame_length - psEnc.state_Fxx[0].inputBufIx;
@@ -270,7 +271,7 @@ namespace Concentus.Silk
                     int id = psEnc.state_Fxx[0].nFramesEncoded;
                     for (n = 0; n < nSamplesFromInput; n++)
                     {
-                        buf[n] = samplesIn[2 * n];
+                        buf[n] = samplesIn[samplesIn_ptr + (2 * n)];
                     }
 
                     /* Making sure to start both resamplers from the same state when switching from mono to stereo */
@@ -292,7 +293,7 @@ namespace Concentus.Silk
                     nSamplesToBuffer = Inlines.silk_min(nSamplesToBuffer, 10 * nBlocksOf10ms * psEnc.state_Fxx[1].fs_kHz);
                     for (n = 0; n < nSamplesFromInput; n++)
                     {
-                        buf[n] = samplesIn[2 * n + 1];
+                        buf[n] = samplesIn[samplesIn_ptr + (2 * n) + 1];
                     }
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[1].resampler_state,
@@ -307,7 +308,7 @@ namespace Concentus.Silk
                     /* Combine left and right channels before resampling */
                     for (n = 0; n < nSamplesFromInput; n++)
                     {
-                        sum = samplesIn[2 * n] + samplesIn[2 * n + 1];
+                        sum = samplesIn[samplesIn_ptr + (2 * n)] + samplesIn[samplesIn_ptr + (2 * n) + 1];
                         buf[n] = (short)Inlines.silk_RSHIFT_ROUND(sum, 1);
                     }
 
@@ -339,7 +340,7 @@ namespace Concentus.Silk
                 else
                 {
                     Inlines.OpusAssert(encControl.nChannelsAPI == 1 && encControl.nChannelsInternal == 1);
-                    samplesIn.MemCopyTo(buf, 0, nSamplesFromInput);
+                    Array.Copy(samplesIn, samplesIn_ptr, buf, 0, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
@@ -349,7 +350,7 @@ namespace Concentus.Silk
                     psEnc.state_Fxx[0].inputBufIx += nSamplesToBuffer;
                 }
 
-                samplesIn = samplesIn.Point(nSamplesFromInput * encControl.nChannelsAPI);
+                samplesIn_ptr += (nSamplesFromInput * encControl.nChannelsAPI);
                 nSamplesIn -= nSamplesFromInput;
 
                 /* Default */

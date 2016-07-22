@@ -787,7 +787,21 @@ namespace Concentus.Common
                 maxval = MAX32(maxval, x[i]);
                 minval = MIN32(minval, x[i]);
             }
-            return MAX32(maxval, -minval);
+            return MAX32(maxval, 0 - minval);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short celt_maxabs32(short[] x, int x_ptr, int len)
+        {
+            int i;
+            short maxval = 0;
+            short minval = 0;
+            for (i = x_ptr; i < x_ptr + len; i++)
+            {
+                maxval = MAX16(maxval, x[i]);
+                minval = MIN16(minval, x[i]);
+            }
+            return MAX(maxval, (short)(0 - minval));
         }
 
         /// <summary>

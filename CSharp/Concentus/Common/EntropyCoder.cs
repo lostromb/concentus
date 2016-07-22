@@ -123,7 +123,8 @@ namespace Concentus.Common
         //////////////// Coder State //////////////////// 
 
         /*POINTER to Buffered input/output.*/
-        public Pointer<byte> buf;
+        public byte[] buf;
+        public int buf_ptr;
 
         /*The size of the buffer.*/
         public uint storage;
@@ -170,6 +171,7 @@ namespace Concentus.Common
         public void Reset()
         {
             buf = null;
+            buf_ptr = 0;
             storage = 0;
             end_offs = 0;
             end_window = 0;
@@ -185,6 +187,7 @@ namespace Concentus.Common
         public void Assign(EntropyCoder other)
         {
             this.buf = other.buf;
+            this.buf_ptr = other.buf_ptr;
             this.storage = other.storage;
             this.end_offs = other.end_offs;
             this.end_window = other.end_window;
@@ -200,13 +203,13 @@ namespace Concentus.Common
 
         internal int read_byte()
         {
-            return this.offs < this.storage ? this.buf[this.offs++] : 0;
+            return this.offs < this.storage ? this.buf[buf_ptr + this.offs++] : 0;
         }
 
         internal int read_byte_from_end()
         {
             return this.end_offs < this.storage ?
-             this.buf[(this.storage - ++(this.end_offs))] : 0;
+             this.buf[buf_ptr + (this.storage - ++(this.end_offs))] : 0;
         }
 
         internal int write_byte(uint _value)
@@ -215,7 +218,7 @@ namespace Concentus.Common
             {
                 return -1;
             }
-            this.buf[this.offs++] = (byte)_value;
+            this.buf[buf_ptr + this.offs++] = (byte)_value;
             return 0;
         }
 
@@ -226,7 +229,7 @@ namespace Concentus.Common
                 return -1;
             }
 
-            this.buf[(this.storage - ++(this.end_offs))] = (byte)_value;
+            this.buf[buf_ptr + (this.storage - ++(this.end_offs))] = (byte)_value;
             return 0;
         }
 
@@ -257,9 +260,10 @@ namespace Concentus.Common
             }
         }
 
-        internal void dec_init(Pointer<byte> _buf, uint _storage)
+        internal void dec_init(byte[] _buf, int _buf_ptr, uint _storage)
         {
             this.buf = _buf;
+            this.buf_ptr = _buf_ptr;
             this.storage = _storage;
             this.end_offs = 0;
             this.end_window = 0;
@@ -483,9 +487,10 @@ namespace Concentus.Common
             }
         }
 
-        internal void enc_init(Pointer<byte> _buf, uint _size)
+        internal void enc_init(byte[] _buf, int buf_ptr, uint _size)
         {
             this.buf = _buf;
+            this.buf_ptr = buf_ptr;
             this.end_offs = 0;
             this.end_window = 0;
             this.nend_bits = 0;
@@ -638,7 +643,7 @@ namespace Concentus.Common
             if (this.offs > 0)
             {
                 /*The first byte has been finalized.*/
-                this.buf[0] = (byte)((this.buf[0] & ~mask) | _val << shift);
+                this.buf[buf_ptr] = (byte)((this.buf[buf_ptr] & ~mask) | _val << shift);
             }
             else if (this.rem >= 0)
             {
@@ -662,18 +667,13 @@ namespace Concentus.Common
         {
             Inlines.OpusAssert(this.offs + this.end_offs <= _size);
             //(memmove(this.buf + _size - this.end_offs, this.buf + this.storage - this.end_offs, this.end_offs * sizeof(*(dst))))
-            this.buf.Point(this.storage - this.end_offs).MemMove((int)(this.storage - _size), (int)this.end_offs);
+            Arrays.MemMove<byte>(this.buf, buf_ptr + (int)_size - (int)this.end_offs, buf_ptr + (int)this.storage - (int)this.end_offs, (int)this.end_offs);
             this.storage = _size;
         }
 
         internal uint range_bytes()
         {
             return this.offs;
-        }
-
-        internal Pointer<byte> get_buffer()
-        {
-            return this.buf;
         }
 
         internal int get_error()
@@ -767,7 +767,7 @@ namespace Concentus.Common
             /*Clear any excess space and add any remaining extra bits to the last byte.*/
             if (this.error == 0)
             {
-                this.buf.Point(this.offs).MemSet(0, this.storage - this.offs - this.end_offs);
+                Arrays.MemSetWithOffset<byte>(this.buf, 0, buf_ptr + (int)this.offs, (int)this.storage - (int)this.offs - (int)this.end_offs);
                 if (used > 0)
                 {
                     /*If there's no range coder data at all, give up.*/
@@ -786,7 +786,7 @@ namespace Concentus.Common
                             this.error = -1;
                         }
 
-                        this.buf[this.storage - this.end_offs - 1] |= (byte)window;
+                        this.buf[buf_ptr + this.storage - this.end_offs - 1] |= (byte)window;
                     }
                 }
             }

@@ -1068,7 +1068,7 @@ namespace Concentus.Silk.Structs
                             /* Restore output state from earlier iteration that did meet the bitrate budget */
                             psRangeEnc.Assign(sRangeEnc_copy2);
                             Inlines.OpusAssert(sRangeEnc_copy2.offs <= 1275);
-                            ec_buf_copy.GetPointer().MemCopyTo(psRangeEnc.buf, (int)sRangeEnc_copy2.offs);
+                            Array.Copy(ec_buf_copy, 0, psRangeEnc.buf, psRangeEnc.buf_ptr, (int)sRangeEnc_copy2.offs);
                             this.sNSQ.Assign(sNSQ_copy2);
                             this.sShape.LastGainIndex = LastGainIndex_copy2;
                         }
@@ -1102,7 +1102,7 @@ namespace Concentus.Silk.Structs
                             /* Copy part of the output state */
                             sRangeEnc_copy2.Assign(psRangeEnc);
                             Inlines.OpusAssert(psRangeEnc.offs <= 1275);
-                            psRangeEnc.buf.MemCopyTo(ec_buf_copy, 0, (int)psRangeEnc.offs);
+                            Array.Copy(psRangeEnc.buf, psRangeEnc.buf_ptr, ec_buf_copy, 0, (int)psRangeEnc.offs);
                             sNSQ_copy2.Assign(this.sNSQ);
                             LastGainIndex_copy2 = this.sShape.LastGainIndex;
                         }

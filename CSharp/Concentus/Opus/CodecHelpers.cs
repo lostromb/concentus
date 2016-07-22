@@ -82,7 +82,7 @@ namespace Concentus
             return toc;
         }
 
-        internal static void hp_cutoff(short[] input, int input_ptr, int cutoff_Hz, int[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
+        internal static void hp_cutoff(short[] input, int input_ptr, int cutoff_Hz, short[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
         {
             int[] B_Q28 = new int[3];
             int[] A_Q28 = new int[2];
@@ -112,7 +112,7 @@ namespace Concentus
             }
         }
 
-        internal static void dc_reject(short[] input, int input_ptr, int cutoff_Hz, int[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
+        internal static void dc_reject(short[] input, int input_ptr, int cutoff_Hz, short[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
         {
             int c, i;
             int shift;
@@ -137,7 +137,7 @@ namespace Concentus
         }
 
         internal static void stereo_fade(
-            int[] pcm_buf,
+            short[] pcm_buf,
             int g1,
             int g2,
             int overlap48,
@@ -162,20 +162,20 @@ namespace Concentus
                       CeltConstants.Q15ONE - w, g1), 15);
                 diff = Inlines.EXTRACT16(Inlines.HALF32((int)pcm_buf[i * channels] - (int)pcm_buf[i * channels + 1]));
                 diff = Inlines.MULT16_16_Q15(g, diff);
-                pcm_buf[i * channels] = pcm_buf[i * channels] - diff;
-                pcm_buf[i * channels + 1] = pcm_buf[i * channels + 1] + diff;
+                pcm_buf[i * channels] = (short)(pcm_buf[i * channels] - diff);
+                pcm_buf[i * channels + 1] = (short)(pcm_buf[i * channels + 1] + diff);
             }
             for (; i < frame_size; i++)
             {
                 int diff;
                 diff = Inlines.EXTRACT16(Inlines.HALF32((int)pcm_buf[i * channels] - (int)pcm_buf[i * channels + 1]));
                 diff = Inlines.MULT16_16_Q15(g2, diff);
-                pcm_buf[i * channels] = pcm_buf[i * channels] - diff;
-                pcm_buf[i * channels + 1] = pcm_buf[i * channels + 1] + diff;
+                pcm_buf[i * channels] = (short)(pcm_buf[i * channels] - diff);
+                pcm_buf[i * channels + 1] = (short)(pcm_buf[i * channels + 1] + diff);
             }
         }
 
-        internal static void gain_fade(int[] buffer, int buf_ptr, int g1, int g2,
+        internal static void gain_fade(short[] buffer, int buf_ptr, int g1, int g2,
                 int overlap48, int frame_size, int channels, int[] window, int Fs)
         {
             int i;
@@ -192,7 +192,7 @@ namespace Concentus
                     w = Inlines.MULT16_16_Q15(window[i * inc], window[i * inc]);
                     g = Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, g2),
                           CeltConstants.Q15ONE - w, g1), 15);
-                    buffer[buf_ptr + i] = Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i]);
+                    buffer[buf_ptr + i] = (short)Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i]);
                 }
             }
             else {
@@ -202,15 +202,15 @@ namespace Concentus
                     w = Inlines.MULT16_16_Q15(window[i * inc], window[i * inc]);
                     g = Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, g2),
                                     CeltConstants.Q15ONE - w, g1), 15);
-                    buffer[buf_ptr + i * 2] = Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i * 2]);
-                    buffer[buf_ptr + i * 2 + 1] = Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i * 2 + 1]);
+                    buffer[buf_ptr + i * 2] = (short)Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i * 2]);
+                    buffer[buf_ptr + i * 2 + 1] = (short)Inlines.MULT16_16_Q15(g, buffer[buf_ptr + i * 2 + 1]);
                 }
             }
             c = 0; do
             {
                 for (i = overlap; i < frame_size; i++)
                 {
-                    buffer[buf_ptr + i * channels + c] = Inlines.MULT16_16_Q15(g2, buffer[buf_ptr + i * channels + c]);
+                    buffer[buf_ptr + i * channels + c] = (short)Inlines.MULT16_16_Q15(g2, buffer[buf_ptr + i * channels + c]);
                 }
             }
             while (++c < channels);
@@ -220,7 +220,7 @@ namespace Concentus
         private const int MAX_DYNAMIC_FRAMESIZE = 24;
 
         /* Estimates how much the bitrate will be boosted based on the sub-frame energy */
-        internal static float transient_boost(Pointer<float> E, Pointer<float> E_1, int LM, int maxM)
+        internal static float transient_boost(float[] E, int E_ptr, float[] E_1, int LM, int maxM)
         {
             int i;
             int M;
@@ -228,7 +228,7 @@ namespace Concentus
             float metric;
 
             M = Inlines.IMIN(maxM, (1 << LM) + 1);
-            for (i = 0; i < M; i++)
+            for (i = E_ptr; i < M + E_ptr; i++)
             {
                 sumE += E[i];
                 sumE_1 += E_1[i];
@@ -287,7 +287,7 @@ namespace Concentus
             }
             for (i = 0; i < 4; i++)
             {
-                cost[0][1 << i] = (frame_cost + rate * (1 << i)) * (1 + factor * transient_boost(E.GetPointer(), E_1.GetPointer(), i, N + 1));
+                cost[0][1 << i] = (frame_cost + rate * (1 << i)) * (1 + factor * transient_boost(E, 0, E_1, i, N + 1));
                 states[0][1 << i] = i;
             }
             for (i = 1; i < N; i++)
@@ -318,7 +318,7 @@ namespace Concentus
                             min_cost = tmp;
                         }
                     }
-                    curr_cost = (frame_cost + rate * (1 << j)) * (1 + factor * transient_boost(E.GetPointer(i), E_1.GetPointer(i), j, N - i + 1));
+                    curr_cost = (frame_cost + rate * (1 << j)) * (1 + factor * transient_boost(E, i, E_1, j, N - i + 1));
                     cost[i][1 << j] = min_cost;
                     /* If part of the frame is outside the analysis window, only count part of the cost */
                     if (N - i < (1 << j))
@@ -550,9 +550,9 @@ namespace Concentus
             return Inlines.EXTRACT16(Inlines.MIN32(CeltConstants.Q15ONE, 20 * mem.max_follower));
         }
 
-        internal static void smooth_fade(Pointer<short> in1, Pointer<short> in2,
-              Pointer<short> output, int overlap, int channels,
-                Pointer<int> window, int Fs)
+        internal static void smooth_fade(short[] in1, int in1_ptr, short[] in2, int in2_ptr,
+              short[] output, int output_ptr, int overlap, int channels,
+                int[] window, int Fs)
         {
             int i, c;
             int inc = 48000 / Fs;
@@ -561,8 +561,8 @@ namespace Concentus
                 for (i = 0; i < overlap; i++)
                 {
                     int w = Inlines.MULT16_16_Q15(window[i * inc], window[i * inc]);
-                    output[i * channels + c] = (short)(Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, in2[i * channels + c]),
-                                   CeltConstants.Q15ONE - w, in1[i * channels + c]), 15));
+                    output[output_ptr + (i * channels) + c] = (short)(Inlines.SHR32(Inlines.MAC16_16(Inlines.MULT16_16(w, in2[in2_ptr + (i * channels) + c]),
+                                   CeltConstants.Q15ONE - w, in1[in1_ptr + (i * channels) + c]), 15));
                 }
             }
         }

@@ -253,7 +253,7 @@ namespace Concentus.Celt.Structs
                             X[c][boffs + j] = (unchecked((int)seed) >> 20);
                         }
 
-                        VQ.renormalise_vector(X[c].GetPointer(), blen, CeltConstants.Q15ONE);
+                        VQ.renormalise_vector(X[c], 0, blen, CeltConstants.Q15ONE);
                     }
                 }
                 this.rng = seed;
@@ -463,8 +463,8 @@ namespace Concentus.Celt.Structs
             this.loss_count = loss_count + 1;
         }
 
-        internal int celt_decode_with_ec(Pointer<byte> data,
-              int len, Pointer<short> pcm, int frame_size, EntropyCoder dec, int accum)
+        internal int celt_decode_with_ec(byte[] data, int data_ptr,
+              int len, short[] pcm, int pcm_ptr, int frame_size, EntropyCoder dec, int accum)
         {
             int c, i, N;
             int spread_decision;
@@ -546,7 +546,7 @@ namespace Concentus.Celt.Structs
             if (data == null || len <= 1)
             {
                 this.celt_decode_lost(N, LM);
-                CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
+                CeltCommon.deemphasis(out_syn, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
 
                 return frame_size / this.downsample;
             }
@@ -556,7 +556,7 @@ namespace Concentus.Celt.Structs
                 // If no entropy decoder was passed into this function, we need to create
                 // a new one here for local use only. It only exists in this function scope.
                 dec = new EntropyCoder();
-                dec.dec_init(data, (uint)len);
+                dec.dec_init(data, data_ptr, (uint)len);
             }
 
             if (C == 1)
@@ -788,7 +788,7 @@ namespace Concentus.Celt.Structs
             } while (++c < 2);
             this.rng = dec.rng;
 
-            CeltCommon.deemphasis(out_syn, pcm, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
+            CeltCommon.deemphasis(out_syn, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
             this.loss_count = 0;
 
             if (dec.tell() > 8 * len)

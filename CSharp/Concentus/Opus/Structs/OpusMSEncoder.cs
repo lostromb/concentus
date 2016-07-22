@@ -774,7 +774,7 @@ namespace Concentus.Structs
                    more than one frame at a time (e.g. 60 ms CELT-only) */
                 rp.AddPacket(tmp_data, 0, len);
                 len = rp.opus_repacketizer_out_range_impl(0, rp.GetNumFrames(),
-                                                  data.GetPointer(data_ptr), max_data_bytes - tot_size, (s != this.layout.nb_streams - 1) ? 1 : 0, (vbr == 0 && s == this.layout.nb_streams - 1) ? 1 : 0);
+                                                  data, data_ptr, max_data_bytes - tot_size, (s != this.layout.nb_streams - 1) ? 1 : 0, (vbr == 0 && s == this.layout.nb_streams - 1) ? 1 : 0);
                 data_ptr += len;
                 tot_size += len;
             }

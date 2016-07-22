@@ -73,7 +73,8 @@ namespace Concentus.Silk
             int lostFlag,           /* I    0: no loss, 1 loss, 2 decode fec                */
             int newPacketFlag,      /* I    Indicates first decoder call for this packet    */
             EntropyCoder psRangeDec,        /* I/O  Compressor data structure                       */
-            Pointer<short> samplesOut,        /* O    Decoded output speech vector                    */
+            short[] samplesOut,        /* O    Decoded output speech vector                    */
+            int samplesOut_ptr,
             out int nSamplesOut       /* O    Number of samples decoded                       */
         )
         {
@@ -294,8 +295,8 @@ namespace Concentus.Silk
             
             if (delay_stack_alloc != 0)
             {
-                samplesOut1_tmp[0] = samplesOut;
-                samplesOut1_tmp[1] = samplesOut.Point(channel_state[0].frame_length + 2);
+                samplesOut1_tmp[0] = samplesOut.GetPointer(samplesOut_ptr);
+                samplesOut1_tmp[1] = samplesOut.GetPointer(samplesOut_ptr + channel_state[0].frame_length + 2);
             }
             else
             {
@@ -374,13 +375,13 @@ namespace Concentus.Silk
                 resample_out_ptr = samplesOut2_tmp;
             }
             else {
-                resample_out_ptr = samplesOut;
+                resample_out_ptr = samplesOut.GetPointer(samplesOut_ptr);
             }
             
             if (delay_stack_alloc != 0)
             {
                 samplesOut1_tmp_storage2 = Pointer.Malloc<short>(decControl.nChannelsInternal * (channel_state[0].frame_length + 2));
-                samplesOut.MemCopyTo(samplesOut1_tmp_storage2, decControl.nChannelsInternal * (channel_state[0].frame_length + 2));
+                samplesOut.GetPointer(samplesOut_ptr).MemCopyTo(samplesOut1_tmp_storage2, decControl.nChannelsInternal * (channel_state[0].frame_length + 2));
                 samplesOut1_tmp[0] = samplesOut1_tmp_storage2;
                 samplesOut1_tmp[1] = samplesOut1_tmp_storage2.Point(channel_state[0].frame_length + 2);
             }
@@ -393,9 +394,10 @@ namespace Concentus.Silk
                 /* Interleave if stereo output and stereo stream */
                 if (decControl.nChannelsAPI == 2)
                 {
+                    int nptr = samplesOut_ptr + n;
                     for (i = 0; i < nSamplesOut; i++)
                     {
-                        samplesOut[n + 2 * i] = resample_out_ptr[i];
+                        samplesOut[nptr + 2 * i] = resample_out_ptr[i];
                     }
                 }
             }
@@ -411,13 +413,13 @@ namespace Concentus.Silk
 
                     for (i = 0; i < nSamplesOut; i++)
                     {
-                        samplesOut[1 + 2 * i] = resample_out_ptr[i];
+                        samplesOut[samplesOut_ptr + 1 + 2 * i] = resample_out_ptr[i];
                     }
                 }
                 else {
                     for (i = 0; i < nSamplesOut; i++)
                     {
-                        samplesOut[1 + 2 * i] = samplesOut[0 + 2 * i];
+                        samplesOut[samplesOut_ptr + 1 + 2 * i] = samplesOut[samplesOut_ptr + 2 * i];
                     }
                 }
             }
