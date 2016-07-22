@@ -1143,7 +1143,7 @@ namespace Concentus.Celt
                 /* Normal case (mono or stereo) */
                 c = 0; do
                 {
-                    Bands.denormalise_bands(mode, X[c], freq, 0, oldBandE, (c * nbEBands), start, effEnd, M,
+                    Bands.denormalise_bands(mode, X[c], freq, 0, oldBandE, c * nbEBands, start, effEnd, M,
                           downsample, silence);
                     for (b = 0; b < B; b++)
                         MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[c].Data, out_syn[c].Offset + (NB * b), mode.window, overlap, shift, B);

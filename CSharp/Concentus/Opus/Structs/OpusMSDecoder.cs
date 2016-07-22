@@ -160,8 +160,8 @@ namespace Concentus.Structs
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
 
-                count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, (s != nb_streams - 1) ? 1 : 0, out toc, null, 0,
-                                               size, 0, out dummy, out packet_offset);
+                count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, (s != nb_streams - 1) ? 1 : 0, out toc, null,
+                                               size.GetPointer(), out dummy, out packet_offset);
                 if (count < 0)
                     return count;
 

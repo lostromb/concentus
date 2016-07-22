@@ -84,10 +84,10 @@ namespace Concentus.Structs
 
             int payload_offset;
             byte out_toc;
-            int[] frame_ptrs = new int[numFrames];
-            short[] sizes = new short[numFrames];
+            Pointer<Pointer<byte>> frames = Pointer.Malloc<Pointer<byte>>(numFrames);
+            Pointer<short> size = Pointer.Malloc<short>(numFrames);
             int packetOffset;
-            int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out out_toc, frame_ptrs, 0, sizes, 0, out payload_offset, out packetOffset);
+            int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out out_toc, frames, size, out payload_offset, out packetOffset);
             if (error < 0)
             {
                 throw new OpusException("An error occurred while parsing the packet", error);
@@ -97,8 +97,8 @@ namespace Concentus.Structs
 
             for (int c = 0; c < numFrames; c++)
             {
-                byte[] nextFrame = new byte[sizes[c]];
-                Array.Copy(packet, frame_ptrs[c], nextFrame, 0, sizes[c]);
+                byte[] nextFrame = new byte[size[c]];
+                frames[c].MemCopyTo(nextFrame.GetPointer(), nextFrame.Length);
                 copiedFrames.Add(nextFrame);
             }
 
@@ -290,9 +290,7 @@ namespace Concentus.Structs
 
         internal static int opus_packet_parse_impl(byte[] data, int data_ptr, int len,
               int self_delimited, out byte out_toc,
-              int[] frame_ptrs, int frame_begin,
-              short[] sizes,
-              int size_ptr,
+              Pointer<Pointer<byte>> frames, Pointer<short> sizes,
               out int payload_offset, out int packet_offset)
         {
             int i, bytes;
@@ -334,20 +332,20 @@ namespace Concentus.Structs
                             return OpusError.OPUS_INVALID_PACKET;
                         last_size = len / 2;
                         /* If last_size doesn't fit in size[0], we'll catch it later */
-                        sizes[size_ptr] = (short)last_size;
+                        sizes[0] = (short)last_size;
                     }
                     break;
                 /* Two VBR frames */
                 case 2:
                     count = 2;
-                    BoxedValue<short> boxed_size = new BoxedValue<short>(sizes[size_ptr]);
+                    BoxedValue<short> boxed_size = new BoxedValue<short>(sizes[0]);
                     bytes = parse_size(data.GetPointer(data_ptr), len, boxed_size);
-                    sizes[size_ptr] = boxed_size.Val;
+                    sizes[0] = boxed_size.Val;
                     len -= bytes;
-                    if (sizes[size_ptr] < 0 || sizes[size_ptr] > len)
+                    if (sizes[0] < 0 || sizes[0] > len)
                         return OpusError.OPUS_INVALID_PACKET;
                     data_ptr += bytes;
-                    last_size = len - sizes[size_ptr];
+                    last_size = len - sizes[0];
                     break;
                 /* Multiple CBR/VBR frames (from 0 to 120 ms) */
                 default: /*case 3:*/
@@ -385,14 +383,14 @@ namespace Concentus.Structs
                         last_size = len;
                         for (i = 0; i < count - 1; i++)
                         {
-                            boxed_size = new BoxedValue<short>(sizes[size_ptr + i]);
+                            boxed_size = new BoxedValue<short>(sizes[i]);
                             bytes = parse_size(data.GetPointer(data_ptr), len, boxed_size);
-                            sizes[size_ptr + i] = boxed_size.Val;
+                            sizes[i] = boxed_size.Val;
                             len -= bytes;
-                            if (sizes[size_ptr + i] < 0 || sizes[size_ptr + i] > len)
+                            if (sizes[i] < 0 || sizes[i] > len)
                                 return OpusError.OPUS_INVALID_PACKET;
                             data_ptr += bytes;
-                            last_size -= bytes + sizes[size_ptr + i];
+                            last_size -= bytes + sizes[i];
                         }
                         if (last_size < 0)
                             return OpusError.OPUS_INVALID_PACKET;
@@ -404,7 +402,7 @@ namespace Concentus.Structs
                         if (last_size * count != len)
                             return OpusError.OPUS_INVALID_PACKET;
                         for (i = 0; i < count - 1; i++)
-                            sizes[size_ptr + i] = (short)last_size;
+                            sizes[i] = (short)last_size;
                     }
                     break;
             }
@@ -412,22 +410,22 @@ namespace Concentus.Structs
             /* Self-delimited framing has an extra size for the last frame. */
             if (self_delimited != 0)
             {
-                BoxedValue<short> boxed_size = new BoxedValue<short>(sizes[size_ptr + count - 1]);
+                BoxedValue<short> boxed_size = new BoxedValue<short>(sizes[count - 1]);
                 bytes = parse_size(data.GetPointer(data_ptr), len, boxed_size);
-                sizes[size_ptr + count - 1] = boxed_size.Val;
+                sizes[count - 1] = boxed_size.Val;
                 len -= bytes;
-                if (sizes[size_ptr + count - 1] < 0 || sizes[size_ptr + count - 1] > len)
+                if (sizes[count - 1] < 0 || sizes[count - 1] > len)
                     return OpusError.OPUS_INVALID_PACKET;
                 data_ptr += bytes;
                 /* For CBR packets, apply the size to all the frames. */
                 if (cbr != 0)
                 {
-                    if (sizes[size_ptr + count - 1] * count > len)
+                    if (sizes[count - 1] * count > len)
                         return OpusError.OPUS_INVALID_PACKET;
                     for (i = 0; i < count - 1; i++)
-                        sizes[size_ptr + i] = sizes[size_ptr + count - 1];
+                        sizes[i] = sizes[count - 1];
                 }
-                else if (bytes + sizes[size_ptr + count - 1] > last_size)
+                else if (bytes + sizes[count - 1] > last_size)
                     return OpusError.OPUS_INVALID_PACKET;
             }
             else
@@ -437,18 +435,16 @@ namespace Concentus.Structs
                    1275. Reject them here.*/
                 if (last_size > 1275)
                     return OpusError.OPUS_INVALID_PACKET;
-                sizes[size_ptr + count - 1] = (short)last_size;
+                sizes[count - 1] = (short)last_size;
             }
 
             payload_offset = (int)(data_ptr - data0);
-            
+
             for (i = 0; i < count; i++)
             {
-                if (frame_ptrs != null)
-                {
-                    frame_ptrs[frame_begin + i] = data_ptr;
-                }
-                data_ptr += sizes[size_ptr + i];
+                if (frames != null)
+                    frames[i] = data.GetPointer(data_ptr);
+                data_ptr += sizes[i];
             }
 
             packet_offset = pad + (int)(data_ptr - data0);
@@ -459,13 +455,13 @@ namespace Concentus.Structs
         }
 
         // used internally
-        internal static int opus_packet_parse(byte[] data, int data_ptr, int len,
-              out byte out_toc, int[] frame_ptrs, int frame_begin,
-              short[] sizes, int size_ptr, out int payload_offset)
+        internal static int opus_packet_parse(Pointer<byte> data, int len,
+              out byte out_toc, Pointer<Pointer<byte>> frames,
+              Pointer<short> size, out int payload_offset)
         {
             int dummy;
-            return OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, 0, out out_toc,
-                                          frame_ptrs, frame_begin, sizes, size_ptr, out payload_offset, out dummy);
+            return OpusPacketInfo.opus_packet_parse_impl(data.Data, data.Offset, len, 0, out out_toc,
+                                          frames, size, out payload_offset, out dummy);
         }
     }
 }
