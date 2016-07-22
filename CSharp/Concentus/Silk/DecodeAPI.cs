@@ -419,7 +419,7 @@ namespace Concentus.Silk
                 else {
                     for (i = 0; i < nSamplesOut; i++)
                     {
-                        samplesOut[samplesOut_ptr + 1 + 2 * i] = samplesOut[0 + 2 * i];
+                        samplesOut[samplesOut_ptr + 1 + 2 * i] = samplesOut[samplesOut_ptr + 2 * i];
                     }
                 }
             }
