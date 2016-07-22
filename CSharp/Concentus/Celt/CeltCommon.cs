@@ -1135,7 +1135,7 @@ namespace Concentus.Celt
                 Bands.denormalise_bands(mode, X[1], out_syn[0].Data, out_syn[0].Offset + (overlap / 2), oldBandE.GetPointer(nbEBands), start, effEnd, M,
                       downsample, silence);
                 for (i = 0; i < N; i++)
-                    freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], out_syn[0][freq2 + i]));
+                    freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], out_syn[0].Data[freq2 + i]));
                 for (b = 0; b < B; b++)
                     MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[0].Data, out_syn[0].Offset + (NB * b), mode.window, overlap, shift, B);
             }
