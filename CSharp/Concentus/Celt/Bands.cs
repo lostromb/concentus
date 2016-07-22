@@ -672,7 +672,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void haar1(int[] X, int N0, int stride)
+        internal static void haar1ZeroOffset(int[] X, int N0, int stride)
         {
             int i, j;
             N0 >>= 1;
@@ -1009,7 +1009,7 @@ namespace Concentus.Celt
             } while (++c < 1 + stereo);
             if (lowband_out != null)
             {
-                lowband_out[lowband_out_ptr] = Inlines.SHR16(X[0], 4);
+                lowband_out[lowband_out_ptr] = Inlines.SHR16(X[X_ptr], 4);
             }
 
             return 1;
@@ -1304,13 +1304,13 @@ namespace Concentus.Celt
                     B >>= 1;
                     N_B <<= 1;
                     cm |= cm >> B;
-                    haar1(X, N_B, B);
+                    haar1(X, X_ptr, N_B, B);
                 }
 
                 for (k = 0; k < recombine; k++)
                 {
                     cm = bit_deinterleave_table[cm];
-                    haar1(X, N0 >> k, 1 << k);
+                    haar1(X, X_ptr, N0 >> k, 1 << k);
                 }
                 B <<= recombine;
 
@@ -1319,9 +1319,9 @@ namespace Concentus.Celt
                 {
                     int j;
                     int n;
-                    n = (Inlines.celt_sqrt(Inlines.SHL32(N0, 22))); // opus bug: unnecessary extend32 here
+                    n = (Inlines.celt_sqrt(Inlines.SHL32(N0, 22)));
                     for (j = 0; j < N0; j++)
-                        lowband_out[lowband_out_ptr + j] = Inlines.MULT16_16_Q15(n, X[j]);
+                        lowband_out[lowband_out_ptr + j] = Inlines.MULT16_16_Q15(n, X[X_ptr + j]);
                 }
 
                 cm = cm & (uint)((1 << B) - 1);
@@ -1483,7 +1483,7 @@ namespace Concentus.Celt
                 if (inv != 0)
                 {
                     int j;
-                    for (j = 0; j < N; j++)
+                    for (j = Y_ptr; j < N + Y_ptr; j++)
                         Y[j] = (short)(0 - Y[j]);
                 }
             }
