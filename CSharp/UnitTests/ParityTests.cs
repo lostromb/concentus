@@ -493,7 +493,8 @@ namespace UnitTests
             {
                 testsRun++;
                 TestResults response = TestDriver.RunTest(p, GetTestSample(p));
-                if (testsRun > 200) break;
+                Assert.IsTrue(response.Passed);
+                if (testsRun > 50) break;
             }
         }
     }
