@@ -1115,7 +1115,7 @@ namespace Concentus.Celt
             {
                 /* Copying a mono streams to two channels */
                 Pointer<int> freq2;
-                Bands.denormalise_bands(mode, X[0], freq, 0, oldBandE.GetPointer(), start, effEnd, M,
+                Bands.denormalise_bands(mode, X[0], freq, 0, oldBandE, 0, start, effEnd, M,
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
                 freq2 = out_syn[1].Point(overlap / 2);
@@ -1129,10 +1129,10 @@ namespace Concentus.Celt
             {
                 /* Downmixing a stereo stream to mono */
                 int freq2 = out_syn[0].Offset + (overlap / 2);
-                Bands.denormalise_bands(mode, X[0], freq, 0, oldBandE.GetPointer(), start, effEnd, M,
+                Bands.denormalise_bands(mode, X[0], freq, 0, oldBandE, 0, start, effEnd, M,
                       downsample, silence);
                 /* Use the output buffer as temp array before downmixing. */
-                Bands.denormalise_bands(mode, X[1], out_syn[0].Data, out_syn[0].Offset + (overlap / 2), oldBandE.GetPointer(nbEBands), start, effEnd, M,
+                Bands.denormalise_bands(mode, X[1], out_syn[0].Data, out_syn[0].Offset + (overlap / 2), oldBandE, nbEBands, start, effEnd, M,
                       downsample, silence);
                 for (i = 0; i < N; i++)
                     freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], out_syn[0].Data[freq2 + i]));
@@ -1143,7 +1143,7 @@ namespace Concentus.Celt
                 /* Normal case (mono or stereo) */
                 c = 0; do
                 {
-                    Bands.denormalise_bands(mode, X[c], freq, 0, oldBandE.GetPointer(c * nbEBands), start, effEnd, M,
+                    Bands.denormalise_bands(mode, X[c], freq, 0, oldBandE, c * nbEBands, start, effEnd, M,
                           downsample, silence);
                     for (b = 0; b < B; b++)
                         MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[c].Data, out_syn[c].Offset + (NB * b), mode.window, overlap, shift, B);

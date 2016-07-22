@@ -43,38 +43,37 @@ namespace Concentus.Celt
 
     internal static class VQ
     {
-        // fixme: remove pointers from this file!
-        internal static void exp_rotation1(Pointer<int> X, int len, int stride, int c, int s)
+        internal static void exp_rotation1(int[] X, int X_ptr, int len, int stride, int c, int s)
         {
             int i;
             int ms;
-            Pointer<int> Xptr;
-            Xptr = X;
+            int Xptr;
+            Xptr = X_ptr;
             ms = Inlines.NEG16(s);
             for (i = 0; i < len - stride; i++)
             {
                 int x1, x2;
-                x1 = Xptr[0];
-                x2 = Xptr[stride];
-                Xptr[stride] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MAC16_16(Inlines.MULT16_16(c, x2), s, x1), 15));
-                Xptr[0] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MAC16_16(Inlines.MULT16_16(c, x1), ms, x2), 15));
-                Xptr = Xptr.Point(1);
+                x1 = X[Xptr];
+                x2 = X[Xptr + stride];
+                X[Xptr + stride] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MAC16_16(Inlines.MULT16_16(c, x2), s, x1), 15));
+                X[Xptr] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MAC16_16(Inlines.MULT16_16(c, x1), ms, x2), 15));
+                Xptr++;
             }
-            Xptr = X.Point(len - 2 * stride - 1);
+            Xptr = X_ptr + (len - 2 * stride - 1);
             for (i = len - 2 * stride - 1; i >= 0; i--)
             {
                 int x1, x2;
-                x1 = Xptr[0];
-                x2 = Xptr[stride];
-                Xptr[stride] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MAC16_16(Inlines.MULT16_16(c, x2), s, x1), 15));
-                Xptr[0] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MAC16_16(Inlines.MULT16_16(c, x1), ms, x2), 15));
-                Xptr = Xptr.Point(-1);
+                x1 = X[Xptr];
+                x2 = X[Xptr + stride];
+                X[Xptr + stride] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MAC16_16(Inlines.MULT16_16(c, x2), s, x1), 15));
+                X[Xptr] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MAC16_16(Inlines.MULT16_16(c, x1), ms, x2), 15));
+                Xptr--;
             }
         }
 
         private static int[] SPREAD_FACTOR = { 15, 10, 5 };
         
-        internal static void exp_rotation(Pointer<int> X, int len, int dir, int stride, int K, int spread)
+        internal static void exp_rotation(int[] X, int X_ptr, int len, int dir, int stride, int K, int spread)
         {
             int i;
             int c, s;
@@ -115,18 +114,18 @@ namespace Concentus.Celt
                 {
                     if (stride2 != 0)
                     {
-                        exp_rotation1(X.Point(i * len), len, stride2, s, c);
+                        exp_rotation1(X, X_ptr + (i * len), len, stride2, s, c);
                     }
 
-                    exp_rotation1(X.Point(i * len), len, 1, c, s);
+                    exp_rotation1(X, X_ptr + (i * len), len, 1, c, s);
                 }
                 else
                 {
-                    exp_rotation1(X.Point(i * len), len, 1, c, (short)(0 - s));
+                    exp_rotation1(X, X_ptr + (i * len), len, 1, c, (short)(0 - s));
 
                     if (stride2 != 0)
                     {
-                        exp_rotation1(X.Point(i * len), len, stride2, s, (short)(0 - c));
+                        exp_rotation1(X, X_ptr + (i * len), len, stride2, s, (short)(0 - c));
                     }
                 }
             }
@@ -134,7 +133,7 @@ namespace Concentus.Celt
 
         /** Takes the pitch vector and the decoded residual vector, computes the gain
             that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-        internal static void normalise_residual(int[] iy, Pointer<int> X,
+        internal static void normalise_residual(int[] iy, int[] X, int X_ptr,
               int N, int Ryy, int gain)
         {
             int i;
@@ -148,7 +147,7 @@ namespace Concentus.Celt
 
             i = 0;
             do
-                X[i] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(g, iy[i]), k + 1));
+                X[X_ptr + i] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(g, iy[i]), k + 1));
             while (++i < N);
         }
 
@@ -180,7 +179,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        internal static uint alg_quant(Pointer<int> X, int N, int K, int spread, int B, EntropyCoder enc
+        internal static uint alg_quant(int[] X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc
            )
         {
             int[] y = new int[N];
@@ -197,21 +196,21 @@ namespace Concentus.Celt
             Inlines.OpusAssert(K > 0, "alg_quant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_quant() needs at least two dimensions");
             
-            exp_rotation(X, N, 1, B, K, spread);
+            exp_rotation(X, X_ptr, N, 1, B, K, spread);
 
             /* Get rid of the sign */
             sum = 0;
             j = 0;
             do
             {
-                if (X[j] > 0)
+                if (X[X_ptr + j] > 0)
                 {
                     signx[j] = 1;
                 }
                 else
                 {
                     signx[j] = -1;
-                    X[j] = (0 - X[j]);
+                    X[X_ptr + j] = (0 - X[X_ptr + j]);
                 }
 
                 iy[j] = 0;
@@ -228,7 +227,7 @@ namespace Concentus.Celt
                 int rcp;
                 j = 0; do
                 {
-                    sum += X[j];
+                    sum += X[X_ptr + j];
                 } while (++j < N);
 
                 /* If X is too small, just replace it with a pulse at 0 */
@@ -236,12 +235,12 @@ namespace Concentus.Celt
                    to be allocated. 64 is an approximation of infinity here. */
                 if (sum <= K)
                 {
-                    X[0] = ((short)(0.5 + (1.0f) * (((int)1) << (14))))/*Inlines.QCONST16(1.0f, 14)*/;
-                    j = 1;
+                    X[X_ptr] = ((short)(0.5 + (1.0f) * (((int)1) << (14))))/*Inlines.QCONST16(1.0f, 14)*/;
+                    j = X_ptr + 1;
                     do
                     {
                         X[j] = 0;
-                    } while (++j < N);
+                    } while (++j < N + X_ptr);
 
                     sum = ((short)(0.5 + (1.0f) * (((int)1) << (14))))/*Inlines.QCONST16(1.0f, 14)*/;
                 }
@@ -252,10 +251,10 @@ namespace Concentus.Celt
                 do
                 {
                     /* It's really important to round *towards zero* here */
-                    iy[j] = Inlines.MULT16_16_Q15(X[j], rcp);
+                    iy[j] = Inlines.MULT16_16_Q15(X[X_ptr + j], rcp);
                     y[j] = (int)iy[j];
                     yy = (Inlines.MAC16_16(yy, y[j], y[j]));
-                    xy = Inlines.MAC16_16(xy, X[j], y[j]);
+                    xy = Inlines.MAC16_16(xy, X[X_ptr + j], y[j]);
                     y[j] *= 2;
                     pulsesLeft -= iy[j];
                 } while (++j < N);
@@ -290,7 +289,7 @@ namespace Concentus.Celt
                 {
                     int Rxy, Ryy;
                     /* Temporary sums of the new pulse(s) */
-                    Rxy = Inlines.EXTRACT16(Inlines.SHR32(Inlines.ADD32(xy, Inlines.EXTEND32(X[j])), rshift));
+                    Rxy = Inlines.EXTRACT16(Inlines.SHR32(Inlines.ADD32(xy, Inlines.EXTEND32(X[X_ptr + j])), rshift));
                     /* We're multiplying y[j] by two so we don't have to do it here */
                     Ryy = Inlines.ADD16(yy, y[j]);
 
@@ -309,7 +308,7 @@ namespace Concentus.Celt
                 } while (++j < N);
 
                 /* Updating the sums of the new pulse(s) */
-                xy = Inlines.ADD32(xy, Inlines.EXTEND32(X[best_id]));
+                xy = Inlines.ADD32(xy, Inlines.EXTEND32(X[X_ptr + best_id]));
                 /* We're multiplying y[j] by two so we don't have to do it here */
                 yy = Inlines.ADD16(yy, y[best_id]);
 
@@ -323,7 +322,7 @@ namespace Concentus.Celt
             j = 0;
             do
             {
-                X[j] = (Inlines.MULT16_16(signx[j], X[j]));
+                X[X_ptr + j] = (Inlines.MULT16_16(signx[j], X[X_ptr + j]));
                 if (signx[j] < 0)
                     iy[j] = -iy[j];
             } while (++j < N);
@@ -337,7 +336,7 @@ namespace Concentus.Celt
 
         /** Decode pulse vector and combine the result with the pitch vector to produce
             the final normalised signal in the current band. */
-        internal static uint alg_unquant(Pointer<int> X, int N, int K, int spread, int B,
+        internal static uint alg_unquant(int[] X, int X_ptr, int N, int K, int spread, int B,
               EntropyCoder dec, int gain)
         {
             int Ryy;
@@ -346,36 +345,36 @@ namespace Concentus.Celt
             Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
             Ryy = CWRS.decode_pulses(iy, N, K, dec);
-            normalise_residual(iy, X, N, Ryy, gain);
-            exp_rotation(X, N, -1, B, K, spread);
+            normalise_residual(iy, X, X_ptr, N, Ryy, gain);
+            exp_rotation(X, X_ptr, N, -1, B, K, spread);
             collapse_mask = extract_collapse_mask(iy, N, B);
 
             return collapse_mask;
         }
 
-        internal static void renormalise_vector(Pointer<int> X, int N, int gain)
+        internal static void renormalise_vector(int[] X, int X_ptr, int N, int gain)
         {
             int i;
             int k;
             int E;
             int g;
             int t;
-            Pointer<int> xptr;
-            E = CeltConstants.EPSILON + Kernels.celt_inner_prod(X.Data, X.Offset, X.Data, X.Offset, N);
+            int xptr;
+            E = CeltConstants.EPSILON + Kernels.celt_inner_prod(X, X_ptr, X, X_ptr, N);
             k = Inlines.celt_ilog2(E) >> 1;
             t = Inlines.VSHR32(E, 2 * (k - 7));
             g = Inlines.MULT16_16_P15(Inlines.celt_rsqrt_norm(t), gain);
 
-            xptr = X;
+            xptr = X_ptr;
             for (i = 0; i < N; i++)
             {
-                xptr[0] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(g, xptr[0]), k + 1));
-                xptr = xptr.Point(1);
+                X[xptr] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(g, X[xptr]), k + 1));
+                xptr++;
             }
             /*return celt_sqrt(E);*/
         }
 
-        internal static int stereo_itheta(Pointer<int> X, Pointer<int> Y, int stereo, int N)
+        internal static int stereo_itheta(int[] X, int X_ptr, int[] Y, int Y_ptr, int stereo, int N)
         {
             int i;
             int itheta;
@@ -388,15 +387,15 @@ namespace Concentus.Celt
                 for (i = 0; i < N; i++)
                 {
                     int m, s;
-                    m = Inlines.ADD16(Inlines.SHR16(X[i], 1), Inlines.SHR16(Y[i], 1));
-                    s = Inlines.SUB16(Inlines.SHR16(X[i], 1), Inlines.SHR16(Y[i], 1));
+                    m = Inlines.ADD16(Inlines.SHR16(X[X_ptr + i], 1), Inlines.SHR16(Y[Y_ptr + i], 1));
+                    s = Inlines.SUB16(Inlines.SHR16(X[X_ptr + i], 1), Inlines.SHR16(Y[Y_ptr + i], 1));
                     Emid = Inlines.MAC16_16(Emid, m, m);
                     Eside = Inlines.MAC16_16(Eside, s, s);
                 }
             }
             else {
-                Emid += Kernels.celt_inner_prod(X.Data, X.Offset, X.Data, X.Offset, N);
-                Eside += Kernels.celt_inner_prod(Y.Data, Y.Offset, Y.Data, Y.Offset, N);
+                Emid += Kernels.celt_inner_prod(X, X_ptr, X, X_ptr, N);
+                Eside += Kernels.celt_inner_prod(Y, Y_ptr, Y, Y_ptr, N);
             }
             mid = (Inlines.celt_sqrt(Emid));
             side = (Inlines.celt_sqrt(Eside));
