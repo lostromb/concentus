@@ -534,7 +534,7 @@ namespace Concentus.Celt
                 if (isTransient != 0 && narrow == 0)
                 {
                     Array.Copy(tmp, 0, tmp_1, 0, N);
-                    Bands.haar1(tmp_1, N >> LM, 1 << LM);
+                    Bands.haar1ZeroOffset(tmp_1, N >> LM, 1 << LM);
                     L1 = l1_metric(tmp_1, N, LM + 1, bias);
                     if (L1 < best_L1)
                     {
@@ -552,7 +552,7 @@ namespace Concentus.Celt
                     else
                         B = k + 1;
 
-                    Bands.haar1(tmp, N >> k, 1 << k);
+                    Bands.haar1ZeroOffset(tmp, N >> k, 1 << k);
 
                     L1 = l1_metric(tmp, N, B, bias);
 

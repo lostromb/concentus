@@ -15,7 +15,7 @@ namespace ParityTest
     public class TestDriver
     {
         private const string OPUS_TARGET_DLL = "opus32-fix.dll";
-        private const bool ACTUALLY_COMPARE = false;
+        private const bool ACTUALLY_COMPARE = true;
         
         private const int BUFFER_OFFSET = 30;
 
@@ -61,7 +61,7 @@ namespace ParityTest
             }
             concentusEncoder.UseVBR = (parameters.UseVBR);
             concentusEncoder.UseConstrainedVBR = (parameters.ConstrainedVBR);
-            concentusEncoder.EnableAnalysis = true;
+            concentusEncoder.EnableAnalysis = false;
             return concentusEncoder;
         }
 
