@@ -388,15 +388,15 @@ namespace Concentus.Celt
                 for (i = 0; i < N; i++)
                 {
                     int m, s;
-                    m = Inlines.ADD16(Inlines.SHR16(X[X_ptr + i], 1), Inlines.SHR16(Y[Y_ptr + i], 1));
-                    s = Inlines.SUB16(Inlines.SHR16(X[X_ptr + i], 1), Inlines.SHR16(Y[Y_ptr + i], 1));
+                    m = Inlines.ADD16(Inlines.SHR16(X[i], 1), Inlines.SHR16(Y[i], 1));
+                    s = Inlines.SUB16(Inlines.SHR16(X[i], 1), Inlines.SHR16(Y[i], 1));
                     Emid = Inlines.MAC16_16(Emid, m, m);
                     Eside = Inlines.MAC16_16(Eside, s, s);
                 }
             }
             else {
-                Emid += Kernels.celt_inner_prod(X, X_ptr, X, X_ptr, N);
-                Eside += Kernels.celt_inner_prod(Y, Y_ptr, Y, Y_ptr, N);
+                Emid += Kernels.celt_inner_prod(X.Data, X.Offset, X.Data, X.Offset, N);
+                Eside += Kernels.celt_inner_prod(Y.Data, Y.Offset, Y.Data, Y.Offset, N);
             }
             mid = (Inlines.celt_sqrt(Emid));
             side = (Inlines.celt_sqrt(Eside));
