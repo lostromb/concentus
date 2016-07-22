@@ -116,7 +116,7 @@ namespace Concentus.Structs
                 return OpusError.OPUS_INVALID_PACKET;
             }
 
-            ret = OpusPacketInfo.opus_packet_parse_impl(data, len, self_delimited, out dummy_toc, this.frames.GetPointer(this.nb_frames), this.len.GetPointer(this.nb_frames), out dummy_offset, out dummy_offset);
+            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out dummy_toc, this.frames.GetPointer(this.nb_frames), this.len.GetPointer(this.nb_frames), out dummy_offset, out dummy_offset);
             if (ret < 1) return ret;
 
             this.nb_frames += curr_nb_frames;
@@ -210,7 +210,7 @@ namespace Concentus.Structs
             frames = this.frames.GetPointer(begin);
 
             if (self_delimited != 0)
-                tot_size = 1 + (this.len[len_ptr + count - 1] >= 252 ? 1 : 0);
+                tot_size = 1 + (this.len[count - 1] >= 252 ? 1 : 0);
             else
                 tot_size = 0;
 
@@ -218,28 +218,28 @@ namespace Concentus.Structs
             if (count == 1)
             {
                 /* Code 0 */
-                tot_size += this.len[len_ptr] + 1;
+                tot_size += this.len[0] + 1;
                 if (tot_size > maxlen)
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
                 data[ptr++] = (byte)(this.toc & 0xFC);
             }
             else if (count == 2)
             {
-                if (this.len[len_ptr + 1] == this.len[len_ptr])
+                if (this.len[1] == this.len[0])
                 {
                     /* Code 1 */
-                    tot_size += 2 * this.len[len_ptr] + 1;
+                    tot_size += 2 * this.len[0] + 1;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
                     data[ptr++] = (byte)((this.toc & 0xFC) | 0x1);
                 }
                 else {
                     /* Code 2 */
-                    tot_size += this.len[len_ptr] + this.len[len_ptr + 1] + 2 + (this.len[len_ptr] >= 252 ? 1 : 0);
+                    tot_size += this.len[0] + this.len[1] + 2 + (this.len[0] >= 252 ? 1 : 0);
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
                     data[ptr++] = (byte)((this.toc & 0xFC) | 0x2);
-                    ptr += OpusPacketInfo.encode_size(this.len[len_ptr], data, ptr);
+                    ptr += OpusPacketInfo.encode_size(this.len[0], data, ptr);
                 }
             }
             if (count > 2 || (pad != 0 && tot_size < maxlen))
@@ -251,13 +251,13 @@ namespace Concentus.Structs
                 /* Restart the process for the padding case */
                 ptr = data_ptr;
                 if (self_delimited != 0)
-                    tot_size = 1 + (this.len[len_ptr + count - 1] >= 252 ? 1 : 0);
+                    tot_size = 1 + (this.len[count - 1] >= 252 ? 1 : 0);
                 else
                     tot_size = 0;
                 vbr = 0;
                 for (i = 1; i < count; i++)
                 {
-                    if (this.len[len_ptr + i] != this.len[len_ptr])
+                    if (this.len[i] != this.len[0])
                     {
                         vbr = 1;
                         break;
@@ -267,8 +267,8 @@ namespace Concentus.Structs
                 {
                     tot_size += 2;
                     for (i = 0; i < count - 1; i++)
-                        tot_size += 1 + (this.len[len_ptr + i] >= 252 ? 1 : 0) + this.len[len_ptr + i];
-                    tot_size += this.len[len_ptr + count - 1];
+                        tot_size += 1 + (this.len[i] >= 252 ? 1 : 0) + this.len[i];
+                    tot_size += this.len[count - 1];
 
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
@@ -277,7 +277,7 @@ namespace Concentus.Structs
                 }
                 else
                 {
-                    tot_size += count * this.len[len_ptr] + 2;
+                    tot_size += count * this.len[0] + 2;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
                     data[ptr++] = (byte)((this.toc & 0xFC) | 0x3);
@@ -303,13 +303,13 @@ namespace Concentus.Structs
                 if (vbr != 0)
                 {
                     for (i = 0; i < count - 1; i++)
-                        ptr += (OpusPacketInfo.encode_size(this.len[len_ptr + i], data, ptr));
+                        ptr += (OpusPacketInfo.encode_size(this.len[i], data, ptr));
                 }
             }
 
             if (self_delimited != 0)
             {
-                int sdlen = OpusPacketInfo.encode_size(this.len[len_ptr + count - 1], data, ptr);
+                int sdlen = OpusPacketInfo.encode_size(this.len[count - 1], data, ptr);
                 ptr += (sdlen);
             }
 
@@ -504,7 +504,7 @@ namespace Concentus.Structs
             {
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
-                count = OpusPacketInfo.opus_packet_parse_impl(data.GetPointer(data_offset), len, 1, out dummy_toc, null,
+                count = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, 1, out dummy_toc, null,
                                                size.GetPointer(), out dummy_offset, out packet_offset);
                 if (count < 0)
                     return count;
@@ -551,7 +551,7 @@ namespace Concentus.Structs
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
                 rp.Reset();
-                ret = OpusPacketInfo.opus_packet_parse_impl(data.GetPointer(data_offset), len, self_delimited, out dummy_toc, null,
+                ret = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, self_delimited, out dummy_toc, null,
                                                size.GetPointer(), out dummy_offset, out packet_offset);
                 if (ret < 0)
                     return ret;
