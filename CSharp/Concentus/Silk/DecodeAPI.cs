@@ -397,7 +397,7 @@ namespace Concentus.Silk
             {
 
                 /* Resample decoded signal to API_sampleRate */
-                ret += Resampler.silk_resampler(channel_state[n].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp.GetPointer(samplesOut_tmp_ptrs[n] + 1), nSamplesOutDec.Val);
+                ret += Resampler.silk_resampler(channel_state[n].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 1, nSamplesOutDec.Val);
 
                 /* Interleave if stereo output and stereo stream */
                 if (decControl.nChannelsAPI == 2)
@@ -417,7 +417,7 @@ namespace Concentus.Silk
                 {
                     /* Resample right channel for newly collapsed stereo just in case
                        we weren't doing collapsing when switching to mono */
-                    ret += Resampler.silk_resampler(channel_state[1].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp.GetPointer(samplesOut_tmp_ptrs[0] + 1), nSamplesOutDec.Val);
+                    ret += Resampler.silk_resampler(channel_state[1].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp, samplesOut_tmp_ptrs[0] + 1, nSamplesOutDec.Val);
 
                     for (i = 0; i < nSamplesOut; i++)
                     {

@@ -217,7 +217,8 @@ namespace Concentus.Silk
             SilkResamplerState S,
             short[] output,
             int output_ptr,
-            Pointer<short> input,
+            short[] input,
+            int input_ptr,
             int inLen)
         {
             int nSamples;
@@ -232,30 +233,30 @@ namespace Concentus.Silk
             short[] delayBufPtr = S.delayBuf;
 
             /* Copy to delay buffer */
-            input.MemCopyTo(delayBufPtr, S.inputDelay, nSamples);
+            Array.Copy(input, input_ptr, delayBufPtr, S.inputDelay, nSamples);
 
             switch (S.resampler_function)
             {
                 case USE_silk_resampler_private_up2_HQ_wrapper:
-                    silk_resampler_private_up2_HQ(S.sIIR, output.GetPointer(output_ptr), delayBufPtr.GetPointer(), S.Fs_in_kHz);
-                    silk_resampler_private_up2_HQ(S.sIIR, output.GetPointer(output_ptr + S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
+                    silk_resampler_private_up2_HQ(S.sIIR, output, output_ptr, delayBufPtr, 0, S.Fs_in_kHz);
+                    silk_resampler_private_up2_HQ(S.sIIR, output, output_ptr + S.Fs_out_kHz, input, input_ptr + nSamples, inLen - S.Fs_in_kHz);
                     break;
                 case USE_silk_resampler_private_IIR_FIR:
-                    silk_resampler_private_IIR_FIR(S, output.GetPointer(output_ptr), delayBufPtr.GetPointer(), S.Fs_in_kHz);
-                    silk_resampler_private_IIR_FIR(S, output.GetPointer(output_ptr + S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
+                    silk_resampler_private_IIR_FIR(S, output, output_ptr, delayBufPtr, 0, S.Fs_in_kHz);
+                    silk_resampler_private_IIR_FIR(S, output, output_ptr + S.Fs_out_kHz, input, input_ptr + nSamples, inLen - S.Fs_in_kHz);
                     break;
                 case USE_silk_resampler_private_down_FIR:
-                    silk_resampler_private_down_FIR(S, output.GetPointer(output_ptr), delayBufPtr.GetPointer(), S.Fs_in_kHz);
-                    silk_resampler_private_down_FIR(S, output.GetPointer(output_ptr + S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
+                    silk_resampler_private_down_FIR(S, output, output_ptr, delayBufPtr, 0, S.Fs_in_kHz);
+                    silk_resampler_private_down_FIR(S, output, output_ptr + S.Fs_out_kHz, input, input_ptr + nSamples, inLen - S.Fs_in_kHz);
                     break;
                 default:
-                    delayBufPtr.GetPointer().MemCopyTo(output.GetPointer(output_ptr), S.Fs_in_kHz);
-                    input.Point(nSamples).MemCopyTo(output.GetPointer(output_ptr + S.Fs_out_kHz), (inLen - S.Fs_in_kHz));
+                    Array.Copy(delayBufPtr, 0, output, output_ptr, S.Fs_in_kHz);
+                    Array.Copy(input, input_ptr + nSamples, output, output_ptr + S.Fs_out_kHz, inLen - S.Fs_in_kHz);
                     break;
             }
 
             /* Copy to delay buffer */
-            input.Point(inLen - S.inputDelay).MemCopyTo(delayBufPtr, 0, S.inputDelay);
+            Array.Copy(input, input_ptr + inLen - S.inputDelay, delayBufPtr, 0, S.inputDelay);
 
             return SilkError.SILK_NO_ERROR;
         }
@@ -321,7 +322,7 @@ namespace Concentus.Silk
         {
             int nSamplesIn, counter, res_Q6;
             int[] buf = new int[SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR];
-            Pointer<int> buf_ptr;
+            int buf_ptr;
             int input_ptr = 0;
             int output_ptr = 0;
 
@@ -334,32 +335,32 @@ namespace Concentus.Silk
                 nSamplesIn = Inlines.silk_min(inLen, SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN);
 
                 /* Second-order AR filter (output in Q8) */
-                silk_resampler_private_AR2(S.GetPointer(ORDER_FIR), buf.GetPointer(ORDER_FIR), input.GetPointer(input_ptr),
+                silk_resampler_private_AR2(S, ORDER_FIR, buf, ORDER_FIR, input, input_ptr,
                     Tables.silk_Resampler_2_3_COEFS_LQ, nSamplesIn);
 
                 /* Interpolate filtered signal */
-                buf_ptr = buf.GetPointer();
+                buf_ptr = 0;
                 counter = nSamplesIn;
                 while (counter > 2)
                 {
                     /* Inner product */
-                    res_Q6 = Inlines.silk_SMULWB(buf_ptr[0], Tables.silk_Resampler_2_3_COEFS_LQ[2]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[1], Tables.silk_Resampler_2_3_COEFS_LQ[3]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[2], Tables.silk_Resampler_2_3_COEFS_LQ[5]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[3], Tables.silk_Resampler_2_3_COEFS_LQ[4]);
+                    res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr], Tables.silk_Resampler_2_3_COEFS_LQ[2]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 1], Tables.silk_Resampler_2_3_COEFS_LQ[3]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 2], Tables.silk_Resampler_2_3_COEFS_LQ[5]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 3], Tables.silk_Resampler_2_3_COEFS_LQ[4]);
 
                     /* Scale down, saturate and store in output array */
                     output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
 
-                    res_Q6 = Inlines.silk_SMULWB(buf_ptr[1], Tables.silk_Resampler_2_3_COEFS_LQ[4]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[2], Tables.silk_Resampler_2_3_COEFS_LQ[5]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[3], Tables.silk_Resampler_2_3_COEFS_LQ[3]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf_ptr[4], Tables.silk_Resampler_2_3_COEFS_LQ[2]);
+                    res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr + 1], Tables.silk_Resampler_2_3_COEFS_LQ[4]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 2], Tables.silk_Resampler_2_3_COEFS_LQ[5]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 3], Tables.silk_Resampler_2_3_COEFS_LQ[3]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 4], Tables.silk_Resampler_2_3_COEFS_LQ[2]);
 
                     /* Scale down, saturate and store in output array */
                     output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
 
-                    buf_ptr = buf_ptr.Point(3);
+                    buf_ptr += 3;
                     counter -= 3;
                 }
 
@@ -390,9 +391,12 @@ namespace Concentus.Silk
         /// <param name="A_Q14">I    AR coefficients, Q14</param>
         /// <param name="len">I    Signal length</param>
         internal static void silk_resampler_private_AR2(
-            Pointer<int> S,
-            Pointer<int> out_Q8,
-            Pointer<short> input,
+            int[] S,
+            int S_ptr,
+            int[] out_Q8,
+            int out_Q8_ptr,
+            short[] input,
+            int input_ptr,
             short[] A_Q14,
             int len)
         {
@@ -400,15 +404,15 @@ namespace Concentus.Silk
 
             for (k = 0; k < len; k++)
             {
-                out32 = Inlines.silk_ADD_LSHIFT32(S[0], (int)input[k], 8);
-                out_Q8[k] = out32;
+                out32 = Inlines.silk_ADD_LSHIFT32(S[S_ptr], (int)input[input_ptr + k], 8);
+                out_Q8[out_Q8_ptr + k] = out32;
                 out32 = Inlines.silk_LSHIFT(out32, 2);
-                S[0] = Inlines.silk_SMLAWB(S[1], out32, A_Q14[0]);
-                S[1] = Inlines.silk_SMULWB(out32, A_Q14[1]);
+                S[S_ptr] = Inlines.silk_SMLAWB(S[S_ptr + 1], out32, A_Q14[0]);
+                S[S_ptr + 1] = Inlines.silk_SMULWB(out32, A_Q14[1]);
             }
         }
 
-        internal static Pointer<short> silk_resampler_private_down_FIR_INTERPOL(
+        internal static int silk_resampler_private_down_FIR_INTERPOL(
             short[] output,
             int output_ptr,
             int[] buf,
@@ -520,7 +524,7 @@ namespace Concentus.Silk
                     break;
             }
 
-            return output.GetPointer(output_ptr);
+            return output_ptr;
         }
 
         /// <summary>
@@ -532,8 +536,10 @@ namespace Concentus.Silk
         /// <param name="inLen">I    Number of input samples</param>
         internal static void silk_resampler_private_down_FIR(
             SilkResamplerState S,
-            Pointer<short> output,
-            Pointer<short> input,
+            short[] output,
+            int output_ptr,
+            short[] input,
+            int input_ptr,
             int inLen)
         {
             int nSamplesIn;
@@ -550,15 +556,15 @@ namespace Concentus.Silk
                 nSamplesIn = Inlines.silk_min(inLen, S.batchSize);
 
                 /* Second-order AR filter (output in Q8) */
-                silk_resampler_private_AR2(S.sIIR.GetPointer(), buf.GetPointer(S.FIR_Order), input, S.Coefs, nSamplesIn);
+                silk_resampler_private_AR2(S.sIIR, 0, buf, S.FIR_Order, input, input_ptr, S.Coefs, nSamplesIn);
 
                 max_index_Q16 = Inlines.silk_LSHIFT32(nSamplesIn, 16);
 
                 /* Interpolate filtered signal */
-                output = silk_resampler_private_down_FIR_INTERPOL(output.Data, output.Offset, buf, S.Coefs, 2, S.FIR_Order,
+                output_ptr = silk_resampler_private_down_FIR_INTERPOL(output, output_ptr, buf, S.Coefs, 2, S.FIR_Order,
                     S.FIR_Fracs, max_index_Q16, index_increment_Q16);
 
-                input = input.Point(nSamplesIn);
+                input_ptr += nSamplesIn;
                 inLen -= nSamplesIn;
 
                 if (inLen > 1)
@@ -576,34 +582,34 @@ namespace Concentus.Silk
             Array.Copy(buf, nSamplesIn, S.sFIR_i32, 0, S.FIR_Order);
         }
 
-        internal static Pointer<short> silk_resampler_private_IIR_FIR_INTERPOL(
-            Pointer<short> output,
+        internal static int silk_resampler_private_IIR_FIR_INTERPOL(
+            short[] output,
+            int output_ptr,
             short[] buf,
             int max_index_Q16,
             int index_increment_Q16)
         {
             int index_Q16, res_Q15;
-            Pointer<short> buf_ptr;
+            int buf_ptr;
             int table_index;
 
             /* Interpolate upsampled signal and store in output array */
             for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16)
             {
                 table_index = Inlines.silk_SMULWB(index_Q16 & 0xFFFF, 12);
-                buf_ptr = buf.GetPointer(index_Q16 >> 16);
+                buf_ptr = index_Q16 >> 16;
 
-                res_Q15 = Inlines.silk_SMULBB(buf_ptr[0], Tables.silk_resampler_frac_FIR_12[table_index, 0]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf_ptr[1], Tables.silk_resampler_frac_FIR_12[table_index, 1]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf_ptr[2], Tables.silk_resampler_frac_FIR_12[table_index, 2]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf_ptr[3], Tables.silk_resampler_frac_FIR_12[table_index, 3]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf_ptr[4], Tables.silk_resampler_frac_FIR_12[11 - table_index, 3]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf_ptr[5], Tables.silk_resampler_frac_FIR_12[11 - table_index, 2]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf_ptr[6], Tables.silk_resampler_frac_FIR_12[11 - table_index, 1]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf_ptr[7], Tables.silk_resampler_frac_FIR_12[11 - table_index, 0]);
-                output[0] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q15, 15));
-                output = output.Point(1); // FIXME inefficient; should use an offset counter instead. See also other uses of this pattern in this file
+                res_Q15 = Inlines.silk_SMULBB(buf[buf_ptr], Tables.silk_resampler_frac_FIR_12[table_index, 0]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 1], Tables.silk_resampler_frac_FIR_12[table_index, 1]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 2], Tables.silk_resampler_frac_FIR_12[table_index, 2]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 3], Tables.silk_resampler_frac_FIR_12[table_index, 3]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 4], Tables.silk_resampler_frac_FIR_12[11 - table_index, 3]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 5], Tables.silk_resampler_frac_FIR_12[11 - table_index, 2]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 6], Tables.silk_resampler_frac_FIR_12[11 - table_index, 1]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 7], Tables.silk_resampler_frac_FIR_12[11 - table_index, 0]);
+                output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q15, 15));
             }
-            return output;
+            return output_ptr;
         }
 
         /// <summary>
@@ -615,8 +621,10 @@ namespace Concentus.Silk
         /// <param name="inLen">I    Number of input samples</param>
         internal static void silk_resampler_private_IIR_FIR(
             SilkResamplerState S,
-            Pointer<short> output,
-            Pointer<short> input,
+            short[] output,
+            int output_ptr,
+            short[] input,
+            int input_ptr,
             int inLen)
         {
             int nSamplesIn;
@@ -634,11 +642,11 @@ namespace Concentus.Silk
                 nSamplesIn = Inlines.silk_min(inLen, S.batchSize);
 
                 /* Upsample 2x */
-                silk_resampler_private_up2_HQ(S.sIIR, buf.GetPointer(SilkConstants.RESAMPLER_ORDER_FIR_12), input, nSamplesIn);
+                silk_resampler_private_up2_HQ(S.sIIR, buf, SilkConstants.RESAMPLER_ORDER_FIR_12, input, input_ptr, nSamplesIn);
 
                 max_index_Q16 = Inlines.silk_LSHIFT32(nSamplesIn, 16 + 1);         /* + 1 because 2x upsampling */
-                output = silk_resampler_private_IIR_FIR_INTERPOL(output, buf, max_index_Q16, index_increment_Q16);
-                input = input.Point(nSamplesIn);
+                output_ptr = silk_resampler_private_IIR_FIR_INTERPOL(output, output_ptr, buf, max_index_Q16, index_increment_Q16);
+                input_ptr += nSamplesIn;
                 inLen -= nSamplesIn;
 
                 if (inLen > 0)
@@ -667,8 +675,10 @@ namespace Concentus.Silk
         /// <param name="len">I    Number of input samples</param>
         internal static void silk_resampler_private_up2_HQ(
             int[] S,
-            Pointer<short> output,
-            Pointer<short> input,
+            short[] output,
+            int output_ptr,
+            short[] input,
+            int input_ptr,
             int len)
         {
             int k;
@@ -685,7 +695,7 @@ namespace Concentus.Silk
             for (k = 0; k < len; k++)
             {
                 /* Convert to Q10 */
-                in32 = Inlines.silk_LSHIFT((int)input[k], 10);
+                in32 = Inlines.silk_LSHIFT((int)input[input_ptr + k], 10);
 
                 /* First all-pass section for even output sample */
                 Y = Inlines.silk_SUB32(in32, S[0]);
@@ -706,7 +716,7 @@ namespace Concentus.Silk
                 S[2] = Inlines.silk_ADD32(out32_2, X);
 
                 /* Apply gain in Q15, convert back to int16 and store to output */
-                output[2 * k] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32_1, 10));
+                output[output_ptr + (2 * k)] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32_1, 10));
 
                 /* First all-pass section for odd output sample */
                 Y = Inlines.silk_SUB32(in32, S[3]);
@@ -727,7 +737,7 @@ namespace Concentus.Silk
                 S[5] = Inlines.silk_ADD32(out32_2, X);
 
                 /* Apply gain in Q15, convert back to int16 and store to output */
-                output[2 * k + 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32_1, 10));
+                output[output_ptr + (2 * k) + 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32_1, 10));
             }
         }
     }

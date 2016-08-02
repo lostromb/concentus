@@ -285,7 +285,8 @@ namespace Concentus.Silk
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf,
                         psEnc.state_Fxx[0].inputBufIx + 2,
-                        buf.GetPointer(),
+                        buf,
+                        0,
                         nSamplesFromInput);
 
                     psEnc.state_Fxx[0].inputBufIx += nSamplesToBuffer;
@@ -300,7 +301,8 @@ namespace Concentus.Silk
                         psEnc.state_Fxx[1].resampler_state,
                         psEnc.state_Fxx[1].inputBuf,
                         psEnc.state_Fxx[1].inputBufIx + 2,
-                        buf.GetPointer(),
+                        buf,
+                        0,
                         nSamplesFromInput);
 
                     psEnc.state_Fxx[1].inputBufIx += nSamplesToBuffer;
@@ -318,7 +320,8 @@ namespace Concentus.Silk
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf,
                         psEnc.state_Fxx[0].inputBufIx + 2,
-                        buf.GetPointer(),
+                        buf,
+                        0,
                         nSamplesFromInput);
 
                     /* On the first mono frame, average the results for the two resampler states  */
@@ -328,7 +331,8 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[1].resampler_state,
                             psEnc.state_Fxx[1].inputBuf,
                             psEnc.state_Fxx[1].inputBufIx + 2,
-                            buf.GetPointer(),
+                            buf,
+                            0,
                             nSamplesFromInput);
 
                         for (n = 0; n < psEnc.state_Fxx[0].frame_length; n++)
@@ -349,7 +353,8 @@ namespace Concentus.Silk
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf,
                         psEnc.state_Fxx[0].inputBufIx + 2,
-                        buf.GetPointer(),
+                        buf,
+                        0,
                         nSamplesFromInput);
 
                     psEnc.state_Fxx[0].inputBufIx += nSamplesToBuffer;
