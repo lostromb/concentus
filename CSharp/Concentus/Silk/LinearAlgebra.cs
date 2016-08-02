@@ -42,7 +42,8 @@ namespace Concentus.Silk
     {
         /* Solves Ax = b, assuming A is symmetric */
         internal static void silk_solve_LDL(
-            Pointer<int> A,                                     /* I    Pointer to symetric square matrix A                                         */
+            int[] A,                                     /* I    Pointer to symetric square matrix A                                         */
+            int A_ptr,
             int M,                                      /* I    Size of matrix                                                              */
             int[] b,                                     /* I    Pointer to b vector                                                         */
             int[] x_Q16                                  /* O    Pointer to x solution vector                                                */
@@ -64,7 +65,7 @@ namespace Concentus.Silk
             Factorize A by LDL such that A = L*D*L',
             where L is lower triangular with ones on diagonal
             ****************************************************/
-            silk_LDL_factorize(A, M, L_Q16, inv_D);
+            silk_LDL_factorize(A, A_ptr, M, L_Q16, inv_D);
 
             /****************************************************
             * substitute D*L'*x = Y. ie:
@@ -87,14 +88,18 @@ namespace Concentus.Silk
 
         /* Factorize square matrix A into LDL form */
         private static void silk_LDL_factorize(
-            Pointer<int> A,         /* I/O Pointer to Symetric Square Matrix                            */
+            int[] A,         /* I/O Pointer to Symetric Square Matrix                            */
+            int A_ptr,
             int M,          /* I   Size of Matrix                                               */
             int[] L_Q16,     /* I/O Pointer to Square Upper triangular Matrix                    */
             int[] inv_D      /* I/O Pointer to vector holding inverted diagonal elements of D    */
         )
         {
             int i, j, k, status, loop_count;
-            Pointer<int> ptr1, ptr2;
+            int[] scratch1;
+            int scratch1_ptr;
+            int[] scratch2;
+            int scratch2_ptr;
             int diag_min_value, tmp_32, err;
             int[] v_Q0 = new int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
             int[] D_Q0 = new int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
@@ -103,20 +108,21 @@ namespace Concentus.Silk
             Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
 
             status = 1;
-            diag_min_value = Inlines.silk_max_32(Inlines.silk_SMMUL(Inlines.silk_ADD_SAT32(A[0], A[Inlines.silk_SMULBB(M, M) - 1]), ((int)((TuningParameters.FIND_LTP_COND_FAC) * ((long)1 << (31)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LTP_COND_FAC, 31)*/), 1 << 9);
+            diag_min_value = Inlines.silk_max_32(Inlines.silk_SMMUL(Inlines.silk_ADD_SAT32(A[A_ptr], A[A_ptr + Inlines.silk_SMULBB(M, M) - 1]), ((int)((TuningParameters.FIND_LTP_COND_FAC) * ((long)1 << (31)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LTP_COND_FAC, 31)*/), 1 << 9);
             for (loop_count = 0; loop_count < M && status == 1; loop_count++)
             {
                 status = 0;
                 for (j = 0; j < M; j++)
                 {
-                    ptr1 = Inlines.MatrixGetPointer(L_Q16, j, 0, M);
+                    scratch1 = L_Q16;
+                    scratch1_ptr = Inlines.MatrixGetPointer(j, 0, M);
                     tmp_32 = 0;
                     for (i = 0; i < j; i++)
                     {
-                        v_Q0[i] = Inlines.silk_SMULWW(D_Q0[i], ptr1[i]); /* Q0 */
-                        tmp_32 = Inlines.silk_SMLAWW(tmp_32, v_Q0[i], ptr1[i]); /* Q0 */
+                        v_Q0[i] = Inlines.silk_SMULWW(D_Q0[i], scratch1[scratch1_ptr + i]); /* Q0 */
+                        tmp_32 = Inlines.silk_SMLAWW(tmp_32, v_Q0[i], scratch1[scratch1_ptr + i]); /* Q0 */
                     }
-                    tmp_32 = Inlines.silk_SUB32(Inlines.MatrixGet(A, j, j, M), tmp_32);
+                    tmp_32 = Inlines.silk_SUB32(Inlines.MatrixGet(A, A_ptr, j, j, M), tmp_32);
 
                     if (tmp_32 < diag_min_value)
                     {
@@ -124,7 +130,7 @@ namespace Concentus.Silk
                         /* Matrix not positive semi-definite, or ill conditioned */
                         for (i = 0; i < M; i++)
                         {
-                            Inlines.MatrixSet(A, i, i, M, Inlines.silk_ADD32(Inlines.MatrixGet(A, i, i, M), tmp_32));
+                            Inlines.MatrixSet(A, A_ptr, i, i, M, Inlines.silk_ADD32(Inlines.MatrixGet(A, A_ptr, i, i, M), tmp_32));
                         }
                         status = 1;
                         break;
@@ -142,23 +148,25 @@ namespace Concentus.Silk
                     inv_D[(j * 2) + 1] = one_div_diag_Q48;
 
                     Inlines.MatrixSet(L_Q16, j, j, M, 65536); /* 1.0 in Q16 */
-                    ptr1 = Inlines.MatrixGetPointer(A, j, 0, M);
-                    ptr2 = Inlines.MatrixGetPointer(L_Q16, j + 1, 0, M);
+                    scratch1 = A;
+                    scratch1_ptr = Inlines.MatrixGetPointer(j, 0, M) + A_ptr;
+                    scratch2 = L_Q16;
+                    scratch2_ptr = Inlines.MatrixGetPointer(j + 1, 0, M);
                     for (i = j + 1; i < M; i++)
                     {
                         tmp_32 = 0;
                         for (k = 0; k < j; k++)
                         {
-                            tmp_32 = Inlines.silk_SMLAWW(tmp_32, v_Q0[k], ptr2[k]); /* Q0 */
+                            tmp_32 = Inlines.silk_SMLAWW(tmp_32, v_Q0[k], scratch2[scratch2_ptr + k]); /* Q0 */
                         }
-                        tmp_32 = Inlines.silk_SUB32(ptr1[i], tmp_32); /* always < max(Correlation) */
+                        tmp_32 = Inlines.silk_SUB32(scratch1[scratch1_ptr + i], tmp_32); /* always < max(Correlation) */
 
                         /* tmp_32 / D_Q0[j] : Divide to Q16 */
                         Inlines.MatrixSet(L_Q16, i, j, M, Inlines.silk_ADD32(Inlines.silk_SMMUL(tmp_32, one_div_diag_Q48),
                             Inlines.silk_RSHIFT(Inlines.silk_SMULWW(tmp_32, one_div_diag_Q36), 4)));
 
                         /* go to next column */
-                        ptr2 = ptr2.Point(M);
+                        scratch2_ptr += M;
                     }
                 }
             }
@@ -195,16 +203,16 @@ namespace Concentus.Silk
             )
         {
             int i, j;
-            Pointer<int> ptr32;
+            int ptr32;
             int tmp_32;
 
             for (i = 0; i < M; i++)
             {
-                ptr32 = Inlines.MatrixGetPointer(L_Q16, i, 0, M);
+                ptr32 = Inlines.MatrixGetPointer(i, 0, M);
                 tmp_32 = 0;
                 for (j = 0; j < i; j++)
                 {
-                    tmp_32 = Inlines.silk_SMLAWW(tmp_32, ptr32[j], x_Q16[j]);
+                    tmp_32 = Inlines.silk_SMLAWW(tmp_32, L_Q16[ptr32 + j], x_Q16[j]);
                 }
                 x_Q16[i] = Inlines.silk_SUB32(b[i], tmp_32);
             }
@@ -219,16 +227,16 @@ namespace Concentus.Silk
         )
         {
             int i, j;
-            Pointer<int> ptr32;
+            int ptr32;
             int tmp_32;
 
             for (i = M - 1; i >= 0; i--)
             {
-                ptr32 = Inlines.MatrixGetPointer(L_Q16, 0, i, M);
+                ptr32 = Inlines.MatrixGetPointer(0, i, M);
                 tmp_32 = 0;
                 for (j = M - 1; j > i; j--)
                 {
-                    tmp_32 = Inlines.silk_SMLAWW(tmp_32, ptr32[Inlines.silk_SMULBB(j, M)], x_Q16[j]);
+                    tmp_32 = Inlines.silk_SMLAWW(tmp_32, L_Q16[ptr32 + Inlines.silk_SMULBB(j, M)], x_Q16[j]);
                 }
                 x_Q16[i] = Inlines.silk_SUB32(b[i], tmp_32);
             }

@@ -2222,21 +2222,26 @@ namespace Concentus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Pointer<T> MatrixGetPointer<T>(Pointer<T> Matrix_base_adr, int row, int column, int N)
+        public static void MatrixSet<T>(T[] Matrix_base_adr, int Matrix_ptr, int row, int column, int N, T value)
         {
-            return Matrix_base_adr.Point(((row) * (N)) + (column));
+            Matrix_base_adr[Matrix_ptr + (row * N) + column] = value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Pointer<T> MatrixGetPointer<T>(T[] Matrix_base_adr, int row, int column, int N)
+        public static int MatrixGetPointer(int row, int column, int N)
         {
-            return Matrix_base_adr.GetPointer(((row) * (N)) + (column));
+            return (row * N) + column;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr[((row) * (N)) + (column)];
+        }
+
+        public static T MatrixGet<T>(T[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
+        {
+            return Matrix_base_adr[matrix_ptr + (row * N) + column];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

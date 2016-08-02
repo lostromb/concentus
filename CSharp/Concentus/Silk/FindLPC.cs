@@ -115,9 +115,9 @@ namespace Concentus.Silk
                     /* Calculate residual energy with NLSF interpolation */
                     Filters.silk_LPC_analysis_filter(LPC_res, 0, x, 0, a_tmp_Q12, 0, 2 * subfr_length, psEncC.predictLPCOrder);
                     
-                    SumSqrShift.silk_sum_sqr_shift(out res_nrg0, out rshift0, LPC_res.GetPointer(psEncC.predictLPCOrder), subfr_length - psEncC.predictLPCOrder);
+                    SumSqrShift.silk_sum_sqr_shift(out res_nrg0, out rshift0, LPC_res, psEncC.predictLPCOrder, subfr_length - psEncC.predictLPCOrder);
                     
-                    SumSqrShift.silk_sum_sqr_shift(out res_nrg1, out rshift1, LPC_res.GetPointer(psEncC.predictLPCOrder + subfr_length), subfr_length - psEncC.predictLPCOrder);
+                    SumSqrShift.silk_sum_sqr_shift(out res_nrg1, out rshift1, LPC_res, psEncC.predictLPCOrder + subfr_length, subfr_length - psEncC.predictLPCOrder);
 
                     /* Add subframe energies from first half frame */
                     shift = rshift0 - rshift1;

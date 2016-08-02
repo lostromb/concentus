@@ -238,7 +238,7 @@ namespace Concentus.Silk
                 pitch_res_ptr = pitch_res;
                 for (k = 0; k < Inlines.silk_SMULBB(SilkConstants.SUB_FRAME_LENGTH_MS, psEnc.nb_subfr) / 2; k++)
                 {
-                    SumSqrShift.silk_sum_sqr_shift(out nrg, out scale, pitch_res_ptr, nSamples);
+                    SumSqrShift.silk_sum_sqr_shift(out nrg, out scale, pitch_res_ptr.Data, pitch_res_ptr.Offset, nSamples);
                     nrg += Inlines.silk_RSHIFT(nSamples, scale);           /* Q(-scale)*/
 
                     log_energy_Q7 = Inlines.silk_lin2log(nrg);

@@ -62,24 +62,24 @@ namespace Concentus.Celt
         {
             int i;
             int lo, hi;
-            Pointer<byte> cache;
 
             LM++;
-            cache = m.cache.bits.GetPointer(m.cache.index[LM * m.nbEBands + band]);
+            byte[] cache = m.cache.bits;
+            int cache_ptr = m.cache.index[LM * m.nbEBands + band];
 
             lo = 0;
-            hi = cache[0];
+            hi = cache[cache_ptr];
             bits--;
             for (i = 0; i < CeltConstants.LOG_MAX_PSEUDO; i++)
             {
                 int mid = (lo + hi + 1) >> 1;
                 /* OPT: Make sure this is implemented with a conditional move */
-                if ((int)cache[mid] >= bits)
+                if ((int)cache[cache_ptr + mid] >= bits)
                     hi = mid;
                 else
                     lo = mid;
             }
-            if (bits - (lo == 0 ? -1 : (int)cache[lo]) <= (int)cache[hi] - bits)
+            if (bits - (lo == 0 ? -1 : (int)cache[cache_ptr + lo]) <= (int)cache[cache_ptr + hi] - bits)
                 return lo;
             else
                 return hi;
@@ -87,11 +87,8 @@ namespace Concentus.Celt
 
         internal static int pulses2bits(CeltMode m, int band, int LM, int pulses)
         {
-            Pointer<byte> cache;
-
             LM++;
-            cache = m.cache.bits.GetPointer(m.cache.index[LM * m.nbEBands + band]);
-            return pulses == 0 ? 0 : cache[pulses] + 1;
+            return pulses == 0 ? 0 : m.cache.bits[m.cache.index[LM * m.nbEBands + band] + pulses] + 1;
         }
 
         internal static int interp_bits2pulses(CeltMode m, int start, int end, int skip_start,

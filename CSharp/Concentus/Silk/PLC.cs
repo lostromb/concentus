@@ -214,7 +214,7 @@ namespace Concentus.Silk
 
             /* Find the subframe with lowest energy of the last two and use that as random noise generator */
             SumSqrShift.silk_sum_sqr_shift(out energy1, out shift1, exc_buf, subfr_length);
-            SumSqrShift.silk_sum_sqr_shift(out energy2, out shift2, exc_buf.GetPointer(subfr_length), subfr_length);
+            SumSqrShift.silk_sum_sqr_shift(out energy2, out shift2, exc_buf, subfr_length, subfr_length);
         }
 
         internal static void silk_PLC_conceal(
@@ -425,7 +425,7 @@ namespace Concentus.Silk
             if (psDec.lossCnt != 0)
             {
                 /* Calculate energy in concealed residual */
-                SumSqrShift.silk_sum_sqr_shift(out psPLC.conc_energy, out psPLC.conc_energy_shift, frame, length);
+                SumSqrShift.silk_sum_sqr_shift(out psPLC.conc_energy, out psPLC.conc_energy_shift, frame.Data, frame.Offset, length);
 
                 psPLC.last_frame_lost = 1;
             }
@@ -434,7 +434,7 @@ namespace Concentus.Silk
                 if (psDec.sPLC.last_frame_lost != 0)
                 {
                     /* Calculate residual in decoded signal if last frame was lost */
-                    SumSqrShift.silk_sum_sqr_shift(out energy, out energy_shift, frame, length);
+                    SumSqrShift.silk_sum_sqr_shift(out energy, out energy_shift, frame.Data, frame.Offset, length);
 
                     /* Normalize energies */
                     if (energy_shift > psPLC.conc_energy_shift)

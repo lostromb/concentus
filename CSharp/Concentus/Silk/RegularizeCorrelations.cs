@@ -42,8 +42,10 @@ namespace Concentus.Silk
     {
         /* Add noise to matrix diagonal */
         internal static void silk_regularize_correlations(
-            Pointer<int> XX,                                    /* I/O  Correlation matrices                                                        */
-            Pointer<int> xx,                                    /* I/O  Correlation values                                                          */
+            int[] XX,                                    /* I/O  Correlation matrices                                                        */
+            int XX_ptr,
+            int[] xx,                                    /* I/O  Correlation values                                                          */
+            int xx_ptr,
             int noise,                                  /* I    Noise to add                                                                */
             int D                                       /* I    Dimension of XX                                                             */
         )
@@ -51,9 +53,9 @@ namespace Concentus.Silk
             int i;
             for (i = 0; i < D; i++)
             {
-                Inlines.MatrixSet(XX, i, i, D, Inlines.silk_ADD32(Inlines.MatrixGet(XX, i, i, D), noise));
+                Inlines.MatrixSet(XX, XX_ptr, i, i, D, Inlines.silk_ADD32(Inlines.MatrixGet(XX, XX_ptr, i, i, D), noise));
             }
-            xx[0] += noise;
+            xx[xx_ptr] += noise;
         }
     }
 }

@@ -216,7 +216,7 @@ namespace Concentus.Celt
 
             if (intra == 0)
             {
-                Pointer<byte> intra_buf;
+                int intra_buf;
                 EntropyCoder enc_intra_state = new EntropyCoder(); // [porting note] stack variable
                 int tell_intra;
                 uint nstart_bytes;
@@ -231,14 +231,14 @@ namespace Concentus.Celt
 
                 nstart_bytes = enc_start_state.range_bytes();
                 nintra_bytes = enc_intra_state.range_bytes();
-                intra_buf = enc_intra_state.buf.GetPointer(enc_intra_state.buf_ptr + (int)nstart_bytes);
+                intra_buf = enc_intra_state.buf_ptr + (int)nstart_bytes;
                 save_bytes = nintra_bytes - nstart_bytes;
 
                 if (save_bytes != 0)
                 {
                     intra_bits = new byte[(int)save_bytes];
                     /* Copy bits from intra bit-stream */
-                    intra_buf.MemCopyTo(intra_bits, 0, (int)save_bytes);
+                    Array.Copy(enc_intra_state.buf, intra_buf, intra_bits, 0, (int)save_bytes);
                 }
 
                 enc.Assign(enc_start_state);
@@ -252,7 +252,7 @@ namespace Concentus.Celt
                     /* Copy intra bits to bit-stream */
                     if (intra_bits != null)
                     {
-                        intra_buf.MemCopyFrom(intra_bits, 0, (int)(nintra_bytes - nstart_bytes));
+                        Array.Copy(intra_bits, 0, enc_intra_state.buf, intra_buf, (int)(nintra_bytes - nstart_bytes));
                     }
                     Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
                     Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);

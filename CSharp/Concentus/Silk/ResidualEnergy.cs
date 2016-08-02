@@ -76,7 +76,7 @@ namespace Concentus.Silk
                 for (j = 0; j < (SilkConstants.MAX_NB_SUBFR >> 1); j++)
                 {
                     /* Measure subframe energy */
-                    SumSqrShift.silk_sum_sqr_shift(out energy, out rshift, LPC_res_ptr, subfr_length);
+                    SumSqrShift.silk_sum_sqr_shift(out energy, out rshift, LPC_res_ptr.Data, LPC_res_ptr.Offset, subfr_length);
                     nrgs[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = energy;
 
                     /* Set Q values for the measured energy */

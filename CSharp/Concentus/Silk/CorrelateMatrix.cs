@@ -86,7 +86,8 @@ namespace Concentus.Silk
 
         /* Calculates correlation matrix X'*X */
         internal static void silk_corrMatrix(
-            Pointer<short> x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
+            short[] x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
+            int x_ptr,
             int L,                                      /* I    Length of vectors                                                           */
             int order,                                  /* I    Max lag for correlation                                                     */
             int head_room,                              /* I    Desired headroom                                                            */
@@ -99,7 +100,7 @@ namespace Concentus.Silk
             Pointer<short> ptr1, ptr2;
             
             /* Calculate energy to find shift used to fit in 32 bits */
-            SumSqrShift.silk_sum_sqr_shift(out energy, out rshifts_local, x, L + order - 1);
+            SumSqrShift.silk_sum_sqr_shift(out energy, out rshifts_local, x, x_ptr, L + order - 1);
             /* Add shifts to get the desired head room */
             head_room_rshifts = Inlines.silk_max(head_room - Inlines.silk_CLZ32(energy), 0);
 
@@ -108,7 +109,7 @@ namespace Concentus.Silk
 
             /* Calculate energy of first column (0) of X: X[:,0]'*X[:,0] */
             /* Remove contribution of first order - 1 samples */
-            for (i = 0; i < order - 1; i++)
+            for (i = x_ptr; i < x_ptr + order - 1; i++)
             {
                 energy -= Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(x[i], x[i]), rshifts_local);
             }
@@ -122,7 +123,7 @@ namespace Concentus.Silk
             /* Calculate energy of remaining columns of X: X[:,j]'*X[:,j] */
             /* Fill out the diagonal of the correlation matrix */
             Inlines.MatrixSet(XX, 0, 0, order, energy);
-            ptr1 = x.Point(order - 1); /* First sample of column 0 of X */
+            ptr1 = x.GetPointer(x_ptr + order - 1); /* First sample of column 0 of X */
             for (j = 1; j < order; j++)
             {
                 energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[L - j], ptr1[L - j]), rshifts_local));
@@ -130,7 +131,7 @@ namespace Concentus.Silk
                 Inlines.MatrixSet(XX, j, j, order, energy);
             }
 
-            ptr2 = x.Point(order - 2); /* First sample of column 1 of X */
+            ptr2 = x.GetPointer(x_ptr + order - 2); /* First sample of column 1 of X */
                                   /* Calculate the remaining elements of the correlation matrix */
             if (rshifts_local > 0)
             {

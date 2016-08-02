@@ -71,11 +71,12 @@ namespace Concentus.Silk
          )
         {
             int i, k, lshift;
-            Pointer<short> r_ptr, lag_ptr;
-            Pointer<short> b_Q14_ptr;
+            int r_ptr;
+            int lag_ptr;
+            int b_Q14_ptr;
 
             int regu;
-            Pointer<int> WLTP_ptr;
+            int WLTP_ptr;
             int[] b_Q16 = new int[SilkConstants.LTP_ORDER];
             int[] delta_b_Q14 = new int[SilkConstants.LTP_ORDER];
             int[] d_Q14 = new int[SilkConstants.MAX_NB_SUBFR];
@@ -92,14 +93,14 @@ namespace Concentus.Silk
             int[] rr = new int[SilkConstants.MAX_NB_SUBFR];
             int wd, m_Q12;
 
-            b_Q14_ptr = b_Q14.GetPointer();
-            WLTP_ptr = WLTP.GetPointer();
-            r_ptr = r_lpc.GetPointer(mem_offset);
+            b_Q14_ptr = 0;
+            WLTP_ptr = 0;
+            r_ptr = mem_offset;
             for (k = 0; k < nb_subfr; k++)
             {
-                lag_ptr = r_ptr.Point(0 - (lag[k] + SilkConstants.LTP_ORDER / 2));
+                lag_ptr = r_ptr - (lag[k] + SilkConstants.LTP_ORDER / 2);
                 
-                SumSqrShift.silk_sum_sqr_shift(out rr[k], out rr_shifts, r_ptr, subfr_length); /* rr[ k ] in Q( -rr_shifts ) */
+                SumSqrShift.silk_sum_sqr_shift(out rr[k], out rr_shifts, r_lpc, r_ptr, subfr_length); /* rr[ k ] in Q( -rr_shifts ) */
 
                 /* Assure headroom */
                 LZs = Inlines.silk_CLZ32(rr[k]);
@@ -110,11 +111,11 @@ namespace Concentus.Silk
                 }
                 corr_rshifts[k] = rr_shifts;
                 BoxedValue<int> boxed_shifts = new BoxedValue<int>(corr_rshifts[k]);
-                CorrelateMatrix.silk_corrMatrix(lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP_ptr, boxed_shifts);  /* WLTP_ptr in Q( -corr_rshifts[ k ] ) */
+                CorrelateMatrix.silk_corrMatrix(r_lpc, lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP.GetPointer(WLTP_ptr), boxed_shifts);  /* WLTP_ptr in Q( -corr_rshifts[ k ] ) */
                 corr_rshifts[k] = boxed_shifts.Val;
 
                 /* The correlation vector always has lower max abs value than rr and/or RR so head room is assured */
-                CorrelateMatrix.silk_corrVector(lag_ptr, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
+                CorrelateMatrix.silk_corrVector(r_lpc.GetPointer(lag_ptr), r_lpc.GetPointer(r_ptr), subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
                 if (corr_rshifts[k] > rr_shifts)
                 {
                     rr[k] = Inlines.silk_RSHIFT(rr[k], corr_rshifts[k] - rr_shifts); /* rr[ k ] in Q( -corr_rshifts[ k ] ) */
@@ -123,17 +124,17 @@ namespace Concentus.Silk
 
                 regu = 1;
                 regu = Inlines.silk_SMLAWB(regu, rr[k], ((int)((TuningParameters.LTP_DAMPING / 3) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16)*/);
-                regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, 0, 0, SilkConstants.LTP_ORDER), ((int)((TuningParameters.LTP_DAMPING / 3) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16)*/);
-                regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP_ptr, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER), ((int)((TuningParameters.LTP_DAMPING / 3) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16)*/);
-                RegularizeCorrelations.silk_regularize_correlations(WLTP_ptr, rr.GetPointer(k), regu, SilkConstants.LTP_ORDER);
+                regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP, WLTP_ptr, 0, 0, SilkConstants.LTP_ORDER), ((int)((TuningParameters.LTP_DAMPING / 3) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16)*/);
+                regu = Inlines.silk_SMLAWB(regu, Inlines.MatrixGet(WLTP, WLTP_ptr, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER - 1, SilkConstants.LTP_ORDER), ((int)((TuningParameters.LTP_DAMPING / 3) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LTP_DAMPING / 3, 16)*/);
+                RegularizeCorrelations.silk_regularize_correlations(WLTP, WLTP_ptr, rr, k, regu, SilkConstants.LTP_ORDER);
 
-                LinearAlgebra.silk_solve_LDL(WLTP_ptr, SilkConstants.LTP_ORDER, Rr, b_Q16); /* WLTP_ptr and Rr_ptr both in Q(-corr_rshifts[k]) */
+                LinearAlgebra.silk_solve_LDL(WLTP, WLTP_ptr, SilkConstants.LTP_ORDER, Rr, b_Q16); /* WLTP_ptr and Rr_ptr both in Q(-corr_rshifts[k]) */
 
                 /* Limit and store in Q14 */
-                silk_fit_LTP(b_Q16, b_Q14_ptr);
+                silk_fit_LTP(b_Q16, b_Q14, b_Q14_ptr);
 
                 /* Calculate residual energy */
-                nrg[k] = ResidualEnergy.silk_residual_energy16_covar(b_Q14_ptr, WLTP_ptr, Rr, rr[k], SilkConstants.LTP_ORDER, 14); /* nrg in Q( -corr_rshifts[ k ] ) */
+                nrg[k] = ResidualEnergy.silk_residual_energy16_covar(b_Q14.GetPointer(b_Q14_ptr), WLTP.GetPointer(WLTP_ptr), Rr, rr[k], SilkConstants.LTP_ORDER, 14); /* nrg in Q( -corr_rshifts[ k ] ) */
 
                 /* temp = Wght[ k ] / ( nrg[ k ] * Wght[ k ] + 0.01f * subfr_length ); */
                 extra_shifts = Inlines.silk_min_int(corr_rshifts[k], LTP_CORRS_HEAD_ROOM);
@@ -146,9 +147,9 @@ namespace Concentus.Silk
 
                 /* Limit temp such that the below scaling never wraps around */
                 WLTP_max = 0;
-                for (i = 0; i < SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER; i++)
+                for (i = WLTP_ptr; i < WLTP_ptr + (SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER); i++)
                 {
-                    WLTP_max = Inlines.silk_max(WLTP_ptr[i], WLTP_max);
+                    WLTP_max = Inlines.silk_max(WLTP[i], WLTP_max);
                 }
                 lshift = Inlines.silk_CLZ32(WLTP_max) - 1 - 3; /* keep 3 bits free for vq_nearest_neighbor */
                 Inlines.OpusAssert(26 - 18 + lshift >= 0);
@@ -157,14 +158,14 @@ namespace Concentus.Silk
                     temp32 = Inlines.silk_min_32(temp32, Inlines.silk_LSHIFT((int)1, 26 - 18 + lshift));
                 }
 
-                Inlines.silk_scale_vector32_Q26_lshift_18(WLTP_ptr.Data, WLTP_ptr.Offset, temp32, SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER); /* WLTP_ptr in Q( 18 - corr_rshifts[ k ] ) */
+                Inlines.silk_scale_vector32_Q26_lshift_18(WLTP, WLTP_ptr, temp32, SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER); /* WLTP_ptr in Q( 18 - corr_rshifts[ k ] ) */
 
-                w[k] = Inlines.MatrixGet(WLTP_ptr, SilkConstants.LTP_ORDER / 2, SilkConstants.LTP_ORDER / 2, SilkConstants.LTP_ORDER); /* w in Q( 18 - corr_rshifts[ k ] ) */
+                w[k] = Inlines.MatrixGet(WLTP, WLTP_ptr, SilkConstants.LTP_ORDER / 2, SilkConstants.LTP_ORDER / 2, SilkConstants.LTP_ORDER); /* w in Q( 18 - corr_rshifts[ k ] ) */
                 Inlines.OpusAssert(w[k] >= 0);
 
-                r_ptr = r_ptr.Point(subfr_length);
-                b_Q14_ptr = b_Q14_ptr.Point(SilkConstants.LTP_ORDER);
-                WLTP_ptr = WLTP_ptr.Point(SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER);
+                r_ptr += subfr_length;
+                b_Q14_ptr += SilkConstants.LTP_ORDER;
+                WLTP_ptr += (SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER);
             }
 
             maxRshifts = 0;
@@ -194,15 +195,15 @@ namespace Concentus.Silk
 
             /* smoothing */
             /* d = sum( B, 1 ); */
-            b_Q14_ptr = b_Q14.GetPointer();
+            b_Q14_ptr = 0;
             for (k = 0; k < nb_subfr; k++)
             {
                 d_Q14[k] = 0;
-                for (i = 0; i < SilkConstants.LTP_ORDER; i++)
+                for (i = b_Q14_ptr; i < b_Q14_ptr + SilkConstants.LTP_ORDER; i++)
                 {
-                    d_Q14[k] += b_Q14_ptr[i];
+                    d_Q14[k] += b_Q14[i];
                 }
-                b_Q14_ptr = b_Q14_ptr.Point(SilkConstants.LTP_ORDER);
+                b_Q14_ptr += SilkConstants.LTP_ORDER;
             }
 
             /* m = ( w * d' ) / ( sum( w ) + 1e-3 ); */
@@ -240,7 +241,7 @@ namespace Concentus.Silk
             }
             m_Q12 = Inlines.silk_DIV32_varQ(wd, temp32, 12);
 
-            b_Q14_ptr = b_Q14.GetPointer();
+            b_Q14_ptr = 0;
             for (k = 0; k < nb_subfr; k++)
             {
                 /* w[ k ] from Q( 18 - corr_rshifts[ k ] ) to Q( 16 ) */
@@ -261,15 +262,15 @@ namespace Concentus.Silk
                 temp32 = 0;
                 for (i = 0; i < SilkConstants.LTP_ORDER; i++)
                 {
-                    delta_b_Q14[i] = Inlines.silk_max_16(b_Q14_ptr[i], 1638);     /* 1638_Q14 = 0.1_Q0 */
+                    delta_b_Q14[i] = Inlines.silk_max_16(b_Q14[b_Q14_ptr + i], 1638);     /* 1638_Q14 = 0.1_Q0 */
                     temp32 += delta_b_Q14[i];                                 /* Q14 */
                 }
                 temp32 = Inlines.silk_DIV32(g_Q26, temp32);                           /* Q14 . Q12 */
                 for (i = 0; i < SilkConstants.LTP_ORDER; i++)
                 {
-                    b_Q14_ptr[i] = (short)(Inlines.silk_LIMIT_32((int)b_Q14_ptr[i] + Inlines.silk_SMULWB(Inlines.silk_LSHIFT_SAT32(temp32, 4), delta_b_Q14[i]), -16000, 28000));
+                    b_Q14[b_Q14_ptr + i] = (short)(Inlines.silk_LIMIT_32((int)b_Q14[b_Q14_ptr + i] + Inlines.silk_SMULWB(Inlines.silk_LSHIFT_SAT32(temp32, 4), delta_b_Q14[i]), -16000, 28000));
                 }
-                b_Q14_ptr = b_Q14_ptr.Point(SilkConstants.LTP_ORDER);
+                b_Q14_ptr += SilkConstants.LTP_ORDER;
             }
         }
 
@@ -281,14 +282,14 @@ namespace Concentus.Silk
         /// <param name=""></param>
         internal static void silk_fit_LTP(
             int[] LTP_coefs_Q16,
-            Pointer<short> LTP_coefs_Q14
-)
+            short[] LTP_coefs_Q14,
+            int LTP_coefs_Q14_ptr)
         {
             int i;
 
             for (i = 0; i < SilkConstants.LTP_ORDER; i++)
             {
-                LTP_coefs_Q14[i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(LTP_coefs_Q16[i], 2));
+                LTP_coefs_Q14[LTP_coefs_Q14_ptr + i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(LTP_coefs_Q16[i], 2));
             }
         }
     }

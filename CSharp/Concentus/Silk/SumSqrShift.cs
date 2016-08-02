@@ -51,7 +51,8 @@ namespace Concentus.Silk
         internal static void silk_sum_sqr_shift(
             out int energy,
             out int shift,
-            Pointer<short> x,
+            short[] x,
+            int x_ptr,
             int len)
         {
             int i, shft;
@@ -63,8 +64,8 @@ namespace Concentus.Silk
 
             for (i = 0; i < len; i += 2)
             {
-                nrg = Inlines.silk_SMLABB_ovflw(nrg, x[i], x[i]);
-                nrg = Inlines.silk_SMLABB_ovflw(nrg, x[i + 1], x[i + 1]);
+                nrg = Inlines.silk_SMLABB_ovflw(nrg, x[x_ptr + i], x[x_ptr + i]);
+                nrg = Inlines.silk_SMLABB_ovflw(nrg, x[x_ptr + i + 1], x[x_ptr + i + 1]);
                 if (nrg < 0)
                 {
                     /* Scale down */
@@ -77,8 +78,8 @@ namespace Concentus.Silk
 
             for (; i < len; i += 2)
             {
-                nrg_tmp = Inlines.silk_SMULBB(x[i], x[i]);
-                nrg_tmp = Inlines.silk_SMLABB_ovflw(nrg_tmp, x[i + 1], x[i + 1]);
+                nrg_tmp = Inlines.silk_SMULBB(x[x_ptr + i], x[x_ptr + i]);
+                nrg_tmp = Inlines.silk_SMLABB_ovflw(nrg_tmp, x[x_ptr + i + 1], x[x_ptr + i + 1]);
                 nrg = unchecked((int)Inlines.silk_ADD_RSHIFT_uint(unchecked((uint)nrg), unchecked((uint)nrg_tmp), shft));
                 if (nrg < 0)
                 {
@@ -91,7 +92,7 @@ namespace Concentus.Silk
             if (i == len)
             {
                 /* One sample left to process */
-                nrg_tmp = Inlines.silk_SMULBB(x[i], x[i]);
+                nrg_tmp = Inlines.silk_SMULBB(x[x_ptr + i], x[x_ptr + i]);
                 nrg = unchecked((int)Inlines.silk_ADD_RSHIFT_uint(unchecked((uint)nrg), unchecked((uint)nrg_tmp), shft));
             }
 
