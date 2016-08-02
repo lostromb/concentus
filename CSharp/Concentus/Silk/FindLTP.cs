@@ -111,11 +111,11 @@ namespace Concentus.Silk
                 }
                 corr_rshifts[k] = rr_shifts;
                 BoxedValue<int> boxed_shifts = new BoxedValue<int>(corr_rshifts[k]);
-                CorrelateMatrix.silk_corrMatrix(r_lpc, lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP.GetPointer(WLTP_ptr), boxed_shifts);  /* WLTP_ptr in Q( -corr_rshifts[ k ] ) */
+                CorrelateMatrix.silk_corrMatrix(r_lpc, lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP, WLTP_ptr, boxed_shifts);  /* WLTP_ptr in Q( -corr_rshifts[ k ] ) */
                 corr_rshifts[k] = boxed_shifts.Val;
 
                 /* The correlation vector always has lower max abs value than rr and/or RR so head room is assured */
-                CorrelateMatrix.silk_corrVector(r_lpc.GetPointer(lag_ptr), r_lpc.GetPointer(r_ptr), subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
+                CorrelateMatrix.silk_corrVector(r_lpc, lag_ptr, r_lpc, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
                 if (corr_rshifts[k] > rr_shifts)
                 {
                     rr[k] = Inlines.silk_RSHIFT(rr[k], corr_rshifts[k] - rr_shifts); /* rr[ k ] in Q( -corr_rshifts[ k ] ) */
@@ -134,7 +134,7 @@ namespace Concentus.Silk
                 silk_fit_LTP(b_Q16, b_Q14, b_Q14_ptr);
 
                 /* Calculate residual energy */
-                nrg[k] = ResidualEnergy.silk_residual_energy16_covar(b_Q14.GetPointer(b_Q14_ptr), WLTP.GetPointer(WLTP_ptr), Rr, rr[k], SilkConstants.LTP_ORDER, 14); /* nrg in Q( -corr_rshifts[ k ] ) */
+                nrg[k] = ResidualEnergy.silk_residual_energy16_covar(b_Q14, b_Q14_ptr, WLTP, WLTP_ptr, Rr, rr[k], SilkConstants.LTP_ORDER, 14); /* nrg in Q( -corr_rshifts[ k ] ) */
 
                 /* temp = Wght[ k ] / ( nrg[ k ] * Wght[ k ] + 0.01f * subfr_length ); */
                 extra_shifts = Inlines.silk_min_int(corr_rshifts[k], LTP_CORRS_HEAD_ROOM);

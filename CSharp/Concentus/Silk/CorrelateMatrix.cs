@@ -45,8 +45,10 @@ namespace Concentus.Silk
     {
         /* Calculates correlation vector X'*t */
         internal static void silk_corrVector(
-            Pointer<short> x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
-            Pointer<short> t,                                     /* I    Target vector [L]                                                           */
+            short[] x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
+            int x_ptr,
+            short[] t,                                     /* I    Target vector [L]                                                           */
+            int t_ptr,
             int L,                                      /* I    Length of vectors                                                           */
             int order,                                  /* I    Max lag for correlation                                                     */
             int[] Xt,                                    /* O    Pointer to X'*t correlation vector [order]                                  */
@@ -54,11 +56,12 @@ namespace Concentus.Silk
         )
         {
             int lag, i;
-            Pointer<short> ptr1, ptr2;
+            int ptr1;
+            int ptr2;
             int inner_prod;
 
-            ptr1 = x.Point(order - 1); /* Points to first sample of column 0 of X: X[:,0] */
-            ptr2 = t;
+            ptr1 = x_ptr + order - 1; /* Points to first sample of column 0 of X: X[:,0] */
+            ptr2 = t_ptr;
             /* Calculate X'*t */
             if (rshifts > 0)
             {
@@ -68,18 +71,18 @@ namespace Concentus.Silk
                     inner_prod = 0;
                     for (i = 0; i < L; i++)
                     {
-                        inner_prod += Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[i], ptr2[i]), rshifts);
+                        inner_prod += Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(x[ptr1 + i], t[ptr2 + i]), rshifts);
                     }
                     Xt[lag] = inner_prod; /* X[:,lag]'*t */
-                    ptr1 = ptr1.Point(-1); /* Go to next column of X */
+                    ptr1--; /* Go to next column of X */
                 }
             }
             else {
                 Inlines.OpusAssert(rshifts == 0);
                 for (lag = 0; lag < order; lag++)
                 {
-                    Xt[lag] = Inlines.silk_inner_prod(ptr1.Data, ptr1.Offset, ptr2.Data, ptr2.Offset, L); /* X[:,lag]'*t */
-                    ptr1 = ptr1.Point(-1); /* Go to next column of X */
+                    Xt[lag] = Inlines.silk_inner_prod(x, ptr1, t, ptr2, L); /* X[:,lag]'*t */
+                    ptr1--; /* Go to next column of X */
                 }
             }
         }
@@ -91,7 +94,8 @@ namespace Concentus.Silk
             int L,                                      /* I    Length of vectors                                                           */
             int order,                                  /* I    Max lag for correlation                                                     */
             int head_room,                              /* I    Desired headroom                                                            */
-            Pointer<int> XX,                                    /* O    Pointer to X'*X correlation matrix [ order x order ]                        */
+            int[] XX,                                    /* O    Pointer to X'*X correlation matrix [ order x order ]                        */
+            int XX_ptr,
             BoxedValue<int> rshifts                               /* I/O  Right shifts of correlations                                                */
         )
         {
@@ -122,13 +126,13 @@ namespace Concentus.Silk
 
             /* Calculate energy of remaining columns of X: X[:,j]'*X[:,j] */
             /* Fill out the diagonal of the correlation matrix */
-            Inlines.MatrixSet(XX, 0, 0, order, energy);
+            Inlines.MatrixSet(XX, XX_ptr, 0, 0, order, energy);
             ptr1 = x.GetPointer(x_ptr + order - 1); /* First sample of column 0 of X */
             for (j = 1; j < order; j++)
             {
                 energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[L - j], ptr1[L - j]), rshifts_local));
                 energy = Inlines.silk_ADD32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[-j], ptr1[-j]), rshifts_local));
-                Inlines.MatrixSet(XX, j, j, order, energy);
+                Inlines.MatrixSet(XX, XX_ptr, j, j, order, energy);
             }
 
             ptr2 = x.GetPointer(x_ptr + order - 2); /* First sample of column 1 of X */
@@ -145,14 +149,14 @@ namespace Concentus.Silk
                         energy += Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[i], ptr2[i]), rshifts_local);
                     }
                     /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */
-                    Inlines.MatrixSet(XX, lag, 0, order, energy);
-                    Inlines.MatrixSet(XX, 0, lag, order, energy);
+                    Inlines.MatrixSet(XX, XX_ptr, lag, 0, order, energy);
+                    Inlines.MatrixSet(XX, XX_ptr, 0, lag, order, energy);
                     for (j = 1; j < (order - lag); j++)
                     {
                         energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[L - j], ptr2[L - j]), rshifts_local));
                         energy = Inlines.silk_ADD32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[-j], ptr2[-j]), rshifts_local));
-                        Inlines.MatrixSet(XX, lag + j, j, order, energy);
-                        Inlines.MatrixSet(XX, j, lag + j, order, energy);
+                        Inlines.MatrixSet(XX, XX_ptr, lag + j, j, order, energy);
+                        Inlines.MatrixSet(XX, XX_ptr, j, lag + j, order, energy);
                     }
                     ptr2 = ptr2.Point(-1); /* Update pointer to first sample of next column (lag) in X */
                 }
@@ -162,15 +166,15 @@ namespace Concentus.Silk
                 {
                     /* Inner product of column 0 and column lag: X[:,0]'*X[:,lag] */
                     energy = Inlines.silk_inner_prod(ptr1.Data, ptr1.Offset, ptr2.Data, ptr2.Offset, L);
-                    Inlines.MatrixSet(XX, lag, 0, order,energy);
-                    Inlines.MatrixSet(XX, 0, lag, order, energy);
+                    Inlines.MatrixSet(XX, XX_ptr, lag, 0, order,energy);
+                    Inlines.MatrixSet(XX, XX_ptr, 0, lag, order, energy);
                     /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */
                     for (j = 1; j < (order - lag); j++)
                     {
                         energy = Inlines.silk_SUB32(energy, Inlines.silk_SMULBB(ptr1[L - j], ptr2[L - j]));
                         energy = Inlines.silk_SMLABB(energy, ptr1[-j], ptr2[-j]);
-                        Inlines.MatrixSet(XX, lag + j, j, order, energy);
-                        Inlines.MatrixSet(XX, j, lag + j, order, energy);
+                        Inlines.MatrixSet(XX, XX_ptr, lag + j, j, order, energy);
+                        Inlines.MatrixSet(XX, XX_ptr, j, lag + j, order, energy);
                     }
                     ptr2 = ptr2.Point(-1);/* Update pointer to first sample of next column (lag) in X */
                 }

@@ -110,8 +110,10 @@ namespace Concentus.Silk
 
         /* Residual energy: nrg = wxx - 2 * wXx * c + c' * wXX * c */
         internal static int silk_residual_energy16_covar(
-            Pointer<short> c,                                     /* I    Prediction vector                                                           */
-            Pointer<int> wXX,                                   /* I    Correlation matrix                                                          */
+            short[] c,                                     /* I    Prediction vector                                                           */
+            int c_ptr,
+            int[] wXX,                                   /* I    Correlation matrix                                                          */
+            int wXX_ptr,
             int[] wXx,                                   /* I    Correlation vector                                                          */
             int wxx,                                    /* I    Signal energy                                                               */
             int D,                                      /* I    Dimension                                                                   */
@@ -133,18 +135,18 @@ namespace Concentus.Silk
             Qxtra = lshifts;
 
             c_max = 0;
-            for (i = 0; i < D; i++)
+            for (i = c_ptr; i < c_ptr + D; i++)
             {
                 c_max = Inlines.silk_max_32(c_max, Inlines.silk_abs((int)c[i]));
             }
             Qxtra = Inlines.silk_min_int(Qxtra, Inlines.silk_CLZ32(c_max) - 17);
 
-            w_max = Inlines.silk_max_32(wXX[0], wXX[D * D - 1]);
+            w_max = Inlines.silk_max_32(wXX[wXX_ptr], wXX[wXX_ptr + (D * D) - 1]);
             Qxtra = Inlines.silk_min_int(Qxtra, Inlines.silk_CLZ32(Inlines.silk_MUL(D, Inlines.silk_RSHIFT(Inlines.silk_SMULWB(w_max, c_max), 4))) - 5);
             Qxtra = Inlines.silk_max_int(Qxtra, 0);
             for (i = 0; i < D; i++)
             {
-                cn[i] = Inlines.silk_LSHIFT((int)c[i], Qxtra);
+                cn[i] = Inlines.silk_LSHIFT((int)c[c_ptr + i], Qxtra);
                 Inlines.OpusAssert(Inlines.silk_abs(cn[i]) <= (short.MaxValue + 1)); /* Check that Inlines.silk_SMLAWB can be used */
             }
             lshifts -= Qxtra;
@@ -162,7 +164,7 @@ namespace Concentus.Silk
             for (i = 0; i < D; i++)
             {
                 tmp = 0;
-                pRow = wXX.Point(i * D);
+                pRow = wXX.GetPointer(wXX_ptr + (i * D));
                 for (j = i + 1; j < D; j++)
                 {
                     tmp = Inlines.silk_SMLAWB(tmp, pRow[j], cn[j]);
