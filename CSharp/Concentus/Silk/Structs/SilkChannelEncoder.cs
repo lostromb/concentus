@@ -363,13 +363,13 @@ namespace Concentus.Silk.Structs
 
                     /* Temporary resampling of x_buf data to API_fs_Hz */
                     x_buf_API_fs_Hz = new short[api_buf_samples];
-                    ret += Resampler.silk_resampler(temp_resampler_state, x_buf_API_fs_Hz.GetPointer(), this.x_buf.GetPointer(), old_buf_samples);
+                    ret += Resampler.silk_resampler(temp_resampler_state, x_buf_API_fs_Hz, 0, this.x_buf.GetPointer(), old_buf_samples);
 
                     /* Initialize the resampler for enc_API.c preparing resampling from API_fs_Hz to fs_kHz */
                     ret += Resampler.silk_resampler_init(this.resampler_state, this.API_fs_Hz, Inlines.silk_SMULBB(fs_kHz, 1000), 1);
 
                     /* Correct resampler state by resampling buffered data from API_fs_Hz to fs_kHz */
-                    ret += Resampler.silk_resampler(this.resampler_state, this.x_buf.GetPointer(), x_buf_API_fs_Hz.GetPointer(), api_buf_samples);
+                    ret += Resampler.silk_resampler(this.resampler_state, this.x_buf, 0, x_buf_API_fs_Hz.GetPointer(), api_buf_samples);
                 }
             }
 

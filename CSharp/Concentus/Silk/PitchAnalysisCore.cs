@@ -180,7 +180,7 @@ namespace Concentus.Silk
 
                 basis_ptr = target_ptr.Point(0 - MIN_LAG_4KHZ);
 
-                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - MAX_LAG_4KHZ), xcorr32, SF_LENGTH_8KHZ, MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1);
+                CeltPitchXCorr.pitch_xcorr(target_ptr.Data, target_ptr.Offset, target_ptr.Data, target_ptr.Offset - MAX_LAG_4KHZ, xcorr32, SF_LENGTH_8KHZ, MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1);
 
                 /* Calculate first vector products before loop */
                 cross_corr = xcorr32[MAX_LAG_4KHZ - MIN_LAG_4KHZ];
@@ -671,7 +671,7 @@ namespace Concentus.Silk
                 lag_low = Lag_range_ptr[k][0];
                 lag_high = Lag_range_ptr[k][1];
                 Inlines.OpusAssert(lag_high - lag_low + 1 <= SCRATCH_SIZE);
-                CeltPitchXCorr.pitch_xcorr(target_ptr, target_ptr.Point(0 - start_lag - lag_high), xcorr32, sf_length, lag_high - lag_low + 1);
+                CeltPitchXCorr.pitch_xcorr(target_ptr.Data, target_ptr.Offset, target_ptr.Data, target_ptr.Offset - start_lag - lag_high, xcorr32, sf_length, lag_high - lag_low + 1);
                 for (j = lag_low; j <= lag_high; j++)
                 {
                     Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);

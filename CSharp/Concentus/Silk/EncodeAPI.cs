@@ -283,7 +283,8 @@ namespace Concentus.Silk
 
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
-                        psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
+                        psEnc.state_Fxx[0].inputBuf,
+                        psEnc.state_Fxx[0].inputBufIx + 2,
                         buf.GetPointer(),
                         nSamplesFromInput);
 
@@ -297,7 +298,8 @@ namespace Concentus.Silk
                     }
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[1].resampler_state,
-                        psEnc.state_Fxx[1].inputBuf.GetPointer(psEnc.state_Fxx[1].inputBufIx + 2),
+                        psEnc.state_Fxx[1].inputBuf,
+                        psEnc.state_Fxx[1].inputBufIx + 2,
                         buf.GetPointer(),
                         nSamplesFromInput);
 
@@ -314,7 +316,8 @@ namespace Concentus.Silk
 
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
-                        psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
+                        psEnc.state_Fxx[0].inputBuf,
+                        psEnc.state_Fxx[0].inputBufIx + 2,
                         buf.GetPointer(),
                         nSamplesFromInput);
 
@@ -323,7 +326,8 @@ namespace Concentus.Silk
                     {
                         ret += Resampler.silk_resampler(
                             psEnc.state_Fxx[1].resampler_state,
-                            psEnc.state_Fxx[1].inputBuf.GetPointer(psEnc.state_Fxx[1].inputBufIx + 2),
+                            psEnc.state_Fxx[1].inputBuf,
+                            psEnc.state_Fxx[1].inputBufIx + 2,
                             buf.GetPointer(),
                             nSamplesFromInput);
 
@@ -343,7 +347,8 @@ namespace Concentus.Silk
                     Array.Copy(samplesIn, samplesIn_ptr, buf, 0, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
-                        psEnc.state_Fxx[0].inputBuf.GetPointer(psEnc.state_Fxx[0].inputBufIx + 2),
+                        psEnc.state_Fxx[0].inputBuf,
+                        psEnc.state_Fxx[0].inputBufIx + 2,
                         buf.GetPointer(),
                         nSamplesFromInput);
 

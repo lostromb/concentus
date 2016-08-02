@@ -53,8 +53,9 @@ namespace Concentus.Silk
         /// <param name="length">I    Length</param>
         /// <param name="rand_seed">I/O  Seed to random index generator</param>
         internal static void silk_CNG_exc(
-            Pointer<int> exc_Q10,
-            Pointer<int> exc_buf_Q14,
+            int[] exc_Q10,
+            int exc_Q10_ptr,
+            int[] exc_buf_Q14,
             int Gain_Q16,
             int length,
             ref int rand_seed)
@@ -70,7 +71,7 @@ namespace Concentus.Silk
             }
 
             seed = rand_seed;
-            for (i = 0; i < length; i++)
+            for (i = exc_Q10_ptr; i < exc_Q10_ptr + length; i++)
             {
                 seed = Inlines.silk_RAND(seed);
                 idx = (int)(Inlines.silk_RSHIFT(seed, 24) & exc_mask);
@@ -150,8 +151,7 @@ namespace Concentus.Silk
                 }
 
                 /* Update CNG excitation buffer with excitation from this subframe */
-                // FIXME this pointer can be cached for performance
-                psCNG.CNG_exc_buf_Q14.GetPointer().MemMove(psDec.subfr_length, (psDec.nb_subfr - 1) * psDec.subfr_length);
+                Arrays.MemMove<int>(psCNG.CNG_exc_buf_Q14, 0, psDec.subfr_length, (psDec.nb_subfr - 1) * psDec.subfr_length);
 
                 /* Smooth gains */
                 for (i = 0; i < psDec.nb_subfr; i++)
@@ -179,7 +179,7 @@ namespace Concentus.Silk
                     gain_Q16 = Inlines.silk_SUB_LSHIFT32(Inlines.silk_SMULWW(psCNG.CNG_smth_Gain_Q16, psCNG.CNG_smth_Gain_Q16), gain_Q16, 5);
                     gain_Q16 = Inlines.silk_LSHIFT32(Inlines.silk_SQRT_APPROX(gain_Q16), 8);
                 }
-                silk_CNG_exc(CNG_sig_Q10.GetPointer(SilkConstants.MAX_LPC_ORDER), psCNG.CNG_exc_buf_Q14.GetPointer(), gain_Q16, length, ref psCNG.rand_seed);
+                silk_CNG_exc(CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER, psCNG.CNG_exc_buf_Q14, gain_Q16, length, ref psCNG.rand_seed);
 
                 /* Convert CNG NLSF to filter representation */
                 NLSF.silk_NLSF2A(A_Q12, psCNG.CNG_smth_NLSF_Q15, psDec.LPC_order);

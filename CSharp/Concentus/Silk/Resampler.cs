@@ -215,7 +215,8 @@ namespace Concentus.Silk
         /// <returns></returns>
         internal static int silk_resampler(
             SilkResamplerState S,
-            Pointer<short> output,
+            short[] output,
+            int output_ptr,
             Pointer<short> input,
             int inLen)
         {
@@ -236,20 +237,20 @@ namespace Concentus.Silk
             switch (S.resampler_function)
             {
                 case USE_silk_resampler_private_up2_HQ_wrapper:
-                    silk_resampler_private_up2_HQ(S.sIIR, output, delayBufPtr.GetPointer(), S.Fs_in_kHz);
-                    silk_resampler_private_up2_HQ(S.sIIR, output.Point(S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
+                    silk_resampler_private_up2_HQ(S.sIIR, output.GetPointer(output_ptr), delayBufPtr.GetPointer(), S.Fs_in_kHz);
+                    silk_resampler_private_up2_HQ(S.sIIR, output.GetPointer(output_ptr + S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
                     break;
                 case USE_silk_resampler_private_IIR_FIR:
-                    silk_resampler_private_IIR_FIR(S, output, delayBufPtr.GetPointer(), S.Fs_in_kHz);
-                    silk_resampler_private_IIR_FIR(S, output.Point(S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
+                    silk_resampler_private_IIR_FIR(S, output.GetPointer(output_ptr), delayBufPtr.GetPointer(), S.Fs_in_kHz);
+                    silk_resampler_private_IIR_FIR(S, output.GetPointer(output_ptr + S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
                     break;
                 case USE_silk_resampler_private_down_FIR:
-                    silk_resampler_private_down_FIR(S, output, delayBufPtr.GetPointer(), S.Fs_in_kHz);
-                    silk_resampler_private_down_FIR(S, output.Point(S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
+                    silk_resampler_private_down_FIR(S, output.GetPointer(output_ptr), delayBufPtr.GetPointer(), S.Fs_in_kHz);
+                    silk_resampler_private_down_FIR(S, output.GetPointer(output_ptr + S.Fs_out_kHz), input.Point(nSamples), inLen - S.Fs_in_kHz);
                     break;
                 default:
-                    delayBufPtr.GetPointer().MemCopyTo(output, S.Fs_in_kHz);
-                    input.Point(nSamples).MemCopyTo(output.Point(S.Fs_out_kHz), (inLen - S.Fs_in_kHz));
+                    delayBufPtr.GetPointer().MemCopyTo(output.GetPointer(output_ptr), S.Fs_in_kHz);
+                    input.Point(nSamples).MemCopyTo(output.GetPointer(output_ptr + S.Fs_out_kHz), (inLen - S.Fs_in_kHz));
                     break;
             }
 

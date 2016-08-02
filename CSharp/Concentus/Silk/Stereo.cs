@@ -48,7 +48,7 @@ namespace Concentus.Silk
         /// <param name="pred_Q13">O Predictors</param>
         internal static void silk_stereo_decode_pred(
             EntropyCoder psRangeDec,
-            Pointer<int> pred_Q13)
+            int[] pred_Q13)
         {
             int n;
             int[][] ix = Arrays.InitTwoDimensionalArray<int>(2, 3);
@@ -139,7 +139,8 @@ namespace Concentus.Silk
             BoxedValue<int> ratio_Q14,
             short[] x,
             short[] y,
-            Pointer<int> mid_res_amp_Q0,
+            int[] mid_res_amp_Q0,
+            int mid_res_amp_Q0_ptr,
             int length,
             int smooth_coef_Q16)
         {
@@ -166,16 +167,16 @@ namespace Concentus.Silk
             /* Smoothed mid and residual norms */
             Inlines.OpusAssert(smooth_coef_Q16 < 32768);
             scale = Inlines.silk_RSHIFT(scale, 1);
-            mid_res_amp_Q0[0] = Inlines.silk_SMLAWB(mid_res_amp_Q0[0],
-                Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgx), scale) - mid_res_amp_Q0[0], smooth_coef_Q16);
+            mid_res_amp_Q0[mid_res_amp_Q0_ptr] = Inlines.silk_SMLAWB(mid_res_amp_Q0[mid_res_amp_Q0_ptr],
+                Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgx), scale) - mid_res_amp_Q0[mid_res_amp_Q0_ptr], smooth_coef_Q16);
             /* Residual energy = nrgy - 2 * pred * corr + pred^2 * nrgx */
             nrgy = Inlines.silk_SUB_LSHIFT32(nrgy, Inlines.silk_SMULWB(corr, pred_Q13), 3 + 1);
             nrgy = Inlines.silk_ADD_LSHIFT32(nrgy, Inlines.silk_SMULWB(nrgx, pred2_Q10), 6);
-            mid_res_amp_Q0[1] = Inlines.silk_SMLAWB(mid_res_amp_Q0[1],
-                Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgy), scale) - mid_res_amp_Q0[1], smooth_coef_Q16);
+            mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1] = Inlines.silk_SMLAWB(mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1],
+                Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgy), scale) - mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1], smooth_coef_Q16);
 
             /* Ratio of smoothed residual and mid norms */
-            ratio_Q14.Val = Inlines.silk_DIV32_varQ(mid_res_amp_Q0[1], Inlines.silk_max(mid_res_amp_Q0[0], 1), 14);
+            ratio_Q14.Val = Inlines.silk_DIV32_varQ(mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1], Inlines.silk_max(mid_res_amp_Q0[mid_res_amp_Q0_ptr], 1), 14);
             ratio_Q14.Val = Inlines.silk_LIMIT(ratio_Q14.Val, 0, 32767);
 
             return pred_Q13;
@@ -243,7 +244,7 @@ namespace Concentus.Silk
             HP_mid = new short[frame_length];
             for (n = 0; n < frame_length; n++)
             {
-                sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(mid[n] + mid[n + 2], mid[n + 1], 1), 2); // opus bug: was ADD_LSHIFT, but the intermediate calculation would overflow
+                sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(mid[n] + mid[n + 2], mid[n + 1], 1), 2);
                 LP_mid[n] = (short)(sum);
                 HP_mid[n] = (short)(mid[n + 1] - sum);
             }
@@ -265,8 +266,8 @@ namespace Concentus.Silk
                 ((int)((SilkConstants.STEREO_RATIO_SMOOTH_COEF) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF, 16)*/;
             smooth_coef_Q16 = Inlines.silk_SMULWB(Inlines.silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
-            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0.GetPointer(), frame_length, smooth_coef_Q16);
-            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0.GetPointer(2), frame_length, smooth_coef_Q16); // opt: potential 1:2 partitioned buffer
+            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0, 0, frame_length, smooth_coef_Q16);
+            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0, 2, frame_length, smooth_coef_Q16);
             
             /* Ratio of the norms of residual and mid signals */
             frac_Q16 = Inlines.silk_SMLABB(HP_ratio_Q14.Val, LP_ratio_Q14.Val, 3);
@@ -423,9 +424,11 @@ namespace Concentus.Silk
         /// <param name="frame_length">I    Number of samples</param>
         internal static void silk_stereo_MS_to_LR(
             StereoDecodeState state,
-            Pointer<short> x1,
-            Pointer<short> x2,
-            Pointer<int> pred_Q13,
+            short[] x1,
+            int x1_ptr,
+            short[] x2,
+            int x2_ptr,
+            int[] pred_Q13,
             int fs_kHz,
             int frame_length)
         {
@@ -433,10 +436,10 @@ namespace Concentus.Silk
             int sum, diff, pred0_Q13, pred1_Q13;
 
             /* Buffering */
-            state.sMid.GetPointer().MemCopyTo(x1, 2);
-            state.sSide.GetPointer().MemCopyTo(x2, 2);
-            x1.Point(frame_length).MemCopyTo(state.sMid, 0, 2);
-            x2.Point(frame_length).MemCopyTo(state.sSide, 0, 2);
+            Array.Copy(state.sMid, 0, x1, x1_ptr, 2);
+            Array.Copy(state.sSide, 0, x2, x2_ptr, 2);
+            Array.Copy(x1, x1_ptr + frame_length, state.sMid, 0, 2);
+            Array.Copy(x2, x2_ptr + frame_length, state.sSide, 0, 2);
 
             /* Interpolate predictors and add prediction to side channel */
             pred0_Q13 = state.pred_prev_Q13[0];
@@ -448,19 +451,19 @@ namespace Concentus.Silk
             {
                 pred0_Q13 += delta0_Q13;
                 pred1_Q13 += delta1_Q13;
-                sum = Inlines.silk_LSHIFT(Inlines.silk_ADD_LSHIFT(x1[n] + x1[n + 2], x1[n + 1], 1), 9);       /* Q11 */
-                sum = Inlines.silk_SMLAWB(Inlines.silk_LSHIFT((int)x2[n + 1], 8), sum, pred0_Q13);         /* Q8  */
-                sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)x1[n + 1], 11), pred1_Q13);        /* Q8  */
-                x2[n + 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
+                sum = Inlines.silk_LSHIFT(Inlines.silk_ADD_LSHIFT(x1[x1_ptr + n] + x1[x1_ptr + n + 2], x1[x1_ptr + n + 1], 1), 9);       /* Q11 */
+                sum = Inlines.silk_SMLAWB(Inlines.silk_LSHIFT((int)x2[x2_ptr + n + 1], 8), sum, pred0_Q13);         /* Q8  */
+                sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)x1[x1_ptr + n + 1], 11), pred1_Q13);        /* Q8  */
+                x2[x2_ptr + n + 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
             }
             pred0_Q13 = pred_Q13[0];
             pred1_Q13 = pred_Q13[1];
             for (n = SilkConstants.STEREO_INTERP_LEN_MS * fs_kHz; n < frame_length; n++)
             {
-                sum = Inlines.silk_LSHIFT(Inlines.silk_ADD_LSHIFT(x1[n] + x1[n + 2], x1[n + 1], 1), 9);       /* Q11 */
-                sum = Inlines.silk_SMLAWB(Inlines.silk_LSHIFT((int)x2[n + 1], 8), sum, pred0_Q13);         /* Q8  */
-                sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)x1[n + 1], 11), pred1_Q13);        /* Q8  */
-                x2[n + 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
+                sum = Inlines.silk_LSHIFT(Inlines.silk_ADD_LSHIFT(x1[x1_ptr + n] + x1[x1_ptr + n + 2], x1[x1_ptr + n + 1], 1), 9);       /* Q11 */
+                sum = Inlines.silk_SMLAWB(Inlines.silk_LSHIFT((int)x2[x2_ptr + n + 1], 8), sum, pred0_Q13);         /* Q8  */
+                sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)x1[x1_ptr + n + 1], 11), pred1_Q13);        /* Q8  */
+                x2[x2_ptr + n + 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
             }
             state.pred_prev_Q13[0] = (short)(pred_Q13[0]);
             state.pred_prev_Q13[1] = (short)(pred_Q13[1]);
@@ -468,10 +471,10 @@ namespace Concentus.Silk
             /* Convert to left/right signals */
             for (n = 0; n < frame_length; n++)
             {
-                sum = x1[n + 1] + (int)x2[n + 1];
-                diff = x1[n + 1] - (int)x2[n + 1];
-                x1[n + 1] = (short)Inlines.silk_SAT16(sum);
-                x2[n + 1] = (short)Inlines.silk_SAT16(diff);
+                sum = x1[x1_ptr + n + 1] + (int)x2[x2_ptr + n + 1];
+                diff = x1[x1_ptr + n + 1] - (int)x2[x2_ptr + n + 1];
+                x1[x1_ptr + n + 1] = (short)Inlines.silk_SAT16(sum);
+                x2[x2_ptr + n + 1] = (short)Inlines.silk_SAT16(diff);
             }
         }
 
