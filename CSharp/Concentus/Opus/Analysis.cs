@@ -178,7 +178,7 @@ namespace Concentus
             float slope = 0;
             float frame_stationarity;
             float relativeE;
-            Pointer<float> frame_probs = Pointer.Malloc<float>(2);
+            float[] frame_probs = new float[2];
             float alpha, alphaE, alphaE2;
             float frame_loudness;
             float bandwidth_mask;

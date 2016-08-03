@@ -48,7 +48,8 @@ namespace Concentus.Structs
     {
         internal byte toc = 0;
         internal int nb_frames = 0;
-        internal readonly Pointer<byte>[] frames = new Pointer<byte>[48];
+        internal readonly byte[][] frames = new byte[48][];
+        internal readonly int[] frames_ptrs = new int[48];
         internal readonly short[] len = new short[48];
         internal int framesize = 0;
         
@@ -116,7 +117,7 @@ namespace Concentus.Structs
                 return OpusError.OPUS_INVALID_PACKET;
             }
 
-            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out dummy_toc, this.frames.GetPointer(this.nb_frames), this.len, this.nb_frames, out dummy_offset, out dummy_offset);
+            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out dummy_toc, this.frames, this.frames_ptrs, this.nb_frames, this.len, this.nb_frames, out dummy_offset, out dummy_offset);
             if (ret < 1) return ret;
 
             this.nb_frames += curr_nb_frames;
@@ -195,8 +196,6 @@ namespace Concentus.Structs
         {
             int i, count;
             int tot_size;
-            Pointer<short> len;
-            Pointer<Pointer<byte>> frames;
             int ptr;
 
             if (begin < 0 || begin >= end || end > this.nb_frames)
@@ -205,9 +204,6 @@ namespace Concentus.Structs
                 return OpusError.OPUS_BAD_ARG;
             }
             count = end - begin;
-
-            len = this.len.GetPointer(begin);
-            frames = this.frames.GetPointer(begin);
 
             if (self_delimited != 0)
                 tot_size = 1 + (this.len[count - 1] >= 252 ? 1 : 0);
@@ -314,12 +310,20 @@ namespace Concentus.Structs
             }
 
             /* Copy the actual data */
-            for (i = 0; i < count; i++)
+            for (i = begin; i < count + begin; i++)
             {
-                /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
-                   padding from opus_packet_pad or opus_packet_unpad(). */
-                frames[i].MemMoveTo(data.GetPointer(ptr), len[i]);
-                ptr += len[i];
+                
+                if (this.frames[i] == data)
+                {
+                    /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
+                       padding from opus_packet_pad or opus_packet_unpad(). */
+                       Arrays.MemMove<byte>(data, frames_ptrs[i], ptr, this.len[i]);
+                }
+                else
+                {
+                    Array.Copy(this.frames[i], frames_ptrs[i], data, ptr, this.len[i]);
+                }
+                ptr += this.len[i];
             }
 
             if (pad != 0)
@@ -504,7 +508,7 @@ namespace Concentus.Structs
             {
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
-                count = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, 1, out dummy_toc, null,
+                count = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, 1, out dummy_toc, null, null, 0, 
                                                size, 0, out dummy_offset, out packet_offset);
                 if (count < 0)
                     return count;
@@ -551,7 +555,7 @@ namespace Concentus.Structs
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
                 rp.Reset();
-                ret = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, self_delimited, out dummy_toc, null,
+                ret = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, self_delimited, out dummy_toc, null, null, 0,
                                                size, 0, out dummy_offset, out packet_offset);
                 if (ret < 0)
                     return ret;
