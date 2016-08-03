@@ -199,7 +199,8 @@ namespace Concentus.Celt.Structs
             int c;
             int i;
             int C = this.channels;
-            Pointer<int>[] out_syn = new Pointer<int>[2];
+            int[][] out_syn = new int[2][];
+            int[] out_syn_ptrs = new int[2];
             CeltMode mode;
             int nbEBands;
             int overlap;
@@ -213,7 +214,8 @@ namespace Concentus.Celt.Structs
 
             c = 0; do
             {
-                out_syn[c] = this.decode_mem[c].GetPointer(CeltConstants.DECODE_BUFFER_SIZE - N);
+                out_syn[c] = this.decode_mem[c];
+                out_syn_ptrs[c] = CeltConstants.DECODE_BUFFER_SIZE - N;
             } while (++c < C);
             
             noise_based = (loss_count >= 5 || start != 0) ? 1 : 0;
@@ -264,7 +266,7 @@ namespace Concentus.Celt.Structs
                     Arrays.MemMove<int>(this.decode_mem[c], N, 0, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
                 } while (++c < C);
 
-                CeltCommon.celt_synthesis(mode, X, out_syn, this.oldEBands, start, effEnd, C, C, 0, LM, this.downsample, 0);
+                CeltCommon.celt_synthesis(mode, X, out_syn, out_syn_ptrs, this.oldEBands, start, effEnd, C, C, 0, LM, this.downsample, 0);
             }
             else
             {
@@ -475,7 +477,8 @@ namespace Concentus.Celt.Structs
             int[] fine_priority;
             int[] tf_res;
             byte[] collapse_masks;
-            Pointer<int>[] out_syn = new Pointer<int>[2];
+            int[][] out_syn = new int[2][];
+            int[] out_syn_ptrs = new int[2];
             int[] oldBandE, oldLogE, oldLogE2, backgroundLogE;
 
             int shortBlocks;
@@ -534,7 +537,8 @@ namespace Concentus.Celt.Structs
             N = M * mode.shortMdctSize;
             c = 0; do
             {
-                out_syn[c] = this.decode_mem[c].GetPointer(CeltConstants.DECODE_BUFFER_SIZE - N);
+                out_syn[c] = this.decode_mem[c];
+                out_syn_ptrs[c] = CeltConstants.DECODE_BUFFER_SIZE - N;
             } while (++c < CC);
 
             effEnd = end;
@@ -544,7 +548,7 @@ namespace Concentus.Celt.Structs
             if (data == null || len <= 1)
             {
                 this.celt_decode_lost(N, LM);
-                CeltCommon.deemphasis(out_syn, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
+                CeltCommon.deemphasis(out_syn, out_syn_ptrs, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
 
                 return frame_size / this.downsample;
             }
@@ -712,21 +716,21 @@ namespace Concentus.Celt.Structs
                     oldBandE[i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
             }
 
-            CeltCommon.celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd,
+            CeltCommon.celt_synthesis(mode, X, out_syn, out_syn_ptrs, oldBandE, start, effEnd,
                            C, CC, isTransient, LM, this.downsample, silence);
 
             c = 0; do
             {
                 this.postfilter_period = Inlines.IMAX(this.postfilter_period, CeltConstants.COMBFILTER_MINPERIOD);
                 this.postfilter_period_old = Inlines.IMAX(this.postfilter_period_old, CeltConstants.COMBFILTER_MINPERIOD);
-                CeltCommon.comb_filter(out_syn[c].Data, out_syn[c].Offset, out_syn[c].Data, out_syn[c].Offset, this.postfilter_period_old, this.postfilter_period, mode.shortMdctSize,
+                CeltCommon.comb_filter(out_syn[c], out_syn_ptrs[c], out_syn[c], out_syn_ptrs[c], this.postfilter_period_old, this.postfilter_period, mode.shortMdctSize,
                       this.postfilter_gain_old, this.postfilter_gain, this.postfilter_tapset_old, this.postfilter_tapset,
                       mode.window, overlap);
                 if (LM != 0)
                 {
                     CeltCommon.comb_filter(
-                        out_syn[c].Data, out_syn[c].Offset + (mode.shortMdctSize),
-                        out_syn[c].Data, out_syn[c].Offset + (mode.shortMdctSize),
+                        out_syn[c], out_syn_ptrs[c] + (mode.shortMdctSize),
+                        out_syn[c], out_syn_ptrs[c] + (mode.shortMdctSize),
                         this.postfilter_period, postfilter_pitch, N - mode.shortMdctSize,
                         this.postfilter_gain, postfilter_gain, this.postfilter_tapset, postfilter_tapset,
                         mode.window, overlap);
@@ -786,7 +790,7 @@ namespace Concentus.Celt.Structs
             } while (++c < 2);
             this.rng = dec.rng;
 
-            CeltCommon.deemphasis(out_syn, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
+            CeltCommon.deemphasis(out_syn, out_syn_ptrs, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
             this.loss_count = 0;
 
             if (dec.tell() > 8 * len)

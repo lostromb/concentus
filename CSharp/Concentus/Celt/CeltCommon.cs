@@ -1006,7 +1006,7 @@ namespace Concentus.Celt
             return maxDepth;
         }
 
-        internal static void deemphasis(Pointer<int>[] input, short[] pcm, int pcm_ptr, int N, int C, int downsample, int[] coef,
+        internal static void deemphasis(int[][] input, int[] input_ptrs, short[] pcm, int pcm_ptr, int N, int C, int downsample, int[] coef,
               int[] mem, int accum)
         {
             int c;
@@ -1019,17 +1019,18 @@ namespace Concentus.Celt
             c = 0; do
             {
                 int j;
-                Pointer<int> x;
+                int x_ptr;
                 int y;
                 int m = mem[c];
-                x = input[c];
+                int[] x = input[c];
+                x_ptr = input_ptrs[c];
                 y = pcm_ptr + c;
                 if (downsample > 1)
                 {
                     /* Shortcut for the standard (non-custom modes) case */
                     for (j = 0; j < N; j++)
                     {
-                        int tmp = x[j] + m + CeltConstants.VERY_SMALL;
+                        int tmp = x[x_ptr + j] + m + CeltConstants.VERY_SMALL;
                         m = Inlines.MULT16_32_Q15(coef0, tmp);
                         scratch[j] = tmp;
                     }
@@ -1041,7 +1042,7 @@ namespace Concentus.Celt
                     {
                         for (j = 0; j < N; j++)
                         {
-                            int tmp = x[j] + m + CeltConstants.VERY_SMALL;
+                            int tmp = x[x_ptr + j] + m + CeltConstants.VERY_SMALL;
                             m = Inlines.MULT16_32_Q15(coef0, tmp);
                             pcm[y + (j * C)] = Inlines.SAT16(Inlines.ADD32(pcm[y + (j * C)], Inlines.SIG2WORD16(tmp)));
                         }
@@ -1050,8 +1051,8 @@ namespace Concentus.Celt
                     {
                         for (j = 0; j < N; j++)
                         {
-                            int tmp = unchecked(x[j] + m + CeltConstants.VERY_SMALL); // Opus bug: This can overflow.
-                            if (x[j] > 0 && m > 0 && tmp < 0) // This is a hack to saturate to INT_MAXVALUE
+                            int tmp = unchecked(x[x_ptr + j] + m + CeltConstants.VERY_SMALL); // Opus bug: This can overflow.
+                            if (x[x_ptr + j] > 0 && m > 0 && tmp < 0) // This is a hack to saturate to INT_MAXVALUE
                             {
                                 tmp = int.MaxValue;
                                 m = int.MaxValue;
@@ -1078,7 +1079,7 @@ namespace Concentus.Celt
 
         }
 
-        internal static void celt_synthesis(CeltMode mode, int[][] X, Pointer<int>[] out_syn,
+        internal static void celt_synthesis(CeltMode mode, int[][] X, int[][] out_syn, int[] out_syn_ptrs,
                             int[] oldBandE, int start, int effEnd, int C, int CC,
                             int isTransient, int LM, int downsample,
                             int silence)
@@ -1114,30 +1115,30 @@ namespace Concentus.Celt
             if (CC == 2 && C == 1)
             {
                 /* Copying a mono streams to two channels */
-                Pointer<int> freq2;
+                int freq2;
                 Bands.denormalise_bands(mode, X[0], freq, 0, oldBandE, 0, start, effEnd, M,
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
-                freq2 = out_syn[1].Point(overlap / 2);
-                freq2.MemCopyFrom(freq, 0, N);
+                freq2 = out_syn_ptrs[1] + (overlap / 2);
+                Array.Copy(freq, 0, out_syn[1], freq2, N);
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq2.Data, freq2.Offset + b, out_syn[0].Data, out_syn[0].Offset + (NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, out_syn[1], freq2 + b, out_syn[0], out_syn_ptrs[0] + (NB * b), mode.window, overlap, shift, B);
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[1].Data, out_syn[1].Offset + (NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[1], out_syn_ptrs[1] + (NB * b), mode.window, overlap, shift, B);
             }
             else if (CC == 1 && C == 2)
             {
                 /* Downmixing a stereo stream to mono */
-                int freq2 = out_syn[0].Offset + (overlap / 2);
+                int freq2 = out_syn_ptrs[0] + (overlap / 2);
                 Bands.denormalise_bands(mode, X[0], freq, 0, oldBandE, 0, start, effEnd, M,
                       downsample, silence);
                 /* Use the output buffer as temp array before downmixing. */
-                Bands.denormalise_bands(mode, X[1], out_syn[0].Data, freq2, oldBandE, nbEBands, start, effEnd, M,
+                Bands.denormalise_bands(mode, X[1], out_syn[0], freq2, oldBandE, nbEBands, start, effEnd, M,
                       downsample, silence);
                 for (i = 0; i < N; i++)
-                    freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], out_syn[0].Data[freq2 + i]));
+                    freq[i] = Inlines.HALF32(Inlines.ADD32(freq[i], out_syn[0][freq2 + i]));
                 for (b = 0; b < B; b++)
-                    MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[0].Data, out_syn[0].Offset + (NB * b), mode.window, overlap, shift, B);
+                    MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[0], out_syn_ptrs[0] + (NB * b), mode.window, overlap, shift, B);
             }
             else {
                 /* Normal case (mono or stereo) */
@@ -1146,7 +1147,7 @@ namespace Concentus.Celt
                     Bands.denormalise_bands(mode, X[c], freq, 0, oldBandE, c * nbEBands, start, effEnd, M,
                           downsample, silence);
                     for (b = 0; b < B; b++)
-                        MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[c].Data, out_syn[c].Offset + (NB * b), mode.window, overlap, shift, B);
+                        MDCT.clt_mdct_backward(mode.mdct, freq, b, out_syn[c], out_syn_ptrs[c] + (NB * b), mode.window, overlap, shift, B);
                 } while (++c < CC);
             }
 
