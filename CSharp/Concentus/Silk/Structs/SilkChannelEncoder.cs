@@ -849,7 +849,7 @@ namespace Concentus.Silk.Structs
             /****************************/
             /* Voice Activity Detection */
             /****************************/
-            VoiceActivityDetection.silk_VAD_GetSA_Q8(this, this.inputBuf.GetPointer(1));
+            VoiceActivityDetection.silk_VAD_GetSA_Q8(this, this.inputBuf, 1);
 
             /**************************************************/
             /* Convert speech activity into VAD and DTX flags */
@@ -890,7 +890,7 @@ namespace Concentus.Silk.Structs
         {
             SilkEncoderControl sEncCtrl = new SilkEncoderControl();
             int i, iter, maxIter, found_upper, found_lower, ret = 0;
-            Pointer<short> x_frame;
+            int x_frame;
             EntropyCoder sRangeEnc_copy = new EntropyCoder();
             EntropyCoder sRangeEnc_copy2 = new EntropyCoder();
             SilkNSQState sNSQ_copy = new SilkNSQState();
@@ -913,43 +913,43 @@ namespace Concentus.Silk.Structs
             /* Set up Input Pointers, and insert frame in input buffer   */
             /*************************************************************/
             /* start of frame to encode */
-            x_frame = this.x_buf.GetPointer(this.ltp_mem_length);
+            x_frame = this.ltp_mem_length;
 
             /***************************************/
             /* Ensure smooth bandwidth transitions */
             /***************************************/
-            this.sLP.silk_LP_variable_cutoff(this.inputBuf.GetPointer(1), this.frame_length);
+            this.sLP.silk_LP_variable_cutoff(this.inputBuf, 1, this.frame_length);
 
             /*******************************************/
             /* Copy new frame to front of input buffer */
             /*******************************************/
-            this.inputBuf.GetPointer(1).MemCopyTo(x_frame.Point(SilkConstants.LA_SHAPE_MS * this.fs_kHz), this.frame_length);
+            Array.Copy(this.inputBuf, 1, this.x_buf, x_frame + SilkConstants.LA_SHAPE_MS * this.fs_kHz, this.frame_length);
 
             if (this.prefillFlag == 0)
             {
                 int[] xfw_Q3;
                 short[] res_pitch;
                 byte[] ec_buf_copy;
-                Pointer<short> res_pitch_frame;
+                int res_pitch_frame;
 
                 res_pitch = new short[this.la_pitch + this.frame_length + this.ltp_mem_length];
                 /* start of pitch LPC residual frame */
-                res_pitch_frame = res_pitch.GetPointer(this.ltp_mem_length);
+                res_pitch_frame = this.ltp_mem_length;
 
                 /*****************************************/
                 /* Find pitch lags, initial LPC analysis */
                 /*****************************************/
-                FindPitchLags.silk_find_pitch_lags(this, sEncCtrl, res_pitch, x_frame);
+                FindPitchLags.silk_find_pitch_lags(this, sEncCtrl, res_pitch, this.x_buf, x_frame);
 
                 /************************/
                 /* Noise shape analysis */
                 /************************/
-                NoiseShapeAnalysis.silk_noise_shape_analysis(this, sEncCtrl, res_pitch_frame.Data, res_pitch_frame.Offset, x_frame.Data, x_frame.Offset);
+                NoiseShapeAnalysis.silk_noise_shape_analysis(this, sEncCtrl, res_pitch, res_pitch_frame, this.x_buf, x_frame);
 
                 /***************************************************/
                 /* Find linear prediction coefficients (LPC + LTP) */
                 /***************************************************/
-                FindPredCoefs.silk_find_pred_coefs(this, sEncCtrl, res_pitch, x_frame, condCoding);
+                FindPredCoefs.silk_find_pred_coefs(this, sEncCtrl, res_pitch, this.x_buf, x_frame, condCoding);
 
                 /****************************************/
                 /* Process gains                        */
@@ -960,7 +960,7 @@ namespace Concentus.Silk.Structs
                 /* Prefiltering for noise shaper         */
                 /*****************************************/
                 xfw_Q3 = new int[this.frame_length];
-                Filters.silk_prefilter(this, sEncCtrl, xfw_Q3, x_frame.Data, x_frame.Offset);
+                Filters.silk_prefilter(this, sEncCtrl, xfw_Q3, this.x_buf, x_frame);
 
                 /****************************************/
                 /* Low Bitrate Redundant Encoding       */

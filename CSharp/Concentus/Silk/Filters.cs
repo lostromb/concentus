@@ -99,9 +99,9 @@ namespace Concentus.Silk
             SilkPrefilterState P = psEnc.sPrefilt;
             int j, k, lag;
             int tmp_32;
-            Pointer<short> AR1_shp_Q13;
-            Pointer<short> px;
-            Pointer<int> pxw_Q3;
+            int AR1_shp_Q13;
+            int px;
+            int pxw_Q3;
             int HarmShapeGain_Q12, Tilt_Q14;
             int HarmShapeFIRPacked_Q12, LF_shp_Q14;
             int[] x_filt_Q12;
@@ -109,8 +109,8 @@ namespace Concentus.Silk
             short[] B_Q10 = new short[2];
 
             /* Set up pointers */
-            px = x.GetPointer(x_ptr);
-            pxw_Q3 = xw_Q3.GetPointer();
+            px = x_ptr;
+            pxw_Q3 = 0;
             lag = P.lagPrev;
             x_filt_Q12 = new int[psEnc.subfr_length];
             st_res_Q2 = new int[psEnc.subfr_length];
@@ -129,10 +129,10 @@ namespace Concentus.Silk
                 HarmShapeFIRPacked_Q12 |= Inlines.silk_LSHIFT((int)Inlines.silk_RSHIFT(HarmShapeGain_Q12, 1), 16);
                 Tilt_Q14 = psEncCtrl.Tilt_Q14[k];
                 LF_shp_Q14 = psEncCtrl.LF_shp_Q14[k];
-                AR1_shp_Q13 = psEncCtrl.AR1_Q13.GetPointer(k * SilkConstants.MAX_SHAPE_LPC_ORDER);
+                AR1_shp_Q13 = k * SilkConstants.MAX_SHAPE_LPC_ORDER;
 
                 /* Short term FIR filtering*/
-                silk_warped_LPC_analysis_filter(P.sAR_shp, st_res_Q2, AR1_shp_Q13.Data, AR1_shp_Q13.Offset, px.Data, px.Offset,
+                silk_warped_LPC_analysis_filter(P.sAR_shp, st_res_Q2, psEncCtrl.AR1_Q13, AR1_shp_Q13, x, px,
                     (short)(psEnc.warping_Q16), psEnc.subfr_length, psEnc.shapingLPCOrder);
 
                 /* Reduce (mainly) low frequencies during harmonic emphasis */
@@ -149,10 +149,10 @@ namespace Concentus.Silk
                 }
                 P.sHarmHP_Q2 = st_res_Q2[psEnc.subfr_length - 1];
 
-                silk_prefilt(P, x_filt_Q12, pxw_Q3.Data, pxw_Q3.Offset, HarmShapeFIRPacked_Q12, Tilt_Q14, LF_shp_Q14, lag, psEnc.subfr_length);
+                silk_prefilt(P, x_filt_Q12, xw_Q3, pxw_Q3, HarmShapeFIRPacked_Q12, Tilt_Q14, LF_shp_Q14, lag, psEnc.subfr_length);
 
-                px = px.Point(psEnc.subfr_length);
-                pxw_Q3 = pxw_Q3.Point(psEnc.subfr_length);
+                px += psEnc.subfr_length;
+                pxw_Q3 += psEnc.subfr_length;
             }
 
             P.lagPrev = psEncCtrl.pitchL[psEnc.nb_subfr - 1];
@@ -321,10 +321,12 @@ namespace Concentus.Silk
         /// <param name="outH">O    High band [N/2]</param>
         /// <param name="N">I    Number of input samples</param>
         internal static void silk_ana_filt_bank_1(
-            Pointer<short> input,
+            short[] input,
+            int input_ptr,
             int[] S,
             short[] outL,
-            Pointer<short> outH,
+            short[] outH,
+            int outH_ptr,
             int N)
         {
             int k, N2 = Inlines.silk_RSHIFT(N, 1);
@@ -334,7 +336,7 @@ namespace Concentus.Silk
             for (k = 0; k < N2; k++)
             {
                 /* Convert to Q10 */
-                in32 = Inlines.silk_LSHIFT((int)input[2 * k], 10);
+                in32 = Inlines.silk_LSHIFT((int)input[input_ptr + 2 * k], 10);
 
                 /* All-pass section for even input sample */
                 Y = Inlines.silk_SUB32(in32, S[0]);
@@ -343,7 +345,7 @@ namespace Concentus.Silk
                 S[0] = Inlines.silk_ADD32(in32, X);
 
                 /* Convert to Q10 */
-                in32 = Inlines.silk_LSHIFT((int)input[2 * k + 1], 10);
+                in32 = Inlines.silk_LSHIFT((int)input[input_ptr + 2 * k + 1], 10);
 
                 /* All-pass section for odd input sample, and add to output of previous section */
                 Y = Inlines.silk_SUB32(in32, S[1]);
@@ -353,7 +355,7 @@ namespace Concentus.Silk
 
                 /* Add/subtract, convert back to int16 and store to output */
                 outL[k] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD32(out_2, out_1), 11));
-                outH[k] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SUB32(out_2, out_1), 11));
+                outH[outH_ptr + k] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SUB32(out_2, out_1), 11));
             }
         }
         

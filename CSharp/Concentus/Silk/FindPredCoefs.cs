@@ -45,7 +45,8 @@ namespace Concentus.Silk
             SilkChannelEncoder psEnc,                                 /* I/O  encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I/O  encoder control                                                             */
             short[] res_pitch,                            /* I    Residual from pitch analysis                                                */
-            Pointer<short> x,                                    /* I    Speech signal                                                               */
+            short[] x,                                    /* I    Speech signal                                                               */
+            int x_ptr,
             int condCoding                              /* I    The type of conditional coding to use                                       */
         )
         {
@@ -54,7 +55,7 @@ namespace Concentus.Silk
             int[] local_gains = new int[SilkConstants.MAX_NB_SUBFR];
             int[] Wght_Q15 = new int[SilkConstants.MAX_NB_SUBFR];
             short[] NLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
-            int x_ptr;
+            int x_ptr2;
             int x_pre_ptr;
             short[] LPC_in_pre;
             int tmp, min_gain_Q16, minInvGain_Q30;
@@ -117,7 +118,7 @@ namespace Concentus.Silk
                 LTPScaleControl.silk_LTP_scale_ctrl(psEnc, psEncCtrl, condCoding);
 
                 /* Create LTP residual */
-                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre, x.Data, x.Offset - psEnc.predictLPCOrder, psEncCtrl.LTPCoef_Q14,
+                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre, x, x_ptr - psEnc.predictLPCOrder, psEncCtrl.LTPCoef_Q14,
                     psEncCtrl.pitchL, invGains_Q16, psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             }
@@ -126,14 +127,14 @@ namespace Concentus.Silk
                 /* UNVOICED */
                 /************/
                 /* Create signal with prepended subframes, scaled by inverse gains */
-                x_ptr = x.Offset - psEnc.predictLPCOrder;
+                x_ptr2 = x_ptr - psEnc.predictLPCOrder;
                 x_pre_ptr = 0;
                 for (i = 0; i < psEnc.nb_subfr; i++)
                 {
-                    Inlines.silk_scale_copy_vector16(LPC_in_pre, x_pre_ptr, x.Data, x_ptr, invGains_Q16[i],
+                    Inlines.silk_scale_copy_vector16(LPC_in_pre, x_pre_ptr, x, x_ptr2, invGains_Q16[i],
                         psEnc.subfr_length + psEnc.predictLPCOrder);
                     x_pre_ptr += psEnc.subfr_length + psEnc.predictLPCOrder;
-                    x_ptr += psEnc.subfr_length;
+                    x_ptr2 += psEnc.subfr_length;
                 }
 
                Arrays.MemSet<short>(psEncCtrl.LTPCoef_Q14, 0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);

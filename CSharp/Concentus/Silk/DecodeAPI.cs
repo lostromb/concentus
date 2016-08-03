@@ -349,7 +349,7 @@ namespace Concentus.Silk
                     {
                         condCoding = SilkConstants.CODE_CONDITIONALLY;
                     }
-                    ret += channel_state[n].silk_decode_frame(psRangeDec, samplesOut_tmp.GetPointer(samplesOut_tmp_ptrs[n] + 2), nSamplesOutDec, lostFlag, condCoding);
+                    ret += channel_state[n].silk_decode_frame(psRangeDec, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec, lostFlag, condCoding);
                 }
                 else
                 {

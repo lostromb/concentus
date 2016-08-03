@@ -95,7 +95,8 @@ namespace Concentus.Silk
         /// <returns>0 if success</returns>
         internal static int silk_VAD_GetSA_Q8(
             SilkChannelEncoder psEncC,
-            Pointer<short> pIn)
+            short[] pIn,
+            int pIn_ptr)
         {
             int SA_Q15, pSNR_dB_Q7, input_tilt;
             int decimated_framelength1, decimated_framelength2;
@@ -140,16 +141,16 @@ namespace Concentus.Silk
             X = new short[X_offset[3] + decimated_framelength1];
 
             /* 0-8 kHz to 0-4 kHz and 4-8 kHz */
-            Filters.silk_ana_filt_bank_1(pIn, psSilk_VAD.AnaState,
-                X, X.GetPointer(X_offset[3]), psEncC.frame_length);
+            Filters.silk_ana_filt_bank_1(pIn, pIn_ptr, psSilk_VAD.AnaState,
+                X, X, X_offset[3], psEncC.frame_length);
 
             /* 0-4 kHz to 0-2 kHz and 2-4 kHz */
-            Filters.silk_ana_filt_bank_1(X.GetPointer(), psSilk_VAD.AnaState1,
-                X, X.GetPointer(X_offset[2]), decimated_framelength1);
+            Filters.silk_ana_filt_bank_1(X, 0, psSilk_VAD.AnaState1,
+                X, X, X_offset[2], decimated_framelength1);
 
             /* 0-2 kHz to 0-1 kHz and 1-2 kHz */
-            Filters.silk_ana_filt_bank_1(X.GetPointer(), psSilk_VAD.AnaState2,
-                X, X.GetPointer(X_offset[1]), decimated_framelength2);
+            Filters.silk_ana_filt_bank_1(X, 0, psSilk_VAD.AnaState2,
+                X, X, X_offset[1], decimated_framelength2);
             
             /*********************************************/
             /* HP filter on lowest band (differentiator) */

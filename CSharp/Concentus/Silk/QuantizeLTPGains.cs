@@ -57,8 +57,8 @@ namespace Concentus.Silk
             byte[] cl_ptr_Q5;
             sbyte[][] cbk_ptr_Q7;
             byte[] cbk_gain_ptr_Q7;
-            Pointer<short> b_Q14_ptr;
-            Pointer<int> W_Q18_ptr;
+            int b_Q14_ptr;
+            int W_Q18_ptr;
             int rate_dist_Q14_subfr, rate_dist_Q14, min_rate_dist_Q14;
             int sum_log_gain_tmp_Q7, best_sum_log_gain_Q7, max_gain_Q7, gain_Q7;
 
@@ -80,8 +80,8 @@ namespace Concentus.Silk
                 cbk_size = Tables.silk_LTP_vq_sizes[k];
 
                 /* Set up pointer to first subframe */
-                W_Q18_ptr = W_Q18.GetPointer(0);
-                b_Q14_ptr = B_Q14.GetPointer(0);
+                W_Q18_ptr = 0;
+                b_Q14_ptr = 0;
 
                 rate_dist_Q14 = 0;
                 sum_log_gain_tmp_Q7 = sum_log_gain_Q7.Val;
@@ -97,7 +97,9 @@ namespace Concentus.Silk
                         temp_idx_box,         /* O    index of best codebook vector                           */
                         rate_dist_Q14_subfr_box,   /* O    best weighted quantization error + mu * rate            */
                         gain_Q7_box,               /* O    sum of absolute LTP coefficients                        */
+                        B_Q14,
                         b_Q14_ptr,              /* I    input vector to be quantized                            */
+                        W_Q18,
                         W_Q18_ptr,              /* I    weighting matrix                                        */
                         cbk_ptr_Q7,             /* I    codebook                                                */
                         cbk_gain_ptr_Q7,        /* I    codebook effective gains                                */
@@ -114,8 +116,8 @@ namespace Concentus.Silk
                     sum_log_gain_tmp_Q7 = Inlines.silk_max(0, sum_log_gain_tmp_Q7
                                             + Inlines.silk_lin2log(gain_safety + gain_Q7) - ((int)((7) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(7, 7)*/);
 
-                    b_Q14_ptr = b_Q14_ptr.Point(SilkConstants.LTP_ORDER);
-                    W_Q18_ptr = W_Q18_ptr.Point(SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER);
+                    b_Q14_ptr += SilkConstants.LTP_ORDER;
+                    W_Q18_ptr += SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER;
                 }
 
                 /* Avoid never finding a codebook */

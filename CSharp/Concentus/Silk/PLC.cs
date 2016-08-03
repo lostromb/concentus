@@ -63,7 +63,8 @@ namespace Concentus.Silk
         internal static void silk_PLC(
             SilkChannelDecoder psDec,             /* I/O Decoder state        */
             SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
-            Pointer<short> frame,            /* I/O  signal              */
+            short[] frame,            /* I/O  signal              */
+            int frame_ptr,
             int lost               /* I Loss flag              */
         )
         {
@@ -79,7 +80,7 @@ namespace Concentus.Silk
                 /****************************/
                 /* Generate Signal          */
                 /****************************/
-                silk_PLC_conceal(psDec, psDecCtrl, frame);
+                silk_PLC_conceal(psDec, psDecCtrl, frame, frame_ptr);
 
                 psDec.lossCnt++;
             }
@@ -220,7 +221,8 @@ namespace Concentus.Silk
         internal static void silk_PLC_conceal(
             SilkChannelDecoder psDec,             /* I/O Decoder state        */
             SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
-            Pointer<short> frame            /* O LPC residual signal    */
+            short[] frame,            /* O LPC residual signal    */
+            int frame_ptr
         )
         {
             int i, j, k;
@@ -394,7 +396,7 @@ namespace Concentus.Silk
                 sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i] = Inlines.silk_ADD_LSHIFT32(sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i], LPC_pred_Q10, 4);
 
                 /* Scale with Gain */
-                frame[i] = (short)Inlines.silk_SAT16(Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i], prevGain_Q10[1]), 8)));
+                frame[frame_ptr + i] = (short)Inlines.silk_SAT16(Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i], prevGain_Q10[1]), 8)));
             }
 
             /* Save LPC state */
@@ -414,7 +416,8 @@ namespace Concentus.Silk
         /* Glues concealed frames with new good received frames */
         internal static void silk_PLC_glue_frames(
             SilkChannelDecoder psDec,             /* I/O decoder state        */
-            Pointer<short> frame,            /* I/O signal               */
+            short[] frame,            /* I/O signal               */
+            int frame_ptr,
             int length              /* I length of signal       */
         )
         {
@@ -425,7 +428,7 @@ namespace Concentus.Silk
             if (psDec.lossCnt != 0)
             {
                 /* Calculate energy in concealed residual */
-                SumSqrShift.silk_sum_sqr_shift(out psPLC.conc_energy, out psPLC.conc_energy_shift, frame.Data, frame.Offset, length);
+                SumSqrShift.silk_sum_sqr_shift(out psPLC.conc_energy, out psPLC.conc_energy_shift, frame, frame_ptr, length);
 
                 psPLC.last_frame_lost = 1;
             }
@@ -434,7 +437,7 @@ namespace Concentus.Silk
                 if (psDec.sPLC.last_frame_lost != 0)
                 {
                     /* Calculate residual in decoded signal if last frame was lost */
-                    SumSqrShift.silk_sum_sqr_shift(out energy, out energy_shift, frame.Data, frame.Offset, length);
+                    SumSqrShift.silk_sum_sqr_shift(out energy, out energy_shift, frame, frame_ptr, length);
 
                     /* Normalize energies */
                     if (energy_shift > psPLC.conc_energy_shift)
@@ -464,7 +467,7 @@ namespace Concentus.Silk
                         /* Make slope 4x steeper to avoid missing onsets after DTX */
                         slope_Q16 = Inlines.silk_LSHIFT(slope_Q16, 2);
 
-                        for (i = 0; i < length; i++)
+                        for (i = frame_ptr; i < frame_ptr + length; i++)
                         {
                             frame[i] = (short)(Inlines.silk_SMULWB(gain_Q16, frame[i]));
                             gain_Q16 += slope_Q16;

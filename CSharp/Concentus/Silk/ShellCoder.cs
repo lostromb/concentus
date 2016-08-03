@@ -101,7 +101,8 @@ namespace Concentus.Silk
         internal static void decode_split(
             short[] p_child1,
             int child1_ptr,
-            Pointer<short> p_child2,
+            short[] p_child2,
+            int p_child2_ptr,
             EntropyCoder psRangeDec,
             int p,
             byte[] shell_table)
@@ -109,12 +110,12 @@ namespace Concentus.Silk
             if (p > 0)
             {
                 p_child1[child1_ptr] = (short)(psRangeDec.dec_icdf(shell_table, (Tables.silk_shell_code_table_offsets[p]), 8));
-                p_child2[0] = (short)(p - p_child1[child1_ptr]);
+                p_child2[p_child2_ptr] = (short)(p - p_child1[child1_ptr]);
             }
             else
             {
                 p_child1[child1_ptr] = 0;
-                p_child2[0] = 0;
+                p_child2[p_child2_ptr] = 0;
             }
         }
 
@@ -177,27 +178,27 @@ namespace Concentus.Silk
             /* this function operates on one shell code frame of 16 pulses */
             Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
 
-            decode_split(pulses3, 0, pulses3.GetPointer(1), psRangeDec, pulses4, Tables.silk_shell_code_table3);
+            decode_split(pulses3, 0, pulses3, 1, psRangeDec, pulses4, Tables.silk_shell_code_table3);
 
-            decode_split(pulses2, 0, pulses2.GetPointer(1), psRangeDec, pulses3[0], Tables.silk_shell_code_table2);
+            decode_split(pulses2, 0, pulses2, 1, psRangeDec, pulses3[0], Tables.silk_shell_code_table2);
 
-            decode_split(pulses1, 0, pulses1.GetPointer(1), psRangeDec, pulses2[0], Tables.silk_shell_code_table1);
-            decode_split(pulses0.Data, pulses0.Offset, pulses0.Point(1), psRangeDec, pulses1[0], Tables.silk_shell_code_table0);
-            decode_split(pulses0.Data, pulses0.Offset + 2, pulses0.Point(3), psRangeDec, pulses1[1], Tables.silk_shell_code_table0);
+            decode_split(pulses1, 0, pulses1 ,1, psRangeDec, pulses2[0], Tables.silk_shell_code_table1);
+            decode_split(pulses0.Data, pulses0.Offset, pulses0.Data, pulses0.Offset + 1, psRangeDec, pulses1[0], Tables.silk_shell_code_table0);
+            decode_split(pulses0.Data, pulses0.Offset + 2, pulses0.Data, pulses0.Offset + 3, psRangeDec, pulses1[1], Tables.silk_shell_code_table0);
 
-            decode_split(pulses1, 2, pulses1.GetPointer(3), psRangeDec, pulses2[1], Tables.silk_shell_code_table1);
-            decode_split(pulses0.Data, pulses0.Offset + 4, pulses0.Point(5), psRangeDec, pulses1[2], Tables.silk_shell_code_table0);
-            decode_split(pulses0.Data, pulses0.Offset + 6, pulses0.Point(7), psRangeDec, pulses1[3], Tables.silk_shell_code_table0);
+            decode_split(pulses1, 2, pulses1, 3, psRangeDec, pulses2[1], Tables.silk_shell_code_table1);
+            decode_split(pulses0.Data, pulses0.Offset + 4, pulses0.Data, pulses0.Offset + 5, psRangeDec, pulses1[2], Tables.silk_shell_code_table0);
+            decode_split(pulses0.Data, pulses0.Offset + 6, pulses0.Data, pulses0.Offset + 7, psRangeDec, pulses1[3], Tables.silk_shell_code_table0);
 
-            decode_split(pulses2, 2, pulses2.GetPointer(3), psRangeDec, pulses3[1], Tables.silk_shell_code_table2);
+            decode_split(pulses2, 2, pulses2, 3, psRangeDec, pulses3[1], Tables.silk_shell_code_table2);
 
-            decode_split(pulses1, 4, pulses1.GetPointer(5), psRangeDec, pulses2[2], Tables.silk_shell_code_table1);
-            decode_split(pulses0.Data, pulses0.Offset + 8, pulses0.Point(9), psRangeDec, pulses1[4], Tables.silk_shell_code_table0);
-            decode_split(pulses0.Data, pulses0.Offset + 10, pulses0.Point(11), psRangeDec, pulses1[5], Tables.silk_shell_code_table0);
+            decode_split(pulses1, 4, pulses1 ,5, psRangeDec, pulses2[2], Tables.silk_shell_code_table1);
+            decode_split(pulses0.Data, pulses0.Offset + 8, pulses0.Data, pulses0.Offset + 9, psRangeDec, pulses1[4], Tables.silk_shell_code_table0);
+            decode_split(pulses0.Data, pulses0.Offset + 10, pulses0.Data, pulses0.Offset + 11, psRangeDec, pulses1[5], Tables.silk_shell_code_table0);
 
-            decode_split(pulses1, 6, pulses1.GetPointer(7), psRangeDec, pulses2[3], Tables.silk_shell_code_table1);
-            decode_split(pulses0.Data, pulses0.Offset + 12, pulses0.Point(13), psRangeDec, pulses1[6], Tables.silk_shell_code_table0);
-            decode_split(pulses0.Data, pulses0.Offset + 14, pulses0.Point(15), psRangeDec, pulses1[7], Tables.silk_shell_code_table0);
+            decode_split(pulses1, 6, pulses1, 7, psRangeDec, pulses2[3], Tables.silk_shell_code_table1);
+            decode_split(pulses0.Data, pulses0.Offset + 12, pulses0.Data, pulses0.Offset + 13, psRangeDec, pulses1[6], Tables.silk_shell_code_table0);
+            decode_split(pulses0.Data, pulses0.Offset + 14, pulses0.Data, pulses0.Offset + 15, psRangeDec, pulses1[7], Tables.silk_shell_code_table0);
         }
     }
 }

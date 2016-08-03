@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class FindPitchLags
@@ -45,14 +46,15 @@ namespace Concentus.Silk
             SilkChannelEncoder psEnc,                                 /* I/O  encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I/O  encoder control                                                             */
             short[] res,                                  /* O    residual                                                                    */
-            Pointer<short> x                                    /* I    Speech signal                                                               */
+            short[] x,                                    /* I    Speech signal                                                               */
+            int x_ptr
         )
         {
             int buf_len, i, scale;
             int thrhld_Q13, res_nrg;
-            Pointer<short> x_buf, x_buf_ptr;
+            int x_buf, x_buf_ptr;
             short[] Wsig;
-            Pointer<short> Wsig_ptr;
+            int Wsig_ptr;
             int[] auto_corr = new int[SilkConstants.MAX_FIND_PITCH_LPC_ORDER + 1];
             short[] rc_Q15 = new short[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
             int[] A_Q24 = new int[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
@@ -67,7 +69,7 @@ namespace Concentus.Silk
             /* Safety check */
             Inlines.OpusAssert(buf_len >= psEnc.pitch_LPC_win_length);
 
-            x_buf = x.Point(0 - psEnc.ltp_mem_length);
+            x_buf = x_ptr - psEnc.ltp_mem_length;
 
             /*************************************/
             /* Estimate LPC AR coefficients      */
@@ -78,19 +80,19 @@ namespace Concentus.Silk
             Wsig = new short[psEnc.pitch_LPC_win_length];
 
             /* First LA_LTP samples */
-            x_buf_ptr = x_buf.Point(buf_len - psEnc.pitch_LPC_win_length);
-            Wsig_ptr = Wsig.GetPointer();
-            ApplySineWindow.silk_apply_sine_window(Wsig_ptr.Data, Wsig_ptr.Offset, x_buf_ptr.Data, x_buf_ptr.Offset, 1, psEnc.la_pitch);
+            x_buf_ptr = x_buf + buf_len - psEnc.pitch_LPC_win_length;
+            Wsig_ptr = 0;
+            ApplySineWindow.silk_apply_sine_window(Wsig, Wsig_ptr, x, x_buf_ptr, 1, psEnc.la_pitch);
 
             /* Middle un - windowed samples */
-            Wsig_ptr = Wsig_ptr.Point(psEnc.la_pitch);
-            x_buf_ptr = x_buf_ptr.Point(psEnc.la_pitch);
-            x_buf_ptr.MemCopyTo(Wsig_ptr, (psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1)));
+            Wsig_ptr += psEnc.la_pitch;
+            x_buf_ptr += psEnc.la_pitch;
+            Array.Copy(x, x_buf_ptr, Wsig, Wsig_ptr, (psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1)));
 
             /* Last LA_LTP samples */
-            Wsig_ptr = Wsig_ptr.Point(psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1));
-            x_buf_ptr = x_buf_ptr.Point(psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1));
-            ApplySineWindow.silk_apply_sine_window(Wsig_ptr.Data, Wsig_ptr.Offset, x_buf_ptr.Data, x_buf_ptr.Offset, 2, psEnc.la_pitch);
+            Wsig_ptr += psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1);
+            x_buf_ptr += psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1);
+            ApplySineWindow.silk_apply_sine_window(Wsig, Wsig_ptr, x, x_buf_ptr, 2, psEnc.la_pitch);
 
             /* Calculate autocorrelation sequence */
             BoxedValue<int> boxed_scale = new BoxedValue<int>();
@@ -121,7 +123,7 @@ namespace Concentus.Silk
             /*****************************************/
             /* LPC analysis filtering                */
             /*****************************************/
-            Filters.silk_LPC_analysis_filter(res, 0, x_buf.Data, x_buf.Offset, A_Q12, 0, buf_len, psEnc.pitchEstimationLPCOrder);
+            Filters.silk_LPC_analysis_filter(res, 0, x, x_buf, A_Q12, 0, buf_len, psEnc.pitchEstimationLPCOrder);
 
             if (psEnc.indices.signalType != SilkConstants.TYPE_NO_VOICE_ACTIVITY && psEnc.first_frame_after_reset == 0)
             {

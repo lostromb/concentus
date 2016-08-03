@@ -55,7 +55,7 @@ namespace Concentus.Silk
         {
             int offset, i, j, lz1, lz2;
             int rshift, energy;
-            Pointer<short> LPC_res_ptr;
+            int LPC_res_ptr;
             short[] LPC_res;
             int x_ptr;
             int tmp32;
@@ -72,18 +72,18 @@ namespace Concentus.Silk
                 Filters.silk_LPC_analysis_filter(LPC_res, 0, x, x_ptr, a_Q12[i], 0, (SilkConstants.MAX_NB_SUBFR >> 1) * offset, LPC_order);
 
                 /* Point to first subframe of the just calculated LPC residual signal */
-                LPC_res_ptr = LPC_res.GetPointer(LPC_order);
+                LPC_res_ptr = LPC_order;
                 for (j = 0; j < (SilkConstants.MAX_NB_SUBFR >> 1); j++)
                 {
                     /* Measure subframe energy */
-                    SumSqrShift.silk_sum_sqr_shift(out energy, out rshift, LPC_res_ptr.Data, LPC_res_ptr.Offset, subfr_length);
+                    SumSqrShift.silk_sum_sqr_shift(out energy, out rshift, LPC_res, LPC_res_ptr, subfr_length);
                     nrgs[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = energy;
 
                     /* Set Q values for the measured energy */
                     nrgsQ[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = 0 - rshift;
 
                     /* Move to next subframe */
-                    LPC_res_ptr = LPC_res_ptr.Point(offset);
+                    LPC_res_ptr += offset;
                 }
                 /* Move to next frame half */
                 x_ptr += (SilkConstants.MAX_NB_SUBFR >> 1) * offset;
@@ -123,7 +123,7 @@ namespace Concentus.Silk
             int i, j, lshifts, Qxtra;
             int c_max, w_max, tmp, tmp2, nrg;
             int[] cn = new int[D]; //SilkConstants.MAX_MATRIX_SIZE
-            Pointer<int> pRow;
+            int pRow;
 
             /* Safety checks */
             Inlines.OpusAssert(D >= 0);
@@ -164,12 +164,12 @@ namespace Concentus.Silk
             for (i = 0; i < D; i++)
             {
                 tmp = 0;
-                pRow = wXX.GetPointer(wXX_ptr + (i * D));
+                pRow = wXX_ptr + (i * D);
                 for (j = i + 1; j < D; j++)
                 {
-                    tmp = Inlines.silk_SMLAWB(tmp, pRow[j], cn[j]);
+                    tmp = Inlines.silk_SMLAWB(tmp, wXX[pRow + j], cn[j]);
                 }
-                tmp = Inlines.silk_SMLAWB(tmp, Inlines.silk_RSHIFT(pRow[i], 1), cn[i]);
+                tmp = Inlines.silk_SMLAWB(tmp, Inlines.silk_RSHIFT(wXX[pRow + i], 1), cn[i]);
                 tmp2 = Inlines.silk_SMLAWB(tmp2, tmp, cn[i]);
             }
             nrg = Inlines.silk_ADD_LSHIFT32(nrg, tmp2, lshifts);                       /* Q: -lshifts - 1 */

@@ -112,7 +112,8 @@ namespace Concentus.Silk
         internal static void silk_CNG(
             SilkChannelDecoder psDec,
             SilkDecoderControl psDecCtrl,
-            Pointer<short> frame,
+            short[] frame,
+            int frame_ptr,
             int length)
         {
             int i, subfr;
@@ -189,34 +190,35 @@ namespace Concentus.Silk
 
                 for (i = 0; i < length; i++)
                 {
+                    int lpci = SilkConstants.MAX_LPC_ORDER + i;
                     Inlines.OpusAssert(psDec.LPC_order == 10 || psDec.LPC_order == 16);
                     /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
                     sum_Q6 = Inlines.silk_RSHIFT(psDec.LPC_order, 1);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 1], A_Q12[0]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 2], A_Q12[1]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 3], A_Q12[2]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 4], A_Q12[3]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 5], A_Q12[4]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 6], A_Q12[5]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 7], A_Q12[6]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 8], A_Q12[7]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 9], A_Q12[8]);
-                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 10], A_Q12[9]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 1], A_Q12[0]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 2], A_Q12[1]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 3], A_Q12[2]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 4], A_Q12[3]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 5], A_Q12[4]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 6], A_Q12[5]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 7], A_Q12[6]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 8], A_Q12[7]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 9], A_Q12[8]);
+                    sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 10], A_Q12[9]);
 
                     if (psDec.LPC_order == 16)
                     {
-                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 11], A_Q12[10]);
-                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 12], A_Q12[11]);
-                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 13], A_Q12[12]);
-                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 14], A_Q12[13]);
-                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 15], A_Q12[14]);
-                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i - 16], A_Q12[15]);
+                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 11], A_Q12[10]);
+                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 12], A_Q12[11]);
+                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 13], A_Q12[12]);
+                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 14], A_Q12[13]);
+                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 15], A_Q12[14]);
+                        sum_Q6 = Inlines.silk_SMLAWB(sum_Q6, CNG_sig_Q10[lpci - 16], A_Q12[15]);
                     }
 
                     /* Update states */
-                    CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i] = Inlines.silk_ADD_LSHIFT(CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i], sum_Q6, 4);
+                    CNG_sig_Q10[lpci] = Inlines.silk_ADD_LSHIFT(CNG_sig_Q10[lpci], sum_Q6, 4);
 
-                    frame[i] = Inlines.silk_ADD_SAT16(frame[i], (short)(Inlines.silk_RSHIFT_ROUND(CNG_sig_Q10[SilkConstants.MAX_LPC_ORDER + i], 10)));
+                    frame[frame_ptr + i] = Inlines.silk_ADD_SAT16(frame[frame_ptr + i], (short)(Inlines.silk_RSHIFT_ROUND(CNG_sig_Q10[lpci], 10)));
                 }
 
                 Array.Copy(CNG_sig_Q10, length, psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);

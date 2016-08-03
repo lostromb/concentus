@@ -35,7 +35,7 @@ namespace Concentus.Silk.Structs
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
-
+    using System;
     /// <summary>
     /// Decoder state
     /// </summary>
@@ -273,7 +273,8 @@ namespace Concentus.Silk.Structs
         /****************/
         internal int silk_decode_frame(
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
-            Pointer<short> pOut,                         /* O    Pointer to output speech frame              */
+            short[] pOut,                         /* O    Pointer to output speech frame              */
+            int pOut_ptr,
             BoxedValue<int> pN,                            /* O    Pointer to size of output frame             */
             int lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
             int condCoding                     /* I    The type of conditional coding to use       */
@@ -311,12 +312,12 @@ namespace Concentus.Silk.Structs
                 /********************************************************/
                 /* Run inverse NSQ                                      */
                 /********************************************************/
-                DecodeCore.silk_decode_core(this, thisCtrl, pOut, pulses);
+                DecodeCore.silk_decode_core(this, thisCtrl, pOut, pOut_ptr, pulses);
 
                 /********************************************************/
                 /* Update PLC state                                     */
                 /********************************************************/
-                PLC.silk_PLC(this, thisCtrl, pOut, 0);
+                PLC.silk_PLC(this, thisCtrl, pOut, pOut_ptr, 0);
 
                 this.lossCnt = 0;
                 this.prevSignalType = this.indices.signalType;
@@ -328,7 +329,7 @@ namespace Concentus.Silk.Structs
             else
             {
                 /* Handle packet loss by extrapolation */
-                PLC.silk_PLC(this, thisCtrl, pOut, 1);
+                PLC.silk_PLC(this, thisCtrl, pOut, pOut_ptr, 1);
             }
 
             /*************************/
@@ -337,17 +338,17 @@ namespace Concentus.Silk.Structs
             Inlines.OpusAssert(this.ltp_mem_length >= this.frame_length);
             mv_len = this.ltp_mem_length - this.frame_length;
             Arrays.MemMove<short>(this.outBuf, this.frame_length, 0, mv_len);
-            pOut.MemCopyTo(this.outBuf, mv_len, this.frame_length);
+            Array.Copy(pOut, pOut_ptr, this.outBuf, mv_len, this.frame_length);
 
             /************************************************/
             /* Comfort noise generation / estimation        */
             /************************************************/
-            CNG.silk_CNG(this, thisCtrl, pOut, L);
+            CNG.silk_CNG(this, thisCtrl, pOut, pOut_ptr, L);
 
             /****************************************************************/
             /* Ensure smooth connection of extrapolated and good frames     */
             /****************************************************************/
-            PLC.silk_PLC_glue_frames(this, pOut, L);
+            PLC.silk_PLC_glue_frames(this, pOut, pOut_ptr, L);
 
             /* Update some decoder state variables */
             this.lagPrev = thisCtrl.pitchL[this.nb_subfr - 1];

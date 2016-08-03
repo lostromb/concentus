@@ -69,7 +69,8 @@ namespace Concentus.Silk.Structs
         /* Start by setting psEncC.mode <> 0;                      */
         /* Deactivate by setting psEncC.mode = 0;                  */
         internal void silk_LP_variable_cutoff(
-            Pointer<short> frame,                         /* I/O  Low-pass filtered output signal             */
+            short[] frame,                         /* I/O  Low-pass filtered output signal             */
+            int frame_ptr,
             int frame_length                    /* I    Frame length                                */
             )
         {
@@ -100,7 +101,7 @@ namespace Concentus.Silk.Structs
 
                 /* ARMA low-pass filtering */
                 Inlines.OpusAssert(SilkConstants.TRANSITION_NB == 3 && SilkConstants.TRANSITION_NA == 2);
-                Filters.silk_biquad_alt(frame.Data, frame.Offset, B_Q28, A_Q28, this.In_LP_State, frame.Data, frame.Offset, frame_length, 1);
+                Filters.silk_biquad_alt(frame, frame_ptr, B_Q28, A_Q28, this.In_LP_State, frame, frame_ptr, frame_length, 1);
             }
         }
     }
