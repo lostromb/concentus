@@ -80,7 +80,7 @@ namespace Concentus.Silk
             /* First LA_LTP samples */
             x_buf_ptr = x_buf.Point(buf_len - psEnc.pitch_LPC_win_length);
             Wsig_ptr = Wsig.GetPointer();
-            ApplySineWindow.silk_apply_sine_window(Wsig_ptr, x_buf_ptr, 1, psEnc.la_pitch);
+            ApplySineWindow.silk_apply_sine_window(Wsig_ptr.Data, Wsig_ptr.Offset, x_buf_ptr.Data, x_buf_ptr.Offset, 1, psEnc.la_pitch);
 
             /* Middle un - windowed samples */
             Wsig_ptr = Wsig_ptr.Point(psEnc.la_pitch);
@@ -90,7 +90,7 @@ namespace Concentus.Silk
             /* Last LA_LTP samples */
             Wsig_ptr = Wsig_ptr.Point(psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1));
             x_buf_ptr = x_buf_ptr.Point(psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1));
-            ApplySineWindow.silk_apply_sine_window(Wsig_ptr, x_buf_ptr, 2, psEnc.la_pitch);
+            ApplySineWindow.silk_apply_sine_window(Wsig_ptr.Data, Wsig_ptr.Offset, x_buf_ptr.Data, x_buf_ptr.Offset, 2, psEnc.la_pitch);
 
             /* Calculate autocorrelation sequence */
             BoxedValue<int> boxed_scale = new BoxedValue<int>();

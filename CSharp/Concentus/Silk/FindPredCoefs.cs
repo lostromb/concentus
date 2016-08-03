@@ -117,7 +117,7 @@ namespace Concentus.Silk
                 LTPScaleControl.silk_LTP_scale_ctrl(psEnc, psEncCtrl, condCoding);
 
                 /* Create LTP residual */
-                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre, x.Point(0 - psEnc.predictLPCOrder), psEncCtrl.LTPCoef_Q14,
+                LTPAnalysisFilter.silk_LTP_analysis_filter(LPC_in_pre, x.Data, x.Offset - psEnc.predictLPCOrder, psEncCtrl.LTPCoef_Q14,
                     psEncCtrl.pitchL, invGains_Q16, psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             }

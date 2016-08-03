@@ -42,7 +42,8 @@ namespace Concentus.Silk
     {
         internal static void silk_LTP_analysis_filter(
             short[] LTP_res,                               /* O    LTP residual signal of length SilkConstants.MAX_NB_SUBFR * ( pre_length + subfr_length )  */
-            Pointer<short> x,                                     /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
+            short[] x,                                     /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
+            int x_ptr,
             short[] LTPCoef_Q14,/* I     LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe  [SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR]                 */
             int[] pitchL,                 /* I    Pitch lag, one for each subframe [SilkConstants.MAX_NB_SUBFR]                                           */
             int[] invGains_Q16,           /* I    Inverse quantization gains, one for each subframe [SilkConstants.MAX_NB_SUBFR]                           */
@@ -51,18 +52,17 @@ namespace Concentus.Silk
             int pre_length                              /* I    Length of the preceding samples starting at &x[0] for each subframe         */
 )
         {
-            Pointer<short> x_ptr, x_lag_ptr;
+            int x_ptr2, x_lag_ptr;
             short[] Btmp_Q14 = new short[SilkConstants.LTP_ORDER];
-            Pointer<short> LTP_res_ptr;
+            int LTP_res_ptr;
             int k, i;
             int LTP_est;
 
-            x_ptr = x;
-            LTP_res_ptr = LTP_res.GetPointer();
+            x_ptr2 = x_ptr;
+            LTP_res_ptr = 0;
             for (k = 0; k < nb_subfr; k++)
             {
-
-                x_lag_ptr = x_ptr.Point(0 - pitchL[k]);
+                x_lag_ptr = x_ptr2 - pitchL[k];
 
                 Btmp_Q14[0] = LTPCoef_Q14[k * SilkConstants.LTP_ORDER];
                 Btmp_Q14[1] = LTPCoef_Q14[k * SilkConstants.LTP_ORDER + 1];
@@ -73,29 +73,30 @@ namespace Concentus.Silk
                 /* LTP analysis FIR filter */
                 for (i = 0; i < subfr_length + pre_length; i++)
                 {
-                    LTP_res_ptr[i] = x_ptr[i];
+                    int LTP_res_ptri = LTP_res_ptr + i;
+                    LTP_res[LTP_res_ptri] = x[x_ptr2 + i];
 
                     /* Long-term prediction */
-                    LTP_est = Inlines.silk_SMULBB(x_lag_ptr[SilkConstants.LTP_ORDER / 2], Btmp_Q14[0]);
-                    LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x_lag_ptr[1], Btmp_Q14[1]);
-                    LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x_lag_ptr[0], Btmp_Q14[2]);
-                    LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x_lag_ptr[-1], Btmp_Q14[3]);
-                    LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x_lag_ptr[-2], Btmp_Q14[4]);
+                    LTP_est = Inlines.silk_SMULBB(x[x_lag_ptr + SilkConstants.LTP_ORDER / 2], Btmp_Q14[0]);
+                    LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x[x_lag_ptr + 1], Btmp_Q14[1]);
+                    LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x[x_lag_ptr], Btmp_Q14[2]);
+                    LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x[x_lag_ptr - 1], Btmp_Q14[3]);
+                    LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x[x_lag_ptr - 2], Btmp_Q14[4]);
 
                     LTP_est = Inlines.silk_RSHIFT_ROUND(LTP_est, 14); /* round and . Q0*/
 
                     /* Subtract long-term prediction */
-                    LTP_res_ptr[i] = (short)Inlines.silk_SAT16((int)x_ptr[i] - LTP_est);
+                    LTP_res[LTP_res_ptri] = (short)Inlines.silk_SAT16((int)x[x_ptr2 + i] - LTP_est);
 
                     /* Scale residual */
-                    LTP_res_ptr[i] = (short)(Inlines.silk_SMULWB(invGains_Q16[k], LTP_res_ptr[i]));
+                    LTP_res[LTP_res_ptri] = (short)(Inlines.silk_SMULWB(invGains_Q16[k], LTP_res[LTP_res_ptri]));
 
-                    x_lag_ptr = x_lag_ptr.Point(1);
+                    x_lag_ptr++;
                 }
 
                 /* Update pointers */
-                LTP_res_ptr = LTP_res_ptr.Point(subfr_length + pre_length);
-                x_ptr = x_ptr.Point(subfr_length);
+                LTP_res_ptr += subfr_length + pre_length;
+                x_ptr2 += subfr_length;
             }
         }
     }

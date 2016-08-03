@@ -56,11 +56,13 @@ namespace Concentus.Silk
 };
 
         internal static void silk_apply_sine_window(
-            Pointer<short> px_win,           /* O    Pointer to windowed signal                                  */
-    Pointer<short> px,               /* I    Pointer to input signal                                     */
-    int win_type,           /* I    Selects a window type                                       */
-    int length              /* I    Window length, multiple of 4                                */
-)
+            short[] px_win,           /* O    Pointer to windowed signal                                  */
+            int px_win_ptr,
+            short[] px,               /* I    Pointer to input signal                                     */
+            int px_ptr,
+            int win_type,           /* I    Selects a window type                                       */
+            int length              /* I    Window length, multiple of 4                                */
+        )
         {
             int k, f_Q16, c_Q16;
             int S0_Q16, S1_Q16;
@@ -99,13 +101,15 @@ namespace Concentus.Silk
             /* 4 samples at a time */
             for (k = 0; k < length; k += 4)
             {
-                px_win[k] = (short)Inlines.silk_SMULWB(Inlines.silk_RSHIFT(S0_Q16 + S1_Q16, 1), px[k]);
-                px_win[k + 1] = (short)Inlines.silk_SMULWB(S1_Q16, px[k + 1]);
+                int pxwk = px_win_ptr + k;
+                int pxk = px_ptr + k;
+                px_win[pxwk] = (short)Inlines.silk_SMULWB(Inlines.silk_RSHIFT(S0_Q16 + S1_Q16, 1), px[pxk]);
+                px_win[pxwk + 1] = (short)Inlines.silk_SMULWB(S1_Q16, px[pxk + 1]);
                 S0_Q16 = Inlines.silk_SMULWB(S1_Q16, c_Q16) + Inlines.silk_LSHIFT(S1_Q16, 1) - S0_Q16 + 1;
                 S0_Q16 = Inlines.silk_min(S0_Q16, ((int)1 << 16));
 
-                px_win[k + 2] = (short)Inlines.silk_SMULWB(Inlines.silk_RSHIFT(S0_Q16 + S1_Q16, 1), px[k + 2]);
-                px_win[k + 3] = (short)Inlines.silk_SMULWB(S0_Q16, px[k + 3]);
+                px_win[pxwk + 2] = (short)Inlines.silk_SMULWB(Inlines.silk_RSHIFT(S0_Q16 + S1_Q16, 1), px[pxk + 2]);
+                px_win[pxwk + 3] = (short)Inlines.silk_SMULWB(S0_Q16, px[pxk + 3]);
                 S1_Q16 = Inlines.silk_SMULWB(S0_Q16, c_Q16) + Inlines.silk_LSHIFT(S0_Q16, 1) - S1_Q16;
                 S1_Q16 = Inlines.silk_min(S1_Q16, ((int)1 << 16));
             }

@@ -153,7 +153,8 @@ namespace Concentus.Silk
         /// <param name="order">(I) Number of input values</param>
         internal static void silk_NLSF_residual_dequant(
                 short[] x_Q10,
-                Pointer<sbyte> indices,
+                sbyte[] indices,
+                int indices_ptr,
                 byte[] pred_coef_Q8,
                 int quant_step_size_Q16,
                 short order)
@@ -165,7 +166,7 @@ namespace Concentus.Silk
             for (i = order - 1; i >= 0; i--)
             {
                 pred_Q10 = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(out_Q10, (short)pred_coef_Q8[i]), 8);
-                out_Q10 = Inlines.silk_LSHIFT16((short)indices[i], 10);
+                out_Q10 = Inlines.silk_LSHIFT16((short)indices[indices_ptr + i], 10);
                 if (out_Q10 > 0)
                 {
                     out_Q10 = Inlines.silk_SUB16(out_Q10, (short)(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
@@ -190,13 +191,13 @@ namespace Concentus.Silk
         {
             int i;
             byte entry;
-            Pointer<byte> ec_sel_ptr = psNLSF_CB.ec_sel.GetPointer(CB1_index * psNLSF_CB.order / 2);
-            int ec_sel_ptr_idx = 0;
+            byte[] ec_sel = psNLSF_CB.ec_sel;
+            int ec_sel_ptr = CB1_index * psNLSF_CB.order / 2;
 
             for (i = 0; i < psNLSF_CB.order; i += 2)
             {
-                entry = ec_sel_ptr[ec_sel_ptr_idx];
-                ec_sel_ptr_idx++;
+                entry = ec_sel[ec_sel_ptr];
+                ec_sel_ptr++;
                 ec_ix[i] = (short)(Inlines.silk_SMULBB(Inlines.silk_RSHIFT(entry, 1) & 7, 2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE + 1));
                 pred_Q8[i] = psNLSF_CB.pred_Q8[i + (entry & 1) * (psNLSF_CB.order - 1)];
                 ec_ix[i + 1] = (short)(Inlines.silk_SMULBB(Inlines.silk_RSHIFT(entry, 5) & 7, 2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE + 1));
@@ -334,11 +335,12 @@ namespace Concentus.Silk
             int W_tmp_Q9, NLSF_Q15_tmp;
 
             // Decode first stage 
-            Pointer<byte> pCB_element = psNLSF_CB.CB1_NLSF_Q8.GetPointer(NLSFIndices[0] * psNLSF_CB.order);
+            byte[] pCB = psNLSF_CB.CB1_NLSF_Q8;
+            int pCB_element = NLSFIndices[0] * psNLSF_CB.order;
 
             for (i = 0; i < psNLSF_CB.order; i++)
             {
-                pNLSF_Q15[i] = Inlines.silk_LSHIFT16((short)pCB_element[i], 7);
+                pNLSF_Q15[i] = Inlines.silk_LSHIFT16((short)pCB[pCB_element + i], 7);
             }
 
             // Unpack entropy table indices and predictor for current CB1 index
@@ -346,7 +348,8 @@ namespace Concentus.Silk
 
             // Predictive residual dequantizer
             silk_NLSF_residual_dequant(res_Q10,
-                NLSFIndices.GetPointer(1),
+                NLSFIndices,
+                1,
                 pred_Q8,
                 psNLSF_CB.quantStepSize_Q16,
                 psNLSF_CB.order);
@@ -658,8 +661,10 @@ namespace Concentus.Silk
             short[] W_adj_Q5 = new short[psNLSF_CB.order];
             byte[] pred_Q8 = new byte[psNLSF_CB.order];
             short[] ec_ix = new short[psNLSF_CB.order];
-            Pointer<byte> pCB_element, iCDF_ptr;
-
+            byte[] pCB = psNLSF_CB.CB1_NLSF_Q8;
+            int iCDF_ptr;
+            int pCB_element;
+            
             Inlines.OpusAssert(nSurvivors <= SilkConstants.NLSF_VQ_MAX_SURVIVORS);
             Inlines.OpusAssert(signalType >= 0 && signalType <= 2);
             Inlines.OpusAssert(NLSF_mu_Q20 <= 32767 && NLSF_mu_Q20 >= 0);
@@ -685,10 +690,11 @@ namespace Concentus.Silk
                 ind1 = tempIndices1[s];
 
                 // Residual after first stage
-                pCB_element = psNLSF_CB.CB1_NLSF_Q8.GetPointer(ind1 * psNLSF_CB.order); // opt: potential 1:2 partitioned buffer
+                
+                pCB_element = ind1 * psNLSF_CB.order; // opt: potential 1:2 partitioned buffer
                 for (i = 0; i < psNLSF_CB.order; i++)
                 {
-                    NLSF_tmp_Q15[i] = Inlines.silk_LSHIFT16((short)pCB_element[i], 7);
+                    NLSF_tmp_Q15[i] = Inlines.silk_LSHIFT16((short)pCB[pCB_element + i], 7);
                     res_Q15[i] = (short)(pNLSF_Q15[i] - NLSF_tmp_Q15[i]);
                 }
 
@@ -725,15 +731,15 @@ namespace Concentus.Silk
                     psNLSF_CB.order);
 
                 // Add rate for first stage
-                iCDF_ptr = psNLSF_CB.CB1_iCDF.GetPointer((signalType >> 1) * psNLSF_CB.nVectors);
+                iCDF_ptr = (signalType >> 1) * psNLSF_CB.nVectors;
 
                 if (ind1 == 0)
                 {
-                    prob_Q8 = 256 - iCDF_ptr[ind1];
+                    prob_Q8 = 256 - psNLSF_CB.CB1_iCDF[iCDF_ptr + ind1];
                 }
                 else
                 {
-                    prob_Q8 = iCDF_ptr[ind1 - 1] - iCDF_ptr[ind1];
+                    prob_Q8 = psNLSF_CB.CB1_iCDF[iCDF_ptr + ind1 - 1] - psNLSF_CB.CB1_iCDF[iCDF_ptr + ind1];
                 }
 
                 bits_q7 = (8 << 7) - Inlines.silk_lin2log(prob_Q8);
@@ -760,17 +766,18 @@ namespace Concentus.Silk
         /// <param name="cLSF">(I) vector of interleaved 2*cos(LSFs), QA [d]</param>
         /// <param name="dd">(I) polynomial order (= 1/2 * filter order)</param>
         internal static void silk_NLSF2A_find_poly(
-            Pointer<int> o,
-            Pointer<int> cLSF,
+            int[] o,
+            int[] cLSF,
+            int cLSF_ptr,
             int dd)
         {
             int k, n, ftmp;
 
             o[0] = Inlines.silk_LSHIFT(1, QA);
-            o[1] = 0 - cLSF[0];
+            o[1] = 0 - cLSF[cLSF_ptr];
             for (k = 1; k < dd; k++)
             {
-                ftmp = cLSF[2 * k];            /* QA*/
+                ftmp = cLSF[cLSF_ptr + (2 * k)];            /* QA*/
                 o[k + 1] = Inlines.silk_LSHIFT(o[k - 1], 1) - (int)Inlines.silk_RSHIFT_ROUND64(Inlines.silk_SMULL(ftmp, o[k]), QA);
                 for (n = k; n > 1; n--)
                 {
@@ -838,8 +845,8 @@ namespace Concentus.Silk
             dd = Inlines.silk_RSHIFT(d, 1);
 
             /* generate even and odd polynomials using convolution */
-            silk_NLSF2A_find_poly(P.GetPointer(), cos_LSF_QA.GetPointer(), dd);
-            silk_NLSF2A_find_poly(Q.GetPointer(), cos_LSF_QA.GetPointer(1), dd);
+            silk_NLSF2A_find_poly(P, cos_LSF_QA, 0, dd);
+            silk_NLSF2A_find_poly(Q, cos_LSF_QA, 1, dd);
 
             /* convert even and odd polynomials to opus_int32 Q12 filter coefs */
             for (k = 0; k < dd; k++)

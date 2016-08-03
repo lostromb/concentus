@@ -944,7 +944,7 @@ namespace Concentus.Silk.Structs
                 /************************/
                 /* Noise shape analysis */
                 /************************/
-                NoiseShapeAnalysis.silk_noise_shape_analysis(this, sEncCtrl, res_pitch_frame, x_frame);
+                NoiseShapeAnalysis.silk_noise_shape_analysis(this, sEncCtrl, res_pitch_frame.Data, res_pitch_frame.Offset, x_frame.Data, x_frame.Offset);
 
                 /***************************************************/
                 /* Find linear prediction coefficients (LPC + LTP) */

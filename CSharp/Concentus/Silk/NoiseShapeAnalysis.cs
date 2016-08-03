@@ -165,8 +165,10 @@ namespace Concentus.Silk
         internal static void silk_noise_shape_analysis(
             SilkChannelEncoder psEnc,                                 /* I/O  Encoder state FIX                                                           */
             SilkEncoderControl psEncCtrl,                             /* I/O  Encoder control FIX                                                         */
-            Pointer<short> pitch_res,                             /* I    LPC residual from pitch analysis                                            */
-            Pointer<short> x                                     /* I    Input signal [ frame_length + la_shape ]                                    */
+            short[] pitch_res,                             /* I    LPC residual from pitch analysis                                            */
+            int pitch_res_ptr,
+            short[] x,                                     /* I    Input signal [ frame_length + la_shape ]                                    */
+            int x_ptr
         )
         {
             SilkShapeState psShapeSt = psEnc.sShape;
@@ -179,11 +181,11 @@ namespace Concentus.Silk
             int[] AR1_Q24 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
             int[] AR2_Q24 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
             short[] x_windowed;
-            Pointer<short> x_ptr, pitch_res_ptr;
-
-
+            int pitch_res_ptr2;
+            int x_ptr2;
+            
             /* Point to start of first LPC analysis block */
-            x_ptr = x.Point(0 - psEnc.la_shape);
+            x_ptr2 = x_ptr - psEnc.la_shape;
 
             /****************/
             /* GAIN CONTROL */
@@ -235,10 +237,10 @@ namespace Concentus.Silk
                 nSamples = Inlines.silk_LSHIFT(psEnc.fs_kHz, 1);
                 energy_variation_Q7 = 0;
                 log_energy_prev_Q7 = 0;
-                pitch_res_ptr = pitch_res;
+                pitch_res_ptr2 = pitch_res_ptr;
                 for (k = 0; k < Inlines.silk_SMULBB(SilkConstants.SUB_FRAME_LENGTH_MS, psEnc.nb_subfr) / 2; k++)
                 {
-                    SumSqrShift.silk_sum_sqr_shift(out nrg, out scale, pitch_res_ptr.Data, pitch_res_ptr.Offset, nSamples);
+                    SumSqrShift.silk_sum_sqr_shift(out nrg, out scale, pitch_res, pitch_res_ptr2, nSamples);
                     nrg += Inlines.silk_RSHIFT(nSamples, scale);           /* Q(-scale)*/
 
                     log_energy_Q7 = Inlines.silk_lin2log(nrg);
@@ -247,7 +249,7 @@ namespace Concentus.Silk
                         energy_variation_Q7 += Inlines.silk_abs(log_energy_Q7 - log_energy_prev_Q7);
                     }
                     log_energy_prev_Q7 = log_energy_Q7;
-                    pitch_res_ptr = pitch_res_ptr.Point(nSamples);
+                    pitch_res_ptr2 += nSamples;
                 }
 
                 psEncCtrl.sparseness_Q8 = Inlines.silk_RSHIFT(Sigmoid.silk_sigm_Q15(Inlines.silk_SMULWB(energy_variation_Q7 -
@@ -300,14 +302,14 @@ namespace Concentus.Silk
                 flat_part = psEnc.fs_kHz * 3;
                 slope_part = Inlines.silk_RSHIFT(psEnc.shapeWinLength - flat_part, 1);
                 
-                ApplySineWindow.silk_apply_sine_window(x_windowed.GetPointer(), x_ptr, 1, slope_part);
+                ApplySineWindow.silk_apply_sine_window(x_windowed, 0, x, x_ptr2, 1, slope_part);
                 shift = slope_part;
-                x_ptr.Point(shift).MemCopyTo(x_windowed.GetPointer(shift), flat_part);
+                Array.Copy(x, x_ptr2 + shift, x_windowed, shift, flat_part);
                 shift += flat_part;
-                ApplySineWindow.silk_apply_sine_window(x_windowed.GetPointer(shift), x_ptr.Point(shift), 2, slope_part);
+                ApplySineWindow.silk_apply_sine_window(x_windowed, shift, x, x_ptr2 + shift, 2, slope_part);
                 
                 /* Update pointer: next LPC analysis block */
-                x_ptr = x_ptr.Point(psEnc.subfr_length);
+                x_ptr2 += psEnc.subfr_length;
                 BoxedValue<int> scale_boxed = new BoxedValue<int>(scale);
                 if (psEnc.warping_Q16 > 0)
                 {

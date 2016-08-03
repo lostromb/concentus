@@ -101,7 +101,7 @@ namespace Concentus.Silk
         {
             int i, j, lag, head_room_rshifts;
             int energy, rshifts_local;
-            Pointer<short> ptr1, ptr2;
+            int ptr1, ptr2;
             
             /* Calculate energy to find shift used to fit in 32 bits */
             SumSqrShift.silk_sum_sqr_shift(out energy, out rshifts_local, x, x_ptr, L + order - 1);
@@ -127,15 +127,15 @@ namespace Concentus.Silk
             /* Calculate energy of remaining columns of X: X[:,j]'*X[:,j] */
             /* Fill out the diagonal of the correlation matrix */
             Inlines.MatrixSet(XX, XX_ptr, 0, 0, order, energy);
-            ptr1 = x.GetPointer(x_ptr + order - 1); /* First sample of column 0 of X */
+            ptr1 = x_ptr + order - 1; /* First sample of column 0 of X */
             for (j = 1; j < order; j++)
             {
-                energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[L - j], ptr1[L - j]), rshifts_local));
-                energy = Inlines.silk_ADD32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[-j], ptr1[-j]), rshifts_local));
+                energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(x[ptr1 + L - j], x[ptr1 + L - j]), rshifts_local));
+                energy = Inlines.silk_ADD32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(x[ptr1 - j], x[ptr1 - j]), rshifts_local));
                 Inlines.MatrixSet(XX, XX_ptr, j, j, order, energy);
             }
 
-            ptr2 = x.GetPointer(x_ptr + order - 2); /* First sample of column 1 of X */
+            ptr2 = x_ptr + order - 2; /* First sample of column 1 of X */
                                   /* Calculate the remaining elements of the correlation matrix */
             if (rshifts_local > 0)
             {
@@ -146,37 +146,37 @@ namespace Concentus.Silk
                     energy = 0;
                     for (i = 0; i < L; i++)
                     {
-                        energy += Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[i], ptr2[i]), rshifts_local);
+                        energy += Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(x[ptr1 + i], x[ptr2 + i]), rshifts_local);
                     }
                     /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */
                     Inlines.MatrixSet(XX, XX_ptr, lag, 0, order, energy);
                     Inlines.MatrixSet(XX, XX_ptr, 0, lag, order, energy);
                     for (j = 1; j < (order - lag); j++)
                     {
-                        energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[L - j], ptr2[L - j]), rshifts_local));
-                        energy = Inlines.silk_ADD32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(ptr1[-j], ptr2[-j]), rshifts_local));
+                        energy = Inlines.silk_SUB32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(x[ptr1 + L - j], x[ptr2 + L - j]), rshifts_local));
+                        energy = Inlines.silk_ADD32(energy, Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(x[ptr1 - j], x[ptr2 - j]), rshifts_local));
                         Inlines.MatrixSet(XX, XX_ptr, lag + j, j, order, energy);
                         Inlines.MatrixSet(XX, XX_ptr, j, lag + j, order, energy);
                     }
-                    ptr2 = ptr2.Point(-1); /* Update pointer to first sample of next column (lag) in X */
+                    ptr2--; /* Update pointer to first sample of next column (lag) in X */
                 }
             }
             else {
                 for (lag = 1; lag < order; lag++)
                 {
                     /* Inner product of column 0 and column lag: X[:,0]'*X[:,lag] */
-                    energy = Inlines.silk_inner_prod(ptr1.Data, ptr1.Offset, ptr2.Data, ptr2.Offset, L);
+                    energy = Inlines.silk_inner_prod(x, ptr1, x, ptr2, L);
                     Inlines.MatrixSet(XX, XX_ptr, lag, 0, order,energy);
                     Inlines.MatrixSet(XX, XX_ptr, 0, lag, order, energy);
                     /* Calculate remaining off diagonal: X[:,j]'*X[:,j + lag] */
                     for (j = 1; j < (order - lag); j++)
                     {
-                        energy = Inlines.silk_SUB32(energy, Inlines.silk_SMULBB(ptr1[L - j], ptr2[L - j]));
-                        energy = Inlines.silk_SMLABB(energy, ptr1[-j], ptr2[-j]);
+                        energy = Inlines.silk_SUB32(energy, Inlines.silk_SMULBB(x[ptr1 + L - j], x[ptr2 + L - j]));
+                        energy = Inlines.silk_SMLABB(energy, x[ptr1 - j], x[ptr2 - j]);
                         Inlines.MatrixSet(XX, XX_ptr, lag + j, j, order, energy);
                         Inlines.MatrixSet(XX, XX_ptr, j, lag + j, order, energy);
                     }
-                    ptr2 = ptr2.Point(-1);/* Update pointer to first sample of next column (lag) in X */
+                    ptr2--;/* Update pointer to first sample of next column (lag) in X */
                 }
             }
             rshifts.Val = rshifts_local;

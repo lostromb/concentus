@@ -116,13 +116,14 @@ namespace Concentus.Silk
         {
             int i, j, p;
             byte[] icdf = new byte[2];
-            Pointer<short> q_ptr;
-            Pointer<byte> icdf_ptr;
+            int q_ptr;
+            byte[] icdf_table = Tables.silk_sign_iCDF;
+            int icdf_ptr;
 
             icdf[1] = 0;
-            q_ptr = pulses.GetPointer(0);
+            q_ptr = 0;
             i = Inlines.silk_SMULBB(7, Inlines.silk_ADD_LSHIFT(quantOffsetType, signalType, 1));
-            icdf_ptr = new Pointer<byte>(Tables.silk_sign_iCDF, i);
+            icdf_ptr = i;
             length = Inlines.silk_RSHIFT(length + SilkConstants.SHELL_CODEC_FRAME_LENGTH / 2, SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH);
 
             for (i = 0; i < length; i++)
@@ -131,18 +132,18 @@ namespace Concentus.Silk
 
                 if (p > 0)
                 {
-                    icdf[0] = icdf_ptr[Inlines.silk_min(p & 0x1F, 6)];
+                    icdf[0] = icdf_table[icdf_ptr + Inlines.silk_min(p & 0x1F, 6)];
                     for (j = 0; j < SilkConstants.SHELL_CODEC_FRAME_LENGTH; j++)
                     {
-                        if (q_ptr[j] > 0)
+                        if (pulses[q_ptr + j] > 0)
                         {
                             /* attach sign */
-                            q_ptr[j] *= (short)(silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
+                            pulses[q_ptr + j] *= (short)(silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
                         }
                     }
                 }
 
-                q_ptr = q_ptr.Point(SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                q_ptr += SilkConstants.SHELL_CODEC_FRAME_LENGTH;
             }
         }
     }
