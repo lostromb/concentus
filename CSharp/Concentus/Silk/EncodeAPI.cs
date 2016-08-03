@@ -485,8 +485,10 @@ namespace Concentus.Silk
                     {
                         BoxedValue<sbyte> midOnlyFlagBoxed = new BoxedValue<sbyte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                         Stereo.silk_stereo_LR_to_MS(psEnc.sStereo,
-                            psEnc.state_Fxx[0].inputBuf.GetPointer(2),
-                            psEnc.state_Fxx[1].inputBuf.GetPointer(2),
+                            psEnc.state_Fxx[0].inputBuf,
+                            2,
+                            psEnc.state_Fxx[1].inputBuf,
+                            2,
                             psEnc.sStereo.predIx[psEnc.state_Fxx[0].nFramesEncoded],
                             midOnlyFlagBoxed,
                             MStargetRates_bps,

@@ -54,7 +54,7 @@ namespace Concentus.Silk
             int i, j, k, iter, abs_q, nLS, RateLevelIndex;
             int[] sum_pulses = new int[SilkConstants.MAX_NB_SHELL_BLOCKS];
             int[] nLshifts = new int[SilkConstants.MAX_NB_SHELL_BLOCKS];
-            Pointer<short> pulses_ptr;
+            int pulses_ptr;
 
             /*********************/
             /* Decode rate level */
@@ -95,7 +95,7 @@ namespace Concentus.Silk
             {
                 if (sum_pulses[i] > 0)
                 {
-                    ShellCoder.silk_shell_decoder(pulses.GetPointer(Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH)), psRangeDec, sum_pulses[i]);
+                    ShellCoder.silk_shell_decoder(pulses, Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH), psRangeDec, sum_pulses[i]);
                 }
                 else
                 {
@@ -111,16 +111,16 @@ namespace Concentus.Silk
                 if (nLshifts[i] > 0)
                 {
                     nLS = nLshifts[i];
-                    pulses_ptr = pulses.GetPointer(Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH));
+                    pulses_ptr = Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH);
                     for (k = 0; k < SilkConstants.SHELL_CODEC_FRAME_LENGTH; k++)
                     {
-                        abs_q = pulses_ptr[k];
+                        abs_q = pulses[pulses_ptr + k];
                         for (j = 0; j < nLS; j++)
                         {
                             abs_q = Inlines.silk_LSHIFT(abs_q, 1);
                             abs_q += psRangeDec.dec_icdf(Tables.silk_lsb_iCDF, 8);
                         }
-                        pulses_ptr[k] = (short)(abs_q);
+                        pulses[pulses_ptr + k] = (short)(abs_q);
                     }
                     /* Mark the number of pulses non-zero for sign decoding. */
                     sum_pulses[i] |= nLS << 5;

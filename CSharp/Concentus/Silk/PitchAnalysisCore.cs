@@ -643,7 +643,7 @@ namespace Concentus.Silk
             int complexity                      /* I Complexity setting          */
         )
         {
-            Pointer<short> target_ptr;
+            int target_ptr;
             int i, j, k, lag_counter, lag_low, lag_high;
             int nb_cbk_search, delta, idx;
             int[] scratch_mem;
@@ -669,7 +669,7 @@ namespace Concentus.Silk
             scratch_mem = new int[SCRATCH_SIZE];
             xcorr32 = new int[SCRATCH_SIZE];
 
-            target_ptr = frame.GetPointer(Inlines.silk_LSHIFT(sf_length, 2)); /* Pointer to middle of frame */
+            target_ptr = Inlines.silk_LSHIFT(sf_length, 2); /* Pointer to middle of frame */
             for (k = 0; k < nb_subfr; k++)
             {
                 lag_counter = 0;
@@ -678,7 +678,7 @@ namespace Concentus.Silk
                 lag_low = Lag_range_ptr[k][0];
                 lag_high = Lag_range_ptr[k][1];
                 Inlines.OpusAssert(lag_high - lag_low + 1 <= SCRATCH_SIZE);
-                CeltPitchXCorr.pitch_xcorr(target_ptr.Data, target_ptr.Offset, target_ptr.Data, target_ptr.Offset - start_lag - lag_high, xcorr32, sf_length, lag_high - lag_low + 1);
+                CeltPitchXCorr.pitch_xcorr(frame, target_ptr, frame, target_ptr - start_lag - lag_high, xcorr32, sf_length, lag_high - lag_low + 1);
                 for (j = lag_low; j <= lag_high; j++)
                 {
                     Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);
@@ -700,7 +700,7 @@ namespace Concentus.Silk
                             scratch_mem[idx + j];
                     }
                 }
-                target_ptr = target_ptr.Point(sf_length);
+                target_ptr += sf_length;
             }
 
         }
@@ -718,7 +718,7 @@ namespace Concentus.Silk
             int complexity                       /* I Complexity setting          */
         )
         {
-            Pointer<short> target_ptr, basis_ptr;
+            int target_ptr, basis_ptr;
             int energy;
             int k, i, j, lag_counter;
             int nb_cbk_search, delta, idx, lag_diff;
@@ -744,14 +744,14 @@ namespace Concentus.Silk
             }
             scratch_mem = new int[SCRATCH_SIZE];
 
-            target_ptr = frame.GetPointer(Inlines.silk_LSHIFT(sf_length, 2));
+            target_ptr = Inlines.silk_LSHIFT(sf_length, 2);
             for (k = 0; k < nb_subfr; k++)
             {
                 lag_counter = 0;
 
                 /* Calculate the energy for first lag */
-                basis_ptr = target_ptr.Point(0 - (start_lag + Lag_range_ptr[k][0]));
-                energy = Inlines.silk_inner_prod_self(basis_ptr.Data, basis_ptr.Offset, sf_length);
+                basis_ptr = target_ptr - (start_lag + Lag_range_ptr[k][0]);
+                energy = Inlines.silk_inner_prod_self(frame, basis_ptr, sf_length);
                 Inlines.OpusAssert(energy >= 0);
                 scratch_mem[lag_counter] = energy;
                 lag_counter++;
@@ -760,11 +760,11 @@ namespace Concentus.Silk
                 for (i = 1; i < lag_diff; i++)
                 {
                     /* remove part outside new window */
-                    energy -= Inlines.silk_SMULBB(basis_ptr[sf_length - i], basis_ptr[sf_length - i]);
+                    energy -= Inlines.silk_SMULBB(frame[basis_ptr + sf_length - i], frame[basis_ptr + sf_length - i]);
                     Inlines.OpusAssert(energy >= 0);
 
                     /* add part that comes into window */
-                    energy = Inlines.silk_ADD_SAT32(energy, Inlines.silk_SMULBB(basis_ptr[-i], basis_ptr[-i]));
+                    energy = Inlines.silk_ADD_SAT32(energy, Inlines.silk_SMULBB(frame[basis_ptr - i], frame[basis_ptr - i]));
                     Inlines.OpusAssert(energy >= 0);
                     Inlines.OpusAssert(lag_counter < SCRATCH_SIZE);
                     scratch_mem[lag_counter] = energy;
@@ -785,7 +785,7 @@ namespace Concentus.Silk
                         Inlines.OpusAssert(Inlines.MatrixGet(energies_st3, k, i, nb_cbk_search).Values[j] >= 0);
                     }
                 }
-                target_ptr = target_ptr.Point(sf_length);
+                target_ptr += sf_length;
             }
         }
     }

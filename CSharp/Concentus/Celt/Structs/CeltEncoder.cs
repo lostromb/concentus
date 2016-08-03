@@ -386,7 +386,7 @@ namespace Concentus.Celt.Structs
         }
 
         
-        internal int celt_encode_with_ec(short[] pcm, int pcm_ptr, int frame_size, Pointer<byte> compressed, int nbCompressedBytes, EntropyCoder enc)
+        internal int celt_encode_with_ec(short[] pcm, int pcm_ptr, int frame_size, byte[] compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc)
         {
             int i, c, N;
             int bits;
@@ -513,7 +513,7 @@ namespace Concentus.Celt.Structs
             if (enc == null)
             {
                 enc = new EntropyCoder();
-                enc.enc_init(compressed.Data, compressed.Offset, (uint)nbCompressedBytes);
+                enc.enc_init(compressed, compressed_ptr, (uint)nbCompressedBytes);
             }
 
             if (vbr_rate > 0)

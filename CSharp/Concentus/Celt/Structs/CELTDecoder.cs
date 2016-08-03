@@ -400,8 +400,8 @@ namespace Concentus.Celt.Structs
                             lpc_mem[i] = Inlines.ROUND16(buf[CeltConstants.DECODE_BUFFER_SIZE - N - 1 - i], CeltConstants.SIG_SHIFT);
                         /* Apply the synthesis filter to convert the excitation back into
                            the signal domain. */
-                        CeltLPC.celt_iir(buf.GetPointer(CeltConstants.DECODE_BUFFER_SIZE - N), this.lpc[c].GetPointer(),
-                              buf.GetPointer(CeltConstants.DECODE_BUFFER_SIZE - N), extrapolation_len, CeltConstants.LPC_ORDER,
+                        CeltLPC.celt_iir(buf, CeltConstants.DECODE_BUFFER_SIZE - N, this.lpc[c],
+                              buf, CeltConstants.DECODE_BUFFER_SIZE - N, extrapolation_len, CeltConstants.LPC_ORDER,
                               lpc_mem);
                     }
 
@@ -416,9 +416,7 @@ namespace Concentus.Celt.Structs
                             S2 += Inlines.SHR32(Inlines.MULT16_16(tmp, tmp), 8);
                         }
                         /* This checks for an "explosion" in the synthesis. */
-                        /* The float test is written this way to catch NaNs in the output
-                           of the IIR filter at the same time. */
-                        if (!(S1 > 0.2f * S2))
+                        if (!(S1 > Inlines.SHR32(S2, 2)))
                         {
                             for (i = 0; i < extrapolation_len; i++)
                                 buf[CeltConstants.DECODE_BUFFER_SIZE - N + i] = 0;

@@ -117,7 +117,7 @@ namespace Concentus.Silk
             int[] nRshifts;
             int[] pulses_comb = new int[8];
             int abs_pulses_ptr;
-            Pointer<sbyte> pulses_ptr;
+            int pulses_ptr;
             byte[] nBits_ptr;
 
             Arrays.MemSet<int>(pulses_comb, 0, 8);
@@ -242,7 +242,7 @@ namespace Concentus.Silk
             {
                 if (sum_pulses[i] > 0)
                 {
-                    ShellCoder.silk_shell_encoder(psRangeEnc, abs_pulses.GetPointer(i * SilkConstants.SHELL_CODEC_FRAME_LENGTH));
+                    ShellCoder.silk_shell_encoder(psRangeEnc, abs_pulses, i * SilkConstants.SHELL_CODEC_FRAME_LENGTH);
                 }
             }
 
@@ -253,11 +253,11 @@ namespace Concentus.Silk
             {
                 if (nRshifts[i] > 0)
                 {
-                    pulses_ptr = pulses.GetPointer(i * SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                    pulses_ptr = i * SilkConstants.SHELL_CODEC_FRAME_LENGTH;
                     nLS = nRshifts[i] - 1;
                     for (k = 0; k < SilkConstants.SHELL_CODEC_FRAME_LENGTH; k++)
                     {
-                        abs_q = (sbyte)Inlines.silk_abs(pulses_ptr[k]);
+                        abs_q = (sbyte)Inlines.silk_abs(pulses[pulses_ptr + k]);
                         for (j = nLS; j > 0; j--)
                         {
                             bit = Inlines.silk_RSHIFT(abs_q, j) & 1;

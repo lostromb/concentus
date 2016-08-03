@@ -43,7 +43,7 @@ namespace Concentus.Silk
         internal static void silk_decode_pitch(
                 short lagIndex,           /* I                                                                */
                 sbyte contourIndex,       /* O                                                                */
-                Pointer<int> pitch_lags,       /* O    4 pitch values                                              */
+                int[] pitch_lags,       /* O    4 pitch values                                              */
                 int Fs_kHz,             /* I    sampling frequency (kHz)                                    */
                 int nb_subfr            /* I    number of sub frames                                        */
             )

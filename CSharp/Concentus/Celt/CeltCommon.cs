@@ -423,8 +423,8 @@ namespace Concentus.Celt
             mem = m;
         }
 
-        internal static void celt_preemphasis(Pointer<short> pcmp, Pointer<int> inp,
-                                int N, int CC, int upsample, Pointer<int> coef, BoxedValue<int> mem, int clip)
+        internal static void celt_preemphasis(short[] pcmp, int[] inp, int inp_ptr,
+                                int N, int CC, int upsample, int[] coef, BoxedValue<int> mem, int clip)
         {
             int i;
             int coef0;
@@ -442,7 +442,7 @@ namespace Concentus.Celt
                     int x;
                     x = pcmp[CC * i];
                     /* Apply pre-emphasis */
-                    inp[i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
+                    inp[inp_ptr + i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                     m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
                 }
                 mem.Val = m;
@@ -452,18 +452,18 @@ namespace Concentus.Celt
             Nu = N / upsample;
             if (upsample != 1)
             {
-                inp.MemSet(0, N);
+                Arrays.MemSetWithOffset<int>(inp, 0, inp_ptr, N);
             }
             for (i = 0; i < Nu; i++)
-                inp[i * upsample] = pcmp[CC * i];
+                inp[inp_ptr + (i * upsample)] = pcmp[CC * i];
 
 
             for (i = 0; i < N; i++)
             {
                 int x;
-                x = (inp[i]);
+                x = (inp[inp_ptr + i]);
                 /* Apply pre-emphasis */
-                inp[i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
+                inp[inp_ptr + i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                 m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
             }
 

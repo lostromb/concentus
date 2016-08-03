@@ -230,7 +230,7 @@ namespace Concentus
             downmix(x, x_ptr, tonal.inmem, 240, remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
             tonal.mem_fill = 240 + remaining;
 
-            KissFFT.opus_fft(kfft, input.GetPointer(), output.GetPointer());
+            KissFFT.opus_fft(kfft, input, output);
 
             for (i = 1; i < N2; i++)
             {

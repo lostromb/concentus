@@ -229,7 +229,7 @@ namespace Concentus.Structs
                 Array.Copy(mem, c * overlap, input, 0, overlap);
                 copy_channel_in(x, 0 , 1, pcm, pcm_ptr, channels, c, len);
                 BoxedValue<int> boxed_preemph = new BoxedValue<int>(preemph_mem[c]);
-                CeltCommon.celt_preemphasis(x.GetPointer(), input.GetPointer(overlap), frame_size, 1, upsample, celt_mode.preemph.GetPointer(), boxed_preemph, 0);
+                CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0);
                 preemph_mem[c] = boxed_preemph.Val;
 
                 MDCT.clt_mdct_forward(
@@ -252,7 +252,7 @@ namespace Concentus.Structs
                 }
                 
                 Bands.compute_band_energies(celt_mode, freq, bandE, 21, 1, LM);
-                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE[0], bandLogE.GetPointer(21 * c), 1);
+                QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE[0], bandLogE, 21 * c, 1);
                 /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
                 for (i = 1; i < 21; i++)
                     bandLogE[21 * c + i] = Inlines.MAX16(bandLogE[21 * c + i], bandLogE[21 * c + i - 1] - ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/);
@@ -352,8 +352,8 @@ namespace Concentus.Structs
             }
             if (surround != 0)
             {
-                this.preemph_mem.GetPointer().MemSet(0, channels);
-                this.window_mem.GetPointer().MemSet(0, channels * 120);
+                Arrays.MemSet(this.preemph_mem, 0, channels);
+                Arrays.MemSet(this.window_mem, 0, channels * 120);
             }
             this.surround = surround;
             return OpusError.OPUS_OK;

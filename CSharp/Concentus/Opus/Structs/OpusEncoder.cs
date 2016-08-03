@@ -1275,7 +1275,7 @@ namespace Concentus.Structs
                 int err;
                 celt_enc.SetStartBand(0);
                 celt_enc.SetVBR(false);
-                err = celt_enc.celt_encode_with_ec(pcm_buf, 0, this.Fs / 200, data.GetPointer(data_ptr + nb_compr_bytes), redundancy_bytes, null);
+                err = celt_enc.celt_encode_with_ec(pcm_buf, 0, this.Fs / 200, data, data_ptr + nb_compr_bytes, redundancy_bytes, null);
                 if (err < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1294,13 +1294,13 @@ namespace Concentus.Structs
                     celt_enc.ResetState();
 
                     /* Prefilling */
-                    celt_enc.celt_encode_with_ec(tmp_prefill, 0, this.Fs / 400, dummy.GetPointer(), 2, null);
+                    celt_enc.celt_encode_with_ec(tmp_prefill, 0, this.Fs / 400, dummy, 0, 2, null);
                     celt_enc.SetPrediction(0);
                 }
                 /* If false, we already busted the budget and we'll end up with a "PLC packet" */
                 if (enc.tell() <= 8 * nb_compr_bytes)
                 {
-                    ret = celt_enc.celt_encode_with_ec(pcm_buf, 0, frame_size, null, nb_compr_bytes, enc);
+                    ret = celt_enc.celt_encode_with_ec(pcm_buf, 0, frame_size, null, 0, nb_compr_bytes, enc);
                     if (ret < 0)
                     {
                         return OpusError.OPUS_INTERNAL_ERROR;
@@ -1322,9 +1322,9 @@ namespace Concentus.Structs
                 celt_enc.SetPrediction(0);
 
                 /* NOTE: We could speed this up slightly (at the expense of code size) by just adding a function that prefills the buffer */
-                celt_enc.celt_encode_with_ec(pcm_buf, (this.channels * (frame_size - N2 - N4)), N4, dummy.GetPointer(), 2, null);
+                celt_enc.celt_encode_with_ec(pcm_buf, (this.channels * (frame_size - N2 - N4)), N4, dummy, 0, 2, null);
 
-                err = celt_enc.celt_encode_with_ec(pcm_buf, (this.channels * (frame_size - N2)), N2, data.GetPointer(data_ptr + nb_compr_bytes), redundancy_bytes, null);
+                err = celt_enc.celt_encode_with_ec(pcm_buf, (this.channels * (frame_size - N2)), N2, data, data_ptr + nb_compr_bytes, redundancy_bytes, null);
                 if (err < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;

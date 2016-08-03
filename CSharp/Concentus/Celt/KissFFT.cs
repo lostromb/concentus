@@ -409,7 +409,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void opus_fft(FFTState st, Pointer<int> fin, Pointer<int> fout)
+        internal static void opus_fft(FFTState st, int[] fin, int[] fout)
         {
             int i;
             /* Allows us to scale with MULT16_32_Q16() */
@@ -421,11 +421,11 @@ namespace Concentus.Celt
             /* Bit-reverse the input */
             for (i = 0; i < st.nfft; i++)
             {
-                fout[2 * st.bitrev[i]] = Inlines.SHR32(Inlines.MULT16_32_Q16(scale, fin[2 * i]), scale_shift);
-                fout[2 * st.bitrev[i] + 1] = Inlines.SHR32(Inlines.MULT16_32_Q16(scale, fin[2 * i + 1]), scale_shift);
+                fout[(2 * st.bitrev[i])] = Inlines.SHR32(Inlines.MULT16_32_Q16(scale, fin[(2 * i)]), scale_shift);
+                fout[(2 * st.bitrev[i] + 1)] = Inlines.SHR32(Inlines.MULT16_32_Q16(scale, fin[(2 * i) + 1]), scale_shift);
             }
 
-            opus_fft_impl(st, fout.Data, fout.Offset);
+            opus_fft_impl(st, fout, 0);
         }
 
 

@@ -125,7 +125,7 @@ namespace Concentus.Silk
                     {
                         LTP_Gain_Q14 = temp_LTP_Gain_Q14;
 
-                        psDecCtrl.LTPCoef_Q14.GetPointer(Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER)).MemCopyTo(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
+                        Array.Copy(psDecCtrl.LTPCoef_Q14, Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER), psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
 
                         psPLC.pitchL_Q8 = Inlines.silk_LSHIFT(psDecCtrl.pitchL[psDec.nb_subfr - 1 - j], 8);
                     }
@@ -229,12 +229,12 @@ namespace Concentus.Silk
             int lag, idx, sLTP_buf_idx;
             int rand_seed, harm_Gain_Q15, rand_Gain_Q15, inv_gain_Q30;
             int energy1, energy2, shift1, shift2;
-            Pointer<int> rand_ptr;
-            Pointer<int> pred_lag_ptr;
+            int rand_ptr;
+            int pred_lag_ptr;
             int LPC_pred_Q10, LTP_pred_Q12;
             short rand_scale_Q14;
             short[] B_Q14;
-            Pointer<int> sLPC_Q14_ptr;
+            int sLPC_Q14_ptr;
             short[] sLTP = new short[psDec.ltp_mem_length];
             int[] sLTP_Q14 = new int[psDec.ltp_mem_length + psDec.frame_length];
             PLCStruct psPLC = psDec.sPLC;
@@ -253,11 +253,11 @@ namespace Concentus.Silk
             if (Inlines.silk_RSHIFT(energy1, shift2) < Inlines.silk_RSHIFT(energy2, shift1))
             {
                 /* First sub-frame has lowest energy */
-                rand_ptr = psDec.exc_Q14.GetPointer(Inlines.silk_max_int(0, (psPLC.nb_subfr - 1) * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE));
+                rand_ptr = Inlines.silk_max_int(0, (psPLC.nb_subfr - 1) * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE);
             }
             else {
                 /* Second sub-frame has lowest energy */
-                rand_ptr = psDec.exc_Q14.GetPointer(Inlines.silk_max_int(0, psPLC.nb_subfr * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE));
+                rand_ptr = Inlines.silk_max_int(0, psPLC.nb_subfr * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE);
             }
 
             /* Set up Gain to random noise component */
@@ -329,23 +329,23 @@ namespace Concentus.Silk
             for (k = 0; k < psDec.nb_subfr; k++)
             {
                 /* Set up pointer */
-                pred_lag_ptr = sLTP_Q14.GetPointer(sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2);
+                pred_lag_ptr = sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2;
                 for (i = 0; i < psDec.subfr_length; i++)
                 {
                     /* Unrolled loop */
                     /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                     LTP_pred_Q12 = 2;
-                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, pred_lag_ptr[0], B_Q14[0]);
-                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, pred_lag_ptr[-1], B_Q14[1]);
-                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, pred_lag_ptr[-2], B_Q14[2]);
-                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, pred_lag_ptr[-3], B_Q14[3]);
-                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, pred_lag_ptr[-4], B_Q14[4]);
-                    pred_lag_ptr = pred_lag_ptr.Point(1);
+                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, sLTP_Q14[pred_lag_ptr], B_Q14[0]);
+                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, sLTP_Q14[pred_lag_ptr - 1], B_Q14[1]);
+                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, sLTP_Q14[pred_lag_ptr - 2], B_Q14[2]);
+                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, sLTP_Q14[pred_lag_ptr - 3], B_Q14[3]);
+                    LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, sLTP_Q14[pred_lag_ptr - 4], B_Q14[4]);
+                    pred_lag_ptr++;
 
                     /* Generate LPC excitation */
                     rand_seed = Inlines.silk_RAND(rand_seed);
                     idx = Inlines.silk_RSHIFT(rand_seed, 25) & SilkConstants.RAND_BUF_MASK;
-                    sLTP_Q14[sLTP_buf_idx] = Inlines.silk_LSHIFT32(Inlines.silk_SMLAWB(LTP_pred_Q12, rand_ptr[idx], rand_scale_Q14), 2);
+                    sLTP_Q14[sLTP_buf_idx] = Inlines.silk_LSHIFT32(Inlines.silk_SMLAWB(LTP_pred_Q12, psDec.exc_Q14[rand_ptr + idx], rand_scale_Q14), 2);
                     sLTP_buf_idx++;
                 }
 
@@ -366,41 +366,42 @@ namespace Concentus.Silk
             /***************************/
             /* LPC synthesis filtering */
             /***************************/
-            sLPC_Q14_ptr = sLTP_Q14.GetPointer(psDec.ltp_mem_length - SilkConstants.MAX_LPC_ORDER);
+            sLPC_Q14_ptr = psDec.ltp_mem_length - SilkConstants.MAX_LPC_ORDER;
 
             /* Copy LPC state */
-            psDec.sLPC_Q14_buf.GetPointer().MemCopyTo(sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
+            Array.Copy(psDec.sLPC_Q14_buf, 0, sLTP_Q14, sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
 
             Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
             for (i = 0; i < psDec.frame_length; i++)
             {
                 /* partly unrolled */
+                int sLPCmaxi = sLPC_Q14_ptr + SilkConstants.MAX_LPC_ORDER + i;
                 /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                 LPC_pred_Q10 = Inlines.silk_RSHIFT(psDec.LPC_order, 1);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 1], psPLC.prevLPC_Q12[0]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 2], psPLC.prevLPC_Q12[1]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 3], psPLC.prevLPC_Q12[2]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 4], psPLC.prevLPC_Q12[3]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 5], psPLC.prevLPC_Q12[4]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 6], psPLC.prevLPC_Q12[5]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 7], psPLC.prevLPC_Q12[6]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 8], psPLC.prevLPC_Q12[7]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 9], psPLC.prevLPC_Q12[8]);
-                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - 10], psPLC.prevLPC_Q12[9]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 1], psPLC.prevLPC_Q12[0]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 2], psPLC.prevLPC_Q12[1]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 3], psPLC.prevLPC_Q12[2]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 4], psPLC.prevLPC_Q12[3]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 5], psPLC.prevLPC_Q12[4]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 6], psPLC.prevLPC_Q12[5]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 7], psPLC.prevLPC_Q12[6]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 8], psPLC.prevLPC_Q12[7]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 9], psPLC.prevLPC_Q12[8]);
+                LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 10], psPLC.prevLPC_Q12[9]);
                 for (j = 10; j < psDec.LPC_order; j++)
                 {
-                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i - j - 1], psPLC.prevLPC_Q12[j]);
+                    LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - j - 1], psPLC.prevLPC_Q12[j]);
                 }
 
                 /* Add prediction to LPC excitation */
-                sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i] = Inlines.silk_ADD_LSHIFT32(sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i], LPC_pred_Q10, 4);
+                sLTP_Q14[sLPCmaxi] = Inlines.silk_ADD_LSHIFT32(sLTP_Q14[sLPCmaxi], LPC_pred_Q10, 4);
 
                 /* Scale with Gain */
-                frame[frame_ptr + i] = (short)Inlines.silk_SAT16(Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(sLPC_Q14_ptr[SilkConstants.MAX_LPC_ORDER + i], prevGain_Q10[1]), 8)));
+                frame[frame_ptr + i] = (short)Inlines.silk_SAT16(Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(sLTP_Q14[sLPCmaxi], prevGain_Q10[1]), 8)));
             }
 
             /* Save LPC state */
-            sLPC_Q14_ptr.Point(psDec.frame_length).MemCopyTo(psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+            Array.Copy(sLTP_Q14, sLPC_Q14_ptr + psDec.frame_length, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
 
             /**************************************/
             /* Update states                      */

@@ -54,14 +54,16 @@ namespace Concentus.Silk
         {
             int i, k, lag = 0, start_idx, sLTP_buf_idx, NLSF_interpolation_flag, signalType;
             short[] A_Q12;
-            Pointer<short> B_Q14;
-            Pointer<short> pxq;
+            short[] B_Q14 = psDecCtrl.LTPCoef_Q14;
+            int B_Q14_ptr;
+            int pxq;
             short[] sLTP;
             int[] sLTP_Q15;
             int LTP_pred_Q13, LPC_pred_Q10, Gain_Q10, inv_gain_Q31, gain_adj_Q16, rand_seed, offset_Q10;
             int pred_lag_ptr;
-            Pointer<int> pexc_Q14;
-            Pointer<int> pres_Q14;
+            int pexc_Q14;
+            int[] pres_Q14;
+            int pres_Q14_ptr;
             int[] res_Q14;
             int[] sLPC_Q14;
 
@@ -109,15 +111,16 @@ namespace Concentus.Silk
             /* Copy LPC state */
             Array.Copy(psDec.sLPC_Q14_buf, sLPC_Q14, SilkConstants.MAX_LPC_ORDER);
 
-            pexc_Q14 = psDec.exc_Q14.GetPointer();
-            pxq = xq.GetPointer(xq_ptr);
+            pexc_Q14 = 0;
+            pxq = xq_ptr;
             sLTP_buf_idx = psDec.ltp_mem_length;
             /* Loop over subframes */
             for (k = 0; k < psDec.nb_subfr; k++)
             {
-                pres_Q14 = res_Q14.GetPointer();
+                pres_Q14 = res_Q14;
+                pres_Q14_ptr = 0;
                 A_Q12 = psDecCtrl.PredCoef_Q12[k >> 1];
-                B_Q14 = psDecCtrl.LTPCoef_Q14.GetPointer(k * SilkConstants.LTP_ORDER);
+                B_Q14_ptr = k * SilkConstants.LTP_ORDER;
                 signalType = psDec.indices.signalType;
 
                 Gain_Q10 = Inlines.silk_RSHIFT(psDecCtrl.Gains_Q16[k], 6);
@@ -147,8 +150,8 @@ namespace Concentus.Silk
                     psDec.indices.signalType != SilkConstants.TYPE_VOICED && k < SilkConstants.MAX_NB_SUBFR / 2)
                 {
 
-                    B_Q14.MemSet(0, SilkConstants.LTP_ORDER);
-                    B_Q14[SilkConstants.LTP_ORDER / 2] = (short)(((int)((0.25f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(0.25f, 14)*/);
+                    Arrays.MemSetWithOffset<short>(B_Q14, 0, B_Q14_ptr, SilkConstants.LTP_ORDER);
+                    B_Q14[B_Q14_ptr + (SilkConstants.LTP_ORDER / 2)] = (short)(((int)((0.25f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(0.25f, 14)*/);
 
                     signalType = SilkConstants.TYPE_VOICED;
                     psDecCtrl.pitchL[k] = psDec.lagPrev;
@@ -207,23 +210,24 @@ namespace Concentus.Silk
                         /* Unrolled loop */
                         /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
                         LTP_pred_Q13 = 2;
-                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr], B_Q14[0]);
-                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 1], B_Q14[1]);
-                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 2], B_Q14[2]);
-                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 3], B_Q14[3]);
-                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 4], B_Q14[4]);
+                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr], B_Q14[B_Q14_ptr]);
+                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 1], B_Q14[B_Q14_ptr + 1]);
+                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 2], B_Q14[B_Q14_ptr + 2]);
+                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 3], B_Q14[B_Q14_ptr + 3]);
+                        LTP_pred_Q13 = Inlines.silk_SMLAWB(LTP_pred_Q13, sLTP_Q15[pred_lag_ptr - 4], B_Q14[B_Q14_ptr + 4]);
                         pred_lag_ptr += 1;
 
                         /* Generate LPC excitation */
-                        pres_Q14[i] = Inlines.silk_ADD_LSHIFT32(pexc_Q14[i], LTP_pred_Q13, 1);
+                        pres_Q14[pres_Q14_ptr + i] = Inlines.silk_ADD_LSHIFT32(psDec.exc_Q14[pexc_Q14 + i], LTP_pred_Q13, 1);
 
                         /* Update states */
-                        sLTP_Q15[sLTP_buf_idx] = Inlines.silk_LSHIFT(pres_Q14[i], 1);
+                        sLTP_Q15[sLTP_buf_idx] = Inlines.silk_LSHIFT(pres_Q14[pres_Q14_ptr + i], 1);
                         sLTP_buf_idx++;
                     }
                 }
                 else {
-                    pres_Q14 = pexc_Q14;
+                    pres_Q14 = psDec.exc_Q14;
+                    pres_Q14_ptr = pexc_Q14;
                 }
 
                 for (i = 0; i < psDec.subfr_length; i++)
@@ -253,18 +257,18 @@ namespace Concentus.Silk
                     }
 
                     /* Add prediction to LPC excitation */
-                    sLPC_Q14[SilkConstants.MAX_LPC_ORDER + i] = Inlines.silk_ADD_LSHIFT32(pres_Q14[i], LPC_pred_Q10, 4);
+                    sLPC_Q14[SilkConstants.MAX_LPC_ORDER + i] = Inlines.silk_ADD_LSHIFT32(pres_Q14[pres_Q14_ptr + i], LPC_pred_Q10, 4);
 
                     /* Scale with gain */
-                    pxq[i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(sLPC_Q14[SilkConstants.MAX_LPC_ORDER + i], Gain_Q10), 8));
+                    xq[pxq + i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(sLPC_Q14[SilkConstants.MAX_LPC_ORDER + i], Gain_Q10), 8));
                 }
 
                 /* DEBUG_STORE_DATA( dec.pcm, pxq, psDec.subfr_length * sizeof( short ) ) */
 
                 /* Update LPC filter state */
                 Array.Copy(sLPC_Q14, psDec.subfr_length, sLPC_Q14, 0, SilkConstants.MAX_LPC_ORDER);
-                pexc_Q14 = pexc_Q14.Point(psDec.subfr_length);
-                pxq = pxq.Point(psDec.subfr_length);
+                pexc_Q14 += psDec.subfr_length;
+                pxq += psDec.subfr_length;
             }
 
             /* Save LPC state */

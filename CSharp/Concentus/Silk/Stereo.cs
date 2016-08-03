@@ -198,8 +198,10 @@ namespace Concentus.Silk
         /// <param name="frame_length">I    Number of samples</param>
         internal static void silk_stereo_LR_to_MS(
             StereoEncodeState state,
-            Pointer<short> x1,
-            Pointer<short> x2,
+            short[] x1,
+            int x1_ptr,
+            short[] x2,
+            int x2_ptr,
             sbyte[][] ix,
             BoxedValue<sbyte> mid_only_flag,
             int[] mid_side_rates_bps,
@@ -220,23 +222,23 @@ namespace Concentus.Silk
             short[] HP_mid;
             short[] LP_side;
             short[] HP_side;
-            Pointer<short> mid = x1.Point(-2);
+            int mid = x1_ptr - 2;
 
             side = new short[frame_length + 2];
 
             /* Convert to basic mid/side signals */
             for (n = 0; n < frame_length + 2; n++)
             {
-                sum = x1[n - 2] + (int)x2[n - 2];
-                diff = x1[n - 2] - (int)x2[n - 2];
-                mid[n] = (short)Inlines.silk_RSHIFT_ROUND(sum, 1);
+                sum = x1[x1_ptr + n - 2] + (int)x2[x2_ptr + n - 2];
+                diff = x1[x1_ptr + n - 2] - (int)x2[x2_ptr + n - 2];
+                x1[mid + n] = (short)Inlines.silk_RSHIFT_ROUND(sum, 1);
                 side[n] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(diff, 1));
             }
 
             /* Buffering */
-            state.sMid.GetPointer().MemCopyTo(mid, 2);
+            Array.Copy(state.sMid, 0, x1, mid, 2);
             Array.Copy(state.sSide, side, 2);
-            mid.Point(frame_length).MemCopyTo(state.sMid, 0, 2);
+            Array.Copy(x1, mid + frame_length, state.sMid, 0, 2);
             Array.Copy(side, frame_length, state.sSide, 0, 2);
 
             /* LP and HP filter mid signal */
@@ -244,9 +246,9 @@ namespace Concentus.Silk
             HP_mid = new short[frame_length];
             for (n = 0; n < frame_length; n++)
             {
-                sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(mid[n] + mid[n + 2], mid[n + 1], 1), 2);
+                sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(x1[mid + n] + x1[mid + n + 2], x1[mid + n + 1], 1), 2);
                 LP_mid[n] = (short)(sum);
-                HP_mid[n] = (short)(mid[n + 1] - sum);
+                HP_mid[n] = (short)(x1[mid + n + 1] - sum);
             }
 
             /* LP and HP filter side signal */
@@ -392,10 +394,10 @@ namespace Concentus.Silk
                 pred0_Q13 += delta0_Q13;
                 pred1_Q13 += delta1_Q13;
                 w_Q24 += deltaw_Q24;
-                sum = Inlines.silk_LSHIFT(Inlines.silk_ADD_LSHIFT(mid[n] + mid[n + 2], mid[n + 1], 1), 9);    /* Q11 */
+                sum = Inlines.silk_LSHIFT(Inlines.silk_ADD_LSHIFT(x1[mid + n] + x1[mid + n + 2], x1[mid + n + 1], 1), 9);    /* Q11 */
                 sum = Inlines.silk_SMLAWB(Inlines.silk_SMULWB(w_Q24, side[n + 1]), sum, pred0_Q13);               /* Q8  */
-                sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)mid[n + 1], 11), pred1_Q13);       /* Q8  */
-                x2[n - 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
+                sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)x1[mid + n + 1], 11), pred1_Q13);       /* Q8  */
+                x2[x2_ptr + n - 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
             }
 
             pred0_Q13 = 0 - pred_Q13[0];
@@ -403,10 +405,10 @@ namespace Concentus.Silk
             w_Q24 = Inlines.silk_LSHIFT(width_Q14, 10);
             for (n = SilkConstants.STEREO_INTERP_LEN_MS * fs_kHz; n < frame_length; n++)
             {
-                sum = Inlines.silk_LSHIFT(Inlines.silk_ADD_LSHIFT(mid[n] + mid[n + 2], mid[n + 1], 1), 9);    /* Q11 */
+                sum = Inlines.silk_LSHIFT(Inlines.silk_ADD_LSHIFT(x1[mid + n] + x1[mid + n + 2], x1[mid + n + 1], 1), 9);    /* Q11 */
                 sum = Inlines.silk_SMLAWB(Inlines.silk_SMULWB(w_Q24, side[n + 1]), sum, pred0_Q13);               /* Q8  */
-                sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)mid[n + 1], 11), pred1_Q13);       /* Q8  */
-                x2[n - 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
+                sum = Inlines.silk_SMLAWB(sum, Inlines.silk_LSHIFT((int)x1[mid + n + 1], 11), pred1_Q13);       /* Q8  */
+                x2[x2_ptr + n - 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(sum, 8));
             }
             state.pred_prev_Q13[0] = (short)pred_Q13[0];
             state.pred_prev_Q13[1] = (short)pred_Q13[1];

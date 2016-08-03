@@ -502,7 +502,7 @@ namespace Concentus.Celt
         /// <param name="bandLogE"></param>
         /// <param name="C"></param>
         internal static void amp2Log2(CeltMode m, int effEnd, int end,
-              int[] bandE, Pointer<int> bandLogE, int C)
+              int[] bandE, int[] bandLogE, int bandLogE_ptr, int C)
         {
             int c, i;
             c = 0;
@@ -510,13 +510,13 @@ namespace Concentus.Celt
             {
                 for (i = 0; i < effEnd; i++)
                 {
-                    bandLogE[i + c * m.nbEBands] =
+                    bandLogE[bandLogE_ptr + (c * m.nbEBands) + i] =
                        (Inlines.celt_log2(Inlines.SHL32(bandE[i + c * m.nbEBands], 2))
                        - Inlines.SHL16((int)Tables.eMeans[i], 6));
                 }
                 for (i = effEnd; i < end; i++)
                 {
-                    bandLogE[c * m.nbEBands + i] = (0 - ((short)(0.5 + (14.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT)*/);
+                    bandLogE[bandLogE_ptr + (c * m.nbEBands) + i] = (0 - ((short)(0.5 + (14.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT)*/);
                 }
             } while (++c < C);
         }

@@ -109,7 +109,7 @@ namespace Concentus.Silk
                 /*********************/
 
                 /* Decode pitch values */
-                DecodePitch.silk_decode_pitch(psDec.indices.lagIndex, psDec.indices.contourIndex, psDecCtrl.pitchL.GetPointer(), psDec.fs_kHz, psDec.nb_subfr);
+                DecodePitch.silk_decode_pitch(psDec.indices.lagIndex, psDec.indices.contourIndex, psDecCtrl.pitchL, psDec.fs_kHz, psDec.nb_subfr);
 
                 /* Decode Codebook Index */
                 cbk_ptr_Q7 = Tables.silk_LTP_vq_ptrs_Q7[psDec.indices.PERIndex]; /* set pointer to start of codebook */
