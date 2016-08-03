@@ -116,7 +116,7 @@ namespace Concentus.Structs
                 return OpusError.OPUS_INVALID_PACKET;
             }
 
-            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out dummy_toc, this.frames.GetPointer(this.nb_frames), this.len.GetPointer(this.nb_frames), out dummy_offset, out dummy_offset);
+            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out dummy_toc, this.frames.GetPointer(this.nb_frames), this.len, this.nb_frames, out dummy_offset, out dummy_offset);
             if (ret < 1) return ret;
 
             this.nb_frames += curr_nb_frames;
@@ -505,7 +505,7 @@ namespace Concentus.Structs
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
                 count = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, 1, out dummy_toc, null,
-                                               size.GetPointer(), out dummy_offset, out packet_offset);
+                                               size, 0, out dummy_offset, out packet_offset);
                 if (count < 0)
                     return count;
                 data_offset += packet_offset;
@@ -552,7 +552,7 @@ namespace Concentus.Structs
                     return OpusError.OPUS_INVALID_PACKET;
                 rp.Reset();
                 ret = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, self_delimited, out dummy_toc, null,
-                                               size.GetPointer(), out dummy_offset, out packet_offset);
+                                               size, 0, out dummy_offset, out packet_offset);
                 if (ret < 0)
                     return ret;
                 ret = rp.opus_repacketizer_cat_impl(data, data_offset, packet_offset, self_delimited);
