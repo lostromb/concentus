@@ -108,13 +108,13 @@ namespace Concentus.Silk.Structs
 
             internal void PartialCopyFrom(NSQ_del_dec_struct other, int q14Offset)
             {
-                Array.Copy(other.sLPC_Q14, q14Offset, sLPC_Q14, q14Offset, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH - q14Offset);
-                Array.Copy(other.RandState, RandState, SilkConstants.DECISION_DELAY);
-                Array.Copy(other.Q_Q10, Q_Q10, SilkConstants.DECISION_DELAY);
-                Array.Copy(other.Xq_Q14, Xq_Q14, SilkConstants.DECISION_DELAY);
-                Array.Copy(other.Pred_Q15, Pred_Q15, SilkConstants.DECISION_DELAY);
-                Array.Copy(other.Shape_Q14, Shape_Q14, SilkConstants.DECISION_DELAY);
-                Array.Copy(other.sAR2_Q14, sAR2_Q14, sAR2_Q14.Length);
+                Buffer.BlockCopy(other.sLPC_Q14, q14Offset * sizeof(int), sLPC_Q14, q14Offset * sizeof(int), (SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH - q14Offset) * sizeof(int));
+                Buffer.BlockCopy(other.RandState, 0, RandState, 0, SilkConstants.DECISION_DELAY * sizeof(int));
+                Buffer.BlockCopy(other.Q_Q10, 0, Q_Q10, 0, SilkConstants.DECISION_DELAY * sizeof(int));
+                Buffer.BlockCopy(other.Xq_Q14, 0, Xq_Q14, 0, SilkConstants.DECISION_DELAY * sizeof(int));
+                Buffer.BlockCopy(other.Pred_Q15, 0, Pred_Q15, 0, SilkConstants.DECISION_DELAY * sizeof(int));
+                Buffer.BlockCopy(other.Shape_Q14, 0, Shape_Q14, 0, SilkConstants.DECISION_DELAY * sizeof(int));
+                Buffer.BlockCopy(other.sAR2_Q14, 0, sAR2_Q14, 0, sAR2_Q14.Length * sizeof(int));
                 LF_AR_Q14 = other.LF_AR_Q14;
                 Seed = other.Seed;
                 SeedInit = other.SeedInit;
@@ -932,6 +932,7 @@ namespace Concentus.Silk.Structs
                 {
                     /* Delayed decision state */
                     psDD = psDelDec[k];
+                    int[] psDD_sAR2 = psDD.sAR2_Q14;
 
                     /* Sample state */
                     SS_left = 2 * k;
@@ -971,25 +972,25 @@ namespace Concentus.Silk.Structs
                     /* Noise shape feedback */
                     Inlines.OpusAssert((shapingLPCOrder & 1) == 0);   /* check that order is even */
                                                                       /* Output of lowpass section */
-                    tmp2 = Inlines.silk_SMLAWB(psDD.sLPC_Q14[psLPC_Q14], psDD.sAR2_Q14[0], warping_Q16);
+                    tmp2 = Inlines.silk_SMLAWB(psDD.sLPC_Q14[psLPC_Q14], psDD_sAR2[0], warping_Q16);
                     /* Output of allpass section */
-                    tmp1 = Inlines.silk_SMLAWB(psDD.sAR2_Q14[0], psDD.sAR2_Q14[1] - tmp2, warping_Q16);
-                    psDD.sAR2_Q14[0] = tmp2;
+                    tmp1 = Inlines.silk_SMLAWB(psDD_sAR2[0], psDD_sAR2[1] - tmp2, warping_Q16);
+                    psDD_sAR2[0] = tmp2;
                     n_AR_Q14 = Inlines.silk_RSHIFT(shapingLPCOrder, 1);
                     n_AR_Q14 = Inlines.silk_SMLAWB(n_AR_Q14, tmp2, AR_shp_Q13[AR_shp_Q13_ptr]);
                     /* Loop over allpass sections */
                     for (j = 2; j < shapingLPCOrder; j += 2)
                     {
                         /* Output of allpass section */
-                        tmp2 = Inlines.silk_SMLAWB(psDD.sAR2_Q14[j - 1], psDD.sAR2_Q14[j + 0] - tmp1, warping_Q16);
-                        psDD.sAR2_Q14[j - 1] = tmp1;
+                        tmp2 = Inlines.silk_SMLAWB(psDD_sAR2[j - 1], psDD_sAR2[j + 0] - tmp1, warping_Q16);
+                        psDD_sAR2[j - 1] = tmp1;
                         n_AR_Q14 = Inlines.silk_SMLAWB(n_AR_Q14, tmp1, AR_shp_Q13[AR_shp_Q13_ptr + j - 1]);
                         /* Output of allpass section */
-                        tmp1 = Inlines.silk_SMLAWB(psDD.sAR2_Q14[j + 0], psDD.sAR2_Q14[j + 1] - tmp2, warping_Q16);
-                        psDD.sAR2_Q14[j + 0] = tmp2;
+                        tmp1 = Inlines.silk_SMLAWB(psDD_sAR2[j + 0], psDD_sAR2[j + 1] - tmp2, warping_Q16);
+                        psDD_sAR2[j + 0] = tmp2;
                         n_AR_Q14 = Inlines.silk_SMLAWB(n_AR_Q14, tmp2, AR_shp_Q13[AR_shp_Q13_ptr + j]);
                     }
-                    psDD.sAR2_Q14[shapingLPCOrder - 1] = tmp1;
+                    psDD_sAR2[shapingLPCOrder - 1] = tmp1;
                     n_AR_Q14 = Inlines.silk_SMLAWB(n_AR_Q14, tmp1, AR_shp_Q13[AR_shp_Q13_ptr + shapingLPCOrder - 1]);
 
                     n_AR_Q14 = Inlines.silk_LSHIFT(n_AR_Q14, 1);                                      /* Q11 . Q12 */
@@ -1201,7 +1202,7 @@ namespace Concentus.Silk.Structs
             for (k = 0; k < nStatesDelayedDecision; k++)
             {
                 psDD = psDelDec[k];
-                Array.Copy(psDD.sLPC_Q14, length, psDD.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
+                Buffer.BlockCopy(psDD.sLPC_Q14, length * sizeof(int), psDD.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH * sizeof(int));
             }
         }
 

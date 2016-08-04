@@ -586,7 +586,7 @@ namespace Concentus.Silk
                         prev_out_Q10[ind_max_min] = prev_out_Q10[ind_min_max + SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
                         RD_min_Q25[ind_max_min] = 0;
                         RD_max_Q25[ind_min_max] = int.MaxValue;
-                        Array.Copy(ind[ind_min_max], ind[ind_max_min], SilkConstants.MAX_LPC_ORDER);
+                        Buffer.BlockCopy(ind[ind_min_max], 0, ind[ind_max_min], 0, order * sizeof(sbyte));
                     }
 
                     // increment index if it comes from the upper half
