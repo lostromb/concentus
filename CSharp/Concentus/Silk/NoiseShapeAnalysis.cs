@@ -430,7 +430,7 @@ namespace Concentus.Silk
                     b_Q14 = fs_kHz_inv + Inlines.silk_DIV32_16(((int)((3.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(3.0f, 14)*/, psEncCtrl.pitchL[k]);
                     /* Pack two coefficients in one int32 */
                     psEncCtrl.LF_shp_Q14[k] = Inlines.silk_LSHIFT(((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/ - b_Q14 - Inlines.silk_SMULWB(strength_Q16, b_Q14), 16);
-                    psEncCtrl.LF_shp_Q14[k] |= (b_Q14 - ((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/) & 0xFFFF; // opus bug: again, cast to ushort was done here where bitwise masking was intended
+                    psEncCtrl.LF_shp_Q14[k] |= (b_Q14 - ((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/) & 0xFFFF;
                 }
                 Inlines.OpusAssert(((int)((TuningParameters.HARM_HP_NOISE_COEF) * ((long)1 << (24)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.HARM_HP_NOISE_COEF, 24)*/ < ((int)((0.5f) * ((long)1 << (24)) + 0.5))/*Inlines.SILK_CONST(0.5f, 24)*/); /* Guarantees that second argument to SMULWB() is within range of an short*/
                 Tilt_Q16 = -((int)((TuningParameters.HP_NOISE_COEF) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.HP_NOISE_COEF, 16)*/ -
@@ -442,7 +442,7 @@ namespace Concentus.Silk
                                                                                  /* Pack two coefficients in one int32 */
                 psEncCtrl.LF_shp_Q14[0] = Inlines.silk_LSHIFT(((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/ - b_Q14 -
                     Inlines.silk_SMULWB(strength_Q16, Inlines.silk_SMULWB(((int)((0.6f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.6f, 16)*/, b_Q14)), 16);
-                psEncCtrl.LF_shp_Q14[0] |= (b_Q14 - ((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/) & 0xFFFF; // opus bug: cast to ushort is better expressed as a bitwise operator, otherwise runtime analysis might flag it as an overflow error
+                psEncCtrl.LF_shp_Q14[0] |= (b_Q14 - ((int)((1.0f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(1.0f, 14)*/) & 0xFFFF;
                 for (k = 1; k < psEnc.nb_subfr; k++)
                 {
                     psEncCtrl.LF_shp_Q14[k] = psEncCtrl.LF_shp_Q14[0];

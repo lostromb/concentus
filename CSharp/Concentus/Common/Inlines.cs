@@ -59,19 +59,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int MULT16_16SU(int a, int b)
         {
-            return ((int)(short)(a) * (int)(ushort)(b));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16SU(short a, ushort b)
-        {
-            return ((int)(short)(a) * (int)(ushort)(b));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16SU(int a, uint b)
-        {
-            return ((a) * (int)(b));
+            return ((int)(short)(a) * (int)(b & 0xFFFF));
         }
 
         //        /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
@@ -196,7 +184,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short SHL16(short a, int shift)
         {
-            return unchecked((short)(unchecked((ushort)a) << shift));
+            return unchecked((short)(unchecked(a & 0xFFFF) << shift));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
