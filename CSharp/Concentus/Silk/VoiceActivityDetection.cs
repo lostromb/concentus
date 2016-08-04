@@ -217,7 +217,7 @@ namespace Concentus.Silk
             /********************/
             /* Noise estimation */
             /********************/
-            silk_VAD_GetNoiseLevels(new Pointer<int>(Xnrg), psSilk_VAD);
+            silk_VAD_GetNoiseLevels(Xnrg, psSilk_VAD);
 
             /***********************************************/
             /* Signal-plus-noise to noise ratio estimation */
@@ -339,7 +339,7 @@ namespace Concentus.Silk
         /// <param name="pX">I    subband energies [VAD_N_BANDS]</param>
         /// <param name="psSilk_VAD">I/O  Pointer to Silk VAD state</param>
         internal static void silk_VAD_GetNoiseLevels(
-            Pointer<int> pX,
+            int[] pX,
             SilkVADState psSilk_VAD)
         {
             int k;

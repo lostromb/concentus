@@ -55,7 +55,7 @@ namespace Concentus.Structs
         internal int mem_fill;                      /* number of usable samples in the buffer */
         internal readonly float[] prev_band_tonality = new float[OpusConstants.NB_TBANDS];
         internal float prev_tonality;
-        internal readonly Pointer<Pointer<float>> E = Arrays.InitTwoDimensionalArrayPointer<float>(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
+        internal readonly float[][] E = Arrays.InitTwoDimensionalArray<float>(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
         internal readonly float[] lowE = new float[OpusConstants.NB_TBANDS];
         internal readonly float[] highE = new float[OpusConstants.NB_TBANDS];
         internal readonly float[] meanE = new float[OpusConstants.NB_TOT_BANDS];
@@ -105,7 +105,7 @@ namespace Concentus.Structs
             prev_tonality = 0;
             for (int c = 0; c < OpusConstants.NB_FRAMES; c++)
             {
-                E[c].MemSet(0, OpusConstants.NB_TBANDS);
+                Arrays.MemSet<float>(E[c], 0, OpusConstants.NB_TBANDS);
             }
             Arrays.MemSet<float>(lowE,0, OpusConstants.NB_TBANDS);
             Arrays.MemSet<float>(highE,0, OpusConstants.NB_TBANDS);

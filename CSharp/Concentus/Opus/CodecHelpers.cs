@@ -264,8 +264,8 @@ namespace Concentus
         internal static int transient_viterbi(float[] E, float[] E_1, int N, int frame_cost, int rate)
         {
             int i;
-            Pointer<Pointer<float>> cost = Arrays.InitTwoDimensionalArrayPointer<float>(MAX_DYNAMIC_FRAMESIZE, 16);
-            Pointer<Pointer<int>> states = Arrays.InitTwoDimensionalArrayPointer<int>(MAX_DYNAMIC_FRAMESIZE, 16);
+            float[][] cost = Arrays.InitTwoDimensionalArray<float>(MAX_DYNAMIC_FRAMESIZE, 16);
+            int[][] states = Arrays.InitTwoDimensionalArray<int>(MAX_DYNAMIC_FRAMESIZE, 16);
             float best_cost;
             int best_state;
             float factor;
@@ -567,108 +567,108 @@ namespace Concentus
             }
         }
 
-        internal static void opus_pcm_soft_clip(Pointer<float> _x, int N, int C, Pointer<float> declip_mem)
-        {
-            int c;
-            int i;
-            Pointer<float> x;
+        //internal static void opus_pcm_soft_clip(Pointer<float> _x, int N, int C, Pointer<float> declip_mem)
+        //{
+        //    int c;
+        //    int i;
+        //    Pointer<float> x;
 
-            if (C < 1 || N < 1 || _x == null || declip_mem == null) return;
+        //    if (C < 1 || N < 1 || _x == null || declip_mem == null) return;
 
-            /* First thing: saturate everything to +/- 2 which is the highest level our
-               non-linearity can handle. At the point where the signal reaches +/-2,
-               the derivative will be zero anyway, so this doesn't introduce any
-               discontinuity in the derivative. */
-            for (i = 0; i < N * C; i++)
-                _x[i] = Inlines.MAX16(-2.0f, Inlines.MIN16(2.0f, _x[i]));
-            for (c = 0; c < C; c++)
-            {
-                float a;
-                float x0;
-                int curr;
+        //    /* First thing: saturate everything to +/- 2 which is the highest level our
+        //       non-linearity can handle. At the point where the signal reaches +/-2,
+        //       the derivative will be zero anyway, so this doesn't introduce any
+        //       discontinuity in the derivative. */
+        //    for (i = 0; i < N * C; i++)
+        //        _x[i] = Inlines.MAX16(-2.0f, Inlines.MIN16(2.0f, _x[i]));
+        //    for (c = 0; c < C; c++)
+        //    {
+        //        float a;
+        //        float x0;
+        //        int curr;
 
-                x = _x.Point(c);
-                a = declip_mem[c];
-                /* Continue applying the non-linearity from the previous frame to avoid
-                   any discontinuity. */
-                for (i = 0; i < N; i++)
-                {
-                    if (x[i * C] * a >= 0)
-                        break;
-                    x[i * C] = x[i * C] + a * x[i * C] * x[i * C];
-                }
+        //        x = _x.Point(c);
+        //        a = declip_mem[c];
+        //        /* Continue applying the non-linearity from the previous frame to avoid
+        //           any discontinuity. */
+        //        for (i = 0; i < N; i++)
+        //        {
+        //            if (x[i * C] * a >= 0)
+        //                break;
+        //            x[i * C] = x[i * C] + a * x[i * C] * x[i * C];
+        //        }
 
-                curr = 0;
-                x0 = x[0];
+        //        curr = 0;
+        //        x0 = x[0];
 
-                while (true)
-                {
-                    int start, end;
-                    float maxval;
-                    int special = 0;
-                    int peak_pos;
-                    for (i = curr; i < N; i++)
-                    {
-                        if (x[i * C] > 1 || x[i * C] < -1)
-                            break;
-                    }
-                    if (i == N)
-                    {
-                        a = 0;
-                        break;
-                    }
-                    peak_pos = i;
-                    start = end = i;
-                    maxval = Inlines.ABS16(x[i * C]);
-                    /* Look for first zero crossing before clipping */
-                    while (start > 0 && x[i * C] * x[(start - 1) * C] >= 0)
-                        start--;
-                    /* Look for first zero crossing after clipping */
-                    while (end < N && x[i * C] * x[end * C] >= 0)
-                    {
-                        /* Look for other peaks until the next zero-crossing. */
-                        if (Inlines.ABS16(x[end * C]) > maxval)
-                        {
-                            maxval = Inlines.ABS16(x[end * C]);
-                            peak_pos = end;
-                        }
-                        end++;
-                    }
-                    /* Detect the special case where we clip before the first zero crossing */
-                    special = (start == 0 && x[i * C] * x[0] >= 0) ? 1 : 0;
+        //        while (true)
+        //        {
+        //            int start, end;
+        //            float maxval;
+        //            int special = 0;
+        //            int peak_pos;
+        //            for (i = curr; i < N; i++)
+        //            {
+        //                if (x[i * C] > 1 || x[i * C] < -1)
+        //                    break;
+        //            }
+        //            if (i == N)
+        //            {
+        //                a = 0;
+        //                break;
+        //            }
+        //            peak_pos = i;
+        //            start = end = i;
+        //            maxval = Inlines.ABS16(x[i * C]);
+        //            /* Look for first zero crossing before clipping */
+        //            while (start > 0 && x[i * C] * x[(start - 1) * C] >= 0)
+        //                start--;
+        //            /* Look for first zero crossing after clipping */
+        //            while (end < N && x[i * C] * x[end * C] >= 0)
+        //            {
+        //                /* Look for other peaks until the next zero-crossing. */
+        //                if (Inlines.ABS16(x[end * C]) > maxval)
+        //                {
+        //                    maxval = Inlines.ABS16(x[end * C]);
+        //                    peak_pos = end;
+        //                }
+        //                end++;
+        //            }
+        //            /* Detect the special case where we clip before the first zero crossing */
+        //            special = (start == 0 && x[i * C] * x[0] >= 0) ? 1 : 0;
 
-                    /* Compute a such that maxval + a*maxval^2 = 1 */
-                    a = (maxval - 1) / (maxval * maxval);
-                    if (x[i * C] > 0)
-                        a = -a;
-                    /* Apply soft clipping */
-                    for (i = start; i < end; i++)
-                        x[i * C] = x[i * C] + a * x[i * C] * x[i * C];
+        //            /* Compute a such that maxval + a*maxval^2 = 1 */
+        //            a = (maxval - 1) / (maxval * maxval);
+        //            if (x[i * C] > 0)
+        //                a = -a;
+        //            /* Apply soft clipping */
+        //            for (i = start; i < end; i++)
+        //                x[i * C] = x[i * C] + a * x[i * C] * x[i * C];
 
-                    if (special != 0 && peak_pos >= 2)
-                    {
-                        /* Add a linear ramp from the first sample to the signal peak.
-                           This avoids a discontinuity at the beginning of the frame. */
-                        float delta;
-                        float offset = x0 - x[0];
-                        delta = offset / peak_pos;
-                        for (i = curr; i < peak_pos; i++)
-                        {
-                            offset -= delta;
-                            x[i * C] += offset;
-                            x[i * C] = Inlines.MAX16(-1.0f, Inlines.MIN16(1.0f, x[i * C]));
-                        }
-                    }
-                    curr = end;
-                    if (curr == N)
-                    {
-                        break;
-                    }
-                }
+        //            if (special != 0 && peak_pos >= 2)
+        //            {
+        //                /* Add a linear ramp from the first sample to the signal peak.
+        //                   This avoids a discontinuity at the beginning of the frame. */
+        //                float delta;
+        //                float offset = x0 - x[0];
+        //                delta = offset / peak_pos;
+        //                for (i = curr; i < peak_pos; i++)
+        //                {
+        //                    offset -= delta;
+        //                    x[i * C] += offset;
+        //                    x[i * C] = Inlines.MAX16(-1.0f, Inlines.MIN16(1.0f, x[i * C]));
+        //                }
+        //            }
+        //            curr = end;
+        //            if (curr == N)
+        //            {
+        //                break;
+        //            }
+        //        }
 
-                declip_mem[c] = a;
-            }
-        }
+        //        declip_mem[c] = a;
+        //    }
+        //}
 
 
         public static string opus_strerror(int error)

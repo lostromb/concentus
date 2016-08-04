@@ -429,26 +429,26 @@ namespace Concentus.Celt
         }
 
 
-        internal static void opus_ifft(FFTState st, Pointer<int> fin, Pointer<int> fout)
-        {
-            int i;
-            Inlines.OpusAssert(fin != fout, "In-place iFFT not supported");
+        //internal static void opus_ifft(FFTState st, Pointer<int> fin, Pointer<int> fout)
+        //{
+        //    int i;
+        //    Inlines.OpusAssert(fin != fout, "In-place iFFT not supported");
 
-            /* Bit-reverse the input */
-            for (i = 0; i < st.nfft * 2; i++)
-            {
-                fout[st.bitrev[i]] = fin[i];
-            }
+        //    /* Bit-reverse the input */
+        //    for (i = 0; i < st.nfft * 2; i++)
+        //    {
+        //        fout[st.bitrev[i]] = fin[i];
+        //    }
 
-            for (i = 1; i < st.nfft * 2; i += 2)
-            {
-                fout[i] = -fout[i];
-            }
+        //    for (i = 1; i < st.nfft * 2; i += 2)
+        //    {
+        //        fout[i] = -fout[i];
+        //    }
 
-            opus_fft_impl(st, fout.Data, fout.Offset);
+        //    opus_fft_impl(st, fout.Data, fout.Offset);
 
-            for (i = 1; i < st.nfft * 2; i += 2)
-                fout[i] = -fout[i];
-        }
+        //    for (i = 1; i < st.nfft * 2; i += 2)
+        //        fout[i] = -fout[i];
+        //}
     }
 }

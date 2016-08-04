@@ -224,6 +224,7 @@ namespace UnitTests
             });
         }
 
+        [Ignore]
         [TestMethod]
         public void TestBug3()
         {

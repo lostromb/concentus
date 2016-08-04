@@ -47,14 +47,12 @@ namespace Concentus.Common
         )
         {
             int corrCount = Inlines.silk_min_int(inputDataSize, correlationCount);
-            scale.Val = Autocorrelation._celt_autocorr(inputData, results, null, 0, corrCount - 1, inputDataSize);
+            scale.Val = Autocorrelation._celt_autocorr(inputData, results, corrCount - 1, inputDataSize);
         }
 
         internal static int _celt_autocorr(
                   short[] x,   /*  in: [0...n-1] samples x   */
                    int[] ac,  /* out: [0...lag-1] ac values */
-                   Pointer<short> window,
-                   int overlap,
                    int lag,
                    int n
                   )
@@ -66,23 +64,8 @@ namespace Concentus.Common
             short[] xptr;
             short[] xx = new short[n];
             Inlines.OpusAssert(n > 0);
-            Inlines.OpusAssert(overlap >= 0);
-            if (overlap == 0)
-            {
-                xptr = x;
-            }
-            else {
-                for (i = 0; i < n; i++)
-                {
-                    xx[i] = x[i];
-                }
-                for (i = 0; i < overlap; i++)
-                {
-                    xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
-                    xx[n - i - 1] = Inlines.MULT16_16_Q15(x[n - i - 1], window[i]);
-                }
-                xptr = xx;
-            }
+            xptr = x;
+
             shift = 0;
             {
                 int ac0;
