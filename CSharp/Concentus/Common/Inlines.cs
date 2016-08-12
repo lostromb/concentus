@@ -2672,6 +2672,18 @@ namespace Concentus.Common
             return a;
         }
 
-#endregion
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int SignedByteToUnsignedInt(sbyte b)
+        {
+            return (b & 0xFF);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int SignedByteToUnsignedInt(byte b)
+        {
+            return (b & 0xFF);
+        }
+
+        #endregion
     }
 }

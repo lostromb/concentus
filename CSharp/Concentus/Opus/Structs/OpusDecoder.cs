@@ -603,7 +603,7 @@ namespace Concentus.Structs
         {
             int i, nb_samples;
             int count, offset;
-            byte toc;
+            sbyte toc;
             int packet_frame_size, packet_stream_channels;
             packet_offset = 0;
             OpusBandwidth packet_bandwidth;

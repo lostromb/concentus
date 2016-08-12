@@ -46,7 +46,7 @@ namespace Concentus.Structs
 {
     public class OpusRepacketizer
     {
-        internal byte toc = 0;
+        internal sbyte toc = 0;
         internal int nb_frames = 0;
         internal readonly byte[][] frames = new byte[48][];
         internal readonly int[] frames_ptrs = new int[48];
@@ -88,7 +88,7 @@ namespace Concentus.Structs
 
         internal int opus_repacketizer_cat_impl(byte[] data, int data_ptr, int len, int self_delimited)
         {
-            byte dummy_toc;
+            sbyte dummy_toc;
             int dummy_offset;
             int curr_nb_frames, ret;
             /* Set of check ToC */
@@ -99,7 +99,7 @@ namespace Concentus.Structs
 
             if (this.nb_frames == 0)
             {
-                this.toc = data[data_ptr];
+                this.toc = EntropyCoder.Convert(data[data_ptr]);
                 this.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, 8000);
             }
             else if ((this.toc & 0xFC) != (data[data_ptr] & 0xFC))
@@ -490,7 +490,7 @@ namespace Concentus.Structs
         {
             int s;
             int count;
-            byte dummy_toc;
+            sbyte dummy_toc;
             short[] size = new short[48];
             int packet_offset;
             int dummy_offset;
@@ -535,7 +535,7 @@ namespace Concentus.Structs
         public static int UnpadMultistreamPacket(byte[] data, int data_offset, int len, int nb_streams)
         {
             int s;
-            byte dummy_toc;
+            sbyte dummy_toc;
             short[] size = new short[48];
             int packet_offset;
             int dummy_offset;

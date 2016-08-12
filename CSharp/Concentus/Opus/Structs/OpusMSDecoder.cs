@@ -148,7 +148,7 @@ namespace Concentus.Structs
         {
             int s;
             int count;
-            byte toc;
+            sbyte toc;
             short[] size = new short[48];
             int samples = 0;
             int packet_offset;

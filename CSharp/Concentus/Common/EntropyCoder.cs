@@ -202,17 +202,31 @@ namespace Concentus.Common
             this.error = other.error;
         }
 
-        private static sbyte Convert(byte x)
+        public static sbyte Convert(byte x)
         {
             return (sbyte)x;
         }
 
-        private static byte Convert(sbyte x)
+        public static byte Convert(sbyte x)
         {
             return (byte)x;
         }
 
-        private static void Convert(sbyte[] input, int input_ptr, byte[] output, int output_ptr, int size)
+        public static byte[] Convert(sbyte[] x)
+        {
+            byte[] returnVal = new byte[x.Length];
+            Convert(x, 0, returnVal, 0, x.Length);
+            return returnVal;
+        }
+
+        public static sbyte[] Convert(byte[] x)
+        {
+            sbyte[] returnVal = new sbyte[x.Length];
+            Convert(x, 0, returnVal, 0, x.Length);
+            return returnVal;
+        }
+
+        public static void Convert(sbyte[] input, int input_ptr, byte[] output, int output_ptr, int size)
         {
             for (int c = 0; c < size; c++)
             {
@@ -220,7 +234,7 @@ namespace Concentus.Common
             }
         }
 
-        private static void Convert(byte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
+        public static void Convert(byte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
         {
             for (int c = 0; c < size; c++)
             {
@@ -228,7 +242,7 @@ namespace Concentus.Common
             }
         }
 
-        private static void Convert(byte[] input, int input_ptr, byte[] output, int output_ptr, int size)
+        public static void Convert(byte[] input, int input_ptr, byte[] output, int output_ptr, int size)
         {
             for (int c = 0; c < size; c++)
             {
@@ -236,7 +250,7 @@ namespace Concentus.Common
             }
         }
 
-        private static void Convert(sbyte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
+        public static void Convert(sbyte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
         {
             for (int c = 0; c < size; c++)
             {
