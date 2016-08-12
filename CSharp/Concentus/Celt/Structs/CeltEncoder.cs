@@ -513,7 +513,7 @@ namespace Concentus.Celt.Structs
             if (enc == null)
             {
                 enc = new EntropyCoder();
-                enc.enc_init(compressed, compressed_ptr, (uint)nbCompressedBytes);
+                enc.enc_init(compressed, compressed_ptr, nbCompressedBytes);
             }
 
             if (vbr_rate > 0)
@@ -538,7 +538,7 @@ namespace Concentus.Celt.Structs
                     {
                         nbCompressedBytes = nbFilledBytes + max_allowed;
                         nbAvailableBytes = max_allowed;
-                        enc.enc_shrink((uint)nbCompressedBytes);
+                        enc.enc_shrink(nbCompressedBytes);
                     }
                 }
             }
@@ -570,7 +570,7 @@ namespace Concentus.Celt.Structs
                     effectiveBytes = nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, nbFilledBytes + 2);
                     total_bits = nbCompressedBytes * 8;
                     nbAvailableBytes = 2;
-                    enc.enc_shrink((uint)nbCompressedBytes);
+                    enc.enc_shrink(nbCompressedBytes);
                 }
                 /* Pretend we've filled all the remaining bits with zeros
                       (that's what the initialiser did anyway) */
@@ -1035,7 +1035,7 @@ namespace Concentus.Celt.Structs
                 nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, nbAvailableBytes + nbFilledBytes);
                 /*printf("%d\n", nbCompressedBytes*50*8);*/
                 /* This moves the raw bits to take into account the new compressed size */
-                enc.enc_shrink((uint)nbCompressedBytes);
+                enc.enc_shrink(nbCompressedBytes);
             }
 
             /* Bit allocation */

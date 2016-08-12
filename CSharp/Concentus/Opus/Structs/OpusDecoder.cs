@@ -253,7 +253,7 @@ namespace Concentus.Structs
             {
                 audiosize = this.frame_size;
                 mode = this.mode;
-                dec.dec_init(data, data_ptr, (uint)len);
+                dec.dec_init(data, data_ptr, len);
             }
             else {
                 audiosize = frame_size;
@@ -438,7 +438,7 @@ namespace Concentus.Structs
                         redundancy = 0;
                     }
                     /* Shrink decoder because of raw bits */
-                    dec.storage = (uint)(dec.storage - redundancy_bytes);
+                    dec.storage = (dec.storage - redundancy_bytes);
                 }
             }
             if (mode != OpusMode.MODE_CELT_ONLY)

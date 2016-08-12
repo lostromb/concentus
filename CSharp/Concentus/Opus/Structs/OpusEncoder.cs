@@ -862,7 +862,7 @@ namespace Concentus.Structs
 
             data_ptr += 1;
 
-            enc.enc_init(data, data_ptr, (uint)(max_data_bytes - 1));
+            enc.enc_init(data, data_ptr, (max_data_bytes - 1));
 
             pcm_buf = new short[(total_buffer + frame_size) * this.channels];
             Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
@@ -1261,7 +1261,7 @@ namespace Concentus.Structs
             }
             else {
                 nb_compr_bytes = Inlines.IMIN((max_data_bytes - 1) - redundancy_bytes, nb_compr_bytes);
-                enc.enc_shrink((uint)nb_compr_bytes);
+                enc.enc_shrink(nb_compr_bytes);
             }
 
             if (this.analysis.enabled && redundancy != 0 || this.mode != OpusMode.MODE_SILK_ONLY)

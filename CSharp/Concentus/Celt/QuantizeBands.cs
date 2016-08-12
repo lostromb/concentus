@@ -219,9 +219,9 @@ namespace Concentus.Celt
                 int intra_buf;
                 EntropyCoder enc_intra_state = new EntropyCoder(); // [porting note] stack variable
                 int tell_intra;
-                uint nstart_bytes;
-                uint nintra_bytes;
-                uint save_bytes;
+                int nstart_bytes;
+                int nintra_bytes;
+                int save_bytes;
                 int badness2;
                 byte[] intra_bits = null;
 
@@ -229,16 +229,16 @@ namespace Concentus.Celt
 
                 enc_intra_state.Assign(enc);
 
-                nstart_bytes = enc_start_state.range_bytes();
-                nintra_bytes = enc_intra_state.range_bytes();
-                intra_buf = enc_intra_state.buf_ptr + (int)nstart_bytes;
+                nstart_bytes = (int)enc_start_state.range_bytes();
+                nintra_bytes = (int)enc_intra_state.range_bytes();
+                intra_buf = (int)nstart_bytes;
                 save_bytes = nintra_bytes - nstart_bytes;
 
                 if (save_bytes != 0)
                 {
-                    intra_bits = new byte[(int)save_bytes];
+                    intra_bits = new byte[save_bytes];
                     /* Copy bits from intra bit-stream */
-                    Array.Copy(enc_intra_state.buf, intra_buf, intra_bits, 0, (int)save_bytes);
+                    Array.Copy(enc_intra_state.get_buffer(), intra_buf, intra_bits, 0, save_bytes);
                 }
 
                 enc.Assign(enc_start_state);
@@ -252,7 +252,7 @@ namespace Concentus.Celt
                     /* Copy intra bits to bit-stream */
                     if (intra_bits != null)
                     {
-                        Array.Copy(intra_bits, 0, enc_intra_state.buf, intra_buf, (int)(nintra_bytes - nstart_bytes));
+                        enc_intra_state.write_buffer(intra_bits, 0, intra_buf, (nintra_bytes - nstart_bytes));
                     }
                     Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
                     Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);

@@ -660,14 +660,14 @@ namespace Concentus.Celt
             int tf_select_rsv;
             int tf_changed;
             int logp;
-            uint budget;
+            int budget;
             uint tell;
             budget = enc.storage * 8;
             tell = (uint)enc.tell();
             logp = isTransient != 0 ? 2 : 4;
             /* Reserve space to code the tf_select decision. */
             tf_select_rsv = (LM > 0 && tell + logp + 1 <= budget) ? 1 : 0;
-            budget -= (uint)tf_select_rsv;
+            budget -= tf_select_rsv;
             curr = tf_changed = 0;
             for (i = start; i < end; i++)
             {
@@ -1159,14 +1159,14 @@ namespace Concentus.Celt
             int tf_select_rsv;
             int tf_changed;
             int logp;
-            uint budget;
+            int budget;
             uint tell;
 
             budget = dec.storage * 8;
             tell = (uint)dec.tell();
             logp = isTransient != 0 ? 2 : 4;
             tf_select_rsv = (LM > 0 && tell + logp + 1 <= budget) ? 1 : 0;
-            budget -= (uint)tf_select_rsv;
+            budget -= tf_select_rsv;
             tf_changed = curr = 0;
             for (i = start; i < end; i++)
             {

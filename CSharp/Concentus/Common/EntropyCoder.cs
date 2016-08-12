@@ -34,8 +34,9 @@ namespace Concentus.Common
 {
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
-    
+
     /*A range decoder.
   This is an entropy decoder based upon \cite{Mar79}, which is itself a
    rediscovery of the FIFO arithmetic code introduced by \cite{Pas76}.
@@ -97,7 +98,7 @@ namespace Concentus.Common
 
         ///*The resolution of fractional-precision bit usage measurements, i.e.,
         //   3 => 1/8th bits.*/
-        public const int BITRES = 3;
+        internal const int BITRES = 3;
 
         /*The number of bits to output at a time.*/
         private const int EC_SYM_BITS = (8);
@@ -123,52 +124,52 @@ namespace Concentus.Common
         //////////////// Coder State //////////////////// 
 
         /*POINTER to Buffered input/output.*/
-        public byte[] buf;
-        public int buf_ptr;
+        private byte[] buf;
+        private int buf_ptr;
 
         /*The size of the buffer.*/
-        public uint storage;
+        internal int storage;
 
         /*The offset at which the last byte containing raw bits was read/written.*/
-        public uint end_offs;
+        internal uint end_offs;
 
         /*Bits that will be read from/written at the end.*/
-        public uint end_window;
+        internal uint end_window;
 
         /*Number of valid bits in end_window.*/
-        public int nend_bits;
+        internal int nend_bits;
 
         /*The total number of whole bits read/written.
           This does not include partial bits currently in the range coder.*/
-        public int nbits_total;
+        internal int nbits_total;
 
         /*The offset at which the next range coder byte will be read/written.*/
-        public uint offs;
+        internal uint offs;
 
         /*The number of values in the current range.*/
-        public uint rng;
+        internal uint rng;
 
         /*In the decoder: the difference between the top of the current range and
            the input value, minus one.
           In the encoder: the low end of the current range.*/
-        public uint val;
+        internal uint val;
 
         /*In the decoder: the saved normalization factor from ec_decode().
           In the encoder: the number of oustanding carry propagating symbols.*/
-        public uint ext;
+        internal uint ext;
 
         /*A buffered input/output symbol, awaiting carry propagation.*/
-        public int rem;
+        internal int rem;
 
         /*Nonzero if an error occurred.*/
-        public int error;
+        internal int error;
 
-        public EntropyCoder()
+        internal EntropyCoder()
         {
             Reset();
         }
 
-        public void Reset()
+        internal void Reset()
         {
             buf = null;
             buf_ptr = 0;
@@ -184,7 +185,7 @@ namespace Concentus.Common
             error = 0;
         }
 
-        public void Assign(EntropyCoder other)
+        internal void Assign(EntropyCoder other)
         {
             this.buf = other.buf;
             this.buf_ptr = other.buf_ptr;
@@ -199,6 +200,18 @@ namespace Concentus.Common
             this.ext = other.ext;
             this.rem = other.rem;
             this.error = other.error;
+        }
+
+        internal byte[] get_buffer()
+        {
+            byte[] convertedBuf = new byte[this.buf.Length - this.buf_ptr];
+            Array.Copy(this.buf, this.buf_ptr, convertedBuf, 0, convertedBuf.Length);
+            return convertedBuf;
+        }
+
+        internal void write_buffer(byte[] data, int data_ptr, int target_offset, int size)
+        {
+            Array.Copy(data, data_ptr, this.buf, target_offset + this.buf_ptr, size);
         }
 
         internal int read_byte()
@@ -260,7 +273,7 @@ namespace Concentus.Common
             }
         }
 
-        internal void dec_init(byte[] _buf, int _buf_ptr, uint _storage)
+        internal void dec_init(byte[] _buf, int _buf_ptr, int _storage)
         {
             this.buf = _buf;
             this.buf_ptr = _buf_ptr;
@@ -487,7 +500,7 @@ namespace Concentus.Common
             }
         }
 
-        internal void enc_init(byte[] _buf, int buf_ptr, uint _size)
+        internal void enc_init(byte[] _buf, int buf_ptr, int _size)
         {
             this.buf = _buf;
             this.buf_ptr = buf_ptr;
@@ -663,7 +676,7 @@ namespace Concentus.Common
             }
         }
 
-        internal void enc_shrink(uint _size)
+        internal void enc_shrink(int _size)
         {
             Inlines.OpusAssert(this.offs + this.end_offs <= _size);
             //(memmove(this.buf + _size - this.end_offs, this.buf + this.storage - this.end_offs, this.end_offs * sizeof(*(dst))))
