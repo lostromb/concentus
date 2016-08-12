@@ -43,7 +43,7 @@ namespace Concentus.Celt
 
     internal static class Rate
     {
-        private static readonly byte[] LOG2_FRAC_TABLE ={
+        private static readonly sbyte[] LOG2_FRAC_TABLE ={
            0,
            8,13,
           16,19,21,23,
@@ -64,7 +64,7 @@ namespace Concentus.Celt
             int lo, hi;
 
             LM++;
-            byte[] cache = m.cache.bits;
+            short[] cache = m.cache.bits;
             int cache_ptr = m.cache.index[LM * m.nbEBands + band];
 
             lo = 0;

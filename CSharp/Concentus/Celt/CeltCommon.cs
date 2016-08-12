@@ -46,7 +46,7 @@ namespace Concentus.Celt
     internal class CeltCommon
     {
         /* Table of 6*64/x, trained on real data to minimize the average error */
-        private static readonly byte[] inv_table = {
+        private static readonly short[] inv_table = {
              255,255,156,110, 86, 70, 59, 51, 45, 40, 37, 33, 31, 28, 26, 25,
               23, 22, 21, 20, 19, 18, 17, 16, 16, 15, 15, 14, 13, 13, 12, 12,
               12, 12, 11, 11, 11, 10, 10, 10,  9,  9,  9,  9,  9,  9,  8,  8,

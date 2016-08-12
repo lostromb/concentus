@@ -67,7 +67,7 @@ namespace Concentus.Celt.Structs
         /// <summary>
         /// Number of bits in each band for several rates
         /// </summary>
-        internal byte[] allocVectors = null;
+        internal short[] allocVectors = null;
         internal short[] logN = null;
 
         internal int[] window = null;

@@ -45,8 +45,8 @@ namespace Concentus.Celt.Structs
     {
         internal int size = 0;
         internal short[] index = null;
-        internal byte[] bits = null;
-        internal byte[] caps = null;
+        internal short[] bits = null;
+        internal short[] caps = null;
 
         internal void Reset()
         {

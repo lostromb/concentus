@@ -994,7 +994,7 @@ namespace Concentus.Celt
             i = ctx.i;
             spread = ctx.spread;
             ec = ctx.ec;
-            byte[] cache = m.cache.bits;
+            short[] cache = m.cache.bits;
             /* If we need 1.5 more bits than we can produce, split the band in two. */
             cache_ptr = m.cache.index[(LM + 1) * m.nbEBands + i];
             if (LM != -1 && b > cache[cache_ptr + cache[cache_ptr]] + 12 && N > 2)
@@ -1151,9 +1151,9 @@ namespace Concentus.Celt
             return cm;
         }
 
-        private static readonly byte[] bit_interleave_table = { 0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3 };
+        private static readonly sbyte[] bit_interleave_table = { 0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3 };
 
-        private static readonly byte[] bit_deinterleave_table ={
+        private static readonly short[] bit_deinterleave_table ={
                            0x00,0x03,0x0C,0x0F,0x30,0x33,0x3C,0x3F,
                            0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF
                      };
@@ -1207,7 +1207,7 @@ namespace Concentus.Celt
                     haar1(X, X_ptr, N >> k, 1 << k);
                 if (lowband != null)
                     haar1(lowband, lowband_ptr, N >> k, 1 << k);
-                fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2;
+                fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2; // ignore the warning; bit_interleave_table cannot be negative
             }
             B >>= recombine;
             N_B <<= recombine;
@@ -1259,7 +1259,7 @@ namespace Concentus.Celt
 
                 for (k = 0; k < recombine; k++)
                 {
-                    cm = bit_deinterleave_table[cm];
+                    cm = (uint)bit_deinterleave_table[cm];
                     haar1(X, X_ptr, N0 >> k, 1 << k);
                 }
                 B <<= recombine;

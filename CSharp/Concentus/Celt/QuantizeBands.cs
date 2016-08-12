@@ -70,7 +70,7 @@ namespace Concentus.Celt
         internal static int quant_coarse_energy_impl(CeltMode m, int start, int end,
               int[][] eBands, int[][] oldEBands,
               int budget, int tell,
-              byte[] prob_model, int[][] error, EntropyCoder enc,
+              short[] prob_model, int[][] error, EntropyCoder enc,
               int C, int LM, int intra, int max_decay, int lfe)
         {
             int i, c;
@@ -350,7 +350,7 @@ namespace Concentus.Celt
 
         internal static void unquant_coarse_energy(CeltMode m, int start, int end, int[] oldEBands, int intra, EntropyCoder dec, int C, int LM)
         {
-            byte[] prob_model = Tables.e_prob_model[LM][intra];
+            short[] prob_model = Tables.e_prob_model[LM][intra];
             int i, c;
             int[] prev = { 0, 0 };
             int coef;
