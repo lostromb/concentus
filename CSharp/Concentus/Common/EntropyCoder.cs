@@ -202,22 +202,58 @@ namespace Concentus.Common
             this.error = other.error;
         }
 
+        private static sbyte Convert(byte x)
+        {
+            return (sbyte)x;
+        }
+
+        private static byte Convert(sbyte x)
+        {
+            return (byte)x;
+        }
+
+        private static void Convert(sbyte[] input, int input_ptr, byte[] output, int output_ptr, int size)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                output[output_ptr + c] = Convert(input[input_ptr + c]);
+            }
+        }
+
+        private static void Convert(byte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                output[output_ptr + c] = Convert(input[input_ptr + c]);
+            }
+        }
+
+        private static void Convert(byte[] input, int input_ptr, byte[] output, int output_ptr, int size)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                output[output_ptr + c] = input[input_ptr + c];
+            }
+        }
+
+        private static void Convert(sbyte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                output[output_ptr + c] = input[input_ptr + c];
+            }
+        }
+
         internal byte[] get_buffer()
         {
             byte[] convertedBuf = new byte[this.storage];
-            for (int c = 0; c < this.storage; c++)
-            {
-                convertedBuf[c] = this.buf[this.buf_ptr + c];
-            }
+            Convert(this.buf, this.buf_ptr, convertedBuf, 0, this.storage);
             return convertedBuf;
         }
 
         internal void write_buffer(byte[] data, int data_ptr, int target_offset, int size)
         {
-            for (int c = 0; c < size; c++)
-            {
-                this.buf[this.buf_ptr + target_offset + c] = data[c + data_ptr];
-            }
+            Convert(data, data_ptr, this.buf, this.buf_ptr + target_offset, size);
         }
 
         internal int read_byte()
