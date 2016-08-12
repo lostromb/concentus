@@ -403,7 +403,7 @@ namespace Concentus.Celt.Structs
             int[] offsets;
             int[] fine_priority;
             int[] tf_res;
-            byte[] collapse_masks;
+            short[] collapse_masks;
             int shortBlocks = 0;
             int isTransient = 0;
             int CC = this.channels;
@@ -1082,7 +1082,7 @@ namespace Concentus.Celt.Structs
             QuantizeBands.quant_fine_energy(mode, start, end, this.oldBandE, error, fine_quant, enc, C);
 
             /* Residual quantisation */
-            collapse_masks = new byte[C * nbEBands];
+            collapse_masks = new short[C * nbEBands];
             Bands.quant_all_bands(1, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   bandE, pulses, shortBlocks, this.spread_decision,
                   dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,

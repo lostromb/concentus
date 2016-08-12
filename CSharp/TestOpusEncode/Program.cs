@@ -287,7 +287,7 @@ namespace TestOpusEncode
 
         internal static int run_test2(bool no_fuzz)
         {
-            byte[] mapping/*[256]*/ = { 0, 1, 255 };
+            short[] mapping/*[256]*/ = { 0, 1, 255 };
             byte[] db62 = new byte[36];
             int i;
             int rc, j;

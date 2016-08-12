@@ -251,7 +251,7 @@ namespace Concentus.Celt
         }
 
         /* This prevents energy collapse for transients with multiple short MDCTs */
-        internal static void anti_collapse(CeltMode m, int[][] X_, byte[] collapse_masks, int LM, int C, int size,
+        internal static void anti_collapse(CeltMode m, int[][] X_, short[] collapse_masks, int LM, int C, int size,
               int start, int end, int[] logE, int[] prev1logE,
               int[] prev2logE, int[] pulses, uint seed)
         {
@@ -1207,7 +1207,7 @@ namespace Concentus.Celt
                     haar1(X, X_ptr, N >> k, 1 << k);
                 if (lowband != null)
                     haar1(lowband, lowband_ptr, N >> k, 1 << k);
-                fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2; // ignore the warning; bit_interleave_table cannot be negative
+                fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2;
             }
             B >>= recombine;
             N_B <<= recombine;
@@ -1456,7 +1456,7 @@ namespace Concentus.Celt
 
 
         internal static void quant_all_bands(int encode, CeltMode m, int start, int end,
-              int[] X_, int[] Y_, byte[] collapse_masks,
+              int[] X_, int[] Y_, short[] collapse_masks,
               int[][] bandE, int[] pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, int[] tf_res, int total_bits,
               int balance, EntropyCoder ec, int LM, int codedBands,
@@ -1511,8 +1511,8 @@ namespace Concentus.Celt
                 int X_ptr, Y_ptr;
                 Y_ptr = 0;
                 int tf_change = 0;
-                uint x_cm;
-                uint y_cm;
+                long x_cm;
+                long y_cm;
                 int last;
 
                 ctx.i = i;

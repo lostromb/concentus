@@ -789,10 +789,9 @@ namespace Concentus.Silk
 
         /* This ordering was found to maximize quality. It improves numerical accuracy of
                silk_NLSF2A_find_poly() compared to "standard" ordering. */
-        private static readonly byte[] ordering16 = { 0, 15, 8, 7, 4, 11, 12, 3, 2, 13, 10, 5, 6, 9, 14, 1 };
-        private static readonly byte[] ordering10 = { 0, 9, 6, 3, 4, 5, 8, 1, 2, 7 };
-
-
+        private static readonly sbyte[] ordering16 = { 0, 15, 8, 7, 4, 11, 12, 3, 2, 13, 10, 5, 6, 9, 14, 1 };
+        private static readonly sbyte[] ordering10 = { 0, 9, 6, 3, 4, 5, 8, 1, 2, 7 };
+        
         /// <summary>
         /// compute whitening filter coefficients from normalized line spectral frequencies
         /// </summary>
@@ -804,8 +803,8 @@ namespace Concentus.Silk
             short[] NLSF,
             int d)
         {
-            
-            byte[] ordering;
+
+            sbyte[] ordering;
             int k, i, dd;
             int[] cos_LSF_QA = new int[d];
             int[] P = new int[d / 2 + 1];

@@ -64,7 +64,7 @@ namespace Concentus.Structs
       int channels,
       int streams,
       int coupled_streams,
-      byte[] mapping
+      short[] mapping
 )
         {
             int i, ret;
@@ -112,7 +112,7 @@ namespace Concentus.Structs
               int channels,
               int streams,
               int coupled_streams,
-              byte[] mapping)
+              short[] mapping)
         {
             int ret;
             OpusMSDecoder st;

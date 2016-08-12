@@ -306,7 +306,7 @@ namespace Concentus.Structs
               int channels,
               int streams,
               int coupled_streams,
-              byte[] mapping,
+              short[] mapping,
               OpusApplication application,
               int surround
         )
@@ -365,7 +365,7 @@ namespace Concentus.Structs
               int mapping_family,
               out int streams,
               out int coupled_streams,
-              byte[] mapping,
+              short[] mapping,
               OpusApplication application
         )
         {
@@ -421,7 +421,7 @@ namespace Concentus.Structs
               int channels,
               int streams,
               int coupled_streams,
-              byte[] mapping,
+              short[] mapping,
               OpusApplication application
         )
         {
@@ -480,7 +480,7 @@ namespace Concentus.Structs
               int mapping_family,
               out int streams,
               out int coupled_streams,
-              byte[] mapping,
+              short[] mapping,
               OpusApplication application
         )
         {

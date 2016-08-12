@@ -476,7 +476,7 @@ namespace Concentus.Celt.Structs
             int[] offsets;
             int[] fine_priority;
             int[] tf_res;
-            byte[] collapse_masks;
+            short[] collapse_masks;
             int[][] out_syn = new int[2][];
             int[] out_syn_ptrs = new int[2];
             int[] oldBandE, oldLogE, oldLogE2, backgroundLogE;
@@ -690,7 +690,7 @@ namespace Concentus.Celt.Structs
             } while (++c < CC);
 
             /* Decode fixed codebook */
-            collapse_masks = new byte[C * nbEBands];
+            collapse_masks = new short[C * nbEBands];
 
             X = Arrays.InitTwoDimensionalArray<int>(C, N);   /**< Interleaved normalised MDCTs */
             
