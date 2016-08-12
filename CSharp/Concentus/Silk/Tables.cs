@@ -254,7 +254,7 @@ namespace Concentus.Silk
             8, 16, 32
         };
 
-        internal static readonly byte[] silk_NLSF_CB1_NB_MB_Q8 = {
+        internal static readonly short[] silk_NLSF_CB1_NB_MB_Q8 = {
                 12,     35,     60,     83,    108,    132,    157,    180,
                206,    228,     15,     32,     55,     77,    101,    125,
                151,    175,    201,    225,     19,     42,     66,     89,
@@ -308,7 +308,7 @@ namespace Concentus.Silk
                 28,     20,     19,     18,     12,     11,      5,      0
         };
 
-        internal static readonly byte[] silk_NLSF_CB2_SELECT_NB_MB = {
+        internal static readonly short[] silk_NLSF_CB2_SELECT_NB_MB = {
                 16,      0,      0,      0,      0,     99,     66,     36,
                 36,     34,     36,     34,     34,     34,     34,     83,
                 69,     36,     52,     34,    116,    102,     70,     68,
@@ -343,7 +343,7 @@ namespace Concentus.Silk
                254,    236,    173,     95,     37,      7,      1,      0
         };
 
-        internal static readonly byte[] silk_NLSF_CB2_BITS_NB_MB_Q5 = {
+        internal static readonly short[] silk_NLSF_CB2_BITS_NB_MB_Q5 = {
                255,    255,    255,    131,      6,    145,    255,    255,
                255,    255,    255,    236,     93,     15,     96,    255,
                255,    255,    255,    255,    194,     83,     25,     71,
@@ -355,7 +355,7 @@ namespace Concentus.Silk
                251,    123,     65,     55,     68,    100,    171,    255
         };
 
-        internal static readonly byte[] silk_NLSF_PRED_NB_MB_Q8 = {
+        internal static readonly short[] silk_NLSF_PRED_NB_MB_Q8 = {
                179,    138,    140,    148,    151,    149,    153,    151,
                163,    116,     67,     82,     59,     92,     72,    100,
                 89,     92
@@ -381,7 +381,7 @@ namespace Concentus.Silk
             deltaMin_Q15 = silk_NLSF_DELTA_MIN_NB_MB_Q15,
         };
 
-        internal static readonly byte[] silk_NLSF_CB1_WB_Q8 = {
+        internal static readonly short[] silk_NLSF_CB1_WB_Q8 = {
                  7,     23,     38,     54,     69,     85,    100,    116,
                131,    147,    162,    178,    193,    208,    223,    239,
                 13,     25,     41,     55,     69,     83,     98,    112,
@@ -459,7 +459,7 @@ namespace Concentus.Silk
                 24,     21,     11,      6,      5,      4,      3,      0
         };
 
-        internal static readonly byte[] silk_NLSF_CB2_SELECT_WB = {
+        internal static readonly short[] silk_NLSF_CB2_SELECT_WB = {
                  0,      0,      0,      0,      0,      0,      0,      1,
                100,    102,    102,     68,     68,     36,     34,     96,
                164,    107,    158,    185,    180,    185,    139,    102,
@@ -506,7 +506,7 @@ namespace Concentus.Silk
                248,    227,    177,    100,     19,      2,      1,      0
         };
 
-        internal static readonly byte[] silk_NLSF_CB2_BITS_WB_Q5 = {
+        internal static readonly short[] silk_NLSF_CB2_BITS_WB_Q5 = {
                255,    255,    255,    156,      4,    154,    255,    255,
                255,    255,    255,    227,    102,     15,     92,    255,
                255,    255,    255,    255,    213,     83,     24,     72,
@@ -518,7 +518,7 @@ namespace Concentus.Silk
                166,    116,     76,     55,     53,    125,    255,    255
         };
 
-        internal static readonly byte[] silk_NLSF_PRED_WB_Q8 = {
+        internal static readonly short[] silk_NLSF_PRED_WB_Q8 = {
                175,    148,    160,    176,    178,    173,    174,    164,
                177,    174,    196,    182,    198,    192,    182,     68,
                 62,     66,     60,     72,    117,     85,     90,    118,
@@ -677,7 +677,7 @@ namespace Concentus.Silk
                113,     63,      0
         };
 
-        internal static readonly byte[] silk_max_pulses_table = {
+        internal static readonly sbyte[] silk_max_pulses_table = {
                  8,     10,     12,     16
         };
 
@@ -894,7 +894,7 @@ namespace Concentus.Silk
                 76,     42,     18,      4,      3,      2,      1,      0
         };
 
-        internal static readonly byte[] silk_shell_code_table_offsets = {
+        internal static readonly short[] silk_shell_code_table_offsets = {
                  0,      0,      2,      5,      9,     14,     20,     27,
                 35,     44,     54,     65,     77,     90,    104,    119,
                135

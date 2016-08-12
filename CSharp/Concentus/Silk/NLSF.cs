@@ -63,7 +63,7 @@ namespace Concentus.Silk
         /// <param name="pCB_Q8">(I) Codebook vectors [K*LPC_order]</param>
         /// <param name="K">(I) Number of codebook vectors</param>
         /// <param name="LPC_order">(I) Number of LPCs</param>
-        internal static void silk_NLSF_VQ(int[] err_Q26, short[] in_Q15, byte[] pCB_Q8, int K, int LPC_order)
+        internal static void silk_NLSF_VQ(int[] err_Q26, short[] in_Q15, short[] pCB_Q8, int K, int LPC_order)
         {
             int diff_Q15, sum_error_Q30, sum_error_Q26;
             int pCB_idx = 0;
@@ -155,7 +155,7 @@ namespace Concentus.Silk
                 short[] x_Q10,
                 sbyte[] indices,
                 int indices_ptr,
-                byte[] pred_coef_Q8,
+                short[] pred_coef_Q8,
                 int quant_step_size_Q16,
                 short order)
         {
@@ -187,11 +187,11 @@ namespace Concentus.Silk
         /// <param name="pred_Q8">(O) LSF predictor [ LPC_ORDER ]</param>
         /// <param name="psNLSF_CB">(I) Codebook object</param>
         /// <param name="CB1_index">(I) Index of vector in first LSF codebook</param>
-        internal static void silk_NLSF_unpack(short[] ec_ix, byte[] pred_Q8, NLSFCodebook psNLSF_CB, int CB1_index)
+        internal static void silk_NLSF_unpack(short[] ec_ix, short[] pred_Q8, NLSFCodebook psNLSF_CB, int CB1_index)
         {
             int i;
-            byte entry;
-            byte[] ec_sel = psNLSF_CB.ec_sel;
+            short entry;
+            short[] ec_sel = psNLSF_CB.ec_sel;
             int ec_sel_ptr = CB1_index * psNLSF_CB.order / 2;
 
             for (i = 0; i < psNLSF_CB.order; i += 2)
@@ -328,14 +328,14 @@ namespace Concentus.Silk
         internal static void silk_NLSF_decode(short[] pNLSF_Q15, sbyte[] NLSFIndices, NLSFCodebook psNLSF_CB)
         {
             int i;
-            byte[] pred_Q8 = new byte[psNLSF_CB.order];
+            short[] pred_Q8 = new short[psNLSF_CB.order];
             short[] ec_ix = new short[psNLSF_CB.order];
             short[] res_Q10 = new short[psNLSF_CB.order];
             short[] W_tmp_QW = new short[psNLSF_CB.order];
             int W_tmp_Q9, NLSF_Q15_tmp;
 
             // Decode first stage 
-            byte[] pCB = psNLSF_CB.CB1_NLSF_Q8;
+            short[] pCB = psNLSF_CB.CB1_NLSF_Q8;
             int pCB_element = NLSFIndices[0] * psNLSF_CB.order;
 
             for (i = 0; i < psNLSF_CB.order; i++)
@@ -388,9 +388,9 @@ namespace Concentus.Silk
             sbyte[] indices,
             short[] x_Q10,
             short[] w_Q5,
-            byte[] pred_coef_Q8,
+            short[] pred_coef_Q8,
             short[] ec_ix,
-            byte[] ec_rates_Q5,
+            short[] ec_rates_Q5,
             int quant_step_size_Q16,
             short inv_quant_step_size_Q6,
             int mu_Q20,
@@ -659,9 +659,9 @@ namespace Concentus.Silk
             short[] NLSF_tmp_Q15 = new short[psNLSF_CB.order];
             short[] W_tmp_QW = new short[psNLSF_CB.order];
             short[] W_adj_Q5 = new short[psNLSF_CB.order];
-            byte[] pred_Q8 = new byte[psNLSF_CB.order];
+            short[] pred_Q8 = new short[psNLSF_CB.order];
             short[] ec_ix = new short[psNLSF_CB.order];
-            byte[] pCB = psNLSF_CB.CB1_NLSF_Q8;
+            short[] pCB = psNLSF_CB.CB1_NLSF_Q8;
             int iCDF_ptr;
             int pCB_element;
             

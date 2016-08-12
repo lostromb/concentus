@@ -58,7 +58,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// POINTER
         /// </summary>
-        internal byte[] CB1_NLSF_Q8 = null;
+        internal short[] CB1_NLSF_Q8 = null;
 
         /// <summary>
         /// POINTER
@@ -68,12 +68,12 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// POINTER to Backward predictor coefs [ order ]
         /// </summary>
-        internal byte[] pred_Q8 = null;
+        internal short[] pred_Q8 = null;
 
         /// <summary>
         /// POINTER to Indices to entropy coding tables [ order ]
         /// </summary>
-        internal byte[] ec_sel = null;
+        internal short[] ec_sel = null;
 
         /// <summary>
         /// POINTER
@@ -83,7 +83,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// POINTER
         /// </summary>
-        internal byte[] ec_Rates_Q5 = null;
+        internal short[] ec_Rates_Q5 = null;
 
         /// <summary>
         /// POINTER
