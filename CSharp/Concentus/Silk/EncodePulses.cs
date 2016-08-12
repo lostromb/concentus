@@ -118,7 +118,7 @@ namespace Concentus.Silk
             int[] pulses_comb = new int[8];
             int abs_pulses_ptr;
             int pulses_ptr;
-            byte[] nBits_ptr;
+            short[] nBits_ptr;
 
             Arrays.MemSet<int>(pulses_comb, 0, 8);
 

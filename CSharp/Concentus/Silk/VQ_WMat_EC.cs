@@ -50,8 +50,8 @@ namespace Concentus.Silk
             int[] W_Q18,                         /* I    weighting matrix                            */
             int W_Q18_ptr,
             sbyte[][] cb_Q7,                         /* I    codebook                                    */
-            byte[] cb_gain_Q7,                    /* I    codebook effective gain                     */
-            byte[] cl_Q5,                         /* I    code length for each codebook vector        */
+            short[] cb_gain_Q7,                    /* I    codebook effective gain                     */
+            short[] cl_Q5,                         /* I    code length for each codebook vector        */
             int mu_Q9,                          /* I    tradeoff betw. weighted error and rate      */
             int max_gain_Q7,                    /* I    maximum sum of absolute LTP coefficients    */
             int L                               /* I    number of vectors in codebook               */

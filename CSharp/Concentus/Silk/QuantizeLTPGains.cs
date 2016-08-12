@@ -54,9 +54,9 @@ namespace Concentus.Silk
         {
             int j, k, cbk_size;
             sbyte[] temp_idx = new sbyte[SilkConstants.MAX_NB_SUBFR];
-            byte[] cl_ptr_Q5;
+            short[] cl_ptr_Q5;
             sbyte[][] cbk_ptr_Q7;
-            byte[] cbk_gain_ptr_Q7;
+            short[] cbk_gain_ptr_Q7;
             int b_Q14_ptr;
             int W_Q18_ptr;
             int rate_dist_Q14_subfr, rate_dist_Q14, min_rate_dist_Q14;

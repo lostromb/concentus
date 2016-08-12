@@ -124,16 +124,16 @@ namespace Concentus.Silk
 
         internal static readonly short silk_LTP_gain_middle_avg_RD_Q14 = 12304;
 
-        internal static readonly byte[] silk_LTP_gain_BITS_Q5_0 = {
+        internal static readonly short[] silk_LTP_gain_BITS_Q5_0 = {
                 15,    131,    138,    138,    155,    155,    173,    173
         };
 
-        internal static readonly byte[] silk_LTP_gain_BITS_Q5_1 = {
+        internal static readonly short[] silk_LTP_gain_BITS_Q5_1 = {
                 69,     93,    115,    118,    131,    138,    141,    138,
                150,    150,    155,    150,    155,    160,    166,    160
         };
 
-        internal static readonly byte[] silk_LTP_gain_BITS_Q5_2 = {
+        internal static readonly short[] silk_LTP_gain_BITS_Q5_2 = {
                131,    128,    134,    141,    141,    141,    145,    145,
                145,    150,    155,    155,    155,    155,    160,    160,
                160,    160,    166,    166,    173,    173,    182,    192,
@@ -146,7 +146,7 @@ namespace Concentus.Silk
             silk_LTP_gain_iCDF_2
         };
 
-        internal static readonly byte[][] silk_LTP_gain_BITS_Q5_ptrs = {
+        internal static readonly short[][] silk_LTP_gain_BITS_Q5_ptrs = {
             silk_LTP_gain_BITS_Q5_0,
             silk_LTP_gain_BITS_Q5_1,
             silk_LTP_gain_BITS_Q5_2
@@ -228,23 +228,23 @@ namespace Concentus.Silk
 
         /* Maximum frequency-dependent response of the pitch taps above,
            computed as max(abs(freqz(taps))) */
-        internal static readonly byte[] silk_LTP_gain_vq_0_gain = {
+        internal static readonly short[] silk_LTP_gain_vq_0_gain = {
               46,      2,     90,     87,     93,     91,     82,     98
         };
 
-        internal static readonly byte[] silk_LTP_gain_vq_1_gain = {
+        internal static readonly short[] silk_LTP_gain_vq_1_gain = {
              109,    120,    118,     12,    113,    115,    117,    119,
               99,     59,     87,    111,     63,    111,    112,     80
         };
 
-        internal static readonly byte[] silk_LTP_gain_vq_2_gain = {
+        internal static readonly short[] silk_LTP_gain_vq_2_gain = {
              126,    124,    125,    124,    129,    121,    126,     23,
              132,    127,    127,    127,    126,    127,    122,    133,
              130,    134,    101,    118,    119,    145,    126,     86,
              124,    120,    123,    119,    170,    173,    107,    109
         };
 
-        internal static readonly byte[][] silk_LTP_vq_gain_ptrs_Q7 = {
+        internal static readonly short[][] silk_LTP_vq_gain_ptrs_Q7 = {
             silk_LTP_gain_vq_0_gain,
             silk_LTP_gain_vq_1_gain,
             silk_LTP_gain_vq_2_gain
@@ -734,48 +734,48 @@ namespace Concentus.Silk
         }
         };
 
-        internal static readonly byte[][] silk_pulses_per_block_BITS_Q5 = {
-        new byte[] {
+        internal static readonly short[][] silk_pulses_per_block_BITS_Q5 = {
+        new short[] {
                 31,     57,    107,    160,    205,    205,    255,    255,
                255,    255,    255,    255,    255,    255,    255,    255,
                255,    255
         },
-        new byte[] {
+        new short[] {
                 69,     47,     67,    111,    166,    205,    255,    255,
                255,    255,    255,    255,    255,    255,    255,    255,
                255,    255
         },
-        new byte[] {
+        new short[] {
                 82,     74,     79,     95,    109,    128,    145,    160,
                173,    205,    205,    205,    224,    255,    255,    224,
                255,    224
         },
-        new byte[] {
+        new short[] {
                125,     74,     59,     69,     97,    141,    182,    255,
                255,    255,    255,    255,    255,    255,    255,    255,
                255,    255
         },
-        new byte[] {
+        new short[] {
                173,    115,     85,     73,     76,     92,    115,    145,
                173,    205,    224,    224,    255,    255,    255,    255,
                255,    255
         },
-        new byte[] {
+        new short[] {
                166,    134,    113,    102,    101,    102,    107,    118,
                125,    138,    145,    155,    166,    182,    192,    192,
                205,    150
         },
-        new byte[] {
+        new short[] {
                224,    182,    134,    101,     83,     79,     85,     97,
                120,    145,    173,    205,    224,    255,    255,    255,
                255,    255
         },
-        new byte[] {
+        new short[] {
                255,    224,    192,    150,    120,    101,     92,     89,
                 93,    102,    118,    134,    160,    182,    192,    224,
                224,    224
         },
-        new byte[] {
+        new short[] {
                255,    224,    224,    182,    155,    134,    118,    109,
                104,    102,    106,    111,    118,    131,    145,    160,
                173,    131
@@ -794,13 +794,13 @@ namespace Concentus.Silk
         }
         };
 
-        internal static readonly byte[][] silk_rate_levels_BITS_Q5 =
+        internal static readonly short[][] silk_rate_levels_BITS_Q5 =
         {
-        new byte[] {
+        new short[] {
                131,     74,    141,     79,     80,    138,     95,    104,
                134
         },
-        new byte[] {
+        new short[] {
                 95,     99,     91,    125,     93,     76,    123,    115,
                123
         }
