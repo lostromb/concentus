@@ -143,11 +143,11 @@ namespace Concentus.Celt
               new sbyte[] { 0, -2, 0, -3,    3, 0, 1,-1},
         };
 
-        internal static readonly byte[] trim_icdf = { 126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0 };
+        internal static readonly short[] trim_icdf = { 126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0 };
         /* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
-        internal static readonly byte[] spread_icdf = { 25, 23, 2, 0 };
+        internal static readonly short[] spread_icdf = { 25, 23, 2, 0 };
 
-        internal static readonly byte[] tapset_icdf = { 2, 1, 0 };
+        internal static readonly short[] tapset_icdf = { 2, 1, 0 };
 
         /* Bit allocation table in units of 1/32 bit/sample (0.1875 dB SNR) */
         internal static readonly byte[] band_allocation = {

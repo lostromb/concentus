@@ -68,9 +68,9 @@ namespace Concentus.Silk
             int[] sum_pulses)
         {
             int i, j, p;
-            byte[] icdf = new byte[2];
+            short[] icdf = new short[2];
             int q_ptr;
-            byte[] sign_icdf = Tables.silk_sign_iCDF;
+            short[] sign_icdf = Tables.silk_sign_iCDF;
             int icdf_ptr;
 
             icdf[1] = 0;
@@ -115,9 +115,9 @@ namespace Concentus.Silk
             int[] sum_pulses)
         {
             int i, j, p;
-            byte[] icdf = new byte[2];
+            short[] icdf = new short[2];
             int q_ptr;
-            byte[] icdf_table = Tables.silk_sign_iCDF;
+            short[] icdf_table = Tables.silk_sign_iCDF;
             int icdf_ptr;
 
             icdf[1] = 0;

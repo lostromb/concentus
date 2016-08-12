@@ -377,8 +377,8 @@ namespace Concentus.Silk
                     if (psEnc.state_Fxx[0].nFramesEncoded == 0 && prefillFlag == 0)
                     {
                         /* Create space at start of payload for VAD and FEC flags */
-                        byte[] iCDF = { 0, 0 };
-                        iCDF[0] = (byte)(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
+                        short[] iCDF = { 0, 0 };
+                        iCDF[0] = (short)(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         psRangeEnc.enc_icdf(0, iCDF, 8);
 
                         /* Encode any LBRR data from previous packet */

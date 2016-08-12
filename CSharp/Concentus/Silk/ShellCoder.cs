@@ -82,7 +82,7 @@ namespace Concentus.Silk
             EntropyCoder psRangeEnc,    /* I/O  compressor data structure                   */
             int p_child1,       /* I    pulse amplitude of first child subframe     */
             int p,              /* I    pulse amplitude of current subframe         */
-            byte[] shell_table    /* I    table of shell cdfs                         */
+            short[] shell_table    /* I    table of shell cdfs                         */
         )
         {
             if (p > 0)
@@ -106,7 +106,7 @@ namespace Concentus.Silk
             int p_child2_ptr,
             EntropyCoder psRangeDec,
             int p,
-            byte[] shell_table)
+            short[] shell_table)
         {
             if (p > 0)
             {

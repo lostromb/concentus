@@ -89,8 +89,8 @@ namespace Concentus.Silk.Structs
         internal int warping_Q16 = 0;                       /* Warping parameter for warped noise shaping                       */
         internal int useCBR = 0;                            /* Flag to enable constant bitrate                                  */
         internal int prefillFlag = 0;                       /* Flag to indicate that only buffers are prefilled, no coding      */
-        internal byte[] pitch_lag_low_bits_iCDF = null;          /* Pointer to iCDF table for low bits of pitch lag index            */
-        internal byte[] pitch_contour_iCDF = null;               /* Pointer to iCDF table for pitch contour index                    */
+        internal short[] pitch_lag_low_bits_iCDF = null;          /* Pointer to iCDF table for low bits of pitch lag index            */
+        internal short[] pitch_contour_iCDF = null;               /* Pointer to iCDF table for pitch contour index                    */
         internal NLSFCodebook psNLSF_CB = null;                        /* Pointer to NLSF codebook                                         */
         internal readonly int[] input_quality_bands_Q15 = new int[SilkConstants.VAD_N_BANDS];
         internal int input_tilt_Q15 = 0;

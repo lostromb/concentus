@@ -63,7 +63,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// POINTER
         /// </summary>
-        internal byte[] CB1_iCDF = null;
+        internal short[] CB1_iCDF = null;
 
         /// <summary>
         /// POINTER to Backward predictor coefs [ order ]
@@ -78,7 +78,7 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// POINTER
         /// </summary>
-        internal byte[] ec_iCDF = null;
+        internal short[] ec_iCDF = null;
 
         /// <summary>
         /// POINTER

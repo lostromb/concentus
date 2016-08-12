@@ -48,7 +48,7 @@ namespace Concentus.Celt
         private static readonly int[] pred_coef = new int[]{ 29440, 26112, 21248, 16384 };
         private static readonly int[] beta_coef = new int[] { 30147, 22282, 12124, 6554 };
         private static readonly int beta_intra = 4915;
-        private static byte[] small_energy_icdf = { 2, 1, 0 };
+        private static short[] small_energy_icdf = { 2, 1, 0 };
 
         internal static int loss_distortion(int[][] eBands, int[][] oldEBands, int start, int end, int len, int C)
         {

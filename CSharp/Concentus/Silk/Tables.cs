@@ -80,20 +80,20 @@ namespace Concentus.Silk
                -8192
          };
 
-        internal static readonly byte[][] silk_gain_iCDF =
+        internal static readonly short[][] silk_gain_iCDF =
         {
-            new byte[] {
+            new short[] {
                    224,    112,     44,     15,      3,      2,      1,      0
             },
-            new byte[] {
+            new short[] {
                    254,    237,    192,    132,     70,     23,      4,      0
             },
-            new byte[] {
+            new short[] {
                    255,    252,    226,    155,     61,     11,      2,      0
             }
         };
 
-        internal static readonly byte[] silk_delta_gain_iCDF = {
+        internal static readonly short[] silk_delta_gain_iCDF = {
                250,    245,    234,    203,     71,     50,     42,     38,
                 35,     33,     31,     29,     28,     27,     26,     25,
                 24,     23,     22,     21,     20,     19,     18,     17,
@@ -102,20 +102,20 @@ namespace Concentus.Silk
                  0
         };
 
-        internal static readonly byte[] silk_LTP_per_index_iCDF = {
+        internal static readonly short[] silk_LTP_per_index_iCDF = {
                179,     99,      0
         };
 
-        internal static readonly byte[] silk_LTP_gain_iCDF_0 = {
+        internal static readonly short[] silk_LTP_gain_iCDF_0 = {
                 71,     56,     43,     30,     21,     12,      6,      0
         };
 
-        internal static readonly byte[] silk_LTP_gain_iCDF_1 = {
+        internal static readonly short[] silk_LTP_gain_iCDF_1 = {
                199,    165,    144,    124,    109,     96,     84,     71,
                 61,     51,     42,     32,     23,     15,      8,      0
         };
 
-        internal static readonly byte[] silk_LTP_gain_iCDF_2 = {
+        internal static readonly short[] silk_LTP_gain_iCDF_2 = {
                241,    225,    211,    199,    187,    175,    164,    153,
                142,    132,    123,    114,    105,     96,     88,     80,
                 72,     64,     57,     50,     44,     38,     33,     29,
@@ -140,7 +140,7 @@ namespace Concentus.Silk
                182,    192,    192,    192,    205,    192,    205,    224
         };
         
-        internal static readonly byte[][] silk_LTP_gain_iCDF_ptrs = {
+        internal static readonly short[][] silk_LTP_gain_iCDF_ptrs = {
             silk_LTP_gain_iCDF_0,
             silk_LTP_gain_iCDF_1,
             silk_LTP_gain_iCDF_2
@@ -297,7 +297,7 @@ namespace Concentus.Silk
                 64,     84,    104,    118,    156,    177,    201,    230
         };
 
-        internal static readonly byte[] silk_NLSF_CB1_iCDF_NB_MB = {
+        internal static readonly short[] silk_NLSF_CB1_iCDF_NB_MB = {
                212,    178,    148,    129,    108,     96,     85,     82,
                 79,     77,     61,     59,     57,     56,     51,     49,
                 48,     45,     42,     41,     40,     38,     36,     34,
@@ -331,7 +331,7 @@ namespace Concentus.Silk
                171,    137,    139,    137,    155,    218,    219,    139
         };
 
-        internal static readonly byte[] silk_NLSF_CB2_iCDF_NB_MB = {
+        internal static readonly short[] silk_NLSF_CB2_iCDF_NB_MB = {
                255,    254,    253,    238,     14,      3,      2,      1,
                  0,    255,    254,    252,    218,     35,      3,      2,
                  1,      0,    255,    254,    250,    208,     59,      4,
@@ -448,7 +448,7 @@ namespace Concentus.Silk
                110,    119,    129,    141,    175,    198,    218,    237
         };
 
-        internal static readonly byte[] silk_NLSF_CB1_iCDF_WB = {
+        internal static readonly short[] silk_NLSF_CB1_iCDF_WB = {
                225,    204,    201,    184,    183,    175,    158,    154,
                153,    135,    119,    115,    113,    110,    109,     99,
                 98,     95,     79,     68,     52,     50,     48,     45,
@@ -494,7 +494,7 @@ namespace Concentus.Silk
                100,    107,    120,    119,     36,    197,     24,      0
         };
 
-        internal static readonly byte[] silk_NLSF_CB2_iCDF_WB = {
+        internal static readonly short[] silk_NLSF_CB2_iCDF_WB = {
                255,    254,    253,    244,     12,      3,      2,      1,
                  0,    255,    254,    252,    224,     38,      3,      2,
                  1,      0,    255,    254,    251,    209,     57,      4,
@@ -566,39 +566,39 @@ namespace Concentus.Silk
                820,   2950,  5000,  6500,  7526,  8266, 10050, 13732
         };
 
-        internal static readonly byte[] silk_stereo_pred_joint_iCDF = {
+        internal static readonly short[] silk_stereo_pred_joint_iCDF = {
             249, 247, 246, 245, 244,
             234, 210, 202, 201, 200,
             197, 174,  82,  59,  56,
              55,  54,  46,  22,  12,
              11,  10,   9,   7,   0
         };
-        internal static readonly byte[] silk_stereo_only_code_mid_iCDF = { 64, 0 };
+        internal static readonly short[] silk_stereo_only_code_mid_iCDF = { 64, 0 };
 
         /* Tables for LBRR flags */
-        internal static readonly byte[] silk_LBRR_flags_2_iCDF = { 203, 150, 0 };
-        internal static readonly byte[] silk_LBRR_flags_3_iCDF = { 215, 195, 166, 125, 110, 82, 0 };
-        internal static readonly byte[][] silk_LBRR_flags_iCDF_ptr = {
+        internal static readonly short[] silk_LBRR_flags_2_iCDF = { 203, 150, 0 };
+        internal static readonly short[] silk_LBRR_flags_3_iCDF = { 215, 195, 166, 125, 110, 82, 0 };
+        internal static readonly short[][] silk_LBRR_flags_iCDF_ptr = {
             silk_LBRR_flags_2_iCDF,
             silk_LBRR_flags_3_iCDF
         };
 
         /* Table for LSB coding */
-        internal static readonly byte[] silk_lsb_iCDF = { 120, 0 };
+        internal static readonly short[] silk_lsb_iCDF = { 120, 0 };
 
         /* Tables for LTPScale */
-        internal static readonly byte[] silk_LTPscale_iCDF = { 128, 64, 0 };
+        internal static readonly short[] silk_LTPscale_iCDF = { 128, 64, 0 };
 
         /* Tables for signal type and offset coding */
-        internal static readonly byte[] silk_type_offset_VAD_iCDF = {
+        internal static readonly short[] silk_type_offset_VAD_iCDF = {
                232,    158,    10,      0
         };
-        internal static readonly byte[] silk_type_offset_no_VAD_iCDF = {
+        internal static readonly short[] silk_type_offset_no_VAD_iCDF = {
                230,      0
         };
 
         /* Tables for NLSF interpolation factor */
-        internal static readonly byte[] silk_NLSF_interpolation_factor_iCDF = { 243, 221, 192, 181, 0 };
+        internal static readonly short[] silk_NLSF_interpolation_factor_iCDF = { 243, 221, 192, 181, 0 };
 
         /* Quantization offsets */
         internal static readonly short[][] silk_Quantization_Offsets_Q10 = {
@@ -610,13 +610,13 @@ namespace Concentus.Silk
         internal static readonly short[] silk_LTPScales_table_Q14 = { 15565, 12288, 8192 };
 
         /* Uniform entropy tables */
-        internal static readonly byte[] silk_uniform3_iCDF = { 171, 85, 0 };
-        internal static readonly byte[] silk_uniform4_iCDF = { 192, 128, 64, 0 };
-        internal static readonly byte[] silk_uniform5_iCDF = { 205, 154, 102, 51, 0 };
-        internal static readonly byte[] silk_uniform6_iCDF = { 213, 171, 128, 85, 43, 0 };
-        internal static readonly byte[] silk_uniform8_iCDF = { 224, 192, 160, 128, 96, 64, 32, 0 };
+        internal static readonly short[] silk_uniform3_iCDF = { 171, 85, 0 };
+        internal static readonly short[] silk_uniform4_iCDF = { 192, 128, 64, 0 };
+        internal static readonly short[] silk_uniform5_iCDF = { 205, 154, 102, 51, 0 };
+        internal static readonly short[] silk_uniform6_iCDF = { 213, 171, 128, 85, 43, 0 };
+        internal static readonly short[] silk_uniform8_iCDF = { 224, 192, 160, 128, 96, 64, 32, 0 };
 
-        internal static readonly byte[] silk_NLSF_EXT_iCDF = { 100, 40, 16, 7, 3, 1, 0 };
+        internal static readonly short[] silk_NLSF_EXT_iCDF = { 100, 40, 16, 7, 3, 1, 0 };
 
         /*  Elliptic/Cauer filters designed with 0.1 dB passband ripple,
                 80 dB minimum stopband attenuation, and
@@ -642,20 +642,20 @@ namespace Concentus.Silk
             new int[] {     35497197,   57401098  }
         };
 
-        internal static readonly byte[] silk_pitch_lag_iCDF = {
+        internal static readonly short[] silk_pitch_lag_iCDF = {
                253,    250,    244,    233,    212,    182,    150,    131,
                120,    110,     98,     85,     72,     60,     49,     40,
                 32,     25,     19,     15,     13,     11,      9,      8,
                  7,      6,      5,      4,      3,      2,      1,      0
         };
 
-        internal static readonly byte[] silk_pitch_delta_iCDF = {
+        internal static readonly short[] silk_pitch_delta_iCDF = {
                210,    208,    206,    203,    199,    193,    183,    168,
                142,    104,     74,     52,     37,     27,     20,     14,
                 10,      6,      4,      2,      0
         };
 
-        internal static readonly byte[] silk_pitch_contour_iCDF = {
+        internal static readonly short[] silk_pitch_contour_iCDF = {
                223,    201,    183,    167,    152,    138,    124,    111,
                 98,     88,     79,     70,     62,     56,     50,     44,
                 39,     35,     31,     27,     24,     21,     18,     16,
@@ -663,17 +663,17 @@ namespace Concentus.Silk
                  1,      0
         };
 
-        internal static readonly byte[] silk_pitch_contour_NB_iCDF = {
+        internal static readonly short[] silk_pitch_contour_NB_iCDF = {
                188,    176,    155,    138,    119,     97,     67,     43,
                 26,     10,      0
         };
 
-        internal static readonly byte[] silk_pitch_contour_10_ms_iCDF = {
+        internal static readonly short[] silk_pitch_contour_10_ms_iCDF = {
                165,    119,     80,     61,     47,     35,     27,     20,
                 14,      9,      4,      0
         };
 
-        internal static readonly byte[] silk_pitch_contour_10_ms_NB_iCDF = {
+        internal static readonly short[] silk_pitch_contour_10_ms_NB_iCDF = {
                113,     63,      0
         };
 
@@ -681,53 +681,53 @@ namespace Concentus.Silk
                  8,     10,     12,     16
         };
 
-        internal static readonly byte[][] silk_pulses_per_block_iCDF = {
-        new byte[] {
+        internal static readonly short[][] silk_pulses_per_block_iCDF = {
+        new short[] {
                125,     51,     26,     18,     15,     12,     11,     10,
                  9,      8,      7,      6,      5,      4,      3,      2,
                  1,      0
         },
-        new byte[] {
+        new short[] {
                198,    105,     45,     22,     15,     12,     11,     10,
                  9,      8,      7,      6,      5,      4,      3,      2,
                  1,      0
         },
-        new byte[] {
+        new short[] {
                213,    162,    116,     83,     59,     43,     32,     24,
                 18,     15,     12,      9,      7,      6,      5,      3,
                  2,      0
         },
-        new byte[] {
+        new short[] {
                239,    187,    116,     59,     28,     16,     11,     10,
                  9,      8,      7,      6,      5,      4,      3,      2,
                  1,      0
         },
-        new byte[] {
+        new short[] {
                250,    229,    188,    135,     86,     51,     30,     19,
                 13,     10,      8,      6,      5,      4,      3,      2,
                  1,      0
         },
-        new byte[] {
+        new short[] {
                249,    235,    213,    185,    156,    128,    103,     83,
                 66,     53,     42,     33,     26,     21,     17,     13,
                 10,      0
         },
-        new byte[] {
+        new short[] {
                254,    249,    235,    206,    164,    118,     77,     46,
                 27,     16,     10,      7,      5,      4,      3,      2,
                  1,      0
         },
-        new byte[] {
+        new short[] {
                255,    253,    249,    239,    220,    191,    156,    119,
                 85,     57,     37,     23,     15,     10,      6,      4,
                  2,      0
         },
-        new byte[] {
+        new short[] {
                255,    253,    251,    246,    237,    223,    203,    179,
                152,    124,     98,     75,     55,     40,     29,     21,
                 15,      0
         },
-        new byte[] {
+        new short[] {
                255,    254,    253,    247,    220,    162,    106,     67,
                 42,     28,     18,     12,      9,      6,      4,      3,
                  2,      0
@@ -782,13 +782,13 @@ namespace Concentus.Silk
         }
         };
 
-        internal static readonly byte[][] silk_rate_levels_iCDF =
+        internal static readonly short[][] silk_rate_levels_iCDF =
         {
-        new byte[] {
+        new short[] {
                241,    190,    178,    132,     87,     74,     41,     14,
                  0
         },
-        new byte[] {
+        new short[] {
                223,    193,    157,    140,    106,     57,     39,     18,
                  0
         }
@@ -806,7 +806,7 @@ namespace Concentus.Silk
         }
         };
 
-        internal static readonly byte[] silk_shell_code_table0 = {
+        internal static readonly short[] silk_shell_code_table0 = {
                128,      0,    214,     42,      0,    235,    128,     21,
                  0,    244,    184,     72,     11,      0,    248,    214,
                128,     42,      7,      0,    248,    225,    170,     80,
@@ -828,7 +828,7 @@ namespace Concentus.Silk
                 76,     48,     27,     14,      7,      3,      1,      0
         };
 
-        internal static readonly byte[] silk_shell_code_table1 = {
+        internal static readonly short[] silk_shell_code_table1 = {
                129,      0,    207,     50,      0,    236,    129,     20,
                  0,    245,    185,     72,     10,      0,    249,    213,
                129,     42,      6,      0,    250,    226,    169,     87,
@@ -850,7 +850,7 @@ namespace Concentus.Silk
                 79,     51,     30,     15,      6,      2,      1,      0
         };
 
-        internal static readonly byte[] silk_shell_code_table2 = {
+        internal static readonly short[] silk_shell_code_table2 = {
                129,      0,    203,     54,      0,    234,    129,     23,
                  0,    245,    184,     73,     10,      0,    250,    215,
                129,     41,      5,      0,    252,    232,    173,     86,
@@ -872,7 +872,7 @@ namespace Concentus.Silk
                 73,     43,     22,     10,      4,      2,      1,      0
         };
 
-        internal static readonly byte[] silk_shell_code_table3 = {
+        internal static readonly short[] silk_shell_code_table3 = {
                130,      0,    200,     58,      0,    231,    130,     26,
                  0,    244,    184,     76,     12,      0,    249,    214,
                130,     43,      6,      0,    252,    232,    173,     87,
@@ -900,7 +900,7 @@ namespace Concentus.Silk
                135
         };
 
-        internal static readonly byte[] silk_sign_iCDF = {
+        internal static readonly short[] silk_sign_iCDF = {
                254,     49,     67,     77,     82,     93,     99,
                198,     11,     18,     24,     31,     36,     45,
                255,     46,     66,     78,     87,     94,    104,

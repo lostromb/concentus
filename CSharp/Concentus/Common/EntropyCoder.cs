@@ -329,7 +329,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        internal int dec_icdf(byte[] _icdf, uint _ftb)
+        internal int dec_icdf(short[] _icdf, uint _ftb)
         {
             uint r;
             uint d;
@@ -343,7 +343,7 @@ namespace Concentus.Common
             do
             {
                 t = s;
-                s = r * _icdf[++ret];
+                s = (uint)(r * _icdf[++ret]);
             }
             while (d < s);
             this.val = d - s;
@@ -352,7 +352,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        internal int dec_icdf(byte[] _icdf, int _icdf_offset, uint _ftb)
+        internal int dec_icdf(short[] _icdf, int _icdf_offset, uint _ftb)
         {
             uint r;
             uint d;
@@ -366,7 +366,7 @@ namespace Concentus.Common
             do
             {
                 t = s;
-                s = r * _icdf[++ret];
+                s = (uint)(r * _icdf[++ret]);
             }
             while (d < s);
             this.val = d - s;
@@ -554,34 +554,34 @@ namespace Concentus.Common
             enc_normalize();
         }
 
-        internal void enc_icdf(int _s, byte[] _icdf, uint _ftb)
+        internal void enc_icdf(int _s, short[] _icdf, uint _ftb)
         {
             uint r;
             r = this.rng >> (int)_ftb;
             if (_s > 0)
             {
-                this.val += this.rng - (r * _icdf[_s - 1]);
+                this.val += this.rng - (uint)(r * _icdf[_s - 1]);
                 this.rng = (r * (uint)(_icdf[_s - 1] - _icdf[_s]));
             }
             else
             {
-                this.rng -= (r * _icdf[_s]);
+                this.rng -= (uint)(r * _icdf[_s]);
             }
             enc_normalize();
         }
 
-        internal void enc_icdf(int _s, byte[] _icdf, int icdf_ptr, uint _ftb)
+        internal void enc_icdf(int _s, short[] _icdf, int icdf_ptr, uint _ftb)
         {
             uint r;
             r = this.rng >> (int)_ftb;
             if (_s > 0)
             {
-                this.val += this.rng - (r * _icdf[icdf_ptr + _s - 1]);
+                this.val += this.rng - (uint)(r * _icdf[icdf_ptr + _s - 1]);
                 this.rng = (r * (uint)(_icdf[icdf_ptr + _s - 1] - _icdf[icdf_ptr + _s]));
             }
             else
             {
-                this.rng -= (r * _icdf[icdf_ptr + _s]);
+                this.rng -= (uint)(r * _icdf[icdf_ptr + _s]);
             }
             enc_normalize();
         }
