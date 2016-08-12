@@ -204,14 +204,20 @@ namespace Concentus.Common
 
         internal byte[] get_buffer()
         {
-            byte[] convertedBuf = new byte[this.buf.Length - this.buf_ptr];
-            Array.Copy(this.buf, this.buf_ptr, convertedBuf, 0, convertedBuf.Length);
+            byte[] convertedBuf = new byte[this.storage];
+            for (int c = 0; c < this.storage; c++)
+            {
+                convertedBuf[c] = this.buf[this.buf_ptr + c];
+            }
             return convertedBuf;
         }
 
         internal void write_buffer(byte[] data, int data_ptr, int target_offset, int size)
         {
-            Array.Copy(data, data_ptr, this.buf, target_offset + this.buf_ptr, size);
+            for (int c = 0; c < size; c++)
+            {
+                this.buf[this.buf_ptr + target_offset + c] = data[c + data_ptr];
+            }
         }
 
         internal int read_byte()
