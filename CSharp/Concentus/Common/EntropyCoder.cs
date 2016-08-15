@@ -89,7 +89,7 @@ namespace Concentus.Common
    month=Jul,
    URL="http://www.stanford.edu/class/ee398a/handouts/papers/Moffat98ArithmCoding.pdf"
   }*/
-    internal class EntropyCoder
+    public class EntropyCoder
     {
         private const int EC_WINDOW_SIZE = ((int)sizeof(uint) * 8);
 
@@ -214,6 +214,8 @@ namespace Concentus.Common
 
         public static byte[] Convert(sbyte[] x)
         {
+            if (x == null)
+                return null;
             byte[] returnVal = new byte[x.Length];
             Convert(x, 0, returnVal, 0, x.Length);
             return returnVal;
@@ -221,6 +223,8 @@ namespace Concentus.Common
 
         public static sbyte[] Convert(byte[] x)
         {
+            if (x == null)
+                return null;
             sbyte[] returnVal = new sbyte[x.Length];
             Convert(x, 0, returnVal, 0, x.Length);
             return returnVal;
@@ -228,6 +232,8 @@ namespace Concentus.Common
 
         public static void Convert(sbyte[] input, int input_ptr, byte[] output, int output_ptr, int size)
         {
+            if (input == null || output == null)
+                return;
             for (int c = 0; c < size; c++)
             {
                 output[output_ptr + c] = Convert(input[input_ptr + c]);
@@ -236,6 +242,8 @@ namespace Concentus.Common
 
         public static void Convert(byte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
         {
+            if (input == null || output == null)
+                return;
             for (int c = 0; c < size; c++)
             {
                 output[output_ptr + c] = Convert(input[input_ptr + c]);
@@ -244,6 +252,8 @@ namespace Concentus.Common
 
         public static void Convert(byte[] input, int input_ptr, byte[] output, int output_ptr, int size)
         {
+            if (input == null || output == null)
+                return;
             for (int c = 0; c < size; c++)
             {
                 output[output_ptr + c] = input[input_ptr + c];
@@ -252,6 +262,8 @@ namespace Concentus.Common
 
         public static void Convert(sbyte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
         {
+            if (input == null || output == null)
+                return;
             for (int c = 0; c < size; c++)
             {
                 output[output_ptr + c] = input[input_ptr + c];

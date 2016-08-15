@@ -48,7 +48,7 @@ namespace Concentus
 {
     public static class CodecHelpers
     {
-        internal static byte gen_toc(OpusMode mode, int framerate, OpusBandwidth bandwidth, int channels)
+        internal static sbyte gen_toc(OpusMode mode, int framerate, OpusBandwidth bandwidth, int channels)
         {
             int period;
             byte toc;
@@ -79,7 +79,7 @@ namespace Concentus
                 toc |= (byte)((period - 2) << 3);
             }
             toc |= (byte)((channels == 2 ? 1 : 0) << 2);
-            return toc;
+            return EntropyCoder.Convert(toc);
         }
 
         internal static void hp_cutoff(short[] input, int input_ptr, int cutoff_Hz, short[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)

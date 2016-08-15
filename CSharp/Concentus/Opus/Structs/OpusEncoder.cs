@@ -484,7 +484,7 @@ namespace Concentus.Structs
                     bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
                 else if (tocmode == OpusMode.MODE_HYBRID && bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-                data[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
+                data[data_ptr] = EntropyCoder.Convert(CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels));
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
@@ -1069,7 +1069,7 @@ namespace Concentus.Structs
                 if (nBytes == 0)
                 {
                     this.rangeFinal = 0;
-                    data[data_ptr - 1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+                    data[data_ptr - 1] = EntropyCoder.Convert(CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels));
 
                     return 1;
                 }
@@ -1334,7 +1334,7 @@ namespace Concentus.Structs
 
             /* Signalling the mode in the first byte */
             data_ptr -= 1;
-            data[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+            data[data_ptr] = EntropyCoder.Convert(CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels));
 
             this.rangeFinal = enc.rng ^ redundant_rng;
 
