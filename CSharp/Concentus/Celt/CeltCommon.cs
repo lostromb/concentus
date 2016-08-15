@@ -1013,6 +1013,14 @@ namespace Concentus.Celt
             int Nd;
             int apply_downsampling = 0;
             int coef0;
+
+            /* shortcut version for common case */
+            if (downsample == 1 && C == 2 && accum == 0)
+            {
+                deemphasis_stereo_simple(input, input_ptrs, pcm, pcm_ptr, N, coef[0], mem);
+                return;
+            }
+
             int[] scratch = new int[N];
             coef0 = coef[0];
             Nd = N / downsample;
@@ -1076,7 +1084,30 @@ namespace Concentus.Celt
                     }
                 }
             } while (++c < C);
+        }
 
+        /* Special case for stereo with no downsampling and no accumulation. This is
+           quite common and we can make it faster by processing both channels in the
+           same loop, reducing overhead due to the dependency loop in the IIR filter */
+        internal static void deemphasis_stereo_simple(int[][] input, int[] input_ptrs, short[] pcm, int pcm_ptr, int N, int coef0, int[] mem)
+        {
+            int[] x0 = input[0];
+            int[] x1 = input[1];
+            int ip0 = input_ptrs[0];
+            int ip1 = input_ptrs[1];
+            int m0 = mem[0];
+            int m1 = mem[1];
+            for (int j = 0; j < N; j++)
+            {
+                int tmp0 = x0[ip0 + j] + m0;
+                int tmp1 = x1[ip1 + j] + m1;
+                m0 = Inlines.MULT16_32_Q15(coef0, tmp0);
+                m1 = Inlines.MULT16_32_Q15(coef0, tmp1);
+                pcm[pcm_ptr + (2 * j)] = Inlines.SIG2WORD16(tmp0);
+                pcm[pcm_ptr + (2 * j) + 1] = Inlines.SIG2WORD16(tmp1);
+            }
+            mem[0] = m0;
+            mem[1] = m1;
         }
 
         internal static void celt_synthesis(CeltMode mode, int[][] X, int[][] out_syn, int[] out_syn_ptrs,
