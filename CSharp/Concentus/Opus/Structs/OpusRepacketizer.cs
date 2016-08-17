@@ -98,10 +98,10 @@ namespace Concentus.Structs
 
             if (this.nb_frames == 0)
             {
-                this.toc = EntropyCoder.Convert(data[data_ptr]);
+                this.toc = EntropyCoder.Convert(data.GetByte(data_ptr));
                 this.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, 8000);
             }
-            else if ((this.toc & 0xFC) != (data[data_ptr] & 0xFC))
+            else if ((this.toc & 0xFC) != (data.GetByte(data_ptr) & 0xFC))
             {
                 /*fprintf(stderr, "toc mismatch: 0x%x vs 0x%x\n", rp.toc, data[0]);*/
                 return OpusError.OPUS_INVALID_PACKET;
@@ -216,7 +216,7 @@ namespace Concentus.Structs
                 tot_size += this.len[0] + 1;
                 if (tot_size > maxlen)
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
-                data[ptr++] = (byte)(this.toc & 0xFC);
+                data.SetByte(ptr++, (byte)(this.toc & 0xFC));
             }
             else if (count == 2)
             {
@@ -226,14 +226,14 @@ namespace Concentus.Structs
                     tot_size += 2 * this.len[0] + 1;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x1);
+                    data.SetByte(ptr++, (byte)((this.toc & 0xFC) | 0x1));
                 }
                 else {
                     /* Code 2 */
                     tot_size += this.len[0] + this.len[1] + 2 + (this.len[0] >= 252 ? 1 : 0);
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x2);
+                    data.SetByte(ptr++, (byte)((this.toc & 0xFC) | 0x2));
                     ptr += OpusPacketInfo.encode_size(this.len[0], data, ptr);
                 }
             }
@@ -267,16 +267,16 @@ namespace Concentus.Structs
 
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x3);
-                    data[ptr++] = (byte)(count | 0x80);
+                    data.SetByte(ptr++, (byte)((this.toc & 0xFC) | 0x3));
+                    data.SetByte(ptr++, (byte)(count | 0x80));
                 }
                 else
                 {
                     tot_size += count * this.len[0] + 2;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x3);
-                    data[ptr++] = (byte)(count);
+                    data.SetByte(ptr++, (byte)((this.toc & 0xFC) | 0x3));
+                    data.SetByte(ptr++, (byte)(count));
                 }
 
                 pad_amount = pad != 0 ? (maxlen - tot_size) : 0;
@@ -284,14 +284,14 @@ namespace Concentus.Structs
                 if (pad_amount != 0)
                 {
                     int nb_255s;
-                    data[data_ptr + 1] |= 0x40;
+                    data.SetByte(data_ptr + 1, (byte)(data.GetByte(data_ptr + 1) | 0x40));
                     nb_255s = (pad_amount - 1) / 255;
                     for (i = 0; i < nb_255s; i++)
                     {
-                        data[ptr++] = 255;
+                        data.SetByte(ptr++, 255);
                     }
 
-                    data[ptr++] = (byte)(pad_amount - 255 * nb_255s - 1);
+                    data.SetByte(ptr++, (byte)(pad_amount - 255 * nb_255s - 1));
                     tot_size += pad_amount;
                 }
 
@@ -316,11 +316,11 @@ namespace Concentus.Structs
                 {
                     /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
                        padding from opus_packet_pad or opus_packet_unpad(). */
-                       Arrays.MemMove<byte>(data, 0, ptr, this.len[i]);
+                       data.MemMove(0, ptr, this.len[i]);
                 }
                 else
                 {
-                    Array.Copy(this.frames[i], 0, data, ptr, this.len[i]);
+                    data.CopyFrom(this.frames[i], 0, ptr, this.len[i]);
                 }
                 ptr += this.len[i];
             }
@@ -328,12 +328,7 @@ namespace Concentus.Structs
             if (pad != 0)
             {
                 /* Fill padding with zeros. */
-                //Arrays.MemSetWithOffset<byte>(ptr.Data, 0, ptr.Offset, data.Offset + maxlen - ptr.Offset);
-                // FIXME why did they not just use a MemSet(0) here?
-                while (ptr < data_ptr + maxlen)
-                {
-                    data[ptr++] = 0;
-                }
+                data.MemSet(0, ptr, data_ptr + maxlen - ptr);
             }
 
             return tot_size;

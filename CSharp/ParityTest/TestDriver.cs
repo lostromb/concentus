@@ -1,4 +1,5 @@
 ﻿using Concentus;
+using Concentus.Common;
 using Concentus.Common.CPlusPlus;
 using Concentus.Enums;
 using Concentus.Structs;

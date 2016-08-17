@@ -102,30 +102,19 @@ namespace Concentus.Structs
         
         public static int GetNumSamplesPerFrame(byte[] packet, int packet_offset, int Fs)
         {
-            return GetNumSamplesPerFrame(EntropyCoder.Convert(packet), packet_offset, Fs);
-        }
-
-        /// <summary>
-        /// Gets the number of samples per frame from an Opus packet.
-        /// </summary>
-        /// <param name="data">Opus packet. This must contain at least one byte of data</param>
-        /// <param name="Fs">Sampling rate in Hz. This must be a multiple of 400, or inaccurate results will be returned.</param>
-        /// <returns>Number of samples per frame</returns>
-        public static int GetNumSamplesPerFrame(sbyte[] packet, int packet_offset, int Fs)
-        {
             int audiosize;
-            if ((packet[packet_offset] & 0x80) != 0)
+            if ((packet.GetByte(packet_offset) & 0x80) != 0)
             {
-                audiosize = ((packet[packet_offset] >> 3) & 0x3);
+                audiosize = ((packet.GetByte(packet_offset) >> 3) & 0x3);
                 audiosize = (Fs << audiosize) / 400;
             }
-            else if ((packet[packet_offset] & 0x60) == 0x60)
+            else if ((packet.GetByte(packet_offset) & 0x60) == 0x60)
             {
-                audiosize = ((packet[packet_offset] & 0x08) != 0) ? Fs / 50 : Fs / 100;
+                audiosize = ((packet.GetByte(packet_offset) & 0x08) != 0) ? Fs / 50 : Fs / 100;
             }
             else
             {
-                audiosize = ((packet[packet_offset] >> 3) & 0x3);
+                audiosize = ((packet.GetByte(packet_offset) >> 3) & 0x3);
                 if (audiosize == 3)
                     audiosize = Fs * 60 / 1000;
                 else
@@ -133,55 +122,35 @@ namespace Concentus.Structs
             }
             return audiosize;
         }
-        
-        public static OpusBandwidth GetBandwidth(byte[] packet, int packet_offset)
-        {
-            return GetBandwidth(EntropyCoder.Convert(packet), packet_offset);
-        }
 
         /// <summary>
         /// Gets the encoded bandwidth of an Opus packet. Note that you are not forced to decode at this bandwidth
         /// </summary>
         /// <param name="data">An Opus packet (must be at least 1 byte)</param>
         /// <returns>An OpusBandwidth value</returns>
-        public static OpusBandwidth GetBandwidth(sbyte[] packet, int packet_offset)
+        public static OpusBandwidth GetBandwidth(byte[] packet, int packet_offset)
         {
             OpusBandwidth bandwidth;
-            if ((packet[packet_offset] & 0x80) != 0)
+            if ((packet.GetByte(packet_offset) & 0x80) != 0)
             {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((packet[packet_offset] >> 5) & 0x3);
+                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((packet.GetByte(packet_offset) >> 5) & 0x3);
                 if (bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
                     bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
             }
-            else if ((packet[packet_offset] & 0x60) == 0x60)
+            else if ((packet.GetByte(packet_offset) & 0x60) == 0x60)
             {
-                bandwidth = ((packet[packet_offset] & 0x10) != 0) ? OpusBandwidth.OPUS_BANDWIDTH_FULLBAND :
+                bandwidth = ((packet.GetByte(packet_offset) & 0x10) != 0) ? OpusBandwidth.OPUS_BANDWIDTH_FULLBAND :
                                              OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
             }
             else {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + ((packet[packet_offset] >> 5) & 0x3);
+                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + ((packet.GetByte(packet_offset) >> 5) & 0x3);
             }
             return bandwidth;
         }
         
         public static int GetNumEncodedChannels(byte[] packet, int packet_offset)
         {
-            return GetNumEncodedChannels(EntropyCoder.Convert(packet), packet_offset);
-        }
-
-        /// <summary>
-        /// Gets the number of encoded channels of an Opus packet. Note that you are not forced to decode with this channel count.
-        /// </summary>
-        /// <param name="data">An opus packet (must be at least 1 byte)</param>
-        /// <returns>The number of channels</returns>
-        public static int GetNumEncodedChannels(sbyte[] packet, int packet_offset)
-        {
-            return ((packet[packet_offset] & 0x4) != 0) ? 2 : 1;
-        }
-        
-        public static int GetNumFrames(byte[] packet, int packet_offset, int len)
-        {
-            return GetNumFrames(EntropyCoder.Convert(packet), packet_offset, len);
+            return ((packet.GetByte(packet_offset) & 0x4) != 0) ? 2 : 1;
         }
 
         /// <summary>
@@ -190,12 +159,12 @@ namespace Concentus.Structs
         /// <param name="packet">An Opus packet</param>
         /// <param name="len">The packet's length (must be at least 1)</param>
         /// <returns>The number of frames in the packet</returns>
-        public static int GetNumFrames(sbyte[] packet, int packet_offset, int len)
+        public static int GetNumFrames(byte[] packet, int packet_offset, int len)
         {
             int count;
             if (len < 1)
                 return OpusError.OPUS_BAD_ARG;
-            count = packet[packet_offset] & 0x3;
+            count = packet.GetByte(packet_offset) & 0x3;
             if (count == 0)
                 return 1;
             else if (count != 3)
@@ -203,23 +172,10 @@ namespace Concentus.Structs
             else if (len < 2)
                 return OpusError.OPUS_INVALID_PACKET;
             else
-                return packet[packet_offset + 1] & 0x3F;
+                return packet.GetByte(packet_offset + 1) & 0x3F;
         }
         
         public static int GetNumSamples(byte[] packet, int packet_offset, int len,
-              int Fs)
-        {
-            return GetNumSamples(EntropyCoder.Convert(packet), packet_offset, len, Fs);
-        }
-
-        /// <summary>
-        /// Gets the number of samples of an Opus packet.
-        /// </summary>
-        /// <param name="packet">An Opus packet</param>
-        /// <param name="len">The packet's length</param>
-        /// <param name="Fs">The decoder's sampling rate in Hz. This must be a multiple of 400</param>
-        /// <returns>The size of the PCM samples that this packet will be decoded to at the specified sample rate</returns>
-        public static int GetNumSamples(sbyte[] packet, int packet_offset, int len,
               int Fs)
         {
             int samples;
@@ -251,23 +207,12 @@ namespace Concentus.Structs
         
         public static OpusMode GetEncoderMode(byte[] packet, int packet_offset)
         {
-            return GetEncoderMode(EntropyCoder.Convert(packet), packet_offset);
-        }
-
-        /// <summary>
-        /// Gets the mode that was used to encode this packet.
-        /// Normally there is nothing you can really do with this, other than debugging.
-        /// </summary>
-        /// <param name="data">An Opus packet</param>
-        /// <returns>The OpusMode used by the encoder</returns>
-        public static OpusMode GetEncoderMode(sbyte[] packet, int packet_offset)
-        {
             OpusMode mode;
-            if ((packet[packet_offset] & 0x80) != 0)
+            if ((packet.GetByte(packet_offset) & 0x80) != 0)
             {
                 mode = OpusMode.MODE_CELT_ONLY;
             }
-            else if ((packet[packet_offset] & 0x60) == 0x60)
+            else if ((packet.GetByte(packet_offset) & 0x60) == 0x60)
             {
                 mode = OpusMode.MODE_HYBRID;
             }
@@ -279,44 +224,29 @@ namespace Concentus.Structs
 
         internal static int encode_size(int size, byte[] data, int data_ptr)
         {
-            sbyte[] dummy = new sbyte[2];
-            int t = encode_size(size, dummy, 0);
-            data[data_ptr] = EntropyCoder.Convert(dummy[0]);
-            if (t == 2)
-                data[data_ptr + 1] = EntropyCoder.Convert(dummy[1]);
-            return t;
-        }
-
-        internal static int encode_size(int size, sbyte[] data, int data_ptr)
-        {
             if (size < 252)
             {
-                data[data_ptr] = (sbyte)(size & 0xFF);
+                data.SetByte(data_ptr, (byte)(size & 0xFF));
                 return 1;
             }
             else {
                 int dp1 = 252 + (size & 0x3);
-                data[data_ptr] = (sbyte)(dp1 & 0xFF);
-                data[data_ptr + 1] = (sbyte)((size - dp1) >> 2);
+                data.SetByte(data_ptr, (byte)(dp1 & 0xFF));
+                data.SetByte(data_ptr + 1, (byte)((size - dp1) >> 2));
                 return 2;
             }
         }
 
         internal static int parse_size(byte[] data, int data_ptr, int len, BoxedValue<short> size)
         {
-            return parse_size(EntropyCoder.Convert(data), data_ptr, len, size);
-        }
-
-        internal static int parse_size(sbyte[] data, int data_ptr, int len, BoxedValue<short> size)
-        {
             if (len < 1)
             {
                 size.Val = -1;
                 return -1;
             }
-            else if (Inlines.SignedByteToUnsignedInt(data[data_ptr]) < 252)
+            else if (Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr)) < 252)
             {
-                size.Val = (short)Inlines.SignedByteToUnsignedInt(data[data_ptr]);
+                size.Val = (short)Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr));
                 return 1;
             }
             else if (len < 2)
@@ -325,7 +255,7 @@ namespace Concentus.Structs
                 return -1;
             }
             else {
-                size.Val = (short)(4 * Inlines.SignedByteToUnsignedInt(data[data_ptr + 1]) + Inlines.SignedByteToUnsignedInt(data[data_ptr]));
+                size.Val = (short)(4 * Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr + 1)) + Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr)));
                 return 2;
             }
         }
@@ -356,7 +286,7 @@ namespace Concentus.Structs
             framesize = GetNumSamplesPerFrame(data, data_ptr, 48000);
 
             cbr = 0;
-            toc = EntropyCoder.Convert(data[data_ptr++]);
+            toc = EntropyCoder.Convert(data.GetByte(data_ptr++));
             len--;
             last_size = len;
             switch (toc & 0x3)
@@ -395,7 +325,7 @@ namespace Concentus.Structs
                     if (len < 1)
                         return OpusError.OPUS_INVALID_PACKET;
                     /* Number of frames encoded in bits 0 to 5 */
-                    ch = Inlines.SignedByteToUnsignedInt(data[data_ptr++]);
+                    ch = Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr++));
                     count = ch & 0x3F;
                     if (count <= 0 || framesize * count > 5760)
                         return OpusError.OPUS_INVALID_PACKET;
@@ -409,7 +339,7 @@ namespace Concentus.Structs
                             int tmp;
                             if (len <= 0)
                                 return OpusError.OPUS_INVALID_PACKET;
-                            p = Inlines.SignedByteToUnsignedInt(data[data_ptr++]);
+                            p = Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr++));
                             len--;
                             tmp = p == 255 ? 254 : p;
                             len -= tmp;
@@ -490,7 +420,7 @@ namespace Concentus.Structs
                     // The old code returned pointers to the single data array, but that can cause unwanted side effects.
                     // So I have replaced it with this code that creates a new copy of each frame. Slower, but more robust
                     frames[frames_ptr + i] = new byte[data.Length - data_ptr];
-                    Array.Copy(data, data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
+                    data.CopyTo(data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
                 }
                 data_ptr += sizes[sizes_ptr + i];
             }
