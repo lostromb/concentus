@@ -313,7 +313,7 @@ namespace Concentus.Celt
 
         internal static int decode_pulses(int[] _y, int _n, int _k, EntropyCoder _dec)
         {
-            return cwrsi(_n, _k, (uint)_dec.dec_uint(CELT_PVQ_V(_n, _k)), _y);
+            return cwrsi(_n, _k, _dec.dec_uint(CELT_PVQ_V(_n, _k)), _y);
         }
     }
 }
