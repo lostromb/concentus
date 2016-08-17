@@ -324,7 +324,7 @@ namespace Concentus.Common
         /// <param name="this"></param>
         /// <param name="_logp"></param>
         /// <returns></returns>
-        internal int dec_bit_logp(uint _logp)
+        internal int dec_bit_logp(long _logp)
         {
             long r;
             long d;
@@ -335,7 +335,7 @@ namespace Concentus.Common
             s = r >> (int)_logp;
             ret = d < s ? 1 : 0;
             if (ret == 0)
-                this.val = (uint)(d - s);
+                this.val = (d - s);
             this.rng = ret != 0 ? s : r - s;
             dec_normalize();
             return ret;
@@ -387,7 +387,7 @@ namespace Concentus.Common
             return ret - _icdf_offset;
         }
 
-        internal uint dec_uint(uint _ft)
+        internal long dec_uint(uint _ft)
         {
             long ft;
             long s;
@@ -398,13 +398,14 @@ namespace Concentus.Common
             ftb = Inlines.EC_ILOG(_ft);
             if (ftb > EC_UINT_BITS)
             {
-                uint t;
+                long t;
                 ftb -= EC_UINT_BITS;
                 ft = (_ft >> ftb) + 1;
                 s = decode(ft);
                 dec_update(s, (s + 1), ft);
-                t = (uint)s << ftb | dec_bits((uint)ftb);
-                if (t <= _ft) return t;
+                t = ((s << ftb | dec_bits((uint)ftb)) & 0xFFFFFFFF);
+                if (t <= _ft)
+                    return t;
                 this.error = 1;
                 return _ft;
             }
@@ -427,12 +428,12 @@ namespace Concentus.Common
             {
                 do
                 {
-                    window |= (uint)read_byte_from_end() << available;
+                    window |= (read_byte_from_end() << available) & 0xFFFFFFFF;
                     available += EC_SYM_BITS;
                 }
                 while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
             }
-            ret = (uint)window & (((uint)1 << (int)_bits) - 1U);
+            ret = (uint)(window & ((1 << (int)_bits) - 1));
             window = window >> (int)_bits;
             available = available - (int)_bits;
             this.end_window = window;
@@ -493,8 +494,8 @@ namespace Concentus.Common
             {
                 enc_carry_out((int)(this.val >> EC_CODE_SHIFT));
                 /*Move the next-to-high-order symbol into the high-order position.*/
-                this.val = (uint)((this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1));
-                this.rng = this.rng << EC_SYM_BITS;
+                this.val = (this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
+                this.rng = (this.rng << EC_SYM_BITS) & 0xFFFFFFFF;
                 this.nbits_total += EC_SYM_BITS;
             }
         }
