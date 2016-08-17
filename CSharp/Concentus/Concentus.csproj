@@ -65,7 +65,6 @@
     <Compile Include="Common\CPlusPlus\BoxedValue.cs" />
     <Compile Include="Common\CPlusPlus\Pointer.cs" />
     <Compile Include="Common\EntropyCoder.cs" />
-    <Compile Include="Common\OpusDataBuffer.cs" />
     <Compile Include="Common\Resampler.cs" />
     <Compile Include="Opus\CodecHelpers.cs" />
     <Compile Include="Opus\Enums\OpusApplication.cs" />

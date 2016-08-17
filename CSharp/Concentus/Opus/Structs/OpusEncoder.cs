@@ -484,7 +484,7 @@ namespace Concentus.Structs
                     bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
                 else if (tocmode == OpusMode.MODE_HYBRID && bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-                data.SetByte(data_ptr, CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels));
+                data[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
@@ -1069,7 +1069,7 @@ namespace Concentus.Structs
                 if (nBytes == 0)
                 {
                     this.rangeFinal = 0;
-                    data.SetByte(data_ptr - 1, CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels));
+                    data[data_ptr - 1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
                     return 1;
                 }
@@ -1334,7 +1334,7 @@ namespace Concentus.Structs
 
             /* Signalling the mode in the first byte */
             data_ptr -= 1;
-            data.SetByte(data_ptr, CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels));
+            data[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
             this.rangeFinal = enc.rng ^ redundant_rng;
 
@@ -1355,7 +1355,7 @@ namespace Concentus.Structs
                 {
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
                 }
-                data.SetByte(data_ptr + 1, 0);
+                data[data_ptr + 1] = 0;
                 ret = 1;
                 this.rangeFinal = 0;
             }
@@ -1367,7 +1367,7 @@ namespace Concentus.Structs
                   fill these in. This can't be done when the MDCT
                   modes are used because the decoder needs to know
                   the actual length for allocation purposes.*/
-                while (ret > 2 && data.GetByte(data_ptr + ret) == 0) ret--;
+                while (ret > 2 && data[data_ptr + ret] == 0) ret--;
             }
             /* Count ToC and redundancy */
             ret += 1 + redundancy_bytes;

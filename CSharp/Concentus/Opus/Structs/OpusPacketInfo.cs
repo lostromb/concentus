@@ -103,18 +103,18 @@ namespace Concentus.Structs
         public static int GetNumSamplesPerFrame(sbyte[] packet, int packet_offset, int Fs)
         {
             int audiosize;
-            if ((packet.GetByte(packet_offset) & 0x80) != 0)
+            if ((packet[packet_offset] & 0x80) != 0)
             {
-                audiosize = ((packet.GetByte(packet_offset) >> 3) & 0x3);
+                audiosize = ((packet[packet_offset] >> 3) & 0x3);
                 audiosize = (Fs << audiosize) / 400;
             }
-            else if ((packet.GetByte(packet_offset) & 0x60) == 0x60)
+            else if ((packet[packet_offset] & 0x60) == 0x60)
             {
-                audiosize = ((packet.GetByte(packet_offset) & 0x08) != 0) ? Fs / 50 : Fs / 100;
+                audiosize = ((packet[packet_offset] & 0x08) != 0) ? Fs / 50 : Fs / 100;
             }
             else
             {
-                audiosize = ((packet.GetByte(packet_offset) >> 3) & 0x3);
+                audiosize = ((packet[packet_offset] >> 3) & 0x3);
                 if (audiosize == 3)
                     audiosize = Fs * 60 / 1000;
                 else
@@ -131,26 +131,26 @@ namespace Concentus.Structs
         public static OpusBandwidth GetBandwidth(sbyte[] packet, int packet_offset)
         {
             OpusBandwidth bandwidth;
-            if ((packet.GetByte(packet_offset) & 0x80) != 0)
+            if ((packet[packet_offset] & 0x80) != 0)
             {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((packet.GetByte(packet_offset) >> 5) & 0x3);
+                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((packet[packet_offset] >> 5) & 0x3);
                 if (bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
                     bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
             }
-            else if ((packet.GetByte(packet_offset) & 0x60) == 0x60)
+            else if ((packet[packet_offset] & 0x60) == 0x60)
             {
-                bandwidth = ((packet.GetByte(packet_offset) & 0x10) != 0) ? OpusBandwidth.OPUS_BANDWIDTH_FULLBAND :
+                bandwidth = ((packet[packet_offset] & 0x10) != 0) ? OpusBandwidth.OPUS_BANDWIDTH_FULLBAND :
                                              OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
             }
             else {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + ((packet.GetByte(packet_offset) >> 5) & 0x3);
+                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + ((packet[packet_offset] >> 5) & 0x3);
             }
             return bandwidth;
         }
         
         public static int GetNumEncodedChannels(sbyte[] packet, int packet_offset)
         {
-            return ((packet.GetByte(packet_offset) & 0x4) != 0) ? 2 : 1;
+            return ((packet[packet_offset] & 0x4) != 0) ? 2 : 1;
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace Concentus.Structs
             int count;
             if (len < 1)
                 return OpusError.OPUS_BAD_ARG;
-            count = packet.GetByte(packet_offset) & 0x3;
+            count = packet[packet_offset] & 0x3;
             if (count == 0)
                 return 1;
             else if (count != 3)
@@ -172,7 +172,7 @@ namespace Concentus.Structs
             else if (len < 2)
                 return OpusError.OPUS_INVALID_PACKET;
             else
-                return packet.GetByte(packet_offset + 1) & 0x3F;
+                return packet[packet_offset + 1] & 0x3F;
         }
         
         public static int GetNumSamples(sbyte[] packet, int packet_offset, int len,
@@ -208,11 +208,11 @@ namespace Concentus.Structs
         public static OpusMode GetEncoderMode(sbyte[] packet, int packet_offset)
         {
             OpusMode mode;
-            if ((packet.GetByte(packet_offset) & 0x80) != 0)
+            if ((packet[packet_offset] & 0x80) != 0)
             {
                 mode = OpusMode.MODE_CELT_ONLY;
             }
-            else if ((packet.GetByte(packet_offset) & 0x60) == 0x60)
+            else if ((packet[packet_offset] & 0x60) == 0x60)
             {
                 mode = OpusMode.MODE_HYBRID;
             }
@@ -226,13 +226,13 @@ namespace Concentus.Structs
         {
             if (size < 252)
             {
-                data.SetByte(data_ptr, (sbyte)(size & 0xFF));
+                data[data_ptr] = (sbyte)(size & 0xFF);
                 return 1;
             }
             else {
                 int dp1 = 252 + (size & 0x3);
-                data.SetByte(data_ptr, (sbyte)(dp1 & 0xFF));
-                data.SetByte(data_ptr + 1, (sbyte)((size - dp1) >> 2));
+                data[data_ptr] = (sbyte)(dp1 & 0xFF);
+                data[data_ptr + 1] = (sbyte)((size - dp1) >> 2);
                 return 2;
             }
         }
@@ -244,9 +244,9 @@ namespace Concentus.Structs
                 size.Val = -1;
                 return -1;
             }
-            else if (Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr)) < 252)
+            else if (Inlines.SignedByteToUnsignedInt(data[data_ptr]) < 252)
             {
-                size.Val = (short)Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr));
+                size.Val = (short)Inlines.SignedByteToUnsignedInt(data[data_ptr]);
                 return 1;
             }
             else if (len < 2)
@@ -255,7 +255,7 @@ namespace Concentus.Structs
                 return -1;
             }
             else {
-                size.Val = (short)(4 * Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr + 1)) + Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr)));
+                size.Val = (short)(4 * Inlines.SignedByteToUnsignedInt(data[data_ptr + 1]) + Inlines.SignedByteToUnsignedInt(data[data_ptr]));
                 return 2;
             }
         }
@@ -286,7 +286,7 @@ namespace Concentus.Structs
             framesize = GetNumSamplesPerFrame(data, data_ptr, 48000);
 
             cbr = 0;
-            toc = data.GetByte(data_ptr++);
+            toc = data[data_ptr++];
             len--;
             last_size = len;
             switch (toc & 0x3)
@@ -325,7 +325,7 @@ namespace Concentus.Structs
                     if (len < 1)
                         return OpusError.OPUS_INVALID_PACKET;
                     /* Number of frames encoded in bits 0 to 5 */
-                    ch = Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr++));
+                    ch = Inlines.SignedByteToUnsignedInt(data[data_ptr++]);
                     count = ch & 0x3F;
                     if (count <= 0 || framesize * count > 5760)
                         return OpusError.OPUS_INVALID_PACKET;
@@ -339,7 +339,7 @@ namespace Concentus.Structs
                             int tmp;
                             if (len <= 0)
                                 return OpusError.OPUS_INVALID_PACKET;
-                            p = Inlines.SignedByteToUnsignedInt(data.GetByte(data_ptr++));
+                            p = Inlines.SignedByteToUnsignedInt(data[data_ptr++]);
                             len--;
                             tmp = p == 255 ? 254 : p;
                             len -= tmp;
@@ -420,7 +420,7 @@ namespace Concentus.Structs
                     // The old code returned pointers to the single data array, but that can cause unwanted side effects.
                     // So I have replaced it with this code that creates a new copy of each frame. Slower, but more robust
                     frames[frames_ptr + i] = new sbyte[data.Length - data_ptr];
-                    data.CopyTo(data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
+                    Array.Copy(data, data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
                 }
                 data_ptr += sizes[sizes_ptr + i];
             }

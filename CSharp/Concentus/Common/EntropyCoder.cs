@@ -273,24 +273,24 @@ namespace Concentus.Common
         internal sbyte[] get_buffer()
         {
             sbyte[] convertedBuf = new sbyte[this.storage];
-            this.buf.CopyTo(this.buf_ptr, convertedBuf, 0, this.storage);
+            Array.Copy(this.buf, this.buf_ptr, convertedBuf, 0, this.storage);
             return convertedBuf;
         }
 
         internal void write_buffer(sbyte[] data, int data_ptr, int target_offset, int size)
         {
-            this.buf.CopyFrom(data, data_ptr, this.buf_ptr + target_offset, size);
+            Array.Copy(data, data_ptr, this.buf, this.buf_ptr + target_offset, size);
         }
 
         internal int read_byte()
         {
-            return this.offs < this.storage ? Inlines.SignedByteToUnsignedInt(this.buf.GetByte(buf_ptr + this.offs++)) : 0;
+            return this.offs < this.storage ? Inlines.SignedByteToUnsignedInt(this.buf[buf_ptr + this.offs++]) : 0;
         }
 
         internal int read_byte_from_end()
         {
             return this.end_offs < this.storage ?
-             Inlines.SignedByteToUnsignedInt(this.buf.GetByte(buf_ptr + (this.storage - ++(this.end_offs)))) : 0;
+             Inlines.SignedByteToUnsignedInt(this.buf[buf_ptr + (this.storage - ++(this.end_offs))]) : 0;
         }
 
         internal int write_byte(uint _value)
@@ -299,7 +299,7 @@ namespace Concentus.Common
             {
                 return -1;
             }
-            this.buf.SetByte(buf_ptr + this.offs++, (sbyte)_value);
+            this.buf[buf_ptr + this.offs++] = (sbyte)_value;
             return 0;
         }
 
@@ -310,7 +310,7 @@ namespace Concentus.Common
                 return -1;
             }
 
-            this.buf.SetByte(buf_ptr + (this.storage - ++(this.end_offs)), (sbyte)_value);
+            this.buf[buf_ptr + (this.storage - ++(this.end_offs))] = (sbyte)_value;
             return 0;
         }
 
@@ -724,7 +724,7 @@ namespace Concentus.Common
             if (this.offs > 0)
             {
                 /*The first byte has been finalized.*/
-                this.buf.SetByte(buf_ptr, (sbyte)((this.buf.GetByte(buf_ptr) & ~mask) | _val << shift));
+                this.buf[buf_ptr] = (sbyte)((this.buf[buf_ptr] & ~mask) | _val << shift);
             }
             else if (this.rem >= 0)
             {
@@ -747,7 +747,7 @@ namespace Concentus.Common
         internal void enc_shrink(int _size)
         {
             Inlines.OpusAssert(this.offs + this.end_offs <= _size);
-            this.buf.MemMove(buf_ptr + (int)_size - (int)this.end_offs, buf_ptr + (int)this.storage - (int)this.end_offs, (int)this.end_offs);
+            Arrays.MemMove<sbyte>(this.buf, buf_ptr + (int)_size - (int)this.end_offs, buf_ptr + (int)this.storage - (int)this.end_offs, (int)this.end_offs);
             this.storage = _size;
         }
 
@@ -847,7 +847,7 @@ namespace Concentus.Common
             /*Clear any excess space and add any remaining extra bits to the last byte.*/
             if (this.error == 0)
             {
-                this.buf.MemSet(0, buf_ptr + (int)this.offs, (int)this.storage - (int)this.offs - (int)this.end_offs);
+                Arrays.MemSetWithOffset<sbyte>(this.buf, 0, buf_ptr + (int)this.offs, (int)this.storage - (int)this.offs - (int)this.end_offs);
                 if (used > 0)
                 {
                     /*If there's no range coder data at all, give up.*/
@@ -867,7 +867,7 @@ namespace Concentus.Common
                         }
 
                         int z = buf_ptr + this.storage - this.end_offs - 1;
-                        this.buf.SetByte(z, (sbyte)(this.buf.GetByte(z) | window));
+                        this.buf[z] = (sbyte)(this.buf[z] | window);
                     }
                 }
             }
