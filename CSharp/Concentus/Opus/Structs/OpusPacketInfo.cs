@@ -85,23 +85,17 @@ namespace Concentus.Structs
             int payload_offset;
             sbyte out_toc;
             byte[][] frames = new byte[numFrames][];
-            int[] frames_ptrs = new int[numFrames];
             short[] size = new short[numFrames];
             int packetOffset;
-            int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out out_toc, frames, frames_ptrs, 0, size, 0, out payload_offset, out packetOffset);
+            int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out out_toc, frames, 0, size, 0, out payload_offset, out packetOffset);
             if (error < 0)
             {
                 throw new OpusException("An error occurred while parsing the packet", error);
             }
 
-            IList<byte[]> copiedFrames = new List<byte[]>();
-
-            for (int c = 0; c < numFrames; c++)
-            {
-                byte[] nextFrame = new byte[size[c]];
-                Array.Copy(frames[c], frames_ptrs[c], nextFrame, 0, size[c]);
-                copiedFrames.Add(nextFrame);
-            }
+            // Since packet_parse_impl has created deep copies of each frame, we can return them safely from this function without
+            // worrying about variable scoping or side effects
+            IList<byte[]> copiedFrames = new List<byte[]>(frames);
 
             return new OpusPacketInfo(out_toc, copiedFrames, payload_offset);
         }
@@ -338,7 +332,7 @@ namespace Concentus.Structs
 
         internal static int opus_packet_parse_impl(byte[] data, int data_ptr, int len,
               int self_delimited, out sbyte out_toc,
-              byte[][] frames, int[] frames_ptrs, int frames_ptr, short[] sizes, int sizes_ptr,
+              byte[][] frames, int frames_ptr, short[] sizes, int sizes_ptr,
               out int payload_offset, out int packet_offset)
         {
             int i, bytes;
@@ -492,9 +486,12 @@ namespace Concentus.Structs
             for (i = 0; i < count; i++)
             {
                 if (frames != null)
-                    frames[frames_ptr + i] = data;
-                if (frames_ptrs != null)
-                    frames_ptrs[frames_ptr + i] = data_ptr;
+                {
+                    // The old code returned pointers to the single data array, but that can cause unwanted side effects.
+                    // So I have replaced it with this code that creates a new copy of each frame. Slower, but more robust
+                    frames[frames_ptr + i] = new byte[data.Length - data_ptr];
+                    Array.Copy(data, data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
+                }
                 data_ptr += sizes[sizes_ptr + i];
             }
 

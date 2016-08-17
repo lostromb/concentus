@@ -49,7 +49,6 @@ namespace Concentus.Structs
         internal sbyte toc = 0;
         internal int nb_frames = 0;
         internal readonly byte[][] frames = new byte[48][];
-        internal readonly int[] frames_ptrs = new int[48];
         internal readonly short[] len = new short[48];
         internal int framesize = 0;
         
@@ -117,7 +116,7 @@ namespace Concentus.Structs
                 return OpusError.OPUS_INVALID_PACKET;
             }
 
-            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out dummy_toc, this.frames, this.frames_ptrs, this.nb_frames, this.len, this.nb_frames, out dummy_offset, out dummy_offset);
+            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out dummy_toc, this.frames, this.nb_frames, this.len, this.nb_frames, out dummy_offset, out dummy_offset);
             if (ret < 1) return ret;
 
             this.nb_frames += curr_nb_frames;
@@ -317,11 +316,11 @@ namespace Concentus.Structs
                 {
                     /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
                        padding from opus_packet_pad or opus_packet_unpad(). */
-                       Arrays.MemMove<byte>(data, frames_ptrs[i], ptr, this.len[i]);
+                       Arrays.MemMove<byte>(data, 0, ptr, this.len[i]);
                 }
                 else
                 {
-                    Array.Copy(this.frames[i], frames_ptrs[i], data, ptr, this.len[i]);
+                    Array.Copy(this.frames[i], 0, data, ptr, this.len[i]);
                 }
                 ptr += this.len[i];
             }
@@ -508,7 +507,7 @@ namespace Concentus.Structs
             {
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
-                count = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, 1, out dummy_toc, null, null, 0, 
+                count = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, 1, out dummy_toc, null, 0, 
                                                size, 0, out dummy_offset, out packet_offset);
                 if (count < 0)
                     return count;
@@ -555,7 +554,7 @@ namespace Concentus.Structs
                 if (len <= 0)
                     return OpusError.OPUS_INVALID_PACKET;
                 rp.Reset();
-                ret = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, self_delimited, out dummy_toc, null, null, 0,
+                ret = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, self_delimited, out dummy_toc, null, 0,
                                                size, 0, out dummy_offset, out packet_offset);
                 if (ret < 0)
                     return ret;
