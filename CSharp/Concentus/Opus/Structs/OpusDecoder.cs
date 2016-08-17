@@ -196,7 +196,7 @@ namespace Concentus.Structs
             return st;
         }
         
-        private static readonly OpusDataBuffer SILENCE = new OpusDataBuffer (new byte[] { 0xFF, 0xFF });
+        private static readonly OpusDataBuffer SILENCE = new OpusDataBuffer (new sbyte[] { -1, -1 });
 
         internal int opus_decode_frame(OpusDataBuffer data, int data_ptr,
       int len, short[] pcm, int pcm_ptr, int frame_size, int decode_fec)
@@ -726,7 +726,7 @@ namespace Concentus.Structs
         /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
         /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
         /// <returns>The number of decoded samples</returns>
-        public int Decode(byte[] in_data, int in_data_offset,
+        public int Decode(sbyte[] in_data, int in_data_offset,
              int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
             if (frame_size <= 0)
@@ -774,7 +774,7 @@ namespace Concentus.Structs
         /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
         /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
         /// <returns>The number of decoded samples</returns>
-        public int Decode(byte[] in_data, int in_data_offset,
+        public int Decode(sbyte[] in_data, int in_data_offset,
             int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
             short[] output;

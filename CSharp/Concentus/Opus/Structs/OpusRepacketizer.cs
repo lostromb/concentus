@@ -48,7 +48,7 @@ namespace Concentus.Structs
     {
         internal sbyte toc = 0;
         internal int nb_frames = 0;
-        internal readonly byte[][] frames = new byte[48][];
+        internal readonly sbyte[][] frames = new sbyte[48][];
         internal readonly short[] len = new short[48];
         internal int framesize = 0;
         

@@ -338,7 +338,7 @@ namespace Concentus.Structs
         }
 
         public int DecodeMultistream(
-              byte[] data,
+              sbyte[] data,
               int data_offset,
               int len,
               short[] out_pcm,
@@ -351,7 +351,7 @@ namespace Concentus.Structs
                 out_pcm, out_pcm_offset, opus_copy_channel_out_short, frame_size, decode_fec, 0);
         }
 
-        public int DecodeMultistream(byte[] data, int data_offset,
+        public int DecodeMultistream(sbyte[] data, int data_offset,
           int len, float[] out_pcm, int out_pcm_offset, int frame_size, int decode_fec)
         {
             return opus_multistream_decode_native<float>(new OpusDataBuffer(data), data_offset, len,

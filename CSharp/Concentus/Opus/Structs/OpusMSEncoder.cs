@@ -597,7 +597,7 @@ namespace Concentus.Structs
             int tot_size;
             short[] buf;
             int[] bandSMR;
-            OpusDataBuffer tmp_data = new OpusDataBuffer(new byte[MS_FRAME_TMP]);
+            OpusDataBuffer tmp_data = new OpusDataBuffer(new sbyte[MS_FRAME_TMP]);
             OpusRepacketizer rp = OpusRepacketizer.Create();
             int vbr;
             CeltMode celt_mode;
@@ -818,7 +818,7 @@ namespace Concentus.Structs
             short[] pcm,
             int pcm_offset,
             int frame_size,
-            byte[] outputBuffer,
+            sbyte[] outputBuffer,
             int outputBuffer_offset,
             int max_data_bytes
         )
@@ -832,7 +832,7 @@ namespace Concentus.Structs
             float[] pcm,
             int pcm_offset,
             int frame_size,
-            byte[] outputBuffer,
+            sbyte[] outputBuffer,
             int outputBuffer_offset,
             int max_data_bytes
         )

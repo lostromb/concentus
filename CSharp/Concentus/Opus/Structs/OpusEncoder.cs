@@ -793,7 +793,7 @@ namespace Concentus.Structs
                 nb_frames = frame_size > this.Fs / 25 ? 3 : 2;
                 bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
 
-                tmp_data = new OpusDataBuffer(new byte[nb_frames * bytes_per_frame]);
+                tmp_data = new OpusDataBuffer(new sbyte[nb_frames * bytes_per_frame]);
 
                 rp = OpusRepacketizer.Create();
 
@@ -1290,7 +1290,7 @@ namespace Concentus.Structs
             {
                 if (this.mode != this.prev_mode && this.prev_mode > 0)
                 {
-                    OpusDataBuffer dummy = new OpusDataBuffer(new byte[2]);
+                    OpusDataBuffer dummy = new OpusDataBuffer(new sbyte[2]);
                     celt_enc.ResetState();
 
                     /* Prefilling */
@@ -1312,7 +1312,7 @@ namespace Concentus.Structs
             if (redundancy != 0 && celt_to_silk == 0)
             {
                 int err;
-                OpusDataBuffer dummy = new OpusDataBuffer(new byte[2]);
+                OpusDataBuffer dummy = new OpusDataBuffer(new sbyte[2]);
                 int N2, N4;
                 N2 = this.Fs / 200;
                 N4 = this.Fs / 400;
@@ -1398,7 +1398,7 @@ namespace Concentus.Structs
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use he Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes</returns>
         public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
-              byte[] out_data, int out_data_offset, int max_data_bytes)
+              sbyte[] out_data, int out_data_offset, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
             if (out_data_offset + max_data_bytes > out_data.Length)
@@ -1463,7 +1463,7 @@ namespace Concentus.Structs
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes</returns>
         public int Encode(float[] in_pcm, int pcm_offset, int frame_size,
-                              byte[] out_data, int out_data_offset, int max_data_bytes)
+                              sbyte[] out_data, int out_data_offset, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
             if (out_data_offset + max_data_bytes > out_data.Length)

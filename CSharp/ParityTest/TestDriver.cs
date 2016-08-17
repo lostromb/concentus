@@ -39,7 +39,7 @@ namespace ParityTest
         private static extern void opus_decoder_destroy(IntPtr decoder);
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int opus_decode(IntPtr st, byte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
+        private static extern int opus_decode(IntPtr st, sbyte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
 
         private static OpusEncoder CreateConcentusEncoder(TestParameters parameters)
         {
@@ -151,7 +151,7 @@ namespace ParityTest
             returnVal.FrameLength = frameSize;
 
             int inputPointer = 0;
-            byte[] outputBuffer = new byte[10000];
+            sbyte[] outputBuffer = new sbyte[10000];
             short[] inputPacket = new short[frameSizeStereo];
             short[] opusDecoded = new short[decodedFrameSizeStereo];
             short[] concentusDecoded = new short[decodedFrameSizeStereo];
@@ -162,7 +162,7 @@ namespace ParityTest
             Queue<string> PacketTransmissionPattern = new Queue<string>();
             for (int c = 0; c < 5; c++) PacketTransmissionPattern.Enqueue("|");
 
-            byte[] concentusEncoded = null;
+            sbyte[] concentusEncoded = null;
             int concentusPacketSize = 0;
 
             try
@@ -213,14 +213,14 @@ namespace ParityTest
                             returnVal.FailureFrame = inputPacket;
                             return returnVal;
                         }
-                        concentusEncoded = new byte[concentusPacketSize];
+                        concentusEncoded = new sbyte[concentusPacketSize];
                         Array.Copy(outputBuffer, BUFFER_OFFSET, concentusEncoded, 0, concentusPacketSize);
 
                         // Encode with Opus
-                        byte[] opusEncoded;
+                        sbyte[] opusEncoded;
                         unsafe
                         {
-                            fixed (byte* benc = outputBuffer)
+                            fixed (sbyte* benc = outputBuffer)
                             {
                                 byte[] nextFrameBytes = ShortsToBytes(inputPacket);
                                 IntPtr encodedPtr = new IntPtr((void*)(benc));
@@ -234,7 +234,7 @@ namespace ParityTest
                                     returnVal.FailureFrame = inputPacket;
                                     return returnVal;
                                 }
-                                opusEncoded = new byte[opusPacketSize];
+                                opusEncoded = new sbyte[opusPacketSize];
                                 Array.Copy(outputBuffer, opusEncoded, opusPacketSize);
                             }
                         }
@@ -254,7 +254,7 @@ namespace ParityTest
                         // Ensure that the packet can be parsed back
                         try
                         {
-                            Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
+                            Pointer<sbyte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
                             OpusPacketInfo packetInfo = OpusPacketInfo.ParseOpusPacket(new OpusDataBuffer(concentusEncodedWithOffset.Data), concentusEncodedWithOffset.Offset, concentusPacketSize);
                         }
                         catch (OpusException e)
@@ -310,7 +310,7 @@ namespace ParityTest
                     if (!droppedPacket)
                     {
                         // Decode with Concentus
-                        Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
+                        Pointer<sbyte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
                         Pointer<short> concentusDecodedWithOffset = Pointerize(concentusDecoded);
                         int concentusOutputFrameSize = concentusDecoder.Decode(
                             concentusEncodedWithOffset.Data,

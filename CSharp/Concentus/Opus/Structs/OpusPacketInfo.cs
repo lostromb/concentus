@@ -54,14 +54,14 @@ namespace Concentus.Structs
         /// <summary>
         /// The list of subframes in this packet
         /// </summary>
-        public readonly IList<byte[]> Frames;
+        public readonly IList<sbyte[]> Frames;
 
         /// <summary>
         /// The index of the start of the payload within the packet
         /// </summary>
         public readonly int PayloadOffset;
 
-        private OpusPacketInfo(sbyte toc, IList<byte[]> frames, int payloadOffset)
+        private OpusPacketInfo(sbyte toc, IList<sbyte[]> frames, int payloadOffset)
         {
             TOCByte = toc;
             Frames = frames;
@@ -84,7 +84,7 @@ namespace Concentus.Structs
 
             int payload_offset;
             sbyte out_toc;
-            byte[][] frames = new byte[numFrames][];
+            sbyte[][] frames = new sbyte[numFrames][];
             short[] size = new short[numFrames];
             int packetOffset;
             int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out out_toc, frames, 0, size, 0, out payload_offset, out packetOffset);
@@ -95,7 +95,7 @@ namespace Concentus.Structs
 
             // Since packet_parse_impl has created deep copies of each frame, we can return them safely from this function without
             // worrying about variable scoping or side effects
-            IList<byte[]> copiedFrames = new List<byte[]>(frames);
+            IList<sbyte[]> copiedFrames = new List<sbyte[]>(frames);
 
             return new OpusPacketInfo(out_toc, copiedFrames, payload_offset);
         }
@@ -262,7 +262,7 @@ namespace Concentus.Structs
 
         internal static int opus_packet_parse_impl(OpusDataBuffer data, int data_ptr, int len,
               int self_delimited, out sbyte out_toc,
-              byte[][] frames, int frames_ptr, short[] sizes, int sizes_ptr,
+              sbyte[][] frames, int frames_ptr, short[] sizes, int sizes_ptr,
               out int payload_offset, out int packet_offset)
         {
             int i, bytes;
@@ -419,7 +419,7 @@ namespace Concentus.Structs
                 {
                     // The old code returned pointers to the single data array, but that can cause unwanted side effects.
                     // So I have replaced it with this code that creates a new copy of each frame. Slower, but more robust
-                    frames[frames_ptr + i] = new byte[data.Length - data_ptr];
+                    frames[frames_ptr + i] = new sbyte[data.Length - data_ptr];
                     data.CopyTo(data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
                 }
                 data_ptr += sizes[sizes_ptr + i];

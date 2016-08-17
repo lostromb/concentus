@@ -1,5 +1,6 @@
 ﻿using Concentus;
 using Concentus.Celt;
+using Concentus.Common;
 using Concentus.Common.CPlusPlus;
 using Concentus.Enums;
 using Concentus.Structs;
@@ -125,7 +126,7 @@ namespace TestOpusEncode
             Pointer<short> inbuf;
             Pointer<short> outbuf;
             Pointer<short> out2buf;
-            Pointer<byte> packet = Pointer.Malloc<byte>(MAX_PACKET + 257);
+            Pointer<sbyte> packet = Pointer.Malloc<sbyte>(MAX_PACKET + 257);
             uint enc_final_range;
             uint dec_final_range;
             int count;
@@ -245,17 +246,17 @@ namespace TestOpusEncode
                         enc_final_range = enc.FinalRange;
                         if ((fast_rand() & 3) == 0)
                         {
-                            if (OpusRepacketizer.PadPacket(packet.Data, packet.Offset, len, len + 1) != OpusError.OPUS_OK) test_failed();
+                            if (OpusRepacketizer.PadPacket(new OpusDataBuffer(packet.Data), packet.Offset, len, len + 1) != OpusError.OPUS_OK) test_failed();
                             len++;
                         }
                         if ((fast_rand() & 7) == 0)
                         {
-                            if (OpusRepacketizer.PadPacket(packet.Data, packet.Offset, len, len + 256) != OpusError.OPUS_OK) test_failed();
+                            if (OpusRepacketizer.PadPacket(new OpusDataBuffer(packet.Data), packet.Offset, len, len + 256) != OpusError.OPUS_OK) test_failed();
                             len += 256;
                         }
                         if ((fast_rand() & 3) == 0)
                         {
-                            len = OpusRepacketizer.UnpadPacket(packet.Data, packet.Offset, len);
+                            len = OpusRepacketizer.UnpadPacket(new OpusDataBuffer(packet.Data), packet.Offset, len);
                             if (len < 1) test_failed();
                         }
                         out_samples = dec.Decode(packet.Data, 0, len, outbuf.Data, i << 1, MAX_FRAME_SAMP, false);
@@ -298,7 +299,7 @@ namespace TestOpusEncode
             OpusDecoder[] dec_err = new OpusDecoder[10];
             short[] inbuf;
             short[] out2buf;
-            byte[] packet = new byte[MAX_PACKET + 257];
+            sbyte[] packet = new sbyte[MAX_PACKET + 257];
             uint enc_final_range;
             uint dec_final_range;
             int count;
@@ -416,12 +417,12 @@ namespace TestOpusEncode
                         enc_final_range = MSenc.FinalRange;
                         if ((fast_rand() & 3) == 0)
                         {
-                            if (OpusRepacketizer.PadMultistreamPacket(packet, 0, len, len + 1, 2) != OpusError.OPUS_OK) test_failed();
+                            if (OpusRepacketizer.PadMultistreamPacket(new OpusDataBuffer(packet), 0, len, len + 1, 2) != OpusError.OPUS_OK) test_failed();
                             len++;
                         }
                         if ((fast_rand() & 7) == 0)
                         {
-                            if (OpusRepacketizer.PadMultistreamPacket(packet, 0, len, len + 256, 2) != OpusError.OPUS_OK) test_failed();
+                            if (OpusRepacketizer.PadMultistreamPacket(new OpusDataBuffer(packet), 0, len, len + 256, 2) != OpusError.OPUS_OK) test_failed();
                             len += 256;
                         }
                         //if ((fast_rand() & 3) == 0)
