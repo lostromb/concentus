@@ -758,7 +758,7 @@ namespace Concentus.Celt
                     int p0 = 3;
                     int x = itheta;
                     int x0 = qn / 2;
-                    uint ft = (uint)(p0 * (x0 + 1) + x0);
+                    long ft = (long)(p0 * (x0 + 1) + x0);
                     /* Use a probability of p0 up to itheta=8192 and then use 1 after */
                     if (encode != 0)
                     {
@@ -769,7 +769,7 @@ namespace Concentus.Celt
                             (uint)(x <= x0 ?
                                 (p0 * (x + 1)) :
                                 ((x - x0) + (x0 + 1) * p0)),
-                            ft);
+                            (uint)ft);
                     }
                     else
                     {
@@ -785,10 +785,10 @@ namespace Concentus.Celt
                         }
 
                         ec.dec_update(
-                            (uint)(x <= x0 ?
+                            (x <= x0 ?
                                 p0 * x :
                                 (x - 1 - x0) + (x0 + 1) * p0),
-                            (uint)(x <= x0 ?
+                            (x <= x0 ?
                                 p0 * (x + 1) :
                                 (x - x0) + (x0 + 1) * p0),
                             ft);
@@ -809,8 +809,8 @@ namespace Concentus.Celt
                 }
                 else
                 {
-                    int fs = 1, ft;
-                    ft = ((qn >> 1) + 1) * ((qn >> 1) + 1);
+                    int fs = 1;
+                    int ft = ((qn >> 1) + 1) * ((qn >> 1) + 1);
                     if (encode != 0)
                     {
                         int fl;
@@ -826,7 +826,7 @@ namespace Concentus.Celt
                         /* Triangular pdf */
                         int fl = 0;
                         int fm;
-                        fm = (int)ec.decode((uint)ft);
+                        fm = (int)ec.decode((long)ft);
 
                         if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
                         {
@@ -841,7 +841,7 @@ namespace Concentus.Celt
                             fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
                         }
 
-                        ec.dec_update((uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec.dec_update(fl, fl + fs, ft);
                     }
                 }
                 Inlines.OpusAssert(itheta >= 0);

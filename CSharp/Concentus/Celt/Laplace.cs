@@ -112,7 +112,7 @@ namespace Concentus.Celt
         {
             int val = 0;
             uint fl;
-            uint fm;
+            long fm;
             fm = dec.decode_bin(15);
             fl = 0;
 
