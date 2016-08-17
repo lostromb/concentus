@@ -286,7 +286,7 @@ namespace Concentus.Structs
             framesize = GetNumSamplesPerFrame(data, data_ptr, 48000);
 
             cbr = 0;
-            toc = EntropyCoder.Convert(data.GetByte(data_ptr++));
+            toc = data.GetByte(data_ptr++);
             len--;
             last_size = len;
             switch (toc & 0x3)

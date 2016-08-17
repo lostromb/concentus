@@ -284,13 +284,13 @@ namespace Concentus.Common
 
         internal int read_byte()
         {
-            return this.offs < this.storage ? this.buf.GetByte(buf_ptr + this.offs++) : 0;
+            return this.offs < this.storage ? Inlines.SignedByteToUnsignedInt(this.buf.GetByte(buf_ptr + this.offs++)) : 0;
         }
 
         internal int read_byte_from_end()
         {
             return this.end_offs < this.storage ?
-             this.buf.GetByte(buf_ptr + (this.storage - ++(this.end_offs))) : 0;
+             Inlines.SignedByteToUnsignedInt(this.buf.GetByte(buf_ptr + (this.storage - ++(this.end_offs)))) : 0;
         }
 
         internal int write_byte(uint _value)

@@ -98,7 +98,7 @@ namespace Concentus.Structs
 
             if (this.nb_frames == 0)
             {
-                this.toc = EntropyCoder.Convert(data.GetByte(data_ptr));
+                this.toc = data.GetByte(data_ptr);
                 this.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, 8000);
             }
             else if ((this.toc & 0xFC) != (data.GetByte(data_ptr) & 0xFC))
