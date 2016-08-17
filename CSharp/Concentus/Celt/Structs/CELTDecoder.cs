@@ -463,7 +463,7 @@ namespace Concentus.Celt.Structs
             this.loss_count = loss_count + 1;
         }
 
-        internal int celt_decode_with_ec(OpusDataBuffer data, int data_ptr,
+        internal int celt_decode_with_ec(sbyte[] data, int data_ptr,
               int len, short[] pcm, int pcm_ptr, int frame_size, EntropyCoder dec, int accum)
         {
             int c, i, N;

@@ -7,26 +7,19 @@ using System.Threading.Tasks;
 
 namespace Concentus.Common
 {
-    public class OpusDataBuffer
+    public static class DataBufferExtensions
     {
-        private sbyte[] _data;
-
-        public OpusDataBuffer(sbyte[] data)
-        {
-            _data = data;
-        }
-
-        public sbyte GetByte(int idx)
+        public static sbyte GetByte(this sbyte[] _data, int idx)
         {
             return _data[idx];
         }
 
-        public void SetByte(int idx, sbyte val)
+        public static void SetByte(this sbyte[] _data, int idx, sbyte val)
         {
             _data[idx] = val;
         }
 
-        public void CopyFrom(sbyte[] source, int sourceOffset, int destOffset, int length)
+        public static void CopyFrom(this sbyte[] _data, sbyte[] source, int sourceOffset, int destOffset, int length)
         {
             for (int c = 0; c < length; c++)
             {
@@ -34,7 +27,7 @@ namespace Concentus.Common
             }
         }
 
-        public void CopyTo(int sourceOffset, sbyte[] dest, int destOffset, int length)
+        public static void CopyTo(this sbyte[] _data, int sourceOffset, sbyte[] dest, int destOffset, int length)
         {
             for (int c = 0; c < length; c++)
             {
@@ -42,7 +35,7 @@ namespace Concentus.Common
             }
         }
 
-        public void MemMove(int source, int dest, int length)
+        public static void MemMove(this sbyte[] _data, int source, int dest, int length)
         {
             if (source == dest || length == 0)
                 return;
@@ -75,25 +68,12 @@ namespace Concentus.Common
             }
         }
 
-        public void MemSet(sbyte value, int offset, int length)
+        public static void MemSet(this sbyte[] _data, sbyte value, int offset, int length)
         {
             for (int c = 0; c < length; c++)
             {
                 _data[c + offset] = value;
             }
-        }
-
-        public int Length
-        {
-            get
-            {
-                return _data.Length;
-            }
-        }
-
-        public bool BufferEquals(sbyte[] other)
-        {
-            return other == _data;
         }
     }
 }

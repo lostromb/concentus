@@ -85,7 +85,7 @@ namespace Concentus.Structs
             return rp;
         }
 
-        internal int opus_repacketizer_cat_impl(OpusDataBuffer data, int data_ptr, int len, int self_delimited)
+        internal int opus_repacketizer_cat_impl(sbyte[] data, int data_ptr, int len, int self_delimited)
         {
             sbyte dummy_toc;
             int dummy_offset;
@@ -170,7 +170,7 @@ namespace Concentus.Structs
   *                              audio stored in the repacketizer state to more
   *                              than 120 ms.
   */
-        public int AddPacket(OpusDataBuffer data, int data_offset, int len)
+        public int AddPacket(sbyte[] data, int data_offset, int len)
         {
             return opus_repacketizer_cat_impl(data, data_offset, len, 0);
         }
@@ -191,7 +191,7 @@ namespace Concentus.Structs
         }
 
         internal int opus_repacketizer_out_range_impl(int begin, int end,
-              OpusDataBuffer data, int data_ptr, int maxlen, int self_delimited, int pad)
+              sbyte[] data, int data_ptr, int maxlen, int self_delimited, int pad)
         {
             int i, count;
             int tot_size;
@@ -312,7 +312,7 @@ namespace Concentus.Structs
             for (i = begin; i < count + begin; i++)
             {
                 
-                if (data.BufferEquals(this.frames[i]))
+                if (data == this.frames[i])
                 {
                     /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
                        padding from opus_packet_pad or opus_packet_unpad(). */
@@ -365,7 +365,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
   *                                complete output packet.
   */
-        public int CreatePacket(int begin, int end, OpusDataBuffer data, int data_offset, int maxlen)
+        public int CreatePacket(int begin, int end, sbyte[] data, int data_offset, int maxlen)
         {
             return opus_repacketizer_out_range_impl(begin, end, data, data_offset, maxlen, 0, 0);
         }
@@ -399,7 +399,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
   *                                complete output packet.
   */
-        public int CreatePacket(OpusDataBuffer data, int data_offset, int maxlen)
+        public int CreatePacket(sbyte[] data, int data_offset, int maxlen)
         {
             return opus_repacketizer_out_range_impl(0, this.nb_frames, data, data_offset, maxlen, 0, 0);
         }
@@ -416,7 +416,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadPacket(OpusDataBuffer data, int data_offset, int len, int new_len)
+        public static int PadPacket(sbyte[] data, int data_offset, int len, int new_len)
         {
             OpusRepacketizer rp = new OpusRepacketizer();
             int ret;
@@ -449,7 +449,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int UnpadPacket(OpusDataBuffer data, int data_offset, int len)
+        public static int UnpadPacket(sbyte[] data, int data_offset, int len)
         {
             int ret;
             if (len < 1)
@@ -480,7 +480,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadMultistreamPacket(OpusDataBuffer data, int data_offset, int len, int new_len, int nb_streams)
+        public static int PadMultistreamPacket(sbyte[] data, int data_offset, int len, int new_len, int nb_streams)
         {
             int s;
             int count;
@@ -526,7 +526,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int UnpadMultistreamPacket(OpusDataBuffer data, int data_offset, int len, int nb_streams)
+        public static int UnpadMultistreamPacket(sbyte[] data, int data_offset, int len, int nb_streams)
         {
             int s;
             sbyte dummy_toc;

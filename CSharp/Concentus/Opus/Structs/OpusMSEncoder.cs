@@ -583,7 +583,7 @@ namespace Concentus.Structs
             T[] pcm,
             int pcm_ptr,
             int analysis_frame_size,
-            OpusDataBuffer data,
+            sbyte[] data,
             int data_ptr,
             int max_data_bytes,
             int lsb_depth,
@@ -597,7 +597,7 @@ namespace Concentus.Structs
             int tot_size;
             short[] buf;
             int[] bandSMR;
-            OpusDataBuffer tmp_data = new OpusDataBuffer(new sbyte[MS_FRAME_TMP]);
+            sbyte[] tmp_data = new sbyte[MS_FRAME_TMP];
             OpusRepacketizer rp = OpusRepacketizer.Create();
             int vbr;
             CeltMode celt_mode;
@@ -825,7 +825,7 @@ namespace Concentus.Structs
         {
             // todo: catch error codes here
             return opus_multistream_encode_native<short>(opus_copy_channel_in_short,
-               pcm, pcm_offset, frame_size, new OpusDataBuffer(outputBuffer), outputBuffer_offset, max_data_bytes, 16, Downmix.downmix_int, 0);
+               pcm, pcm_offset, frame_size, outputBuffer, outputBuffer_offset, max_data_bytes, 16, Downmix.downmix_int, 0);
         }
 
         public int EncodeMultistream(
@@ -839,7 +839,7 @@ namespace Concentus.Structs
         {
             // todo: catch error codes here
             return opus_multistream_encode_native<float>(opus_copy_channel_in_float,
-               pcm, pcm_offset, frame_size, new OpusDataBuffer(outputBuffer), outputBuffer_offset, max_data_bytes, 16, Downmix.downmix_float, 1);
+               pcm, pcm_offset, frame_size, outputBuffer, outputBuffer_offset, max_data_bytes, 16, Downmix.downmix_float, 1);
         }
 
         #endregion

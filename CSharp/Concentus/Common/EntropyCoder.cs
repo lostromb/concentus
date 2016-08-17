@@ -124,7 +124,7 @@ namespace Concentus.Common
         //////////////// Coder State //////////////////// 
 
         /*POINTER to Buffered input/output.*/
-        private OpusDataBuffer buf;
+        private sbyte[] buf;
         private int buf_ptr;
 
         /*The size of the buffer.*/
@@ -341,7 +341,7 @@ namespace Concentus.Common
             }
         }
 
-        internal void dec_init(OpusDataBuffer _buf, int _buf_ptr, int _storage)
+        internal void dec_init(sbyte[] _buf, int _buf_ptr, int _storage)
         {
             this.buf = _buf;
             this.buf_ptr = _buf_ptr;
@@ -568,7 +568,7 @@ namespace Concentus.Common
             }
         }
 
-        internal void enc_init(OpusDataBuffer _buf, int buf_ptr, int _size)
+        internal void enc_init(sbyte[] _buf, int buf_ptr, int _size)
         {
             this.buf = _buf;
             this.buf_ptr = buf_ptr;

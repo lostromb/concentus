@@ -246,17 +246,17 @@ namespace TestOpusEncode
                         enc_final_range = enc.FinalRange;
                         if ((fast_rand() & 3) == 0)
                         {
-                            if (OpusRepacketizer.PadPacket(new OpusDataBuffer(packet.Data), packet.Offset, len, len + 1) != OpusError.OPUS_OK) test_failed();
+                            if (OpusRepacketizer.PadPacket(packet.Data, packet.Offset, len, len + 1) != OpusError.OPUS_OK) test_failed();
                             len++;
                         }
                         if ((fast_rand() & 7) == 0)
                         {
-                            if (OpusRepacketizer.PadPacket(new OpusDataBuffer(packet.Data), packet.Offset, len, len + 256) != OpusError.OPUS_OK) test_failed();
+                            if (OpusRepacketizer.PadPacket(packet.Data, packet.Offset, len, len + 256) != OpusError.OPUS_OK) test_failed();
                             len += 256;
                         }
                         if ((fast_rand() & 3) == 0)
                         {
-                            len = OpusRepacketizer.UnpadPacket(new OpusDataBuffer(packet.Data), packet.Offset, len);
+                            len = OpusRepacketizer.UnpadPacket(packet.Data, packet.Offset, len);
                             if (len < 1) test_failed();
                         }
                         out_samples = dec.Decode(packet.Data, 0, len, outbuf.Data, i << 1, MAX_FRAME_SAMP, false);
@@ -417,12 +417,12 @@ namespace TestOpusEncode
                         enc_final_range = MSenc.FinalRange;
                         if ((fast_rand() & 3) == 0)
                         {
-                            if (OpusRepacketizer.PadMultistreamPacket(new OpusDataBuffer(packet), 0, len, len + 1, 2) != OpusError.OPUS_OK) test_failed();
+                            if (OpusRepacketizer.PadMultistreamPacket(packet, 0, len, len + 1, 2) != OpusError.OPUS_OK) test_failed();
                             len++;
                         }
                         if ((fast_rand() & 7) == 0)
                         {
-                            if (OpusRepacketizer.PadMultistreamPacket(new OpusDataBuffer(packet), 0, len, len + 256, 2) != OpusError.OPUS_OK) test_failed();
+                            if (OpusRepacketizer.PadMultistreamPacket(packet, 0, len, len + 256, 2) != OpusError.OPUS_OK) test_failed();
                             len += 256;
                         }
                         //if ((fast_rand() & 3) == 0)
