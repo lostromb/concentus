@@ -223,7 +223,7 @@ namespace Concentus.Celt
                 int nintra_bytes;
                 int save_bytes;
                 int badness2;
-                byte[] intra_bits = null;
+                sbyte[] intra_bits = null;
 
                 tell_intra = (int)enc.tell_frac();
 
@@ -236,7 +236,7 @@ namespace Concentus.Celt
 
                 if (save_bytes != 0)
                 {
-                    intra_bits = new byte[save_bytes];
+                    intra_bits = new sbyte[save_bytes];
                     /* Copy bits from intra bit-stream */
                     Array.Copy(enc_intra_state.get_buffer(), intra_buf, intra_bits, 0, save_bytes);
                 }

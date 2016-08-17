@@ -929,7 +929,7 @@ namespace Concentus.Silk.Structs
             {
                 int[] xfw_Q3;
                 short[] res_pitch;
-                byte[] ec_buf_copy;
+                sbyte[] ec_buf_copy;
                 int res_pitch_frame;
 
                 res_pitch = new short[this.la_pitch + this.frame_length + this.ltp_mem_length];
@@ -981,7 +981,7 @@ namespace Concentus.Silk.Structs
                 seed_copy = this.indices.Seed;
                 ec_prevLagIndex_copy = this.ec_prevLagIndex;
                 ec_prevSignalType_copy = this.ec_prevSignalType;
-                ec_buf_copy = new byte[1275]; // fixme: this size might be optimized to the actual size
+                ec_buf_copy = new sbyte[1275]; // fixme: this size might be optimized to the actual size
                 for (iter = 0; ; iter++)
                 {
                     if (gainsID == gainsID_lower)

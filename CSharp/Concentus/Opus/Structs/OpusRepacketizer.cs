@@ -216,7 +216,7 @@ namespace Concentus.Structs
                 tot_size += this.len[0] + 1;
                 if (tot_size > maxlen)
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
-                data.SetByte(ptr++, (byte)(this.toc & 0xFC));
+                data.SetByte(ptr++, (sbyte)(this.toc & 0xFC));
             }
             else if (count == 2)
             {
@@ -226,14 +226,14 @@ namespace Concentus.Structs
                     tot_size += 2 * this.len[0] + 1;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data.SetByte(ptr++, (byte)((this.toc & 0xFC) | 0x1));
+                    data.SetByte(ptr++, (sbyte)((this.toc & 0xFC) | 0x1));
                 }
                 else {
                     /* Code 2 */
                     tot_size += this.len[0] + this.len[1] + 2 + (this.len[0] >= 252 ? 1 : 0);
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data.SetByte(ptr++, (byte)((this.toc & 0xFC) | 0x2));
+                    data.SetByte(ptr++, (sbyte)((this.toc & 0xFC) | 0x2));
                     ptr += OpusPacketInfo.encode_size(this.len[0], data, ptr);
                 }
             }
@@ -267,16 +267,16 @@ namespace Concentus.Structs
 
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data.SetByte(ptr++, (byte)((this.toc & 0xFC) | 0x3));
-                    data.SetByte(ptr++, (byte)(count | 0x80));
+                    data.SetByte(ptr++, (sbyte)((this.toc & 0xFC) | 0x3));
+                    data.SetByte(ptr++, (sbyte)(count | 0x80));
                 }
                 else
                 {
                     tot_size += count * this.len[0] + 2;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data.SetByte(ptr++, (byte)((this.toc & 0xFC) | 0x3));
-                    data.SetByte(ptr++, (byte)(count));
+                    data.SetByte(ptr++, (sbyte)((this.toc & 0xFC) | 0x3));
+                    data.SetByte(ptr++, (sbyte)(count));
                 }
 
                 pad_amount = pad != 0 ? (maxlen - tot_size) : 0;
@@ -284,14 +284,14 @@ namespace Concentus.Structs
                 if (pad_amount != 0)
                 {
                     int nb_255s;
-                    data.SetByte(data_ptr + 1, (byte)(data.GetByte(data_ptr + 1) | 0x40));
+                    data.SetByte(data_ptr + 1, (sbyte)(data.GetByte(data_ptr + 1) | 0x40));
                     nb_255s = (pad_amount - 1) / 255;
                     for (i = 0; i < nb_255s; i++)
                     {
-                        data.SetByte(ptr++, 255);
+                        data.SetByte(ptr++, -1);
                     }
 
-                    data.SetByte(ptr++, (byte)(pad_amount - 255 * nb_255s - 1));
+                    data.SetByte(ptr++, (sbyte)(pad_amount - 255 * nb_255s - 1));
                     tot_size += pad_amount;
                 }
 

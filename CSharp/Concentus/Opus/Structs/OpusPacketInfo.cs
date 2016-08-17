@@ -226,13 +226,13 @@ namespace Concentus.Structs
         {
             if (size < 252)
             {
-                data.SetByte(data_ptr, (byte)(size & 0xFF));
+                data.SetByte(data_ptr, (sbyte)(size & 0xFF));
                 return 1;
             }
             else {
                 int dp1 = 252 + (size & 0x3);
-                data.SetByte(data_ptr, (byte)(dp1 & 0xFF));
-                data.SetByte(data_ptr + 1, (byte)((size - dp1) >> 2));
+                data.SetByte(data_ptr, (sbyte)(dp1 & 0xFF));
+                data.SetByte(data_ptr + 1, (sbyte)((size - dp1) >> 2));
                 return 2;
             }
         }

@@ -270,14 +270,14 @@ namespace Concentus.Common
             }
         }
 
-        internal byte[] get_buffer()
+        internal sbyte[] get_buffer()
         {
-            byte[] convertedBuf = new byte[this.storage];
+            sbyte[] convertedBuf = new sbyte[this.storage];
             this.buf.CopyTo(this.buf_ptr, convertedBuf, 0, this.storage);
             return convertedBuf;
         }
 
-        internal void write_buffer(byte[] data, int data_ptr, int target_offset, int size)
+        internal void write_buffer(sbyte[] data, int data_ptr, int target_offset, int size)
         {
             this.buf.CopyFrom(data, data_ptr, this.buf_ptr + target_offset, size);
         }
@@ -299,7 +299,7 @@ namespace Concentus.Common
             {
                 return -1;
             }
-            this.buf.SetByte(buf_ptr + this.offs++, (byte)_value);
+            this.buf.SetByte(buf_ptr + this.offs++, (sbyte)_value);
             return 0;
         }
 
@@ -310,7 +310,7 @@ namespace Concentus.Common
                 return -1;
             }
 
-            this.buf.SetByte(buf_ptr + (this.storage - ++(this.end_offs)), (byte)_value);
+            this.buf.SetByte(buf_ptr + (this.storage - ++(this.end_offs)), (sbyte)_value);
             return 0;
         }
 
@@ -724,7 +724,7 @@ namespace Concentus.Common
             if (this.offs > 0)
             {
                 /*The first byte has been finalized.*/
-                this.buf.SetByte(buf_ptr, (byte)((this.buf.GetByte(buf_ptr) & ~mask) | _val << shift));
+                this.buf.SetByte(buf_ptr, (sbyte)((this.buf.GetByte(buf_ptr) & ~mask) | _val << shift));
             }
             else if (this.rem >= 0)
             {
@@ -867,7 +867,7 @@ namespace Concentus.Common
                         }
 
                         int z = buf_ptr + this.storage - this.end_offs - 1;
-                        this.buf.SetByte(z, (byte)(this.buf.GetByte(z) | window));
+                        this.buf.SetByte(z, (sbyte)(this.buf.GetByte(z) | window));
                     }
                 }
             }
