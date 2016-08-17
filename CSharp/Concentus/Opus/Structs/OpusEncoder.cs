@@ -345,7 +345,7 @@ namespace Concentus.Structs
         /// <param name="float_api"></param>
         /// <returns></returns>
         internal int opus_encode_native<T>(short[] pcm, int pcm_ptr, int frame_size,
-                        byte[] data, int data_ptr, int out_data_bytes, int lsb_depth,
+                        OpusDataBuffer data, int data_ptr, int out_data_bytes, int lsb_depth,
                         T[] analysis_pcm, int analysis_pcm_ptr, int analysis_size, int c1, int c2,
                         int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
         {
@@ -484,7 +484,7 @@ namespace Concentus.Structs
                     bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
                 else if (tocmode == OpusMode.MODE_HYBRID && bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-                data[data_ptr] = EntropyCoder.Convert(CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels));
+                data.SetByte(data_ptr, EntropyCoder.Convert(CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels)));
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
@@ -775,7 +775,7 @@ namespace Concentus.Structs
             /* Can't support higher than wideband for >20 ms frames */
             if (frame_size > this.Fs / 50 && (this.mode == OpusMode.MODE_CELT_ONLY || this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
             {
-                byte[] tmp_data;
+                OpusDataBuffer tmp_data;
                 int nb_frames;
                 OpusBandwidth bak_bandwidth;
                 int bak_channels, bak_to_mono;
@@ -793,7 +793,7 @@ namespace Concentus.Structs
                 nb_frames = frame_size > this.Fs / 25 ? 3 : 2;
                 bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
 
-                tmp_data = new byte[nb_frames * bytes_per_frame];
+                tmp_data = new OpusDataBuffer(new byte[nb_frames * bytes_per_frame]);
 
                 rp = OpusRepacketizer.Create();
 
@@ -1069,7 +1069,7 @@ namespace Concentus.Structs
                 if (nBytes == 0)
                 {
                     this.rangeFinal = 0;
-                    data[data_ptr - 1] = EntropyCoder.Convert(CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels));
+                    data.SetByte(data_ptr - 1, EntropyCoder.Convert(CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels)));
 
                     return 1;
                 }
@@ -1290,7 +1290,7 @@ namespace Concentus.Structs
             {
                 if (this.mode != this.prev_mode && this.prev_mode > 0)
                 {
-                    byte[] dummy = new byte[2];
+                    OpusDataBuffer dummy = new OpusDataBuffer(new byte[2]);
                     celt_enc.ResetState();
 
                     /* Prefilling */
@@ -1312,7 +1312,7 @@ namespace Concentus.Structs
             if (redundancy != 0 && celt_to_silk == 0)
             {
                 int err;
-                byte[] dummy = new byte[2];
+                OpusDataBuffer dummy = new OpusDataBuffer(new byte[2]);
                 int N2, N4;
                 N2 = this.Fs / 200;
                 N4 = this.Fs / 400;
@@ -1334,7 +1334,7 @@ namespace Concentus.Structs
 
             /* Signalling the mode in the first byte */
             data_ptr -= 1;
-            data[data_ptr] = EntropyCoder.Convert(CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels));
+            data.SetByte(data_ptr, EntropyCoder.Convert(CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels)));
 
             this.rangeFinal = enc.rng ^ redundant_rng;
 
@@ -1355,7 +1355,7 @@ namespace Concentus.Structs
                 {
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
                 }
-                data[data_ptr + 1] = 0;
+                data.SetByte(data_ptr + 1, 0);
                 ret = 1;
                 this.rangeFinal = 0;
             }
@@ -1367,7 +1367,7 @@ namespace Concentus.Structs
                   fill these in. This can't be done when the MDCT
                   modes are used because the decoder needs to know
                   the actual length for allocation purposes.*/
-                while (ret > 2 && data[data_ptr + ret] == 0) ret--;
+                while (ret > 2 && data.GetByte(data_ptr + ret) == 0) ret--;
             }
             /* Count ToC and redundancy */
             ret += 1 + redundancy_bytes;
@@ -1428,7 +1428,7 @@ namespace Concentus.Structs
 
             try
             {
-                int ret = opus_encode_native<short>(in_pcm, pcm_offset, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
+                int ret = opus_encode_native<short>(in_pcm, pcm_offset, internal_frame_size, new OpusDataBuffer(out_data), out_data_offset, max_data_bytes, 16,
                                          in_pcm, pcm_offset, frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
 
                 if (ret < 0)
@@ -1502,7 +1502,7 @@ namespace Concentus.Structs
 
             try
             {
-                ret = opus_encode_native(input, 0, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
+                ret = opus_encode_native(input, 0, internal_frame_size, new OpusDataBuffer(out_data), out_data_offset, max_data_bytes, 16,
                                      in_pcm, pcm_offset, frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
 
                 if (ret < 0)

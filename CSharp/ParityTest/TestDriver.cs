@@ -255,7 +255,7 @@ namespace ParityTest
                         try
                         {
                             Pointer<byte> concentusEncodedWithOffset = Pointerize(concentusEncoded);
-                            OpusPacketInfo packetInfo = OpusPacketInfo.ParseOpusPacket(concentusEncodedWithOffset.Data, concentusEncodedWithOffset.Offset, concentusPacketSize);
+                            OpusPacketInfo packetInfo = OpusPacketInfo.ParseOpusPacket(new OpusDataBuffer(concentusEncodedWithOffset.Data), concentusEncodedWithOffset.Offset, concentusPacketSize);
                         }
                         catch (OpusException e)
                         {

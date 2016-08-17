@@ -143,7 +143,7 @@ namespace Concentus.Structs
           int frame_size
         );
 
-        internal static int opus_multistream_packet_validate(byte[] data, int data_ptr,
+        internal static int opus_multistream_packet_validate(OpusDataBuffer data, int data_ptr,
             int len, int nb_streams, int Fs)
         {
             int s;
@@ -177,7 +177,7 @@ namespace Concentus.Structs
         }
 
         internal int opus_multistream_decode_native<T>(
-      byte[] data,
+      OpusDataBuffer data,
       int data_ptr,
       int len,
       T[] pcm,
@@ -347,14 +347,14 @@ namespace Concentus.Structs
               int decode_fec
         )
         {
-            return opus_multistream_decode_native<short>(data, data_offset, len,
+            return opus_multistream_decode_native<short>(new OpusDataBuffer(data), data_offset, len,
                 out_pcm, out_pcm_offset, opus_copy_channel_out_short, frame_size, decode_fec, 0);
         }
 
         public int DecodeMultistream(byte[] data, int data_offset,
           int len, float[] out_pcm, int out_pcm_offset, int frame_size, int decode_fec)
         {
-            return opus_multistream_decode_native<float>(data, data_offset, len,
+            return opus_multistream_decode_native<float>(new OpusDataBuffer(data), data_offset, len,
                 out_pcm, out_pcm_offset, opus_copy_channel_out_float, frame_size, decode_fec, 0);
         }
 

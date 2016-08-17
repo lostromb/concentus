@@ -196,9 +196,9 @@ namespace Concentus.Structs
             return st;
         }
         
-        private static readonly byte[] SILENCE = { 0xFF, 0xFF };
+        private static readonly OpusDataBuffer SILENCE = new OpusDataBuffer (new byte[] { 0xFF, 0xFF });
 
-        internal int opus_decode_frame(byte[] data, int data_ptr,
+        internal int opus_decode_frame(OpusDataBuffer data, int data_ptr,
       int len, short[] pcm, int pcm_ptr, int frame_size, int decode_fec)
         {
             SilkDecoder silk_dec;
@@ -597,7 +597,7 @@ namespace Concentus.Structs
             return celt_ret < 0 ? celt_ret : audiosize;
         }
 
-        internal int opus_decode_native(byte[] data, int data_ptr,
+        internal int opus_decode_native(OpusDataBuffer data, int data_ptr,
           int len, short[] pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
           int self_delimited, out int packet_offset, int soft_clip)
         {
@@ -737,7 +737,7 @@ namespace Concentus.Structs
             try
             {
                 int dummy;
-                int ret = opus_decode_native(in_data, in_data_offset, len, out_pcm, out_pcm_offset, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
+                int ret = opus_decode_native(new OpusDataBuffer(in_data), in_data_offset, len, out_pcm, out_pcm_offset, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
 
                 if (ret < 0)
                 {
@@ -787,7 +787,7 @@ namespace Concentus.Structs
             }
             if (in_data != null && len > 0 && !decode_fec)
             {
-                nb_samples = OpusPacketInfo.GetNumSamples(this, in_data, in_data_offset, len);
+                nb_samples = OpusPacketInfo.GetNumSamples(this, new OpusDataBuffer(in_data), in_data_offset, len);
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else
@@ -798,7 +798,7 @@ namespace Concentus.Structs
             try
             {
                 int dummy;
-                ret = opus_decode_native(in_data, in_data_offset, len, output, 0, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
+                ret = opus_decode_native(new OpusDataBuffer(in_data), in_data_offset, len, output, 0, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
 
                 if (ret < 0)
                 {

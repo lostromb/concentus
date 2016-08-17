@@ -77,7 +77,7 @@ namespace Concentus.Structs
         /// <param name="packet_offset">The index of the beginning of the packet in the data array (usually 0)</param>
         /// <param name="len">The packet's length</param>
         /// <returns>A parsed packet info struct</returns>
-        public static OpusPacketInfo ParseOpusPacket(byte[] packet, int packet_offset, int len)
+        public static OpusPacketInfo ParseOpusPacket(OpusDataBuffer packet, int packet_offset, int len)
         {
             // Find the number of frames first
             int numFrames = GetNumFrames(packet, packet_offset, len);
@@ -100,7 +100,7 @@ namespace Concentus.Structs
             return new OpusPacketInfo(out_toc, copiedFrames, payload_offset);
         }
         
-        public static int GetNumSamplesPerFrame(byte[] packet, int packet_offset, int Fs)
+        public static int GetNumSamplesPerFrame(OpusDataBuffer packet, int packet_offset, int Fs)
         {
             int audiosize;
             if ((packet.GetByte(packet_offset) & 0x80) != 0)
@@ -128,7 +128,7 @@ namespace Concentus.Structs
         /// </summary>
         /// <param name="data">An Opus packet (must be at least 1 byte)</param>
         /// <returns>An OpusBandwidth value</returns>
-        public static OpusBandwidth GetBandwidth(byte[] packet, int packet_offset)
+        public static OpusBandwidth GetBandwidth(OpusDataBuffer packet, int packet_offset)
         {
             OpusBandwidth bandwidth;
             if ((packet.GetByte(packet_offset) & 0x80) != 0)
@@ -148,7 +148,7 @@ namespace Concentus.Structs
             return bandwidth;
         }
         
-        public static int GetNumEncodedChannels(byte[] packet, int packet_offset)
+        public static int GetNumEncodedChannels(OpusDataBuffer packet, int packet_offset)
         {
             return ((packet.GetByte(packet_offset) & 0x4) != 0) ? 2 : 1;
         }
@@ -159,7 +159,7 @@ namespace Concentus.Structs
         /// <param name="packet">An Opus packet</param>
         /// <param name="len">The packet's length (must be at least 1)</param>
         /// <returns>The number of frames in the packet</returns>
-        public static int GetNumFrames(byte[] packet, int packet_offset, int len)
+        public static int GetNumFrames(OpusDataBuffer packet, int packet_offset, int len)
         {
             int count;
             if (len < 1)
@@ -175,7 +175,7 @@ namespace Concentus.Structs
                 return packet.GetByte(packet_offset + 1) & 0x3F;
         }
         
-        public static int GetNumSamples(byte[] packet, int packet_offset, int len,
+        public static int GetNumSamples(OpusDataBuffer packet, int packet_offset, int len,
               int Fs)
         {
             int samples;
@@ -200,12 +200,12 @@ namespace Concentus.Structs
         /// <param name="len">The packet's length</param>
         /// <returns>The size of the PCM samples that this packet will be decoded to by the specified decoder</returns>
         public static int GetNumSamples(OpusDecoder dec,
-              byte[] packet, int packet_offset, int len)
+              OpusDataBuffer packet, int packet_offset, int len)
         {
             return GetNumSamples(packet, packet_offset, len, dec.Fs);
         }
         
-        public static OpusMode GetEncoderMode(byte[] packet, int packet_offset)
+        public static OpusMode GetEncoderMode(OpusDataBuffer packet, int packet_offset)
         {
             OpusMode mode;
             if ((packet.GetByte(packet_offset) & 0x80) != 0)
@@ -222,7 +222,7 @@ namespace Concentus.Structs
             return mode;
         }
 
-        internal static int encode_size(int size, byte[] data, int data_ptr)
+        internal static int encode_size(int size, OpusDataBuffer data, int data_ptr)
         {
             if (size < 252)
             {
@@ -237,7 +237,7 @@ namespace Concentus.Structs
             }
         }
 
-        internal static int parse_size(byte[] data, int data_ptr, int len, BoxedValue<short> size)
+        internal static int parse_size(OpusDataBuffer data, int data_ptr, int len, BoxedValue<short> size)
         {
             if (len < 1)
             {
@@ -260,7 +260,7 @@ namespace Concentus.Structs
             }
         }
 
-        internal static int opus_packet_parse_impl(byte[] data, int data_ptr, int len,
+        internal static int opus_packet_parse_impl(OpusDataBuffer data, int data_ptr, int len,
               int self_delimited, out sbyte out_toc,
               byte[][] frames, int frames_ptr, short[] sizes, int sizes_ptr,
               out int payload_offset, out int packet_offset)

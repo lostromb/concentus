@@ -124,7 +124,7 @@ namespace Concentus.Common
         //////////////// Coder State //////////////////// 
 
         /*POINTER to Buffered input/output.*/
-        private byte[] buf;
+        private OpusDataBuffer buf;
         private int buf_ptr;
 
         /*The size of the buffer.*/
@@ -279,7 +279,7 @@ namespace Concentus.Common
 
         internal void write_buffer(byte[] data, int data_ptr, int target_offset, int size)
         {
-            Convert(data, data_ptr, this.buf, this.buf_ptr + target_offset, size);
+            this.buf.CopyFrom(data, data_ptr, this.buf_ptr + target_offset, size);
         }
 
         internal int read_byte()
@@ -341,7 +341,7 @@ namespace Concentus.Common
             }
         }
 
-        internal void dec_init(byte[] _buf, int _buf_ptr, int _storage)
+        internal void dec_init(OpusDataBuffer _buf, int _buf_ptr, int _storage)
         {
             this.buf = _buf;
             this.buf_ptr = _buf_ptr;
@@ -568,7 +568,7 @@ namespace Concentus.Common
             }
         }
 
-        internal void enc_init(byte[] _buf, int buf_ptr, int _size)
+        internal void enc_init(OpusDataBuffer _buf, int buf_ptr, int _size)
         {
             this.buf = _buf;
             this.buf_ptr = buf_ptr;
@@ -724,7 +724,7 @@ namespace Concentus.Common
             if (this.offs > 0)
             {
                 /*The first byte has been finalized.*/
-                this.buf.SetByte(buf_ptr, (byte)((this.buf[buf_ptr] & ~mask) | _val << shift));
+                this.buf.SetByte(buf_ptr, (byte)((this.buf.GetByte(buf_ptr) & ~mask) | _val << shift));
             }
             else if (this.rem >= 0)
             {
