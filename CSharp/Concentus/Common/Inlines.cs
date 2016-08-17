@@ -2573,6 +2573,12 @@ namespace Concentus.Common
             return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int EC_MINI(int a, int b)
+        {
+            return (int)EC_MINI((uint)a, (uint)b);
+        }
+
         /// <summary>
         /// Counts leading zeroes
         /// </summary>
@@ -2612,6 +2618,12 @@ namespace Concentus.Common
         //    y = (y & 0x0000003f);
         //    return (int)(32 - y);
         //}
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int EC_ILOG(long x)
+        {
+            return EC_ILOG((uint)x);
+        }
 
         /// <summary>
         /// returns inverse base-2 log of a value

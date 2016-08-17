@@ -91,7 +91,7 @@ namespace Concentus.Common
   }*/
     public class EntropyCoder
     {
-        private const int EC_WINDOW_SIZE = ((int)sizeof(uint) * 8);
+        private const int EC_WINDOW_SIZE = 32;
 
         ///*The number of bits to use for the range-coded part of uint integers.*/
         private const int EC_UINT_BITS = 8;
@@ -101,25 +101,25 @@ namespace Concentus.Common
         internal const int BITRES = 3;
 
         /*The number of bits to output at a time.*/
-        private const int EC_SYM_BITS = (8);
+        private const int EC_SYM_BITS = 8;
 
         /*The total number of bits in each of the state registers.*/
-        private const int EC_CODE_BITS = (32);
+        private const int EC_CODE_BITS = 32;
 
         /*The maximum symbol value.*/
-        private const uint EC_SYM_MAX = ((1U << EC_SYM_BITS) - 1);
+        private const long EC_SYM_MAX = 0x000000FF;
 
         /*Bits to shift by to move a symbol into the high-order position.*/
-        private const uint EC_CODE_SHIFT = (EC_CODE_BITS - EC_SYM_BITS - 1);
+        private const int EC_CODE_SHIFT = 0x00000017;
 
         /*Carry bit of the high-order range symbol.*/
-        private const uint EC_CODE_TOP = ((1U) << (EC_CODE_BITS - 1));
+        private const long EC_CODE_TOP = 0x80000000;
 
         /*Low-order bit of the high-order range symbol.*/
-        private const uint EC_CODE_BOT = (EC_CODE_TOP >> EC_SYM_BITS);
+        private const long EC_CODE_BOT = 0x00800000;
 
         /*The number of bits available for the last, partial symbol in the code field.*/
-        private const int EC_CODE_EXTRA = ((EC_CODE_BITS - 2) % EC_SYM_BITS + 1);
+        private const int EC_CODE_EXTRA = 0x00000007;
 
         //////////////// Coder State //////////////////// 
 
@@ -147,7 +147,7 @@ namespace Concentus.Common
         internal int offs;
 
         /*The number of values in the current range.*/
-        internal uint rng;
+        internal long rng;
 
         /*In the decoder: the difference between the top of the current range and
            the input value, minus one.
@@ -303,6 +303,16 @@ namespace Concentus.Common
             return 0;
         }
 
+        internal int write_byte(long _value)
+        {
+            if (this.offs + this.end_offs >= this.storage)
+            {
+                return -1;
+            }
+            this.buf[buf_ptr + this.offs++] = (sbyte)(_value & 0xFF);
+            return 0;
+        }
+
         internal int write_byte_at_end(uint _value)
         {
             if (this.offs + this.end_offs >= this.storage)
@@ -311,6 +321,17 @@ namespace Concentus.Common
             }
 
             this.buf[buf_ptr + (this.storage - ++(this.end_offs))] = (sbyte)_value;
+            return 0;
+        }
+
+        internal int write_byte_at_end(long _value)
+        {
+            if (this.offs + this.end_offs >= this.storage)
+            {
+                return -1;
+            }
+
+            this.buf[buf_ptr + (this.storage - ++(this.end_offs))] = (sbyte)(_value & 0xFF);
             return 0;
         }
 
@@ -325,7 +346,7 @@ namespace Concentus.Common
             {
                 int sym;
                 this.nbits_total += EC_SYM_BITS;
-                this.rng <<= EC_SYM_BITS;
+                this.rng = (this.rng << EC_SYM_BITS) & 0xFFFFFFFF;
 
                 /*Use up the remaining bits from our last symbol.*/
                 sym = this.rem;
@@ -337,7 +358,9 @@ namespace Concentus.Common
                 sym = (sym << EC_SYM_BITS | this.rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
 
                 /*And subtract them from val, capped to be less than EC_CODE_TOP.*/
-                this.val = (uint)((this.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym)) & (EC_CODE_TOP - 1);
+                this.val = (uint)((
+                    ((long)this.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym))
+                    & (EC_CODE_TOP - 1));
             }
         }
 
@@ -357,7 +380,7 @@ namespace Concentus.Common
             this.offs = 0;
             this.rng = 1U << EC_CODE_EXTRA;
             this.rem = read_byte();
-            this.val = this.rng - 1 - (uint)(this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
+            this.val = (uint)(this.rng - 1 - (this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA)));
             this.error = 0;
             /*Normalize the interval.*/
             dec_normalize();
@@ -366,7 +389,7 @@ namespace Concentus.Common
         internal uint decode(uint _ft)
         {
             uint s;
-            this.ext = this.rng / _ft;
+            this.ext = (uint)(this.rng / _ft);
             s = (uint)(this.val / this.ext);
             return _ft - Inlines.EC_MINI(s + 1, _ft);
         }
@@ -374,7 +397,7 @@ namespace Concentus.Common
         internal uint decode_bin(uint _bits)
         {
             uint s;
-            this.ext = this.rng >> (int)_bits;
+            this.ext = (uint)(this.rng >> (int)_bits);
             s = (uint)(this.val / this.ext);
             return (1U << (int)_bits) - Inlines.EC_MINI(s + 1U, 1U << (int)_bits);
         }
@@ -396,15 +419,16 @@ namespace Concentus.Common
         /// <returns></returns>
         internal int dec_bit_logp(uint _logp)
         {
-            uint r;
-            uint d;
-            uint s;
+            long r;
+            long d;
+            long s;
             int ret;
             r = this.rng;
             d = this.val;
             s = r >> (int)_logp;
             ret = d < s ? 1 : 0;
-            if (ret == 0) this.val = d - s;
+            if (ret == 0)
+                this.val = (uint)(d - s);
             this.rng = ret != 0 ? s : r - s;
             dec_normalize();
             return ret;
@@ -417,7 +441,7 @@ namespace Concentus.Common
             uint s;
             uint t;
             int ret;
-            s = this.rng;
+            s = (uint)this.rng;
             d = this.val;
             r = s >> (int)_ftb;
             ret = -1;
@@ -440,7 +464,7 @@ namespace Concentus.Common
             uint s;
             uint t;
             int ret;
-            s = this.rng;
+            s = (uint)this.rng;
             d = this.val;
             r = s >> (int)_ftb;
             ret = _icdf_offset - 1;
@@ -541,7 +565,7 @@ namespace Concentus.Common
 
                 if (this.ext > 0)
                 {
-                    uint sym;
+                    long sym;
                     sym = (EC_SYM_MAX + (uint)carry) & EC_SYM_MAX;
                     do this.error |= write_byte(sym);
                     while (--(this.ext) > 0);
@@ -560,9 +584,9 @@ namespace Concentus.Common
             /*If the range is too small, output some bits and rescale it.*/
             while (this.rng <= EC_CODE_BOT)
             {
-                enc_carry_out((int)(this.val >> (int)EC_CODE_SHIFT));
+                enc_carry_out((int)(this.val >> EC_CODE_SHIFT));
                 /*Move the next-to-high-order symbol into the high-order position.*/
-                this.val = (this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
+                this.val = (uint)((this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1));
                 this.rng = this.rng << EC_SYM_BITS;
                 this.nbits_total += EC_SYM_BITS;
             }
@@ -578,7 +602,7 @@ namespace Concentus.Common
             /*This is the offset from which ec_tell() will subtract partial bits.*/
             this.nbits_total = EC_CODE_BITS + 1;
             this.offs = 0;
-            this.rng = EC_CODE_TOP;
+            this.rng = (uint)EC_CODE_TOP;
             this.rem = -1;
             this.val = 0;
             this.ext = 0;
@@ -589,10 +613,10 @@ namespace Concentus.Common
         internal void encode(uint _fl, uint _fh, uint _ft)
         {
             uint r;
-            r = this.rng / _ft;
+            r = (uint)(this.rng / _ft);
             if (_fl > 0)
             {
-                this.val += this.rng - (r * (_ft - _fl));
+                this.val += (uint)(this.rng - (r * (_ft - _fl)));
                 this.rng = (r * (_fh - _fl));
             }
             else
@@ -606,10 +630,10 @@ namespace Concentus.Common
         internal void encode_bin(uint _fl, uint _fh, uint _bits)
         {
             uint r;
-            r = this.rng >> (int)_bits;
+            r = (uint)(this.rng >> (int)_bits);
             if (_fl > 0)
             {
-                this.val += this.rng - (r * ((1U << (int)_bits) - _fl));
+                this.val += (uint)(this.rng - (r * ((1U << (int)_bits) - _fl)));
                 this.rng = (r * (_fh - _fl));
             }
             else this.rng -= (r * ((1U << (int)_bits) - _fh));
@@ -622,7 +646,7 @@ namespace Concentus.Common
             uint r;
             uint s;
             uint l;
-            r = this.rng;
+            r = (uint)this.rng;
             l = this.val;
             s = r >> (int)_logp;
             r -= s;
@@ -638,10 +662,10 @@ namespace Concentus.Common
         internal void enc_icdf(int _s, short[] _icdf, uint _ftb)
         {
             uint r;
-            r = this.rng >> (int)_ftb;
+            r = (uint)(this.rng >> (int)_ftb);
             if (_s > 0)
             {
-                this.val += this.rng - (uint)(r * _icdf[_s - 1]);
+                this.val += (uint)(this.rng - (uint)(r * _icdf[_s - 1]));
                 this.rng = (r * (uint)(_icdf[_s - 1] - _icdf[_s]));
             }
             else
@@ -654,10 +678,10 @@ namespace Concentus.Common
         internal void enc_icdf(int _s, short[] _icdf, int icdf_ptr, uint _ftb)
         {
             uint r;
-            r = this.rng >> (int)_ftb;
+            r = (uint)(this.rng >> (int)_ftb);
             if (_s > 0)
             {
-                this.val += this.rng - (uint)(r * _icdf[icdf_ptr + _s - 1]);
+                this.val += (uint)(this.rng - (uint)(r * _icdf[icdf_ptr + _s - 1]));
                 this.rng = (r * (uint)(_icdf[icdf_ptr + _s - 1] - _icdf[icdf_ptr + _s]));
             }
             else
@@ -699,7 +723,7 @@ namespace Concentus.Common
             {
                 do
                 {
-                    this.error |= write_byte_at_end((uint)window & EC_SYM_MAX);
+                    this.error |= write_byte_at_end(window & EC_SYM_MAX);
                     window >>= EC_SYM_BITS;
                     used -= EC_SYM_BITS;
                 }
@@ -734,8 +758,8 @@ namespace Concentus.Common
             else if (this.rng <= (EC_CODE_TOP >> (int)_nbits))
             {
                 /*The renormalization loop has never been run.*/
-                this.val = (this.val & ~((uint)mask << (int)EC_CODE_SHIFT)) |
-                 (uint)_val << (int)(EC_CODE_SHIFT + shift);
+                this.val = (this.val & ~((uint)mask << EC_CODE_SHIFT)) |
+                 (uint)_val << (EC_CODE_SHIFT + shift);
             }
             else
             {
@@ -810,7 +834,7 @@ namespace Concentus.Common
             /*We output the minimum number of bits that ensures that the symbols encoded
                thus far will be decoded correctly regardless of the bits that follow.*/
             l = EC_CODE_BITS - Inlines.EC_ILOG(this.rng);
-            msk = (EC_CODE_TOP - 1) >> l;
+            msk = (uint)((EC_CODE_TOP - 1) >> l);
             end = (this.val + msk) & ~msk;
 
             if ((end | msk) >= this.val + this.rng)
@@ -822,8 +846,8 @@ namespace Concentus.Common
 
             while (l > 0)
             {
-                enc_carry_out((int)(end >> (int)EC_CODE_SHIFT));
-                end = (end << EC_SYM_BITS) & (EC_CODE_TOP - 1);
+                enc_carry_out((int)(end >> EC_CODE_SHIFT));
+                end = (uint)((end << EC_SYM_BITS) & (EC_CODE_TOP - 1));
                 l -= EC_SYM_BITS;
             }
 
@@ -839,7 +863,7 @@ namespace Concentus.Common
 
             while (used >= EC_SYM_BITS)
             {
-                this.error |= write_byte_at_end((uint)window & EC_SYM_MAX);
+                this.error |= write_byte_at_end(window & EC_SYM_MAX);
                 window >>= EC_SYM_BITS;
                 used -= EC_SYM_BITS;
             }

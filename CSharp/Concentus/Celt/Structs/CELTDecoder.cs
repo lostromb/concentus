@@ -788,7 +788,7 @@ namespace Concentus.Celt.Structs
                     oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
                 }
             } while (++c < 2);
-            this.rng = dec.rng;
+            this.rng = (uint)dec.rng;
 
             CeltCommon.deemphasis(out_syn, out_syn_ptrs, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
             this.loss_count = 0;

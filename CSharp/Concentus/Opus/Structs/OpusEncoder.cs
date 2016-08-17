@@ -1336,7 +1336,7 @@ namespace Concentus.Structs
             data_ptr -= 1;
             data[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
-            this.rangeFinal = enc.rng ^ redundant_rng;
+            this.rangeFinal = ((uint)enc.rng) ^ redundant_rng;
 
             if (to_celt != 0)
                 this.prev_mode = OpusMode.MODE_CELT_ONLY;

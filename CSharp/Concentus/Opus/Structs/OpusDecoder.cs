@@ -589,7 +589,7 @@ namespace Concentus.Structs
             if (len <= 1)
                 this.rangeFinal = 0;
             else
-                this.rangeFinal = dec.rng ^ redundant_rng;
+                this.rangeFinal = ((uint)dec.rng) ^ redundant_rng;
 
             this.prev_mode = mode;
             this.prev_redundancy = (redundancy != 0 && celt_to_silk == 0) ? 1 : 0;

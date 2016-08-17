@@ -1168,7 +1168,7 @@ namespace Concentus.Celt.Structs
                 this.consec_transient++;
             else
                 this.consec_transient = 0;
-            this.rng = enc.rng;
+            this.rng = (uint)enc.rng;
 
             /* If there's any room left (can only happen for very high rates),
                it's already filled with zeros */
