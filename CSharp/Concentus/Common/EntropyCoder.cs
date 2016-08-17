@@ -131,7 +131,7 @@ namespace Concentus.Common
         internal int storage;
 
         /*The offset at which the last byte containing raw bits was read/written.*/
-        internal uint end_offs;
+        internal int end_offs;
 
         /*Bits that will be read from/written at the end.*/
         internal uint end_window;
@@ -144,7 +144,7 @@ namespace Concentus.Common
         internal int nbits_total;
 
         /*The offset at which the next range coder byte will be read/written.*/
-        internal uint offs;
+        internal int offs;
 
         /*The number of values in the current range.*/
         internal uint rng;
@@ -273,7 +273,7 @@ namespace Concentus.Common
         internal byte[] get_buffer()
         {
             byte[] convertedBuf = new byte[this.storage];
-            Convert(this.buf, this.buf_ptr, convertedBuf, 0, this.storage);
+            this.buf.CopyTo(this.buf_ptr, convertedBuf, 0, this.storage);
             return convertedBuf;
         }
 
@@ -284,13 +284,13 @@ namespace Concentus.Common
 
         internal int read_byte()
         {
-            return this.offs < this.storage ? this.buf[buf_ptr + this.offs++] : 0;
+            return this.offs < this.storage ? this.buf.GetByte(buf_ptr + this.offs++) : 0;
         }
 
         internal int read_byte_from_end()
         {
             return this.end_offs < this.storage ?
-             this.buf[buf_ptr + (this.storage - ++(this.end_offs))] : 0;
+             this.buf.GetByte(buf_ptr + (this.storage - ++(this.end_offs))) : 0;
         }
 
         internal int write_byte(uint _value)
@@ -299,7 +299,7 @@ namespace Concentus.Common
             {
                 return -1;
             }
-            this.buf[buf_ptr + this.offs++] = (byte)_value;
+            this.buf.SetByte(buf_ptr + this.offs++, (byte)_value);
             return 0;
         }
 
@@ -310,7 +310,7 @@ namespace Concentus.Common
                 return -1;
             }
 
-            this.buf[buf_ptr + (this.storage - ++(this.end_offs))] = (byte)_value;
+            this.buf.SetByte(buf_ptr + (this.storage - ++(this.end_offs)), (byte)_value);
             return 0;
         }
 
@@ -724,7 +724,7 @@ namespace Concentus.Common
             if (this.offs > 0)
             {
                 /*The first byte has been finalized.*/
-                this.buf[buf_ptr] = (byte)((this.buf[buf_ptr] & ~mask) | _val << shift);
+                this.buf.SetByte(buf_ptr, (byte)((this.buf[buf_ptr] & ~mask) | _val << shift));
             }
             else if (this.rem >= 0)
             {
@@ -747,12 +747,11 @@ namespace Concentus.Common
         internal void enc_shrink(int _size)
         {
             Inlines.OpusAssert(this.offs + this.end_offs <= _size);
-            //(memmove(this.buf + _size - this.end_offs, this.buf + this.storage - this.end_offs, this.end_offs * sizeof(*(dst))))
-            Arrays.MemMove<byte>(this.buf, buf_ptr + (int)_size - (int)this.end_offs, buf_ptr + (int)this.storage - (int)this.end_offs, (int)this.end_offs);
+            this.buf.MemMove(buf_ptr + (int)_size - (int)this.end_offs, buf_ptr + (int)this.storage - (int)this.end_offs, (int)this.end_offs);
             this.storage = _size;
         }
 
-        internal uint range_bytes()
+        internal int range_bytes()
         {
             return this.offs;
         }
@@ -848,7 +847,7 @@ namespace Concentus.Common
             /*Clear any excess space and add any remaining extra bits to the last byte.*/
             if (this.error == 0)
             {
-                Arrays.MemSetWithOffset<byte>(this.buf, 0, buf_ptr + (int)this.offs, (int)this.storage - (int)this.offs - (int)this.end_offs);
+                this.buf.MemSet(0, buf_ptr + (int)this.offs, (int)this.storage - (int)this.offs - (int)this.end_offs);
                 if (used > 0)
                 {
                     /*If there's no range coder data at all, give up.*/
@@ -867,7 +866,8 @@ namespace Concentus.Common
                             this.error = -1;
                         }
 
-                        this.buf[buf_ptr + this.storage - this.end_offs - 1] |= (byte)window;
+                        int z = buf_ptr + this.storage - this.end_offs - 1;
+                        this.buf.SetByte(z, (byte)(this.buf.GetByte(z) | window));
                     }
                 }
             }

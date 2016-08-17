@@ -229,9 +229,9 @@ namespace Concentus.Celt
 
                 enc_intra_state.Assign(enc);
 
-                nstart_bytes = (int)enc_start_state.range_bytes();
-                nintra_bytes = (int)enc_intra_state.range_bytes();
-                intra_buf = (int)nstart_bytes;
+                nstart_bytes = enc_start_state.range_bytes();
+                nintra_bytes = enc_intra_state.range_bytes();
+                intra_buf = nstart_bytes;
                 save_bytes = nintra_bytes - nstart_bytes;
 
                 if (save_bytes != 0)
