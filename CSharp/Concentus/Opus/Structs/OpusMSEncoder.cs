@@ -1081,12 +1081,12 @@ namespace Concentus.Structs
             }
         }
 
-        public uint FinalRange
+        public int FinalRange
         {
             get
             {
                 int s;
-                uint value = 0;
+                int value = 0;
                 int encoder_ptr = 0;
                 for (s = 0; s < layout.nb_streams; s++)
                 {

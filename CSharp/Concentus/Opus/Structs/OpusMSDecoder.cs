@@ -409,11 +409,11 @@ namespace Concentus.Structs
             }
         }
 
-        public uint FinalRange
+        public int FinalRange
         {
             get
             {
-                uint value = 0;
+                int value = 0;
                 for (int s = 0; s < layout.nb_streams; s++)
                 {
                     value ^= decoders[s].FinalRange;

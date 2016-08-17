@@ -57,7 +57,7 @@ namespace Concentus.Celt.Structs
         internal int signalling = 0;
 
         /* Everything beyond this point gets cleared on a reset */
-        internal uint rng = 0;
+        internal int rng = 0;
         internal int error = 0;
         internal int last_pitch_index = 0;
         internal int loss_count = 0;
@@ -223,7 +223,7 @@ namespace Concentus.Celt.Structs
             {
                 /* Noise-based PLC/CNG */
                 int[][] X;
-                uint seed;
+                int seed;
                 int end;
                 int effEnd;
                 int decay;
@@ -788,7 +788,7 @@ namespace Concentus.Celt.Structs
                     oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
                 }
             } while (++c < 2);
-            this.rng = (uint)dec.rng;
+            this.rng = (int)dec.rng;
 
             CeltCommon.deemphasis(out_syn, out_syn_ptrs, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
             this.loss_count = 0;
@@ -852,7 +852,7 @@ namespace Concentus.Celt.Structs
             this.signalling = value;
         }
 
-        public uint GetFinalRange()
+        public int GetFinalRange()
         {
             return this.rng;
         }

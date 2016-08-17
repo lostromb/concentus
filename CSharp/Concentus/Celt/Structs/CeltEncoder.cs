@@ -69,7 +69,7 @@ namespace Concentus.Celt.Structs
 
         /* Everything beyond this point gets cleared on a reset */
 
-        internal uint rng = 0;
+        internal int rng = 0;
         internal int spread_decision = 0;
         internal int delayedIntra = 0;
         internal int tonal_average = 0;
@@ -1168,7 +1168,7 @@ namespace Concentus.Celt.Structs
                 this.consec_transient++;
             else
                 this.consec_transient = 0;
-            this.rng = (uint)enc.rng;
+            this.rng = (int)enc.rng;
 
             /* If there's any room left (can only happen for very high rates),
                it's already filled with zeros */
@@ -1280,7 +1280,7 @@ namespace Concentus.Celt.Structs
             return this.mode;
         }
 
-        internal uint GetFinalRange()
+        internal int GetFinalRange()
         {
             return this.rng;
         }

@@ -77,7 +77,7 @@ namespace Concentus.Structs
         internal int frame_size;
         internal int prev_redundancy;
         internal int last_packet_duration;
-        internal uint rangeFinal;
+        internal int rangeFinal;
         internal SilkDecoder SilkDecoder = new SilkDecoder();
         internal CeltDecoder Celt_Decoder = new CeltDecoder();
 
@@ -226,7 +226,7 @@ namespace Concentus.Structs
             int c;
             int F2_5, F5, F10, F20;
             int[] window;
-            uint redundant_rng = 0;
+            int redundant_rng = 0;
             int celt_accum;
 
             silk_dec = this.SilkDecoder;
@@ -589,7 +589,7 @@ namespace Concentus.Structs
             if (len <= 1)
                 this.rangeFinal = 0;
             else
-                this.rangeFinal = ((uint)dec.rng) ^ redundant_rng;
+                this.rangeFinal = ((int)dec.rng) ^ redundant_rng;
 
             this.prev_mode = mode;
             this.prev_redundancy = (redundancy != 0 && celt_to_silk == 0) ? 1 : 0;
@@ -830,7 +830,7 @@ namespace Concentus.Structs
             }
         }
 
-        public uint FinalRange
+        public int FinalRange
         {
             get
             {

@@ -71,7 +71,7 @@ namespace Concentus.Celt
             return i;
         }
 
-        internal static uint celt_lcg_rand(uint seed)
+        internal static int celt_lcg_rand(int seed)
         {
             return unchecked(1664525 * seed + 1013904223);
         }
@@ -253,7 +253,7 @@ namespace Concentus.Celt
         /* This prevents energy collapse for transients with multiple short MDCTs */
         internal static void anti_collapse(CeltMode m, int[][] X_, short[] collapse_masks, int LM, int C, int size,
               int start, int end, int[] logE, int[] prev1logE,
-              int[] prev2logE, int[] pulses, uint seed)
+              int[] prev2logE, int[] pulses, int seed)
         {
             int c, i, j, k;
             for (i = start; i < end; i++)
@@ -683,7 +683,7 @@ namespace Concentus.Celt
             public EntropyCoder ec;
             public int remaining_bits;
             public int[][] bandE;
-            public uint seed;
+            public int seed;
         };
 
         public class split_ctx
@@ -1460,7 +1460,7 @@ namespace Concentus.Celt
               int[][] bandE, int[] pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, int[] tf_res, int total_bits,
               int balance, EntropyCoder ec, int LM, int codedBands,
-              ref uint seed)
+              ref int seed)
         {
             int i;
             int remaining_bits;

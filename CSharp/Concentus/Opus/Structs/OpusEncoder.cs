@@ -96,7 +96,7 @@ namespace Concentus.Structs
         internal readonly StereoWidthState width_mem = new StereoWidthState();
         internal readonly short[] delay_buffer = new short[OpusConstants.MAX_ENCODER_BUFFER * 2];
         internal OpusBandwidth detected_bandwidth;
-        internal uint rangeFinal;
+        internal int rangeFinal;
 
         // [Porting Note] There were originally "cabooses" that were tacked onto the end
         // of the struct without being explicitly included (since they have a variable size).
@@ -364,7 +364,7 @@ namespace Concentus.Structs
             short[] pcm_buf;
             int nb_compr_bytes;
             int to_celt = 0;
-            uint redundant_rng = 0;
+            int redundant_rng = 0;
             int cutoff_Hz, hp_freq_smth1;
             int voice_est; /* Probability of voice in Q7 */
             int equiv_rate;
@@ -1336,7 +1336,7 @@ namespace Concentus.Structs
             data_ptr -= 1;
             data[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
-            this.rangeFinal = ((uint)enc.rng) ^ redundant_rng;
+            this.rangeFinal = ((int)enc.rng) ^ redundant_rng;
 
             if (to_celt != 0)
                 this.prev_mode = OpusMode.MODE_CELT_ONLY;
@@ -1813,7 +1813,7 @@ namespace Concentus.Structs
             }
         }
         
-        public uint FinalRange
+        public int FinalRange
         {
             get
             {

@@ -127,8 +127,8 @@ namespace TestOpusEncode
             Pointer<short> outbuf;
             Pointer<short> out2buf;
             Pointer<sbyte> packet = Pointer.Malloc<sbyte>(MAX_PACKET + 257);
-            uint enc_final_range;
-            uint dec_final_range;
+            int enc_final_range;
+            int dec_final_range;
             int count;
             /*FIXME: encoder api tests, fs!=48k, mono, VBR*/
 
@@ -300,8 +300,8 @@ namespace TestOpusEncode
             short[] inbuf;
             short[] out2buf;
             sbyte[] packet = new sbyte[MAX_PACKET + 257];
-            uint enc_final_range;
-            uint dec_final_range;
+            int enc_final_range;
+            int dec_final_range;
             int count;
 
             inbuf = new short[SAMPLES * 2];
