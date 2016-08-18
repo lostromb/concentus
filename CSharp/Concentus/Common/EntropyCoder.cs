@@ -134,7 +134,7 @@ namespace Concentus.Common
         internal int end_offs;
 
         /*Bits that will be read from/written at the end.*/
-        internal long end_window;
+        internal uint end_window;
 
         /*Number of valid bits in end_window.*/
         internal int nend_bits;
@@ -152,11 +152,11 @@ namespace Concentus.Common
         /*In the decoder: the difference between the top of the current range and
            the input value, minus one.
           In the encoder: the low end of the current range.*/
-        internal long val;
+        internal uint val;
 
         /*In the decoder: the saved normalization factor from ec_decode().
           In the encoder: the number of oustanding carry propagating symbols.*/
-        internal long ext;
+        internal uint ext;
 
         /*A buffered input/output symbol, awaiting carry propagation.*/
         internal int rem;
@@ -202,6 +202,74 @@ namespace Concentus.Common
             this.error = other.error;
         }
 
+        public static sbyte Convert(byte x)
+        {
+            return (sbyte)x;
+        }
+
+        public static byte Convert(sbyte x)
+        {
+            return (byte)x;
+        }
+
+        public static byte[] Convert(sbyte[] x)
+        {
+            if (x == null)
+                return null;
+            byte[] returnVal = new byte[x.Length];
+            Convert(x, 0, returnVal, 0, x.Length);
+            return returnVal;
+        }
+
+        public static sbyte[] Convert(byte[] x)
+        {
+            if (x == null)
+                return null;
+            sbyte[] returnVal = new sbyte[x.Length];
+            Convert(x, 0, returnVal, 0, x.Length);
+            return returnVal;
+        }
+
+        public static void Convert(sbyte[] input, int input_ptr, byte[] output, int output_ptr, int size)
+        {
+            if (input == null || output == null)
+                return;
+            for (int c = 0; c < size; c++)
+            {
+                output[output_ptr + c] = Convert(input[input_ptr + c]);
+            }
+        }
+
+        public static void Convert(byte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
+        {
+            if (input == null || output == null)
+                return;
+            for (int c = 0; c < size; c++)
+            {
+                output[output_ptr + c] = Convert(input[input_ptr + c]);
+            }
+        }
+
+        public static void Convert(byte[] input, int input_ptr, byte[] output, int output_ptr, int size)
+        {
+            if (input == null || output == null)
+                return;
+            for (int c = 0; c < size; c++)
+            {
+                output[output_ptr + c] = input[input_ptr + c];
+            }
+        }
+
+        public static void Convert(sbyte[] input, int input_ptr, sbyte[] output, int output_ptr, int size)
+        {
+            if (input == null || output == null)
+                return;
+            for (int c = 0; c < size; c++)
+            {
+                output[output_ptr + c] = input[input_ptr + c];
+            }
+        }
+
         internal sbyte[] get_buffer()
         {
             sbyte[] convertedBuf = new sbyte[this.storage];
@@ -225,6 +293,16 @@ namespace Concentus.Common
              Inlines.SignedByteToUnsignedInt(this.buf[buf_ptr + (this.storage - ++(this.end_offs))]) : 0;
         }
 
+        internal int write_byte(uint _value)
+        {
+            if (this.offs + this.end_offs >= this.storage)
+            {
+                return -1;
+            }
+            this.buf[buf_ptr + this.offs++] = (sbyte)_value;
+            return 0;
+        }
+
         internal int write_byte(long _value)
         {
             if (this.offs + this.end_offs >= this.storage)
@@ -232,6 +310,17 @@ namespace Concentus.Common
                 return -1;
             }
             this.buf[buf_ptr + this.offs++] = (sbyte)(_value & 0xFF);
+            return 0;
+        }
+
+        internal int write_byte_at_end(uint _value)
+        {
+            if (this.offs + this.end_offs >= this.storage)
+            {
+                return -1;
+            }
+
+            this.buf[buf_ptr + (this.storage - ++(this.end_offs))] = (sbyte)_value;
             return 0;
         }
 
@@ -269,7 +358,9 @@ namespace Concentus.Common
                 sym = (sym << EC_SYM_BITS | this.rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
 
                 /*And subtract them from val, capped to be less than EC_CODE_TOP.*/
-                this.val = ((this.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym)) & (EC_CODE_TOP - 1);
+                this.val = (uint)((
+                    ((long)this.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym))
+                    & (EC_CODE_TOP - 1));
             }
         }
 
@@ -284,35 +375,37 @@ namespace Concentus.Common
             /*This is the offset from which ec_tell() will subtract partial bits.
               The final value after the ec_dec_normalize() call will be the same as in
                the encoder, but we have to compensate for the bits that are added there.*/
-            this.nbits_total = EC_CODE_BITS + 1 - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
+            this.nbits_total = EC_CODE_BITS + 1
+            - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
             this.offs = 0;
-            this.rng = 1 << EC_CODE_EXTRA;
+            this.rng = 1U << EC_CODE_EXTRA;
             this.rem = read_byte();
-            this.val = this.rng - 1 - (this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
+            this.val = (uint)(this.rng - 1 - (this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA)));
             this.error = 0;
             /*Normalize the interval.*/
             dec_normalize();
         }
 
-        internal long decode(long _ft)
+        internal uint decode(uint _ft)
         {
-            long s;
-            this.ext = this.rng / _ft;
-            s = this.val / this.ext;
+            uint s;
+            this.ext = (uint)(this.rng / _ft);
+            s = (uint)(this.val / this.ext);
             return _ft - Inlines.EC_MINI(s + 1, _ft);
         }
 
-        internal long decode_bin(int _bits)
+        internal uint decode_bin(uint _bits)
         {
-            long s;
-            this.ext = this.rng >> (int)_bits;
-            s = this.val / this.ext;
-            return (1L << _bits) - Inlines.EC_MINI(s + 1, 1L << _bits);
+            uint s;
+            this.ext = (uint)(this.rng >> (int)_bits);
+            s = (uint)(this.val / this.ext);
+            return (1U << (int)_bits) - Inlines.EC_MINI(s + 1U, 1U << (int)_bits);
         }
 
-        internal void dec_update(long _fl, long _fh, long _ft)
+        internal void dec_update(uint _fl, uint _fh, uint _ft)
         {
-            long s = this.ext * (_ft - _fh);
+            uint s;
+            s = this.ext * (_ft - _fh);
             this.val -= s;
             this.rng = _fl > 0 ? this.ext * (_fh - _fl) : this.rng - s;
             dec_normalize();
@@ -335,7 +428,7 @@ namespace Concentus.Common
             s = r >> (int)_logp;
             ret = d < s ? 1 : 0;
             if (ret == 0)
-                this.val = (d - s);
+                this.val = (uint)(d - s);
             this.rng = ret != 0 ? s : r - s;
             dec_normalize();
             return ret;
@@ -349,7 +442,7 @@ namespace Concentus.Common
             uint t;
             int ret;
             s = (uint)this.rng;
-            d = (uint)this.val;
+            d = this.val;
             r = s >> (int)_ftb;
             ret = -1;
             do
@@ -372,7 +465,7 @@ namespace Concentus.Common
             uint t;
             int ret;
             s = (uint)this.rng;
-            d = (uint)this.val;
+            d = this.val;
             r = s >> (int)_ftb;
             ret = _icdf_offset - 1;
             do
@@ -389,8 +482,8 @@ namespace Concentus.Common
 
         internal long dec_uint(uint _ft)
         {
-            long ft;
-            long s;
+            uint ft;
+            uint s;
             int ftb;
             /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
             Inlines.OpusAssert(_ft > 1);
@@ -400,7 +493,7 @@ namespace Concentus.Common
             {
                 long t;
                 ftb -= EC_UINT_BITS;
-                ft = (_ft >> ftb) + 1;
+                ft = (uint)(_ft >> ftb) + 1;
                 s = decode(ft);
                 dec_update(s, (s + 1), ft);
                 t = ((s << ftb | dec_bits((uint)ftb)) & 0xFFFFFFFF);
@@ -411,9 +504,9 @@ namespace Concentus.Common
             }
             else {
                 _ft++;
-                s = decode(_ft);
-                dec_update(s, s + 1, _ft);
-                return (uint)s;
+                s = decode((uint)_ft);
+                dec_update(s, s + 1, (uint)_ft);
+                return s;
             }
         }
 
@@ -436,7 +529,7 @@ namespace Concentus.Common
             ret = (uint)(window & ((1 << (int)_bits) - 1));
             window = window >> (int)_bits;
             available = available - (int)_bits;
-            this.end_window = window;
+            this.end_window = (uint)window;
             this.nend_bits = available;
             this.nbits_total = this.nbits_total + (int)_bits;
             return ret;
@@ -494,7 +587,7 @@ namespace Concentus.Common
             {
                 enc_carry_out((int)(this.val >> EC_CODE_SHIFT));
                 /*Move the next-to-high-order symbol into the high-order position.*/
-                this.val = (this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
+                this.val = (uint)((this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1));
                 this.rng = (this.rng << EC_SYM_BITS) & 0xFFFFFFFF;
                 this.nbits_total += EC_SYM_BITS;
             }
@@ -555,7 +648,7 @@ namespace Concentus.Common
             uint s;
             uint l;
             r = (uint)this.rng;
-            l = (uint)this.val;
+            l = this.val;
             s = r >> (int)_logp;
             r -= s;
             if (_val != 0)
@@ -621,7 +714,7 @@ namespace Concentus.Common
 
         internal void enc_bits(uint _fl, uint _bits)
         {
-            long window;
+            uint window;
             int used;
             window = this.end_window;
             used = this.nend_bits;
@@ -734,7 +827,7 @@ namespace Concentus.Common
 
         internal void enc_done()
         {
-            long window;
+            uint window;
             int used;
             uint msk;
             uint end;
@@ -743,13 +836,13 @@ namespace Concentus.Common
                thus far will be decoded correctly regardless of the bits that follow.*/
             l = EC_CODE_BITS - Inlines.EC_ILOG(this.rng);
             msk = (uint)((EC_CODE_TOP - 1) >> l);
-            end = (uint)(this.val + msk) & ~msk;
+            end = (this.val + msk) & ~msk;
 
             if ((end | msk) >= this.val + this.rng)
             {
                 l++;
                 msk >>= 1;
-                end = (uint)(this.val + msk) & ~msk;
+                end = (this.val + msk) & ~msk;
             }
 
             while (l > 0)

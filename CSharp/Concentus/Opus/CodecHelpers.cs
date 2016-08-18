@@ -51,7 +51,7 @@ namespace Concentus
         internal static sbyte gen_toc(OpusMode mode, int framerate, OpusBandwidth bandwidth, int channels)
         {
             int period;
-            sbyte toc;
+            byte toc;
             period = 0;
             while (framerate < 400)
             {
@@ -60,26 +60,26 @@ namespace Concentus
             }
             if (mode == OpusMode.MODE_SILK_ONLY)
             {
-                toc = (sbyte)((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND) << 5);
-                toc |= (sbyte)((period - 2) << 3);
+                toc = (byte)((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND) << 5);
+                toc |= (byte)((period - 2) << 3);
             }
             else if (mode == OpusMode.MODE_CELT_ONLY)
             {
                 int tmp = bandwidth - OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
                 if (tmp < 0)
                     tmp = 0;
-                toc = unchecked((sbyte)0x80);
-                toc |= (sbyte)(tmp << 5);
-                toc |= (sbyte)(period << 3);
+                toc = 0x80;
+                toc |= (byte)(tmp << 5);
+                toc |= (byte)(period << 3);
             }
             else /* Hybrid */
             {
                 toc = 0x60;
-                toc |= (sbyte)((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND) << 4);
-                toc |= (sbyte)((period - 2) << 3);
+                toc |= (byte)((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND) << 4);
+                toc |= (byte)((period - 2) << 3);
             }
-            toc |= (sbyte)((channels == 2 ? 1 : 0) << 2);
-            return toc;
+            toc |= (byte)((channels == 2 ? 1 : 0) << 2);
+            return EntropyCoder.Convert(toc);
         }
 
         internal static void hp_cutoff(short[] input, int input_ptr, int cutoff_Hz, short[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)

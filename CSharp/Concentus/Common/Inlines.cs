@@ -2579,12 +2579,6 @@ namespace Concentus.Common
             return (int)EC_MINI((uint)a, (uint)b);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long EC_MINI(long a, long b)
-        {
-            return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFL : 0)));
-        }
-
         /// <summary>
         /// Counts leading zeroes
         /// </summary>
