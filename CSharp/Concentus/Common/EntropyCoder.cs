@@ -152,11 +152,11 @@ namespace Concentus.Common
         /*In the decoder: the difference between the top of the current range and
            the input value, minus one.
           In the encoder: the low end of the current range.*/
-        internal uint val;
+        internal long val;
 
         /*In the decoder: the saved normalization factor from ec_decode().
           In the encoder: the number of oustanding carry propagating symbols.*/
-        internal uint ext;
+        internal long ext;
 
         /*A buffered input/output symbol, awaiting carry propagation.*/
         internal int rem;
@@ -358,7 +358,7 @@ namespace Concentus.Common
                 sym = (sym << EC_SYM_BITS | this.rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
 
                 /*And subtract them from val, capped to be less than EC_CODE_TOP.*/
-                this.val = (uint)((
+                this.val = Inlines.CapToUInt32((
                     ((long)this.val << EC_SYM_BITS) + (EC_SYM_MAX & ~sym))
                     & (EC_CODE_TOP - 1));
             }
@@ -380,7 +380,7 @@ namespace Concentus.Common
             this.offs = 0;
             this.rng = 1U << EC_CODE_EXTRA;
             this.rem = read_byte();
-            this.val = (uint)(this.rng - 1 - (this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA)));
+            this.val = Inlines.CapToUInt32(this.rng - 1 - (this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA)));
             this.error = 0;
             /*Normalize the interval.*/
             dec_normalize();
@@ -389,7 +389,7 @@ namespace Concentus.Common
         internal uint decode(uint _ft)
         {
             uint s;
-            this.ext = (uint)(this.rng / _ft);
+            this.ext = Inlines.CapToUInt32(this.rng / _ft);
             s = (uint)(this.val / this.ext);
             return _ft - Inlines.EC_MINI(s + 1, _ft);
         }
@@ -397,7 +397,7 @@ namespace Concentus.Common
         internal uint decode_bin(uint _bits)
         {
             uint s;
-            this.ext = (uint)(this.rng >> (int)_bits);
+            this.ext = Inlines.CapToUInt32(this.rng >> (int)_bits);
             s = (uint)(this.val / this.ext);
             return (1U << (int)_bits) - Inlines.EC_MINI(s + 1U, 1U << (int)_bits);
         }
@@ -405,7 +405,7 @@ namespace Concentus.Common
         internal void dec_update(uint _fl, uint _fh, uint _ft)
         {
             uint s;
-            s = this.ext * (_ft - _fh);
+            s = (uint)(this.ext * (_ft - _fh));
             this.val -= s;
             this.rng = _fl > 0 ? this.ext * (_fh - _fl) : this.rng - s;
             dec_normalize();
@@ -428,7 +428,7 @@ namespace Concentus.Common
             s = r >> (int)_logp;
             ret = d < s ? 1 : 0;
             if (ret == 0)
-                this.val = (uint)(d - s);
+                this.val = Inlines.CapToUInt32(d - s);
             this.rng = ret != 0 ? s : r - s;
             dec_normalize();
             return ret;
@@ -442,7 +442,7 @@ namespace Concentus.Common
             uint t;
             int ret;
             s = (uint)this.rng;
-            d = this.val;
+            d = (uint)this.val;
             r = s >> (int)_ftb;
             ret = -1;
             do
@@ -465,7 +465,7 @@ namespace Concentus.Common
             uint t;
             int ret;
             s = (uint)this.rng;
-            d = this.val;
+            d = (uint)this.val;
             r = s >> (int)_ftb;
             ret = _icdf_offset - 1;
             do
@@ -587,7 +587,7 @@ namespace Concentus.Common
             {
                 enc_carry_out((int)(this.val >> EC_CODE_SHIFT));
                 /*Move the next-to-high-order symbol into the high-order position.*/
-                this.val = (uint)((this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1));
+                this.val = Inlines.CapToUInt32((this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1));
                 this.rng = (this.rng << EC_SYM_BITS) & 0xFFFFFFFF;
                 this.nbits_total += EC_SYM_BITS;
             }
@@ -617,7 +617,7 @@ namespace Concentus.Common
             r = (uint)(this.rng / _ft);
             if (_fl > 0)
             {
-                this.val += (uint)(this.rng - (r * (_ft - _fl)));
+                this.val += Inlines.CapToUInt32(this.rng - (r * (_ft - _fl)));
                 this.rng = (r * (_fh - _fl));
             }
             else
@@ -634,7 +634,7 @@ namespace Concentus.Common
             r = (uint)(this.rng >> (int)_bits);
             if (_fl > 0)
             {
-                this.val += (uint)(this.rng - (r * ((1U << (int)_bits) - _fl)));
+                this.val += Inlines.CapToUInt32(this.rng - (r * ((1U << (int)_bits) - _fl)));
                 this.rng = (r * (_fh - _fl));
             }
             else this.rng -= (r * ((1U << (int)_bits) - _fh));
@@ -648,7 +648,7 @@ namespace Concentus.Common
             uint s;
             uint l;
             r = (uint)this.rng;
-            l = this.val;
+            l = (uint)this.val;
             s = r >> (int)_logp;
             r -= s;
             if (_val != 0)
@@ -666,7 +666,7 @@ namespace Concentus.Common
             r = (uint)(this.rng >> (int)_ftb);
             if (_s > 0)
             {
-                this.val += (uint)(this.rng - (uint)(r * _icdf[_s - 1]));
+                this.val += Inlines.CapToUInt32(this.rng - (uint)(r * _icdf[_s - 1]));
                 this.rng = (r * (uint)(_icdf[_s - 1] - _icdf[_s]));
             }
             else
@@ -682,7 +682,7 @@ namespace Concentus.Common
             r = (uint)(this.rng >> (int)_ftb);
             if (_s > 0)
             {
-                this.val += (uint)(this.rng - (uint)(r * _icdf[icdf_ptr + _s - 1]));
+                this.val += Inlines.CapToUInt32(this.rng - (uint)(r * _icdf[icdf_ptr + _s - 1]));
                 this.rng = (r * (uint)(_icdf[icdf_ptr + _s - 1] - _icdf[icdf_ptr + _s]));
             }
             else
@@ -749,7 +749,7 @@ namespace Concentus.Common
             if (this.offs > 0)
             {
                 /*The first byte has been finalized.*/
-                this.buf[buf_ptr] = (sbyte)((this.buf[buf_ptr] & ~mask) | _val << shift);
+                this.buf[buf_ptr] = (sbyte)((this.buf[buf_ptr] & ~mask) | Inlines.CapToUInt32(_val << shift));
             }
             else if (this.rem >= 0)
             {
@@ -759,8 +759,8 @@ namespace Concentus.Common
             else if (this.rng <= (EC_CODE_TOP >> (int)_nbits))
             {
                 /*The renormalization loop has never been run.*/
-                this.val = (this.val & ~((uint)mask << EC_CODE_SHIFT)) |
-                 (uint)_val << (EC_CODE_SHIFT + shift);
+                this.val = Inlines.CapToUInt32((this.val & ~((uint)mask << EC_CODE_SHIFT)) |
+                 (uint)_val << (EC_CODE_SHIFT + shift));
             }
             else
             {
@@ -836,13 +836,13 @@ namespace Concentus.Common
                thus far will be decoded correctly regardless of the bits that follow.*/
             l = EC_CODE_BITS - Inlines.EC_ILOG(this.rng);
             msk = (uint)((EC_CODE_TOP - 1) >> l);
-            end = (this.val + msk) & ~msk;
+            end = ((uint)this.val + msk) & ~msk;
 
             if ((end | msk) >= this.val + this.rng)
             {
                 l++;
                 msk >>= 1;
-                end = (this.val + msk) & ~msk;
+                end = ((uint)this.val + msk) & ~msk;
             }
 
             while (l > 0)

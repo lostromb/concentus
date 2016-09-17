@@ -39,6 +39,7 @@ namespace Concentus.Common
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+
     public static class Inlines
     {
         [Conditional("DEBUG")]
@@ -48,6 +49,21 @@ namespace Concentus.Common
             if (!condition) throw new ArithmeticException("Debug macro failed validation");
 #endif
             Debug.Assert(condition, message);
+        }
+
+        public static long CapToUInt32(long val)
+        {
+            return val & 0xFFFFFFFF;
+        }
+
+        public static long CapToUInt32(uint val)
+        {
+            return val;
+        }
+
+        public static long CapToUInt32(int val)
+        {
+            return val;
         }
 
         #region CELT
