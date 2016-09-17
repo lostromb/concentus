@@ -27,7 +27,7 @@ namespace ConcentusDemo
         private CodecStatistics _statistics = new CodecStatistics();
         private Stopwatch _timer = new Stopwatch();
 
-        private byte[] scratchBuffer = new byte[10000];
+        private sbyte[] scratchBuffer = new sbyte[10000];
 
         public ConcentusCodec()
         {
@@ -96,7 +96,7 @@ namespace ConcentusDemo
             return _statistics;
         }
 
-        public byte[] Compress(AudioChunk input)
+        public sbyte[] Compress(AudioChunk input)
         {
             int frameSize = GetFrameSize();
 
@@ -132,12 +132,12 @@ namespace ConcentusDemo
                 _statistics.EncodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 
-            byte[] finalOutput = new byte[outCursor];
+            sbyte[] finalOutput = new sbyte[outCursor];
             Array.Copy(scratchBuffer, 0, finalOutput, 0, outCursor);
             return finalOutput;
         }
         
-        public AudioChunk Decompress(byte[] inputPacket)
+        public AudioChunk Decompress(sbyte[] inputPacket)
         {
             int frameSize = GetFrameSize();
             

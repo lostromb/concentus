@@ -89,7 +89,7 @@ namespace ConcentusDemo
                 _codecParamLock.ReleaseMutex();
 
                 // Run the opus encoder and decoder
-                byte[] compressedFrame = _currentCodec.Compress(inputPcm);
+                sbyte[] compressedFrame = _currentCodec.Compress(inputPcm);
                 if (compressedFrame != null && compressedFrame.Length > 0)
                 {
                     AudioChunk decompressed = _currentCodec.Decompress(compressedFrame);

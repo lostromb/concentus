@@ -15,8 +15,8 @@ namespace ConcentusDemo
         void SetApplication(OpusApplication application);
         void SetFrameSize(double frameSize);
         void SetVBRMode(bool vbr, bool constrained);
-        byte[] Compress(AudioChunk input);
-        AudioChunk Decompress(byte[] input);
+        sbyte[] Compress(AudioChunk input);
+        AudioChunk Decompress(sbyte[] input);
         CodecStatistics GetStatistics();
     }
 }

@@ -36,7 +36,7 @@ namespace ConcentusDemo
         private static extern void opus_decoder_destroy(IntPtr decoder);
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int opus_decode(IntPtr st, byte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
+        private static extern int opus_decode(IntPtr st, sbyte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
         
         private const int OPUS_SET_BITRATE_REQUEST = 4002;
         private const int OPUS_SET_COMPLEXITY_REQUEST = 4010;
@@ -67,7 +67,7 @@ namespace ConcentusDemo
         private CodecStatistics _statistics = new CodecStatistics();
         private Stopwatch _timer = new Stopwatch();
 
-        private byte[] scratchBuffer = new byte[10000];
+        private sbyte[] scratchBuffer = new sbyte[10000];
 
         public NativeOpusCodec()
         {
@@ -145,7 +145,7 @@ namespace ConcentusDemo
             return _statistics;
         }
 
-        public byte[] Compress(AudioChunk input)
+        public sbyte[] Compress(AudioChunk input)
         {
             int frameSize = GetFrameSize();
 
@@ -170,7 +170,7 @@ namespace ConcentusDemo
             {
                 unsafe
                 {
-                    fixed (byte* benc = scratchBuffer)
+                    fixed (sbyte* benc = scratchBuffer)
                     {
                         short[] nextFrameData = _incomingSamples.Read(frameSize);
                         byte[] nextFrameBytes = AudioMath.ShortsToBytes(nextFrameData);
@@ -189,12 +189,12 @@ namespace ConcentusDemo
                 _statistics.EncodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);
             }
 
-            byte[] finalOutput = new byte[outCursor];
+            sbyte[] finalOutput = new sbyte[outCursor];
             Array.Copy(scratchBuffer, 0, finalOutput, 0, outCursor);
             return finalOutput;
         }
 
-        public AudioChunk Decompress(byte[] inputPacket)
+        public AudioChunk Decompress(sbyte[] inputPacket)
         {
             int frameSize = GetFrameSize();
 
