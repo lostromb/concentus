@@ -346,7 +346,7 @@ namespace Concentus.Common
             {
                 int sym;
                 this.nbits_total += EC_SYM_BITS;
-                this.rng = (this.rng << EC_SYM_BITS) & 0xFFFFFFFF;
+                this.rng = Inlines.CapToUInt32(this.rng << EC_SYM_BITS);
 
                 /*Use up the remaining bits from our last symbol.*/
                 sym = this.rem;
@@ -496,7 +496,7 @@ namespace Concentus.Common
                 ft = (uint)(_ft >> ftb) + 1;
                 s = decode(ft);
                 dec_update(s, (s + 1), ft);
-                t = ((s << ftb | dec_bits((uint)ftb)) & 0xFFFFFFFF);
+                t = Inlines.CapToUInt32((s << ftb | dec_bits((uint)ftb)));
                 if (t <= _ft)
                     return t;
                 this.error = 1;
@@ -521,7 +521,7 @@ namespace Concentus.Common
             {
                 do
                 {
-                    window |= (read_byte_from_end() << available) & 0xFFFFFFFF;
+                    window = Inlines.CapToUInt32(window | (read_byte_from_end() << available));
                     available += EC_SYM_BITS;
                 }
                 while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
@@ -588,7 +588,7 @@ namespace Concentus.Common
                 enc_carry_out((int)(this.val >> EC_CODE_SHIFT));
                 /*Move the next-to-high-order symbol into the high-order position.*/
                 this.val = Inlines.CapToUInt32((this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1));
-                this.rng = (this.rng << EC_SYM_BITS) & 0xFFFFFFFF;
+                this.rng = Inlines.CapToUInt32(this.rng << EC_SYM_BITS);
                 this.nbits_total += EC_SYM_BITS;
             }
         }

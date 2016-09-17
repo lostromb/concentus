@@ -53,7 +53,11 @@ namespace Concentus.Common
 
         public static long CapToUInt32(long val)
         {
-            return val & 0xFFFFFFFF;
+            if (val < 0)
+            {
+                Debug.WriteLine("unsigned value less than zero");
+            }
+            return (0xFFFFFFFFL & (int)val);
         }
 
         public static long CapToUInt32(uint val)
