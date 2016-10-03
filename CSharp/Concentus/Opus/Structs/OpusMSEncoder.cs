@@ -1035,20 +1035,20 @@ namespace Concentus.Structs
             }
         }
 
-        public int VoiceRatio
-        {
-            get
-            {
-                return encoders[0].VoiceRatio;
-            }
-            set
-            {
-                for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
-                {
-                    encoders[encoder_ptr].VoiceRatio = (value);
-                }
-            }
-        }
+        //public int VoiceRatio
+        //{
+        //    get
+        //    {
+        //        return encoders[0].VoiceRatio;
+        //    }
+        //    set
+        //    {
+        //        for (int encoder_ptr = 0; encoder_ptr < layout.nb_streams; encoder_ptr++)
+        //        {
+        //            encoders[encoder_ptr].VoiceRatio = (value);
+        //        }
+        //    }
+        //}
 
         public OpusSignal SignalType
         {

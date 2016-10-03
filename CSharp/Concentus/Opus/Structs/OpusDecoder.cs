@@ -706,7 +706,7 @@ namespace Concentus.Structs
 
             return nb_samples;
         }
-        
+
         /// <summary>
         /// Decodes an Opus packet.
         /// </summary>
@@ -715,23 +715,24 @@ namespace Concentus.Structs
         /// <param name="len">The number of bytes in the payload</param>
         /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
         /// You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need
-        /// exact sizing.</param>
+        /// exact sizing. Otherwise, the minimum safe buffer size is 5760 samples</param>
         /// <param name="out_pcm_offset">The offset to use when writing to the output buffer</param>
         /// <param name="frame_size">The number of samples (per channel) of available space in the output PCM buf.
         /// If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
         /// not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
         /// then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
         /// not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
-        /// be a multiple of 2.5 ms.</param>
-        /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
-        /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
+        /// be a multiple of 10 ms.</param>
+        /// <param name="decode_fec">Indicates that we want to recreate the PREVIOUS (lost) packet using FEC data from THIS packet. Using this packet
+        /// recovery scheme, you will actually decode this packet twice, first with decode_fec TRUE and then again with FALSE. If FEC data is not
+        /// available in this packet, the decoder will simply generate a best-effort recreation of the lost packet.</param>
         /// <returns>The number of decoded samples</returns>
         public int Decode(byte[] in_data, int in_data_offset,
-             int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
+             int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec = false)
         {
             if (frame_size <= 0)
             {
-                throw new ArgumentException("Frame size must be <= 0");
+                throw new ArgumentException("Frame size must be > 0");
             }
 
             try
@@ -763,19 +764,20 @@ namespace Concentus.Structs
         /// <param name="len">The number of bytes in the payload</param>
         /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
         /// You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need
-        /// exact sizing.</param>
+        /// exact sizing. Otherwise, the minimum safe buffer size is 5760 samples</param>
         /// <param name="out_pcm_offset">The offset to use when writing to the output buffer</param>
         /// <param name="frame_size">The number of samples (per channel) of available space in the output PCM buf.
         /// If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
         /// not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
         /// then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
         /// not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
-        /// be a multiple of 2.5 ms.</param>
-        /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
-        /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
+        /// be a multiple of 10 ms.</param>
+        /// <param name="decode_fec">Indicates that we want to recreate the PREVIOUS (lost) packet using FEC data from THIS packet. Using this packet
+        /// recovery scheme, you will actually decode this packet twice, first with decode_fec TRUE and then again with FALSE. If FEC data is not
+        /// available in this packet, the decoder will simply generate a best-effort recreation of the lost packet.</param>
         /// <returns>The number of decoded samples</returns>
         public int Decode(byte[] in_data, int in_data_offset,
-            int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
+            int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec = false)
         {
             short[] output;
             int ret, i;
@@ -822,6 +824,10 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets the encoded bandwidth of the last packet decoded. This may be lower than the actual decoding sample rate,
+        /// and is only an indicator of the encoded audio's quality
+        /// </summary>
         public OpusBandwidth Bandwidth
         {
             get
@@ -838,6 +844,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets the sample rate that this decoder decodes to. Always constant for the lifetime of the decoder
+        /// </summary>
         public int SampleRate
         {
             get
@@ -845,7 +854,21 @@ namespace Concentus.Structs
                 return Fs;
             }
         }
+
+        /// <summary>
+        /// Gets the number of channels that this decoder decodes to. Always constant for the lifetime of the decoder.
+        /// </summary>
+        public int NumChannels
+        {
+            get
+            {
+                return channels;
+            }
+        }
         
+        /// <summary>
+        /// Gets the last estimated pitch value of the decoded audio
+        /// </summary>
         public int Pitch
         {
             get
@@ -859,6 +882,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets or sets the gain (Q8) to use in decoding
+        /// </summary>
         public int Gain
         {
             get
@@ -876,6 +902,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Gets the duration of the last packet, in PCM samples per channel
+        /// </summary>
         public int LastPacketDuration
         {
             get
@@ -884,6 +913,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Resets all buffers and prepares this decoder to process a fresh (unrelated) stream
+        /// </summary>
         public void ResetState()
         {
             PartialReset();

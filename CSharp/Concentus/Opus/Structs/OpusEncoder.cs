@@ -1395,8 +1395,8 @@ namespace Concentus.Structs
         /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
         /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
-        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use he Bitrate parameter for that)</param>
-        /// <returns>The length of the encoded packet, in bytes</returns>
+        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
+        /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
         public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
@@ -1461,7 +1461,7 @@ namespace Concentus.Structs
         /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
-        /// <returns>The length of the encoded packet, in bytes</returns>
+        /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
         public int Encode(float[] in_pcm, int pcm_offset, int frame_size,
                               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
@@ -1548,7 +1548,7 @@ namespace Concentus.Structs
         }
 
         /// <summary>
-        /// Gets or sets the bitrate for encoder, in bits per second. Valid bitrates are be between 6K (6144) and 510K (522240)
+        /// Gets or sets the bitrate for encoder, in bits per second. Valid bitrates are between 6K (6144) and 510K (522240)
         /// </summary>
         public int Bitrate
         {
@@ -1594,7 +1594,8 @@ namespace Concentus.Structs
         }
 
         /// <summary>
-        /// Gets or sets the maximum bandwidth to be used by the encoder.
+        /// Gets or sets the maximum bandwidth to be used by the encoder. This can be used if
+        /// high-frequency audio is not important to your application (e.g. telephony)
         /// </summary>
         public OpusBandwidth MaxBandwidth
         {
@@ -1620,7 +1621,8 @@ namespace Concentus.Structs
         }
 
         /// <summary>
-        /// Gets or sets the "preferred" encoded bandwidth
+        /// Gets or sets the "preferred" encoded bandwidth. This does not affect the sample rate of the input audio,
+        /// only the encoding cutoffs
         /// </summary>
         public OpusBandwidth Bandwidth
         {
@@ -1740,22 +1742,22 @@ namespace Concentus.Structs
         /// <summary>
         /// Gets or sets the "voice ratio". This is not implemented, but the idea is to hint the amount of voice vs. music in the input signal
         /// </summary>
-        public int VoiceRatio
-        {
-            get
-            {
-                return voice_ratio;
-            }
-            set
-            {
-                if (value < -1 || value > 100)
-                {
-                    throw new ArgumentException("Voice ratio must be between -1 and 100");
-                }
+        //public int VoiceRatio
+        //{
+        //    get
+        //    {
+        //        return voice_ratio;
+        //    }
+        //    set
+        //    {
+        //        if (value < -1 || value > 100)
+        //        {
+        //            throw new ArgumentException("Voice ratio must be between -1 and 100");
+        //        }
 
-                voice_ratio = value;
-            }
-        }
+        //        voice_ratio = value;
+        //    }
+        //}
 
         /// <summary>
         /// Gets or sets a flag to enable constrained VBR. This only applies when the encoder is in CELT mode (i.e. high bitrates)
@@ -1803,7 +1805,7 @@ namespace Concentus.Structs
         }
 
         /// <summary>
-        /// Gets the encoder's input sample rate.
+        /// Gets the encoder's input sample rate. This is fixed for the lifetime of the encoder.
         /// </summary>
         public int SampleRate
         {
@@ -1812,7 +1814,18 @@ namespace Concentus.Structs
                 return Fs;
             }
         }
-        
+
+        /// <summary>
+        /// Gets the number of channels that this encoder expects in its input. Always constant for the lifetime of the decoder.
+        /// </summary>
+        public int NumChannels
+        {
+            get
+            {
+                return channels;
+            }
+        }
+
         public uint FinalRange
         {
             get
@@ -1862,7 +1875,7 @@ namespace Concentus.Structs
 
         /// <summary>
         /// Gets or sets a user-forced mode for the encoder. There are three modes, SILK, HYBRID, and CELT. Silk can only encode below 40Kbit/s and is best suited
-        /// for speech. Silk also has modes such as FEC which may be desirable. Celt sounds better at higher bandwidth and is comparable to AAC.
+        /// for speech. Silk also has modes such as FEC which may be desirable. Celt sounds better at higher bandwidth and is comparable to AAC. It also performs somewhat faster.
         /// Hybrid is used to create a smooth transition between the two modes. Note that this value may not always be honored due to other factors such
         /// as frame size and bitrate.
         /// </summary>
@@ -1895,7 +1908,7 @@ namespace Concentus.Structs
         }
 
         /// <summary>
-        /// Gets or sets a flag to enable prediction, which does something.
+        /// Gets or sets a flag to disable prediction, which does... something with the SILK codec
         /// </summary>
         public bool PredictionDisabled
         {
