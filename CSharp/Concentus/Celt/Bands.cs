@@ -92,8 +92,8 @@ namespace Concentus.Celt
 
         internal static int bitexact_log2tan(int isin, int icos)
         {
-            int lc = Inlines.EC_ILOG((uint)icos);
-            int ls = Inlines.EC_ILOG((uint)isin);
+            int lc = Inlines.EC_ILOG((long)icos);
+            int ls = Inlines.EC_ILOG((long)isin);
             icos <<= 15 - lc;
             isin <<= 15 - ls;
             return (ls - lc) * (1 << 11)
@@ -758,7 +758,7 @@ namespace Concentus.Celt
                     int p0 = 3;
                     int x = itheta;
                     int x0 = qn / 2;
-                    uint ft = (uint)(p0 * (x0 + 1) + x0);
+                    long ft = Inlines.CapToUInt32(p0 * (x0 + 1) + x0);
                     /* Use a probability of p0 up to itheta=8192 and then use 1 after */
                     if (encode != 0)
                     {
@@ -769,12 +769,11 @@ namespace Concentus.Celt
                             (uint)(x <= x0 ?
                                 (p0 * (x + 1)) :
                                 ((x - x0) + (x0 + 1) * p0)),
-                            ft);
+                            (uint)ft);
                     }
                     else
                     {
-                        int fs;
-                        fs = (int)ec.decode(ft);
+                        int fs = (int)ec.decode((uint)ft);
                         if (fs < (x0 + 1) * p0)
                         {
                             x = fs / p0;
@@ -791,7 +790,7 @@ namespace Concentus.Celt
                             (uint)(x <= x0 ?
                                 p0 * (x + 1) :
                                 (x - x0) + (x0 + 1) * p0),
-                            ft);
+                            (uint)ft);
                         itheta = x;
                     }
                 }
@@ -800,11 +799,11 @@ namespace Concentus.Celt
                     /* Uniform pdf */
                     if (encode != 0)
                     {
-                        ec.enc_uint((uint)itheta, (uint)qn + 1);
+                        ec.enc_uint((uint)itheta, (uint)(qn + 1));
                     }
                     else
                     {
-                        itheta = (int)ec.dec_uint((uint)qn + 1);
+                        itheta = (int)ec.dec_uint((uint)(qn + 1));
                     }
                 }
                 else
@@ -919,7 +918,7 @@ namespace Concentus.Celt
             sctx.qalloc = qalloc;
         }
 
-        internal static uint quant_band_n1(band_ctx ctx, int[] X, int X_ptr, int[] Y, int Y_ptr, int b,
+        internal static int quant_band_n1(band_ctx ctx, int[] X, int X_ptr, int[] Y, int Y_ptr, int b,
                  int[] lowband_out, int lowband_out_ptr)
         {
             int resynth = ctx.encode == 0 ? 1 : 0;
@@ -969,7 +968,7 @@ namespace Concentus.Celt
            It can split the band in two and transmit the energy difference with
            the two half-bands. It can be called recursively so bands can end up being
            split in 8 parts. */
-        internal static uint quant_partition(band_ctx ctx, int[] X, int X_ptr,
+        internal static int quant_partition(band_ctx ctx, int[] X, int X_ptr,
       int N, int b, int B, int[] lowband, int lowband_ptr,
       int LM,
       int gain, int fill)
@@ -980,7 +979,7 @@ namespace Concentus.Celt
             int imid = 0, iside = 0;
             int B0 = B;
             int mid = 0, side = 0;
-            uint cm = 0;
+            int cm = 0;
             int resynth = (ctx.encode == 0) ? 1 : 0;
             int Y = 0;
             int encode;
@@ -1105,11 +1104,11 @@ namespace Concentus.Celt
 
                     if (resynth != 0)
                     {
-                        uint cm_mask;
+                        int cm_mask;
                         /* B can be as large as 16, so this shift might overflow an int on a
                            16-bit platform; use a long to get defined behavior.*/
-                        cm_mask = (uint)(1UL << B) - 1;
-                        fill &= (int)cm_mask;
+                        cm_mask = (1 << B) - 1;
+                        fill = fill & cm_mask;
 
                         if (fill == 0)
                         {
@@ -1139,7 +1138,7 @@ namespace Concentus.Celt
                                     tmp = (((ctx.seed) & 0x8000) != 0 ? tmp : 0 - tmp);
                                     X[X_ptr + j] = (lowband[lowband_ptr + j] + tmp);
                                 }
-                                cm = (uint)fill;
+                                cm = fill;
                             }
 
                             VQ.renormalise_vector(X, X_ptr, N, gain);
@@ -1159,7 +1158,7 @@ namespace Concentus.Celt
                      };
 
         /* This function is responsible for encoding and decoding a band for the mono case. */
-        internal static uint quant_band(band_ctx ctx, int[] X, int X_ptr,
+        internal static int quant_band(band_ctx ctx, int[] X, int X_ptr,
               int N, int b, int B, int[] lowband, int lowband_ptr,
               int LM, int[] lowband_out, int lowband_out_ptr,
               int gain, int[] lowband_scratch, int lowband_scratch_ptr, int fill)
@@ -1171,7 +1170,7 @@ namespace Concentus.Celt
             int time_divide = 0;
             int recombine = 0;
             int longBlocks;
-            uint cm = 0;
+            int cm = 0;
             int resynth = ctx.encode == 0 ? 1 : 0;
             int k;
             int encode;
@@ -1259,7 +1258,7 @@ namespace Concentus.Celt
 
                 for (k = 0; k < recombine; k++)
                 {
-                    cm = (uint)bit_deinterleave_table[cm];
+                    cm = bit_deinterleave_table[cm];
                     haar1(X, X_ptr, N0 >> k, 1 << k);
                 }
                 B <<= recombine;
@@ -1274,13 +1273,13 @@ namespace Concentus.Celt
                         lowband_out[lowband_out_ptr + j] = Inlines.MULT16_16_Q15(n, X[X_ptr + j]);
                 }
 
-                cm = cm & (uint)((1 << B) - 1);
+                cm = cm & ((1 << B) - 1);
             }
             return cm;
         }
 
         /* This function is responsible for encoding and decoding a band for the stereo case. */
-        internal static uint quant_band_stereo(band_ctx ctx, int[] X, int X_ptr, int[] Y, int Y_ptr,
+        internal static int quant_band_stereo(band_ctx ctx, int[] X, int X_ptr, int[] Y, int Y_ptr,
               int N, int b, int B, int[] lowband, int lowband_ptr,
               int LM, int[] lowband_out, int lowband_out_ptr,
               int[] lowband_scratch, int lowband_scratch_ptr, int fill)
@@ -1288,7 +1287,7 @@ namespace Concentus.Celt
             int imid = 0, iside = 0;
             int inv = 0;
             int mid = 0, side = 0;
-            uint cm = 0;
+            int cm = 0;
             int resynth = ctx.encode == 0 ? 1 : 0;
             int mbits, sbits, delta;
             int itheta;

@@ -151,9 +151,9 @@ namespace Concentus.Celt
             while (++i < N);
         }
 
-        internal static uint extract_collapse_mask(int[] iy, int N, int B)
+        internal static int extract_collapse_mask(int[] iy, int N, int B)
         {
-            uint collapse_mask;
+            int collapse_mask;
             int N0;
             int i;
             if (B <= 1)
@@ -173,13 +173,13 @@ namespace Concentus.Celt
                     tmp |= unchecked((uint)iy[i * N0 + j]);
                 } while (++j < N0);
 
-                collapse_mask |= (tmp != 0 ? 1U : 0) << i;
+                collapse_mask |= (tmp != 0 ? 1 : 0) << i;
             } while (++i < B);
 
             return collapse_mask;
         }
 
-        internal static uint alg_quant(int[] X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc
+        internal static int alg_quant(int[] X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc
            )
         {
             int[] y = new int[N];
@@ -191,7 +191,7 @@ namespace Concentus.Celt
             int sum;
             int xy;
             int yy;
-            uint collapse_mask;
+            int collapse_mask;
             
             Inlines.OpusAssert(K > 0, "alg_quant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_quant() needs at least two dimensions");
@@ -336,11 +336,11 @@ namespace Concentus.Celt
 
         /** Decode pulse vector and combine the result with the pitch vector to produce
             the final normalised signal in the current band. */
-        internal static uint alg_unquant(int[] X, int X_ptr, int N, int K, int spread, int B,
+        internal static int alg_unquant(int[] X, int X_ptr, int N, int K, int spread, int B,
               EntropyCoder dec, int gain)
         {
             int Ryy;
-            uint collapse_mask;
+            int collapse_mask;
             int[] iy = new int[N];
             Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
