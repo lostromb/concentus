@@ -49,22 +49,21 @@ namespace Concentus.Celt
     {
         /* The minimum probability of an energy delta (out of 32768). */
         private const int LAPLACE_LOG_MINP = 0;
-        private const uint LAPLACE_MINP = (1 << LAPLACE_LOG_MINP);
+        private const long LAPLACE_MINP = (1 << LAPLACE_LOG_MINP);
         /* The minimum number of guaranteed representable energy deltas (in one
             direction). */
         private const int LAPLACE_NMIN = 16;
 
         /* When called, decay is positive and at most 11456. */
-        internal static uint ec_laplace_get_freq1(uint fs0, int decay)
+        internal static long ec_laplace_get_freq1(long fs0, int decay)
         {
-            uint ft;
-            ft = 32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0;
-            return (uint)((ft * (int)(16384 - decay)) >> 15);
+            long ft = Inlines.CapToUInt32(32768 - LAPLACE_MINP * (2 * LAPLACE_NMIN) - fs0);
+            return (Inlines.CapToUInt32(ft * (16384 - decay)) >> 15);
         }
 
-        internal static void ec_laplace_encode(EntropyCoder enc, ref int value, uint fs, int decay)
+        internal static void ec_laplace_encode(EntropyCoder enc, ref int value, long fs, int decay)
         {
-            uint fl;
+            long fl;
             int val = value;
             fl = 0;
             if (val != 0)
@@ -80,8 +79,8 @@ namespace Concentus.Celt
                 for (i = 1; fs > 0 && i < val; i++)
                 {
                     fs *= 2;
-                    fl += fs + 2 * LAPLACE_MINP;
-                    fs = (uint)((fs * (int)decay) >> 15);
+                    fl = Inlines.CapToUInt32(fl + fs + 2 * LAPLACE_MINP);
+                    fs = Inlines.CapToUInt32((fs * (int)decay) >> 15);
                 }
 
                 /* Everything beyond that has probability LAPLACE_MINP. */
@@ -92,27 +91,27 @@ namespace Concentus.Celt
                     ndi_max = (int)(32768 - fl + LAPLACE_MINP - 1) >> LAPLACE_LOG_MINP;
                     ndi_max = (ndi_max - s) >> 1;
                     di = Inlines.IMIN(val - i, ndi_max - 1);
-                    fl += (uint)(2 * di + 1 + s) * LAPLACE_MINP;
+                    fl = Inlines.CapToUInt32(fl + (2 * di + 1 + s) * LAPLACE_MINP);
                     fs = Inlines.IMIN(LAPLACE_MINP, 32768 - fl);
                     value = (i + di + s) ^ s;
                 }
                 else
                 {
                     fs += LAPLACE_MINP;
-                    fl += (uint)(fs & ~s);
+                    fl = fl + Inlines.CapToUInt32(fs & ~s);
                 }
                 Inlines.OpusAssert(fl + fs <= 32768);
                 Inlines.OpusAssert(fs > 0);
             }
 
-            enc.encode_bin(fl, fl + fs, 15);
+            enc.encode_bin((uint)fl, (uint)(fl + fs), 15);
         }
 
-        internal static int ec_laplace_decode(EntropyCoder dec, uint fs, int decay)
+        internal static int ec_laplace_decode(EntropyCoder dec, long fs, int decay)
         {
             int val = 0;
-            uint fl;
-            uint fm;
+            long fl;
+            long fm;
             fm = dec.decode_bin(15);
             fl = 0;
 
@@ -125,8 +124,8 @@ namespace Concentus.Celt
                 while (fs > LAPLACE_MINP && fm >= fl + 2 * fs)
                 {
                     fs *= 2;
-                    fl += fs;
-                    fs = (uint)(((fs - 2 * LAPLACE_MINP) * (int)decay) >> 15);
+                    fl = Inlines.CapToUInt32(fl + fs);
+                    fs = Inlines.CapToUInt32(((fs - 2 * LAPLACE_MINP) * (int)decay) >> 15);
                     fs += LAPLACE_MINP;
                     val++;
                 }
@@ -136,12 +135,12 @@ namespace Concentus.Celt
                     int di;
                     di = (int)(fm - fl) >> (LAPLACE_LOG_MINP + 1);
                     val += di;
-                    fl += (uint)(2 * di * LAPLACE_MINP);
+                    fl = Inlines.CapToUInt32(fl + Inlines.CapToUInt32(2 * di * LAPLACE_MINP));
                 }
                 if (fm < fl + fs)
                     val = -val;
                 else
-                    fl += fs;
+                    fl = Inlines.CapToUInt32(fl + fs);
             }
 
             Inlines.OpusAssert(fl < 32768);
@@ -149,7 +148,7 @@ namespace Concentus.Celt
             Inlines.OpusAssert(fl <= fm);
             Inlines.OpusAssert(fm < Inlines.IMIN(fl + fs, 32768));
 
-            dec.dec_update(fl, Inlines.IMIN(fl + fs, 32768), 32768);
+            dec.dec_update((uint)fl, (uint)Inlines.IMIN(fl + fs, 32768), 32768);
             return val;
         }
 

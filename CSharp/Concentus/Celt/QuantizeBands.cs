@@ -140,7 +140,7 @@ namespace Concentus.Celt
                     {
                         int pi;
                         pi = 2 * Inlines.IMIN(i, 20);
-                        Laplace.ec_laplace_encode(enc, ref qi, (((uint)prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
+                        Laplace.ec_laplace_encode(enc, ref qi, ((prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
                     }
                     else if (budget - tell >= 2)
                     {
@@ -389,7 +389,7 @@ namespace Concentus.Celt
                         int pi;
                         pi = 2 * Inlines.IMIN(i, 20);
                         qi = Laplace.ec_laplace_decode(dec,
-                              (uint)prob_model[pi] << 7, prob_model[pi + 1] << 6);
+                              prob_model[pi] << 7, prob_model[pi + 1] << 6);
                     }
                     else if (budget - tell >= 2)
                     {
