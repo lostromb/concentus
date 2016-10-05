@@ -394,20 +394,21 @@ namespace Concentus.Common
             return Inlines.CapToUInt32(_ft - Inlines.EC_MINI(Inlines.CapToUInt32(s + 1), _ft));
         }
 
-        internal uint decode_bin(uint _bits)
+        internal long decode_bin(int _bits)
         {
-            uint s;
-            this.ext = Inlines.CapToUInt32(this.rng >> (int)_bits);
-            s = (uint)(this.val / this.ext);
-            return (1U << (int)_bits) - Inlines.EC_MINI(s + 1U, 1U << (int)_bits);
+            this.ext = this.rng >> _bits;
+            long s = Inlines.CapToUInt32(this.val / this.ext);
+            return Inlines.CapToUInt32(Inlines.CapToUInt32(1L << _bits) - Inlines.EC_MINI(Inlines.CapToUInt32(s + 1), 1L << _bits));
         }
 
-        internal void dec_update(uint _fl, uint _fh, uint _ft)
+        internal void dec_update(long _fl, long _fh, long _ft)
         {
-            uint s;
-            s = (uint)(this.ext * (_ft - _fh));
-            this.val -= s;
-            this.rng = _fl > 0 ? this.ext * (_fh - _fl) : this.rng - s;
+            _fl = Inlines.CapToUInt32(_fl);
+            _fh = Inlines.CapToUInt32(_fh);
+            _ft = Inlines.CapToUInt32(_ft);
+            long s = Inlines.CapToUInt32(this.ext * (_ft - _fh));
+            this.val = this.val - s;
+            this.rng = _fl > 0 ? Inlines.CapToUInt32(this.ext * (_fh - _fl)) : this.rng - s;
             dec_normalize();
         }
 

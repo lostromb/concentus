@@ -148,7 +148,7 @@ namespace Concentus.Celt
             Inlines.OpusAssert(fl <= fm);
             Inlines.OpusAssert(fm < Inlines.IMIN(fl + fs, 32768));
 
-            dec.dec_update((uint)fl, (uint)Inlines.IMIN(fl + fs, 32768), 32768);
+            dec.dec_update(fl, Inlines.IMIN(fl + fs, 32768), 32768);
             return val;
         }
 

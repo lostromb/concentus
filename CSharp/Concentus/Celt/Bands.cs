@@ -784,13 +784,13 @@ namespace Concentus.Celt
                         }
 
                         ec.dec_update(
-                            (uint)(x <= x0 ?
+                            (x <= x0 ?
                                 p0 * x :
                                 (x - 1 - x0) + (x0 + 1) * p0),
-                            (uint)(x <= x0 ?
+                            (x <= x0 ?
                                 p0 * (x + 1) :
                                 (x - x0) + (x0 + 1) * p0),
-                            (uint)ft);
+                            ft);
                         itheta = x;
                     }
                 }
@@ -840,7 +840,7 @@ namespace Concentus.Celt
                             fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
                         }
 
-                        ec.dec_update((uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec.dec_update(fl, (fl + fs), ft);
                     }
                 }
                 Inlines.OpusAssert(itheta >= 0);
