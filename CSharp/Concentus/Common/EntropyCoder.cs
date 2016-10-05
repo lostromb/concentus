@@ -293,16 +293,6 @@ namespace Concentus.Common
              Inlines.SignedByteToUnsignedInt(this.buf[buf_ptr + (this.storage - ++(this.end_offs))]) : 0;
         }
 
-        internal int write_byte(FakeUint32 _value)
-        {
-            if (this.offs + this.end_offs >= this.storage)
-            {
-                return -1;
-            }
-            this.buf[buf_ptr + this.offs++] = (sbyte)(_value.LongVal & 0xFF);
-            return 0;
-        }
-
         internal int write_byte(long _value)
         {
             if (this.offs + this.end_offs >= this.storage)
@@ -310,17 +300,6 @@ namespace Concentus.Common
                 return -1;
             }
             this.buf[buf_ptr + this.offs++] = (sbyte)(_value & 0xFF);
-            return 0;
-        }
-
-        internal int write_byte_at_end(uint _value)
-        {
-            if (this.offs + this.end_offs >= this.storage)
-            {
-                return -1;
-            }
-
-            this.buf[buf_ptr + (this.storage - ++(this.end_offs))] = (sbyte)_value;
             return 0;
         }
 
@@ -556,18 +535,18 @@ namespace Concentus.Common
                   This compare should be taken care of by branch-prediction thereafter.*/
                 if (this.rem >= 0)
                 {
-                    this.error |= write_byte((uint)(this.rem + carry));
+                    this.error |= write_byte(Inlines.CapToUInt32(this.rem + carry));
                 }
 
                 if (this.ext > 0)
                 {
                     long sym;
-                    sym = (EC_SYM_MAX + (uint)carry) & EC_SYM_MAX;
+                    sym = (EC_SYM_MAX + carry) & EC_SYM_MAX;
                     do this.error |= write_byte(sym);
                     while (--(this.ext) > 0);
                 }
 
-                this.rem = (int)((uint)_c & EC_SYM_MAX);
+                this.rem = (int)(_c & EC_SYM_MAX);
             }
             else
             {
@@ -598,7 +577,7 @@ namespace Concentus.Common
             /*This is the offset from which ec_tell() will subtract partial bits.*/
             this.nbits_total = EC_CODE_BITS + 1;
             this.offs = 0;
-            this.rng = (uint)EC_CODE_TOP;
+            this.rng = Inlines.CapToUInt32(EC_CODE_TOP);
             this.rem = -1;
             this.val = 0;
             this.ext = 0;
