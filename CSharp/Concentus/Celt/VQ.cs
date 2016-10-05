@@ -203,15 +203,12 @@ namespace Concentus.Celt
             j = 0;
             do
             {
-                if (X[X_ptr + j] > 0)
-                {
-                    signx[j] = 1;
-                }
-                else
-                {
-                    signx[j] = -1;
-                    X[X_ptr + j] = (0 - X[X_ptr + j]);
-                }
+                int xpj = X_ptr + j;
+
+                /* OPT: Make sure the following two lines result in conditional moves
+                   rather than branches. */
+                signx[j] = X[xpj] > 0 ? 1 : -1;
+                X[xpj] = Inlines.ABS16(X[xpj]);
 
                 iy[j] = 0;
                 y[j] = 0;
@@ -323,8 +320,9 @@ namespace Concentus.Celt
             do
             {
                 X[X_ptr + j] = (Inlines.MULT16_16(signx[j], X[X_ptr + j]));
-                if (signx[j] < 0)
-                    iy[j] = -iy[j];
+                /* OPT: Make sure your compiler uses a conditional move here rather than
+                     a branch. */
+                iy[j] = signx[j] < 0 ? -iy[j] : iy[j];
             } while (++j < N);
 
             CWRS.encode_pulses(iy, N, K, enc);
