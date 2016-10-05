@@ -773,7 +773,7 @@ namespace Concentus.Celt
                     }
                     else
                     {
-                        int fs = (int)ec.decode((uint)ft);
+                        int fs = (int)ec.decode(ft);
                         if (fs < (x0 + 1) * p0)
                         {
                             x = fs / p0;
@@ -825,7 +825,7 @@ namespace Concentus.Celt
                         /* Triangular pdf */
                         int fl = 0;
                         int fm;
-                        fm = (int)ec.decode((uint)ft);
+                        fm = (int)ec.decode(ft);
 
                         if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
                         {

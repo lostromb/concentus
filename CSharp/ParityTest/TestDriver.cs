@@ -265,7 +265,7 @@ namespace ParityTest
                             return returnVal;
                         }
 
-                        if (concentusEncoderWithoutFEC != null)
+                        /*if (concentusEncoderWithoutFEC != null)
                         {
                             // Encode again without FEC and verify that there is a difference
                             int packetSizeWithoutFEC = concentusEncoderWithoutFEC.Encode(inputPacket, 0, frameSize, outputBuffer, 0, 10000);
@@ -284,7 +284,7 @@ namespace ParityTest
                                 returnVal.FailureFrame = inputPacket;
                                 return returnVal;
                             }
-                        }
+                        }*/
                     }
                 }
                 catch (OpusException e)

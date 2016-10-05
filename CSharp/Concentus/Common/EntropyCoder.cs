@@ -386,12 +386,12 @@ namespace Concentus.Common
             dec_normalize();
         }
 
-        internal uint decode(uint _ft)
+        internal long decode(long _ft)
         {
-            uint s;
+            _ft = Inlines.CapToUInt32(_ft);
             this.ext = Inlines.CapToUInt32(this.rng / _ft);
-            s = (uint)(this.val / this.ext);
-            return _ft - Inlines.EC_MINI(s + 1, _ft);
+            long s = Inlines.CapToUInt32(this.val / this.ext);
+            return Inlines.CapToUInt32(_ft - Inlines.EC_MINI(Inlines.CapToUInt32(s + 1), _ft));
         }
 
         internal uint decode_bin(uint _bits)
@@ -494,7 +494,7 @@ namespace Concentus.Common
                 long t;
                 ftb -= EC_UINT_BITS;
                 ft = (uint)(_ft >> ftb) + 1;
-                s = decode(ft);
+                s = (uint)decode(ft);
                 dec_update(s, (s + 1), ft);
                 t = Inlines.CapToUInt32((s << ftb | dec_bits((uint)ftb)));
                 if (t <= _ft)
@@ -504,7 +504,7 @@ namespace Concentus.Common
             }
             else {
                 _ft++;
-                s = decode((uint)_ft);
+                s = (uint)decode(_ft);
                 dec_update(s, s + 1, (uint)_ft);
                 return s;
             }
