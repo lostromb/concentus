@@ -435,48 +435,40 @@ namespace Concentus.Common
             return ret;
         }
 
-        internal int dec_icdf(short[] _icdf, uint _ftb)
+        internal int dec_icdf(short[] _icdf, int _ftb)
         {
-            uint r;
-            uint d;
-            uint s;
-            uint t;
-            int ret;
-            s = (uint)this.rng;
-            d = (uint)this.val;
-            r = s >> (int)_ftb;
-            ret = -1;
+            long t;
+            long s = this.rng;
+            long d = this.val;
+            long r = s >> _ftb;
+            int ret = -1;
             do
             {
                 t = s;
-                s = (uint)(r * _icdf[++ret]);
+                s = Inlines.CapToUInt32(r * _icdf[++ret]);
             }
             while (d < s);
-            this.val = d - s;
-            this.rng = t - s;
+            this.val = Inlines.CapToUInt32(d - s);
+            this.rng = Inlines.CapToUInt32(t - s);
             dec_normalize();
             return ret;
         }
 
-        internal int dec_icdf(short[] _icdf, int _icdf_offset, uint _ftb)
+        internal int dec_icdf(short[] _icdf, int _icdf_offset, int _ftb)
         {
-            uint r;
-            uint d;
-            uint s;
-            uint t;
-            int ret;
-            s = (uint)this.rng;
-            d = (uint)this.val;
-            r = s >> (int)_ftb;
-            ret = _icdf_offset - 1;
+            long t;
+            long s = this.rng;
+            long d = this.val;
+            long r = s >> _ftb;
+            int ret = _icdf_offset - 1;
             do
             {
                 t = s;
-                s = (uint)(r * _icdf[++ret]);
+                s = Inlines.CapToUInt32(r * _icdf[++ret]);
             }
             while (d < s);
-            this.val = d - s;
-            this.rng = t - s;
+            this.val = Inlines.CapToUInt32(d - s);
+            this.rng = Inlines.CapToUInt32(t - s);
             dec_normalize();
             return ret - _icdf_offset;
         }
