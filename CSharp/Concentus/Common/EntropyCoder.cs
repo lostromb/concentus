@@ -134,7 +134,7 @@ namespace Concentus.Common
         internal int end_offs;
 
         /*Bits that will be read from/written at the end.*/
-        internal uint end_window;
+        internal long end_window;
 
         /*Number of valid bits in end_window.*/
         internal int nend_bits;
@@ -293,13 +293,13 @@ namespace Concentus.Common
              Inlines.SignedByteToUnsignedInt(this.buf[buf_ptr + (this.storage - ++(this.end_offs))]) : 0;
         }
 
-        internal int write_byte(uint _value)
+        internal int write_byte(FakeUint32 _value)
         {
             if (this.offs + this.end_offs >= this.storage)
             {
                 return -1;
             }
-            this.buf[buf_ptr + this.offs++] = (sbyte)_value;
+            this.buf[buf_ptr + this.offs++] = (sbyte)(_value.LongVal & 0xFF);
             return 0;
         }
 
@@ -529,7 +529,7 @@ namespace Concentus.Common
             ret = (uint)(window & ((1 << (int)_bits) - 1));
             window = window >> (int)_bits;
             available = available - (int)_bits;
-            this.end_window = (uint)window;
+            this.end_window = Inlines.CapToUInt32(window);
             this.nend_bits = available;
             this.nbits_total = this.nbits_total + (int)_bits;
             return ret;
@@ -714,7 +714,7 @@ namespace Concentus.Common
 
         internal void enc_bits(uint _fl, uint _bits)
         {
-            uint window;
+            long window;
             int used;
             window = this.end_window;
             used = this.nend_bits;
@@ -724,14 +724,14 @@ namespace Concentus.Common
             {
                 do
                 {
-                    this.error |= write_byte_at_end(window & EC_SYM_MAX);
+                    this.error = this.error | write_byte_at_end(window & EC_SYM_MAX);
                     window >>= EC_SYM_BITS;
                     used -= EC_SYM_BITS;
                 }
                 while (used >= EC_SYM_BITS);
             }
 
-            window |= (uint)_fl << used;
+            window = window | Inlines.CapToUInt32(_fl << used);
             used += (int)_bits;
             this.end_window = window;
             this.nend_bits = used;
@@ -827,7 +827,7 @@ namespace Concentus.Common
 
         internal void enc_done()
         {
-            uint window;
+            long window;
             int used;
             uint msk;
             uint end;
@@ -865,7 +865,7 @@ namespace Concentus.Common
             while (used >= EC_SYM_BITS)
             {
                 this.error |= write_byte_at_end(window & EC_SYM_MAX);
-                window >>= EC_SYM_BITS;
+                window = window >> EC_SYM_BITS;
                 used -= EC_SYM_BITS;
             }
 
@@ -887,12 +887,12 @@ namespace Concentus.Common
                            would corrupt the range coder data, and that's more important.*/
                         if (this.offs + this.end_offs >= this.storage && l < used)
                         {
-                            window = window & ((1U << l) - 1);
+                            window = Inlines.CapToUInt32(window & ((1U << l) - 1));
                             this.error = -1;
                         }
 
                         int z = buf_ptr + this.storage - this.end_offs - 1;
-                        this.buf[z] = (sbyte)(this.buf[z] | window);
+                        this.buf[z] = (sbyte)(this.buf[z] | (sbyte)(window & 0xFF));
                     }
                 }
             }

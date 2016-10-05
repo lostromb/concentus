@@ -670,6 +670,12 @@ namespace Concentus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long IMIN(long a, long b)
+        {
+            return ((a) < (b) ? (a) : (b));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IMAX(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
@@ -2597,6 +2603,12 @@ namespace Concentus.Common
         public static int EC_MINI(int a, int b)
         {
             return (int)EC_MINI((uint)a, (uint)b);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long EC_MINI(long a, long b)
+        {
+            return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
         }
 
         /// <summary>

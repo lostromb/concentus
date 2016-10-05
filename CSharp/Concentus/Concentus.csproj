@@ -63,6 +63,7 @@
     <Compile Include="Celt\CeltPitchXCorr.cs" />
     <Compile Include="Common\CPlusPlus\Arrays.cs" />
     <Compile Include="Common\CPlusPlus\BoxedValue.cs" />
+    <Compile Include="Common\CPlusPlus\FakeUint32.cs" />
     <Compile Include="Common\CPlusPlus\Pointer.cs" />
     <Compile Include="Common\EntropyCoder.cs" />
     <Compile Include="Common\Resampler.cs" />
