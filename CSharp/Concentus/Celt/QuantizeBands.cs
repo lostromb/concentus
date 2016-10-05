@@ -428,7 +428,7 @@ namespace Concentus.Celt
                 {
                     int q2;
                     int offset;
-                    q2 = (int)dec.dec_bits((uint)fine_quant[i]);
+                    q2 = dec.dec_bits(fine_quant[i]);
                     offset = Inlines.SUB16((Inlines.SHR32(
                         Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + 
                         ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/, fine_quant[i])),
@@ -454,7 +454,7 @@ namespace Concentus.Celt
                     {
                         int q2;
                         int offset;
-                        q2 = (int)dec.dec_bits(1);
+                        q2 = dec.dec_bits(1);
                         offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
                         oldEBands[i + c * m.nbEBands] += offset;
                         bits_left--;

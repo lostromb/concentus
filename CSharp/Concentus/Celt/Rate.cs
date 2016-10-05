@@ -250,7 +250,7 @@ namespace Concentus.Celt
                 }
                 else
                 {
-                    intensity = start + (int)ec.dec_uint((uint)(codedBands + 1 - start));
+                    intensity = start + (int)ec.dec_uint(codedBands + 1 - start);
                 }
             }
             else

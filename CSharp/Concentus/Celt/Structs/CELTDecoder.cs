@@ -593,11 +593,11 @@ namespace Concentus.Celt.Structs
                 {
                     int qg, octave;
                     octave = (int)dec.dec_uint(6);
-                    postfilter_pitch = (16 << octave) + (int)dec.dec_bits(4 + (uint)octave) - 1;
-                    qg = (int)dec.dec_bits(3);
+                    postfilter_pitch = (16 << octave) + dec.dec_bits(4 + octave) - 1;
+                    qg = dec.dec_bits(3);
                     if (dec.tell() + 2 <= total_bits)
                         postfilter_tapset = dec.dec_icdf(Tables.tapset_icdf, 2);
-                    postfilter_gain = ((short)(0.5 + (.09375f) * (((int)1) << (15))))/*Inlines.QCONST16(.09375f, 15)*/ * (qg + 1);
+                    postfilter_gain = ((short)(0.5 + (.09375f) * ((1) << (15))))/*Inlines.QCONST16(.09375f, 15)*/ * (qg + 1);
                 }
                 tell = dec.tell();
             }
@@ -700,7 +700,7 @@ namespace Concentus.Celt.Structs
 
             if (anti_collapse_rsv > 0)
             {
-                anti_collapse_on = (int)dec.dec_bits(1);
+                anti_collapse_on = dec.dec_bits(1);
             }
 
             QuantizeBands.unquant_energy_finalise(mode, start, end, oldBandE,

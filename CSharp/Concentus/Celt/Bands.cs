@@ -803,7 +803,7 @@ namespace Concentus.Celt
                     }
                     else
                     {
-                        itheta = (int)ec.dec_uint((uint)(qn + 1));
+                        itheta = (int)ec.dec_uint(qn + 1);
                     }
                 }
                 else
@@ -946,7 +946,7 @@ namespace Concentus.Celt
                     }
                     else
                     {
-                        sign = (int)ec.dec_bits(1);
+                        sign = ec.dec_bits(1);
                     }
                     ctx.remaining_bits -= 1 << EntropyCoder.BITRES;
                     b -= 1 << EntropyCoder.BITRES;
@@ -1361,7 +1361,7 @@ namespace Concentus.Celt
                     }
                     else
                     {
-                        sign = (int)ec.dec_bits(1);
+                        sign = ec.dec_bits(1);
                     }
                 }
                 sign = 1 - 2 * sign;

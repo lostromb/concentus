@@ -473,10 +473,11 @@ namespace Concentus.Common
             return ret - _icdf_offset;
         }
 
-        internal long dec_uint(uint _ft)
+        internal long dec_uint(long _ft)
         {
-            uint ft;
-            uint s;
+            _ft = Inlines.CapToUInt32(_ft);
+            long ft;
+            long s;
             int ftb;
             /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
             Inlines.OpusAssert(_ft > 1);
@@ -486,31 +487,32 @@ namespace Concentus.Common
             {
                 long t;
                 ftb -= EC_UINT_BITS;
-                ft = (uint)(_ft >> ftb) + 1;
-                s = (uint)decode(ft);
+                ft = Inlines.CapToUInt32((_ft >> ftb) + 1);
+                s = Inlines.CapToUInt32(decode(ft));
                 dec_update(s, (s + 1), ft);
-                t = Inlines.CapToUInt32((s << ftb | dec_bits((uint)ftb)));
+                t = Inlines.CapToUInt32((s << ftb | dec_bits(ftb)));
                 if (t <= _ft)
                     return t;
                 this.error = 1;
                 return _ft;
             }
-            else {
+            else
+            {
                 _ft++;
-                s = (uint)decode(_ft);
-                dec_update(s, s + 1, (uint)_ft);
+                s = Inlines.CapToUInt32(decode(_ft));
+                dec_update(s, s + 1, _ft);
                 return s;
             }
         }
 
-        internal uint dec_bits(uint _bits)
+        internal int dec_bits(int _bits)
         {
             long window;
             int available;
-            uint ret;
+            int ret;
             window = this.end_window;
             available = this.nend_bits;
-            if ((uint)available < _bits)
+            if (available < _bits)
             {
                 do
                 {
@@ -519,12 +521,12 @@ namespace Concentus.Common
                 }
                 while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
             }
-            ret = (uint)(window & ((1 << (int)_bits) - 1));
-            window = window >> (int)_bits;
-            available = available - (int)_bits;
+            ret = (int)(0xFFFFFFFF & (window & ((1 << _bits) - 1)));
+            window = window >> _bits;
+            available = available - _bits;
             this.end_window = Inlines.CapToUInt32(window);
             this.nend_bits = available;
-            this.nbits_total = this.nbits_total + (int)_bits;
+            this.nbits_total = this.nbits_total + _bits;
             return ret;
         }
 
