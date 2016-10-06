@@ -48,7 +48,7 @@ class Downmix
     /// <param name="c1"></param>
     /// <param name="c2"></param>
     /// <param name="C"></param>
-    void downmix_int(short[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
+    static void downmix_int(short[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
     {
         int scale;
         int j;

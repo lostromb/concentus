@@ -855,7 +855,7 @@ class CeltCommon
         int i, c;
         int tot_boost = 0;
         int maxDepth;
-        int[][] follower = Arrays.InitTwoDimensionalArray<int>(2, nbEBands);
+        int[][] follower = Arrays.InitTwoDimensionalArrayInt(2, nbEBands);
         int[] noise_floor = new int[C * nbEBands]; // opt: partitioned array
 
         Arrays.MemSet(offsets, 0, nbEBands);

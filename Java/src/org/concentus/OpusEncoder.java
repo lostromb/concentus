@@ -2,7 +2,7 @@
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
-   Ported to C# by Logan Stromberg
+   Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions

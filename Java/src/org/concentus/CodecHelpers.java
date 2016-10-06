@@ -2,7 +2,7 @@
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
-   Ported to C# by Logan Stromberg
+   Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -254,7 +254,7 @@ public class CodecHelpers
     {
         int i;
         float[][] cost = Arrays.InitTwoDimensionalArray<float>(MAX_DYNAMIC_FRAMESIZE, 16);
-        int[][] states = Arrays.InitTwoDimensionalArray<int>(MAX_DYNAMIC_FRAMESIZE, 16);
+        int[][] states = Arrays.InitTwoDimensionalArrayInt(MAX_DYNAMIC_FRAMESIZE, 16);
         float best_cost;
         int best_state;
         float factor;

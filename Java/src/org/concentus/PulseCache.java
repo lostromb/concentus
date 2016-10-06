@@ -34,26 +34,19 @@
 */
 
 package org.concentus;
+
+class PulseCache
 {
-    using Concentus.Celt.Enums;
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Enums;
-    using System;
+    int size = 0;
+    short[] index = null;
+    short[] bits = null;
+    short[] caps = null;
 
-    class PulseCache
+    void Reset()
     {
-        internal int size = 0;
-        internal short[] index = null;
-        internal short[] bits = null;
-        internal short[] caps = null;
-
-        internal void Reset()
-        {
-            size = 0;
-            index = null;
-            bits = null;
-            caps = null;
-        }
+        size = 0;
+        index = null;
+        bits = null;
+        caps = null;
     }
 }

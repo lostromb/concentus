@@ -35,21 +35,37 @@ import java.lang.reflect.Array;
 
 class Arrays<T>
 {
-    // FIXME make this non-generic
-    
-    @SuppressWarnings("unchecked")
-    T[][] InitTwoDimensionalArray(Class<T> c, int x, int y)
+    static int[][] InitTwoDimensionalArrayInt(int x, int y)
     {
-        T[][] returnVal = (T[][])Array.newInstance(c, x, y);
-        
+        int[][] returnVal = new int[x][];
+        for (int c = 0; c < x; c++)
+        {
+            returnVal[c] = new int[y];
+        }
         return returnVal;
     }
     
-    @SuppressWarnings("unchecked")
-    T[][][] InitThreeDimensionalArray(Class<T> c, int x, int y, int z)
+    static short[][] InitTwoDimensionalArrayShort(int x, int y)
     {
-        T[][][] returnVal = (T[][][])Array.newInstance(c, x, y, z);
-        
+        short[][] returnVal = new short[x][];
+        for (int c = 0; c < x; c++)
+        {
+            returnVal[c] = new short[y];
+        }
+        return returnVal;
+    }
+    
+    static byte[][][] InitThreeDimensionalArrayByte(int x, int y, int z)
+    {
+        byte[][][] returnVal = new byte[x][][];
+        for (int c = 0; c < x; c++)
+        {
+            returnVal[c] = new byte[y][];
+            for (int a = 0; a < y; a++)
+            {
+                returnVal[c][a] = new byte[z];
+            }
+        }
         return returnVal;
     }
     

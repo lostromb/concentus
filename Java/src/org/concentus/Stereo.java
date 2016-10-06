@@ -44,7 +44,7 @@ class Stereo
         int[] pred_Q13)
     {
         int n;
-        int[][] ix = Arrays.InitTwoDimensionalArray<int>(2, 3);
+        int[][] ix = Arrays.InitTwoDimensionalArrayInt(2, 3);
         int low_Q13, step_Q13;
 
         // Entropy decoding

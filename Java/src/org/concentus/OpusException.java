@@ -29,18 +29,22 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 package org.concentus;
+
+public class OpusException extends Exception
 {
-    public class OpusException : Exception
+    public OpusException()
     {
-        public OpusException() : base() { }
-        public OpusException(string message) : base(message) { }
-        public OpusException(string message, int opus_error_code) : base(message + ": " + CodecHelpers.opus_strerror(opus_error_code)) { }
+        //super();
+    }
+    
+    public OpusException(String message)
+    {
+        //super(message);
+    }
+    
+    public OpusException(String message, int opus_error_code)
+    {
+        //super(message + ": " + CodecHelpers.opus_strerror(opus_error_code)) { }
     }
 }

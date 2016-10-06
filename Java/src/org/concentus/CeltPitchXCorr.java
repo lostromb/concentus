@@ -47,18 +47,25 @@ class CeltPitchXCorr
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
+        BoxedValue<Integer> sum0 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum3 = new BoxedValue<Integer>();
         for (i = 0; i < max_pitch - 3; i += 4)
         {
-            int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-            Kernels.xcorr_kernel(_x, _y, i, ref sum0, ref sum1, ref sum2, ref sum3, len);
-            xcorr[i] = sum0;
-            xcorr[i + 1] = sum1;
-            xcorr[i + 2] = sum2;
-            xcorr[i + 3] = sum3;
-            sum0 = Inlines.MAX32(sum0, sum1);
-            sum2 = Inlines.MAX32(sum2, sum3);
-            sum0 = Inlines.MAX32(sum0, sum2);
-            maxcorr = Inlines.MAX32(maxcorr, sum0);
+            sum0.Val = 0;
+            sum1.Val = 0;
+            sum2.Val = 0;
+            sum3.Val = 0;
+            Kernels.xcorr_kernel(_x, _y, i, sum0, sum1, sum2, sum3, len);
+            xcorr[i] = sum0.Val;
+            xcorr[i + 1] = sum1.Val;
+            xcorr[i + 2] = sum2.Val;
+            xcorr[i + 3] = sum3.Val;
+            sum0.Val = Inlines.MAX32(sum0.Val, sum1.Val);
+            sum2.Val = Inlines.MAX32(sum2.Val, sum3.Val);
+            sum0.Val = Inlines.MAX32(sum0.Val, sum2.Val);
+            maxcorr = Inlines.MAX32(maxcorr, sum0.Val);
         }
         /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
         for (; i < max_pitch; i++)
@@ -82,19 +89,26 @@ class CeltPitchXCorr
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
+        BoxedValue<Integer> sum0 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum3 = new BoxedValue<Integer>();
         for (i = 0; i < max_pitch - 3; i += 4)
         {
-            int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-            Kernels.xcorr_kernel(_x, _x_ptr, _y, _y_ptr + i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+            sum0.Val = 0;
+            sum1.Val = 0;
+            sum2.Val = 0;
+            sum3.Val = 0;
+            Kernels.xcorr_kernel(_x, _x_ptr, _y, _y_ptr + i, sum0, sum1, sum2, sum3, len);
 
-            xcorr[i] = sum0;
-            xcorr[i + 1] = sum1;
-            xcorr[i + 2] = sum2;
-            xcorr[i + 3] = sum3;
-            sum0 = Inlines.MAX32(sum0, sum1);
-            sum2 = Inlines.MAX32(sum2, sum3);
-            sum0 = Inlines.MAX32(sum0, sum2);
-            maxcorr = Inlines.MAX32(maxcorr, sum0);
+            xcorr[i] = sum0.Val;
+            xcorr[i + 1] = sum1.Val;
+            xcorr[i + 2] = sum2.Val;
+            xcorr[i + 3] = sum3.Val;
+            sum0.Val = Inlines.MAX32(sum0.Val, sum1.Val);
+            sum2.Val = Inlines.MAX32(sum2.Val, sum3.Val);
+            sum0.Val = Inlines.MAX32(sum0.Val, sum2.Val);
+            maxcorr = Inlines.MAX32(maxcorr, sum0.Val);
         }
         /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
         for (; i < max_pitch; i++)
@@ -116,19 +130,26 @@ class CeltPitchXCorr
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
+        BoxedValue<Integer> sum0 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum3 = new BoxedValue<Integer>();
         for (i = 0; i < max_pitch - 3; i += 4)
         {
-            int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-            Kernels.xcorr_kernel(_x, 0, _y, i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+            sum0.Val = 0;
+            sum1.Val = 0;
+            sum2.Val = 0;
+            sum3.Val = 0;
+            Kernels.xcorr_kernel(_x, 0, _y, i, sum0, sum1, sum2, sum3, len);
 
-            xcorr[i] = sum0;
-            xcorr[i + 1] = sum1;
-            xcorr[i + 2] = sum2;
-            xcorr[i + 3] = sum3;
-            sum0 = Inlines.MAX32(sum0, sum1);
-            sum2 = Inlines.MAX32(sum2, sum3);
-            sum0 = Inlines.MAX32(sum0, sum2);
-            maxcorr = Inlines.MAX32(maxcorr, sum0);
+            xcorr[i] = sum0.Val;
+            xcorr[i + 1] = sum1.Val;
+            xcorr[i + 2] = sum2.Val;
+            xcorr[i + 3] = sum3.Val;
+            sum0.Val = Inlines.MAX32(sum0.Val, sum1.Val);
+            sum2.Val = Inlines.MAX32(sum2.Val, sum3.Val);
+            sum0.Val = Inlines.MAX32(sum0.Val, sum2.Val);
+            maxcorr = Inlines.MAX32(maxcorr, sum0.Val);
         }
         /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
         for (; i < max_pitch; i++)

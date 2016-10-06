@@ -42,7 +42,7 @@ class SilkDecoderControl
     final int[] Gains_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
 
     /* Holds interpolated and final coefficients */
-    final short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArray<short>(2, SilkConstants.MAX_LPC_ORDER);
+    final short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArrayShort(2, SilkConstants.MAX_LPC_ORDER);
     final short[] LTPCoef_Q14 = new short[SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR];
     int LTP_scale_Q14 = 0;
 

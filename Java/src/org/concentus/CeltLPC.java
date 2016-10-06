@@ -34,122 +34,115 @@
 */
 
 package org.concentus;
+
+class CeltLPC
 {
-    using Concentus.Celt.Enums;
-    using Concentus.Celt.Structs;
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using System.Diagnostics;
-
-    class CeltLPC
+    static void celt_lpc(
+        int[] _lpc, /* out: [0...p-1] LPC coefficients      */
+        int[] ac,  /* in:  [0...p] autocorrelation values  */
+        int p)
     {
-        static void celt_lpc(
-            int[] _lpc, /* out: [0...p-1] LPC coefficients      */
-            int[] ac,  /* in:  [0...p] autocorrelation values  */
-            int p)
+        int i, j;
+        int r;
+        int error = ac[0];
+        int[] lpc = new int[p];
+
+        //Arrays.MemSet(lpc, 0, p); strictly, this is not necessary since the runtime zeroes memory for us
+
+        if (ac[0] != 0)
         {
-            int i, j;
-            int r;
-            int error = ac[0];
-            int[] lpc = new int[p];
-
-            //Arrays.MemSet(lpc, 0, p); strictly, this is not necessary since the runtime zeroes memory for us
-
-            if (ac[0] != 0)
-            {
-                for (i = 0; i < p; i++)
-                {
-                    /* Sum up this iteration's reflection coefficient */
-                    int rr = 0;
-                    for (j = 0; j < i; j++)
-                        rr += Inlines.MULT32_32_Q31(lpc[j], ac[i - j]);
-                    rr += Inlines.SHR32(ac[i + 1], 3);
-                    r = 0 - Inlines.frac_div32(Inlines.SHL32(rr, 3), error);
-                    /*  Update LPC coefficients and total error */
-                    lpc[i] = Inlines.SHR32(r, 3);
-
-                    for (j = 0; j < (i + 1) >> 1; j++)
-                    {
-                        int tmp1, tmp2;
-                        tmp1 = lpc[j];
-                        tmp2 = lpc[i - 1 - j];
-                        lpc[j] = tmp1 + Inlines.MULT32_32_Q31(r, tmp2);
-                        lpc[i - 1 - j] = tmp2 + Inlines.MULT32_32_Q31(r, tmp1);
-                    }
-
-                    error = error - Inlines.MULT32_32_Q31(Inlines.MULT32_32_Q31(r, r), error);
-
-                    /* Bail out once we get 30 dB gain */
-                    if (error < Inlines.SHR32(ac[0], 10))
-                    {
-                        break;
-                    }
-                }
-            }
-
             for (i = 0; i < p; i++)
             {
-                _lpc[i] = Inlines.ROUND16((lpc[i]), 16);
+                /* Sum up this iteration's reflection coefficient */
+                int rr = 0;
+                for (j = 0; j < i; j++)
+                    rr += Inlines.MULT32_32_Q31(lpc[j], ac[i - j]);
+                rr += Inlines.SHR32(ac[i + 1], 3);
+                r = 0 - Inlines.frac_div32(Inlines.SHL32(rr, 3), error);
+                /*  Update LPC coefficients and total error */
+                lpc[i] = Inlines.SHR32(r, 3);
+
+                for (j = 0; j < (i + 1) >> 1; j++)
+                {
+                    int tmp1, tmp2;
+                    tmp1 = lpc[j];
+                    tmp2 = lpc[i - 1 - j];
+                    lpc[j] = tmp1 + Inlines.MULT32_32_Q31(r, tmp2);
+                    lpc[i - 1 - j] = tmp2 + Inlines.MULT32_32_Q31(r, tmp1);
+                }
+
+                error = error - Inlines.MULT32_32_Q31(Inlines.MULT32_32_Q31(r, r), error);
+
+                /* Bail out once we get 30 dB gain */
+                if (error < Inlines.SHR32(ac[0], 10))
+                {
+                    break;
+                }
             }
         }
 
-        static void celt_iir(
-            int[] _x,
-            int _x_ptr,
-                 int[] den,
-                 int[] _y,
-                 int _y_ptr,
-                 int N,
-                 int ord,
-                 int[] mem)
+        for (i = 0; i < p; i++)
         {
-            int i, j;
-            int[] rden = new int[ord];
-            int[] y = new int[N + ord];
-            Inlines.OpusAssert((ord & 3) == 0);
-
-            for (i = 0; i < ord; i++)
-                rden[i] = den[ord - i - 1];
-            for (i = 0; i < ord; i++)
-                y[i] = (0 - mem[ord - i - 1]);
-            for (; i < N + ord; i++)
-                y[i] = 0;
-            for (i = 0; i < N - 3; i += 4)
-            {
-                /* Unroll by 4 as if it were an FIR filter */
-                int sum0 = _x[_x_ptr + i];
-                int sum1 = _x[_x_ptr + i + 1];
-                int sum2 = _x[_x_ptr + i + 2];
-                int sum3 = _x[_x_ptr + i + 3];
-                Kernels.xcorr_kernel(rden, y, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
-
-                /* Patch up the result to compensate for the fact that this is an IIR */
-                y[i + ord] = (0 - Inlines.ROUND16((sum0), CeltConstants.SIG_SHIFT));
-                _y[_y_ptr + i] = sum0;
-                sum1 = Inlines.MAC16_16(sum1, y[i + ord], den[0]);
-                y[i + ord + 1] = (0 - Inlines.ROUND16((sum1), CeltConstants.SIG_SHIFT));
-                _y[_y_ptr + i + 1] = sum1;
-                sum2 = Inlines.MAC16_16(sum2, y[i + ord + 1], den[0]);
-                sum2 = Inlines.MAC16_16(sum2, y[i + ord], den[1]);
-                y[i + ord + 2] = (0 - Inlines.ROUND16((sum2), CeltConstants.SIG_SHIFT));
-                _y[_y_ptr + i + 2] = sum2;
-
-                sum3 = Inlines.MAC16_16(sum3, y[i + ord + 2], den[0]);
-                sum3 = Inlines.MAC16_16(sum3, y[i + ord + 1], den[1]);
-                sum3 = Inlines.MAC16_16(sum3, y[i + ord], den[2]);
-                y[i + ord + 3] = (0 - Inlines.ROUND16((sum3), CeltConstants.SIG_SHIFT));
-                _y[_y_ptr + i + 3] = sum3;
-            }
-            for (; i < N; i++)
-            {
-                int sum = _x[_x_ptr + i];
-                for (j = 0; j < ord; j++)
-                    sum -= Inlines.MULT16_16(rden[j], y[i + j]);
-                y[i + ord] = Inlines.ROUND16((sum), CeltConstants.SIG_SHIFT);
-                _y[_y_ptr + i] = sum;
-            }
-            for (i = 0; i < ord; i++)
-                mem[i] = (_y[_y_ptr + N - i - 1]);
+            _lpc[i] = Inlines.ROUND16((lpc[i]), 16);
         }
+    }
+
+    static void celt_iir(
+        int[] _x,
+        int _x_ptr,
+             int[] den,
+             int[] _y,
+             int _y_ptr,
+             int N,
+             int ord,
+             int[] mem)
+    {
+        int i, j;
+        int[] rden = new int[ord];
+        int[] y = new int[N + ord];
+        Inlines.OpusAssert((ord & 3) == 0);
+
+        for (i = 0; i < ord; i++)
+            rden[i] = den[ord - i - 1];
+        for (i = 0; i < ord; i++)
+            y[i] = (0 - mem[ord - i - 1]);
+        for (; i < N + ord; i++)
+            y[i] = 0;
+        for (i = 0; i < N - 3; i += 4)
+        {
+            /* Unroll by 4 as if it were an FIR filter */
+            int sum0 = _x[_x_ptr + i];
+            int sum1 = _x[_x_ptr + i + 1];
+            int sum2 = _x[_x_ptr + i + 2];
+            int sum3 = _x[_x_ptr + i + 3];
+            Kernels.xcorr_kernel(rden, y, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
+
+            /* Patch up the result to compensate for the fact that this is an IIR */
+            y[i + ord] = (0 - Inlines.ROUND16((sum0), CeltConstants.SIG_SHIFT));
+            _y[_y_ptr + i] = sum0;
+            sum1 = Inlines.MAC16_16(sum1, y[i + ord], den[0]);
+            y[i + ord + 1] = (0 - Inlines.ROUND16((sum1), CeltConstants.SIG_SHIFT));
+            _y[_y_ptr + i + 1] = sum1;
+            sum2 = Inlines.MAC16_16(sum2, y[i + ord + 1], den[0]);
+            sum2 = Inlines.MAC16_16(sum2, y[i + ord], den[1]);
+            y[i + ord + 2] = (0 - Inlines.ROUND16((sum2), CeltConstants.SIG_SHIFT));
+            _y[_y_ptr + i + 2] = sum2;
+
+            sum3 = Inlines.MAC16_16(sum3, y[i + ord + 2], den[0]);
+            sum3 = Inlines.MAC16_16(sum3, y[i + ord + 1], den[1]);
+            sum3 = Inlines.MAC16_16(sum3, y[i + ord], den[2]);
+            y[i + ord + 3] = (0 - Inlines.ROUND16((sum3), CeltConstants.SIG_SHIFT));
+            _y[_y_ptr + i + 3] = sum3;
+        }
+        for (; i < N; i++)
+        {
+            int sum = _x[_x_ptr + i];
+            for (j = 0; j < ord; j++)
+                sum -= Inlines.MULT16_16(rden[j], y[i + j]);
+            y[i + ord] = Inlines.ROUND16((sum), CeltConstants.SIG_SHIFT);
+            _y[_y_ptr + i] = sum;
+        }
+        for (i = 0; i < ord; i++)
+            mem[i] = (_y[_y_ptr + N - i - 1]);
     }
 }

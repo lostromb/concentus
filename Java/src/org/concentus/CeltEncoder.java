@@ -182,11 +182,11 @@ package org.concentus;
             this.PartialReset();
 
             // We have to reconstitute the dynamic buffers here.
-            this.in_mem = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.overlap);
-            this.prefilter_mem = Arrays.InitTwoDimensionalArray<int>(this.channels, CeltConstants.COMBFILTER_MAXPERIOD);
-            this.oldBandE = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
-            this.oldLogE = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
-            this.oldLogE2 = Arrays.InitTwoDimensionalArray<int>(this.channels, this.mode.nbEBands);
+            this.in_mem = Arrays.InitTwoDimensionalArrayInt(this.channels, this.mode.overlap);
+            this.prefilter_mem = Arrays.InitTwoDimensionalArrayInt(this.channels, CeltConstants.COMBFILTER_MAXPERIOD);
+            this.oldBandE = Arrays.InitTwoDimensionalArrayInt(this.channels, this.mode.nbEBands);
+            this.oldLogE = Arrays.InitTwoDimensionalArrayInt(this.channels, this.mode.nbEBands);
+            this.oldLogE2 = Arrays.InitTwoDimensionalArrayInt(this.channels, this.mode.nbEBands);
 
             for (i = 0; i < this.mode.nbEBands; i++)
             {
@@ -548,7 +548,7 @@ package org.concentus;
             if (effEnd > mode.effEBands)
                 effEnd = mode.effEBands;
 
-            input = Arrays.InitTwoDimensionalArray<int>(CC, N + overlap);
+            input = Arrays.InitTwoDimensionalArrayInt(CC, N + overlap);
 
             sample_max = Inlines.MAX32(this.overlap_max, Inlines.celt_maxabs32(pcm, pcm_ptr, C * (N - overlap) / this.upsample));
             this.overlap_max = Inlines.celt_maxabs32(pcm, pcm_ptr + (C * (N - overlap) / this.upsample), C * overlap / this.upsample);
@@ -632,12 +632,12 @@ package org.concentus;
                 transient_got_disabled = 1;
             }
 
-            freq = Arrays.InitTwoDimensionalArray<int>(CC, N); /**< Interleaved signal MDCTs */
-            bandE = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
-            bandLogE = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
+            freq = Arrays.InitTwoDimensionalArrayInt(CC, N); /**< Interleaved signal MDCTs */
+            bandE = Arrays.InitTwoDimensionalArrayInt(CC, nbEBands);
+            bandLogE = Arrays.InitTwoDimensionalArrayInt(CC, nbEBands);
 
             secondMdct = (shortBlocks != 0 && this.complexity >= 8) ? 1 : 0;
-            bandLogE2 = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
+            bandLogE2 = Arrays.InitTwoDimensionalArrayInt(CC, nbEBands);
             //Arrays.MemSet(bandLogE2, 0, C * nbEBands); // not explicitly needed
             if (secondMdct != 0)
             {
@@ -805,7 +805,7 @@ package org.concentus;
             if (LM > 0 && enc.tell() + 3 <= total_bits)
                 enc.enc_bit_logp(isTransient, 3);
 
-            X = Arrays.InitTwoDimensionalArray<int>(C, N);         /**< Interleaved normalised MDCTs */
+            X = Arrays.InitTwoDimensionalArrayInt(C, N);         /**< Interleaved normalised MDCTs */
 
             /* Band normalisation */
             Bands.normalise_bands(mode, freq, X, bandE, effEnd, C, M);
@@ -836,7 +836,7 @@ package org.concentus;
                 tf_select = 0;
             }
 
-            error = Arrays.InitTwoDimensionalArray<int>(C, nbEBands);
+            error = Arrays.InitTwoDimensionalArrayInt(C, nbEBands);
             QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE,
                   this.oldBandE, total_bits, error, enc,
                   C, LM, nbAvailableBytes, this.force_intra,

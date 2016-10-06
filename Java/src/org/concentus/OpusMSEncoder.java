@@ -201,8 +201,8 @@ package org.concentus;
             int upsample;
             int frame_size;
             int channel_offset;
-            int[][] bandE = Arrays.InitTwoDimensionalArray<int>(1, 21);
-            int[][] maskLogE = Arrays.InitTwoDimensionalArray<int>(3, 21);
+            int[][] bandE = Arrays.InitTwoDimensionalArrayInt(1, 21);
+            int[][] maskLogE = Arrays.InitTwoDimensionalArrayInt(3, 21);
             int[] input;
             short[] x;
             int[][] freq;
@@ -216,7 +216,7 @@ package org.concentus;
 
             input = new int[frame_size + overlap];
             x = new short[len];
-            freq = Arrays.InitTwoDimensionalArray<int>(1, frame_size);
+            freq = Arrays.InitTwoDimensionalArrayInt(1, frame_size);
 
             channel_pos(channels, pos);
 

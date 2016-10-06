@@ -37,13 +37,13 @@ package org.concentus;
     
 class Analysis
 {
-    private final double M_PI = 3.141592653;
-    private final float cA = 0.43157974f;
-    private final float cB = 0.67848403f;
-    private final float cC = 0.08595542f;
-    private final float cE = ((float)M_PI / 2);
+    private static final double M_PI = 3.141592653;
+    private static final float cA = 0.43157974f;
+    private static final float cB = 0.67848403f;
+    private static final float cC = 0.08595542f;
+    private static final float cE = ((float)M_PI / 2);
 
-    private final int NB_TONAL_SKIP_BANDS = 9;
+    private static final int NB_TONAL_SKIP_BANDS = 9;
 
     static float fast_atan2f(float y, float x)
     {
@@ -131,7 +131,6 @@ class Analysis
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="T">The type of signal being handled (either short or float) - changes based on which API is used</typeparam>
     /// <param name="tonal"></param>
     /// <param name="celt_mode"></param>
     /// <param name="x"></param>
@@ -141,8 +140,7 @@ class Analysis
     /// <param name="c2"></param>
     /// <param name="C"></param>
     /// <param name="lsb_depth"></param>
-    /// <param name="downmix"></param>
-    static void tonality_analysis<T>(TonalityAnalysisState tonal, CeltMode celt_mode, T[] x, int x_ptr, int len, int offset, int c1, int c2, int C, int lsb_depth, Downmix.downmix_func<T> downmix)
+    static void tonality_analysis(TonalityAnalysisState tonal, CeltMode celt_mode, short[] x, int x_ptr, int len, int offset, int c1, int c2, int C, int lsb_depth)
     {
         int i, b;
         FFTState kfft;
@@ -187,7 +185,7 @@ class Analysis
         if (tonal.count == 0)
             tonal.mem_fill = 240;
 
-        downmix(x, x_ptr, tonal.inmem, tonal.mem_fill, Inlines.IMIN(len, OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill), offset, c1, c2, C);
+        Downmix.downmix_int(x, x_ptr, tonal.inmem, tonal.mem_fill, Inlines.IMIN(len, OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill), offset, c1, c2, C);
 
         if (tonal.mem_fill + len < OpusConstants.ANALYSIS_BUF_SIZE)
         {
@@ -215,7 +213,7 @@ class Analysis
         Arrays.MemMove(tonal.inmem, OpusConstants.ANALYSIS_BUF_SIZE - 240, 0, 240);
 
         remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
-        downmix(x, x_ptr, tonal.inmem, 240, remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
+        Downmix.downmix_int(x, x_ptr, tonal.inmem, 240, remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);
         tonal.mem_fill = 240 + remaining;
 
         KissFFT.opus_fft(kfft, input, output);
@@ -239,12 +237,12 @@ class Analysis
             d_angle2 = angle2 - angle;
             d2_angle2 = d_angle2 - d_angle;
 
-            mod1 = d2_angle - (float)Math.Floor(0.5f + d2_angle);
+            mod1 = d2_angle - (float)Math.floor(0.5f + d2_angle);
             noisiness[i] = Inlines.ABS16(mod1);
             mod1 *= mod1;
             mod1 *= mod1;
 
-            mod2 = d2_angle2 - (float)Math.Floor(0.5f + d2_angle2);
+            mod2 = d2_angle2 - (float)Math.floor(0.5f + d2_angle2);
             noisiness[i] += Inlines.ABS16(mod2);
             mod2 *= mod2;
             mod2 *= mod2;
@@ -292,8 +290,8 @@ class Analysis
             tonal.E[tonal.E_count][b] = E;
             frame_noisiness += nE / (1e-15f + E);
 
-            frame_loudness += (float)Math.Sqrt(E + 1e-10f);
-            logE[b] = (float)Math.Log(E + 1e-10f);
+            frame_loudness += (float)Math.sqrt(E + 1e-10f);
+            logE[b] = (float)Math.log(E + 1e-10f);
             tonal.lowE[b] = Inlines.MIN32(logE[b], tonal.lowE[b] + 0.01f);
             tonal.highE[b] = Inlines.MAX32(logE[b], tonal.highE[b] - 0.1f);
             if (tonal.highE[b] < tonal.lowE[b] + 1.0f)
@@ -306,11 +304,11 @@ class Analysis
             L1 = L2 = 0;
             for (i = 0; i < OpusConstants.NB_FRAMES; i++)
             {
-                L1 += (float)Math.Sqrt(tonal.E[i][b]);
+                L1 += (float)Math.sqrt(tonal.E[i][b]);
                 L2 += tonal.E[i][b];
             }
 
-            stationarity = Inlines.MIN16(0.99f, L1 / (float)Math.Sqrt(1e-15 + OpusConstants.NB_FRAMES * L2));
+            stationarity = Inlines.MIN16(0.99f, L1 / (float)Math.sqrt(1e-15 + OpusConstants.NB_FRAMES * L2));
             stationarity *= stationarity;
             stationarity *= stationarity;
             frame_stationarity += stationarity;
@@ -359,7 +357,7 @@ class Analysis
         }
         if (tonal.count <= 2)
             bandwidth = 20;
-        frame_loudness = 20 * (float)Math.Log10(frame_loudness);
+        frame_loudness = 20 * (float)Math.log10(frame_loudness);
         tonal.Etracker = Inlines.MAX32(tonal.Etracker - .03f, frame_loudness);
         tonal.lowECount *= (1 - alphaE);
         if (frame_loudness < tonal.Etracker - 30)
@@ -415,7 +413,7 @@ class Analysis
             tonal.mem[i] = BFCC[i];
         }
         for (i = 0; i < 9; i++)
-            features[11 + i] = (float)Math.Sqrt(tonal.std[i]);
+            features[11 + i] = (float)Math.sqrt(tonal.std[i]);
         features[20] = info.tonality;
         features[21] = info.activity;
         features[22] = frame_stationarity;
@@ -427,7 +425,7 @@ class Analysis
             mlp.mlp_process(OpusTables.net, features, frame_probs);
             frame_probs[0] = .5f * (frame_probs[0] + 1);
             /* Curve fitting between the MLP probability and the actual probability */
-            frame_probs[0] = .01f + 1.21f * frame_probs[0] * frame_probs[0] - .23f * (float)Math.Pow(frame_probs[0], 10);
+            frame_probs[0] = .01f + 1.21f * frame_probs[0] * frame_probs[0] - .23f * (float)Math.pow(frame_probs[0], 10);
             /* Probability of active audio (as opposed to silence) */
             frame_probs[1] = .5f * frame_probs[1] + .5f;
             /* Consider that silence has a 50-50 probability. */
@@ -468,8 +466,8 @@ class Analysis
                 p1 = tonal.music_prob * (1 - tau) + (1 - tonal.music_prob) * tau;
                 /* We apply the current probability with exponent beta to work around
                    the fact that the probability estimates aren't independent. */
-                p0 *= (float)Math.Pow(1 - frame_probs[0], beta);
-                p1 *= (float)Math.Pow(frame_probs[0], beta);
+                p0 *= (float)Math.pow(1 - frame_probs[0], beta);
+                p1 *= (float)Math.pow(frame_probs[0], beta);
                 /* Normalise the probabilities to get the Marokv probability of music. */
                 tonal.music_prob = p1 / (p0 + p1);
                 info.music_prob = tonal.music_prob;
@@ -477,8 +475,8 @@ class Analysis
                 /* This chunk of code deals with delayed decision. */
                 psum = 1e-20f;
                 /* Instantaneous probability of speech and music, with beta pre-applied. */
-                speech0 = (float)Math.Pow(1 - frame_probs[0], beta);
-                music0 = (float)Math.Pow(frame_probs[0], beta);
+                speech0 = (float)Math.pow(1 - frame_probs[0], beta);
+                music0 = (float)Math.pow(frame_probs[0], beta);
                 if (tonal.count == 1)
                 {
                     tonal.pspeech[0] = 0.5f;
@@ -554,9 +552,9 @@ class Analysis
         info.valid = 1;
     }
 
-    static void run_analysis<T>(TonalityAnalysisState analysis, CeltMode celt_mode, T[] analysis_pcm, int analysis_pcm_ptr,
+    static void run_analysis(TonalityAnalysisState analysis, CeltMode celt_mode, short[] analysis_pcm, int analysis_pcm_ptr,
                      int analysis_frame_size, int frame_size, int c1, int c2, int C, int Fs,
-                     int lsb_depth, Downmix.downmix_func<T> downmix, AnalysisInfo analysis_info)
+                     int lsb_depth, AnalysisInfo analysis_info)
     {
         int offset;
         int pcm_len;
@@ -570,7 +568,7 @@ class Analysis
             offset = analysis.analysis_offset;
             do
             {
-                tonality_analysis(analysis, celt_mode, analysis_pcm, analysis_pcm_ptr, Inlines.IMIN(480, pcm_len), offset, c1, c2, C, lsb_depth, downmix);
+                tonality_analysis(analysis, celt_mode, analysis_pcm, analysis_pcm_ptr, Inlines.IMIN(480, pcm_len), offset, c1, c2, C, lsb_depth);
                 offset += 480;
                 pcm_len -= 480;
             } while (pcm_len > 0);

@@ -72,14 +72,22 @@ class Kernels
             mem[i] = x[x_ptr + N - i - 1];
         }
 
+        BoxedValue<Integer> sum0 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum3 = new BoxedValue<Integer>();
+        
         for (i = 0; i < N - 3; i += 4)
         {
-            int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-            xcorr_kernel(rnum, 0, local_x, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
-            y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum0, CeltConstants.SIG_SHIFT))));
-            y[y_ptr + i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 1]), Inlines.PSHR32(sum1, CeltConstants.SIG_SHIFT))));
-            y[y_ptr + i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 2]), Inlines.PSHR32(sum2, CeltConstants.SIG_SHIFT))));
-            y[y_ptr + i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 3]), Inlines.PSHR32(sum3, CeltConstants.SIG_SHIFT))));
+            sum0.Val = 0;
+            sum1.Val = 0;
+            sum2.Val = 0;
+            sum3.Val = 0;
+            xcorr_kernel(rnum, 0, local_x, i, sum0, sum1, sum2, sum3, ord);
+            y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum0.Val, CeltConstants.SIG_SHIFT))));
+            y[y_ptr + i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 1]), Inlines.PSHR32(sum1.Val, CeltConstants.SIG_SHIFT))));
+            y[y_ptr + i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 2]), Inlines.PSHR32(sum2.Val, CeltConstants.SIG_SHIFT))));
+            y[y_ptr + i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 3]), Inlines.PSHR32(sum3.Val, CeltConstants.SIG_SHIFT))));
         }
 
         for (; i < N; i++)
@@ -131,14 +139,22 @@ class Kernels
             mem[i] = x[x_ptr + N - i - 1];
         }
 
+        BoxedValue<Integer> sum0 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum3 = new BoxedValue<Integer>();
+        
         for (i = 0; i < N - 3; i += 4)
         {
-            int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-            xcorr_kernel(rnum, local_x, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
-            y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum0, CeltConstants.SIG_SHIFT))));
-            y[y_ptr + i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 1]), Inlines.PSHR32(sum1, CeltConstants.SIG_SHIFT))));
-            y[y_ptr + i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 2]), Inlines.PSHR32(sum2, CeltConstants.SIG_SHIFT))));
-            y[y_ptr + i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 3]), Inlines.PSHR32(sum3, CeltConstants.SIG_SHIFT))));
+            sum0.Val = 0;
+            sum1.Val = 0;
+            sum2.Val = 0;
+            sum3.Val = 0;
+            xcorr_kernel(rnum, local_x, i, sum0, sum1, sum2, sum3, ord);
+            y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum0.Val, CeltConstants.SIG_SHIFT))));
+            y[y_ptr + i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 1]), Inlines.PSHR32(sum1.Val, CeltConstants.SIG_SHIFT))));
+            y[y_ptr + i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 2]), Inlines.PSHR32(sum2.Val, CeltConstants.SIG_SHIFT))));
+            y[y_ptr + i + 3] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i + 3]), Inlines.PSHR32(sum3.Val, CeltConstants.SIG_SHIFT))));
         }
 
         for (; i < N; i++)
@@ -161,8 +177,12 @@ class Kernels
     /// <param name="y"></param>
     /// <param name="sum"></param>
     /// <param name="len"></param>
-    static void xcorr_kernel(short[] x, int x_ptr, short[] y, int y_ptr, BoxedValue<Integer> sum0, BoxedValue<Integer> sum1, BoxedValue<Integer> sum2, BoxedValue<Integer> sum3, int len)
+    static void xcorr_kernel(short[] x, int x_ptr, short[] y, int y_ptr, BoxedValue<Integer> _sum0, BoxedValue<Integer> _sum1, BoxedValue<Integer> _sum2, BoxedValue<Integer> _sum3, int len)
     {
+        int sum0 = _sum0.Val;
+        int sum1 = _sum1.Val;
+        int sum2 = _sum2.Val;
+        int sum3 = _sum3.Val;
         int j;
         short y_0, y_1, y_2, y_3;
         Inlines.OpusAssert(len >= 3);
@@ -228,10 +248,19 @@ class Kernels
             sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
             sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
         }
+        
+        _sum0.Val = sum0;
+        _sum1.Val = sum1;
+        _sum2.Val = sum2;
+        _sum3.Val = sum3;
     }
 
-    static void xcorr_kernel(int[] x, int[] y, int y_ptr, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+    static void xcorr_kernel(int[] x, int[] y, int y_ptr, BoxedValue<Integer> _sum0, BoxedValue<Integer> _sum1, BoxedValue<Integer> _sum2, BoxedValue<Integer> _sum3, int len)
     {
+        int sum0 = _sum0.Val;
+        int sum1 = _sum1.Val;
+        int sum2 = _sum2.Val;
+        int sum3 = _sum3.Val;
         int j;
         int y_0, y_1, y_2, y_3;
         int x_ptr = 0;
@@ -298,6 +327,11 @@ class Kernels
             sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
             sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
         }
+        
+        _sum0.Val = sum0;
+        _sum1.Val = sum1;
+        _sum2.Val = sum2;
+        _sum3.Val = sum3;
     }
 
     static int celt_inner_prod(short[] x, int x_ptr, short[] y, int y_ptr, int N)
@@ -327,7 +361,7 @@ class Kernels
         return xy;
     }
 
-    static void dual_inner_prod(int[] x, int x_ptr, int[] y01,int y01_ptr, int[] y02, int y02_ptr, int N, out int xy1, out int xy2)
+    static void dual_inner_prod(int[] x, int x_ptr, int[] y01,int y01_ptr, int[] y02, int y02_ptr, int N, BoxedValue<Integer> xy1, BoxedValue<Integer> xy2)
     {
         int i;
         int xy01 = 0;
@@ -337,7 +371,7 @@ class Kernels
             xy01 = Inlines.MAC16_16(xy01, x[x_ptr + i], y01[y01_ptr + i]);
             xy02 = Inlines.MAC16_16(xy02, x[x_ptr + i], y02[y02_ptr + i]);
         }
-        xy1 = xy01;
-        xy2 = xy02;
+        xy1.Val = xy01;
+        xy2.Val = xy02;
     }
 }

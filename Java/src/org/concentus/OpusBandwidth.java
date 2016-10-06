@@ -2,7 +2,7 @@
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
-   Ported to C# by Logan Stromberg
+   Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -33,8 +33,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-namespace Concentus.Enums
-{
+package org.concentus;
+
     public enum OpusBandwidth
     {
         OPUS_BANDWIDTH_AUTO, 
@@ -46,28 +46,28 @@ namespace Concentus.Enums
     }
 
     // FIXME: We should remove all cases where bandwidth is cast to int, it's.....improper
-    internal static class OpusBandwidthHelpers
+    class OpusBandwidthHelpers
     {
-        internal static int GetOrdinal(OpusBandwidth bw)
+        static int GetOrdinal(OpusBandwidth bw)
         {
             switch (bw)
             {
-                case OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND:
+                case OPUS_BANDWIDTH_NARROWBAND:
                     return 1;
-                case OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND:
+                case OPUS_BANDWIDTH_MEDIUMBAND:
                     return 2;
-                case OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND:
+                case OPUS_BANDWIDTH_WIDEBAND:
                     return 3;
-                case OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND:
+                case OPUS_BANDWIDTH_SUPERWIDEBAND:
                     return 4;
-                case OpusBandwidth.OPUS_BANDWIDTH_FULLBAND:
+                case OPUS_BANDWIDTH_FULLBAND:
                     return 5;
             }
 
             return -1;
         }
 
-        internal static OpusBandwidth GetBandwidth(int ordinal)
+        static OpusBandwidth GetBandwidth(int ordinal)
         {
             switch (ordinal)
             {
@@ -86,21 +86,21 @@ namespace Concentus.Enums
             return OpusBandwidth.OPUS_BANDWIDTH_AUTO;
         }
 
-        internal static OpusBandwidth MIN(OpusBandwidth a, OpusBandwidth b)
+        static OpusBandwidth MIN(OpusBandwidth a, OpusBandwidth b)
         {
             if (GetOrdinal(a) < GetOrdinal(b))
                 return a;
             return b;
         }
 
-        internal static OpusBandwidth MAX(OpusBandwidth a, OpusBandwidth b)
+        static OpusBandwidth MAX(OpusBandwidth a, OpusBandwidth b)
         {
             if (GetOrdinal(a) > GetOrdinal(b))
                 return a;
             return b;
         }
 
-        internal static OpusBandwidth SUBTRACT(OpusBandwidth a, int b)
+        static OpusBandwidth SUBTRACT(OpusBandwidth a, int b)
         {
             return GetBandwidth(GetOrdinal(a) - b);
         }

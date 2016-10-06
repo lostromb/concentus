@@ -39,7 +39,7 @@ class SilkEncoderControl
 {
     /* Prediction and coding parameters */
     final int[] Gains_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
-    final short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArray<short>(2, SilkConstants.MAX_LPC_ORDER);     /* holds interpolated and final coefficients */
+    final short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArrayShort(2, SilkConstants.MAX_LPC_ORDER);     /* holds interpolated and final coefficients */
     final short[] LTPCoef_Q14 = new short[SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR];
     int LTP_scale_Q14 = 0;
     final int[] pitchL = new int[SilkConstants.MAX_NB_SUBFR];

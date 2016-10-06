@@ -230,7 +230,7 @@ package org.concentus;
                 end = this.end;
                 effEnd = Inlines.IMAX(start, Inlines.IMIN(end, mode.effEBands));
 
-                X = Arrays.InitTwoDimensionalArray<int>(C, N);   /**< Interleaved normalised MDCTs */
+                X = Arrays.InitTwoDimensionalArrayInt(C, N);   /**< Interleaved normalised MDCTs */
 
                 /* Energy decay */
                 decay = loss_count == 0 ? ((short)(0.5 + (1.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)*/ : ((short)(0.5 + (0.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.5f, CeltConstants.DB_SHIFT)*/;
@@ -692,7 +692,7 @@ package org.concentus;
             /* Decode fixed codebook */
             collapse_masks = new short[C * nbEBands];
 
-            X = Arrays.InitTwoDimensionalArray<int>(C, N);   /**< Interleaved normalised MDCTs */
+            X = Arrays.InitTwoDimensionalArrayInt(C, N);   /**< Interleaved normalised MDCTs */
             
             Bands.quant_all_bands(0, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,

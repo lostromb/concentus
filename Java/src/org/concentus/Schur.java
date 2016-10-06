@@ -43,7 +43,7 @@ class Schur
     )
     {
         int k, n, lz;
-        int[][] C = Arrays.InitTwoDimensionalArray<int>(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
+        int[][] C = Arrays.InitTwoDimensionalArrayInt(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
         int Ctmp1, Ctmp2, rc_tmp_Q15;
 
         Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
@@ -130,7 +130,7 @@ class Schur
     )
     {
         int k, n;
-        int[][] C = Arrays.InitTwoDimensionalArray<int>(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
+        int[][] C = Arrays.InitTwoDimensionalArrayInt(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
         int Ctmp1_Q30, Ctmp2_Q30, rc_tmp_Q31;
 
         Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);

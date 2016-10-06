@@ -34,8 +34,6 @@ package org.concentus;
 
 class LPCInversePredGain
 {
-    private static final float RC_THRESHOLD = 0.9999f;
-
     private static final int QA = 24;
     private static final int A_LIMIT = ((int)((0.99975f) * ((long)1 << (QA)) + 0.5))/*Inlines.SILK_CONST(0.99975f, QA)*/;
 
@@ -120,7 +118,7 @@ class LPCInversePredGain
     )
     {
         int k;
-        int[][] Atmp_QA = Arrays.InitTwoDimensionalArray<int>(2, SilkConstants.SILK_MAX_ORDER_LPC);
+        int[][] Atmp_QA = Arrays.InitTwoDimensionalArrayInt(2, SilkConstants.SILK_MAX_ORDER_LPC);
         int[] Anew_QA;
         int DC_resp = 0;
 
@@ -146,7 +144,7 @@ class LPCInversePredGain
     )
     {
         int k;
-        int[][] Atmp_QA = Arrays.InitTwoDimensionalArray<int>(2, SilkConstants.SILK_MAX_ORDER_LPC);
+        int[][] Atmp_QA = Arrays.InitTwoDimensionalArrayInt(2, SilkConstants.SILK_MAX_ORDER_LPC);
         int[] Anew_QA;
 
         Anew_QA = Atmp_QA[order & 1];

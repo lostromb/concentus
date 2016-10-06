@@ -1577,7 +1577,7 @@ class Inlines
 
     /// <summary>
     /// Macro to convert floating-point constants to fixed-point by applying a scalar factor
-    /// Because of limitations of the C# JIT, this macro is actually evaluated at runtime and therefore should not be used if you want to maximize performance
+    /// Because of limitations of the JIT, this macro is actually evaluated at runtime and therefore should not be used if you want to maximize performance
     /// </summary>
 
     static int SILK_CONST(float number, int scale)

@@ -31,22 +31,14 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using Concentus.Common.CPlusPlus;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 package org.concentus;
+
+/// <summary>
+/// state object for multi-layer perceptron
+/// </summary>
+class MLP
 {
-    /// <summary>
-    /// state object for multi-layer perceptron
-    /// </summary>
-    class MLP
-    {
-        internal int layers;
-        internal int[] topo;
-        internal float[] weights;
-    }
+    int layers;
+    int[] topo;
+    float[] weights;
 }
