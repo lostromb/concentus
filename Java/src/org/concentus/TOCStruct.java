@@ -30,37 +30,32 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus;.Structs
+package org.concentus;
+
+/// <summary>
+/// Struct for TOC (Table of Contents)
+/// </summary>
+class TOCStruct
 {
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Silk.Enums;
+    /// <summary>
+    /// Voice activity for packet
+    /// </summary>
+    int VADFlag = 0;
 
     /// <summary>
-    /// Struct for TOC (Table of Contents)
+    /// Voice activity for each frame in packet
     /// </summary>
-    class TOCStruct
+    final int[] VADFlags = new int[SilkConstants.SILK_MAX_FRAMES_PER_PACKET];
+
+    /// <summary>
+    /// Flag indicating if packet contains in-band FEC
+    /// </summary>
+    int inbandFECFlag = 0;
+
+    void Reset()
     {
-        /// <summary>
-        /// Voice activity for packet
-        /// </summary>
-        internal int VADFlag = 0;
-
-        /// <summary>
-        /// Voice activity for each frame in packet
-        /// </summary>
-        internal final int[] VADFlags = new int[SilkConstants.SILK_MAX_FRAMES_PER_PACKET];
-
-        /// <summary>
-        /// Flag indicating if packet contains in-band FEC
-        /// </summary>
-        internal int inbandFECFlag = 0;
-    
-        internal void Reset()
-        {
-            VADFlag = 0;
-            Arrays.MemSet(VADFlags, 0, SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
-            inbandFECFlag = 0;
-        }
+        VADFlag = 0;
+        Arrays.MemSet(VADFlags, 0, SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
+        inbandFECFlag = 0;
     }
 }

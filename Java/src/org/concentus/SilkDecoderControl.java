@@ -30,34 +30,29 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus;.Structs
+package org.concentus;
+
+/// <summary>
+/// Decoder control
+/// </summary>
+class SilkDecoderControl
 {
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Silk.Enums;
+    /* Prediction and coding parameters */
+    final int[] pitchL = new int[SilkConstants.MAX_NB_SUBFR];
+    final int[] Gains_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
 
-    /// <summary>
-    /// Decoder control
-    /// </summary>
-    class SilkDecoderControl
+    /* Holds interpolated and final coefficients */
+    final short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArray<short>(2, SilkConstants.MAX_LPC_ORDER);
+    final short[] LTPCoef_Q14 = new short[SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR];
+    int LTP_scale_Q14 = 0;
+
+    void Reset()
     {
-        /* Prediction and coding parameters */
-        internal final int[] pitchL = new int[SilkConstants.MAX_NB_SUBFR];
-        internal final int[] Gains_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
-
-        /* Holds interpolated and final coefficients */
-        internal final short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArray<short>(2, SilkConstants.MAX_LPC_ORDER);
-        internal final short[] LTPCoef_Q14 = new short[SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR];
-        internal int LTP_scale_Q14 = 0;
-
-        internal void Reset()
-        {
-            Arrays.MemSet(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet(PredCoef_Q12[0], 0, SilkConstants.MAX_LPC_ORDER);
-            Arrays.MemSet(PredCoef_Q12[1], 0, SilkConstants.MAX_LPC_ORDER);
-            Arrays.MemSet(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
-            LTP_scale_Q14 = 0;
-        }
+        Arrays.MemSet(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
+        Arrays.MemSet(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
+        Arrays.MemSet(PredCoef_Q12[0], 0, SilkConstants.MAX_LPC_ORDER);
+        Arrays.MemSet(PredCoef_Q12[1], 0, SilkConstants.MAX_LPC_ORDER);
+        Arrays.MemSet(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
+        LTP_scale_Q14 = 0;
     }
 }

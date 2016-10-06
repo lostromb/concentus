@@ -483,7 +483,7 @@ package org.concentus;
                     /* Convert Left/Right to Mid/Side */
                     if (encControl.nChannelsInternal == 2)
                     {
-                        BoxedValue<byte> midOnlyFlagBoxed = new BoxedValue<byte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
+                        BoxedValue<Byte> midOnlyFlagBoxed = new BoxedValue<Byte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                         Stereo.silk_stereo_LR_to_MS(psEnc.sStereo,
                             psEnc.state_Fxx[0].inputBuf,
                             2,

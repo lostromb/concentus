@@ -30,23 +30,18 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus;.Structs
+package org.concentus;
+
+class StereoDecodeState
 {
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Silk.Enums;
+    final short[] pred_prev_Q13 = new short[2];
+    final short[] sMid = new short[2];
+    final short[] sSide = new short[2];
 
-    class StereoDecodeState
+    void Reset()
     {
-        internal final short[] pred_prev_Q13 = new short[2];
-        internal final short[] sMid = new short[2];
-        internal final short[] sSide = new short[2];
-
-        internal void Reset()
-        {
-            Arrays.MemSet(pred_prev_Q13, 0, 2);
-            Arrays.MemSet(sMid, 0, 2);
-            Arrays.MemSet(sSide, 0, 2);
-        }
+        Arrays.MemSet(pred_prev_Q13, (short)0, 2);
+        Arrays.MemSet(sMid, (short)0, 2);
+        Arrays.MemSet(sSide, (short)0, 2);
     }
 }

@@ -30,28 +30,23 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus;.Structs
+package org.concentus;
+
+/// <summary>
+/// Noise shaping analysis state
+/// </summary>
+class SilkShapeState
 {
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Silk.Enums;
+    byte LastGainIndex = 0;
+    int HarmBoost_smth_Q16 = 0;
+    int HarmShapeGain_smth_Q16 = 0;
+    int Tilt_smth_Q16 = 0;
 
-    /// <summary>
-    /// Noise shaping analysis state
-    /// </summary>
-    class SilkShapeState
+    void Reset()
     {
-        internal byte LastGainIndex = 0;
-        internal int HarmBoost_smth_Q16 = 0;
-        internal int HarmShapeGain_smth_Q16 = 0;
-        internal int Tilt_smth_Q16 = 0;
-
-        internal void Reset()
-        {
-            LastGainIndex = 0;
-            HarmBoost_smth_Q16 = 0;
-            HarmShapeGain_smth_Q16 = 0;
-            Tilt_smth_Q16 = 0;
-        }
+        LastGainIndex = 0;
+        HarmBoost_smth_Q16 = 0;
+        HarmShapeGain_smth_Q16 = 0;
+        Tilt_smth_Q16 = 0;
     }
 }

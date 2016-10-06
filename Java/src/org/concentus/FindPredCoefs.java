@@ -106,7 +106,7 @@ package org.concentus;
                 psEncCtrl.LTPredCodGain_Q7 = boxed_codgain.Val;
 
                 /* Quantize LTP gain parameters */
-                BoxedValue<byte> boxed_periodicity = new BoxedValue<byte>(psEnc.indices.PERIndex);
+                BoxedValue<Byte> boxed_periodicity = new BoxedValue<Byte>(psEnc.indices.PERIndex);
                 BoxedValue<Integer> boxed_gain = new BoxedValue<Integer>(psEnc.sum_log_gain_Q7);
                 QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex, boxed_periodicity,
                     boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr

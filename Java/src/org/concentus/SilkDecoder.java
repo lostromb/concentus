@@ -30,41 +30,36 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus;.Structs
+package org.concentus;
+
+/// <summary>
+/// Decoder super struct
+/// </summary>
+class SilkDecoder
 {
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Silk.Enums;
+    final SilkChannelDecoder[] channel_state = new SilkChannelDecoder[SilkConstants.DECODER_NUM_CHANNELS];
+    final StereoDecodeState sStereo = new StereoDecodeState();
+    int nChannelsAPI = 0;
+    int nChannelsInternal = 0;
+    int prev_decode_only_middle = 0;
 
-    /// <summary>
-    /// Decoder super struct
-    /// </summary>
-    class SilkDecoder
+    SilkDecoder()
     {
-        internal final SilkChannelDecoder[] channel_state = new SilkChannelDecoder[SilkConstants.DECODER_NUM_CHANNELS];
-        internal final StereoDecodeState sStereo = new StereoDecodeState();
-        internal int nChannelsAPI = 0;
-        internal int nChannelsInternal = 0;
-        internal int prev_decode_only_middle = 0;
-
-        internal SilkDecoder()
+        for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)
         {
-            for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)
-            {
-                channel_state[c] = new SilkChannelDecoder();
-            }
+            channel_state[c] = new SilkChannelDecoder();
         }
+    }
 
-        internal void Reset()
+    void Reset()
+    {
+        for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)
         {
-            for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)
-            {
-                channel_state[c].Reset();
-            }
-            sStereo.Reset();
-            nChannelsAPI = 0;
-            nChannelsInternal = 0;
-            prev_decode_only_middle = 0;
+            channel_state[c].Reset();
         }
+        sStereo.Reset();
+        nChannelsAPI = 0;
+        nChannelsInternal = 0;
+        prev_decode_only_middle = 0;
     }
 }

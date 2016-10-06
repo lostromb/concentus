@@ -69,7 +69,7 @@ package org.concentus;
             short[] frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
             int[] pitch_out,         /* O    4 pitch lag values                                          */
             BoxedValue<short> lagIndex,          /* O    Lag Index                                                   */
-            BoxedValue<byte> contourIndex,      /* O    Pitch contour Index                                         */
+            BoxedValue<Byte> contourIndex,      /* O    Pitch contour Index                                         */
             BoxedValue<Integer> LTPCorr_Q15,       /* I/O  Normalized correlation; input: value from previous frame    */
             int prevLag,            /* I    Last lag of previous frame; set to zero is unvoiced         */
             int search_thres1_Q16,  /* I    First stage threshold for lag candidates 0 - 1              */

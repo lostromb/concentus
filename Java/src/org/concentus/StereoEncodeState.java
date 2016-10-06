@@ -30,42 +30,37 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus;.Structs
+package org.concentus;
+
+class StereoEncodeState
 {
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Silk.Enums;
+    final short[] pred_prev_Q13 = new short[2];
+    final short[] sMid = new short[2];
+    final short[] sSide = new short[2];
+    final int[] mid_side_amp_Q0 = new int[4];
+    short smth_width_Q14 = 0;
+    short width_prev_Q14 = 0;
+    short silent_side_len = 0;
+    final byte[][][] predIx = Arrays.InitThreeDimensionalArray<byte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
+    final byte[] mid_only_flags = new byte[SilkConstants.MAX_FRAMES_PER_PACKET];
 
-    class StereoEncodeState
+    void Reset()
     {
-        internal final short[] pred_prev_Q13 = new short[2];
-        internal final short[] sMid = new short[2];
-        internal final short[] sSide = new short[2];
-        internal final int[] mid_side_amp_Q0 = new int[4];
-        internal short smth_width_Q14 = 0;
-        internal short width_prev_Q14 = 0;
-        internal short silent_side_len = 0;
-        internal final byte[][][] predIx = Arrays.InitThreeDimensionalArray<byte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
-        internal final byte[] mid_only_flags = new byte[SilkConstants.MAX_FRAMES_PER_PACKET];
-        
-        internal void Reset()
+        Arrays.MemSet(pred_prev_Q13, 0, 2);
+        Arrays.MemSet(sMid, 0, 2);
+        Arrays.MemSet(sSide, 0, 2);
+        Arrays.MemSet(mid_side_amp_Q0, 0, 4);
+        smth_width_Q14 = 0;
+        width_prev_Q14 = 0;
+        silent_side_len = 0;
+        for (int x = 0; x < SilkConstants.MAX_FRAMES_PER_PACKET; x++)
         {
-            Arrays.MemSet(pred_prev_Q13, 0, 2);
-            Arrays.MemSet(sMid, 0, 2);
-            Arrays.MemSet(sSide, 0, 2);
-            Arrays.MemSet(mid_side_amp_Q0, 0, 4);
-            smth_width_Q14 = 0;
-            width_prev_Q14 = 0;
-            silent_side_len = 0;
-            for (int x = 0; x < SilkConstants.MAX_FRAMES_PER_PACKET; x++)
+            for (int y= 0; y < 2; y++)
             {
-                for (int y= 0; y < 2; y++)
-                {
-                    Arrays.MemSet<byte>(predIx[x][y], 0, 3);
-                }
+                Arrays.MemSet<byte>(predIx[x][y], 0, 3);
             }
-
-            Arrays.MemSet<byte>(mid_only_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
         }
+
+        Arrays.MemSet<byte>(mid_only_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
     }
 }
