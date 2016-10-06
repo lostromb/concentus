@@ -43,7 +43,7 @@ using System.Threading.Tasks;
 
 namespace Concentus
 {
-    internal static class Tables
+    internal static class OpusTables
     {
         internal static readonly float[] dct_table = {
                     0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f, 0.250000f,

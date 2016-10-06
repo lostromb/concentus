@@ -66,7 +66,7 @@ namespace Concentus
             }
             i = (int)Math.Floor(.5f + 25 * x);
             x -= .04f * i;
-            y = Tables.tansig_table[i];
+            y = OpusTables.tansig_table[i];
             dy = 1 - y * y;
             y = y + x * dy * (1 - y * x);
             return sign * y;

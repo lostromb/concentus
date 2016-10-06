@@ -211,7 +211,7 @@ namespace Concentus.Celt
             if (two_pass != 0 || intra != 0)
             {
                 badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget,
-                      tell, Tables.e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
+                      tell, CeltTables.e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
             }
 
             if (intra == 0)
@@ -244,7 +244,7 @@ namespace Concentus.Celt
                 enc.Assign(enc_start_state);
 
                 badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, budget,
-                      tell, Tables.e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
+                      tell, CeltTables.e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
 
                 if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && (enc.tell_frac()) + intra_bias > tell_intra)))
                 {
@@ -350,7 +350,7 @@ namespace Concentus.Celt
 
         internal static void unquant_coarse_energy(CeltMode m, int start, int end, int[] oldEBands, int intra, EntropyCoder dec, int C, int LM)
         {
-            short[] prob_model = Tables.e_prob_model[LM][intra];
+            short[] prob_model = CeltTables.e_prob_model[LM][intra];
             int i, c;
             int[] prev = { 0, 0 };
             int coef;
@@ -483,7 +483,7 @@ namespace Concentus.Celt
                 {
                     bandLogE[c][i] =
                        (Inlines.celt_log2(Inlines.SHL32(bandE[c][i], 2))
-                       - Inlines.SHL16((int)Tables.eMeans[i], 6));
+                       - Inlines.SHL16((int)CeltTables.eMeans[i], 6));
                 }
                 for (i = effEnd; i < end; i++)
                 {
@@ -512,7 +512,7 @@ namespace Concentus.Celt
                 {
                     bandLogE[bandLogE_ptr + (c * m.nbEBands) + i] =
                        (Inlines.celt_log2(Inlines.SHL32(bandE[i + c * m.nbEBands], 2))
-                       - Inlines.SHL16((int)Tables.eMeans[i], 6));
+                       - Inlines.SHL16((int)CeltTables.eMeans[i], 6));
                 }
                 for (i = effEnd; i < end; i++)
                 {

@@ -70,7 +70,7 @@ namespace Concentus.Silk
             int i, j, p;
             short[] icdf = new short[2];
             int q_ptr;
-            short[] sign_icdf = Tables.silk_sign_iCDF;
+            short[] sign_icdf = SilkTables.silk_sign_iCDF;
             int icdf_ptr;
 
             icdf[1] = 0;
@@ -117,7 +117,7 @@ namespace Concentus.Silk
             int i, j, p;
             short[] icdf = new short[2];
             int q_ptr;
-            short[] icdf_table = Tables.silk_sign_iCDF;
+            short[] icdf_table = SilkTables.silk_sign_iCDF;
             int icdf_ptr;
 
             icdf[1] = 0;

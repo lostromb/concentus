@@ -596,7 +596,7 @@ namespace Concentus.Celt.Structs
                     postfilter_pitch = (16 << octave) + dec.dec_bits(4 + octave) - 1;
                     qg = dec.dec_bits(3);
                     if (dec.tell() + 2 <= total_bits)
-                        postfilter_tapset = dec.dec_icdf(Tables.tapset_icdf, 2);
+                        postfilter_tapset = dec.dec_icdf(CeltTables.tapset_icdf, 2);
                     postfilter_gain = ((short)(0.5 + (.09375f) * ((1) << (15))))/*Inlines.QCONST16(.09375f, 15)*/ * (qg + 1);
                 }
                 tell = dec.tell();
@@ -627,7 +627,7 @@ namespace Concentus.Celt.Structs
             tell = dec.tell();
             spread_decision = Spread.SPREAD_NORMAL;
             if (tell + 4 <= total_bits)
-                spread_decision = dec.dec_icdf(Tables.spread_icdf, 5);
+                spread_decision = dec.dec_icdf(CeltTables.spread_icdf, 5);
 
             cap = new int[nbEBands];
 
@@ -668,7 +668,7 @@ namespace Concentus.Celt.Structs
 
             fine_quant = new int[nbEBands];
             alloc_trim = tell + (6 << EntropyCoder.BITRES) <= total_bits ?
-                  dec.dec_icdf(Tables.trim_icdf, 7) : 5;
+                  dec.dec_icdf(CeltTables.trim_icdf, 7) : 5;
 
             bits = ((len * 8) << EntropyCoder.BITRES) - dec.tell_frac() - 1;
             anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;

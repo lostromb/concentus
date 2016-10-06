@@ -218,7 +218,7 @@ namespace Concentus
             noisiness = new float[240];
             for (i = 0; i < N2; i++)
             {
-                float w = Tables.analysis_window[i];
+                float w = OpusTables.analysis_window[i];
                 input[2 * i] = (int)(w * tonal.inmem[i]);
                 input[2 * i + 1] = (int)(w * tonal.inmem[N2 + i]);
                 input[(2 * (N - i - 1))] = (int)(w * tonal.inmem[N - i - 1]);
@@ -290,7 +290,7 @@ namespace Concentus
                 float E = 0, tE = 0, nE = 0;
                 float L1, L2;
                 float stationarity;
-                for (i = Tables.tbands[b]; i < Tables.tbands[b + 1]; i++)
+                for (i = OpusTables.tbands[b]; i < OpusTables.tbands[b + 1]; i++)
                 {
                     float binE = output[2 * i] * (float)output[2 * i] + output[2 * (N - i)] * (float)output[2 * (N - i)]
                                + output[2 * i + 1] * (float)output[2 * i + 1] + output[2 * (N - i) + 1] * (float)output[2 * (N - i) + 1];
@@ -347,8 +347,8 @@ namespace Concentus
                 float E = 0;
                 int band_start, band_end;
                 /* Keep a margin of 300 Hz for aliasing */
-                band_start = Tables.extra_bands[b];
-                band_end = Tables.extra_bands[b + 1];
+                band_start = OpusTables.extra_bands[b];
+                band_end = OpusTables.extra_bands[b + 1];
                 for (i = band_start; i < band_end; i++)
                 {
                     float binE = output[2 * i] * (float)output[2 * i] + output[2 * (N - i)] * (float)output[2 * (N - i)]
@@ -381,7 +381,7 @@ namespace Concentus
             {
                 float sum = 0;
                 for (b = 0; b < 16; b++)
-                    sum += Tables.dct_table[i * 16 + b] * logE[b];
+                    sum += OpusTables.dct_table[i * 16 + b] * logE[b];
                 BFCC[i] = sum;
             }
 
@@ -436,7 +436,7 @@ namespace Concentus
 
             if (info.enabled)
             {
-                mlp.mlp_process(Tables.net, features, frame_probs);
+                mlp.mlp_process(OpusTables.net, features, frame_probs);
                 frame_probs[0] = .5f * (frame_probs[0] + 1);
                 /* Curve fitting between the MLP probability and the actual probability */
                 frame_probs[0] = .01f + 1.21f * frame_probs[0] * frame_probs[0] - .23f * (float)Math.Pow(frame_probs[0], 10);

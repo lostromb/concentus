@@ -584,8 +584,8 @@ namespace Concentus.Celt
                     int curr0, curr1;
                     curr0 = Inlines.IMIN(cost0, cost1 + lambda);
                     curr1 = Inlines.IMIN(cost0 + lambda, cost1);
-                    cost0 = curr0 + Inlines.abs(metric[i] - 2 * Tables.tf_select_table[LM][4 * isTransient + 2 * sel + 0]);
-                    cost1 = curr1 + Inlines.abs(metric[i] - 2 * Tables.tf_select_table[LM][4 * isTransient + 2 * sel + 1]);
+                    cost0 = curr0 + Inlines.abs(metric[i] - 2 * CeltTables.tf_select_table[LM][4 * isTransient + 2 * sel + 0]);
+                    cost1 = curr1 + Inlines.abs(metric[i] - 2 * CeltTables.tf_select_table[LM][4 * isTransient + 2 * sel + 1]);
                 }
                 cost0 = Inlines.IMIN(cost0, cost1);
                 selcost[sel] = cost0;
@@ -625,8 +625,8 @@ namespace Concentus.Celt
                     curr1 = from1;
                     path1[i] = 1;
                 }
-                cost0 = curr0 + Inlines.abs(metric[i] - 2 * Tables.tf_select_table[LM][4 * isTransient + 2 * tf_select + 0]);
-                cost1 = curr1 + Inlines.abs(metric[i] - 2 * Tables.tf_select_table[LM][4 * isTransient + 2 * tf_select + 1]);
+                cost0 = curr0 + Inlines.abs(metric[i] - 2 * CeltTables.tf_select_table[LM][4 * isTransient + 2 * tf_select + 0]);
+                cost1 = curr1 + Inlines.abs(metric[i] - 2 * CeltTables.tf_select_table[LM][4 * isTransient + 2 * tf_select + 1]);
             }
             tf_res[len - 1] = cost0 < cost1 ? 0 : 1;
             /* Viterbi backward pass to check the decisions */
@@ -672,13 +672,13 @@ namespace Concentus.Celt
             }
             /* Only code tf_select if it would actually make a difference. */
             if (tf_select_rsv != 0 &&
-                  Tables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
-                  Tables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
+                  CeltTables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
+                  CeltTables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
                 enc.enc_bit_logp(tf_select, 1);
             else
                 tf_select = 0;
             for (i = start; i < end; i++)
-                tf_res[i] = Tables.tf_select_table[LM][4 * isTransient + 2 * tf_select + tf_res[i]];
+                tf_res[i] = CeltTables.tf_select_table[LM][4 * isTransient + 2 * tf_select + tf_res[i]];
             /*for(i=0;i<end;i++)printf("%d ", isTransient ? tf_res[i] : LM+tf_res[i]);printf("\n");*/
         }
 
@@ -874,7 +874,7 @@ namespace Concentus.Celt
                 /* Noise floor must take into account eMeans, the depth, the width of the bands
                    and the preemphasis filter (approx. square of bark band ID) */
                 noise_floor[i] = (Inlines.MULT16_16(((short)(0.5 + (0.0625f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0625f, CeltConstants.DB_SHIFT)*/, logN[i])
-                      + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/ + Inlines.SHL16((9 - lsb_depth), CeltConstants.DB_SHIFT) - Inlines.SHL16(Tables.eMeans[i], 6)
+                      + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/ + Inlines.SHL16((9 - lsb_depth), CeltConstants.DB_SHIFT) - Inlines.SHL16(CeltTables.eMeans[i], 6)
                       + Inlines.MULT16_16(((short)(0.5 + (0.0062f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0062f, CeltConstants.DB_SHIFT)*/, (i + 5) * (i + 5)));
             }
             c = 0; do
@@ -1167,14 +1167,14 @@ namespace Concentus.Celt
             }
             tf_select = 0;
             if (tf_select_rsv != 0 &&
-              Tables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
-              Tables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
+              CeltTables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
+              CeltTables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
             {
                 tf_select = dec.dec_bit_logp(1);
             }
             for (i = start; i < end; i++)
             {
-                tf_res[i] = Tables.tf_select_table[LM][4 * isTransient + 2 * tf_select + tf_res[i]];
+                tf_res[i] = CeltTables.tf_select_table[LM][4 * isTransient + 2 * tf_select + tf_res[i]];
             }
         }
 

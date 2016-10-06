@@ -389,7 +389,7 @@ namespace Concentus.Silk
             /* Set up stage 2 codebook based on number of subframes */
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
-                Lag_CB_ptr = Tables.silk_CB_lags_stage2;
+                Lag_CB_ptr = SilkTables.silk_CB_lags_stage2;
                 if (Fs_kHz == 8 && complexity > SilkConstants.SILK_PE_MIN_COMPLEX)
                 {
                     /* If input is 8 khz use a larger codebook here because it is last stage */
@@ -400,7 +400,7 @@ namespace Concentus.Silk
                 }
             }
             else {
-                Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms;
+                Lag_CB_ptr = SilkTables.silk_CB_lags_stage2_10_ms;
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE2_10MS;
             }
 
@@ -453,7 +453,7 @@ namespace Concentus.Silk
 
                 if (CCmax_new_b > CCmax_b &&  /* Find maximum biased correlation                  */
                     CCmax_new > Inlines.silk_SMULBB(nb_subfr, search_thres2_Q13) &&  /* Correlation needs to be high enough to be voiced */
-                    Tables.silk_CB_lags_stage2[0][CBimax_new] <= MIN_LAG_8KHZ      /* Lag must be in range                             */
+                    SilkTables.silk_CB_lags_stage2[0][CBimax_new] <= MIN_LAG_8KHZ      /* Lag must be in range                             */
                  )
                 {
                     CCmax_b = CCmax_new_b;
@@ -527,18 +527,18 @@ namespace Concentus.Silk
                 /* pitch lags according to second stage */
                 for (k = 0; k < nb_subfr; k++)
                 {
-                    pitch_out[k] = lag + 2 * Tables.silk_CB_lags_stage2[k][CBimax_old];
+                    pitch_out[k] = lag + 2 * SilkTables.silk_CB_lags_stage2[k][CBimax_old];
                 }
 
                 /* Set up codebook parameters according to complexity setting and frame length */
                 if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
                 {
-                    nb_cbk_search = (int)Tables.silk_nb_cbk_searchs_stage3[complexity];
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage3;
+                    nb_cbk_search = (int)SilkTables.silk_nb_cbk_searchs_stage3[complexity];
+                    Lag_CB_ptr = SilkTables.silk_CB_lags_stage3;
                 }
                 else {
                     nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms;
+                    Lag_CB_ptr = SilkTables.silk_CB_lags_stage3_10_ms;
                 }
 
                 /* Calculate the correlations and energies needed in stage 3 */
@@ -587,7 +587,7 @@ namespace Concentus.Silk
                             CCmax_new = 0;
                         }
 
-                        if (CCmax_new > CCmax && (d + Tables.silk_CB_lags_stage3[0][j]) <= max_lag)
+                        if (CCmax_new > CCmax && (d + SilkTables.silk_CB_lags_stage3[0][j]) <= max_lag)
                         {
                             CCmax = CCmax_new;
                             lag_new = d;
@@ -656,14 +656,14 @@ namespace Concentus.Silk
 
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
-                Lag_range_ptr = Tables.silk_Lag_range_stage3[complexity];
-                Lag_CB_ptr = Tables.silk_CB_lags_stage3;
-                nb_cbk_search = Tables.silk_nb_cbk_searchs_stage3[complexity];
+                Lag_range_ptr = SilkTables.silk_Lag_range_stage3[complexity];
+                Lag_CB_ptr = SilkTables.silk_CB_lags_stage3;
+                nb_cbk_search = SilkTables.silk_nb_cbk_searchs_stage3[complexity];
             }
             else {
                 Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
-                Lag_range_ptr = Tables.silk_Lag_range_stage3_10_ms;
-                Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms;
+                Lag_range_ptr = SilkTables.silk_Lag_range_stage3_10_ms;
+                Lag_CB_ptr = SilkTables.silk_CB_lags_stage3_10_ms;
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
             }
             scratch_mem = new int[SCRATCH_SIZE];
@@ -732,14 +732,14 @@ namespace Concentus.Silk
 
             if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
             {
-                Lag_range_ptr = Tables.silk_Lag_range_stage3[complexity];
-                Lag_CB_ptr = Tables.silk_CB_lags_stage3;
-                nb_cbk_search = Tables.silk_nb_cbk_searchs_stage3[complexity];
+                Lag_range_ptr = SilkTables.silk_Lag_range_stage3[complexity];
+                Lag_CB_ptr = SilkTables.silk_CB_lags_stage3;
+                nb_cbk_search = SilkTables.silk_nb_cbk_searchs_stage3[complexity];
             }
             else {
                 Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
-                Lag_range_ptr = Tables.silk_Lag_range_stage3_10_ms;
-                Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms;
+                Lag_range_ptr = SilkTables.silk_Lag_range_stage3_10_ms;
+                Lag_CB_ptr = SilkTables.silk_CB_lags_stage3_10_ms;
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
             }
             scratch_mem = new int[SCRATCH_SIZE];

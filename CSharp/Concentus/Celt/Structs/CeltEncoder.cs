@@ -610,7 +610,7 @@ namespace Concentus.Celt.Structs
                     enc.enc_bits((pitch_index - (16 << octave)), 4 + octave);
                     pitch_index -= 1;
                     enc.enc_bits(qg, 3);
-                    enc.enc_icdf(prefilter_tapset, Tables.tapset_icdf, 2);
+                    enc.enc_icdf(prefilter_tapset, CeltTables.tapset_icdf, 2);
                 }
             }
 
@@ -867,7 +867,7 @@ namespace Concentus.Celt.Structs
                     /*printf("%d %d\n", st.tapset_decision, st.spread_decision);*/
                     /*printf("%f %d %f %d\n\n", st.analysis.tonality, st.spread_decision, st.analysis.tonality_slope, st.tapset_decision);*/
                 }
-                enc.enc_icdf(this.spread_decision, Tables.spread_icdf, 5);
+                enc.enc_icdf(this.spread_decision, CeltTables.spread_icdf, 5);
             }
 
             offsets = new int[nbEBands];
@@ -924,7 +924,7 @@ namespace Concentus.Celt.Structs
                     dual_stereo = CeltCommon.stereo_analysis(mode, X, LM);
 
                 this.intensity = Bands.hysteresis_decision((int)(equiv_rate / 1000),
-                      Tables.intensity_thresholds, Tables.intensity_histeresis, 21, this.intensity);
+                      CeltTables.intensity_thresholds, CeltTables.intensity_histeresis, 21, this.intensity);
                 this.intensity = Inlines.IMIN(end, Inlines.IMAX(start, this.intensity));
             }
 
@@ -941,7 +941,7 @@ namespace Concentus.Celt.Structs
                        end, LM, C, this.analysis, ref this.stereo_saving, tf_estimate,
                        this.intensity, surround_trim);
                 }
-                enc.enc_icdf(alloc_trim, Tables.trim_icdf, 7);
+                enc.enc_icdf(alloc_trim, CeltTables.trim_icdf, 7);
                 tell = (int)enc.tell_frac();
             }
 

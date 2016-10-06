@@ -55,24 +55,24 @@ namespace Concentus.Silk
             {
                 if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
                 {
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage2;
+                    Lag_CB_ptr = SilkTables.silk_CB_lags_stage2;
                 }
                 else
                 {
                     Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage2_10_ms;
+                    Lag_CB_ptr = SilkTables.silk_CB_lags_stage2_10_ms;
                 }
             }
             else
             {
                 if (nb_subfr == SilkConstants.PE_MAX_NB_SUBFR)
                 {
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage3;
+                    Lag_CB_ptr = SilkTables.silk_CB_lags_stage3;
                 }
                 else
                 {
                     Inlines.OpusAssert(nb_subfr == SilkConstants.PE_MAX_NB_SUBFR >> 1);
-                    Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms;
+                    Lag_CB_ptr = SilkTables.silk_CB_lags_stage3_10_ms;
                 }
             }
 

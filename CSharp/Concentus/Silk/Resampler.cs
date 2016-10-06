@@ -105,7 +105,7 @@ namespace Concentus.Silk
                     Inlines.OpusAssert(false);
                     return -1;
                 }
-                S.inputDelay = Tables.delay_matrix_enc[rateID(Fs_Hz_in),rateID(Fs_Hz_out)];
+                S.inputDelay = SilkTables.delay_matrix_enc[rateID(Fs_Hz_in),rateID(Fs_Hz_out)];
             }
             else {
                 if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000) ||
@@ -114,7 +114,7 @@ namespace Concentus.Silk
                     Inlines.OpusAssert(false);
                     return -1;
                 }
-                S.inputDelay = Tables.delay_matrix_dec[rateID(Fs_Hz_in),rateID(Fs_Hz_out)];
+                S.inputDelay = SilkTables.delay_matrix_dec[rateID(Fs_Hz_in),rateID(Fs_Hz_out)];
             }
 
             S.Fs_in_kHz = Inlines.silk_DIV32_16(Fs_Hz_in, 1000);
@@ -147,37 +147,37 @@ namespace Concentus.Silk
                 {             /* Fs_out : Fs_in = 3 : 4 */
                     S.FIR_Fracs = 3;
                     S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR0;
-                    S.Coefs = Tables.silk_Resampler_3_4_COEFS;
+                    S.Coefs = SilkTables.silk_Resampler_3_4_COEFS;
                 }
                 else if (Inlines.silk_MUL(Fs_Hz_out, 3) == Inlines.silk_MUL(Fs_Hz_in, 2))
                 {      /* Fs_out : Fs_in = 2 : 3 */
                     S.FIR_Fracs = 2;
                     S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR0;
-                    S.Coefs = Tables.silk_Resampler_2_3_COEFS;
+                    S.Coefs = SilkTables.silk_Resampler_2_3_COEFS;
                 }
                 else if (Inlines.silk_MUL(Fs_Hz_out, 2) == Fs_Hz_in)
                 {                     /* Fs_out : Fs_in = 1 : 2 */
                     S.FIR_Fracs = 1;
                     S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR1;
-                    S.Coefs = Tables.silk_Resampler_1_2_COEFS;
+                    S.Coefs = SilkTables.silk_Resampler_1_2_COEFS;
                 }
                 else if (Inlines.silk_MUL(Fs_Hz_out, 3) == Fs_Hz_in)
                 {                     /* Fs_out : Fs_in = 1 : 3 */
                     S.FIR_Fracs = 1;
                     S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR2;
-                    S.Coefs = Tables.silk_Resampler_1_3_COEFS;
+                    S.Coefs = SilkTables.silk_Resampler_1_3_COEFS;
                 }
                 else if (Inlines.silk_MUL(Fs_Hz_out, 4) == Fs_Hz_in)
                 {                     /* Fs_out : Fs_in = 1 : 4 */
                     S.FIR_Fracs = 1;
                     S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR2;
-                    S.Coefs = Tables.silk_Resampler_1_4_COEFS;
+                    S.Coefs = SilkTables.silk_Resampler_1_4_COEFS;
                 }
                 else if (Inlines.silk_MUL(Fs_Hz_out, 6) == Fs_Hz_in)
                 {                     /* Fs_out : Fs_in = 1 : 6 */
                     S.FIR_Fracs = 1;
                     S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR2;
-                    S.Coefs = Tables.silk_Resampler_1_6_COEFS;
+                    S.Coefs = SilkTables.silk_Resampler_1_6_COEFS;
                 }
                 else
                 {
@@ -277,8 +277,8 @@ namespace Concentus.Silk
             int k, len2 = Inlines.silk_RSHIFT32(inLen, 1);
             int in32, out32, Y, X;
 
-            Inlines.OpusAssert(Tables.silk_resampler_down2_0 > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_down2_1 < 0);
+            Inlines.OpusAssert(SilkTables.silk_resampler_down2_0 > 0);
+            Inlines.OpusAssert(SilkTables.silk_resampler_down2_1 < 0);
 
             /* Internal variables and state are in Q10 format */
             for (k = 0; k < len2; k++)
@@ -288,7 +288,7 @@ namespace Concentus.Silk
 
                 /* All-pass section for even input sample */
                 Y = Inlines.silk_SUB32(in32, S[0]);
-                X = Inlines.silk_SMLAWB(Y, Y, Tables.silk_resampler_down2_1);
+                X = Inlines.silk_SMLAWB(Y, Y, SilkTables.silk_resampler_down2_1);
                 out32 = Inlines.silk_ADD32(S[0], X);
                 S[0] = Inlines.silk_ADD32(in32, X);
 
@@ -297,7 +297,7 @@ namespace Concentus.Silk
 
                 /* All-pass section for odd input sample, and add to output of previous section */
                 Y = Inlines.silk_SUB32(in32, S[1]);
-                X = Inlines.silk_SMULWB(Y, Tables.silk_resampler_down2_0);
+                X = Inlines.silk_SMULWB(Y, SilkTables.silk_resampler_down2_0);
                 out32 = Inlines.silk_ADD32(out32, S[1]);
                 out32 = Inlines.silk_ADD32(out32, X);
                 S[1] = Inlines.silk_ADD32(in32, X);
@@ -336,7 +336,7 @@ namespace Concentus.Silk
 
                 /* Second-order AR filter (output in Q8) */
                 silk_resampler_private_AR2(S, ORDER_FIR, buf, ORDER_FIR, input, input_ptr,
-                    Tables.silk_Resampler_2_3_COEFS_LQ, nSamplesIn);
+                    SilkTables.silk_Resampler_2_3_COEFS_LQ, nSamplesIn);
 
                 /* Interpolate filtered signal */
                 buf_ptr = 0;
@@ -344,18 +344,18 @@ namespace Concentus.Silk
                 while (counter > 2)
                 {
                     /* Inner product */
-                    res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr], Tables.silk_Resampler_2_3_COEFS_LQ[2]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 1], Tables.silk_Resampler_2_3_COEFS_LQ[3]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 2], Tables.silk_Resampler_2_3_COEFS_LQ[5]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 3], Tables.silk_Resampler_2_3_COEFS_LQ[4]);
+                    res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr], SilkTables.silk_Resampler_2_3_COEFS_LQ[2]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 1], SilkTables.silk_Resampler_2_3_COEFS_LQ[3]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 2], SilkTables.silk_Resampler_2_3_COEFS_LQ[5]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 3], SilkTables.silk_Resampler_2_3_COEFS_LQ[4]);
 
                     /* Scale down, saturate and store in output array */
                     output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
 
-                    res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr + 1], Tables.silk_Resampler_2_3_COEFS_LQ[4]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 2], Tables.silk_Resampler_2_3_COEFS_LQ[5]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 3], Tables.silk_Resampler_2_3_COEFS_LQ[3]);
-                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 4], Tables.silk_Resampler_2_3_COEFS_LQ[2]);
+                    res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr + 1], SilkTables.silk_Resampler_2_3_COEFS_LQ[4]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 2], SilkTables.silk_Resampler_2_3_COEFS_LQ[5]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 3], SilkTables.silk_Resampler_2_3_COEFS_LQ[3]);
+                    res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 4], SilkTables.silk_Resampler_2_3_COEFS_LQ[2]);
 
                     /* Scale down, saturate and store in output array */
                     output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
@@ -599,14 +599,14 @@ namespace Concentus.Silk
                 table_index = Inlines.silk_SMULWB(index_Q16 & 0xFFFF, 12);
                 buf_ptr = index_Q16 >> 16;
 
-                res_Q15 = Inlines.silk_SMULBB(buf[buf_ptr], Tables.silk_resampler_frac_FIR_12[table_index, 0]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 1], Tables.silk_resampler_frac_FIR_12[table_index, 1]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 2], Tables.silk_resampler_frac_FIR_12[table_index, 2]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 3], Tables.silk_resampler_frac_FIR_12[table_index, 3]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 4], Tables.silk_resampler_frac_FIR_12[11 - table_index, 3]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 5], Tables.silk_resampler_frac_FIR_12[11 - table_index, 2]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 6], Tables.silk_resampler_frac_FIR_12[11 - table_index, 1]);
-                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 7], Tables.silk_resampler_frac_FIR_12[11 - table_index, 0]);
+                res_Q15 = Inlines.silk_SMULBB(buf[buf_ptr], SilkTables.silk_resampler_frac_FIR_12[table_index, 0]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 1], SilkTables.silk_resampler_frac_FIR_12[table_index, 1]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 2], SilkTables.silk_resampler_frac_FIR_12[table_index, 2]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 3], SilkTables.silk_resampler_frac_FIR_12[table_index, 3]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 4], SilkTables.silk_resampler_frac_FIR_12[11 - table_index, 3]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 5], SilkTables.silk_resampler_frac_FIR_12[11 - table_index, 2]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 6], SilkTables.silk_resampler_frac_FIR_12[11 - table_index, 1]);
+                res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 7], SilkTables.silk_resampler_frac_FIR_12[11 - table_index, 0]);
                 output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q15, 15));
             }
             return output_ptr;
@@ -684,12 +684,12 @@ namespace Concentus.Silk
             int k;
             int in32, out32_1, out32_2, Y, X;
 
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[0] > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[1] > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_0[2] < 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[0] > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[1] > 0);
-            Inlines.OpusAssert(Tables.silk_resampler_up2_hq_1[2] < 0);
+            Inlines.OpusAssert(SilkTables.silk_resampler_up2_hq_0[0] > 0);
+            Inlines.OpusAssert(SilkTables.silk_resampler_up2_hq_0[1] > 0);
+            Inlines.OpusAssert(SilkTables.silk_resampler_up2_hq_0[2] < 0);
+            Inlines.OpusAssert(SilkTables.silk_resampler_up2_hq_1[0] > 0);
+            Inlines.OpusAssert(SilkTables.silk_resampler_up2_hq_1[1] > 0);
+            Inlines.OpusAssert(SilkTables.silk_resampler_up2_hq_1[2] < 0);
 
             /* Internal variables and state are in Q10 format */
             for (k = 0; k < len; k++)
@@ -699,19 +699,19 @@ namespace Concentus.Silk
 
                 /* First all-pass section for even output sample */
                 Y = Inlines.silk_SUB32(in32, S[0]);
-                X = Inlines.silk_SMULWB(Y, Tables.silk_resampler_up2_hq_0[0]);
+                X = Inlines.silk_SMULWB(Y, SilkTables.silk_resampler_up2_hq_0[0]);
                 out32_1 = Inlines.silk_ADD32(S[0], X);
                 S[0] = Inlines.silk_ADD32(in32, X);
 
                 /* Second all-pass section for even output sample */
                 Y = Inlines.silk_SUB32(out32_1, S[1]);
-                X = Inlines.silk_SMULWB(Y, Tables.silk_resampler_up2_hq_0[1]);
+                X = Inlines.silk_SMULWB(Y, SilkTables.silk_resampler_up2_hq_0[1]);
                 out32_2 = Inlines.silk_ADD32(S[1], X);
                 S[1] = Inlines.silk_ADD32(out32_1, X);
 
                 /* Third all-pass section for even output sample */
                 Y = Inlines.silk_SUB32(out32_2, S[2]);
-                X = Inlines.silk_SMLAWB(Y, Y, Tables.silk_resampler_up2_hq_0[2]);
+                X = Inlines.silk_SMLAWB(Y, Y, SilkTables.silk_resampler_up2_hq_0[2]);
                 out32_1 = Inlines.silk_ADD32(S[2], X);
                 S[2] = Inlines.silk_ADD32(out32_2, X);
 
@@ -720,19 +720,19 @@ namespace Concentus.Silk
 
                 /* First all-pass section for odd output sample */
                 Y = Inlines.silk_SUB32(in32, S[3]);
-                X = Inlines.silk_SMULWB(Y, Tables.silk_resampler_up2_hq_1[0]);
+                X = Inlines.silk_SMULWB(Y, SilkTables.silk_resampler_up2_hq_1[0]);
                 out32_1 = Inlines.silk_ADD32(S[3], X);
                 S[3] = Inlines.silk_ADD32(in32, X);
 
                 /* Second all-pass section for odd output sample */
                 Y = Inlines.silk_SUB32(out32_1, S[4]);
-                X = Inlines.silk_SMULWB(Y, Tables.silk_resampler_up2_hq_1[1]);
+                X = Inlines.silk_SMULWB(Y, SilkTables.silk_resampler_up2_hq_1[1]);
                 out32_2 = Inlines.silk_ADD32(S[4], X);
                 S[4] = Inlines.silk_ADD32(out32_1, X);
 
                 /* Third all-pass section for odd output sample */
                 Y = Inlines.silk_SUB32(out32_2, S[5]);
-                X = Inlines.silk_SMLAWB(Y, Y, Tables.silk_resampler_up2_hq_1[2]);
+                X = Inlines.silk_SMLAWB(Y, Y, SilkTables.silk_resampler_up2_hq_1[2]);
                 out32_1 = Inlines.silk_ADD32(S[5], X);
                 S[5] = Inlines.silk_ADD32(out32_2, X);
 

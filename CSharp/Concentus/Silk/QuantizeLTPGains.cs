@@ -74,10 +74,10 @@ namespace Concentus.Silk
                    such as state rescaling/rewhitening. */
                 int gain_safety = ((int)((0.4f) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(0.4f, 7)*/;
 
-                cl_ptr_Q5 = Tables.silk_LTP_gain_BITS_Q5_ptrs[k];
-                cbk_ptr_Q7 = Tables.silk_LTP_vq_ptrs_Q7[k];
-                cbk_gain_ptr_Q7 = Tables.silk_LTP_vq_gain_ptrs_Q7[k];
-                cbk_size = Tables.silk_LTP_vq_sizes[k];
+                cl_ptr_Q5 = SilkTables.silk_LTP_gain_BITS_Q5_ptrs[k];
+                cbk_ptr_Q7 = SilkTables.silk_LTP_vq_ptrs_Q7[k];
+                cbk_gain_ptr_Q7 = SilkTables.silk_LTP_vq_gain_ptrs_Q7[k];
+                cbk_size = SilkTables.silk_LTP_vq_sizes[k];
 
                 /* Set up pointer to first subframe */
                 W_Q18_ptr = 0;
@@ -132,13 +132,13 @@ namespace Concentus.Silk
                 }
 
                 /* Break early in low-complexity mode if rate distortion is below threshold */
-                if (lowComplexity != 0 && (rate_dist_Q14 < Tables.silk_LTP_gain_middle_avg_RD_Q14))
+                if (lowComplexity != 0 && (rate_dist_Q14 < SilkTables.silk_LTP_gain_middle_avg_RD_Q14))
                 {
                     break;
                 }
             }
 
-            cbk_ptr_Q7 = Tables.silk_LTP_vq_ptrs_Q7[periodicity_index.Val];
+            cbk_ptr_Q7 = SilkTables.silk_LTP_vq_ptrs_Q7[periodicity_index.Val];
             for (j = 0; j < nb_subfr; j++)
             {
                 for (k = 0; k < SilkConstants.LTP_ORDER; k++)

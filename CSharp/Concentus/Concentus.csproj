@@ -57,7 +57,7 @@
     <Compile Include="Celt\Structs\FFTState.cs" />
     <Compile Include="Celt\Structs\MDCTLookup.cs" />
     <Compile Include="Celt\Structs\PulseCache.cs" />
-    <Compile Include="Celt\Tables.cs" />
+    <Compile Include="Celt\CeltTables.cs" />
     <Compile Include="Celt\VQ.cs" />
     <Compile Include="Common\Autocorrelation.cs" />
     <Compile Include="Celt\CeltPitchXCorr.cs" />
@@ -94,7 +94,7 @@
     <Compile Include="Opus\Structs\StereoWidthState.cs" />
     <Compile Include="Opus\Structs\TonalityAnalysisState.cs" />
     <Compile Include="Opus\Structs\VorbisLayout.cs" />
-    <Compile Include="Opus\Tables.cs" />
+    <Compile Include="Opus\OpusTables.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Silk\ApplySineWindow.cs" />
     <Compile Include="Silk\BurgModified.cs" />
@@ -162,7 +162,7 @@
     <Compile Include="Silk\Structs\StereoDecodeState.cs" />
     <Compile Include="Silk\Structs\StereoEncodeState.cs" />
     <Compile Include="Silk\SumSqrShift.cs" />
-    <Compile Include="Silk\Tables.cs" />
+    <Compile Include="Silk\SilkTables.cs" />
     <Compile Include="Silk\TuningParameters.cs" />
     <Compile Include="Silk\VoiceActivityDetection.cs" />
     <Compile Include="Silk\VQ_WMat_EC.cs" />

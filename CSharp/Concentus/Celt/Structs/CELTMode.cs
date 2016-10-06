@@ -85,33 +85,33 @@ namespace Concentus.Celt.Structs
             nbEBands = 21,
             effEBands = 21,
             preemph = new int[] { 27853, 0, 4096, 8192 },
-            eBands = Tables.eband5ms,
+            eBands = CeltTables.eband5ms,
             maxLM = 3,
             nbShortMdcts = 8,
             shortMdctSize = 120,
             nbAllocVectors = 11,
-            allocVectors = Tables.band_allocation,
-            logN = Tables.logN400,
-            window = Tables.window120,
+            allocVectors = CeltTables.band_allocation,
+            logN = CeltTables.logN400,
+            window = CeltTables.window120,
             mdct = new MDCTLookup()
             {
                 n = 1920,
                 maxshift = 3,
                 kfft = new FFTState[]
                 {
-                    Tables.fft_state48000_960_0,
-                    Tables.fft_state48000_960_1,
-                    Tables.fft_state48000_960_2,
-                    Tables.fft_state48000_960_3,
+                    CeltTables.fft_state48000_960_0,
+                    CeltTables.fft_state48000_960_1,
+                    CeltTables.fft_state48000_960_2,
+                    CeltTables.fft_state48000_960_3,
                 },
-                trig = Tables.mdct_twiddles960
+                trig = CeltTables.mdct_twiddles960
             },
             cache = new PulseCache()
             {
                 size = 392,
-                index = Tables.cache_index50,
-                bits = Tables.cache_bits50,
-                caps = Tables.cache_caps50,
+                index = CeltTables.cache_index50,
+                bits = CeltTables.cache_bits50,
+                caps = CeltTables.cache_caps50,
             }
         };
     }

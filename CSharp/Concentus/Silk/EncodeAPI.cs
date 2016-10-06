@@ -394,7 +394,7 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[n].LBRR_flag = (sbyte)(LBRR_symbol > 0 ? 1 : 0);
                             if (LBRR_symbol != 0 && psEnc.state_Fxx[n].nFramesPerPacket > 1)
                             {
-                                psRangeEnc.enc_icdf( LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2], 8);
+                                psRangeEnc.enc_icdf( LBRR_symbol - 1, SilkTables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2], 8);
                             }
                         }
 

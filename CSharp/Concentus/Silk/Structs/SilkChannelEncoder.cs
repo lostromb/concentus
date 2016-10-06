@@ -409,10 +409,10 @@ namespace Concentus.Silk.Structs
                     this.pitch_LPC_win_length = Inlines.silk_SMULBB(SilkConstants.FIND_PITCH_LPC_WIN_MS_2_SF, fs_kHz);
                     if (this.fs_kHz == 8)
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_NB_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_10_ms_NB_iCDF;
                     }
                     else {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_10_ms_iCDF;
                     }
                 }
                 else {
@@ -422,10 +422,10 @@ namespace Concentus.Silk.Structs
                     this.pitch_LPC_win_length = Inlines.silk_SMULBB(SilkConstants.FIND_PITCH_LPC_WIN_MS, fs_kHz);
                     if (this.fs_kHz == 8)
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_NB_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_NB_iCDF;
                     }
                     else {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_iCDF;
                     }
                 }
                 this.PacketSize_ms = PacketSize_ms;
@@ -461,32 +461,32 @@ namespace Concentus.Silk.Structs
                 {
                     if (this.nb_subfr == SilkConstants.MAX_NB_SUBFR)
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_NB_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_NB_iCDF;
                     }
                     else {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_NB_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_10_ms_NB_iCDF;
                     }
                 }
                 else {
                     if (this.nb_subfr == SilkConstants.MAX_NB_SUBFR)
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_iCDF;
                     }
                     else
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_10_ms_iCDF;
                     }
                 }
 
                 if (this.fs_kHz == 8 || this.fs_kHz == 12)
                 {
                     this.predictLPCOrder = SilkConstants.MIN_LPC_ORDER;
-                    this.psNLSF_CB = Tables.silk_NLSF_CB_NB_MB;
+                    this.psNLSF_CB = SilkTables.silk_NLSF_CB_NB_MB;
                 }
                 else
                 {
                     this.predictLPCOrder = SilkConstants.MAX_LPC_ORDER;
-                    this.psNLSF_CB = Tables.silk_NLSF_CB_WB;
+                    this.psNLSF_CB = SilkTables.silk_NLSF_CB_WB;
                 }
 
                 this.subfr_length = SilkConstants.SUB_FRAME_LENGTH_MS * fs_kHz;
@@ -507,17 +507,17 @@ namespace Concentus.Silk.Structs
                 if (this.fs_kHz == 16)
                 {
                     this.mu_LTP_Q9 = ((int)((TuningParameters.MU_LTP_QUANT_WB) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_WB, 9)*/;
-                    this.pitch_lag_low_bits_iCDF = Tables.silk_uniform8_iCDF;
+                    this.pitch_lag_low_bits_iCDF = SilkTables.silk_uniform8_iCDF;
                 }
                 else if (this.fs_kHz == 12)
                 {
                     this.mu_LTP_Q9 = ((int)((TuningParameters.MU_LTP_QUANT_MB) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_MB, 9)*/;
-                    this.pitch_lag_low_bits_iCDF = Tables.silk_uniform6_iCDF;
+                    this.pitch_lag_low_bits_iCDF = SilkTables.silk_uniform6_iCDF;
                 }
                 else
                 {
                     this.mu_LTP_Q9 = ((int)((TuningParameters.MU_LTP_QUANT_NB) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MU_LTP_QUANT_NB, 9)*/;
-                    this.pitch_lag_low_bits_iCDF = Tables.silk_uniform4_iCDF;
+                    this.pitch_lag_low_bits_iCDF = SilkTables.silk_uniform4_iCDF;
                 }
             }
 
@@ -812,14 +812,14 @@ namespace Concentus.Silk.Structs
                 /* If new TargetRate_bps, translate to SNR_dB value */
                 if (this.fs_kHz == 8)
                 {
-                    rateTable = Tables.silk_TargetRate_table_NB;
+                    rateTable = SilkTables.silk_TargetRate_table_NB;
                 }
                 else if (this.fs_kHz == 12)
                 {
-                    rateTable = Tables.silk_TargetRate_table_MB;
+                    rateTable = SilkTables.silk_TargetRate_table_MB;
                 }
                 else {
-                    rateTable = Tables.silk_TargetRate_table_WB;
+                    rateTable = SilkTables.silk_TargetRate_table_WB;
                 }
 
                 /* Reduce bitrate for 10 ms modes in these calculations */
@@ -835,7 +835,7 @@ namespace Concentus.Silk.Structs
                     {
                         frac_Q6 = Inlines.silk_DIV32(Inlines.silk_LSHIFT(TargetRate_bps - rateTable[k - 1], 6),
                                                          rateTable[k] - rateTable[k - 1]);
-                        this.SNR_dB_Q7 = Inlines.silk_LSHIFT(Tables.silk_SNR_table_Q1[k - 1], 6) + Inlines.silk_MUL(frac_Q6, Tables.silk_SNR_table_Q1[k] - Tables.silk_SNR_table_Q1[k - 1]);
+                        this.SNR_dB_Q7 = Inlines.silk_LSHIFT(SilkTables.silk_SNR_table_Q1[k - 1], 6) + Inlines.silk_MUL(frac_Q6, SilkTables.silk_SNR_table_Q1[k] - SilkTables.silk_SNR_table_Q1[k - 1]);
                         break;
                     }
                 }

@@ -60,7 +60,7 @@ namespace Concentus.Silk
                 /* Default is minimum scaling */
                 psEnc.indices.LTP_scaleIndex = 0;
             }
-            psEncCtrl.LTP_scale_Q14 = Tables.silk_LTPScales_table_Q14[psEnc.indices.LTP_scaleIndex];
+            psEncCtrl.LTP_scale_Q14 = SilkTables.silk_LTPScales_table_Q14[psEnc.indices.LTP_scaleIndex];
         }
     }
 }

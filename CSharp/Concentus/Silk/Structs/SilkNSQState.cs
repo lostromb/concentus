@@ -183,7 +183,7 @@ namespace Concentus.Silk.Structs
 
             Inlines.OpusAssert(this.prev_gain_Q16 != 0);
 
-            offset_Q10 = Tables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
+            offset_Q10 = SilkTables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
 
             if (psIndices.NLSFInterpCoef_Q2 == 4)
             {
@@ -637,7 +637,7 @@ namespace Concentus.Silk.Structs
                 Array.Copy(this.sAR2_Q14, psDD.sAR2_Q14, psEncC.shapingLPCOrder);
             }
 
-            offset_Q10 = Tables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
+            offset_Q10 = SilkTables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
             smpl_buf_idx = 0; /* index of oldest samples */
 
             decisionDelay = Inlines.silk_min_int(SilkConstants.DECISION_DELAY, psEncC.subfr_length);

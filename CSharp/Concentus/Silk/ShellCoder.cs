@@ -87,7 +87,7 @@ namespace Concentus.Silk
         {
             if (p > 0)
             {
-                psRangeEnc.enc_icdf( p_child1, shell_table, Tables.silk_shell_code_table_offsets[p], 8);
+                psRangeEnc.enc_icdf( p_child1, shell_table, SilkTables.silk_shell_code_table_offsets[p], 8);
             }
         }
 
@@ -110,7 +110,7 @@ namespace Concentus.Silk
         {
             if (p > 0)
             {
-                p_child1[child1_ptr] = (short)(psRangeDec.dec_icdf(shell_table, (Tables.silk_shell_code_table_offsets[p]), 8));
+                p_child1[child1_ptr] = (short)(psRangeDec.dec_icdf(shell_table, (SilkTables.silk_shell_code_table_offsets[p]), 8));
                 p_child2[p_child2_ptr] = (short)(p - p_child1[child1_ptr]);
             }
             else
@@ -141,27 +141,27 @@ namespace Concentus.Silk
             combine_pulses(pulses3, pulses2, 2);
             combine_pulses(pulses4, pulses3, 1);
 
-            encode_split(psRangeEnc, pulses3[0], pulses4[0], Tables.silk_shell_code_table3);
+            encode_split(psRangeEnc, pulses3[0], pulses4[0], SilkTables.silk_shell_code_table3);
 
-            encode_split(psRangeEnc, pulses2[0], pulses3[0], Tables.silk_shell_code_table2);
+            encode_split(psRangeEnc, pulses2[0], pulses3[0], SilkTables.silk_shell_code_table2);
 
-            encode_split(psRangeEnc, pulses1[0], pulses2[0], Tables.silk_shell_code_table1);
-            encode_split(psRangeEnc, pulses0[pulses0_ptr], pulses1[0], Tables.silk_shell_code_table0);
-            encode_split(psRangeEnc, pulses0[pulses0_ptr + 2], pulses1[1], Tables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses1[0], pulses2[0], SilkTables.silk_shell_code_table1);
+            encode_split(psRangeEnc, pulses0[pulses0_ptr], pulses1[0], SilkTables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses0[pulses0_ptr + 2], pulses1[1], SilkTables.silk_shell_code_table0);
 
-            encode_split(psRangeEnc, pulses1[2], pulses2[1], Tables.silk_shell_code_table1);
-            encode_split(psRangeEnc, pulses0[pulses0_ptr + 4], pulses1[2], Tables.silk_shell_code_table0);
-            encode_split(psRangeEnc, pulses0[pulses0_ptr + 6], pulses1[3], Tables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses1[2], pulses2[1], SilkTables.silk_shell_code_table1);
+            encode_split(psRangeEnc, pulses0[pulses0_ptr + 4], pulses1[2], SilkTables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses0[pulses0_ptr + 6], pulses1[3], SilkTables.silk_shell_code_table0);
 
-            encode_split(psRangeEnc, pulses2[2], pulses3[1], Tables.silk_shell_code_table2);
+            encode_split(psRangeEnc, pulses2[2], pulses3[1], SilkTables.silk_shell_code_table2);
 
-            encode_split(psRangeEnc, pulses1[4], pulses2[2], Tables.silk_shell_code_table1);
-            encode_split(psRangeEnc, pulses0[pulses0_ptr + 8], pulses1[4], Tables.silk_shell_code_table0);
-            encode_split(psRangeEnc, pulses0[pulses0_ptr + 10], pulses1[5], Tables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses1[4], pulses2[2], SilkTables.silk_shell_code_table1);
+            encode_split(psRangeEnc, pulses0[pulses0_ptr + 8], pulses1[4], SilkTables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses0[pulses0_ptr + 10], pulses1[5], SilkTables.silk_shell_code_table0);
 
-            encode_split(psRangeEnc, pulses1[6], pulses2[3], Tables.silk_shell_code_table1);
-            encode_split(psRangeEnc, pulses0[pulses0_ptr + 12], pulses1[6], Tables.silk_shell_code_table0);
-            encode_split(psRangeEnc, pulses0[pulses0_ptr + 14], pulses1[7], Tables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses1[6], pulses2[3], SilkTables.silk_shell_code_table1);
+            encode_split(psRangeEnc, pulses0[pulses0_ptr + 12], pulses1[6], SilkTables.silk_shell_code_table0);
+            encode_split(psRangeEnc, pulses0[pulses0_ptr + 14], pulses1[7], SilkTables.silk_shell_code_table0);
         }
 
 
@@ -180,27 +180,27 @@ namespace Concentus.Silk
             /* this function operates on one shell code frame of 16 pulses */
             Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
 
-            decode_split(pulses3, 0, pulses3, 1, psRangeDec, pulses4, Tables.silk_shell_code_table3);
+            decode_split(pulses3, 0, pulses3, 1, psRangeDec, pulses4, SilkTables.silk_shell_code_table3);
 
-            decode_split(pulses2, 0, pulses2, 1, psRangeDec, pulses3[0], Tables.silk_shell_code_table2);
+            decode_split(pulses2, 0, pulses2, 1, psRangeDec, pulses3[0], SilkTables.silk_shell_code_table2);
 
-            decode_split(pulses1, 0, pulses1 ,1, psRangeDec, pulses2[0], Tables.silk_shell_code_table1);
-            decode_split(pulses0, pulses0_ptr, pulses0, pulses0_ptr + 1, psRangeDec, pulses1[0], Tables.silk_shell_code_table0);
-            decode_split(pulses0, pulses0_ptr + 2, pulses0, pulses0_ptr + 3, psRangeDec, pulses1[1], Tables.silk_shell_code_table0);
+            decode_split(pulses1, 0, pulses1 ,1, psRangeDec, pulses2[0], SilkTables.silk_shell_code_table1);
+            decode_split(pulses0, pulses0_ptr, pulses0, pulses0_ptr + 1, psRangeDec, pulses1[0], SilkTables.silk_shell_code_table0);
+            decode_split(pulses0, pulses0_ptr + 2, pulses0, pulses0_ptr + 3, psRangeDec, pulses1[1], SilkTables.silk_shell_code_table0);
 
-            decode_split(pulses1, 2, pulses1, 3, psRangeDec, pulses2[1], Tables.silk_shell_code_table1);
-            decode_split(pulses0, pulses0_ptr + 4, pulses0, pulses0_ptr + 5, psRangeDec, pulses1[2], Tables.silk_shell_code_table0);
-            decode_split(pulses0, pulses0_ptr + 6, pulses0, pulses0_ptr + 7, psRangeDec, pulses1[3], Tables.silk_shell_code_table0);
+            decode_split(pulses1, 2, pulses1, 3, psRangeDec, pulses2[1], SilkTables.silk_shell_code_table1);
+            decode_split(pulses0, pulses0_ptr + 4, pulses0, pulses0_ptr + 5, psRangeDec, pulses1[2], SilkTables.silk_shell_code_table0);
+            decode_split(pulses0, pulses0_ptr + 6, pulses0, pulses0_ptr + 7, psRangeDec, pulses1[3], SilkTables.silk_shell_code_table0);
 
-            decode_split(pulses2, 2, pulses2, 3, psRangeDec, pulses3[1], Tables.silk_shell_code_table2);
+            decode_split(pulses2, 2, pulses2, 3, psRangeDec, pulses3[1], SilkTables.silk_shell_code_table2);
 
-            decode_split(pulses1, 4, pulses1 ,5, psRangeDec, pulses2[2], Tables.silk_shell_code_table1);
-            decode_split(pulses0, pulses0_ptr + 8, pulses0, pulses0_ptr + 9, psRangeDec, pulses1[4], Tables.silk_shell_code_table0);
-            decode_split(pulses0, pulses0_ptr + 10, pulses0, pulses0_ptr + 11, psRangeDec, pulses1[5], Tables.silk_shell_code_table0);
+            decode_split(pulses1, 4, pulses1 ,5, psRangeDec, pulses2[2], SilkTables.silk_shell_code_table1);
+            decode_split(pulses0, pulses0_ptr + 8, pulses0, pulses0_ptr + 9, psRangeDec, pulses1[4], SilkTables.silk_shell_code_table0);
+            decode_split(pulses0, pulses0_ptr + 10, pulses0, pulses0_ptr + 11, psRangeDec, pulses1[5], SilkTables.silk_shell_code_table0);
 
-            decode_split(pulses1, 6, pulses1, 7, psRangeDec, pulses2[3], Tables.silk_shell_code_table1);
-            decode_split(pulses0, pulses0_ptr + 12, pulses0, pulses0_ptr + 13, psRangeDec, pulses1[6], Tables.silk_shell_code_table0);
-            decode_split(pulses0, pulses0_ptr + 14, pulses0, pulses0_ptr + 15, psRangeDec, pulses1[7], Tables.silk_shell_code_table0);
+            decode_split(pulses1, 6, pulses1, 7, psRangeDec, pulses2[3], SilkTables.silk_shell_code_table1);
+            decode_split(pulses0, pulses0_ptr + 12, pulses0, pulses0_ptr + 13, psRangeDec, pulses1[6], SilkTables.silk_shell_code_table0);
+            decode_split(pulses0, pulses0_ptr + 14, pulses0, pulses0_ptr + 15, psRangeDec, pulses1[7], SilkTables.silk_shell_code_table0);
         }
     }
 }

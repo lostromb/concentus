@@ -201,7 +201,7 @@ namespace Concentus.Silk
                             channel_state[n].LBRR_flags[0] = 1;
                         }
                         else {
-                            LBRR_symbol = psRangeDec.dec_icdf(Tables.silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2], 8) + 1;
+                            LBRR_symbol = psRangeDec.dec_icdf(SilkTables.silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2], 8) + 1;
                             for (i = 0; i < channel_state[n].nFramesPerPacket; i++)
                             {
                                 channel_state[n].LBRR_flags[i] = Inlines.silk_RSHIFT(LBRR_symbol, i) & 1;

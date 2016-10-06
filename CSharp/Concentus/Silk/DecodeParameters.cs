@@ -112,7 +112,7 @@ namespace Concentus.Silk
                 DecodePitch.silk_decode_pitch(psDec.indices.lagIndex, psDec.indices.contourIndex, psDecCtrl.pitchL, psDec.fs_kHz, psDec.nb_subfr);
 
                 /* Decode Codebook Index */
-                cbk_ptr_Q7 = Tables.silk_LTP_vq_ptrs_Q7[psDec.indices.PERIndex]; /* set pointer to start of codebook */
+                cbk_ptr_Q7 = SilkTables.silk_LTP_vq_ptrs_Q7[psDec.indices.PERIndex]; /* set pointer to start of codebook */
 
                 for (k = 0; k < psDec.nb_subfr; k++)
                 {
@@ -127,7 +127,7 @@ namespace Concentus.Silk
                 /* Decode LTP scaling */
                 /**********************/
                 Ix = psDec.indices.LTP_scaleIndex;
-                psDecCtrl.LTP_scale_Q14 = Tables.silk_LTPScales_table_Q14[Ix];
+                psDecCtrl.LTP_scale_Q14 = SilkTables.silk_LTPScales_table_Q14[Ix];
             }
             else
             {

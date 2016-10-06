@@ -74,7 +74,7 @@ namespace Concentus.Silk
             res_Q14 = new int[psDec.subfr_length];
             sLPC_Q14 = new int[psDec.subfr_length + SilkConstants.MAX_LPC_ORDER];
 
-            offset_Q10 = Tables.silk_Quantization_Offsets_Q10[psDec.indices.signalType >> 1][psDec.indices.quantOffsetType];
+            offset_Q10 = SilkTables.silk_Quantization_Offsets_Q10[psDec.indices.signalType >> 1][psDec.indices.quantOffsetType];
 
             if (psDec.indices.NLSFInterpCoef_Q2 < 1 << 2)
             {

@@ -170,7 +170,7 @@ namespace Concentus.Celt
         /*U(N,K) = U(K,N) := N>0?K>0?U(N-1,K)+U(N,K-1)+U(N-1,K-1):0:K>0?1:0*/
         private static long CELT_PVQ_U(int _n, int _k)
         {
-            return Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[Inlines.IMIN(_n, _k)] + Inlines.IMAX(_n, _k)];
+            return CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[Inlines.IMIN(_n, _k)] + Inlines.IMAX(_n, _k)];
         }
 
 
@@ -230,12 +230,12 @@ namespace Concentus.Celt
                     int row;
                     row = CELT_PVQ_U_ROW[_n];
                     /*Are the pulses in this dimension negative?*/
-                    p = Tables.CELT_PVQ_U_DATA[row + _k + 1];
+                    p = CeltTables.CELT_PVQ_U_DATA[row + _k + 1];
                     s = 0 - (_i >= p ? 1 : 0);
                     _i = _i - Inlines.CapToUInt32(p & s);
                     /*Count how many pulses were placed in this dimension.*/
                     k0 = _k;
-                    q = Tables.CELT_PVQ_U_DATA[row + _n];
+                    q = CeltTables.CELT_PVQ_U_DATA[row + _n];
 
                     if (q > _i)
                     {
@@ -244,12 +244,12 @@ namespace Concentus.Celt
 
                         do
                         {
-                            p = Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[--_k] + _n];
+                            p = CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[--_k] + _n];
                         } while (p > _i);
                     }
                     else
                     {
-                        for (p = Tables.CELT_PVQ_U_DATA[row + _k]; p > _i; p = Tables.CELT_PVQ_U_DATA[row + _k])
+                        for (p = CeltTables.CELT_PVQ_U_DATA[row + _k]; p > _i; p = CeltTables.CELT_PVQ_U_DATA[row + _k])
                         {
                             _k--;
                         }
@@ -264,8 +264,8 @@ namespace Concentus.Celt
                 else
                 {
                     /*Are there any pulses in this dimension at all?*/
-                    p = Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[_k] + _n];
-                    q = Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[_k + 1] + _n];
+                    p = CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[_k] + _n];
+                    q = CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[_k + 1] + _n];
                     if (p <= _i && _i < q)
                     {
                         _i -= p;
@@ -280,7 +280,7 @@ namespace Concentus.Celt
                         k0 = _k;
                         do
                         {
-                            p = Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[--_k] + _n];
+                            p = CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[--_k] + _n];
                         } while (p > _i);
 
                         _i -= p;

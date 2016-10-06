@@ -834,8 +834,8 @@ namespace Concentus.Silk
                 Inlines.OpusAssert(f_int < SilkConstants.LSF_COS_TAB_SZ);
 
                 /* Read start and end value from table */
-                cos_val = Tables.silk_LSFCosTab_Q12[f_int];                /* Q12 */
-                delta = Tables.silk_LSFCosTab_Q12[f_int + 1] - cos_val;  /* Q12, with a range of 0..200 */
+                cos_val = SilkTables.silk_LSFCosTab_Q12[f_int];                /* Q12 */
+                delta = SilkTables.silk_LSFCosTab_Q12[f_int + 1] - cos_val;  /* Q12, with a range of 0..200 */
 
                 /* Linear interpolation */
                 cos_LSF_QA[ordering[k]] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_LSHIFT(cos_val, 8) + Inlines.silk_MUL(delta, f_frac), 20 - QA); /* QA */
@@ -1042,7 +1042,7 @@ namespace Concentus.Silk
             /* Find roots, alternating between P and Q */
             p = P;                          /* Pointer to polynomial */
 
-            xlo = Tables.silk_LSFCosTab_Q12[0]; /* Q12*/
+            xlo = SilkTables.silk_LSFCosTab_Q12[0]; /* Q12*/
             ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
 
             if (ylo < 0)
@@ -1062,7 +1062,7 @@ namespace Concentus.Silk
             while (true)
             {
                 /* Evaluate polynomial */
-                xhi = Tables.silk_LSFCosTab_Q12[k]; /* Q12 */
+                xhi = SilkTables.silk_LSFCosTab_Q12[k]; /* Q12 */
                 yhi = silk_A2NLSF_eval_poly(p, xhi, dd);
 
                 /* Detect zero crossing */
@@ -1131,7 +1131,7 @@ namespace Concentus.Silk
                     p = PQ[root_ix & 1];
 
                     /* Evaluate polynomial */
-                    xlo = Tables.silk_LSFCosTab_Q12[k - 1]; /* Q12*/
+                    xlo = SilkTables.silk_LSFCosTab_Q12[k - 1]; /* Q12*/
                     ylo = Inlines.silk_LSHIFT(1 - (root_ix & 2), 12);
                 }
                 else
@@ -1161,7 +1161,7 @@ namespace Concentus.Silk
 
                         silk_A2NLSF_init(a_Q16, P, Q, dd);
                         p = P;                            /* Pointer to polynomial */
-                        xlo = Tables.silk_LSFCosTab_Q12[0]; /* Q12*/
+                        xlo = SilkTables.silk_LSFCosTab_Q12[0]; /* Q12*/
                         ylo = silk_A2NLSF_eval_poly(p, xlo, dd);
                         if (ylo < 0)
                         {

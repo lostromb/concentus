@@ -128,7 +128,7 @@ namespace Concentus.Silk
             }
 
             /* Quantizer boundary adjustment */
-            quant_offset_Q10 = Tables.silk_Quantization_Offsets_Q10[psEnc.indices.signalType >> 1][psEnc.indices.quantOffsetType];
+            quant_offset_Q10 = SilkTables.silk_Quantization_Offsets_Q10[psEnc.indices.signalType >> 1][psEnc.indices.quantOffsetType];
             psEncCtrl.Lambda_Q10 = ((int)((TuningParameters.LAMBDA_OFFSET) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LAMBDA_OFFSET, 10)*/
                                   + Inlines.silk_SMULBB(((int)((TuningParameters.LAMBDA_DELAYED_DECISIONS) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LAMBDA_DELAYED_DECISIONS, 10)*/, psEnc.nStatesDelayedDecision)
                                   + Inlines.silk_SMULWB(((int)((TuningParameters.LAMBDA_SPEECH_ACT) * ((long)1 << (18)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.LAMBDA_SPEECH_ACT, 18)*/, psEnc.speech_activity_Q8)

@@ -208,7 +208,7 @@ namespace Concentus.Celt
 
                 j = M * eBands[i];
                 band_end = M * eBands[i + 1];
-                lg = Inlines.ADD16(bandLogE[bandLogE_ptr + i], Inlines.SHL16(Tables.eMeans[i], 6));
+                lg = Inlines.ADD16(bandLogE[bandLogE_ptr + i], Inlines.SHL16(CeltTables.eMeans[i], 6));
 
                 /* Handle the integer part of the log energy */
                 shift = 16 - (lg >> CeltConstants.DB_SHIFT);
@@ -550,7 +550,7 @@ namespace Concentus.Celt
                 {
                     for (j = 0; j < N0; j++)
                     {
-                        tmp[Tables.ordery_table[ordery + i] * N0 + j] = X[j * stride + i + X_ptr];
+                        tmp[CeltTables.ordery_table[ordery + i] * N0 + j] = X[j * stride + i + X_ptr];
                     }
                 }
             }
@@ -582,7 +582,7 @@ namespace Concentus.Celt
                 {
                     for (j = 0; j < N0; j++)
                     {
-                        tmp[j * stride + i] = X[Tables.ordery_table[ordery + i] * N0 + j + X_ptr];
+                        tmp[j * stride + i] = X[CeltTables.ordery_table[ordery + i] * N0 + j + X_ptr];
                     }
                 }
             }

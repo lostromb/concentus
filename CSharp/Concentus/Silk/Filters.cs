@@ -408,18 +408,18 @@ namespace Concentus.Silk
                         for (nb = 0; nb < SilkConstants.TRANSITION_NB; nb++)
                         {
                             B_Q28[nb] = Inlines.silk_SMLAWB(
-                                Tables.silk_Transition_LP_B_Q28[ind][nb],
-                                Tables.silk_Transition_LP_B_Q28[ind + 1][nb] -
-                                    Tables.silk_Transition_LP_B_Q28[ind][nb],
+                                SilkTables.silk_Transition_LP_B_Q28[ind][nb],
+                                SilkTables.silk_Transition_LP_B_Q28[ind + 1][nb] -
+                                    SilkTables.silk_Transition_LP_B_Q28[ind][nb],
                                 fac_Q16);
                         }
 
                         for (na = 0; na < SilkConstants.TRANSITION_NA; na++)
                         {
                             A_Q28[na] = Inlines.silk_SMLAWB(
-                                Tables.silk_Transition_LP_A_Q28[ind][na],
-                                Tables.silk_Transition_LP_A_Q28[ind + 1][na] -
-                                    Tables.silk_Transition_LP_A_Q28[ind][na],
+                                SilkTables.silk_Transition_LP_A_Q28[ind][na],
+                                SilkTables.silk_Transition_LP_A_Q28[ind + 1][na] -
+                                    SilkTables.silk_Transition_LP_A_Q28[ind][na],
                                 fac_Q16);
                         }
                     }
@@ -433,32 +433,32 @@ namespace Concentus.Silk
                         for (nb = 0; nb < SilkConstants.TRANSITION_NB; nb++)
                         {
                             B_Q28[nb] = Inlines.silk_SMLAWB(
-                                Tables.silk_Transition_LP_B_Q28[ind + 1][nb],
-                                Tables.silk_Transition_LP_B_Q28[ind + 1][nb] -
-                                    Tables.silk_Transition_LP_B_Q28[ind][nb],
+                                SilkTables.silk_Transition_LP_B_Q28[ind + 1][nb],
+                                SilkTables.silk_Transition_LP_B_Q28[ind + 1][nb] -
+                                    SilkTables.silk_Transition_LP_B_Q28[ind][nb],
                                 fac_Q16 - ((int)1 << 16));
                         }
 
                         for (na = 0; na < SilkConstants.TRANSITION_NA; na++)
                         {
                             A_Q28[na] = Inlines.silk_SMLAWB(
-                                Tables.silk_Transition_LP_A_Q28[ind + 1][na],
-                                Tables.silk_Transition_LP_A_Q28[ind + 1][na] -
-                                    Tables.silk_Transition_LP_A_Q28[ind][na],
+                                SilkTables.silk_Transition_LP_A_Q28[ind + 1][na],
+                                SilkTables.silk_Transition_LP_A_Q28[ind + 1][na] -
+                                    SilkTables.silk_Transition_LP_A_Q28[ind][na],
                                 fac_Q16 - ((int)1 << 16));
                         }
                     }
                 }
                 else
                 {
-                    Array.Copy(Tables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
-                    Array.Copy(Tables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
+                    Array.Copy(SilkTables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                    Array.Copy(SilkTables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
                 }
             }
             else
             {
-                Array.Copy(Tables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
-                Array.Copy(Tables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
+                Array.Copy(SilkTables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                Array.Copy(SilkTables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
             }
         }
         

@@ -38,7 +38,7 @@ namespace Concentus.Silk
     using Concentus.Silk.Structs;
     using System.Diagnostics;
 
-    internal static class Tables
+    internal static class SilkTables
     {
         /// <summary>
         /// Cosine approximation table for LSF conversion

@@ -55,21 +55,21 @@ namespace Concentus.Silk
             int low_Q13, step_Q13;
 
             // Entropy decoding
-            n = psRangeDec.dec_icdf(Tables.silk_stereo_pred_joint_iCDF, 8);
+            n = psRangeDec.dec_icdf(SilkTables.silk_stereo_pred_joint_iCDF, 8);
             ix[0][2] = Inlines.silk_DIV32_16(n, 5);
             ix[1][2] = n - 5 * ix[0][2];
             for (n = 0; n < 2; n++)
             {
-                ix[n][0] = psRangeDec.dec_icdf(Tables.silk_uniform3_iCDF, 8);
-                ix[n][1] = psRangeDec.dec_icdf(Tables.silk_uniform5_iCDF, 8);
+                ix[n][0] = psRangeDec.dec_icdf(SilkTables.silk_uniform3_iCDF, 8);
+                ix[n][1] = psRangeDec.dec_icdf(SilkTables.silk_uniform5_iCDF, 8);
             }
 
             // Dequantize
             for (n = 0; n < 2; n++)
             {
                 ix[n][0] += 3 * ix[n][2];
-                low_Q13 = Tables.silk_stereo_pred_quant_Q13[ix[n][0]];
-                step_Q13 = Inlines.silk_SMULWB(Tables.silk_stereo_pred_quant_Q13[ix[n][0] + 1] - low_Q13,
+                low_Q13 = SilkTables.silk_stereo_pred_quant_Q13[ix[n][0]];
+                step_Q13 = Inlines.silk_SMULWB(SilkTables.silk_stereo_pred_quant_Q13[ix[n][0] + 1] - low_Q13,
                     ((int)((0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16)*/);
                 pred_Q13[n] = Inlines.silk_SMLABB(low_Q13, step_Q13, 2 * ix[n][1] + 1);
             }
@@ -89,7 +89,7 @@ namespace Concentus.Silk
         )
         {
             /* Decode flag that only mid channel is coded */
-            decode_only_mid.Val = psRangeDec.dec_icdf(Tables.silk_stereo_only_code_mid_iCDF, 8);
+            decode_only_mid.Val = psRangeDec.dec_icdf(SilkTables.silk_stereo_only_code_mid_iCDF, 8);
         }
 
         /// <summary>
@@ -104,13 +104,13 @@ namespace Concentus.Silk
             /* Entropy coding */
             n = 5 * ix[0][2] + ix[1][2];
             Inlines.OpusAssert(n < 25);
-            psRangeEnc.enc_icdf( n, Tables.silk_stereo_pred_joint_iCDF, 8);
+            psRangeEnc.enc_icdf( n, SilkTables.silk_stereo_pred_joint_iCDF, 8);
             for (n = 0; n < 2; n++)
             {
                 Inlines.OpusAssert(ix[n][0] < 3);
                 Inlines.OpusAssert(ix[n][1] < SilkConstants.STEREO_QUANT_SUB_STEPS);
-                psRangeEnc.enc_icdf( ix[n][0], Tables.silk_uniform3_iCDF, 8);
-                psRangeEnc.enc_icdf( ix[n][1], Tables.silk_uniform5_iCDF, 8);
+                psRangeEnc.enc_icdf( ix[n][0], SilkTables.silk_uniform3_iCDF, 8);
+                psRangeEnc.enc_icdf( ix[n][1], SilkTables.silk_uniform5_iCDF, 8);
             }
         }
 
@@ -122,7 +122,7 @@ namespace Concentus.Silk
         internal static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, sbyte mid_only_flag)
         {
             /* Encode flag that only mid channel is coded */
-            psRangeEnc.enc_icdf( mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF, 8);
+            psRangeEnc.enc_icdf( mid_only_flag, SilkTables.silk_stereo_only_code_mid_iCDF, 8);
         }
 
         /// <summary>
@@ -506,8 +506,8 @@ namespace Concentus.Silk
                 err_min_Q13 = int.MaxValue;
                 for (i = 0; i < SilkConstants.STEREO_QUANT_TAB_SIZE - 1; i++)
                 {
-                    low_Q13 = Tables.silk_stereo_pred_quant_Q13[i];
-                    step_Q13 = Inlines.silk_SMULWB(Tables.silk_stereo_pred_quant_Q13[i + 1] - low_Q13,
+                    low_Q13 = SilkTables.silk_stereo_pred_quant_Q13[i];
+                    step_Q13 = Inlines.silk_SMULWB(SilkTables.silk_stereo_pred_quant_Q13[i + 1] - low_Q13,
                         ((int)((0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16)*/);
 
                     for (j = 0; j < SilkConstants.STEREO_QUANT_SUB_STEPS; j++)

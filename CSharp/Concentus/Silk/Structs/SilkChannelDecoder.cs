@@ -207,19 +207,19 @@ namespace Concentus.Silk.Structs
                 {
                     if (this.nb_subfr == SilkConstants.MAX_NB_SUBFR)
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_NB_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_NB_iCDF;
                     }
                     else {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_NB_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_10_ms_NB_iCDF;
                     }
                 }
                 else {
                     if (this.nb_subfr == SilkConstants.MAX_NB_SUBFR)
                     {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_iCDF;
                     }
                     else {
-                        this.pitch_contour_iCDF = Tables.silk_pitch_contour_10_ms_iCDF;
+                        this.pitch_contour_iCDF = SilkTables.silk_pitch_contour_10_ms_iCDF;
                     }
                 }
                 if (this.fs_kHz != fs_kHz)
@@ -228,23 +228,23 @@ namespace Concentus.Silk.Structs
                     if (fs_kHz == 8 || fs_kHz == 12)
                     {
                         this.LPC_order = SilkConstants.MIN_LPC_ORDER;
-                        this.psNLSF_CB = Tables.silk_NLSF_CB_NB_MB;
+                        this.psNLSF_CB = SilkTables.silk_NLSF_CB_NB_MB;
                     }
                     else {
                         this.LPC_order = SilkConstants.MAX_LPC_ORDER;
-                        this.psNLSF_CB = Tables.silk_NLSF_CB_WB;
+                        this.psNLSF_CB = SilkTables.silk_NLSF_CB_WB;
                     }
                     if (fs_kHz == 16)
                     {
-                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform8_iCDF;
+                        this.pitch_lag_low_bits_iCDF = SilkTables.silk_uniform8_iCDF;
                     }
                     else if (fs_kHz == 12)
                     {
-                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform6_iCDF;
+                        this.pitch_lag_low_bits_iCDF = SilkTables.silk_uniform6_iCDF;
                     }
                     else if (fs_kHz == 8)
                     {
-                        this.pitch_lag_low_bits_iCDF = Tables.silk_uniform4_iCDF;
+                        this.pitch_lag_low_bits_iCDF = SilkTables.silk_uniform4_iCDF;
                     }
                     else {
                         /* unsupported sampling rate */

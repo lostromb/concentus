@@ -524,7 +524,7 @@ namespace Concentus.Structs
                 if (this.channels == 2)
                 {
                     int stereo_threshold;
-                    stereo_threshold = Tables.stereo_music_threshold + ((voice_est * voice_est * (Tables.stereo_voice_threshold - Tables.stereo_music_threshold)) >> 14);
+                    stereo_threshold = OpusTables.stereo_music_threshold + ((voice_est * voice_est * (OpusTables.stereo_voice_threshold - OpusTables.stereo_music_threshold)) >> 14);
                     if (this.stream_channels == 2)
                         stereo_threshold -= 1000;
                     else
@@ -548,10 +548,10 @@ namespace Concentus.Structs
                 int threshold;
 
                 /* Interpolate based on stereo width */
-                mode_voice = (int)(Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, Tables.mode_thresholds[0][0])
-                      + Inlines.MULT16_32_Q15(stereo_width, Tables.mode_thresholds[1][0]));
-                mode_music = (int)(Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, Tables.mode_thresholds[1][1])
-                      + Inlines.MULT16_32_Q15(stereo_width, Tables.mode_thresholds[1][1]));
+                mode_voice = (int)(Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, OpusTables.mode_thresholds[0][0])
+                      + Inlines.MULT16_32_Q15(stereo_width, OpusTables.mode_thresholds[1][0]));
+                mode_music = (int)(Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, OpusTables.mode_thresholds[1][1])
+                      + Inlines.MULT16_32_Q15(stereo_width, OpusTables.mode_thresholds[1][1]));
                 /* Interpolate based on speech/music probability */
                 threshold = mode_music + ((voice_est * voice_est * (mode_voice - mode_music)) >> 14);
                 /* Bias towards SILK for VoIP because of some useful features */
@@ -662,12 +662,12 @@ namespace Concentus.Structs
                 }
                 if (this.channels == 2 && this.force_channels != 1)
                 {
-                    voice_bandwidth_thresholds = Tables.stereo_voice_bandwidth_thresholds;
-                    music_bandwidth_thresholds = Tables.stereo_music_bandwidth_thresholds;
+                    voice_bandwidth_thresholds = OpusTables.stereo_voice_bandwidth_thresholds;
+                    music_bandwidth_thresholds = OpusTables.stereo_music_bandwidth_thresholds;
                 }
                 else {
-                    voice_bandwidth_thresholds = Tables.mono_voice_bandwidth_thresholds;
-                    music_bandwidth_thresholds = Tables.mono_music_bandwidth_thresholds;
+                    voice_bandwidth_thresholds = OpusTables.mono_voice_bandwidth_thresholds;
+                    music_bandwidth_thresholds = OpusTables.mono_music_bandwidth_thresholds;
                 }
                 /* Interpolate bandwidth thresholds depending on voice estimation */
                 for (i = 0; i < 8; i++)

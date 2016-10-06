@@ -41,7 +41,7 @@ namespace Concentus.Celt
     using Concentus.Common.CPlusPlus;
     using System.Diagnostics;
 
-    internal static class Tables
+    internal static class CeltTables
     {
         /* Mean energy in each band quantized in Q4 */
         internal static readonly sbyte[] eMeans/*[25]*/ = {
