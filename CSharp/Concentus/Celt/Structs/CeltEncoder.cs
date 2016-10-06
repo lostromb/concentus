@@ -554,10 +554,6 @@ namespace Concentus.Celt.Structs
             this.overlap_max = Inlines.celt_maxabs32(pcm, pcm_ptr + (C * (N - overlap) / this.upsample), C * overlap / this.upsample);
             sample_max = Inlines.MAX32(sample_max, this.overlap_max);
             silence = (sample_max == 0) ? 1 : 0;
-#if FUZZING
-            if ((new Random().Next() & 0x3F) == 0)
-                silence = 1;
-#endif
             if (tell == 1)
                 enc.enc_bit_logp(silence, 15);
             else
@@ -1091,9 +1087,6 @@ namespace Concentus.Celt.Structs
             if (anti_collapse_rsv > 0)
             {
                 anti_collapse_on = (this.consec_transient < 2) ? 1 : 0;
-#if FUZZING
-                anti_collapse_on = new Random().Next() & 0x1;
-#endif
                 enc.enc_bits(anti_collapse_on, 1);
             }
 

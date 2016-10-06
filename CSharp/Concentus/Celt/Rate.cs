@@ -203,11 +203,7 @@ namespace Concentus.Celt
                            skip here must be explicitly signaled.*/
                         /*Choose a threshold with some hysteresis to keep bands from
                            fluctuating in and out.*/
-#if FUZZING
-            if ((new Random().Next() & 0x1) == 0)
-#else
                         if (codedBands <= start + 2 || (band_bits > ((j < prev ? 7 : 9) * band_width << LM << EntropyCoder.BITRES) >> 4 && j <= signalBandwidth))
-#endif
                         {
                             ec.enc_bit_logp(1, 1);
                             break;

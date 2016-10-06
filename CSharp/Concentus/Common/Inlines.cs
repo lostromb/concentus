@@ -40,32 +40,24 @@ namespace Concentus.Common
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
 
-    public static class Inlines
+    internal static class Inlines
     {
-        [Conditional("DEBUG")]
-        public static void OpusAssert(bool condition, string message = "Unknown error")
+        internal static void OpusAssert(bool condition, string message = "Unknown error")
         {
-#if DEBUG_MACROS
-            if (!condition) throw new ArithmeticException("Debug macro failed validation");
-#endif
             Debug.Assert(condition, message);
         }
 
-        public static long CapToUInt32(long val)
+        internal static long CapToUInt32(long val)
         {
-            if (val < 0)
-            {
-                Debug.WriteLine("unsigned value less than zero");
-            }
             return (0xFFFFFFFFL & (int)val);
         }
 
-        public static long CapToUInt32(uint val)
+        internal static long CapToUInt32(uint val)
         {
             return val;
         }
 
-        public static long CapToUInt32(int val)
+        internal static long CapToUInt32(int val)
         {
             return val;
         }
@@ -76,50 +68,50 @@ namespace Concentus.Common
 
         //        /** Multiply a 16-bit signed value by a 16-bit unsigned value. The result is a 32-bit signed value */
         //#define MULT16_16SU(a,b) ((opus_val32)(opus_val16)(a)*(opus_val32)(opus_uint16)(b))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16SU(int a, int b)
+        
+        internal static int MULT16_16SU(int a, int b)
         {
             return ((int)(short)(a) * (int)(b & 0xFFFF));
         }
 
         //        /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
         //#define MULT16_32_Q16(a,b) ADD32(MULT16_16((a),SHR((b),16)), SHR(MULT16_16SU((a),((b)&0x0000ffff)),16))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_32_Q16(short a, int b)
+        
+        internal static int MULT16_32_Q16(short a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_32_Q16(int a, int b)
+        
+        internal static int MULT16_32_Q16(int a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
         //        /** 16x32 multiplication, followed by a 16-bit shift right (round-to-nearest). Results fits in 32 bits */
         //#define MULT16_32_P16(a,b) ADD32(MULT16_16((a),SHR((b),16)), PSHR(MULT16_16SU((a),((b)&0x0000ffff)),16))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_32_P16(short a, int b)
+        
+        internal static int MULT16_32_P16(short a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), PSHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_32_P16(int a, int b)
+        
+        internal static int MULT16_32_P16(int a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), PSHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
         //        /** 16x32 multiplication, followed by a 15-bit shift right. Results fits in 32 bits */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_32_Q15(short a, int b)
+        
+        internal static int MULT16_32_Q15(short a, int b)
         {
             return ((a * (b >> 16)) << 1) + ((a * (b & 0xFFFF)) >> 15);
             //return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (ushort)((b) & 0x0000ffff)), 15));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_32_Q15(int a, int b)
+        
+        internal static int MULT16_32_Q15(int a, int b)
         {
             return ((a * (b >> 16)) << 1) + ((a * (b & 0xFFFF)) >> 15);
             //return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (uint)((b) & 0x0000ffff)), 15));
@@ -127,264 +119,264 @@ namespace Concentus.Common
 
         //        /** 32x32 multiplication, followed by a 31-bit shift right. Results fits in 32 bits */
         //#define MULT32_32_Q31(a,b) ADD32(ADD32(SHL(MULT16_16(SHR((a),16),SHR((b),16)),1), SHR(MULT16_16SU(SHR((a),16),((b)&0x0000ffff)),15)), SHR(MULT16_16SU(SHR((b),16),((a)&0x0000ffff)),15))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT32_32_Q31(int a, int b)
+        
+        internal static int MULT32_32_Q31(int a, int b)
         {
             return ADD32(ADD32(SHL(MULT16_16(SHR((a), 16), SHR((b), 16)), 1), SHR(MULT16_16SU(SHR((a), 16), ((b) & 0x0000ffff)), 15)), SHR(MULT16_16SU(SHR((b), 16), ((a) & 0x0000ffff)), 15));
         }
 
         // "Compile-time" (not really) conversion of float constant to 16-bit value
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short QCONST16(float x, int bits)
+        
+        internal static short QCONST16(float x, int bits)
         {
             return ((short)(0.5 + (x) * (((int)1) << (bits))));
         }
 
         // "Compile-time" (not really) conversion of float constant to 32-bit value
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int QCONST32(float x, int bits)
+        
+        internal static int QCONST32(float x, int bits)
         {
             return ((int)(0.5 + (x) * (((int)1) << (bits))));
         }
 
         //        /** Negate a 16-bit value */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short NEG16(short x)
+        
+        internal static short NEG16(short x)
         {
             return (short)(0 - x);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int NEG16(int x)
+        
+        internal static int NEG16(int x)
         {
             return 0 - x;
         }
 
         //        /** Negate a 32-bit value */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int NEG32(int x)
+        
+        internal static int NEG32(int x)
         {
             return 0 - x;
         }
 
         //        /** Change a 32-bit value into a 16-bit value. The value is assumed to fit in 16-bit, otherwise the result is undefined */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short EXTRACT16(int x)
+        
+        internal static short EXTRACT16(int x)
         {
             return unchecked((short)x);
         }
 
         //        /** Change a 16-bit value into a 32-bit value */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EXTEND32(short x)
+        
+        internal static int EXTEND32(short x)
         {
             return (int)x;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EXTEND32(int x)
+        
+        internal static int EXTEND32(int x)
         {
             return x;
         }
 
         //        /** Arithmetic shift-right of a 16-bit value */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short SHR16(short a, int shift)
+        
+        internal static short SHR16(short a, int shift)
         {
             return (short)((a) >> (shift));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SHR16(int a, int shift)
+        
+        internal static int SHR16(int a, int shift)
         {
             return ((a) >> (shift));
         }
 
         //        /** Arithmetic shift-left of a 16-bit value */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short SHL16(short a, int shift)
+        
+        internal static short SHL16(short a, int shift)
         {
             return unchecked((short)(unchecked(a & 0xFFFF) << shift));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SHL16(int a, int shift)
+        
+        internal static int SHL16(int a, int shift)
         {
             return (int)(0xFFFFFFFF & ((long)a << shift));
         }
 
         //        /** Arithmetic shift-right of a 32-bit value */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SHR32(int a, int shift)
+        
+        internal static int SHR32(int a, int shift)
         {
             return a >> shift;
         }
 
         //        /** Arithmetic shift-left of a 32-bit value */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SHL32(int a, int shift)
+        
+        internal static int SHL32(int a, int shift)
         {
             return (int)(0xFFFFFFFF & ((long)a << shift));
         }
 
         //        /** 32-bit arithmetic shift right with rounding-to-nearest instead of rounding down */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int PSHR32(int a, int shift)
+        
+        internal static int PSHR32(int a, int shift)
         {
             return (SHR32((a) + ((EXTEND32(1) << ((shift)) >> 1)), shift));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short PSHR16(short a, int shift)
+        
+        internal static short PSHR16(short a, int shift)
         {
             return SHR16((short)(a + (1 << (shift) >> 1)), shift);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int PSHR16(int a, int shift)
+        
+        internal static int PSHR16(int a, int shift)
         {
             return SHR32((a + (1 << (shift) >> 1)), shift);
         }
 
         //        /** 32-bit arithmetic shift right where the argument can be negative */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int VSHR32(int a, int shift)
+        
+        internal static int VSHR32(int a, int shift)
         {
             return (((shift) > 0) ? SHR32(a, shift) : SHL32(a, -(shift)));
         }
 
         //        /** "RAW" macros, should not be used outside of this header file */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private static int SHR(int a, int shift)
         {
             return ((a) >> (shift));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private static int SHL(int a, int shift)
         {
             return SHL32(a, shift);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private static int SHR(short a, int shift)
         {
             return ((a) >> (shift));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private static int SHL(short a, int shift)
         {
             return SHL32(a, shift);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         private static int PSHR(int a, int shift)
         {
             return (SHR((a) + ((EXTEND32(1) << ((shift)) >> 1)), shift));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SATURATE(int x, int a)
+        
+        internal static int SATURATE(int x, int a)
         {
             return (((x) > (a) ? (a) : (x) < -(a) ? -(a) : (x)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short SATURATE16(int x)
+        
+        internal static short SATURATE16(int x)
         {
             return (EXTRACT16((x) > 32767 ? 32767 : (x) < -32768 ? -32768 : (x)));
         }
 
         //        /** Shift by a and round-to-neareast 32-bit value. Result is a 16-bit value */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short ROUND16(short x, short a)
+        
+        internal static short ROUND16(short x, short a)
         {
             return (EXTRACT16(PSHR32((x), (a))));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ROUND16(int x, int a)
+        
+        internal static int ROUND16(int x, int a)
         {
             return PSHR32((x), (a));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int PDIV32(int a, int b)
+        
+        internal static int PDIV32(int a, int b)
         {
             return a / b;
         }
 
         //        /** Divide by two */
         // fixme: can this be optimized?
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short HALF16(short x)
+        
+        internal static short HALF16(short x)
         {
             return (SHR16(x, 1));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int HALF16(int x)
+        
+        internal static int HALF16(int x)
         {
             return (SHR32(x, 1));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int HALF32(int x)
+        
+        internal static int HALF32(int x)
         {
             return (SHR32(x, 1));
         }
 
         //        /** Add two 16-bit values */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short ADD16(short a, short b)
+        
+        internal static short ADD16(short a, short b)
         {
             return ((short)((short)(a) + (short)(b)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ADD16(int a, int b)
+        
+        internal static int ADD16(int a, int b)
         {
             return (a + b);
         }
 
         //        /** Subtract two 16-bit values */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short SUB16(short a, short b)
+        
+        internal static short SUB16(short a, short b)
         {
             return ((short)((short)(a) - (short)(b)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SUB16(int a, int b)
+        
+        internal static int SUB16(int a, int b)
         {
             return (a - b);
         }
 
         //        /** Add two 32-bit values */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ADD32(int a, int b)
+        
+        internal static int ADD32(int a, int b)
         {
             return ((int)(a) + (int)(b));
         }
 
         //        /** Subtract two 32-bit values */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SUB32(int a, int b)
+        
+        internal static int SUB32(int a, int b)
         {
             return ((int)(a) - (int)(b));
         }
 
         //        /** 16x16 multiplication where the result fits in 16 bits */
         //#define MULT16_16_16(a,b)     ((((opus_val16)(a))*((opus_val16)(b))))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MULT16_16_16(short a, short b)
+        
+        internal static short MULT16_16_16(short a, short b)
         {
             return (short)(((((short)(a)) * ((short)(b)))));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_16(int a, int b)
+        
+        internal static int MULT16_16_16(int a, int b)
         {
             return (a * b);
         }
@@ -392,34 +384,34 @@ namespace Concentus.Common
         //        /* (opus_val32)(opus_val16) gives TI compiler a hint that it's 16x16->32 multiply */
         //        /** 16x16 multiplication where the result fits in 32 bits */
         //#define MULT16_16(a,b)     (((opus_val32)(opus_val16)(a))*((opus_val32)(opus_val16)(b)))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16(int a, int b)
+        
+        internal static int MULT16_16(int a, int b)
         {
             return a * b;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16(short a, short b)
+        
+        internal static int MULT16_16(short a, short b)
         {
             return a * b;
         }
 
         //        /** 16x16 multiply-add where the result fits in 32 bits */
         //#define MAC16_16(c,a,b) (ADD32((c),MULT16_16((a),(b))))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAC16_16(short c, short a, short b)
+        
+        internal static int MAC16_16(short c, short a, short b)
         {
             return c + (a * b);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAC16_16(int c, short a, short b)
+        
+        internal static int MAC16_16(int c, short a, short b)
         {
             return c + (a * b);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAC16_16(int c, int a, int b)
+        
+        internal static int MAC16_16(int c, int a, int b)
         {
             return c + (a * b);
         }
@@ -428,14 +420,14 @@ namespace Concentus.Common
         //            b must fit in 31 bits.
         //            Result fits in 32 bits. */
         //#define MAC16_32_Q15(c,a,b) ADD32((c),ADD32(MULT16_16((a),SHR((b),15)), SHR(MULT16_16((a),((b)&0x00007fff)),15)))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAC16_32_Q15(int c, short a, short b)
+        
+        internal static int MAC16_32_Q15(int c, short a, short b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 15)), SHR(MULT16_16((a), ((b) & 0x00007fff)), 15)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAC16_32_Q15(int c, int a, int b)
+        
+        internal static int MAC16_32_Q15(int c, int a, int b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 15)), SHR(MULT16_16((a), ((b) & 0x00007fff)), 15)));
         }
@@ -443,153 +435,153 @@ namespace Concentus.Common
         //        /** 16x32 multiplication, followed by a 16-bit shift right and 32-bit add.
         //            Results fits in 32 bits */
         //#define MAC16_32_Q16(c,a,b) ADD32((c),ADD32(MULT16_16((a),SHR((b),16)), SHR(MULT16_16SU((a),((b)&0x0000ffff)),16)))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAC16_32_Q16(int c, short a, short b)
+        
+        internal static int MAC16_32_Q16(int c, short a, short b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAC16_32_Q16(int c, int a, int b)
+        
+        internal static int MAC16_32_Q16(int c, int a, int b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16)));
         }
 
         //#define MULT16_16_Q11_32(a,b) (SHR(MULT16_16((a),(b)),11))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_Q11_32(short a, short b)
+        
+        internal static int MULT16_16_Q11_32(short a, short b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_Q11_32(int a, int b)
+        
+        internal static int MULT16_16_Q11_32(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
         //#define MULT16_16_Q11(a,b) (SHR(MULT16_16((a),(b)),11))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MULT16_16_Q11(short a, short b)
+        
+        internal static short MULT16_16_Q11(short a, short b)
         {
             return (short)((SHR(MULT16_16((a), (b)), 11)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_Q11(int a, int b)
+        
+        internal static int MULT16_16_Q11(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
         //#define MULT16_16_Q13(a,b) (SHR(MULT16_16((a),(b)),13))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MULT16_16_Q13(short a, short b)
+        
+        internal static short MULT16_16_Q13(short a, short b)
         {
             return (short)((SHR(MULT16_16((a), (b)), 13)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_Q13(int a, int b)
+        
+        internal static int MULT16_16_Q13(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 13));
         }
 
         //#define MULT16_16_Q14(a,b) (SHR(MULT16_16((a),(b)),14))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MULT16_16_Q14(short a, short b)
+        
+        internal static short MULT16_16_Q14(short a, short b)
         {
             return (short)((SHR(MULT16_16((a), (b)), 14)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_Q14(int a, int b)
+        
+        internal static int MULT16_16_Q14(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 14));
         }
 
         //#define MULT16_16_Q15(a,b) (SHR(MULT16_16((a),(b)),15))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MULT16_16_Q15(short a, short b)
+        
+        internal static short MULT16_16_Q15(short a, short b)
         {
             return (short)((SHR(MULT16_16((a), (b)), 15)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_Q15(int a, int b)
+        
+        internal static int MULT16_16_Q15(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 15));
         }
 
         //#define MULT16_16_P13(a,b) (SHR(ADD32(4096,MULT16_16((a),(b))),13))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MULT16_16_P13(short a, short b)
+        
+        internal static short MULT16_16_P13(short a, short b)
         {
             return (short)((SHR(ADD32(4096, MULT16_16((a), (b))), 13)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_P13(int a, int b)
+        
+        internal static int MULT16_16_P13(int a, int b)
         {
             return (SHR(ADD32(4096, MULT16_16((a), (b))), 13));
         }
 
         //#define MULT16_16_P14(a,b) (SHR(ADD32(8192,MULT16_16((a),(b))),14))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MULT16_16_P14(short a, short b)
+        
+        internal static short MULT16_16_P14(short a, short b)
         {
             return (short)((SHR(ADD32(8192, MULT16_16((a), (b))), 14)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_P14(int a, int b)
+        
+        internal static int MULT16_16_P14(int a, int b)
         {
             return (SHR(ADD32(8192, MULT16_16((a), (b))), 14));
         }
 
         //#define MULT16_16_P15(a,b) (SHR(ADD32(16384,MULT16_16((a),(b))),15))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MULT16_16_P15(short a, short b)
+        
+        internal static short MULT16_16_P15(short a, short b)
         {
             return (short)((SHR(ADD32(16384, MULT16_16((a), (b))), 15)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MULT16_16_P15(int a, int b)
+        
+        internal static int MULT16_16_P15(int a, int b)
         {
             return (SHR(ADD32(16384, MULT16_16((a), (b))), 15));
         }
 
         //        /** Divide a 32-bit value by a 16-bit value. Result fits in 16 bits */
         //#define DIV32_16(a,b) ((opus_val16)(((opus_val32)(a))/((opus_val16)(b))))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short DIV32_16(int a, short b)
+        
+        internal static short DIV32_16(int a, short b)
         {
             return (short)(((short)(((int)(a)) / ((short)(b)))));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int DIV32_16(int a, int b)
+        
+        internal static int DIV32_16(int a, int b)
         {
             return a / b;
         }
 
         //        /** Divide a 32-bit value by a 32-bit value. Result fits in 32 bits */
         //#define DIV32(a,b) (((opus_val32)(a))/((opus_val32)(b)))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int DIV32(int a, int b)
+        
+        internal static int DIV32(int a, int b)
         {
             return a / b;
         }
 
         // identical to silk_SAT16 - saturate operation
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short SAT16(int x)
+        
+        internal static short SAT16(int x)
         {
             return (short)(x > 32767 ? 32767 : x < -32768 ? -32768 : (short)x);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short SIG2WORD16(int x)
+        
+        internal static short SIG2WORD16(int x)
         {
             x = PSHR32(x, 12);
             x = MAX32(x, -32768);
@@ -597,174 +589,170 @@ namespace Concentus.Common
             return EXTRACT16(x);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MIN(short a, short b)
+        
+        internal static short MIN(short a, short b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MAX(short a, short b)
+        
+        internal static short MAX(short a, short b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MIN16(short a, short b)
+        
+        internal static short MIN16(short a, short b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short MAX16(short a, short b)
+        
+        internal static short MAX16(short a, short b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MIN16(int a, int b)
+        
+        internal static int MIN16(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAX16(int a, int b)
+        
+        internal static int MAX16(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float MIN16(float a, float b)
+        
+        internal static float MIN16(float a, float b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float MAX16(float a, float b)
+        
+        internal static float MAX16(float a, float b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MIN(int a, int b)
+        
+        internal static int MIN(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAX(int a, int b)
+        
+        internal static int MAX(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IMIN(int a, int b)
+        
+        internal static int IMIN(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long IMIN(long a, long b)
+        
+        internal static long IMIN(long a, long b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IMAX(int a, int b)
+        
+        internal static int IMAX(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MIN32(int a, int b)
+        
+        internal static int MIN32(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MAX32(int a, int b)
+        
+        internal static int MAX32(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float MIN32(float a, float b)
+        
+        internal static float MIN32(float a, float b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float MAX32(float a, float b)
+        
+        internal static float MAX32(float a, float b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ABS16(int x)
+        
+        internal static int ABS16(int x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float ABS16(float x)
+        
+        internal static float ABS16(float x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short ABS16(short x)
+        
+        internal static short ABS16(short x)
         {
             return (short)(((x) < 0 ? (-(x)) : (x)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ABS32(int x)
+        
+        internal static int ABS32(int x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_udiv(int n, int d)
+        
+        internal static int celt_udiv(int n, int d)
         {
             Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_sudiv(int n, int d)
+        
+        internal static int celt_sudiv(int n, int d)
         {
             Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
         //#define celt_div(a,b) MULT32_32_Q31((opus_val32)(a),celt_rcp(b))
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_div(int a, int b)
+        
+        internal static int celt_div(int a, int b)
         {
             return MULT32_32_Q31((int)(a), celt_rcp(b));
         }
 
         /** Integer log in base2. Undefined for zero and negative numbers */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_ilog2(int x)
+        
+        internal static int celt_ilog2(int x)
         {
             Inlines.OpusAssert(x > 0, "celt_ilog2() only defined for strictly positive numbers");
-#if DEBUG_MACROS
-            if (x <= 0)
-                throw new ArgumentException("celt_ilog2() only defined for strictly positive numbers");
-#endif
             return (EC_ILOG((long)x) - 1);
         }
 
         /** Integer log in base2. Defined for zero, but not for negative numbers */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_zlog2(int x)
+        
+        internal static int celt_zlog2(int x)
         {
             return x <= 0 ? 0 : celt_ilog2(x);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_maxabs16(int[] x, int x_ptr, int len)
+        
+        internal static int celt_maxabs16(int[] x, int x_ptr, int len)
         {
             int i;
             int maxval = 0;
@@ -777,8 +765,8 @@ namespace Concentus.Common
             return MAX32(EXTEND32(maxval), -EXTEND32(minval));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_maxabs32(int[] x, int x_ptr, int len)
+        
+        internal static int celt_maxabs32(int[] x, int x_ptr, int len)
         {
             int i;
             int maxval = 0;
@@ -791,8 +779,8 @@ namespace Concentus.Common
             return MAX32(maxval, 0 - minval);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short celt_maxabs32(short[] x, int x_ptr, int len)
+        
+        internal static short celt_maxabs32(short[] x, int x_ptr, int len)
         {
             int i;
             short maxval = 0;
@@ -811,8 +799,8 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int FRAC_MUL16(int a, int b)
+        
+        internal static int FRAC_MUL16(int a, int b)
         {
             return ((16384 + ((int)((short)a * (short)b))) >> 15);
         }
@@ -823,10 +811,9 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_val"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int isqrt32(long _val)
+        
+        internal static int isqrt32(long _val)
         {
-#if PARITY
             int b;
             int g;
             int bshift;
@@ -851,19 +838,14 @@ namespace Concentus.Common
             }
             while (bshift >= 0);
             return g;
-#else
-            // Is this faster?
-            return (int)Math.Sqrt(_val);
-#endif
         }
 
         private static readonly short[] sqrt_C = { 23175, 11561, -3011, 1699, -664 };
 
         /** Sqrt approximation (QX input, QX/2 output) */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_sqrt(int x)
+        
+        internal static int celt_sqrt(int x)
         {
-#if PARITY
             int k;
             short n;
             int rt;
@@ -879,17 +861,12 @@ namespace Concentus.Common
                        MULT16_16_Q15(n, ADD16(sqrt_C[3], MULT16_16_Q15(n, (sqrt_C[4])))))))));
             rt = VSHR32(rt, 7 - k);
             return rt;
-#else
-            // This is 100x faster
-            return (int)Math.Sqrt(x);
-#endif
         }
 
         /** Reciprocal approximation (Q15 input, Q16 output) */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_rcp(int x)
+        
+        internal static int celt_rcp(int x)
         {
-#if PARITY
             int i;
             int n;
             int r;
@@ -914,15 +891,11 @@ namespace Concentus.Common
                 of 7.05346E-5, a (relative) RMSE of 2.14418E-5, and a peak absolute
                 error of 1.24665/32768. */
             return VSHR32(EXTEND32(r), i - 16);
-#else
-            // 50x faster
-            return (int)(((float)(1 << 16) * (float)(1 << 15)) / ((float)x));
-#endif
         }
 
         /** Reciprocal sqrt approximation in the range [0.25,1) (Q16 in, Q14 out) */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_rsqrt_norm(int x)
+        
+        internal static int celt_rsqrt_norm(int x)
         {
             int n;
             int r;
@@ -949,8 +922,8 @@ namespace Concentus.Common
                        SUB16(MULT16_16_Q15(y, 12288), 16384))));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int frac_div32(int a, int b)
+        
+        internal static int frac_div32(int a, int b)
         {
             int rcp;
             int result, rem;
@@ -973,10 +946,9 @@ namespace Concentus.Common
         private const short log2_C0 = -6801 + (1 << (3));
 
         /** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_log2(int x)
+        
+        internal static int celt_log2(int x)
         {
-#if PARITY
             int i;
             int n, frac;
             /* -0.41509302963303146, 0.9609890551383969, -0.31836011537636605,
@@ -987,13 +959,10 @@ namespace Concentus.Common
             n = VSHR32(x, i - 15) - 32768 - 16384;
             frac = ADD16(log2_C0, MULT16_16_Q15(n, ADD16(15746, MULT16_16_Q15(n, ADD16(-5217, MULT16_16_Q15(n, ADD16(2545, MULT16_16_Q15(n, -1401))))))));
             return SHL16((short)(i - 13), 10) + SHR16(frac, 4);
-#else
-            return (int)((float)(1 << 10) * (float)Math.Log10(x / (float)(1 << 14)) / (float)Math.Log10(2));
-#endif
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_exp2_frac(int x)
+        
+        internal static int celt_exp2_frac(int x)
         {
             int frac;
             frac = SHL16(x, 4);
@@ -1001,8 +970,8 @@ namespace Concentus.Common
         }
 
         /** Base-2 exponential approximation (2^x). (Q10 input, Q16 output) */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_exp2(int x)
+        
+        internal static int celt_exp2(int x)
         {
             int integer;
             int frac;
@@ -1017,15 +986,15 @@ namespace Concentus.Common
         
         /* Atan approximation using a 4th order polynomial. Input is in Q15 format
            and normalized by pi/4. Output is in Q15 format */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_atan01(int x)
+        
+        internal static int celt_atan01(int x)
         {
             return MULT16_16_P15(x, ADD32(32767, MULT16_16_P15(x, ADD32(-21, MULT16_16_P15(x, ADD32(-11943, MULT16_16_P15(4936, x)))))));
         }
 
         /* atan2() approximation valid for positive input values */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_atan2p(int y, int x)
+        
+        internal static int celt_atan2p(int y, int x)
         {
             if (y < x)
             {
@@ -1044,8 +1013,8 @@ namespace Concentus.Common
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int celt_cos_norm(int x)
+        
+        internal static int celt_cos_norm(int x)
         {
             x = x & 0x0001ffff;
             if (x > SHL32(EXTEND32(1), 16))
@@ -1070,8 +1039,8 @@ namespace Concentus.Common
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int _celt_cos_pi_2(int x)
+        
+        internal static int _celt_cos_pi_2(int x)
         {
             int x2;
 
@@ -1079,8 +1048,8 @@ namespace Concentus.Common
             return ADD32(1, MIN32(32766, ADD32(SUB16(32767, x2), MULT16_16_P15(x2, ADD32(-7651, MULT16_16_P15(x2, ADD32(8277, MULT16_16_P15(-626, x2))))))));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short FLOAT2INT16(float x)
+        
+        internal static short FLOAT2INT16(float x)
         {
             x = x * CeltConstants.CELT_SIG_SCALE;
             if (x < short.MinValue)
@@ -1103,8 +1072,8 @@ namespace Concentus.Common
         /// <param name="a32"></param>
         /// <param name="rot"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ROR32(int a32, int rot)
+        
+        internal static int silk_ROR32(int a32, int rot)
         {
             int m = (0 - rot);
             if (rot == 0)
@@ -1120,19 +1089,15 @@ namespace Concentus.Common
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_MUL(int a32, int b32)
+        
+        internal static int silk_MUL(int a32, int b32)
         {
             int ret = a32 * b32;
-#if DEBUG_MACROS
-            long ret64 = (long)a32 * (long)b32;
-            Inlines.OpusAssert((long)ret == ret64);
-#endif
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_MLA(int a32, int b32, int c32)
+        
+        internal static int silk_MLA(int a32, int b32, int c32)
         {
             int ret = silk_ADD32((a32), ((b32) * (c32)));
             Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
@@ -1146,29 +1111,29 @@ namespace Concentus.Common
         /// <param name="b32"></param>
         /// <returns></returns>
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMULTT(int a32, int b32)
+        
+        internal static int silk_SMULTT(int a32, int b32)
         {
             return ((a32 >> 16) * (b32 >> 16));
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMLATT(int a32, int b32, int c32)
+        
+        internal static int silk_SMLATT(int a32, int b32, int c32)
         {
             return silk_ADD32((a32), ((b32) >> 16) * ((c32) >> 16));
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_SMLALBB(long a64, short b16, short c16)
+        
+        internal static long silk_SMLALBB(long a64, short b16, short c16)
         {
             return silk_ADD64((a64), (long)((int)(b16) * (int)(c16)));
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_SMULL(int a32, int b32)
+        
+        internal static long silk_SMULL(int a32, int b32)
         {
             return (long)a32 * (long)b32;
         }
@@ -1180,14 +1145,14 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD32_ovflw(int a, int b)
+        
+        internal static int silk_ADD32_ovflw(int a, int b)
         {
             return (int)((long)a + b);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD32_ovflw(long a, long b)
+        
+        internal static int silk_ADD32_ovflw(long a, long b)
         {
             return unchecked((int)(a + b));
         }
@@ -1199,8 +1164,8 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SUB32_ovflw(int a, int b)
+        
+        internal static int silk_SUB32_ovflw(int a, int b)
         {
             return (int)((long)a - b);
         }
@@ -1212,22 +1177,22 @@ namespace Concentus.Common
         /// <param name="b32"></param>
         /// <param name="c32"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_MLA_ovflw(int a32, int b32, int c32)
+        
+        internal static int silk_MLA_ovflw(int a32, int b32, int c32)
         {
             return (int)silk_ADD32_ovflw((long)a32, (long)b32 * c32);
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMLABB_ovflw(int a32, int b32, int c32)
+        
+        internal static int silk_SMLABB_ovflw(int a32, int b32, int c32)
         {
             return unchecked((silk_ADD32_ovflw((a32), ((int)((short)(b32))) * (int)((short)(c32)))));
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMULBB(int a32, int b32)
+        
+        internal static int silk_SMULBB(int a32, int b32)
         {
             return ((int)unchecked((short)a32) * (int)unchecked((short)b32));
         }
@@ -1239,78 +1204,49 @@ namespace Concentus.Common
         /// <param name="b32"></param>
         /// <returns></returns>
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMULWB(int a32, int b32)
+        
+        internal static int silk_SMULWB(int a32, int b32)
         {
-#if DEBUG_MACROS
-            int ret;
-            ret = ((a32 >> 16) * (int)((short)b32) + (((a32 & 0x0000FFFF) * (int)((short)b32)) >> 16));
-            if ((long)ret != ((long)a32 * (short)b32) >> 16)
-            {
-                Inlines.OpusAssert(false);
-            }
-            return ret;
-#else
             return unchecked((int)(unchecked(unchecked(a32 * (long)(unchecked((short)b32))) >> 16)));
-#endif
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMLABB(int a32, int b32, int c32)
+        
+        internal static int silk_SMLABB(int a32, int b32, int c32)
         {
             return ((a32) + ((int)unchecked((short)b32)) * (int)unchecked((short)c32));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_DIV32_16(int a32, int b32)
+        
+        internal static int silk_DIV32_16(int a32, int b32)
         {
-#if DEBUG_MACROS
-            bool fail = false;
-            fail |= b32 == 0;
-            fail |= b32 > short.MaxValue;
-            fail |= b32 < short.MinValue;
-            Inlines.OpusAssert(!fail);
-#endif
             return a32 / b32;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_DIV32(int a32, int b32)
+        
+        internal static int silk_DIV32(int a32, int b32)
         {
             return a32 / b32;
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_ADD16(short a, short b)
+        
+        internal static short silk_ADD16(short a, short b)
         {
             short ret = (short)(a + b);
-#if DEBUG_MACROS
-            if (ret != silk_ADD_SAT16(a, b))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD32(int a, int b)
+        
+        internal static int silk_ADD32(int a, int b)
         {
             int ret = a + b;
-#if DEBUG_MACROS
-            if (ret != silk_ADD_SAT32(a, b))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_ADD64(long a, long b)
+        
+        internal static long silk_ADD64(long a, long b)
         {
             long ret = a + b;
             Inlines.OpusAssert(ret == silk_ADD_SAT64(a, b));
@@ -1318,8 +1254,8 @@ namespace Concentus.Common
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_SUB16(short a, short b)
+        
+        internal static short silk_SUB16(short a, short b)
         {
             short ret = (short)(a - b);
             Inlines.OpusAssert(ret == silk_SUB_SAT16(a, b));
@@ -1327,8 +1263,8 @@ namespace Concentus.Common
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SUB32(int a, int b)
+        
+        internal static int silk_SUB32(int a, int b)
         {
             int ret = a - b;
             Inlines.OpusAssert(ret == silk_SUB_SAT32(a, b));
@@ -1336,30 +1272,25 @@ namespace Concentus.Common
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_SUB64(long a, long b)
+        
+        internal static long silk_SUB64(long a, long b)
         {
             long ret = a - b;
             Inlines.OpusAssert(ret == silk_SUB_SAT64(a, b));
             return ret;
         }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SAT8(int a)
+        
+        internal static int silk_SAT8(int a)
         {
             return a > byte.MaxValue ? byte.MaxValue : ((a) < byte.MinValue ? byte.MinValue : (a));
         }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SAT16(int a)
+        
+        internal static int silk_SAT16(int a)
         {
             return a > short.MaxValue ? short.MaxValue : ((a) < short.MinValue ? short.MinValue : (a));
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SAT32(long a)
+        
+        internal static int silk_SAT32(long a)
         {
             return a > int.MaxValue ? int.MaxValue : ((a) < int.MinValue ? int.MinValue : (int)(a));
         }
@@ -1370,16 +1301,16 @@ namespace Concentus.Common
         /// <param name="a16"></param>
         /// <param name="b16"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_ADD_SAT16(short a16, short b16)
+        
+        internal static short silk_ADD_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_ADD32((int)(a16), (b16)));
             Inlines.OpusAssert(res == silk_SAT16((int)a16 + (int)b16));
             return res;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD_SAT32(int a32, int b32)
+        
+        internal static int silk_ADD_SAT32(int a32, int b32)
         {
             int res = (unchecked(((long)(a32) + (long)(b32)) & 0x80000000) == 0 ?
                 ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
@@ -1388,44 +1319,26 @@ namespace Concentus.Common
             return res;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_ADD_SAT64(long a64, long b64)
+        
+        internal static long silk_ADD_SAT64(long a64, long b64)
         {
             long res;
             res = (unchecked((a64 + b64) & long.MinValue) == 0 ?
                 (unchecked((a64 & b64) & long.MinValue) != 0 ? long.MinValue : a64 + b64) :
                 (unchecked((a64 | b64) & long.MinValue) == 0 ? long.MaxValue : a64 + b64));
-#if DEBUG_MACROS
-            bool fail = false;
-            if (res != a64 + b64)
-            {
-                /* Check that we saturated to the correct extreme value */
-                if (!((res == long.MaxValue && ((a64 >> 1) + (b64 >> 1) > (long.MaxValue >> 3))) ||
-                       (res == long.MinValue && ((a64 >> 1) + (b64 >> 1) < (long.MinValue >> 3)))))
-                {
-                    fail = true;
-                }
-            }
-            else
-            {
-                /* Saturation not necessary */
-                fail = res != a64 + b64;
-            }
-            Inlines.OpusAssert(!fail);
-#endif
             return res;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_SUB_SAT16(short a16, short b16)
+        
+        internal static short silk_SUB_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_SUB32((int)(a16), (b16)));
             Inlines.OpusAssert(res == silk_SAT16((int)a16 - (int)b16));
             return res;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SUB_SAT32(int a32, int b32)
+        
+        internal static int silk_SUB_SAT32(int a32, int b32)
         {
             int res = ((((long)a32 - b32) & 0x80000000) == 0 ?
                 (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
@@ -1434,31 +1347,13 @@ namespace Concentus.Common
             return res;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_SUB_SAT64(long a64, long b64)
+        
+        internal static long silk_SUB_SAT64(long a64, long b64)
         {
             long res;
-            res = (unchecked((ulong)((a64) - (b64)) & 0x8000000000000000UL) == 0 ?
-                (((ulong)(a64) & ((ulong)(b64) ^ 0x8000000000000000UL) & 0x8000000000000000UL) != 0 ? long.MinValue : (a64) - (b64)) :
-                ((((ulong)(a64) ^ 0x8000000000000000UL) & (ulong)(b64) & 0x8000000000000000UL) != 0 ? long.MaxValue : (a64) - (b64)));
-#if DEBUG_MACROS
-            bool fail = false;
-            if (res != a64 - b64)
-            {
-                /* Check that we saturated to the correct extreme value */
-                if (!((res == long.MaxValue && ((a64 >> 1) + (b64 >> 1) > (long.MaxValue >> 3))) ||
-                      (res == long.MinValue && ((a64 >> 1) + (b64 >> 1) < (long.MinValue >> 3)))))
-                {
-                    fail = true;
-                }
-            }
-            else
-            {
-                /* Saturation not necessary */
-                fail = res != a64 - b64;
-            }
-            Inlines.OpusAssert(!fail);
-#endif
+            res = (unchecked((long)((a64) - (b64)) & long.MinValue) == 0 ?
+                (((long)(a64) & ((long)(b64) ^ long.MinValue) & long.MinValue) != 0 ? long.MinValue : (a64) - (b64)) :
+                ((((long)(a64) ^ long.MinValue) & (long)(b64) & long.MinValue) != 0 ? long.MaxValue : (a64) - (b64)));
             return res;
         }
 
@@ -1471,8 +1366,8 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte silk_ADD_POS_SAT8(sbyte a, sbyte b)
+        
+        internal static sbyte silk_ADD_POS_SAT8(sbyte a, sbyte b)
         {
             return (sbyte)((((a + b) & 0x80) != 0) ? sbyte.MaxValue : (a + b));
         }
@@ -1483,8 +1378,8 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_ADD_POS_SAT16(short a, short b)
+        
+        internal static short silk_ADD_POS_SAT16(short a, short b)
         {
             return (short)(unchecked(((a + b) & 0x8000) != 0) ? short.MaxValue : (a + b));
         }
@@ -1495,8 +1390,8 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD_POS_SAT32(int a, int b)
+        
+        internal static int silk_ADD_POS_SAT32(int a, int b)
         {
             return (unchecked(((a + b) & 0x80000000) != 0) ? int.MaxValue : (a + b));
         }
@@ -1507,91 +1402,50 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_ADD_POS_SAT64(long a, long b)
+        
+        internal static long silk_ADD_POS_SAT64(long a, long b)
         {
             return ((unchecked((ulong)(a + b) & 0x8000000000000000L) != 0) ? long.MaxValue : (a + b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte silk_LSHIFT8(sbyte a, int shift)
+        
+        internal static sbyte silk_LSHIFT8(sbyte a, int shift)
         {
             sbyte ret = (sbyte)(a << shift);
-#if DEBUG_MACROS
-            bool fail = false;
-            fail |= shift < 0;
-            fail |= shift >= 8;
-            fail |= (long)ret != ((long)a) << shift;
-            Inlines.OpusAssert(!fail);
-#endif
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_LSHIFT16(short a, int shift)
+        
+        internal static short silk_LSHIFT16(short a, int shift)
         {
             short ret = (short)(a << shift);
-#if DEBUG_MACROS
-            bool fail = false;
-            fail |= shift < 0;
-            fail |= shift >= 16;
-            fail |= (long)ret != ((long)a) << shift;
-            Inlines.OpusAssert(!fail);
-#endif
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_LSHIFT32(int a, int shift)
+        
+        internal static int silk_LSHIFT32(int a, int shift)
         {
             int ret = a << shift;
-#if DEBUG_MACROS
-            bool fail = false;
-            fail |= shift < 0;
-            fail |= shift >= 32;
-            fail |= (long)ret != ((long)a) << shift;
-            Inlines.OpusAssert(!fail);
-#endif
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_LSHIFT64(long a, int shift)
+        
+        internal static long silk_LSHIFT64(long a, int shift)
         {
             long ret = a << shift;
-#if DEBUG_MACROS
-            bool fail = false;
-            fail |= shift < 0;
-            fail |= shift >= 64;
-            fail |= (ret >> shift) != ((long)a);
-            Inlines.OpusAssert(!fail);
-#endif
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_LSHIFT(int a, int shift)
+        
+        internal static int silk_LSHIFT(int a, int shift)
         {
             int ret = a << shift;
-#if DEBUG_MACROS
-            bool fail = false;
-            fail |= shift < 0;
-            fail |= shift >= 32;
-            fail |= (long)ret != ((long)a) << shift;
-            Inlines.OpusAssert(!fail);
-#endif
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_LSHIFT_ovflw(int a, int shift)
+        
+        internal static int silk_LSHIFT_ovflw(int a, int shift)
         {
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift >= 32)) /* no check for overflow */
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return a << shift;
         }
 
@@ -1601,227 +1455,135 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="shift"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_LSHIFT_SAT32(int a, int shift)
+        
+        internal static int silk_LSHIFT_SAT32(int a, int shift)
         {
             return (silk_LSHIFT32(silk_LIMIT((a), silk_RSHIFT32(int.MinValue, (shift)), silk_RSHIFT32(int.MaxValue, (shift))), (shift)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte silk_RSHIFT8(sbyte a, int shift)
+        
+        internal static sbyte silk_RSHIFT8(sbyte a, int shift)
         {
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift >= 8))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return (sbyte)(a >> shift);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_RSHIFT16(short a, int shift)
+        
+        internal static short silk_RSHIFT16(short a, int shift)
         {
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift >= 16))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return (short)(a >> shift);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_RSHIFT32(int a, int shift)
+        
+        internal static int silk_RSHIFT32(int a, int shift)
         {
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift >= 32))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return a >> shift;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_RSHIFT(int a, int shift)
+        
+        internal static int silk_RSHIFT(int a, int shift)
         {
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift >= 32))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return a >> shift;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_RSHIFT64(long a, int shift)
+        
+        internal static long silk_RSHIFT64(long a, int shift)
         {
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift >= 64))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return a >> shift;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_RSHIFT_uint(long a, int shift)
+        
+        internal static long silk_RSHIFT_uint(long a, int shift)
         {
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 32))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return CapToUInt32(a) >> shift;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD_LSHIFT(int a, int b, int shift)
+        
+        internal static int silk_ADD_LSHIFT(int a, int b, int shift)
         {
             int ret = a + (b << shift);
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) << shift)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;                /* shift >= 0 */
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD_LSHIFT32(int a, int b, int shift)
+        
+        internal static int silk_ADD_LSHIFT32(int a, int b, int shift)
         {
             int ret = a + (b << shift);
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) << shift)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;                /* shift >= 0 */
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD_RSHIFT(int a, int b, int shift)
+        
+        internal static int silk_ADD_RSHIFT(int a, int b, int shift)
         {
             int ret = a + (b >> shift);
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) >> shift)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;                /* shift  > 0 */
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD_RSHIFT32(int a, int b, int shift)
+        
+        internal static int silk_ADD_RSHIFT32(int a, int b, int shift)
         {
             int ret = a + (b >> shift);
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) >> shift)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;                /* shift  > 0 */
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_ADD_RSHIFT_uint(long a, long b, int shift)
+        
+        internal static long silk_ADD_RSHIFT_uint(long a, long b, int shift)
         {
             long ret = CapToUInt32(a + (CapToUInt32(b) >> shift));
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) >> shift)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;                /* shift  > 0 */
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SUB_LSHIFT32(int a, int b, int shift)
+        
+        internal static int silk_SUB_LSHIFT32(int a, int b, int shift)
         {
             int ret;
             ret = a - (b << shift);
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a - (((long)b) << shift)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;                /* shift >= 0 */
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SUB_RSHIFT32(int a, int b, int shift)
+        
+        internal static int silk_SUB_RSHIFT32(int a, int b, int shift)
         {
             int ret;
             ret = a - (b >> shift);
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 31) || ((long)ret != (long)a - (((long)b) >> shift)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;                /* shift  > 0 */
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_RSHIFT_ROUND(int a, int shift)
+        
+        internal static int silk_RSHIFT_ROUND(int a, int shift)
         {
             int ret;
             ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
-#if DEBUG_MACROS
-            /* the marco definition can't handle a shift of zero */
-            if ((shift <= 0) || (shift > 31) || ((long)ret != ((long)a + ((long)1 << (shift - 1))) >> shift))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_RSHIFT_ROUND64(long a, int shift)
+        
+        internal static long silk_RSHIFT_ROUND64(long a, int shift)
         {
             long ret;
-#if DEBUG_MACROS
-            /* the macro definition can't handle a shift of zero */
-            if ((shift <= 0) || (shift >= 64))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_min(int a, int b)
+        
+        internal static int silk_min(int a, int b)
         {
             return ((a) < (b)) ? (a) : (b);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_max(int a, int b)
+        
+        internal static int silk_max(int a, int b)
         {
             return ((a) > (b)) ? (a) : (b);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float silk_min(float a, float b)
+        
+        internal static float silk_min(float a, float b)
         {
             return ((a) < (b)) ? (a) : (b);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float silk_max(float a, float b)
+        
+        internal static float silk_max(float a, float b)
         {
             return ((a) > (b)) ? (a) : (b);
         }
@@ -1830,124 +1592,124 @@ namespace Concentus.Common
         /// Macro to convert floating-point constants to fixed-point by applying a scalar factor
         /// Because of limitations of the C# JIT, this macro is actually evaluated at runtime and therefore should not be used if you want to maximize performance
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SILK_CONST(float number, int scale)
+        
+        internal static int SILK_CONST(float number, int scale)
         {
             return ((int)((number) * ((long)1 << (scale)) + 0.5));
         }
 
         /* silk_min() versions with typecast in the function call */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_min_int(int a, int b)
+        
+        internal static int silk_min_int(int a, int b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_min_16(short a, short b)
+        
+        internal static short silk_min_16(short a, short b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_min_32(int a, int b)
+        
+        internal static int silk_min_32(int a, int b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_min_64(long a, long b)
+        
+        internal static long silk_min_64(long a, long b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
         /* silk_min() versions with typecast in the function call */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_max_int(int a, int b)
+        
+        internal static int silk_max_int(int a, int b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_max_16(short a, short b)
+        
+        internal static short silk_max_16(short a, short b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_max_32(int a, int b)
+        
+        internal static int silk_max_32(int a, int b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_max_64(long a, long b)
+        
+        internal static long silk_max_64(long a, long b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float silk_LIMIT(float a, float limit1, float limit2)
+        
+        internal static float silk_LIMIT(float a, float limit1, float limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_LIMIT(int a, int limit1, int limit2)
+        
+        internal static int silk_LIMIT(int a, int limit1, int limit2)
         {
             return silk_LIMIT_32(a, limit1, limit2);
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_LIMIT_int(int a, int limit1, int limit2)
+        
+        internal static int silk_LIMIT_int(int a, int limit1, int limit2)
         {
             return silk_LIMIT_32(a, limit1, limit2);
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short silk_LIMIT_16(short a, short limit1, short limit2)
+        
+        internal static short silk_LIMIT_16(short a, short limit1, short limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_LIMIT_32(int a, int limit1, int limit2)
+        
+        internal static int silk_LIMIT_32(int a, int limit1, int limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_abs(int a)
+        
+        internal static int silk_abs(int a)
         {
             // Be careful, silk_abs returns wrong when input equals to silk_intXX_MIN
             return ((a) > 0) ? (a) : -(a);
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_abs_int16(int a)
+        
+        internal static int silk_abs_int16(int a)
         {
             return (a ^ (a >> 15)) - (a >> 15);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_abs_int32(int a)
+        
+        internal static int silk_abs_int32(int a)
         {
             return (a ^ (a >> 31)) - (a >> 31);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_abs_int64(long a)
+        
+        internal static long silk_abs_int64(long a)
         {
             return ((a) > 0) ? (a) : -(a);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_sign(int a)
+        
+        internal static long silk_sign(int a)
         {
             return (a) > 0 ? 1 : ((a) < 0 ? -1 : 0);
         }
@@ -1958,8 +1720,8 @@ namespace Concentus.Common
         /// frames), otherwise result won't be random at all. When only using some of the
         /// bits, take the most significant bits by right-shifting.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_RAND(int seed)
+        
+        internal static int silk_RAND(int seed)
         {
             return silk_MLA_ovflw(907633515, seed, 196314165);
         }
@@ -1970,23 +1732,17 @@ namespace Concentus.Common
         /// <param name="a32"></param>
         /// <param name="b32"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMMUL(int a32, int b32)
+        
+        internal static int silk_SMMUL(int a32, int b32)
         {
             return (int)silk_RSHIFT64(silk_SMULL((a32), (b32)), 32);
         }
 
         /* a32 + (b32 * (c32 >> 16)) >> 16 */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMLAWT(int a32, int b32, int c32)
+        
+        internal static int silk_SMLAWT(int a32, int b32, int c32)
         {
             int ret = a32 + ((b32 >> 16) * (c32 >> 16)) + (((b32 & 0x0000FFFF) * ((c32 >> 16)) >> 16));
-#if DEBUG_MACROS
-            if ((long)ret != (long)a32 + (((long)b32 * (c32 >> 16)) >> 16))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;
         }
 
@@ -1997,8 +1753,8 @@ namespace Concentus.Common
         /// <param name="b32">I    denominator (Q0)</param>
         /// <param name="Qres">I    Q-domain of result (>= 0)</param>
         /// <returns>O    returns a good approximation of "(a32 << Qres) / b32"</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_DIV32_varQ(int a32, int b32, int Qres)
+        
+        internal static int silk_DIV32_varQ(int a32, int b32, int Qres)
         {
             int a_headrm, b_headrm, lshift;
             int b32_inv, a32_nrm, b32_nrm, result;
@@ -2051,8 +1807,8 @@ namespace Concentus.Common
         /// <param name="b32">I    denominator (Q0)</param>
         /// <param name="Qres">I    Q-domain of result (> 0)</param>
         /// <returns>a good approximation of "(1 << Qres) / b32"</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_INVERSE32_varQ(int b32, int Qres)
+        
+        internal static int silk_INVERSE32_varQ(int b32, int Qres)
         {
             int b_headrm, lshift;
             int b32_inv, b32_nrm, err_Q32, result;
@@ -2102,74 +1858,68 @@ namespace Concentus.Common
         /// a32 + (b32 * (int)((short)(c32))) >> 16 output have to be 32bit int
         /// </summary>
         // fixme: This method should be as optimized as possible
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMLAWB(int a32, int b32, int c32)
+        
+        internal static int silk_SMLAWB(int a32, int b32, int c32)
         {
             //return (int)(a32 + ((b32 * (long)((short)c32)) >> 16));
             int ret;
             ret = a32 + silk_SMULWB(b32, c32);
-#if DEBUG_MACROS
-            if (silk_ADD32(a32, silk_SMULWB(b32, c32)) != silk_ADD_SAT32(a32, silk_SMULWB(b32, c32)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
             return ret;
         }
 
         ///* (a32 * (b32 >> 16)) >> 16 */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMULWT(int a32, int b32)
+        
+        internal static int silk_SMULWT(int a32, int b32)
         {
             return (((a32) >> 16) * ((b32) >> 16) + ((((a32) & 0x0000FFFF) * ((b32) >> 16)) >> 16));
         }
 
         ///* (int)((short)(a32)) * (b32 >> 16) */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMULBT(int a32, int b32)
+        
+        internal static int silk_SMULBT(int a32, int b32)
         {
             return ((int)((short)(a32)) * ((b32) >> 16));
         }
 
         ///* a32 + (int)((short)(b32)) * (c32 >> 16) */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMLABT(int a32, int b32, int c32)
+        
+        internal static int silk_SMLABT(int a32, int b32, int c32)
         {
             return ((a32) + ((int)((short)(b32))) * ((c32) >> 16));
         }
 
         ///* a64 + (b32 * c32) */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_SMLAL(long a64, int b32, int c32)
+        
+        internal static long silk_SMLAL(long a64, int b32, int c32)
         {
             return (silk_ADD64((a64), ((long)(b32) * (long)(c32))));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MatrixSet<T>(T[] Matrix_base_adr, int Matrix_ptr, int row, int column, int N, T value)
+        
+        internal static void MatrixSet<T>(T[] Matrix_base_adr, int Matrix_ptr, int row, int column, int N, T value)
         {
             Matrix_base_adr[Matrix_ptr + (row * N) + column] = value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MatrixGetPointer(int row, int column, int N)
+        
+        internal static int MatrixGetPointer(int row, int column, int N)
         {
             return (row * N) + column;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
+        
+        internal static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr[((row) * (N)) + (column)];
         }
 
-        public static T MatrixGet<T>(T[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
+        internal static T MatrixGet<T>(T[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
         {
             return Matrix_base_adr[matrix_ptr + (row * N) + column];
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MatrixSet<T>(T[] Matrix_base_adr, int row, int column, int N, T value)
+        
+        internal static void MatrixSet<T>(T[] Matrix_base_adr, int row, int column, int N, T value)
         {
             Matrix_base_adr[((row) * (N)) + (column)] = value;
         }
@@ -2177,64 +1927,26 @@ namespace Concentus.Common
         /// <summary>
         /// (a32 * b32) >> 16
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMULWW(int a32, int b32)
+        
+        internal static int silk_SMULWW(int a32, int b32)
         {
-#if DEBUG_MACROS
-            int ret, tmp1, tmp2;
-            long ret64;
-            bool fail = false;
-
-            ret = silk_SMULWB(a32, b32);
-            tmp1 = silk_RSHIFT_ROUND(b32, 16);
-            tmp2 = silk_MUL(a32, tmp1);
-
-            fail |= (long)tmp2 != (long)a32 * (long)tmp1;
-
-            tmp1 = ret;
-            ret = silk_ADD32(tmp1, tmp2);
-            fail |= silk_ADD32(tmp1, tmp2) != silk_ADD_SAT32(tmp1, tmp2);
-
-            ret64 = silk_RSHIFT64(silk_SMULL(a32, b32), 16);
-            fail |= (long)ret != ret64;
-
-            if (fail)
-            {
-                Inlines.OpusAssert(false);
-            }
-
-            return ret;
-#else
             //return CHOP32(((long)(a32) * (b32)) >> 16);
             return silk_MLA(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16));
-#endif
         }
 
         /// <summary>
         /// a32 + ((b32 * c32) >> 16)
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SMLAWW(int a32, int b32, int c32)
+        
+        internal static int silk_SMLAWW(int a32, int b32, int c32)
         {
-#if DEBUG_MACROS
-            int ret, tmp;
-
-            tmp = silk_SMULWW(b32, c32);
-            ret = silk_ADD32(a32, tmp);
-            if (ret != silk_ADD_SAT32(a32, tmp))
-            {
-                Inlines.OpusAssert(false);
-            }
-            return ret;
-#else
             //return CHOP32(((a32) + (((long)(b32) * (c32)) >> 16)));
             return silk_MLA(silk_SMLAWB((a32), (b32), (c32)), (b32), silk_RSHIFT_ROUND((c32), 16));
-#endif
         }
 
         /* count leading zeros of opus_int64 */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_CLZ64(long input)
+        
+        internal static int silk_CLZ64(long input)
         {
             int in_upper;
 
@@ -2250,8 +1962,8 @@ namespace Concentus.Common
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_CLZ32(int in32)
+        
+        internal static int silk_CLZ32(int in32)
         {
             return in32 == 0 ? 32 : 32 - EC_ILOG(in32);
         }
@@ -2262,8 +1974,8 @@ namespace Concentus.Common
         /// <param name="input">input</param>
         /// <param name="lz">number of leading zeros</param>
         /// <param name="frac_Q7">the 7 bits right after the leading one</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void silk_CLZ_FRAC(int input, out int lz, out int frac_Q7)
+        
+        internal static void silk_CLZ_FRAC(int input, out int lz, out int frac_Q7)
         {
             int lzeros = silk_CLZ32(input);
 
@@ -2278,10 +1990,9 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_SQRT_APPROX(int x)
+        
+        internal static int silk_SQRT_APPROX(int x)
         {
-#if PARITY
             int y, lz, frac_Q7;
 
             if (x <= 0)
@@ -2306,14 +2017,10 @@ namespace Concentus.Common
             y = silk_SMLAWB(y, y, silk_SMULBB(213, frac_Q7));
 
             return y;
-#else
-            // This is 10x faster
-            return (int)(Math.Sqrt(x));
-#endif
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int MUL32_FRAC_Q(int a32, int b32, int Q)
+        
+        internal static int MUL32_FRAC_Q(int a32, int b32, int Q)
         {
             return ((int)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)));
         }
@@ -2324,8 +2031,8 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="inLin">(I) input in linear scale</param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_lin2log(int inLin)
+        
+        internal static int silk_lin2log(int inLin)
         {
             int lz, frac_Q7;
 
@@ -2341,8 +2048,8 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="inLog_Q7">input on log scale</param>
         /// <returns>Linearized value</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_log2lin(int inLog_Q7)
+        
+        internal static int silk_log2lin(int inLog_Q7)
         {
             int output, frac_Q7;
 
@@ -2380,8 +2087,8 @@ namespace Concentus.Common
         /// <param name="x1">(I) second vector [MAX_LPC_ORDER]</param>
         /// <param name="ifact_Q2">(I) interp. factor, weight on 2nd vector</param>
         /// <param name="d">(I) number of parameters</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void silk_interpolate(
+        
+        internal static void silk_interpolate(
             short[] xi,
             short[] x0,
             short[] x1,
@@ -2407,8 +2114,8 @@ namespace Concentus.Common
         /// <param name="scale">I number of bits to shift</param>
         /// <param name="len">I vector lengths</param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_inner_prod_aligned_scale(
+        
+        internal static int silk_inner_prod_aligned_scale(
             short[] inVec1,
             short[] inVec2,
             int scale,
@@ -2424,8 +2131,8 @@ namespace Concentus.Common
         }
 
         /* Copy and multiply a vector by a constant */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void silk_scale_copy_vector16(
+        
+        internal static void silk_scale_copy_vector16(
             short[] data_out,
             int data_out_ptr,
         short[] data_in,
@@ -2441,8 +2148,8 @@ namespace Concentus.Common
         }
 
         /* Multiply a vector by a constant */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void silk_scale_vector32_Q26_lshift_18(
+        
+        internal static void silk_scale_vector32_Q26_lshift_18(
             int[] data1,             /* I/O  Q0/Q18                                                      */
             int data1_ptr,
             int gain_Q26,           /* I    Q26                                                         */
@@ -2456,8 +2163,8 @@ namespace Concentus.Common
         }
 
         /* sum = for(i=0;i<len;i++)inVec1[i]*inVec2[i];      ---        inner product   */
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_inner_prod(
+        
+        internal static int silk_inner_prod(
             short[] inVec1,             /*    I input vector 1                                              */
             int inVec1_ptr,
             short[] inVec2,             /*    I input vector 2                                              */
@@ -2472,8 +2179,8 @@ namespace Concentus.Common
             return xy;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_inner_prod_self(
+        
+        internal static int silk_inner_prod_self(
             short[] inVec,             /*    I input vector 1 (will be crossed with itself)                                             */
             int inVec_ptr,
             int len                /*    I vector lengths                                              */
@@ -2486,8 +2193,8 @@ namespace Concentus.Common
             return xy;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long silk_inner_prod16_aligned_64(
+        
+        internal static long silk_inner_prod16_aligned_64(
             short[] inVec1,             /*    I input vector 1                                              */
             int inVec1_ptr,
             short[] inVec2,             /*    I input vector 2                                              */
@@ -2515,16 +2222,15 @@ namespace Concentus.Common
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long EC_MINI(long a, long b)
+        
+        internal static long EC_MINI(long a, long b)
         {
             return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EC_ILOG(long x)
+        
+        internal static int EC_ILOG(long x)
         {
-#if PARITY
             if(x == 0)
                 return 1;
             x |= (x >> 1);
@@ -2539,50 +2245,28 @@ namespace Concentus.Common
             y += (y >> 16);
             y = (y & 0x0000003f);
             return (int)y;
-#else
-            // On a Pentium M, this branchless version tested as the fastest on
-            // 1,000,000,000 random 32-bit integers, edging out a similar version with
-            // branches, and a 256-entry LUT version.
-            int ret;
-            int m;
-            ret = _x == 0 ? 0 : 1;
-            m = ((_x & 0xFFFF0000U) == 0 ? 0 : 1) << 4;
-            _x >>= m;
-            ret |= m;
-            m = ((_x & 0xFF00U) == 0 ? 0 : 1) << 3;
-            _x >>= m;
-            ret |= m;
-            m = ((_x & 0xF0U) == 0 ? 0 : 1) << 2;
-            _x >>= m;
-            ret |= m;
-            m = ((_x & 0xCU) == 0 ? 0 : 1) << 1;
-            _x >>= m;
-            ret |= m;
-            ret += (_x & 0x2U) == 0 ? 0 : 1;
-            return ret;
-#endif
         }
 
 #endregion
 
 #region C++ Math
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int abs(int a)
+        
+        internal static int abs(int a)
         {
             if (a < 0)
                 return 0 - a;
             return a;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SignedByteToUnsignedInt(sbyte b)
+        
+        internal static int SignedByteToUnsignedInt(sbyte b)
         {
             return (b & 0xFF);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int SignedByteToUnsignedInt(byte b)
+        
+        internal static int SignedByteToUnsignedInt(byte b)
         {
             return (b & 0xFF);
         }

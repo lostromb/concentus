@@ -269,10 +269,7 @@ namespace Concentus.Celt
             /* *tf_estimate = 1 + Inlines.MIN16(1, sqrt(Inlines.MAX16(0, tf_max-30))/20); */
             tf_estimate = (Inlines.celt_sqrt(Inlines.MAX32(0, Inlines.SHL32(Inlines.MULT16_16(((short)(0.5 + (0.0069f) * (((int)1) << (14))))/*Inlines.QCONST16(0.0069f, 14)*/, Inlines.MIN16(163, tf_max)), 14) - ((int)(0.5 + (0.139f) * (((int)1) << (28))))/*Inlines.QCONST32(0.139f, 28)*/)));
             /*printf("%d %f\n", tf_max, mask_metric);*/
-
-#if FUZZING
-            is_transient = new Random().Next() & 0x1;
-#endif
+            
             /*printf("%d %f %d\n", is_transient, (float)*tf_estimate, tf_max);*/
             return is_transient;
         }
@@ -641,16 +638,7 @@ namespace Concentus.Celt
                     tf_res[i] = path0[i + 1];
             }
             /*printf("%d %f\n", *tf_sum, tf_estimate);*/
-
-#if FUZZING
-            Random rand = new Random();
-            tf_select = rand.Next() & 0x1;
-            tf_res[0] = rand.Next() & 0x1;
-            for (i = 1; i < len; i++)
-            {
-                tf_res[i] = tf_res[i - 1] ^ ((rand.Next() & 0xF) == 0 ? 1 : 0);
-            }
-#endif
+            
             return tf_select;
         }
 
@@ -763,9 +751,7 @@ namespace Concentus.Celt
             trim_index = Inlines.PSHR32(trim, 8);
             trim_index = Inlines.IMAX(0, Inlines.IMIN(10, trim_index));
             /*printf("%d\n", trim_index);*/
-#if FUZZING
-            trim_index = new Random().Next() % 11;
-#endif
+
             return trim_index;
         }
 

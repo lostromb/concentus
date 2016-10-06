@@ -531,10 +531,6 @@ namespace Concentus.Celt
             else {
                 decision = Spread.SPREAD_NONE;
             }
-#if FUZZING
-            decision = new Random().Next() & 0x3;
-            tapset_decision.Val = new Random().Next() % 3;
-#endif
             return decision;
         }
 

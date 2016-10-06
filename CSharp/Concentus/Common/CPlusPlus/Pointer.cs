@@ -46,46 +46,7 @@ namespace Concentus.Common.CPlusPlus
     public class Pointer<T>
     {
         private const bool CHECK_UNINIT_MEM = false;
-
-#if DEBUG
-        private class Statistics
-        {
-            public Statistics(int baseOffset)
-            {
-                this.baseOffset = baseOffset;
-            }
-
-            public int baseOffset;
-            public int minReadIndex = int.MaxValue;
-            public int maxReadIndex = int.MinValue;
-            public int minWriteIndex = int.MaxValue;
-            public int maxWriteIndex = int.MinValue;
-
-            public Tuple<int, int> ReadRange
-            {
-                get
-                {
-                    if (minReadIndex == int.MaxValue || maxReadIndex == int.MinValue)
-                        return null;
-                    return new Tuple<int, int>(minReadIndex - baseOffset, maxReadIndex - baseOffset);
-                }
-            }
-
-            public Tuple<int, int> WriteRange
-            {
-                get
-                {
-                    if (minWriteIndex == int.MaxValue || maxWriteIndex == int.MinValue)
-                        return null;
-                    return new Tuple<int, int>(minWriteIndex - baseOffset, maxWriteIndex - baseOffset);
-                }
-            }
-        }
-        private bool[] _initialized;
-        private Statistics _statistics;
-        private int _length;
-#endif
-
+        
         private T[] _array;
         private int _offset;
 
@@ -93,84 +54,20 @@ namespace Concentus.Common.CPlusPlus
         {
             _array = new T[capacity];
             _offset = 0;
-#if DEBUG
-            _length = capacity;
-            _statistics = new Statistics(0);
-            _initialized = new bool[capacity];
-            for (int c = 0; c < capacity; c++)
-            {
-                _initialized[c] = false;
-            }
-#endif
         }
 
         public Pointer(T[] buffer)
         {
             _array = buffer;
             _offset = 0;
-#if DEBUG
-            _length = buffer.Length;
-            _statistics = new Statistics(0);
-            _initialized = new bool[buffer.Length];
-            for (int c = 0; c < buffer.Length; c++)
-            {
-                _initialized[c] = true;
-            }
-#endif
         }
 
         public Pointer(T[] buffer, int absoluteOffset)
         {
             _array = buffer;
             _offset = absoluteOffset;
-#if DEBUG
-            _length = buffer.Length - absoluteOffset;
-            //Inlines.OpusAssert(_length >= 0, "Attempted to point past the end of an array");
-            _statistics = new Statistics(absoluteOffset);
-            _initialized = new bool[buffer.Length];
-            for (int c = 0; c < buffer.Length; c++)
-            {
-                _initialized[c] = true;
-            }
-#endif
         }
-
-#if DEBUG
-        private Pointer(T[] buffer, int absoluteOffset, Statistics statistics, bool[] initializedStatus)
-        {
-            _array = buffer;
-            _offset = absoluteOffset;
-            _length = buffer.Length - absoluteOffset;
-            //Inlines.OpusAssert(_length >= 0, "Attempted to point past the end of an array");
-            _statistics = statistics;
-            _initialized = initializedStatus;
-        }
-
-        public Tuple<int, int> ReadRange
-        {
-            get
-            {
-                return _statistics.ReadRange;
-            }
-        }
-
-        public Tuple<int, int> WriteRange
-        {
-            get
-            {
-                return _statistics.WriteRange;
-            }
-        }
-
-        public int Length
-        {
-            get
-            {
-                return _length;
-            }
-        }
-#endif
-
+        
         public int Offset
         {
             get
@@ -192,23 +89,11 @@ namespace Concentus.Common.CPlusPlus
         {
             get
             {
-#if DEBUG
-                if (CHECK_UNINIT_MEM) Inlines.OpusAssert(_initialized[index + _offset], "Attempted to read from uninitialized memory!");
-                // Inlines.OpusAssert(index < _length, "Attempted to read past the end of an array!");
-                _statistics.maxReadIndex = Math.Max(_statistics.maxReadIndex, index + _offset);
-                _statistics.minReadIndex = Math.Min(_statistics.minReadIndex, index + _offset);
-#endif
                 return _array[index + _offset];
             }
 
             set
             {
-#if DEBUG
-                // Inlines.OpusAssert(index < _length, "Attempted to write past the end of an array!");
-                _statistics.maxWriteIndex = Math.Max(_statistics.maxWriteIndex, index + _offset);
-                _statistics.minWriteIndex = Math.Min(_statistics.minWriteIndex, index + _offset);
-                _initialized[index + _offset] = true;
-#endif
                 _array[index + _offset] = value;
             }
         }
@@ -237,20 +122,7 @@ namespace Concentus.Common.CPlusPlus
             returnVal = _array[_offset];
             return Point(1);
         }
-
-#if DEBUG
-        public Pointer<T> Point(int relativeOffset)
-        {
-            if (relativeOffset == 0) return this;
-            return new Pointer<T>(_array, _offset + relativeOffset, _statistics, _initialized);
-        }
-
-        public Pointer<T> Point(uint relativeOffset)
-        {
-            if (relativeOffset == 0) return this;
-            return new Pointer<T>(_array, _offset + (int)relativeOffset, _statistics, _initialized);
-        }
-#else
+        
         public Pointer<T> Point(int relativeOffset)
         {
             if (relativeOffset == 0) return this;
@@ -262,7 +134,6 @@ namespace Concentus.Common.CPlusPlus
             if (relativeOffset == 0) return this;
             return new Pointer<T>(_array, _offset + (int)relativeOffset);
         }
-#endif
 
         private static string invert_endianness(string hexstring)
         {
@@ -308,26 +179,6 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
-        /// <summary>
-        /// Copies the contents of this pointer, starting at its current address, into the space of another pointer.
-        /// !!! IMPORTANT !!! REMEMBER THAT C++ memcpy is (DEST, SOURCE, LENGTH) !!!!
-        /// IN C# IT IS (SOURCE, DEST, LENGTH). DON'T GET SCOOPED LIKE I DID
-        /// </summary>
-        /// <param name="destination"></param>
-        /// <param name="length"></param>
-#if DEBUG
-        public void MemCopyTo(Pointer<T> destination, int length, bool debug = false)
-        {
-            Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
-            if (debug)
-                PrintMemCopy(_array, _offset, length);
-            
-            for (int c = 0; c < length; c++)
-            {
-                destination[c] = _array[c + _offset];
-            }
-        }
-#else
         public void MemCopyTo(Pointer<T> destination, int length)
         {
             if (destination is Pointer<T>)
@@ -344,54 +195,22 @@ namespace Concentus.Common.CPlusPlus
                 }
             }
         }
-#endif
-
-        /// <summary>
-        /// Copies the contents of this pointer, starting at its current address, into an array.
-        /// !!! IMPORTANT !!! REMEMBER THAT C++ memcpy is (DEST, SOURCE, LENGTH) !!!!
-        /// </summary>
-        /// <param name="destination"></param>
-        /// <param name="length"></param>
-#if DEBUG
-        public void MemCopyTo(T[] destination, int destOffset, int length)
-        {
-            Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
-            //PrintMemCopy(_array, _offset, length);
-            for (int c = 0; c < length; c++)
-            {
-                destination[c + destOffset] = _array[c + _offset];
-            }
-        }
-#else
+        
         public void MemCopyTo(T[] destination, int offset, int length)
         {
             // Use the fast way if we have access to the base array
             Array.Copy(_array, _offset, destination, offset, length);
         }
-#endif
 
         /// <summary>
         /// Loads N values from a source array into this pointer's space
         /// </summary>
         /// <param name="destination"></param>
         /// <param name="length"></param>
-#if DEBUG
-        public void MemCopyFrom(T[] source, int sourceOffset, int length)
-        {
-            Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
-            //PrintMemCopy(source, sourceOffset, length);
-            for (int c = 0; c < length; c++)
-            {
-                _array[c + _offset] = source[c + sourceOffset];
-                _initialized[c + _offset] = true;
-            }
-        }
-#else
         public void MemCopyFrom(T[] source, int sourceOffset, int length)
         {
             Array.Copy(source, sourceOffset, _array, _offset, length);
         }
-#endif
 
         /// <summary>
         /// Assigns a certain value to a range of spaces in this array
@@ -400,9 +219,6 @@ namespace Concentus.Common.CPlusPlus
         /// <param name="length">The number of values to write</param>
         public void MemSet(T value, int length)
         {
-#if DEBUG
-            Inlines.OpusAssert(length >= 0, "Cannot memset() with a negative length!");
-#endif
             MemSet(value, (uint)length);
         }
 
@@ -416,9 +232,6 @@ namespace Concentus.Common.CPlusPlus
             for (int c = _offset; c < _offset + length; c++)
             {
                 _array[c] = value;
-#if DEBUG
-                _initialized[c] = true;
-#endif
             }
         }
 
@@ -446,63 +259,10 @@ namespace Concentus.Common.CPlusPlus
         /// </summary>
         /// <param name="move_dist">The offset to send this pointer's data to</param>
         /// <param name="length">The number of values to copy</param>
-#if DEBUG
-        public void MemMove(int move_dist, int length)
-        {
-            Inlines.OpusAssert(length >= 0, "Cannot memmove() with a negative length!");
-            if (move_dist == 0 || length == 0)
-                return;
-
-            // Do regions overlap?
-            if ((move_dist > 0 && move_dist < length) || (move_dist < 0 && 0 - move_dist > length))
-            {
-                // Take extra precautions
-                if (move_dist < 0)
-                {
-                    // Copy forwards
-                    for (int c = 0; c < length; c++)
-                    {
-                        _array[c + _offset + move_dist] = _array[c + _offset];
-                        _initialized[c + _offset + move_dist] = true;
-                    }
-                }
-                else
-                {
-                    // Copy backwards
-                    for (int c = length - 1; c >= 0; c--)
-                    {
-                        _array[c + _offset + move_dist] = _array[c + _offset];
-                        _initialized[c + _offset + move_dist] = true;
-                    }
-                }
-            }
-            else
-            {
-                for (int c = 0; c < length; c++)
-                {
-                    _array[c + _offset + move_dist] = _array[c + _offset];
-                    _initialized[c + _offset + move_dist] = true;
-                }
-            }
-        }
-#else
         public void MemMove(int move_dist, int length)
         {
             Arrays.MemMove(_array, _offset, _offset + move_dist, length);
         }
-#endif
-
-        /// <summary>
-        /// Simulates pointer zooming: newPtr = &ptr[offset].
-        /// Returns a pointer that is offset from this one within the same buffer.
-        /// </summary>
-        /// <param name="arg"></param>
-        /// <param name="offset"></param>
-        /// <returns></returns>
-        /*internal static Pointer<T> operator +(Pointer<T> arg, int offset)
-        {
-            return new Pointer<T>(arg._array, arg._offset + offset);
-        }*/
         
         public override bool Equals(object obj)
         {

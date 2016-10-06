@@ -520,11 +520,6 @@ namespace Concentus.Structs
                 this.stream_channels = this.force_channels;
             }
             else {
-#if FUZZING
-        /* Random mono/stereo decision */
-        if (st.channels == 2 && (new Random().Next() & 0x1F) == 0)
-            st.stream_channels = 3 - st.stream_channels;
-#else
                 /* Rate-dependent mono-stereo decision */
                 if (this.channels == 2)
                 {
@@ -539,7 +534,6 @@ namespace Concentus.Structs
                 else {
                     this.stream_channels = this.channels;
                 }
-#endif
             }
             equiv_rate = this.bitrate_bps - (40 * this.stream_channels + 20) * (this.Fs / frame_size - 50);
 
@@ -550,22 +544,6 @@ namespace Concentus.Structs
             }
             else if (this.user_forced_mode == OpusMode.MODE_AUTO)
             {
-#if FUZZING
-        /* Random mode switching */
-        if ((new Random().Next() & 0xF) == 0)
-        {
-            if ((new Random().Next() & 0x1) == 0)
-                st.mode = OpusMode.MODE_CELT_ONLY;
-            else
-                st.mode = OpusMode.MODE_SILK_ONLY;
-        }
-        else {
-            if (st.prev_mode == OpusMode.MODE_CELT_ONLY)
-                st.mode = OpusMode.MODE_CELT_ONLY;
-            else
-                st.mode = OpusMode.MODE_SILK_ONLY;
-        }
-#else
                 int mode_voice, mode_music;
                 int threshold;
 
@@ -595,7 +573,6 @@ namespace Concentus.Structs
                 /* When encoding voice and DTX is enabled, set the encoder to SILK mode (at least for now) */
                 if (this.silk_mode.useDTX != 0 && voice_est > 100)
                     this.mode = OpusMode.MODE_SILK_ONLY;
-#endif
             }
             else {
                 this.mode = this.user_forced_mode;

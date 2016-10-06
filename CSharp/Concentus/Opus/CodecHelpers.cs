@@ -691,17 +691,7 @@ namespace Concentus
 
         public static string GetVersionString()
         {
-            return "concentus 1.0a-fixed"
-#if DEBUG
-          + "-debug"
-#endif
-#if FUZZING
-          + "-fuzzing"
-#endif
-#if PARITY
-          + "-parity"
-#endif
-          ;
+            return "concentus 1.0a-java-fixed";
         }
     }
 }
