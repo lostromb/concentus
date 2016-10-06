@@ -199,11 +199,11 @@ public class OpusEncoder
         OpusEncoder st;
         if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000))
         {
-            throw new ArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
+            throw new IllegalArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
         }
         if (channels != 1 && channels != 2)
         {
-            throw new ArgumentException("Number of channels must be 1 or 2");
+            throw new IllegalArgumentException("Number of channels must be 1 or 2");
         }
 
         st = new OpusEncoder();
@@ -211,7 +211,7 @@ public class OpusEncoder
         if (ret != OpusError.OPUS_OK)
         {
             if (ret == OpusError.OPUS_BAD_ARG)
-                throw new ArgumentException("OPUS_BAD_ARG when creating encoder");
+                throw new IllegalArgumentException("OPUS_BAD_ARG when creating encoder");
             throw new OpusException("Error while initializing encoder", ret);
         }
         return st;
@@ -1369,7 +1369,7 @@ public class OpusEncoder
         // Check that the caller is telling the truth about its input buffers
         if (out_data_offset + max_data_bytes > out_data.Length)
         {
-            throw new ArgumentException(string.Format(
+            throw new IllegalArgumentException(string.Format(
                 "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
                 max_data_bytes, out_data.Length - out_data_offset));
         }
@@ -1387,7 +1387,7 @@ public class OpusEncoder
         // Check that input pcm length is >= frame_size
         if (pcm_offset + internal_frame_size > in_pcm.Length)
         {
-            throw new ArgumentException(string.Format(
+            throw new IllegalArgumentException(string.Format(
                 "Not enough samples provided in input signal: Expected {0} samples, found {1}",
                 internal_frame_size, in_pcm.Length - pcm_offset));
         }
@@ -1401,7 +1401,7 @@ public class OpusEncoder
             {
                 // An error happened; report it
                 if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new ArgumentException("OPUS_BAD_ARG while encoding");
+                    throw new IllegalArgumentException("OPUS_BAD_ARG while encoding");
                 throw new OpusException("An error occurred during encoding", ret);
             }
 
@@ -1434,7 +1434,7 @@ public class OpusEncoder
         // Check that the caller is telling the truth about its input buffers
         if (out_data_offset + max_data_bytes > out_data.Length)
         {
-            throw new ArgumentException(string.Format(
+            throw new IllegalArgumentException(string.Format(
                 "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
                 max_data_bytes, out_data.Length - out_data_offset));
         }
@@ -1456,7 +1456,7 @@ public class OpusEncoder
         // Check that input pcm length is >= frame_size
         if (pcm_offset + internal_frame_size > in_pcm.Length)
         {
-            throw new ArgumentException(string.Format(
+            throw new IllegalArgumentException(string.Format(
                 "Not enough samples provided in input signal: Expected {0} samples, found {1}",
                 internal_frame_size, in_pcm.Length - pcm_offset));
         }
@@ -1475,7 +1475,7 @@ public class OpusEncoder
             {
                 // An error happened; report it
                 if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new ArgumentException("OPUS_BAD_ARG while decoding");
+                    throw new IllegalArgumentException("OPUS_BAD_ARG while decoding");
                 throw new OpusException("An error occurred during encoding", ret);
             }
 
@@ -1506,7 +1506,7 @@ public class OpusEncoder
         {
             if (first == 0 && application != value)
             {
-                throw new ArgumentException("Application cannot be changed after encoding has started");
+                throw new IllegalArgumentException("Application cannot be changed after encoding has started");
             }
 
             application = value;
@@ -1527,7 +1527,7 @@ public class OpusEncoder
             if (value != OpusConstants.OPUS_AUTO && value != OpusConstants.OPUS_BITRATE_MAX)
             {
                 if (value <= 0)
-                    throw new ArgumentException("Bitrate must be positive");
+                    throw new IllegalArgumentException("Bitrate must be positive");
                 else if (value <= 500)
                     value = 500;
                 else if (value > (int)300000 * channels)
@@ -1552,7 +1552,7 @@ public class OpusEncoder
         {
             if ((value < 1 || value > channels) && value != OpusConstants.OPUS_AUTO)
             {
-                throw new ArgumentException("Force channels must be <= num. of channels");
+                throw new IllegalArgumentException("Force channels must be <= num. of channels");
             }
 
             force_channels = value;
@@ -1641,7 +1641,7 @@ public class OpusEncoder
         {
             if (value < 0 || value > 10)
             {
-                throw new ArgumentException("Complexity must be between 0 and 10");
+                throw new IllegalArgumentException("Complexity must be between 0 and 10");
             }
             silk_mode.complexity = value;
             Celt_Encoder.SetComplexity(value);
@@ -1679,7 +1679,7 @@ public class OpusEncoder
         {
             if (value < 0 || value > 100)
             {
-                throw new ArgumentException("Packet loss must be between 0 and 100");
+                throw new IllegalArgumentException("Packet loss must be between 0 and 100");
             }
             silk_mode.packetLossPercentage = value;
             Celt_Encoder.SetPacketLossPercent(value);
@@ -1716,7 +1716,7 @@ public class OpusEncoder
         {
             if (value < -1 || value > 100)
             {
-                throw new ArgumentException("Voice ratio must be between -1 and 100");
+                throw new IllegalArgumentException("Voice ratio must be between -1 and 100");
             }
 
             voice_ratio = value;
@@ -1801,7 +1801,7 @@ public class OpusEncoder
         {
             if (value < 8 || value > 24)
             {
-                throw new ArgumentException("LSB depth must be between 8 and 24");
+                throw new IllegalArgumentException("LSB depth must be between 8 and 24");
             }
 
             lsb_depth = value;

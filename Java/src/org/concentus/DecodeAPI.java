@@ -69,7 +69,7 @@ class DecodeAPI
         EntropyCoder psRangeDec,        /* I/O  Compressor data structure                       */
         short[] samplesOut,        /* O    Decoded output speech vector                    */
         int samplesOut_ptr,
-        out int nSamplesOut       /* O    Number of samples decoded                       */
+        BoxedValue<Integer> nSamplesOut       /* O    Number of samples decoded                       */
     )
     {
         int i, n, decode_only_middle = 0, ret = SilkError.SILK_NO_ERROR;
@@ -87,7 +87,7 @@ class DecodeAPI
         int has_side;
         int stereo_to_mono;
         int delay_stack_alloc;
-        nSamplesOut = 0;
+        nSamplesOut.Val = 0;
 
         Inlines.OpusAssert(decControl.nChannelsInternal == 1 || decControl.nChannelsInternal == 2);
 
@@ -158,8 +158,8 @@ class DecodeAPI
 
         if (decControl.nChannelsAPI == 2 && decControl.nChannelsInternal == 2 && (psDec.nChannelsAPI == 1 || psDec.nChannelsInternal == 1))
         {
-            Arrays.MemSet(psDec.sStereo.pred_prev_Q13, 0, 2);
-            Arrays.MemSet(psDec.sStereo.sSide, 0, 2);
+            Arrays.MemSet(psDec.sStereo.pred_prev_Q13, (short)0, 2);
+            Arrays.MemSet(psDec.sStereo.sSide, (short)0, 2);
             channel_state[1].resampler_state.Assign(channel_state[0].resampler_state);
         }
         psDec.nChannelsAPI = decControl.nChannelsAPI;
@@ -275,7 +275,7 @@ class DecodeAPI
         /* Reset side channel decoder prediction memory for first frame with side coding */
         if (decControl.nChannelsInternal == 2 && decode_only_middle == 0 && psDec.prev_decode_only_middle == 1)
         {
-            Arrays.MemSet(psDec.channel_state[1].outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+            Arrays.MemSet(psDec.channel_state[1].outBuf, (short)0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
             Arrays.MemSet(psDec.channel_state[1].sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
             psDec.channel_state[1].lagPrev = 100;
             psDec.channel_state[1].LastGainIndex = 10;
@@ -346,7 +346,7 @@ class DecodeAPI
             }
             else
             {
-                Arrays.MemSetWithOffset(samplesOut_tmp, 0, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec.Val);
+                Arrays.MemSetWithOffset(samplesOut_tmp, (short)0, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec.Val);
             }
             channel_state[n].nFramesDecoded++;
         }
@@ -364,12 +364,12 @@ class DecodeAPI
         }
 
         /* Number of output samples */
-        nSamplesOut = Inlines.silk_DIV32(nSamplesOutDec.Val * decControl.API_sampleRate, Inlines.silk_SMULBB(channel_state[0].fs_kHz, 1000));
+        nSamplesOut.Val = Inlines.silk_DIV32(nSamplesOutDec.Val * decControl.API_sampleRate, Inlines.silk_SMULBB(channel_state[0].fs_kHz, 1000));
 
         /* Set up pointers to temp buffers */
         if (decControl.nChannelsAPI == 2)
         {
-            samplesOut2_tmp = new short[nSamplesOut];
+            samplesOut2_tmp = new short[nSamplesOut.Val];
             resample_out = samplesOut2_tmp;
             resample_out_ptr = 0;
         }
@@ -396,7 +396,7 @@ class DecodeAPI
             if (decControl.nChannelsAPI == 2)
             {
                 int nptr = samplesOut_ptr + n;
-                for (i = 0; i < nSamplesOut; i++)
+                for (i = 0; i < nSamplesOut.Val; i++)
                 {
                     samplesOut[nptr + 2 * i] = resample_out[resample_out_ptr + i];
                 }
@@ -412,13 +412,13 @@ class DecodeAPI
                    we weren't doing collapsing when switching to mono */
                 ret += Resampler.silk_resampler(channel_state[1].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp, samplesOut_tmp_ptrs[0] + 1, nSamplesOutDec.Val);
 
-                for (i = 0; i < nSamplesOut; i++)
+                for (i = 0; i < nSamplesOut.Val; i++)
                 {
                     samplesOut[samplesOut_ptr + 1 + 2 * i] = resample_out[resample_out_ptr + i];
                 }
             }
             else {
-                for (i = 0; i < nSamplesOut; i++)
+                for (i = 0; i < nSamplesOut.Val; i++)
                 {
                     samplesOut[samplesOut_ptr + 1 + 2 * i] = samplesOut[samplesOut_ptr + 2 * i];
                 }

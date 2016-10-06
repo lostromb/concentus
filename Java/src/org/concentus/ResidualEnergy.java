@@ -48,7 +48,8 @@ class ResidualEnergy
         )
     {
         int offset, i, j, lz1, lz2;
-        int rshift, energy;
+        BoxedValue<Integer> rshift = new BoxedValue<Integer>();
+        BoxedValue<Integer> energy = new BoxedValue<Integer>();
         int LPC_res_ptr;
         short[] LPC_res;
         int x_ptr;
@@ -70,11 +71,11 @@ class ResidualEnergy
             for (j = 0; j < (SilkConstants.MAX_NB_SUBFR >> 1); j++)
             {
                 /* Measure subframe energy */
-                SumSqrShift.silk_sum_sqr_shift(out energy, out rshift, LPC_res, LPC_res_ptr, subfr_length);
-                nrgs[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = energy;
+                SumSqrShift.silk_sum_sqr_shift(energy, rshift, LPC_res, LPC_res_ptr, subfr_length);
+                nrgs[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = energy.Val;
 
                 /* Set Q values for the measured energy */
-                nrgsQ[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = 0 - rshift;
+                nrgsQ[i * (SilkConstants.MAX_NB_SUBFR >> 1) + j] = 0 - rshift.Val;
 
                 /* Move to next subframe */
                 LPC_res_ptr += offset;

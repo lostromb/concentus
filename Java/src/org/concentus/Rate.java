@@ -45,7 +45,7 @@ class Rate
       32,33,34,34,35,36,36,37,37
     };
 
-    private final int ALLOC_STEPS = 6;
+    private static final int ALLOC_STEPS = 6;
 
     static int get_pulses(int i)
     {
@@ -86,8 +86,8 @@ class Rate
     }
 
     static int interp_bits2pulses(CeltMode m, int start, int end, int skip_start,
-          int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, out int _balance,
-          int skip_rsv, ref int intensity, int intensity_rsv, ref int dual_stereo, int dual_stereo_rsv, int[] bits,
+          int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, BoxedValue<Integer> _balance,
+          int skip_rsv, BoxedValue<Integer> intensity, int intensity_rsv, BoxedValue<Integer> dual_stereo, int dual_stereo_rsv, int[] bits,
           int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
     {
         int psum;
@@ -235,20 +235,20 @@ class Rate
         {
             if (encode != 0)
             {
-                intensity = Inlines.IMIN(intensity, codedBands);
-                ec.enc_uint((intensity - start), (codedBands + 1 - start));
+                intensity.Val = Inlines.IMIN(intensity.Val, codedBands);
+                ec.enc_uint((intensity.Val - start), (codedBands + 1 - start));
             }
             else
             {
-                intensity = start + (int)ec.dec_uint(codedBands + 1 - start);
+                intensity.Val = start + (int)ec.dec_uint(codedBands + 1 - start);
             }
         }
         else
         {
-            intensity = 0;
+            intensity.Val = 0;
         }
 
-        if (intensity <= start)
+        if (intensity.Val <= start)
         {
             total += dual_stereo_rsv;
             dual_stereo_rsv = 0;
@@ -257,16 +257,16 @@ class Rate
         {
             if (encode != 0)
             {
-                ec.enc_bit_logp(dual_stereo, 1);
+                ec.enc_bit_logp(dual_stereo.Val, 1);
             }
             else
             {
-                dual_stereo = ec.dec_bit_logp(1);
+                dual_stereo.Val = ec.dec_bit_logp(1);
             }
         }
         else
         {
-            dual_stereo = 0;
+            dual_stereo.Val = 0;
         }
 
         /* Allocate the remaining bits */
@@ -302,7 +302,7 @@ class Rate
                 bits[j] = bit - excess;
 
                 /* Compensate for the extra DoF in stereo */
-                den = (C * N + ((C == 2 && N > 2 && (dual_stereo == 0) && j < intensity) ? 1 : 0));
+                den = (C * N + ((C == 2 && N > 2 && (dual_stereo.Val == 0) && j < intensity.Val) ? 1 : 0));
 
                 NClogN = den * (m.logN[j] + logM);
 
@@ -368,7 +368,7 @@ class Rate
         }
         /* Save any remaining bits over the cap for the rebalancing in
             quant_all_bands(). */
-        _balance = balance;
+        _balance.Val = balance;
 
         /* The skipped bands use all their bits for fine energy. */
         for (; j < end; j++)
@@ -382,8 +382,8 @@ class Rate
         return codedBands;
     }
 
-    static int compute_allocation(CeltMode m, int start, int end, int[] offsets, int[] cap, int alloc_trim, ref int intensity, ref int dual_stereo,
-          int total, out int balance, int[] pulses, int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
+    static int compute_allocation(CeltMode m, int start, int end, int[] offsets, int[] cap, int alloc_trim, BoxedValue<Integer> intensity, BoxedValue<Integer> dual_stereo,
+          int total, BoxedValue<Integer> balance, int[] pulses, int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
     {
         int lo, hi, len, j;
         int codedBands;
@@ -500,7 +500,7 @@ class Rate
         }
 
         codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
-              total, out balance, skip_rsv, ref intensity, intensity_rsv, ref dual_stereo, dual_stereo_rsv,
+              total, balance, skip_rsv, intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
               pulses, ebits, fine_priority, C, LM, ec, encode, prev, signalBandwidth);
 
         return codedBands;

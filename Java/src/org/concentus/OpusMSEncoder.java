@@ -59,7 +59,7 @@ package org.concentus;
         private OpusMSEncoder(int nb_streams, int nb_coupled_streams)
         {
             if (nb_streams < 1 || nb_coupled_streams > nb_streams || nb_coupled_streams < 0)
-                throw new ArgumentException("Invalid channel count in MS encoder");
+                throw new IllegalArgumentException("Invalid channel count in MS encoder");
 
             encoders = new OpusEncoder[nb_streams];
             for (int c = 0; c < nb_streams; c++)
@@ -430,14 +430,14 @@ package org.concentus;
             if ((channels > 255) || (channels < 1) || (coupled_streams > streams) ||
                 (streams < 1) || (coupled_streams < 0) || (streams > 255 - coupled_streams))
             {
-                throw new ArgumentException("Invalid channel / stream configuration");
+                throw new IllegalArgumentException("Invalid channel / stream configuration");
             }
             st = new OpusMSEncoder(streams, coupled_streams);
             ret = st.opus_multistream_encoder_init(Fs, channels, streams, coupled_streams, mapping, application, 0);
             if (ret != OpusError.OPUS_OK)
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new ArgumentException("OPUS_BAD_ARG when creating MS encoder");
+                    throw new IllegalArgumentException("OPUS_BAD_ARG when creating MS encoder");
                 throw new OpusException("Could not create MS encoder", ret);
             }
             return st;
@@ -458,7 +458,7 @@ package org.concentus;
                     nb_coupled_streams.Val = 1;
                 }
                 else
-                    throw new ArgumentException("More than 2 channels requires custom mappings");
+                    throw new IllegalArgumentException("More than 2 channels requires custom mappings");
             }
             else if (mapping_family == 1 && channels <= 8 && channels >= 1)
             {
@@ -471,7 +471,7 @@ package org.concentus;
                 nb_coupled_streams.Val = 0;
             }
             else
-                throw new ArgumentException("Invalid mapping family");
+                throw new IllegalArgumentException("Invalid mapping family");
         }
 
         public static OpusMSEncoder CreateSurround(
@@ -488,7 +488,7 @@ package org.concentus;
             OpusMSEncoder st;
             if ((channels > 255) || (channels < 1) || application == OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED)
             {
-                throw new ArgumentException("Invalid channel count or application");
+                throw new IllegalArgumentException("Invalid channel count or application");
             }
             BoxedValue<Integer> nb_streams = new BoxedValue<Integer>();
             BoxedValue<Integer> nb_coupled_streams = new BoxedValue<Integer>();
@@ -499,7 +499,7 @@ package org.concentus;
             if (ret != OpusError.OPUS_OK)
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new ArgumentException("Bad argument passed to CreateSurround");
+                    throw new IllegalArgumentException("Bad argument passed to CreateSurround");
                 throw new OpusException("Could not create multistream encoder", ret);
             }
             return st;
@@ -864,7 +864,7 @@ package org.concentus;
             {
                 if (value < 0 && value != OpusConstants.OPUS_AUTO && value != OpusConstants.OPUS_BITRATE_MAX)
                 {
-                    throw new ArgumentException("Invalid bitrate");
+                    throw new IllegalArgumentException("Invalid bitrate");
                 }
                 bitrate_bps = value;
             }
@@ -1141,7 +1141,7 @@ package org.concentus;
         public OpusEncoder GetMultistreamEncoderState(int streamId)
         {
             if (streamId >= layout.nb_streams)
-                throw new ArgumentException("Requested stream doesn't exist");
+                throw new IllegalArgumentException("Requested stream doesn't exist");
             return encoders[streamId];
         }
 

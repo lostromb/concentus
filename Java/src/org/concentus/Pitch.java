@@ -202,7 +202,7 @@ class Pitch
 
     // Fixme: remove pointers and optimize
     static void pitch_search(int[] x_lp, int x_lp_ptr, int[] y,
-              int len, int max_pitch, out int pitch)
+              int len, int max_pitch, BoxedValue<Integer> pitch)
     {
         int i, j;
         int lag;
@@ -291,13 +291,13 @@ class Pitch
             offset = 0;
         }
 
-        pitch = 2 * best_pitch[0] - offset;
+        pitch.Val = 2 * best_pitch[0] - offset;
     }
 
     private static final int[] second_check = { 0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2 };
 
     static int remove_doubling(int[] x, int maxperiod, int minperiod,
-        int N, ref int T0_, int prev_period, int prev_gain)
+        int N, BoxedValue<Integer> T0_, int prev_period, int prev_gain)
     {
         int k, i, T, T0;
         int g, g0;
@@ -309,16 +309,21 @@ class Pitch
         int minperiod0 = minperiod;
         maxperiod /= 2;
         minperiod /= 2;
-        T0_ /= 2;
+        T0_.Val /= 2;
         prev_period /= 2;
         N /= 2;
         int x_ptr = maxperiod;
-        if (T0_ >= maxperiod)
-            T0_ = maxperiod - 1;
+        if (T0_.Val >= maxperiod)
+            T0_.Val = maxperiod - 1;
 
-        T = T0 = T0_;
+        T = T0 = T0_.Val;
         int[] yy_lookup = new int[maxperiod + 1];
-        Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, out xx, out xy);
+        BoxedValue<Integer> boxed_xx = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_xy = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_xy2 = new BoxedValue<Integer>();
+        Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, boxed_xx, boxed_xy);
+        xx = boxed_xx.Val;
+        xy = boxed_xy.Val;
         yy_lookup[0] = xx;
         yy = xx;
         for (i = 1; i <= maxperiod; i++)
@@ -367,7 +372,9 @@ class Pitch
                 T1b = Inlines.celt_udiv(2 * second_check[k] * T0 + k, 2 * k);
             }
 
-            Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, out xy, out xy2);
+            Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, boxed_xy, boxed_xy2);
+            xy = boxed_xy.Val;
+            xy2 = boxed_xy2.Val;
 
             xy += xy2;
             yy = yy_lookup[T1] + yy_lookup[T1b];
@@ -445,11 +452,11 @@ class Pitch
             pg = g;
         }
 
-        T0_ = 2 * T + offset;
+        T0_.Val = 2 * T + offset;
 
-        if (T0_ < minperiod0)
+        if (T0_.Val < minperiod0)
         {
-            T0_ = minperiod0;
+            T0_.Val = minperiod0;
         }
 
         return pg;

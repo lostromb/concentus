@@ -102,6 +102,12 @@ class CeltLPC
         int[] y = new int[N + ord];
         Inlines.OpusAssert((ord & 3) == 0);
 
+        BoxedValue<Integer> _sum0 = new BoxedValue<Integer>();
+        BoxedValue<Integer> _sum1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> _sum2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> _sum3 = new BoxedValue<Integer>();
+        int sum0, sum1, sum2, sum3;
+        
         for (i = 0; i < ord; i++)
             rden[i] = den[ord - i - 1];
         for (i = 0; i < ord; i++)
@@ -111,11 +117,15 @@ class CeltLPC
         for (i = 0; i < N - 3; i += 4)
         {
             /* Unroll by 4 as if it were an FIR filter */
-            int sum0 = _x[_x_ptr + i];
-            int sum1 = _x[_x_ptr + i + 1];
-            int sum2 = _x[_x_ptr + i + 2];
-            int sum3 = _x[_x_ptr + i + 3];
-            Kernels.xcorr_kernel(rden, y, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
+            _sum0.Val = _x[_x_ptr + i];
+            _sum1.Val = _x[_x_ptr + i + 1];
+            _sum2.Val = _x[_x_ptr + i + 2];
+            _sum3.Val = _x[_x_ptr + i + 3];
+            Kernels.xcorr_kernel(rden, y, i, _sum0, _sum1, _sum2, _sum3, ord);
+            sum0 = _sum0.Val;
+            sum1 = _sum1.Val;
+            sum2 = _sum2.Val;
+            sum3 = _sum3.Val;
 
             /* Patch up the result to compensate for the fact that this is an IIR */
             y[i + ord] = (0 - Inlines.ROUND16((sum0), CeltConstants.SIG_SHIFT));

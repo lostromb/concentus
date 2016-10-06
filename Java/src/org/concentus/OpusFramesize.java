@@ -37,6 +37,11 @@ package org.concentus;
 
 public enum OpusFramesize
 {
+    /**
+     * Error state
+     */
+    OPUS_FRAMESIZE_UNKNOWN,
+    
     /// <summary>
     /// Select frame size from the argument (default)
     /// </summary>

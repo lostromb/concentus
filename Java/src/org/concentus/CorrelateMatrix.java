@@ -98,7 +98,12 @@ class CorrelateMatrix
         int ptr1, ptr2;
 
         /* Calculate energy to find shift used to fit in 32 bits */
-        SumSqrShift.silk_sum_sqr_shift(out energy, out rshifts_local, x, x_ptr, L + order - 1);
+        BoxedValue<Integer> boxed_energy = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_rshifts_local = new BoxedValue<Integer>();
+        SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_rshifts_local, x, x_ptr, L + order - 1);
+        energy = boxed_energy.Val;
+        rshifts_local = boxed_rshifts_local.Val;
+        
         /* Add shifts to get the desired head room */
         head_room_rshifts = Inlines.silk_max(head_room - Inlines.silk_CLZ32(energy), 0);
 

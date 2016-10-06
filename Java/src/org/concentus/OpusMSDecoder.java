@@ -72,7 +72,7 @@ package org.concentus;
 
             if ((channels > 255) || (channels < 1) || (coupled_streams > streams) ||
                 (streams < 1) || (coupled_streams < 0) || (streams > 255 - coupled_streams))
-                throw new ArgumentException("Invalid channel or coupled stream count");
+                throw new IllegalArgumentException("Invalid channel or coupled stream count");
 
             this.layout.nb_channels = channels;
             this.layout.nb_streams = streams;
@@ -81,7 +81,7 @@ package org.concentus;
             for (i = 0; i < this.layout.nb_channels; i++)
                 this.layout.mapping[i] = mapping[i];
             if (OpusMultistream.validate_layout(this.layout) == 0)
-                throw new ArgumentException("Invalid surround channel layout");
+                throw new IllegalArgumentException("Invalid surround channel layout");
 
             for (i = 0; i < this.layout.nb_coupled_streams; i++)
             {
@@ -119,14 +119,14 @@ package org.concentus;
             if ((channels > 255) || (channels < 1) || (coupled_streams > streams) ||
                 (streams < 1) || (coupled_streams < 0) || (streams > 255 - coupled_streams))
             {
-                throw new ArgumentException("Invalid channel / stream configuration");
+                throw new IllegalArgumentException("Invalid channel / stream configuration");
             }
             st = new OpusMSDecoder(streams, coupled_streams);
             ret = st.opus_multistream_decoder_init(Fs, channels, streams, coupled_streams, mapping);
             if (ret != OpusError.OPUS_OK)
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new ArgumentException("Bad argument while creating MS decoder");
+                    throw new IllegalArgumentException("Bad argument while creating MS decoder");
                 throw new OpusException("Could not create MS decoder", ret);
             }
             return st;

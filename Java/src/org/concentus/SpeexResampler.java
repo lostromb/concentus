@@ -584,7 +584,7 @@ package org.concentus;
 //        SpeexResampler st;
 //        if (quality > 10 || quality < 0)
 //        {
-//            throw new ArgumentException("Quality must be between 0 and 10");
+//            throw new IllegalArgumentException("Quality must be between 0 and 10");
 //        }
 //        st = new SpeexResampler();
 //        st.initialised = 0;
@@ -946,7 +946,7 @@ package org.concentus;
 //        set
 //        {
 //            if (value > 10 || value < 0)
-//                throw new ArgumentException("Quality must be between 0 and 10");
+//                throw new IllegalArgumentException("Quality must be between 0 and 10");
 //            if (this.quality == value)
 //                return;
 //            this.quality = value;

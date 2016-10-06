@@ -164,11 +164,11 @@ public class OpusDecoder
         OpusDecoder st; // porting note: pointer
         if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000))
         {
-            throw new ArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
+            throw new IllegalArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
         }
         if (channels != 1 && channels != 2)
         {
-            throw new ArgumentException("Number of channels must be 1 or 2");
+            throw new IllegalArgumentException("Number of channels must be 1 or 2");
         }
 
         st = new OpusDecoder();
@@ -177,7 +177,7 @@ public class OpusDecoder
         if (ret != OpusError.OPUS_OK)
         {
             if (ret == OpusError.OPUS_BAD_ARG)
-                throw new ArgumentException("OPUS_BAD_ARG when creating decoder");
+                throw new IllegalArgumentException("OPUS_BAD_ARG when creating decoder");
             throw new OpusException("Error while initializing decoder", ret);
         }
         return st;
@@ -718,7 +718,7 @@ public class OpusDecoder
     {
         if (frame_size <= 0)
         {
-            throw new ArgumentException("Frame size must be <= 0");
+            throw new IllegalArgumentException("Frame size must be <= 0");
         }
 
         try
@@ -730,7 +730,7 @@ public class OpusDecoder
             {
                 // An error happened; report it
                 if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new ArgumentException("OPUS_BAD_ARG while decoding");
+                    throw new IllegalArgumentException("OPUS_BAD_ARG while decoding");
                 throw new OpusException("An error occurred during decoding", ret);
             }
 
@@ -770,7 +770,7 @@ public class OpusDecoder
 
         if (frame_size <= 0)
         {
-            throw new ArgumentException("Frame size must be > 0");
+            throw new IllegalArgumentException("Frame size must be > 0");
         }
         if (in_data != null && len > 0 && !decode_fec)
         {
@@ -791,7 +791,7 @@ public class OpusDecoder
             {
                 // An error happened; report it
                 if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new ArgumentException("OPUS_BAD_ARG when decoding");
+                    throw new IllegalArgumentException("OPUS_BAD_ARG when decoding");
                 throw new OpusException("An error occurred during decoding", ret);
             }
 
@@ -856,7 +856,7 @@ public class OpusDecoder
         {
             if (value < -32768 || value > 32767)
             {
-                throw new ArgumentException("Gain must be within the range of a signed int16");
+                throw new IllegalArgumentException("Gain must be within the range of a signed int16");
             }
 
             decode_gain = value;
