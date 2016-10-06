@@ -581,7 +581,13 @@ class CeltEncoder
                   && this.complexity >= 5 && !(this.consec_transient != 0 && LM != 3 && this.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE)) ? 1 : 0;
 
             prefilter_tapset = this.tapset_decision;
-            pf_on = this.run_prefilter(input, this.prefilter_mem, CC, N, prefilter_tapset, out pitch_index, out gain1, out qg, enabled, nbAvailableBytes);
+            BoxedValue<Integer> boxed_pitch_index = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_gain1 = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_qg = new BoxedValue<Integer>();
+            pf_on = this.run_prefilter(input, this.prefilter_mem, CC, N, prefilter_tapset, boxed_pitch_index, boxed_gain1, boxed_qg, enabled, nbAvailableBytes);
+            pitch_index = boxed_pitch_index.Val;
+            gain1 = boxed_gain1.Val;
+            qg = boxed_qg.Val;
 
             if ((gain1 > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/ || this.prefilter_gain > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/) && (this.analysis.valid == 0 || this.analysis.tonality > .3)
                   && (pitch_index > 1.26 * this.prefilter_period || pitch_index < .79 * this.prefilter_period))
@@ -610,8 +616,12 @@ class CeltEncoder
         shortBlocks = 0;
         if (this.complexity >= 1 && this.lfe == 0)
         {
+            BoxedValue<Integer> boxed_tf_estimate = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_tf_chan = new BoxedValue<Integer>();
             isTransient = CeltCommon.transient_analysis(input, N + overlap, CC,
-                  out tf_estimate, out tf_chan);
+                  boxed_tf_estimate, boxed_tf_chan);
+            tf_estimate = boxed_tf_estimate.Val;
+            tf_chan = boxed_tf_chan.Val;
         }
 
         if (LM > 0 && enc.tell() + 3 <= total_bits)
@@ -831,10 +841,12 @@ class CeltEncoder
         }
 
         error = Arrays.InitTwoDimensionalArrayInt(C, nbEBands);
+        BoxedValue<Integer> boxed_delayedintra = new BoxedValue<Integer>(this.delayedIntra);
         QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE,
               this.oldBandE, total_bits, error, enc,
               C, LM, nbAvailableBytes, this.force_intra,
-              ref this.delayedIntra, this.complexity >= 4 ? 1 : 0, this.loss_rate, this.lfe);
+              boxed_delayedintra, this.complexity >= 4 ? 1 : 0, this.loss_rate, this.lfe);
+        this.delayedIntra = boxed_delayedintra.Val;
 
         CeltCommon.tf_encode(start, end, isTransient, tf_res, LM, tf_select, enc);
 
@@ -854,9 +866,15 @@ class CeltEncoder
             }
             else
             {
-                    this.spread_decision = Bands.spreading_decision(mode, X,
-                        ref this.tonal_average, this.spread_decision, ref this.hf_average,
-                        ref this.tapset_decision, (pf_on != 0 && shortBlocks == 0) ? 1 : 0, effEnd, C, M);
+                BoxedValue<Integer> boxed_tonal_average = new BoxedValue<Integer>(this.tonal_average);
+                BoxedValue<Integer> boxed_tapset_decision = new BoxedValue<Integer>(this.tapset_decision);
+                BoxedValue<Integer> boxed_hf_average = new BoxedValue<Integer>(this.hf_average);
+                this.spread_decision = Bands.spreading_decision(mode, X,
+                    boxed_tonal_average, this.spread_decision, boxed_hf_average,
+                    boxed_tapset_decision, (pf_on != 0 && shortBlocks == 0) ? 1 : 0, effEnd, C, M);
+                this.tonal_average = boxed_tonal_average.Val;
+                this.tapset_decision = boxed_tapset_decision.Val;
+                this.hf_average = boxed_hf_average.Val;
 
                 /*printf("%d %d\n", st.tapset_decision, st.spread_decision);*/
                 /*printf("%f %d %f %d\n\n", st.analysis.tonality, st.spread_decision, st.analysis.tonality_slope, st.tapset_decision);*/
@@ -866,9 +884,11 @@ class CeltEncoder
 
         offsets = new int[nbEBands];
 
+        BoxedValue<Integer> boxed_tot_boost = new BoxedValue<Integer>();
         maxDepth = CeltCommon.dynalloc_analysis(bandLogE, bandLogE2, nbEBands, start, end, C, offsets,
               this.lsb_depth, mode.logN, isTransient, this.vbr, this.constrained_vbr,
-              eBands, LM, effectiveBytes, out tot_boost, this.lfe, surround_dynalloc);
+              eBands, LM, effectiveBytes, boxed_tot_boost, this.lfe, surround_dynalloc);
+        tot_boost = boxed_tot_boost.Val;
 
         /* For LFE, everything interesting is in the first band */
         if (this.lfe != 0)
@@ -931,9 +951,11 @@ class CeltEncoder
             }
             else
             {
+                BoxedValue<Integer> boxed_stereo_saving = new BoxedValue<Integer>(this.stereo_saving);
                 alloc_trim = CeltCommon.alloc_trim_analysis(mode, X, bandLogE,
-                   end, LM, C, this.analysis, ref this.stereo_saving, tf_estimate,
+                   end, LM, C, this.analysis, boxed_stereo_saving, tf_estimate,
                    this.intensity, surround_trim);
+                this.stereo_saving = boxed_stereo_saving.Val;
             }
             enc.enc_icdf(alloc_trim, CeltTables.trim_icdf, 7);
             tell = (int)enc.tell_frac();
@@ -1060,9 +1082,15 @@ class CeltEncoder
             signalBandwidth = 1;
         }
 
+        BoxedValue<Integer> boxed_intensity = new BoxedValue<Integer>(this.intensity);
+        BoxedValue<Integer> boxed_balance = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_dual_stereo = new BoxedValue<Integer>(dual_stereo);
         codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
-              alloc_trim, ref this.intensity, ref dual_stereo, bits, out balance, pulses,
+              alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
               fine_quant, fine_priority, C, LM, enc, 1, this.lastCodedBands, signalBandwidth);
+        this.intensity = boxed_intensity.Val;
+        balance = boxed_balance.Val;
+        dual_stereo = boxed_dual_stereo.Val;
 
         if (this.lastCodedBands != 0)
             this.lastCodedBands = Inlines.IMIN(this.lastCodedBands + 1, Inlines.IMAX(this.lastCodedBands - 1, codedBands));
@@ -1073,10 +1101,12 @@ class CeltEncoder
 
         /* Residual quantisation */
         collapse_masks = new short[C * nbEBands];
+        BoxedValue<Integer> boxed_rng = new BoxedValue<Integer>(this.rng);
         Bands.quant_all_bands(1, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
               bandE, pulses, shortBlocks, this.spread_decision,
               dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
-              balance, enc, LM, codedBands, ref this.rng);
+              balance, enc, LM, codedBands, boxed_rng);
+        this.rng = boxed_rng.Val;
 
         if (anti_collapse_rsv > 0)
         {

@@ -35,74 +35,73 @@
 
 package org.concentus;
 
-    public enum OpusBandwidth
+public enum OpusBandwidth
+{
+    OPUS_BANDWIDTH_AUTO, 
+    OPUS_BANDWIDTH_NARROWBAND,
+    OPUS_BANDWIDTH_MEDIUMBAND,
+    OPUS_BANDWIDTH_WIDEBAND,
+    OPUS_BANDWIDTH_SUPERWIDEBAND,
+    OPUS_BANDWIDTH_FULLBAND
+}
+
+// FIXME: We should remove all cases where bandwidth is cast to int, it's.....improper
+class OpusBandwidthHelpers
+{
+    static int GetOrdinal(OpusBandwidth bw)
     {
-        OPUS_BANDWIDTH_AUTO, 
-        OPUS_BANDWIDTH_NARROWBAND,
-        OPUS_BANDWIDTH_MEDIUMBAND,
-        OPUS_BANDWIDTH_WIDEBAND,
-        OPUS_BANDWIDTH_SUPERWIDEBAND,
-        OPUS_BANDWIDTH_FULLBAND
+        switch (bw)
+        {
+            case OPUS_BANDWIDTH_NARROWBAND:
+                return 1;
+            case OPUS_BANDWIDTH_MEDIUMBAND:
+                return 2;
+            case OPUS_BANDWIDTH_WIDEBAND:
+                return 3;
+            case OPUS_BANDWIDTH_SUPERWIDEBAND:
+                return 4;
+            case OPUS_BANDWIDTH_FULLBAND:
+                return 5;
+        }
+
+        return -1;
     }
 
-    // FIXME: We should remove all cases where bandwidth is cast to int, it's.....improper
-    class OpusBandwidthHelpers
+    static OpusBandwidth GetBandwidth(int ordinal)
     {
-        static int GetOrdinal(OpusBandwidth bw)
+        switch (ordinal)
         {
-            switch (bw)
-            {
-                case OPUS_BANDWIDTH_NARROWBAND:
-                    return 1;
-                case OPUS_BANDWIDTH_MEDIUMBAND:
-                    return 2;
-                case OPUS_BANDWIDTH_WIDEBAND:
-                    return 3;
-                case OPUS_BANDWIDTH_SUPERWIDEBAND:
-                    return 4;
-                case OPUS_BANDWIDTH_FULLBAND:
-                    return 5;
-            }
-
-            return -1;
+            case 1:
+                return OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+            case 2:
+                return OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+            case 3:
+                return OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
+            case 4:
+                return OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+            case 5:
+                return OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
         }
 
-        static OpusBandwidth GetBandwidth(int ordinal)
-        {
-            switch (ordinal)
-            {
-                case 1:
-                    return OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
-                case 2:
-                    return OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
-                case 3:
-                    return OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
-                case 4:
-                    return OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-                case 5:
-                    return OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
-            }
+        return OpusBandwidth.OPUS_BANDWIDTH_AUTO;
+    }
 
-            return OpusBandwidth.OPUS_BANDWIDTH_AUTO;
-        }
+    static OpusBandwidth MIN(OpusBandwidth a, OpusBandwidth b)
+    {
+        if (GetOrdinal(a) < GetOrdinal(b))
+            return a;
+        return b;
+    }
 
-        static OpusBandwidth MIN(OpusBandwidth a, OpusBandwidth b)
-        {
-            if (GetOrdinal(a) < GetOrdinal(b))
-                return a;
-            return b;
-        }
+    static OpusBandwidth MAX(OpusBandwidth a, OpusBandwidth b)
+    {
+        if (GetOrdinal(a) > GetOrdinal(b))
+            return a;
+        return b;
+    }
 
-        static OpusBandwidth MAX(OpusBandwidth a, OpusBandwidth b)
-        {
-            if (GetOrdinal(a) > GetOrdinal(b))
-                return a;
-            return b;
-        }
-
-        static OpusBandwidth SUBTRACT(OpusBandwidth a, int b)
-        {
-            return GetBandwidth(GetOrdinal(a) - b);
-        }
+    static OpusBandwidth SUBTRACT(OpusBandwidth a, int b)
+    {
+        return GetBandwidth(GetOrdinal(a) - b);
     }
 }

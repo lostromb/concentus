@@ -45,6 +45,16 @@ class Arrays<T>
         return returnVal;
     }
     
+    static float[][] InitTwoDimensionalArrayFloat(int x, int y)
+    {
+        float[][] returnVal = new float[x][];
+        for (int c = 0; c < x; c++)
+        {
+            returnVal[c] = new float[y];
+        }
+        return returnVal;
+    }
+    
     static short[][] InitTwoDimensionalArrayShort(int x, int y)
     {
         short[][] returnVal = new short[x][];

@@ -49,12 +49,12 @@ public class CodecHelpers
         }
         if (mode == OpusMode.MODE_SILK_ONLY)
         {
-            toc = (short)((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND) << 5);
+            toc = (short)((OpusBandwidthHelpers.GetOrdinal(bandwidth) - OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)) << 5);
             toc |= (short)((period - 2) << 3);
         }
         else if (mode == OpusMode.MODE_CELT_ONLY)
         {
-            int tmp = bandwidth - OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
+            int tmp = OpusBandwidthHelpers.GetOrdinal(bandwidth) - OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND);
             if (tmp < 0)
                 tmp = 0;
             toc = 0x80;
@@ -64,7 +64,7 @@ public class CodecHelpers
         else /* Hybrid */
         {
             toc = 0x60;
-            toc |= (short)((bandwidth - OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND) << 4);
+            toc |= (short)((OpusBandwidthHelpers.GetOrdinal(bandwidth) - OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)) << 4);
             toc |= (short)((period - 2) << 3);
         }
         toc |= (short)((channels == 2 ? 1 : 0) << 2);
@@ -77,7 +77,7 @@ public class CodecHelpers
         int[] A_Q28 = new int[2];
         int Fc_Q19, r_Q28, r_Q22;
 
-        Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / ((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/);
+        Inlines.OpusAssert(cutoff_Hz <= Integer.MAX_VALUE / ((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/);
         Fc_Q19 = Inlines.silk_DIV32_16(Inlines.silk_SMULBB(((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/, cutoff_Hz), Fs / 1000);
         Inlines.OpusAssert(Fc_Q19 > 0 && Fc_Q19 < 32768);
 
@@ -253,7 +253,7 @@ public class CodecHelpers
     static int transient_viterbi(float[] E, float[] E_1, int N, int frame_cost, int rate)
     {
         int i;
-        float[][] cost = Arrays.InitTwoDimensionalArray<float>(MAX_DYNAMIC_FRAMESIZE, 16);
+        float[][] cost = Arrays.InitTwoDimensionalArrayFloat(MAX_DYNAMIC_FRAMESIZE, 16);
         int[][] states = Arrays.InitTwoDimensionalArrayInt(MAX_DYNAMIC_FRAMESIZE, 16);
         float best_cost;
         int best_state;
@@ -339,9 +339,8 @@ public class CodecHelpers
         return best_state;
     }
 
-    static int optimize_framesize<T>(T[] x, int x_ptr, int len, int C, int Fs,
-                    int bitrate, int tonality, float[] mem, int buffering,
-                    Downmix.downmix_func<T> downmix)
+    static int optimize_framesize(short[] x, int x_ptr, int len, int C, int Fs,
+                    int bitrate, int tonality, float[] mem, int buffering)
     {
         int N;
         int i;
@@ -385,7 +384,7 @@ public class CodecHelpers
             int j;
             tmp = CeltConstants.EPSILON;
 
-            downmix(x, x_ptr, sub, 0, subframe, i * subframe + offset, 0, -2, C);
+            Downmix.downmix_int(x, x_ptr, sub, 0, subframe, i * subframe + offset, 0, -2, C);
             if (i == 0)
                 memx = sub[0];
             for (j = 0; j < subframe; j++)
@@ -422,8 +421,9 @@ public class CodecHelpers
             new_size = frame_size;
         else if (variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE)
             new_size = Fs / 50;
-        else if (variable_duration >= OpusFramesize.OPUS_FRAMESIZE_2_5_MS && variable_duration <= OpusFramesize.OPUS_FRAMESIZE_60_MS)
-            new_size = Inlines.IMIN(3 * Fs / 50, (Fs / 400) << (variable_duration - OpusFramesize.OPUS_FRAMESIZE_2_5_MS));
+        else if (OpusFramesizeHelpers.GetOrdinal(variable_duration) >= OpusFramesizeHelpers.GetOrdinal(OpusFramesize.OPUS_FRAMESIZE_2_5_MS)
+                && OpusFramesizeHelpers.GetOrdinal(variable_duration) <= OpusFramesizeHelpers.GetOrdinal(OpusFramesize.OPUS_FRAMESIZE_60_MS))
+            new_size = Inlines.IMIN(3 * Fs / 50, (Fs / 400) << (OpusFramesizeHelpers.GetOrdinal(variable_duration) - OpusFramesizeHelpers.GetOrdinal(OpusFramesize.OPUS_FRAMESIZE_2_5_MS)));
         else
             return -1;
         if (new_size > frame_size)
@@ -434,9 +434,9 @@ public class CodecHelpers
         return new_size;
     }
 
-    static int compute_frame_size<T>(T[] analysis_pcm, int analysis_pcm_ptr, int frame_size,
+    static int compute_frame_size(short[] analysis_pcm, int analysis_pcm_ptr, int frame_size,
           OpusFramesize variable_duration, int C, int Fs, int bitrate_bps,
-          int delay_compensation, Downmix.downmix_func<T> downmix, float[] subframe_mem, bool analysis_enabled
+          int delay_compensation, float[] subframe_mem, boolean analysis_enabled
           )
     {
 
@@ -444,7 +444,7 @@ public class CodecHelpers
         {
             int LM = 3;
             LM = optimize_framesize(analysis_pcm, analysis_pcm_ptr, frame_size, C, Fs, bitrate_bps,
-                  0, subframe_mem, delay_compensation, downmix);
+                  0, subframe_mem, delay_compensation);
             while ((Fs / 400 << LM) > frame_size)
                 LM--;
             frame_size = (Fs / 400 << LM);
