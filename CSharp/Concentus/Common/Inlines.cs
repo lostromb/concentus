@@ -210,7 +210,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SHL16(int a, int shift)
         {
-            return unchecked(((int)(unchecked((unchecked((uint)(a)) << (shift))))));
+            return (int)(0xFFFFFFFF & ((long)a << shift));
         }
 
         //        /** Arithmetic shift-right of a 32-bit value */
@@ -224,7 +224,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int SHL32(int a, int shift)
         {
-            return unchecked(((int)(unchecked((unchecked((uint)(a)) << (shift))))));
+            return (int)(0xFFFFFFFF & ((long)a << shift));
         }
 
         //        /** 32-bit arithmetic shift right with rounding-to-nearest instead of rounding down */
@@ -1106,19 +1106,6 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_ROR32(int a32, int rot)
         {
-            return unchecked((int)silk_ROR32(unchecked((uint)a32), rot));
-        }
-
-        /// <summary>
-        /// Rotate a32 right by 'rot' bits. Negative rot values result in rotating
-        /// left. Output is 32bit uint.
-        /// </summary>
-        /// <param name="a32"></param>
-        /// <param name="rot"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint silk_ROR32(uint a32, int rot)
-        {
             int m = (0 - rot);
             if (rot == 0)
             {
@@ -1196,11 +1183,11 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_ADD32_ovflw(int a, int b)
         {
-            return unchecked((int)((uint)a + (uint)b));
+            return (int)((long)a + b);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_ADD32_ovflw(uint a, uint b)
+        public static int silk_ADD32_ovflw(long a, long b)
         {
             return unchecked((int)(a + b));
         }
@@ -1215,7 +1202,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_SUB32_ovflw(int a, int b)
         {
-            return unchecked((int)((uint)a - (uint)b));
+            return (int)((long)a - b);
         }
 
         /// <summary>
@@ -1228,7 +1215,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_MLA_ovflw(int a32, int b32, int c32)
         {
-            return unchecked(silk_ADD32_ovflw((uint)(a32), (uint)(b32) * (uint)(c32)));
+            return (int)silk_ADD32_ovflw((long)a32, (long)b32 * c32);
         }
 
 
@@ -1394,7 +1381,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_ADD_SAT32(int a32, int b32)
         {
-            int res = (unchecked(((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
+            int res = (unchecked(((long)(a32) + (long)(b32)) & 0x80000000) == 0 ?
                 ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
                 ((((a32) | (b32)) & 0x80000000) == 0 ? int.MaxValue : (a32) + (b32)));
             Inlines.OpusAssert(res == silk_SAT32((long)a32 + (long)b32));
@@ -1405,9 +1392,9 @@ namespace Concentus.Common
         public static long silk_ADD_SAT64(long a64, long b64)
         {
             long res;
-            res = (unchecked((ulong)(a64 + b64) & 0x8000000000000000UL) == 0 ?
-                (unchecked((ulong)(a64 & b64) & 0x8000000000000000UL) != 0 ? long.MinValue : a64 + b64) :
-                (unchecked((ulong)(a64 | b64) & 0x8000000000000000UL) == 0 ? long.MaxValue : a64 + b64));
+            res = (unchecked((a64 + b64) & long.MinValue) == 0 ?
+                (unchecked((a64 & b64) & long.MinValue) != 0 ? long.MinValue : a64 + b64) :
+                (unchecked((a64 | b64) & long.MinValue) == 0 ? long.MaxValue : a64 + b64));
 #if DEBUG_MACROS
             bool fail = false;
             if (res != a64 + b64)
@@ -1440,7 +1427,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_SUB_SAT32(int a32, int b32)
         {
-            int res = (unchecked(((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
+            int res = ((((long)a32 - b32) & 0x80000000) == 0 ?
                 (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
                 ((((a32) ^ 0x80000000) & (b32) & 0x80000000) != 0 ? int.MaxValue : (a32) - (b32)));
             Inlines.OpusAssert(res == silk_SAT32((long)a32 - (long)b32));
@@ -1606,19 +1593,6 @@ namespace Concentus.Common
             }
 #endif
             return a << shift;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint silk_LSHIFT_uint(uint a, int shift)
-        {
-            uint ret = a << shift;
-#if DEBUG_MACROS
-            if ((shift < 0) || ((long)ret != ((long)a) << shift))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
-            return ret;
         }
 
         /// <summary>
@@ -2279,7 +2253,7 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_CLZ32(int in32)
         {
-            return in32 == 0 ? 32 : 32 - EC_ILOG(unchecked((uint)in32));
+            return in32 == 0 ? 32 : 32 - EC_ILOG(in32);
         }
 
         /// <summary>
@@ -2550,17 +2524,6 @@ namespace Concentus.Common
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int EC_ILOG(long x)
         {
-            return EC_ILOG((uint)x);
-        }
-
-        /// <summary>
-        /// returns inverse base-2 log of a value
-        /// </summary>
-        /// <param name="_x"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EC_ILOG(uint x)
-        {
 #if PARITY
             if(x == 0)
                 return 1;
@@ -2569,7 +2532,7 @@ namespace Concentus.Common
             x |= (x >> 4);
             x |= (x >> 8);
             x |= (x >> 16);
-            uint y = x - ((x >> 1) & 0x55555555);
+            long y = x - ((x >> 1) & 0x55555555);
             y = (((y >> 2) & 0x33333333) + (y & 0x33333333));
             y = (((y >> 4) + y) & 0x0f0f0f0f);
             y += (y >> 8);
