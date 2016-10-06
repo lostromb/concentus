@@ -133,7 +133,7 @@ namespace Concentus.Structs
             OpusBandwidth bandwidth;
             if ((packet[packet_offset] & 0x80) != 0)
             {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((packet[packet_offset] >> 5) & 0x3);
+                bandwidth = OpusBandwidthHelpers.GetBandwidth(OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND) + ((packet[packet_offset] >> 5) & 0x3));
                 if (bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
                     bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
             }
@@ -143,7 +143,7 @@ namespace Concentus.Structs
                                              OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
             }
             else {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + ((packet[packet_offset] >> 5) & 0x3);
+                bandwidth = OpusBandwidthHelpers.GetBandwidth(OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND) + ((packet[packet_offset] >> 5) & 0x3));
             }
             return bandwidth;
         }
