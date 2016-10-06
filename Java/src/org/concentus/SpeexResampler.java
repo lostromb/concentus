@@ -1,6 +1,6 @@
 /* Copyright (C) 2007-2008 Jean-Marc Valin
    Copyright (C) 2008      Thorvald Natvig
-   Ported to C# by Logan Stromberg
+   Ported to Java by Logan Stromberg
       
    File: Resampler.cs
    Arbitrary resampling code
