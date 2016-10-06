@@ -673,7 +673,7 @@ namespace Concentus.Celt
             {
                 if (tell + logp <= budget)
                 {
-                    enc.enc_bit_logp(tf_res[i] ^ curr, (uint)logp);
+                    enc.enc_bit_logp(tf_res[i] ^ curr, logp);
                     tell = (uint)enc.tell();
                     curr = tf_res[i];
                     tf_changed |= curr;

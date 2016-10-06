@@ -611,7 +611,7 @@ namespace Concentus.Celt.Structs
                     pitch_index += 1;
                     octave = Inlines.EC_ILOG((uint)pitch_index) - 5;
                     enc.enc_uint((uint)octave, 6);
-                    enc.enc_bits((uint)(pitch_index - (16 << octave)), (uint)(4 + octave));
+                    enc.enc_bits((uint)(pitch_index - (16 << octave)), 4 + octave);
                     pitch_index -= 1;
                     enc.enc_bits((uint)qg, 3);
                     enc.enc_icdf(prefilter_tapset, Tables.tapset_icdf, 2);
@@ -907,7 +907,7 @@ namespace Concentus.Celt.Structs
                 {
                     int flag;
                     flag = j < offsets[i] ? 1 : 0;
-                    enc.enc_bit_logp(flag, (uint)dynalloc_loop_logp);
+                    enc.enc_bit_logp(flag, dynalloc_loop_logp);
                     tell = (int)enc.tell_frac();
                     if (flag == 0)
                         break;

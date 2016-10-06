@@ -307,7 +307,7 @@ namespace Concentus.Celt
                         q2 = frac - 1;
                     if (q2 < 0)
                         q2 = 0;
-                    enc.enc_bits((uint)q2, (uint)fine_quant[i]);
+                    enc.enc_bits((uint)q2, fine_quant[i]);
                     offset = Inlines.SUB16(
                         (Inlines.SHR32(
                             Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/,

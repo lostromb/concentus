@@ -585,91 +585,96 @@ namespace Concentus.Common
             this.error = 0;
         }
 
-        internal void encode(uint _fl, uint _fh, uint _ft)
+        internal void encode(long _fl, long _fh, long _ft)
         {
-            uint r;
-            r = (uint)(this.rng / _ft);
+            _fl = Inlines.CapToUInt32(_fl);
+            _fh = Inlines.CapToUInt32(_fh);
+            _ft = Inlines.CapToUInt32(_ft);
+            long r = Inlines.CapToUInt32(this.rng / _ft);
             if (_fl > 0)
             {
                 this.val += Inlines.CapToUInt32(this.rng - (r * (_ft - _fl)));
-                this.rng = (r * (_fh - _fl));
+                this.rng = Inlines.CapToUInt32(r * (_fh - _fl));
             }
             else
             {
-                this.rng -= (r * (_ft - _fh));
+                this.rng = Inlines.CapToUInt32(this.rng - (r * (_ft - _fh)));
             }
             
             enc_normalize();
         }
 
-        internal void encode_bin(uint _fl, uint _fh, uint _bits)
+        internal void encode_bin(long _fl, long _fh, int _bits)
         {
-            uint r;
-            r = (uint)(this.rng >> (int)_bits);
+            _fl = Inlines.CapToUInt32(_fl);
+            _fh = Inlines.CapToUInt32(_fh);
+            long r = Inlines.CapToUInt32(this.rng >> (int)_bits);
             if (_fl > 0)
             {
-                this.val += Inlines.CapToUInt32(this.rng - (r * ((1U << (int)_bits) - _fl)));
-                this.rng = (r * (_fh - _fl));
+                this.val = Inlines.CapToUInt32(this.val + Inlines.CapToUInt32(this.rng - (r * ((1U << (int)_bits) - _fl))));
+                this.rng = Inlines.CapToUInt32(r * (_fh - _fl));
             }
-            else this.rng -= (r * ((1U << (int)_bits) - _fh));
+            else
+            {
+                this.rng = Inlines.CapToUInt32(this.rng - (r * ((1U << (int)_bits) - _fh)));
+            }
+
             enc_normalize();
         }
 
         /*The probability of having a "one" is 1/(1<<_logp).*/
-        internal void enc_bit_logp(int _val, uint _logp)
+        internal void enc_bit_logp(int _val, int _logp)
         {
-            uint r;
-            uint s;
-            uint l;
-            r = (uint)this.rng;
-            l = (uint)this.val;
-            s = r >> (int)_logp;
+            long r = this.rng;
+            long l = this.val;
+            long s = r >> _logp;
             r -= s;
             if (_val != 0)
             {
-                this.val = l + r;
+                this.val = Inlines.CapToUInt32(l + r);
             }
 
             this.rng = _val != 0 ? s : r;
             enc_normalize();
         }
 
-        internal void enc_icdf(int _s, short[] _icdf, uint _ftb)
+        internal void enc_icdf(int _s, short[] _icdf, int _ftb)
         {
-            uint r;
-            r = (uint)(this.rng >> (int)_ftb);
+            long r = Inlines.CapToUInt32(this.rng >> _ftb);
             if (_s > 0)
             {
-                this.val += Inlines.CapToUInt32(this.rng - (uint)(r * _icdf[_s - 1]));
-                this.rng = (r * (uint)(_icdf[_s - 1] - _icdf[_s]));
+                this.val = this.val + Inlines.CapToUInt32(this.rng - Inlines.CapToUInt32(r * _icdf[_s - 1]));
+                this.rng = (r * Inlines.CapToUInt32(_icdf[_s - 1] - _icdf[_s]));
             }
             else
             {
-                this.rng -= (uint)(r * _icdf[_s]);
+                this.rng = Inlines.CapToUInt32(this.rng - (r * _icdf[_s]));
             }
             enc_normalize();
         }
 
-        internal void enc_icdf(int _s, short[] _icdf, int icdf_ptr, uint _ftb)
+        internal void enc_icdf(int _s, short[] _icdf, int icdf_ptr, int _ftb)
         {
-            uint r;
-            r = (uint)(this.rng >> (int)_ftb);
+            long r = Inlines.CapToUInt32(this.rng >> _ftb);
             if (_s > 0)
             {
-                this.val += Inlines.CapToUInt32(this.rng - (uint)(r * _icdf[icdf_ptr + _s - 1]));
-                this.rng = (r * (uint)(_icdf[icdf_ptr + _s - 1] - _icdf[icdf_ptr + _s]));
+                this.val = this.val + Inlines.CapToUInt32(this.rng - Inlines.CapToUInt32(r * _icdf[icdf_ptr + _s - 1]));
+                this.rng = Inlines.CapToUInt32(r * Inlines.CapToUInt32(_icdf[icdf_ptr + _s - 1] - _icdf[icdf_ptr + _s]));
             }
             else
             {
-                this.rng -= (uint)(r * _icdf[icdf_ptr + _s]);
+                this.rng = Inlines.CapToUInt32(this.rng - (r * _icdf[icdf_ptr + _s]));
             }
             enc_normalize();
         }
 
-        internal void enc_uint(uint _fl, uint _ft)
+        internal void enc_uint(long _fl, long _ft)
         {
-            uint ft;
-            uint fl;
+            _fl = Inlines.CapToUInt32(_fl);
+            _ft = Inlines.CapToUInt32(_ft);
+
+            long ft;
+            long fl;
             int ftb;
             /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
             Inlines.OpusAssert(_ft > 1);
@@ -678,16 +683,20 @@ namespace Concentus.Common
             if (ftb > EC_UINT_BITS)
             {
                 ftb -= EC_UINT_BITS;
-                ft = (_ft >> ftb) + 1;
-                fl = (uint)(_fl >> ftb);
+                ft = Inlines.CapToUInt32((_ft >> ftb) + 1);
+                fl = Inlines.CapToUInt32(_fl >> ftb);
                 encode(fl, fl + 1, ft);
-                enc_bits(_fl & (((uint)1 << ftb) - 1U), (uint)ftb);
+                enc_bits(_fl & Inlines.CapToUInt32((1 << ftb) - 1), ftb);
             }
-            else encode(_fl, _fl + 1, _ft + 1);
+            else
+            {
+                encode(_fl, _fl + 1, _ft + 1);
+            }
         }
 
-        internal void enc_bits(uint _fl, uint _bits)
+        internal void enc_bits(long _fl, int _bits)
         {
+            _fl = Inlines.CapToUInt32(_fl);
             long window;
             int used;
             window = this.end_window;
@@ -706,19 +715,19 @@ namespace Concentus.Common
             }
 
             window = window | Inlines.CapToUInt32(_fl << used);
-            used += (int)_bits;
+            used += _bits;
             this.end_window = window;
             this.nend_bits = used;
-            this.nbits_total += (int)_bits;
+            this.nbits_total += _bits;
         }
 
-        internal void enc_patch_initial_bits(uint _val, uint _nbits)
+        internal void enc_patch_initial_bits(long _val, int _nbits)
         {
             int shift;
-            uint mask;
+            long mask;
             Inlines.OpusAssert(_nbits <= EC_SYM_BITS);
-            shift = EC_SYM_BITS - (int)_nbits;
-            mask = ((1U << (int)_nbits) - 1) << shift;
+            shift = EC_SYM_BITS - _nbits;
+            mask = ((1 << _nbits) - 1) << shift;
 
             if (this.offs > 0)
             {
@@ -728,13 +737,13 @@ namespace Concentus.Common
             else if (this.rem >= 0)
             {
                 /*The first byte is still awaiting carry propagation.*/
-                this.rem = (int)(((uint)this.rem & ~mask) | _val) << shift;
+                this.rem = (int)Inlines.CapToUInt32((Inlines.CapToUInt32((this.rem & ~mask) | _val)) << shift);
             }
             else if (this.rng <= (EC_CODE_TOP >> (int)_nbits))
             {
                 /*The renormalization loop has never been run.*/
-                this.val = Inlines.CapToUInt32((this.val & ~((uint)mask << EC_CODE_SHIFT)) |
-                 (uint)_val << (EC_CODE_SHIFT + shift));
+                this.val = Inlines.CapToUInt32((this.val & ~(mask << EC_CODE_SHIFT)) |
+                 Inlines.CapToUInt32(Inlines.CapToUInt32(_val) << (EC_CODE_SHIFT + shift)));
             }
             else
             {
@@ -775,7 +784,7 @@ namespace Concentus.Common
             return returnVal;
         }
 
-        private static readonly uint[] correction = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
+        private static readonly int[] correction = {35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535};
 
         /// <summary>
         /// This is a faster version of ec_tell_frac() that takes advantage
@@ -784,45 +793,45 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="this"></param>
         /// <returns></returns>
-        internal uint tell_frac()
+        internal int tell_frac()
         {
             int nbits;
             int r;
             int l;
-            uint b;
-            nbits = this.nbits_total << EntropyCoder.BITRES;
+            long b;
+            nbits = this.nbits_total << BITRES;
             l = Inlines.EC_ILOG(this.rng);
             r = (int)(this.rng >> (l - 16));
-            b = (uint)((r >> 12) - 8);
-            b += (r > correction[b] ? 1u : 0);
+            b = Inlines.CapToUInt32((r >> 12) - 8);
+            b = Inlines.CapToUInt32(b + (r > correction[b] ? 1 : 0));
             l = (int)((l << 3) + b);
-            return (uint)(nbits - l);
+            return nbits - l;
         }
 
         internal void enc_done()
         {
             long window;
             int used;
-            uint msk;
-            uint end;
+            long msk;
+            long end;
             int l;
             /*We output the minimum number of bits that ensures that the symbols encoded
                thus far will be decoded correctly regardless of the bits that follow.*/
             l = EC_CODE_BITS - Inlines.EC_ILOG(this.rng);
-            msk = (uint)((EC_CODE_TOP - 1) >> l);
-            end = ((uint)this.val + msk) & ~msk;
+            msk = Inlines.CapToUInt32((EC_CODE_TOP - 1) >> l);
+            end = Inlines.CapToUInt32((Inlines.CapToUInt32(this.val + msk)) & ~msk);
 
             if ((end | msk) >= this.val + this.rng)
             {
                 l++;
                 msk >>= 1;
-                end = ((uint)this.val + msk) & ~msk;
+                end = Inlines.CapToUInt32((Inlines.CapToUInt32(this.val + msk)) & ~msk);
             }
 
             while (l > 0)
             {
                 enc_carry_out((int)(end >> EC_CODE_SHIFT));
-                end = (uint)((end << EC_SYM_BITS) & (EC_CODE_TOP - 1));
+                end = Inlines.CapToUInt32((end << EC_SYM_BITS) & (EC_CODE_TOP - 1));
                 l -= EC_SYM_BITS;
             }
 

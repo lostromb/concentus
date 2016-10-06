@@ -635,7 +635,7 @@ namespace Concentus.Silk
 
                         if (prefillFlag == 0)
                         {
-                            psRangeEnc.enc_patch_initial_bits((uint)flags, (uint)((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
+                            psRangeEnc.enc_patch_initial_bits(flags, ((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         }
 
                         /* Return zero bytes if all channels DTXed */
