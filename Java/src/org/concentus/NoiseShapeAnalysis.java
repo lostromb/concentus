@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -304,7 +304,7 @@ package org.concentus;
                 
                 ApplySineWindow.silk_apply_sine_window(x_windowed, 0, x, x_ptr2, 1, slope_part);
                 shift = slope_part;
-                Array.Copy(x, x_ptr2 + shift, x_windowed, shift, flat_part);
+                System.arraycopy(x, x_ptr2 + shift, x_windowed, shift, flat_part);
                 shift += flat_part;
                 ApplySineWindow.silk_apply_sine_window(x_windowed, shift, x, x_ptr2 + shift, 2, slope_part);
                 
@@ -354,9 +354,9 @@ package org.concentus;
                     /* Adjust gain for warping */
                     gain_mult_Q16 = warped_gain(AR2_Q24, warping_Q16, psEnc.shapingLPCOrder);
                     Inlines.OpusAssert(psEncCtrl.Gains_Q16[k] >= 0);
-                    if (Inlines.silk_SMULWW(Inlines.silk_RSHIFT_ROUND(psEncCtrl.Gains_Q16[k], 1), gain_mult_Q16) >= (int.MaxValue >> 1))
+                    if (Inlines.silk_SMULWW(Inlines.silk_RSHIFT_ROUND(psEncCtrl.Gains_Q16[k], 1), gain_mult_Q16) >= (Integer.MAX_VALUE >> 1))
                     {
-                        psEncCtrl.Gains_Q16[k] = int.MaxValue;
+                        psEncCtrl.Gains_Q16[k] = Integer.MAX_VALUE;
                     }
                     else {
                         psEncCtrl.Gains_Q16[k] = Inlines.silk_SMULWW(psEncCtrl.Gains_Q16[k], gain_mult_Q16);
@@ -367,7 +367,7 @@ package org.concentus;
                 BWExpander.silk_bwexpander_32(AR2_Q24, psEnc.shapingLPCOrder, BWExp2_Q16);
                 
                 /* Compute noise shaping filter coefficients */
-                Array.Copy(AR2_Q24, AR1_Q24, psEnc.shapingLPCOrder);
+                System.arraycopy(AR2_Q24, AR1_Q24, psEnc.shapingLPCOrder);
 
                 /* Bandwidth expansion for analysis filter shaping */
                 Inlines.OpusAssert(BWExp1_Q16 <= ((int)((1.0f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1.0f, 16)*/);

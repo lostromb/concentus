@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -97,7 +97,7 @@ package org.concentus;
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="ix">I    Quantization indices [ 2 ][ 3 ]</param>
-        static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, sbyte[][] ix)
+        static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, byte[][] ix)
         {
             int n;
 
@@ -119,7 +119,7 @@ package org.concentus;
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="mid_only_flag"></param>
-        static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, sbyte mid_only_flag)
+        static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, byte mid_only_flag)
         {
             /* Encode flag that only mid channel is coded */
             psRangeEnc.enc_icdf( mid_only_flag, SilkTables.silk_stereo_only_code_mid_iCDF, 8);
@@ -202,8 +202,8 @@ package org.concentus;
             int x1_ptr,
             short[] x2,
             int x2_ptr,
-            sbyte[][] ix,
-            BoxedValue<sbyte> mid_only_flag,
+            byte[][] ix,
+            BoxedValue<byte> mid_only_flag,
             int[] mid_side_rates_bps,
             int total_rate_bps,
             int prev_speech_act_Q8,
@@ -236,10 +236,10 @@ package org.concentus;
             }
 
             /* Buffering */
-            Array.Copy(state.sMid, 0, x1, mid, 2);
-            Array.Copy(state.sSide, side, 2);
-            Array.Copy(x1, mid + frame_length, state.sMid, 0, 2);
-            Array.Copy(side, frame_length, state.sSide, 0, 2);
+            System.arraycopy(state.sMid, 0, x1, mid, 2);
+            System.arraycopy(state.sSide, side, 2);
+            System.arraycopy(x1, mid + frame_length, state.sMid, 0, 2);
+            System.arraycopy(side, frame_length, state.sSide, 0, 2);
 
             /* LP and HP filter mid signal */
             LP_mid = new short[frame_length];
@@ -438,10 +438,10 @@ package org.concentus;
             int sum, diff, pred0_Q13, pred1_Q13;
 
             /* Buffering */
-            Array.Copy(state.sMid, 0, x1, x1_ptr, 2);
-            Array.Copy(state.sSide, 0, x2, x2_ptr, 2);
-            Array.Copy(x1, x1_ptr + frame_length, state.sMid, 0, 2);
-            Array.Copy(x2, x2_ptr + frame_length, state.sSide, 0, 2);
+            System.arraycopy(state.sMid, 0, x1, x1_ptr, 2);
+            System.arraycopy(state.sSide, 0, x2, x2_ptr, 2);
+            System.arraycopy(x1, x1_ptr + frame_length, state.sMid, 0, 2);
+            System.arraycopy(x2, x2_ptr + frame_length, state.sSide, 0, 2);
 
             /* Interpolate predictors and add prediction to side channel */
             pred0_Q13 = state.pred_prev_Q13[0];
@@ -487,23 +487,23 @@ package org.concentus;
         /// <param name="ix">O    Quantization indices [ 2 ][ 3 ]</param>
         static void silk_stereo_quant_pred(
                             int[] pred_Q13,
-                            sbyte[][] ix)
+                            byte[][] ix)
         {
-            sbyte i, j; // [porting note] these were originally ints
+            byte i, j; // [porting note] these were originally ints
             int n;
             int low_Q13, step_Q13, lvl_Q13, err_min_Q13, err_Q13, quant_pred_Q13 = 0;
 
             // FIXME: ix was formerly an out parameter that was newly allocated here
             // but now it relies on the caller to initialize it
             // clear ix
-            Arrays.MemSet<sbyte>(ix[0], 0, 3);
-            Arrays.MemSet<sbyte>(ix[1], 0, 3);
+            Arrays.MemSet<byte>(ix[0], 0, 3);
+            Arrays.MemSet<byte>(ix[1], 0, 3);
 
             /* Quantize */
             for (n = 0; n < 2; n++)
             {
                 /* Brute-force search over quantization levels */
-                err_min_Q13 = int.MaxValue;
+                err_min_Q13 = Integer.MAX_VALUE;
                 for (i = 0; i < SilkConstants.STEREO_QUANT_TAB_SIZE - 1; i++)
                 {
                     low_Q13 = SilkTables.silk_stereo_pred_quant_Q13[i];
@@ -531,8 +531,8 @@ package org.concentus;
                 }
 
             done:
-                ix[n][2] = (sbyte)(Inlines.silk_DIV32_16(ix[n][0], 3));
-                ix[n][0] = (sbyte)(ix[n][0] - (sbyte)(ix[n][2] * 3));
+                ix[n][2] = (byte)(Inlines.silk_DIV32_16(ix[n][0], 3));
+                ix[n][0] = (byte)(ix[n][0] - (byte)(ix[n][2] * 3));
                 pred_Q13[n] = quant_pred_Q13;
             }
 

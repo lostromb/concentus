@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -42,14 +42,14 @@ package org.concentus;
     {
         /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
         static void silk_VQ_WMat_EC(
-            BoxedValue<sbyte> ind,                           /* O    index of best codebook vector               */
+            BoxedValue<byte> ind,                           /* O    index of best codebook vector               */
             BoxedValue<Integer> rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
             BoxedValue<Integer> gain_Q7,                       /* O    sum of absolute LTP coefficients            */
             short[] in_Q14,                        /* I    input vector to be quantized                */
             int in_Q14_ptr,
             int[] W_Q18,                         /* I    weighting matrix                            */
             int W_Q18_ptr,
-            sbyte[][] cb_Q7,                         /* I    codebook                                    */
+            byte[][] cb_Q7,                         /* I    codebook                                    */
             short[] cb_gain_Q7,                    /* I    codebook effective gain                     */
             short[] cl_Q5,                         /* I    code length for each codebook vector        */
             int mu_Q9,                          /* I    tradeoff betw. weighted error and rate      */
@@ -58,13 +58,13 @@ package org.concentus;
 )
         {
             int k, gain_tmp_Q7;
-            sbyte[] cb_row_Q7;
+            byte[] cb_row_Q7;
             int cb_row_Q7_ptr = 0;
             short[] diff_Q14 = new short[5];
             int sum1_Q14, sum2_Q16;
 
             /* Loop over codebook */
-            rate_dist_Q14.Val = int.MaxValue;
+            rate_dist_Q14.Val = Integer.MAX_VALUE;
             for (k = 0; k < L; k++)
             {
                 /* Go to next cbk vector */
@@ -125,7 +125,7 @@ package org.concentus;
                 if (sum1_Q14 < rate_dist_Q14.Val)
                 {
                     rate_dist_Q14.Val = sum1_Q14;
-                    ind.Val = (sbyte)k;
+                    ind.Val = (byte)k;
                     gain_Q7.Val = gain_tmp_Q7;
                 }
             }

@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -179,9 +179,9 @@ package org.concentus;
             {
                 nrg = 1;
             }
-            else if (nrg > Inlines.silk_RSHIFT(int.MaxValue, lshifts + 2))
+            else if (nrg > Inlines.silk_RSHIFT(Integer.MAX_VALUE, lshifts + 2))
             {
-                nrg = int.MaxValue >> 1;
+                nrg = Integer.MAX_VALUE >> 1;
             }
             else {
                 nrg = Inlines.silk_LSHIFT(nrg, lshifts + 1);                           /* Q0 */

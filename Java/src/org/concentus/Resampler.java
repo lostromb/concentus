@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -233,7 +233,7 @@ package org.concentus;
             short[] delayBufPtr = S.delayBuf;
 
             /* Copy to delay buffer */
-            Array.Copy(input, input_ptr, delayBufPtr, S.inputDelay, nSamples);
+            System.arraycopy(input, input_ptr, delayBufPtr, S.inputDelay, nSamples);
 
             switch (S.resampler_function)
             {
@@ -250,13 +250,13 @@ package org.concentus;
                     silk_resampler_private_down_FIR(S, output, output_ptr + S.Fs_out_kHz, input, input_ptr + nSamples, inLen - S.Fs_in_kHz);
                     break;
                 default:
-                    Array.Copy(delayBufPtr, 0, output, output_ptr, S.Fs_in_kHz);
-                    Array.Copy(input, input_ptr + nSamples, output, output_ptr + S.Fs_out_kHz, inLen - S.Fs_in_kHz);
+                    System.arraycopy(delayBufPtr, 0, output, output_ptr, S.Fs_in_kHz);
+                    System.arraycopy(input, input_ptr + nSamples, output, output_ptr + S.Fs_out_kHz, inLen - S.Fs_in_kHz);
                     break;
             }
 
             /* Copy to delay buffer */
-            Array.Copy(input, input_ptr + inLen - S.inputDelay, delayBufPtr, 0, S.inputDelay);
+            System.arraycopy(input, input_ptr + inLen - S.inputDelay, delayBufPtr, 0, S.inputDelay);
 
             return SilkError.SILK_NO_ERROR;
         }
@@ -327,7 +327,7 @@ package org.concentus;
             int output_ptr = 0;
 
             /* Copy buffered samples to start of buffer */
-            Array.Copy(S, 0, buf, 0, ORDER_FIR);
+            System.arraycopy(S, 0, buf, 0, ORDER_FIR);
 
             /* Iterate over blocks of frameSizeIn input samples */
             while (true)
@@ -370,7 +370,7 @@ package org.concentus;
                 if (inLen > 0)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    Array.Copy(buf, nSamplesIn, buf, 0, ORDER_FIR);
+                    System.arraycopy(buf, nSamplesIn, buf, 0, ORDER_FIR);
                 }
                 else
                 {
@@ -379,7 +379,7 @@ package org.concentus;
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            Array.Copy(buf, nSamplesIn, S, 0, ORDER_FIR);
+            System.arraycopy(buf, nSamplesIn, S, 0, ORDER_FIR);
         }
 
         /// <summary>
@@ -547,7 +547,7 @@ package org.concentus;
             int[] buf = new int[S.batchSize + S.FIR_Order];
 
             /* Copy buffered samples to start of buffer */
-            Array.Copy(S.sFIR_i32, buf, S.FIR_Order);
+            System.arraycopy(S.sFIR_i32, buf, S.FIR_Order);
 
             /* Iterate over blocks of frameSizeIn input samples */
             index_increment_Q16 = S.invRatio_Q16;
@@ -570,7 +570,7 @@ package org.concentus;
                 if (inLen > 1)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    Array.Copy(buf, nSamplesIn, buf, 0, S.FIR_Order);
+                    System.arraycopy(buf, nSamplesIn, buf, 0, S.FIR_Order);
                 }
                 else
                 {
@@ -579,7 +579,7 @@ package org.concentus;
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            Array.Copy(buf, nSamplesIn, S.sFIR_i32, 0, S.FIR_Order);
+            System.arraycopy(buf, nSamplesIn, S.sFIR_i32, 0, S.FIR_Order);
         }
 
         static int silk_resampler_private_IIR_FIR_INTERPOL(
@@ -633,7 +633,7 @@ package org.concentus;
             short[] buf = new short[2 * S.batchSize + SilkConstants.RESAMPLER_ORDER_FIR_12];
 
             /* Copy buffered samples to start of buffer */
-            Array.Copy(S.sFIR_i16, 0, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
+            System.arraycopy(S.sFIR_i16, 0, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
 
             /* Iterate over blocks of frameSizeIn input samples */
             index_increment_Q16 = S.invRatio_Q16;
@@ -652,7 +652,7 @@ package org.concentus;
                 if (inLen > 0)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    Array.Copy(buf, nSamplesIn << 1, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
+                    System.arraycopy(buf, nSamplesIn << 1, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
                 }
                 else
                 {
@@ -661,7 +661,7 @@ package org.concentus;
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            Array.Copy(buf, nSamplesIn << 1, S.sFIR_i16, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
+            System.arraycopy(buf, nSamplesIn << 1, S.sFIR_i16, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
         }
 
         /// <summary>

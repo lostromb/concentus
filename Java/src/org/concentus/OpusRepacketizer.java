@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -46,9 +46,9 @@ package org.concentus;
 {
     public class OpusRepacketizer
     {
-        internal sbyte toc = 0;
+        internal byte toc = 0;
         internal int nb_frames = 0;
-        internal final sbyte[][] frames = new sbyte[48][];
+        internal final byte[][] frames = new byte[48][];
         internal final short[] len = new short[48];
         internal int framesize = 0;
         
@@ -85,9 +85,9 @@ package org.concentus;
             return rp;
         }
 
-        internal int opus_repacketizer_cat_impl(sbyte[] data, int data_ptr, int len, int self_delimited)
+        internal int opus_repacketizer_cat_impl(byte[] data, int data_ptr, int len, int self_delimited)
         {
-            sbyte dummy_toc;
+            byte dummy_toc;
             int dummy_offset;
             int curr_nb_frames, ret;
             /* Set of check ToC */
@@ -170,7 +170,7 @@ package org.concentus;
   *                              audio stored in the repacketizer state to more
   *                              than 120 ms.
   */
-        public int AddPacket(sbyte[] data, int data_offset, int len)
+        public int AddPacket(byte[] data, int data_offset, int len)
         {
             return opus_repacketizer_cat_impl(data, data_offset, len, 0);
         }
@@ -191,7 +191,7 @@ package org.concentus;
         }
 
         internal int opus_repacketizer_out_range_impl(int begin, int end,
-              sbyte[] data, int data_ptr, int maxlen, int self_delimited, int pad)
+              byte[] data, int data_ptr, int maxlen, int self_delimited, int pad)
         {
             int i, count;
             int tot_size;
@@ -216,7 +216,7 @@ package org.concentus;
                 tot_size += this.len[0] + 1;
                 if (tot_size > maxlen)
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
-                data[ptr++] = (sbyte)(this.toc & 0xFC);
+                data[ptr++] = (byte)(this.toc & 0xFC);
             }
             else if (count == 2)
             {
@@ -226,14 +226,14 @@ package org.concentus;
                     tot_size += 2 * this.len[0] + 1;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data[ptr++] = (sbyte)((this.toc & 0xFC) | 0x1);
+                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x1);
                 }
                 else {
                     /* Code 2 */
                     tot_size += this.len[0] + this.len[1] + 2 + (this.len[0] >= 252 ? 1 : 0);
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data[ptr++] = (sbyte)((this.toc & 0xFC) | 0x2);
+                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x2);
                     ptr += OpusPacketInfo.encode_size(this.len[0], data, ptr);
                 }
             }
@@ -267,16 +267,16 @@ package org.concentus;
 
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data[ptr++] = (sbyte)((this.toc & 0xFC) | 0x3);
-                    data[ptr++] = (sbyte)(count | 0x80);
+                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x3);
+                    data[ptr++] = (byte)(count | 0x80);
                 }
                 else
                 {
                     tot_size += count * this.len[0] + 2;
                     if (tot_size > maxlen)
                         return OpusError.OPUS_BUFFER_TOO_SMALL;
-                    data[ptr++] = (sbyte)((this.toc & 0xFC) | 0x3);
-                    data[ptr++] = (sbyte)(count);
+                    data[ptr++] = (byte)((this.toc & 0xFC) | 0x3);
+                    data[ptr++] = (byte)(count);
                 }
 
                 pad_amount = pad != 0 ? (maxlen - tot_size) : 0;
@@ -284,14 +284,14 @@ package org.concentus;
                 if (pad_amount != 0)
                 {
                     int nb_255s;
-                    data[data_ptr + 1] = (sbyte)(data[data_ptr + 1] | 0x40);
+                    data[data_ptr + 1] = (byte)(data[data_ptr + 1] | 0x40);
                     nb_255s = (pad_amount - 1) / 255;
                     for (i = 0; i < nb_255s; i++)
                     {
                         data[ptr++] = -1;
                     }
 
-                    data[ptr++] = (sbyte)(pad_amount - 255 * nb_255s - 1);
+                    data[ptr++] = (byte)(pad_amount - 255 * nb_255s - 1);
                     tot_size += pad_amount;
                 }
 
@@ -316,11 +316,11 @@ package org.concentus;
                 {
                     /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
                        padding from opus_packet_pad or opus_packet_unpad(). */
-                    Arrays.MemMove<sbyte>(data, 0, ptr, this.len[i]);
+                    Arrays.MemMove<byte>(data, 0, ptr, this.len[i]);
                 }
                 else
                 {
-                    Array.Copy(this.frames[i], 0, data, ptr, this.len[i]);
+                    System.arraycopy(this.frames[i], 0, data, ptr, this.len[i]);
                 }
                 ptr += this.len[i];
             }
@@ -328,7 +328,7 @@ package org.concentus;
             if (pad != 0)
             {
                 /* Fill padding with zeros. */
-                Arrays.MemSetWithOffset<sbyte>(data, 0, ptr, data_ptr + maxlen - ptr);
+                Arrays.MemSetWithOffset<byte>(data, 0, ptr, data_ptr + maxlen - ptr);
             }
 
             return tot_size;
@@ -365,7 +365,7 @@ package org.concentus;
   * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
   *                                complete output packet.
   */
-        public int CreatePacket(int begin, int end, sbyte[] data, int data_offset, int maxlen)
+        public int CreatePacket(int begin, int end, byte[] data, int data_offset, int maxlen)
         {
             return opus_repacketizer_out_range_impl(begin, end, data, data_offset, maxlen, 0, 0);
         }
@@ -399,7 +399,7 @@ package org.concentus;
   * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
   *                                complete output packet.
   */
-        public int CreatePacket(sbyte[] data, int data_offset, int maxlen)
+        public int CreatePacket(byte[] data, int data_offset, int maxlen)
         {
             return opus_repacketizer_out_range_impl(0, this.nb_frames, data, data_offset, maxlen, 0, 0);
         }
@@ -416,7 +416,7 @@ package org.concentus;
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadPacket(sbyte[] data, int data_offset, int len, int new_len)
+        public static int PadPacket(byte[] data, int data_offset, int len, int new_len)
         {
             OpusRepacketizer rp = new OpusRepacketizer();
             int ret;
@@ -428,7 +428,7 @@ package org.concentus;
                 return OpusError.OPUS_BAD_ARG;
             rp.Reset();
             /* Moving payload to the end of the packet so we can do in-place padding */
-            Arrays.MemMove<sbyte>(data, data_offset, data_offset + new_len - len, len);
+            Arrays.MemMove<byte>(data, data_offset, data_offset + new_len - len, len);
             //data.MemMoveTo(data.Point(new_len - len), len);
             rp.AddPacket(data, data_offset + new_len - len, len);
             ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, data_offset, new_len, 0, 1);
@@ -449,7 +449,7 @@ package org.concentus;
   * @retval #OPUS_BAD_ARG \a len was less than 1.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int UnpadPacket(sbyte[] data, int data_offset, int len)
+        public static int UnpadPacket(byte[] data, int data_offset, int len)
         {
             int ret;
             if (len < 1)
@@ -480,11 +480,11 @@ package org.concentus;
   * @retval #OPUS_BAD_ARG \a len was less than 1.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadMultistreamPacket(sbyte[] data, int data_offset, int len, int new_len, int nb_streams)
+        public static int PadMultistreamPacket(byte[] data, int data_offset, int len, int new_len, int nb_streams)
         {
             int s;
             int count;
-            sbyte dummy_toc;
+            byte dummy_toc;
             short[] size = new short[48];
             int packet_offset;
             int dummy_offset;
@@ -526,10 +526,10 @@ package org.concentus;
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int UnpadMultistreamPacket(sbyte[] data, int data_offset, int len, int nb_streams)
+        public static int UnpadMultistreamPacket(byte[] data, int data_offset, int len, int nb_streams)
         {
             int s;
-            sbyte dummy_toc;
+            byte dummy_toc;
             short[] size = new short[48];
             int packet_offset;
             int dummy_offset;

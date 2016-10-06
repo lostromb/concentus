@@ -35,6 +35,8 @@ import java.lang.reflect.Array;
 
 class Arrays<T>
 {
+    // FIXME make this non-generic
+    
     @SuppressWarnings("unchecked")
     T[][] InitTwoDimensionalArray(Class<T> c, int x, int y)
     {
@@ -51,8 +53,22 @@ class Arrays<T>
         return returnVal;
     }
     
-    //FIXME: For the most part this method is used to zero-out arrays, which is usually already done by the runtime.
-    void MemSet(T[] array, T value)
+    static void MemSet(byte[] array, byte value)
+    {
+        for (int c = 0; c < array.length; c++)
+        {
+            array[c] = value;
+        }
+    }
+    
+    static void MemSet(short[] array, short value)
+    {
+        for (int c = 0; c < array.length; c++)
+        {
+            array[c] = value;
+        }
+    }
+    static void MemSet(int[] array, int value)
     {
         for (int c = 0; c < array.length; c++)
         {
@@ -60,7 +76,23 @@ class Arrays<T>
         }
     }
 
-    void MemSet(T[] array, T value, int length)
+    static void MemSet(byte[] array, byte value, int length)
+    {
+        for (int c = 0; c < length; c++)
+        {
+            array[c] = value;
+        }
+    }
+    
+    static void MemSet(short[] array, short value, int length)
+    {
+        for (int c = 0; c < length; c++)
+        {
+            array[c] = value;
+        }
+    }
+    
+    static void MemSet(int[] array, int value, int length)
     {
         for (int c = 0; c < length; c++)
         {
@@ -68,15 +100,99 @@ class Arrays<T>
         }
     }
 
-    void MemSetWithOffset(T[] array, T value, int offset, int length)
+    static void MemSetWithOffset(byte[] array, byte value, int offset, int length)
     {
         for (int c = offset; c < offset + length; c++)
         {
             array[c] = value;
         }
     }
+    
+    static void MemSetWithOffset(short[] array, short value, int offset, int length)
+    {
+        for (int c = offset; c < offset + length; c++)
+        {
+            array[c] = value;
+        }
+    }
+    
+    static void MemSetWithOffset(int[] array, int value, int offset, int length)
+    {
+        for (int c = offset; c < offset + length; c++)
+        {
+            array[c] = value;
+        }
+    }
+    
+    // Hooray for generic programming in Java
 
-    void MemMove(T[] array, int src_idx, int dst_idx, int length)
+    static void MemMove(byte[] array, int src_idx, int dst_idx, int length)
+    {
+        if (src_idx == dst_idx || length == 0)
+            return;
+
+        // Do regions overlap?
+        if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+        {
+            // Take extra precautions
+            if (dst_idx < src_idx)
+            {
+                // Copy forwards
+                for (int c = 0; c < length; c++)
+                {
+                    array[c + dst_idx] = array[c + src_idx];
+                }
+            }
+            else
+            {
+                // Copy backwards
+                for (int c = length - 1; c >= 0; c--)
+                {
+                    array[c + dst_idx] = array[c + src_idx];
+                }
+            }
+        }
+        else
+        {
+            // Memory regions cannot overlap; just do a fast copy
+            System.arraycopy(array, src_idx, array, dst_idx, length);
+        }
+    }
+    
+    static void MemMove(short[] array, int src_idx, int dst_idx, int length)
+    {
+        if (src_idx == dst_idx || length == 0)
+            return;
+
+        // Do regions overlap?
+        if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+        {
+            // Take extra precautions
+            if (dst_idx < src_idx)
+            {
+                // Copy forwards
+                for (int c = 0; c < length; c++)
+                {
+                    array[c + dst_idx] = array[c + src_idx];
+                }
+            }
+            else
+            {
+                // Copy backwards
+                for (int c = length - 1; c >= 0; c--)
+                {
+                    array[c + dst_idx] = array[c + src_idx];
+                }
+            }
+        }
+        else
+        {
+            // Memory regions cannot overlap; just do a fast copy
+            System.arraycopy(array, src_idx, array, dst_idx, length);
+        }
+    }
+    
+    static void MemMove(int[] array, int src_idx, int dst_idx, int length)
     {
         if (src_idx == dst_idx || length == 0)
             return;

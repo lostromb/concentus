@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ package org.concentus;
                 if (nrg < 0)
                 {
                     /* Scale down */
-                    nrg = unchecked((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                    nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
                     shft = 2;
                     i += 2;
                     break;
@@ -80,11 +80,11 @@ package org.concentus;
             {
                 nrg_tmp = Inlines.silk_SMULBB(x[x_ptr + i], x[x_ptr + i]);
                 nrg_tmp = Inlines.silk_SMLABB_ovflw(nrg_tmp, x[x_ptr + i + 1], x[x_ptr + i + 1]);
-                nrg = unchecked((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
+                nrg = ((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
                 if (nrg < 0)
                 {
                     /* Scale down */
-                    nrg = unchecked((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                    nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
                     shft += 2;
                 }
             }
@@ -93,13 +93,13 @@ package org.concentus;
             {
                 /* One sample left to process */
                 nrg_tmp = Inlines.silk_SMULBB(x[x_ptr + i], x[x_ptr + i]);
-                nrg = unchecked((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
+                nrg = ((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
             }
 
             /* Make sure to have at least one extra leading zero (two leading zeros in total) */
             if ((nrg & 0xC0000000) != 0)
             {
-                nrg = unchecked((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
                 shft += 2;
             }
 
@@ -137,7 +137,7 @@ package org.concentus;
                 if (nrg < 0)
                 {
                     /* Scale down */
-                    nrg = unchecked((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                    nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
                     shft = 2;
                     i += 2;
                     break;
@@ -148,11 +148,11 @@ package org.concentus;
             {
                 nrg_tmp = Inlines.silk_SMULBB(x[i], x[i]);
                 nrg_tmp = Inlines.silk_SMLABB_ovflw(nrg_tmp, x[i + 1], x[i + 1]);
-                nrg = unchecked((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
+                nrg = ((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
                 if (nrg < 0)
                 {
                     /* Scale down */
-                    nrg = unchecked((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                    nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
                     shft += 2;
                 }
             }
@@ -161,13 +161,13 @@ package org.concentus;
             {
                 /* One sample left to process */
                 nrg_tmp = Inlines.silk_SMULBB(x[i], x[i]);
-                nrg = unchecked((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
+                nrg = ((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
             }
 
             /* Make sure to have at least one extra leading zero (two leading zeros in total) */
             if ((nrg & 0xC0000000) != 0)
             {
-                nrg = unchecked((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
                 shft += 2;
             }
 

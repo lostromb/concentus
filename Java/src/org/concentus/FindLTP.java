@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -141,7 +141,7 @@ package org.concentus;
                 denom32 = Inlines.silk_LSHIFT_SAT32(Inlines.silk_SMULWB(nrg[k], Wght_Q15[k]), 1 + extra_shifts) + /* Q( -corr_rshifts[ k ] + extra_shifts ) */
                             Inlines.silk_RSHIFT(Inlines.silk_SMULWB((int)subfr_length, 655), corr_rshifts[k] - extra_shifts);    /* Q( -corr_rshifts[ k ] + extra_shifts ) */
                 denom32 = Inlines.silk_max(denom32, 1);
-                Inlines.OpusAssert(((long)Wght_Q15[k] << 16) < int.MaxValue);                       /* Wght always < 0.5 in Q0 */
+                Inlines.OpusAssert(((long)Wght_Q15[k] << 16) < Integer.MAX_VALUE);                       /* Wght always < 0.5 in Q0 */
                 temp32 = Inlines.silk_DIV32(Inlines.silk_LSHIFT((int)Wght_Q15[k], 16), denom32);             /* Q( 15 + 16 + corr_rshifts[k] - extra_shifts ) */
                 temp32 = Inlines.silk_RSHIFT(temp32, 31 + corr_rshifts[k] - extra_shifts - 26);               /* Q26 */
 

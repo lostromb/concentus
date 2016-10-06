@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -125,7 +125,7 @@ package org.concentus;
                     {
                         LTP_Gain_Q14 = temp_LTP_Gain_Q14;
 
-                        Array.Copy(psDecCtrl.LTPCoef_Q14, Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER), psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
+                        System.arraycopy(psDecCtrl.LTPCoef_Q14, Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER), psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
 
                         psPLC.pitchL_Q8 = Inlines.silk_LSHIFT(psDecCtrl.pitchL[psDec.nb_subfr - 1 - j], 8);
                     }
@@ -166,11 +166,11 @@ package org.concentus;
             }
 
             /* Save LPC coeficients */
-            Array.Copy(psDecCtrl.PredCoef_Q12[1], psPLC.prevLPC_Q12, psDec.LPC_order);
+            System.arraycopy(psDecCtrl.PredCoef_Q12[1], psPLC.prevLPC_Q12, psDec.LPC_order);
             psPLC.prevLTP_scale_Q14 = (short)(psDecCtrl.LTP_scale_Q14);
 
             /* Save last two gains */
-            Array.Copy(psDecCtrl.Gains_Q16, psDec.nb_subfr - 2, psPLC.prevGain_Q16, 0, 2);
+            System.arraycopy(psDecCtrl.Gains_Q16, psDec.nb_subfr - 2, psPLC.prevGain_Q16, 0, 2);
 
             psPLC.subfr_length = psDec.subfr_length;
             psPLC.nb_subfr = psDec.nb_subfr;
@@ -317,7 +317,7 @@ package org.concentus;
             Filters.silk_LPC_analysis_filter(sLTP, idx, psDec.outBuf, idx, psPLC.prevLPC_Q12, 0, psDec.ltp_mem_length - idx, psDec.LPC_order);
             /* Scale LTP state */
             inv_gain_Q30 = Inlines.silk_INVERSE32_varQ(psPLC.prevGain_Q16[1], 46);
-            inv_gain_Q30 = Inlines.silk_min(inv_gain_Q30, int.MaxValue >> 1);
+            inv_gain_Q30 = Inlines.silk_min(inv_gain_Q30, Integer.MAX_VALUE >> 1);
             for (i = idx + psDec.LPC_order; i < psDec.ltp_mem_length; i++)
             {
                 sLTP_Q14[i] = Inlines.silk_SMULWB(inv_gain_Q30, sLTP[i]);
@@ -369,7 +369,7 @@ package org.concentus;
             sLPC_Q14_ptr = psDec.ltp_mem_length - SilkConstants.MAX_LPC_ORDER;
 
             /* Copy LPC state */
-            Array.Copy(psDec.sLPC_Q14_buf, 0, sLTP_Q14, sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
+            System.arraycopy(psDec.sLPC_Q14_buf, 0, sLTP_Q14, sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
 
             Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
             for (i = 0; i < psDec.frame_length; i++)
@@ -401,7 +401,7 @@ package org.concentus;
             }
 
             /* Save LPC state */
-            Array.Copy(sLTP_Q14, sLPC_Q14_ptr + psDec.frame_length, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+            System.arraycopy(sLTP_Q14, sLPC_Q14_ptr + psDec.frame_length, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
 
             /**************************************/
             /* Update states                      */

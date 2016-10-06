@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -42,14 +42,14 @@ package org.concentus;
     {
         static void silk_decode_pitch(
                 short lagIndex,           /* I                                                                */
-                sbyte contourIndex,       /* O                                                                */
+                byte contourIndex,       /* O                                                                */
                 int[] pitch_lags,       /* O    4 pitch values                                              */
                 int Fs_kHz,             /* I    sampling frequency (kHz)                                    */
                 int nb_subfr            /* I    number of sub frames                                        */
             )
         {
             int lag, k, min_lag, max_lag;
-            sbyte[][] Lag_CB_ptr;
+            byte[][] Lag_CB_ptr;
 
             if (Fs_kHz == 8)
             {

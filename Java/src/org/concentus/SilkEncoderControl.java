@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -73,32 +73,32 @@ package org.concentus;.Structs
 
         /* Parameters for CBR mode */
         internal final int[] GainsUnq_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
-        internal sbyte lastGainIndexPrev = 0;
+        internal byte lastGainIndexPrev = 0;
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
             Arrays.MemSet<short>(PredCoef_Q12[0], 0, SilkConstants.MAX_LPC_ORDER);
             Arrays.MemSet<short>(PredCoef_Q12[1], 0, SilkConstants.MAX_LPC_ORDER);
             Arrays.MemSet<short>(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
             LTP_scale_Q14 = 0;
-            Arrays.MemSet<int>(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
             Arrays.MemSet<short>(AR1_Q13, 0, SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
             Arrays.MemSet<short>(AR2_Q13, 0, SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
-            Arrays.MemSet<int>(LF_shp_Q14, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<int>(GainsPre_Q14, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<int>(HarmBoost_Q14, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<int>(Tilt_Q14, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<int>(HarmShapeGain_Q14, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(LF_shp_Q14, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(GainsPre_Q14, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(HarmBoost_Q14, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(Tilt_Q14, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(HarmShapeGain_Q14, 0, SilkConstants.MAX_NB_SUBFR);
             Lambda_Q10 = 0;
             input_quality_Q14 = 0;
             coding_quality_Q14 = 0;
             sparseness_Q8 = 0;
             predGain_Q16 = 0;
             LTPredCodGain_Q7 = 0;
-            Arrays.MemSet<int>(ResNrg, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<int>(ResNrgQ, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<int>(GainsUnq_Q16, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(ResNrg, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(ResNrgQ, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet(GainsUnq_Q16, 0, SilkConstants.MAX_NB_SUBFR);
             lastGainIndexPrev = 0;
         }
     }

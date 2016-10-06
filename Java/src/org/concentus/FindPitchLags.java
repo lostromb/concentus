@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -87,7 +87,7 @@ package org.concentus;
             /* Middle un - windowed samples */
             Wsig_ptr += psEnc.la_pitch;
             x_buf_ptr += psEnc.la_pitch;
-            Array.Copy(x, x_buf_ptr, Wsig, Wsig_ptr, (psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1)));
+            System.arraycopy(x, x_buf_ptr, Wsig, Wsig_ptr, (psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1)));
 
             /* Last LA_LTP samples */
             Wsig_ptr += psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1);
@@ -139,7 +139,7 @@ package org.concentus;
                 /* Call pitch estimator                  */
                 /*****************************************/
                 BoxedValue<short> boxed_lagIndex = new BoxedValue<short>(psEnc.indices.lagIndex);
-                BoxedValue<sbyte> boxed_contourIndex = new BoxedValue<sbyte>(psEnc.indices.contourIndex);
+                BoxedValue<byte> boxed_contourIndex = new BoxedValue<byte>(psEnc.indices.contourIndex);
                 BoxedValue<Integer> boxed_LTPcorr = new BoxedValue<Integer>(psEnc.LTPCorr_Q15);
                 if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL, boxed_lagIndex, boxed_contourIndex,
                         boxed_LTPcorr, psEnc.prevLag, psEnc.pitchEstimationThreshold_Q16,
@@ -156,7 +156,7 @@ package org.concentus;
                 psEnc.LTPCorr_Q15 = boxed_LTPcorr.Val;
             }
             else {
-                Arrays.MemSet<int>(psEncCtrl.pitchL, 0, SilkConstants.MAX_NB_SUBFR);
+                Arrays.MemSet(psEncCtrl.pitchL, 0, SilkConstants.MAX_NB_SUBFR);
                 psEnc.indices.lagIndex = 0;
                 psEnc.indices.contourIndex = 0;
                 psEnc.LTPCorr_Q15 = 0;

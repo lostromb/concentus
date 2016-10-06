@@ -34,21 +34,14 @@
 */
 
 package org.concentus;
-{
-    using Concentus.Celt.Enums;
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Enums;
-    using System;
 
-    class FFTState
-    {
-        internal int nfft = 0;
-        internal short scale = 0;
-        internal int scale_shift = 0;
-        internal int shift = 0;
-        internal short[] factors = new short[2 * KissFFT.MAXFACTORS];
-        internal short[] bitrev = null;
-        internal short[] twiddles = null;
-    }
+class FFTState
+{
+    int nfft = 0;
+    short scale = 0;
+    int scale_shift = 0;
+    int shift = 0;
+    short[] factors = new short[2 * KissFFT.MAXFACTORS];
+    short[] bitrev = null;
+    short[] twiddles = null;
 }

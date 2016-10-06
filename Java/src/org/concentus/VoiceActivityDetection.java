@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,7 @@ package org.concentus;
             for (b = 0; b < SilkConstants.VAD_N_BANDS; b++)
             {
                 psSilk_VAD.NL[b] = Inlines.silk_MUL(100, psSilk_VAD.NoiseLevelBias[b]);
-                psSilk_VAD.inv_NL[b] = Inlines.silk_DIV32(int.MaxValue, psSilk_VAD.NL[b]);
+                psSilk_VAD.inv_NL[b] = Inlines.silk_DIV32(Integer.MAX_VALUE, psSilk_VAD.NL[b]);
             }
 
             psSilk_VAD.counter = 15;
@@ -367,7 +367,7 @@ package org.concentus;
                 Inlines.OpusAssert(nrg > 0);
 
                 /* Invert energies */
-                inv_nrg = Inlines.silk_DIV32(int.MaxValue, nrg);
+                inv_nrg = Inlines.silk_DIV32(Integer.MAX_VALUE, nrg);
                 Inlines.OpusAssert(inv_nrg >= 0);
 
                 /* Less update when subband energy is high */
@@ -392,7 +392,7 @@ package org.concentus;
                 Inlines.OpusAssert(psSilk_VAD.inv_NL[k] >= 0);
 
                 /* Compute noise level by inverting again */
-                nl = Inlines.silk_DIV32(int.MaxValue, psSilk_VAD.inv_NL[k]);
+                nl = Inlines.silk_DIV32(Integer.MAX_VALUE, psSilk_VAD.inv_NL[k]);
                 Inlines.OpusAssert(nl >= 0);
 
                 /* Limit noise levels (guarantee 7 bits of head room) */

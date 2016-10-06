@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2008-2011 Octasic Inc.
+/* Copyright (c) 2008-2011 Octasic Inc.
    Originally written by Jean-Marc Valin
    Ported to Java by Logan Stromberg
 

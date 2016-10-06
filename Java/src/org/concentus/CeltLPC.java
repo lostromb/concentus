@@ -53,7 +53,7 @@ package org.concentus;
             int error = ac[0];
             int[] lpc = new int[p];
 
-            //Arrays.MemSet<int>(lpc, 0, p); strictly, this is not necessary since the runtime zeroes memory for us
+            //Arrays.MemSet(lpc, 0, p); strictly, this is not necessary since the runtime zeroes memory for us
 
             if (ac[0] != 0)
             {

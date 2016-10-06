@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -107,7 +107,7 @@ package org.concentus;
             EntropyCoder psRangeEnc,
             int signalType,
             int quantOffsetType,
-            sbyte[] pulses,
+            byte[] pulses,
             int frame_length)
         {
             int i, k, j, iter, bit, nLS, scale_down, RateLevelIndex = 0;
@@ -120,7 +120,7 @@ package org.concentus;
             int pulses_ptr;
             short[] nBits_ptr;
 
-            Arrays.MemSet<int>(pulses_comb, 0, 8);
+            Arrays.MemSet(pulses_comb, 0, 8);
 
             /****************************/
             /* Prepare for shell coding */
@@ -132,7 +132,7 @@ package org.concentus;
             {
                 Inlines.OpusAssert(frame_length == 12 * 10); /* Make sure only happens for 10 ms @ 12 kHz */
                 iter++;
-                Arrays.MemSetWithOffset<sbyte>(pulses, 0, frame_length, SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                Arrays.MemSetWithOffset<byte>(pulses, 0, frame_length, SilkConstants.SHELL_CODEC_FRAME_LENGTH);
             }
 
             /* Take the absolute value of the pulses */
@@ -190,7 +190,7 @@ package org.concentus;
             /* Rate level */
             /**************/
             /* find rate level that leads to fewest bits for coding of pulses per block info */
-            minSumBits_Q5 = int.MaxValue;
+            minSumBits_Q5 = Integer.MAX_VALUE;
             for (k = 0; k < SilkConstants.N_RATE_LEVELS - 1; k++)
             {
                 nBits_ptr = SilkTables.silk_pulses_per_block_BITS_Q5[k];
@@ -257,7 +257,7 @@ package org.concentus;
                     nLS = nRshifts[i] - 1;
                     for (k = 0; k < SilkConstants.SHELL_CODEC_FRAME_LENGTH; k++)
                     {
-                        abs_q = (sbyte)Inlines.silk_abs(pulses[pulses_ptr + k]);
+                        abs_q = (byte)Inlines.silk_abs(pulses[pulses_ptr + k]);
                         for (j = nLS; j > 0; j--)
                         {
                             bit = Inlines.silk_RSHIFT(abs_q, j) & 1;

@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ package org.concentus;
             {
                 /* Only scale if first frame in packet */
                 round_loss = psEnc.PacketLoss_perc + psEnc.nFramesPerPacket;
-                psEnc.indices.LTP_scaleIndex = (sbyte)Inlines.silk_LIMIT(
+                psEnc.indices.LTP_scaleIndex = (byte)Inlines.silk_LIMIT(
                     Inlines.silk_SMULWB(Inlines.silk_SMULBB(round_loss, psEncCtrl.LTPredCodGain_Q7), ((int)((0.1f) * ((long)1 << (9)) + 0.5))/*Inlines.SILK_CONST(0.1f, 9)*/), 0, 2);
             }
             else {

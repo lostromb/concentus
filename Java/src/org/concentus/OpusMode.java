@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors

@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -141,7 +141,7 @@ package org.concentus;
             hybrid_stereo_width_Q14 = 0;
             variable_HP_smth2_Q15 = 0;
             prev_HB_gain = 0;
-            Arrays.MemSet<int>(hp_mem, 0, 4);
+            Arrays.MemSet(hp_mem, 0, 4);
             mode = 0;
             prev_mode = 0;
             prev_channels = 0;
@@ -345,7 +345,7 @@ package org.concentus;
         /// <param name="float_api"></param>
         /// <returns></returns>
         internal int opus_encode_native<T>(short[] pcm, int pcm_ptr, int frame_size,
-                        sbyte[] data, int data_ptr, int out_data_bytes, int lsb_depth,
+                        byte[] data, int data_ptr, int out_data_bytes, int lsb_depth,
                         T[] analysis_pcm, int analysis_pcm_ptr, int analysis_size, int c1, int c2,
                         int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
         {
@@ -752,7 +752,7 @@ package org.concentus;
             /* Can't support higher than wideband for >20 ms frames */
             if (frame_size > this.Fs / 50 && (this.mode == OpusMode.MODE_CELT_ONLY || this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
             {
-                sbyte[] tmp_data;
+                byte[] tmp_data;
                 int nb_frames;
                 OpusBandwidth bak_bandwidth;
                 int bak_channels, bak_to_mono;
@@ -770,7 +770,7 @@ package org.concentus;
                 nb_frames = frame_size > this.Fs / 25 ? 3 : 2;
                 bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
 
-                tmp_data = new sbyte[nb_frames * bytes_per_frame];
+                tmp_data = new byte[nb_frames * bytes_per_frame];
 
                 rp = OpusRepacketizer.Create();
 
@@ -842,7 +842,7 @@ package org.concentus;
             enc.enc_init(data, data_ptr, (max_data_bytes - 1));
 
             pcm_buf = new short[(total_buffer + frame_size) * this.channels];
-            Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
+            System.arraycopy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
 
             if (this.mode == OpusMode.MODE_CELT_ONLY)
                 hp_freq_smth1 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
@@ -1025,12 +1025,12 @@ package org.concentus;
                     CodecHelpers.gain_fade(this.delay_buffer, prefill_offset,
                           0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
                     Arrays.MemSet<short>(this.delay_buffer, 0, prefill_offset);
-                    Array.Copy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
+                    System.arraycopy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
                     EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, zero, 1);
                 }
 
-                Array.Copy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
+                System.arraycopy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
 
                 BoxedValue<Integer> boxed_silkBytes = new BoxedValue<Integer>(nBytes);
                 ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
@@ -1158,17 +1158,17 @@ package org.concentus;
             tmp_prefill = new short[this.channels * this.Fs / 400];
             if (this.mode != OpusMode.MODE_SILK_ONLY && this.mode != this.prev_mode && this.prev_mode > 0)
             {
-                Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels), tmp_prefill, 0, this.channels * this.Fs / 400);
+                System.arraycopy(this.delay_buffer, ((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels), tmp_prefill, 0, this.channels * this.Fs / 400);
             }
 
             if (this.channels * (this.encoder_buffer - (frame_size + total_buffer)) > 0)
             {
                 Arrays.MemMove<short>(this.delay_buffer, this.channels * frame_size, 0, this.channels * (this.encoder_buffer - frame_size - total_buffer));
-                Array.Copy(pcm_buf, 0, this.delay_buffer, (this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
+                System.arraycopy(pcm_buf, 0, this.delay_buffer, (this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
             }
             else
             {
-                Array.Copy(pcm_buf, (frame_size + total_buffer - this.encoder_buffer) * this.channels, this.delay_buffer, 0, this.encoder_buffer * this.channels);
+                System.arraycopy(pcm_buf, (frame_size + total_buffer - this.encoder_buffer) * this.channels, this.delay_buffer, 0, this.encoder_buffer * this.channels);
             }
 
             /* gain_fade() and stereo_fade() need to be after the buffer copying
@@ -1267,7 +1267,7 @@ package org.concentus;
             {
                 if (this.mode != this.prev_mode && this.prev_mode > 0)
                 {
-                    sbyte[] dummy = new sbyte[2];
+                    byte[] dummy = new byte[2];
                     celt_enc.ResetState();
 
                     /* Prefilling */
@@ -1289,7 +1289,7 @@ package org.concentus;
             if (redundancy != 0 && celt_to_silk == 0)
             {
                 int err;
-                sbyte[] dummy = new sbyte[2];
+                byte[] dummy = new byte[2];
                 int N2, N4;
                 N2 = this.Fs / 200;
                 N4 = this.Fs / 400;
@@ -1375,7 +1375,7 @@ package org.concentus;
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use he Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes</returns>
         public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
-              sbyte[] out_data, int out_data_offset, int max_data_bytes)
+              byte[] out_data, int out_data_offset, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
             if (out_data_offset + max_data_bytes > out_data.Length)
@@ -1440,7 +1440,7 @@ package org.concentus;
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes</returns>
         public int Encode(float[] in_pcm, int pcm_offset, int frame_size,
-                              sbyte[] out_data, int out_data_offset, int max_data_bytes)
+                              byte[] out_data, int out_data_offset, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
             if (out_data_offset + max_data_bytes > out_data.Length)

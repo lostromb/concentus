@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -193,7 +193,7 @@ package org.concentus;
                 /* Decode LBRR flags */
                 for (n = 0; n < decControl.nChannelsInternal; n++)
                 {
-                    Arrays.MemSet<int>(channel_state[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+                    Arrays.MemSet(channel_state[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
                     if (channel_state[n].LBRR_flag != 0)
                     {
                         if (channel_state[n].nFramesPerPacket == 1)
@@ -283,7 +283,7 @@ package org.concentus;
             if (decControl.nChannelsInternal == 2 && decode_only_middle == 0 && psDec.prev_decode_only_middle == 1)
             {
                 Arrays.MemSet<short>(psDec.channel_state[1].outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
-                Arrays.MemSet<int>(psDec.channel_state[1].sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemSet(psDec.channel_state[1].sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
                 psDec.channel_state[1].lagPrev = 100;
                 psDec.channel_state[1].LastGainIndex = 10;
                 psDec.channel_state[1].prevSignalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
@@ -353,7 +353,7 @@ package org.concentus;
                 }
                 else
                 {
-                    Arrays.MemSetWithOffset<short>(samplesOut_tmp, 0, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec.Val);
+                    Arrays.MemSetWithOffset(samplesOut_tmp, 0, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec.Val);
                 }
                 channel_state[n].nFramesDecoded++;
             }
@@ -366,8 +366,8 @@ package org.concentus;
             else
             {
                 /* Buffering */
-                Array.Copy(psDec.sStereo.sMid, 0, samplesOut_tmp, samplesOut_tmp_ptrs[0], 2);
-                Array.Copy(samplesOut_tmp, samplesOut_tmp_ptrs[0] + nSamplesOutDec.Val, psDec.sStereo.sMid, 0, 2);
+                System.arraycopy(psDec.sStereo.sMid, 0, samplesOut_tmp, samplesOut_tmp_ptrs[0], 2);
+                System.arraycopy(samplesOut_tmp, samplesOut_tmp_ptrs[0] + nSamplesOutDec.Val, psDec.sStereo.sMid, 0, 2);
             }
 
             /* Number of output samples */
@@ -388,7 +388,7 @@ package org.concentus;
             if (delay_stack_alloc != 0)
             {
                 samplesOut1_tmp_storage2 = new short[decControl.nChannelsInternal * (channel_state[0].frame_length + 2)];
-                Array.Copy(samplesOut, samplesOut_ptr, samplesOut1_tmp_storage2, 0, decControl.nChannelsInternal * (channel_state[0].frame_length + 2));
+                System.arraycopy(samplesOut, samplesOut_ptr, samplesOut1_tmp_storage2, 0, decControl.nChannelsInternal * (channel_state[0].frame_length + 2));
                 samplesOut_tmp = samplesOut1_tmp_storage2;
                 samplesOut_tmp_ptrs[0] = 0;
                 samplesOut_tmp_ptrs[1] = channel_state[0].frame_length + 2;

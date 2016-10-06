@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ package org.concentus;
             int[] LTP_corrs_rshift = new int[SilkConstants.MAX_NB_SUBFR];
             
             /* weighting for weighted least squares */
-            min_gain_Q16 = int.MaxValue >> 6;
+            min_gain_Q16 = Integer.MAX_VALUE >> 6;
             for (i = 0; i < psEnc.nb_subfr; i++)
             {
                 min_gain_Q16 = Inlines.silk_min(min_gain_Q16, psEncCtrl.Gains_Q16[i]);
@@ -106,7 +106,7 @@ package org.concentus;
                 psEncCtrl.LTPredCodGain_Q7 = boxed_codgain.Val;
 
                 /* Quantize LTP gain parameters */
-                BoxedValue<sbyte> boxed_periodicity = new BoxedValue<sbyte>(psEnc.indices.PERIndex);
+                BoxedValue<byte> boxed_periodicity = new BoxedValue<byte>(psEnc.indices.PERIndex);
                 BoxedValue<Integer> boxed_gain = new BoxedValue<Integer>(psEnc.sum_log_gain_Q7);
                 QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex, boxed_periodicity,
                     boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr
@@ -165,7 +165,7 @@ package org.concentus;
                 psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             /* Copy to prediction struct for use in next frame for interpolation */
-            Array.Copy(NLSF_Q15, psEnc.prev_NLSFq_Q15, SilkConstants.MAX_LPC_ORDER);
+            System.arraycopy(NLSF_Q15, psEnc.prev_NLSFq_Q15, SilkConstants.MAX_LPC_ORDER);
         }
     }
 }

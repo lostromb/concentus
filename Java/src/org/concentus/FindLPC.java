@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -166,7 +166,7 @@ package org.concentus;
                         /* Interpolation has lower residual energy */
                         res_nrg = res_nrg_interp;
                         res_nrg_Q = res_nrg_interp_Q;
-                        psEncC.indices.NLSFInterpCoef_Q2 = (sbyte)k;
+                        psEncC.indices.NLSFInterpCoef_Q2 = (byte)k;
                     }
                 }
             }

@@ -279,8 +279,8 @@ package org.concentus;
             c = 0;
             do
             {
-                Array.Copy(prefilter_mem[c], 0, pre[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
-                Array.Copy(input[c], overlap, pre[c], CeltConstants.COMBFILTER_MAXPERIOD, N);
+                System.arraycopy(prefilter_mem[c], 0, pre[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
+                System.arraycopy(input[c], overlap, pre[c], CeltConstants.COMBFILTER_MAXPERIOD, N);
             } while (++c < CC);
 
             if (enabled != 0)
@@ -354,7 +354,7 @@ package org.concentus;
             {
                 int offset = mode.shortMdctSize - overlap;
                 this.prefilter_period = Inlines.IMAX(this.prefilter_period, CeltConstants.COMBFILTER_MINPERIOD);
-                Array.Copy(this.in_mem[c], 0, input[c], 0, overlap);
+                System.arraycopy(this.in_mem[c], 0, input[c], 0, overlap);
                 if (offset != 0)
                 {
                     CeltCommon.comb_filter(input[c], (overlap), pre[c], (CeltConstants.COMBFILTER_MAXPERIOD),
@@ -365,16 +365,16 @@ package org.concentus;
                 CeltCommon.comb_filter(input[c], (overlap + offset), pre[c], (CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       this.prefilter_period, pitch_index, N - offset, -this.prefilter_gain, -gain1,
                       this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
-                Array.Copy(input[c], N, this.in_mem[c], 0, overlap);
+                System.arraycopy(input[c], N, this.in_mem[c], 0, overlap);
 
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
                 {
-                    Array.Copy(pre[c], N, prefilter_mem[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
+                    System.arraycopy(pre[c], N, prefilter_mem[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
                 }
                 else
                 {
                     Arrays.MemMove(prefilter_mem[c], N, 0, CeltConstants.COMBFILTER_MAXPERIOD - N);
-                    Array.Copy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem[c], CeltConstants.COMBFILTER_MAXPERIOD - N, N);
+                    System.arraycopy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem[c], CeltConstants.COMBFILTER_MAXPERIOD - N, N);
                 }
             } while (++c < CC);
 
@@ -386,7 +386,7 @@ package org.concentus;
         }
 
         
-        internal int celt_encode_with_ec(short[] pcm, int pcm_ptr, int frame_size, sbyte[] compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc)
+        internal int celt_encode_with_ec(short[] pcm, int pcm_ptr, int frame_size, byte[] compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc)
         {
             int i, c, N;
             int bits;
@@ -638,7 +638,7 @@ package org.concentus;
 
             secondMdct = (shortBlocks != 0 && this.complexity >= 8) ? 1 : 0;
             bandLogE2 = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
-            //Arrays.MemSet<int>(bandLogE2, 0, C * nbEBands); // not explicitly needed
+            //Arrays.MemSet(bandLogE2, 0, C * nbEBands); // not explicitly needed
             if (secondMdct != 0)
             {
                 CeltCommon.compute_mdcts(mode, 0, input, freq, C, CC, LM, this.upsample);
@@ -674,7 +674,7 @@ package org.concentus;
             QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
 
             surround_dynalloc = new int[C * nbEBands];
-            //Arrays.MemSet<int>(surround_dynalloc, 0, end); // not strictly needed
+            //Arrays.MemSet(surround_dynalloc, 0, end); // not strictly needed
             /* This computes how much masking takes place between surround channels */
             if (start == 0 && this.energy_mask != null && this.lfe == 0)
             {
@@ -737,7 +737,7 @@ package org.concentus;
                            disabling masking. */
                         mask_avg = 0;
                         diff = 0;
-                        Arrays.MemSet<int>(surround_dynalloc, 0, mask_end);
+                        Arrays.MemSet(surround_dynalloc, 0, mask_end);
                     }
                     else {
                         for (i = 0; i < mask_end; i++)
@@ -774,9 +774,9 @@ package org.concentus;
 
             if (secondMdct == 0)
             {
-                Array.Copy(bandLogE[0], bandLogE2[0], nbEBands);
+                System.arraycopy(bandLogE[0], bandLogE2[0], nbEBands);
                 if (C == 2)
-                    Array.Copy(bandLogE[1], bandLogE2[1], nbEBands);
+                    System.arraycopy(bandLogE[1], bandLogE2[1], nbEBands);
             }
 
             /* Last chance to catch any transient we might have missed in the
@@ -1113,17 +1113,17 @@ package org.concentus;
 
             if (CC == 2 && C == 1)
             {
-                Array.Copy(oldBandE[0], 0, oldBandE[1], 0, nbEBands);
+                System.arraycopy(oldBandE[0], 0, oldBandE[1], 0, nbEBands);
             }
 
             if (isTransient == 0)
             {
-                Array.Copy(oldLogE[0], 0, oldLogE2[0], 0, nbEBands);
-                Array.Copy(oldBandE[0], 0, oldLogE[0], 0, nbEBands);
+                System.arraycopy(oldLogE[0], 0, oldLogE2[0], 0, nbEBands);
+                System.arraycopy(oldBandE[0], 0, oldLogE[0], 0, nbEBands);
                 if (CC == 2)
                 {
-                    Array.Copy(oldLogE[1], 0, oldLogE2[1], 0, nbEBands);
-                    Array.Copy(oldBandE[1], 0, oldLogE[1], 0, nbEBands);
+                    System.arraycopy(oldLogE[1], 0, oldLogE2[1], 0, nbEBands);
+                    System.arraycopy(oldBandE[1], 0, oldLogE[1], 0, nbEBands);
                 }
             }
             else

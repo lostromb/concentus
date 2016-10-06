@@ -198,7 +198,7 @@ package org.concentus;
                 }
                 /*printf("\n");*/
                 /* First few samples are bad because we don't propagate the memory */
-                Arrays.MemSet<int>(tmp, 0, 12);
+                Arrays.MemSet(tmp, 0, 12);
 
                 /* Normalize tmp to max range */
                 {
@@ -369,7 +369,7 @@ package org.concentus;
                     int bound = B * N / upsample;
                     for (i = 0; i < bound; i++)
                         output[c][i] *= upsample;
-                    Arrays.MemSetWithOffset<int>(output[c], 0, bound, B * N - bound);
+                    Arrays.MemSetWithOffset(output[c], 0, bound, B * N - bound);
                 } while (++c < C);
             }
         }
@@ -402,7 +402,7 @@ package org.concentus;
             Nu = N / upsample;
             if (upsample != 1)
             {
-                Arrays.MemSetWithOffset<int>(inp, 0, inp_ptr, N);
+                Arrays.MemSetWithOffset(inp, 0, inp_ptr, N);
             }
             for (i = 0; i < Nu; i++)
                 inp[inp_ptr + (i * upsample)] = pcmp[pcmp_ptr + (CC * i)];
@@ -449,7 +449,7 @@ package org.concentus;
             Nu = N / upsample;
             if (upsample != 1)
             {
-                Arrays.MemSetWithOffset<int>(inp, 0, inp_ptr, N);
+                Arrays.MemSetWithOffset(inp, 0, inp_ptr, N);
             }
             for (i = 0; i < Nu; i++)
                 inp[inp_ptr + (i * upsample)] = pcmp[CC * i];
@@ -520,7 +520,7 @@ package org.concentus;
                 N = (m.eBands[i + 1] - m.eBands[i]) << LM;
                 /* band is too narrow to be split down to LM=-1 */
                 narrow = ((m.eBands[i + 1] - m.eBands[i]) == 1) ? 1 : 0;
-                Array.Copy(X[tf_chan], (m.eBands[i] << LM), tmp, 0, N);
+                System.arraycopy(X[tf_chan], (m.eBands[i] << LM), tmp, 0, N);
                 /* Just add the right channel if we're in stereo */
                 /*if (C==2)
                    for (j=0;j<N;j++)
@@ -530,7 +530,7 @@ package org.concentus;
                 /* Check the -1 case for transients */
                 if (isTransient != 0 && narrow == 0)
                 {
-                    Array.Copy(tmp, 0, tmp_1, 0, N);
+                    System.arraycopy(tmp, 0, tmp_1, 0, N);
                     Bands.haar1ZeroOffset(tmp_1, N >> LM, 1 << LM);
                     L1 = l1_metric(tmp_1, N, LM + 1, bias);
                     if (L1 < best_L1)
@@ -866,7 +866,7 @@ package org.concentus;
             int[][] follower = Arrays.InitTwoDimensionalArray<int>(2, nbEBands);
             int[] noise_floor = new int[C * nbEBands]; // opt: partitioned array
 
-            Arrays.MemSet<int>(offsets, 0, nbEBands);
+            Arrays.MemSet(offsets, 0, nbEBands);
             /* Dynamic allocation code */
             maxDepth = (0 - ((short)(0.5 + (31.9f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(31.9f, CeltConstants.DB_SHIFT)*/);
             for (i = 0; i < end; i++)
@@ -1037,11 +1037,11 @@ package org.concentus;
                     {
                         for (j = 0; j < N; j++)
                         {
-                            int tmp = unchecked(x[x_ptr + j] + m + CeltConstants.VERY_SMALL); // Opus bug: This can overflow.
+                            int tmp = (x[x_ptr + j] + m + CeltConstants.VERY_SMALL); // Opus bug: This can overflow.
                             if (x[x_ptr + j] > 0 && m > 0 && tmp < 0) // This is a hack to saturate to INT_MAXVALUE
                             {
-                                tmp = int.MaxValue;
-                                m = int.MaxValue;
+                                tmp = Integer.MAX_VALUE;
+                                m = Integer.MAX_VALUE;
                             }
                             else
                             {
@@ -1106,7 +1106,7 @@ package org.concentus;
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
                 freq2 = out_syn_ptrs[1] + (overlap / 2);
-                Array.Copy(freq, 0, out_syn[1], freq2, N);
+                System.arraycopy(freq, 0, out_syn[1], freq2, N);
                 for (b = 0; b < B; b++)
                     MDCT.clt_mdct_backward(mode.mdct, out_syn[1], freq2 + b, out_syn[0], out_syn_ptrs[0] + (NB * b), mode.window, overlap, shift, B);
                 for (b = 0; b < B; b++)
@@ -1314,11 +1314,11 @@ package org.concentus;
             comb_filter_const(y, y_ptr + i, x, x_ptr + i, T1, N - i, g10, g11, g12);
         }
 
-        private static final sbyte[][] tf_select_table = {
-              new sbyte[]{0, -1, 0, -1,    0,-1, 0,-1},
-              new sbyte[]{0, -1, 0, -2,    1, 0, 1,-1},
-              new sbyte[]{0, -2, 0, -3,    2, 0, 1,-1},
-              new sbyte[]{0, -2, 0, -3,    3, 0, 1,-1},
+        private static final byte[][] tf_select_table = {
+              new byte[]{0, -1, 0, -1,    0,-1, 0,-1},
+              new byte[]{0, -1, 0, -2,    1, 0, 1,-1},
+              new byte[]{0, -2, 0, -3,    2, 0, 1,-1},
+              new byte[]{0, -2, 0, -3,    3, 0, 1,-1},
         };
         
         static void init_caps(CeltMode m, int[] cap, int LM, int C)

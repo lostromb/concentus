@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -196,9 +196,9 @@ package org.concentus;
             return st;
         }
         
-        private static final sbyte[] SILENCE = new sbyte[] { -1, -1 };
+        private static final byte[] SILENCE = new byte[] { -1, -1 };
 
-        internal int opus_decode_frame(sbyte[] data, int data_ptr,
+        internal int opus_decode_frame(byte[] data, int data_ptr,
       int len, short[] pcm, int pcm_ptr, int frame_size, int decode_fec)
         {
             SilkDecoder silk_dec;
@@ -399,7 +399,7 @@ package org.concentus;
                         {
                             /* PLC failure should not be fatal */
                             silk_frame_size = frame_size;
-                            Arrays.MemSetWithOffset<short>(pcm_ptr2, 0, pcm_ptr2_ptr, frame_size * this.channels);
+                            Arrays.MemSetWithOffset(pcm_ptr2, 0, pcm_ptr2_ptr, frame_size * this.channels);
                         }
                         else {
 
@@ -597,13 +597,13 @@ package org.concentus;
             return celt_ret < 0 ? celt_ret : audiosize;
         }
 
-        internal int opus_decode_native(sbyte[] data, int data_ptr,
+        internal int opus_decode_native(byte[] data, int data_ptr,
           int len, short[] pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
           int self_delimited, out int packet_offset, int soft_clip)
         {
             int i, nb_samples;
             int count, offset;
-            sbyte toc;
+            byte toc;
             int packet_frame_size, packet_stream_channels;
             packet_offset = 0;
             OpusBandwidth packet_bandwidth;
@@ -726,7 +726,7 @@ package org.concentus;
         /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
         /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
         /// <returns>The number of decoded samples</returns>
-        public int Decode(sbyte[] in_data, int in_data_offset,
+        public int Decode(byte[] in_data, int in_data_offset,
              int len, short[] out_pcm, int out_pcm_offset, int frame_size, boolean decode_fec)
         {
             if (frame_size <= 0)
@@ -774,7 +774,7 @@ package org.concentus;
         /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
         /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
         /// <returns>The number of decoded samples</returns>
-        public int Decode(sbyte[] in_data, int in_data_offset,
+        public int Decode(byte[] in_data, int in_data_offset,
             int len, float[] out_pcm, int out_pcm_offset, int frame_size, boolean decode_fec)
         {
             short[] output;

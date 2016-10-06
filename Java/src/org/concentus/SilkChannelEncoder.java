@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -50,8 +50,8 @@ package org.concentus;.Structs
         internal final short[] prev_NLSFq_Q15 = new short[SilkConstants.MAX_LPC_ORDER];   /* Previously quantized NLSF vector                                 */
         internal int speech_activity_Q8 = 0;                /* Speech activity                                                  */
         internal int allow_bandwidth_switch = 0;            /* Flag indicating that switching of internal bandwidth is allowed  */
-        internal sbyte LBRRprevLastGainIndex = 0;
-        internal sbyte prevSignalType = 0;
+        internal byte LBRRprevLastGainIndex = 0;
+        internal byte prevSignalType = 0;
         internal int prevLag = 0;
         internal int pitch_LPC_win_length = 0;
         internal int max_pitch_lag = 0;                     /* Highest possible pitch lag (samples)                             */
@@ -96,12 +96,12 @@ package org.concentus;.Structs
         internal int input_tilt_Q15 = 0;
         internal int SNR_dB_Q7 = 0;                         /* Quality setting                                                  */
 
-        internal final sbyte[] VAD_flags = new sbyte[SilkConstants.MAX_FRAMES_PER_PACKET];
-        internal sbyte LBRR_flag = 0;
+        internal final byte[] VAD_flags = new byte[SilkConstants.MAX_FRAMES_PER_PACKET];
+        internal byte LBRR_flag = 0;
         internal final int[] LBRR_flags = new int[SilkConstants.MAX_FRAMES_PER_PACKET];
 
         internal final SideInfoIndices indices = new SideInfoIndices();
-        internal final sbyte[] pulses = new sbyte[SilkConstants.MAX_FRAME_LENGTH];
+        internal final byte[] pulses = new byte[SilkConstants.MAX_FRAME_LENGTH];
 
         /* Input/output buffering */
         internal final short[] inputBuf = new short[SilkConstants.MAX_FRAME_LENGTH + 2];  /* Buffer containing input signal                                   */
@@ -132,7 +132,7 @@ package org.concentus;.Structs
         internal int LBRR_enabled = 0;                      /* Depends on useInBandFRC, bitrate and packet loss rate            */
         internal int LBRR_GainIncreases = 0;                /* Gains increment for coding LBRR frames                           */
         internal final SideInfoIndices[] indices_LBRR = new SideInfoIndices[SilkConstants.MAX_FRAMES_PER_PACKET];
-        internal final sbyte[][] pulses_LBRR = Arrays.InitTwoDimensionalArray<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
+        internal final byte[][] pulses_LBRR = Arrays.InitTwoDimensionalArray<byte>(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
 
         /* Noise shaping state */
         internal final SilkShapeState sShape = new SilkShapeState();
@@ -156,7 +156,7 @@ package org.concentus;.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(In_HP_State, 0, 2);
+            Arrays.MemSet(In_HP_State, 0, 2);
             variable_HP_smth1_Q15 = 0;
             variable_HP_smth2_Q15 = 0;
             sLP.Reset();
@@ -207,14 +207,14 @@ package org.concentus;.Structs
             pitch_lag_low_bits_iCDF = null;
             pitch_contour_iCDF = null;
             psNLSF_CB = null;
-            Arrays.MemSet<int>(input_quality_bands_Q15, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSet(input_quality_bands_Q15, 0, SilkConstants.VAD_N_BANDS);
             input_tilt_Q15 = 0;
             SNR_dB_Q7 = 0;
-            Arrays.MemSet<sbyte>(VAD_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSet<byte>(VAD_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             LBRR_flag = 0;
-            Arrays.MemSet<int>(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSet(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             indices.Reset();
-            Arrays.MemSet<sbyte>(pulses, 0, SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet<byte>(pulses, 0, SilkConstants.MAX_FRAME_LENGTH);
             Arrays.MemSet<short>(inputBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2);
             inputBufIx = 0;
             nFramesPerPacket = 0;
@@ -235,7 +235,7 @@ package org.concentus;.Structs
             for (int c = 0; c < SilkConstants.MAX_FRAMES_PER_PACKET; c++)
             {
                 indices_LBRR[c].Reset();
-                Arrays.MemSet<sbyte>(pulses_LBRR[c], 0, SilkConstants.MAX_FRAME_LENGTH);
+                Arrays.MemSet<byte>(pulses_LBRR[c], 0, SilkConstants.MAX_FRAME_LENGTH);
             }
             sShape.Reset();
             sPrefilt.Reset();
@@ -900,14 +900,14 @@ package org.concentus;.Structs
             short gainMult_Q8;
             short ec_prevLagIndex_copy;
             int ec_prevSignalType_copy;
-            sbyte LastGainIndex_copy2;
-            sbyte seed_copy;
+            byte LastGainIndex_copy2;
+            byte seed_copy;
 
             /* This is totally unnecessary but many compilers (including gcc) are too dumb to realise it */
             LastGainIndex_copy2 = 0;
             nBits_lower = nBits_upper = gainMult_lower = gainMult_upper = 0;
 
-            this.indices.Seed = (sbyte)(this.frameCounter++ & 3);
+            this.indices.Seed = (byte)(this.frameCounter++ & 3);
 
             /**************************************************************/
             /* Set up Input Pointers, and insert frame in input buffer   */
@@ -923,13 +923,13 @@ package org.concentus;.Structs
             /*******************************************/
             /* Copy new frame to front of input buffer */
             /*******************************************/
-            Array.Copy(this.inputBuf, 1, this.x_buf, x_frame + SilkConstants.LA_SHAPE_MS * this.fs_kHz, this.frame_length);
+            System.arraycopy(this.inputBuf, 1, this.x_buf, x_frame + SilkConstants.LA_SHAPE_MS * this.fs_kHz, this.frame_length);
 
             if (this.prefillFlag == 0)
             {
                 int[] xfw_Q3;
                 short[] res_pitch;
-                sbyte[] ec_buf_copy;
+                byte[] ec_buf_copy;
                 int res_pitch_frame;
 
                 res_pitch = new short[this.la_pitch + this.frame_length + this.ltp_mem_length];
@@ -981,7 +981,7 @@ package org.concentus;.Structs
                 seed_copy = this.indices.Seed;
                 ec_prevLagIndex_copy = this.ec_prevLagIndex;
                 ec_prevSignalType_copy = this.ec_prevSignalType;
-                ec_buf_copy = new sbyte[1275]; // fixme: this size might be optimized to the actual size
+                ec_buf_copy = new byte[1275]; // fixme: this size might be optimized to the actual size
                 for (iter = 0; ; iter++)
                 {
                     if (gainsID == gainsID_lower)
@@ -1102,7 +1102,7 @@ package org.concentus;.Structs
                             /* Copy part of the output state */
                             sRangeEnc_copy2.Assign(psRangeEnc);
                             Inlines.OpusAssert(psRangeEnc.offs <= 1275);
-                            Array.Copy(psRangeEnc.get_buffer(), 0, ec_buf_copy, 0, (int)psRangeEnc.offs);
+                            System.arraycopy(psRangeEnc.get_buffer(), 0, ec_buf_copy, 0, (int)psRangeEnc.offs);
                             sNSQ_copy2.Assign(this.sNSQ);
                             LastGainIndex_copy2 = this.sShape.LastGainIndex;
                         }
@@ -1147,7 +1147,7 @@ package org.concentus;.Structs
 
                     /* Quantize gains */
                     this.sShape.LastGainIndex = sEncCtrl.lastGainIndexPrev;
-                    BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(this.sShape.LastGainIndex);
+                    BoxedValue<byte> boxed_gainIndex = new BoxedValue<byte>(this.sShape.LastGainIndex);
                     GainQuantization.silk_gains_quant(this.indices.GainsIndices, sEncCtrl.Gains_Q16,
                           boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                     this.sShape.LastGainIndex = boxed_gainIndex.Val;
@@ -1206,7 +1206,7 @@ package org.concentus;.Structs
                 psIndices_LBRR.Assign(this.indices);
 
                 /* Save original gains */
-                Array.Copy(thisCtrl.Gains_Q16, TempGains_Q16, this.nb_subfr);
+                System.arraycopy(thisCtrl.Gains_Q16, TempGains_Q16, this.nb_subfr);
 
                 if (this.nFramesEncoded == 0 || this.LBRR_flags[this.nFramesEncoded - 1] == 0)
                 {
@@ -1214,13 +1214,13 @@ package org.concentus;.Structs
                     this.LBRRprevLastGainIndex = this.sShape.LastGainIndex;
 
                     /* Increase Gains to get target LBRR rate */
-                    psIndices_LBRR.GainsIndices[0] = (sbyte)(psIndices_LBRR.GainsIndices[0] + this.LBRR_GainIncreases);
-                    psIndices_LBRR.GainsIndices[0] = (sbyte)(Inlines.silk_min_int(psIndices_LBRR.GainsIndices[0], SilkConstants.N_LEVELS_QGAIN - 1));
+                    psIndices_LBRR.GainsIndices[0] = (byte)(psIndices_LBRR.GainsIndices[0] + this.LBRR_GainIncreases);
+                    psIndices_LBRR.GainsIndices[0] = (byte)(Inlines.silk_min_int(psIndices_LBRR.GainsIndices[0], SilkConstants.N_LEVELS_QGAIN - 1));
                 }
 
                 /* Decode to get gains in sync with decoder         */
                 /* Overwrite unquantized gains with quantized gains */
-                BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(this.LBRRprevLastGainIndex);
+                BoxedValue<byte> boxed_gainIndex = new BoxedValue<byte>(this.LBRRprevLastGainIndex);
                 GainQuantization.silk_gains_dequant(thisCtrl.Gains_Q16, psIndices_LBRR.GainsIndices,
                     boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                 this.LBRRprevLastGainIndex = boxed_gainIndex.Val;
@@ -1263,7 +1263,7 @@ package org.concentus;.Structs
                 }
 
                 /* Restore original gains */
-                Array.Copy(TempGains_Q16, thisCtrl.Gains_Q16, this.nb_subfr);
+                System.arraycopy(TempGains_Q16, thisCtrl.Gains_Q16, this.nb_subfr);
             }
         }
     }

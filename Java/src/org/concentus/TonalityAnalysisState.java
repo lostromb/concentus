@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -99,7 +99,7 @@ package org.concentus;
             Arrays.MemSet<float>(angle,0, 240);
             Arrays.MemSet<float>(d_angle,0, 240);
             Arrays.MemSet<float>(d2_angle,0, 240);
-            Arrays.MemSet<int>(inmem, 0, OpusConstants.ANALYSIS_BUF_SIZE);
+            Arrays.MemSet(inmem, 0, OpusConstants.ANALYSIS_BUF_SIZE);
             mem_fill = 0;
             Arrays.MemSet<float>(prev_band_tonality,0, OpusConstants.NB_TBANDS);
             prev_tonality = 0;

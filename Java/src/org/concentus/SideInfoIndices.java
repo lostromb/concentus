@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -39,23 +39,23 @@ package org.concentus;.Structs
 
     class SideInfoIndices
     {
-        internal final sbyte[] GainsIndices = new sbyte[SilkConstants.MAX_NB_SUBFR];
-        internal final sbyte[] LTPIndex = new sbyte[SilkConstants.MAX_NB_SUBFR];
-        internal final sbyte[] NLSFIndices = new sbyte[SilkConstants.MAX_LPC_ORDER + 1];
+        internal final byte[] GainsIndices = new byte[SilkConstants.MAX_NB_SUBFR];
+        internal final byte[] LTPIndex = new byte[SilkConstants.MAX_NB_SUBFR];
+        internal final byte[] NLSFIndices = new byte[SilkConstants.MAX_LPC_ORDER + 1];
         internal short lagIndex = 0;
-        internal sbyte contourIndex = 0;
-        internal sbyte signalType = 0;
-        internal sbyte quantOffsetType = 0;
-        internal sbyte NLSFInterpCoef_Q2 = 0;
-        internal sbyte PERIndex = 0;
-        internal sbyte LTP_scaleIndex = 0;
-        internal sbyte Seed = 0;
+        internal byte contourIndex = 0;
+        internal byte signalType = 0;
+        internal byte quantOffsetType = 0;
+        internal byte NLSFInterpCoef_Q2 = 0;
+        internal byte PERIndex = 0;
+        internal byte LTP_scaleIndex = 0;
+        internal byte Seed = 0;
 
         internal void Reset()
         {
-            Arrays.MemSet<sbyte>(GainsIndices, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<sbyte>(LTPIndex, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<sbyte>(NLSFIndices, 0, SilkConstants.MAX_LPC_ORDER + 1);
+            Arrays.MemSet<byte>(GainsIndices, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet<byte>(LTPIndex, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSet<byte>(NLSFIndices, 0, SilkConstants.MAX_LPC_ORDER + 1);
             lagIndex = 0;
             contourIndex = 0;
             signalType = 0;
@@ -72,9 +72,9 @@ package org.concentus;.Structs
         /// <param name="other"></param>
         internal void Assign(SideInfoIndices other)
         {
-            Array.Copy(other.GainsIndices, this.GainsIndices, SilkConstants.MAX_NB_SUBFR);
-            Array.Copy(other.LTPIndex, this.LTPIndex, SilkConstants.MAX_NB_SUBFR);
-            Array.Copy(other.NLSFIndices, this.NLSFIndices, SilkConstants.MAX_LPC_ORDER + 1);
+            System.arraycopy(other.GainsIndices, this.GainsIndices, SilkConstants.MAX_NB_SUBFR);
+            System.arraycopy(other.LTPIndex, this.LTPIndex, SilkConstants.MAX_NB_SUBFR);
+            System.arraycopy(other.NLSFIndices, this.NLSFIndices, SilkConstants.MAX_LPC_ORDER + 1);
             this.lagIndex = other.lagIndex;
             this.contourIndex = other.contourIndex;
             this.signalType = other.signalType;

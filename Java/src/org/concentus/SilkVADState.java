@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -93,15 +93,15 @@ package org.concentus;.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(AnaState, 0, 2);
-            Arrays.MemSet<int>(AnaState1, 0, 2);
-            Arrays.MemSet<int>(AnaState2, 0, 2);
-            Arrays.MemSet<int>(XnrgSubfr, 0, SilkConstants.VAD_N_BANDS);
-            Arrays.MemSet<int>(NrgRatioSmth_Q8, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSet(AnaState, 0, 2);
+            Arrays.MemSet(AnaState1, 0, 2);
+            Arrays.MemSet(AnaState2, 0, 2);
+            Arrays.MemSet(XnrgSubfr, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSet(NrgRatioSmth_Q8, 0, SilkConstants.VAD_N_BANDS);
             HPstate = 0;
-            Arrays.MemSet<int>(NL, 0, SilkConstants.VAD_N_BANDS);
-            Arrays.MemSet<int>(inv_NL, 0, SilkConstants.VAD_N_BANDS);
-            Arrays.MemSet<int>(NoiseLevelBias, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSet(NL, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSet(inv_NL, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSet(NoiseLevelBias, 0, SilkConstants.VAD_N_BANDS);
             counter = 0;
         }
     }

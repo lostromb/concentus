@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -226,7 +226,7 @@ package org.concentus;
 
             for (c = 0; c < channels; c++)
             {
-                Array.Copy(mem, c * overlap, input, 0, overlap);
+                System.arraycopy(mem, c * overlap, input, 0, overlap);
                 copy_channel_in(x, 0 , 1, pcm, pcm_ptr, channels, c, len);
                 BoxedValue<Integer> boxed_preemph = new BoxedValue<Integer>(preemph_mem[c]);
                 CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0);
@@ -276,7 +276,7 @@ package org.concentus;
                         maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21 * c + i] - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
                     }
                 }
-                Array.Copy(input, frame_size, mem, c * overlap, overlap);
+                System.arraycopy(input, frame_size, mem, c * overlap, overlap);
             }
             for (i = 0; i < 21; i++)
                 maskLogE[1][i] = Inlines.MIN32(maskLogE[0][i], maskLogE[2][i]);
@@ -583,7 +583,7 @@ package org.concentus;
             T[] pcm,
             int pcm_ptr,
             int analysis_frame_size,
-            sbyte[] data,
+            byte[] data,
             int data_ptr,
             int max_data_bytes,
             int lsb_depth,
@@ -597,7 +597,7 @@ package org.concentus;
             int tot_size;
             short[] buf;
             int[] bandSMR;
-            sbyte[] tmp_data = new sbyte[MS_FRAME_TMP];
+            byte[] tmp_data = new byte[MS_FRAME_TMP];
             OpusRepacketizer rp = OpusRepacketizer.Create();
             int vbr;
             CeltMode celt_mode;
@@ -818,7 +818,7 @@ package org.concentus;
             short[] pcm,
             int pcm_offset,
             int frame_size,
-            sbyte[] outputBuffer,
+            byte[] outputBuffer,
             int outputBuffer_offset,
             int max_data_bytes
         )
@@ -832,7 +832,7 @@ package org.concentus;
             float[] pcm,
             int pcm_offset,
             int frame_size,
-            sbyte[] outputBuffer,
+            byte[] outputBuffer,
             int outputBuffer_offset,
             int max_data_bytes
         )

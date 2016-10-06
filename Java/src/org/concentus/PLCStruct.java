@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,7 @@ package org.concentus;.Structs
             conc_energy = 0;
             conc_energy_shift = 0;
             prevLTP_scale_Q14 = 0;
-            Arrays.MemSet<int>(prevGain_Q16, 0, 2);
+            Arrays.MemSet(prevGain_Q16, 0, 2);
             fs_kHz = 0;
             nb_subfr = 0;
             subfr_length = 0;

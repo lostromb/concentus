@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,7 @@ package org.concentus;
         /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
         static void silk_encode_signs(
             EntropyCoder psRangeEnc,
-            sbyte[] pulses,
+            byte[] pulses,
             int length,
             int signalType,
             int quantOffsetType,

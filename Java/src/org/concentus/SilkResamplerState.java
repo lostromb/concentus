@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -59,8 +59,8 @@ package org.concentus;.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(sIIR, 0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
-            Arrays.MemSet<int>(sFIR_i32, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Arrays.MemSet(sIIR, 0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
+            Arrays.MemSet(sFIR_i32, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
             Arrays.MemSet<short>(sFIR_i16, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
             Arrays.MemSet<short>(delayBuf, 0, 48);
             resampler_function = 0;
@@ -85,10 +85,10 @@ package org.concentus;.Structs
             Fs_out_kHz = other.Fs_out_kHz;
             inputDelay = other.inputDelay;
             Coefs = other.Coefs;
-            Array.Copy(other.sIIR, this.sIIR, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
-            Array.Copy(other.sFIR_i32, this.sFIR_i32, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            Array.Copy(other.sFIR_i16, this.sFIR_i16, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            Array.Copy(other.delayBuf, this.delayBuf, 48);
+            System.arraycopy(other.sIIR, this.sIIR, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
+            System.arraycopy(other.sFIR_i32, this.sFIR_i32, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            System.arraycopy(other.sFIR_i16, this.sFIR_i16, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            System.arraycopy(other.delayBuf, this.delayBuf, 48);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -48,7 +48,7 @@ package org.concentus;
 {
     public static class CodecHelpers
     {
-        static sbyte gen_toc(OpusMode mode, int framerate, OpusBandwidth bandwidth, int channels)
+        static byte gen_toc(OpusMode mode, int framerate, OpusBandwidth bandwidth, int channels)
         {
             int period;
             byte toc;
@@ -88,7 +88,7 @@ package org.concentus;
             int[] A_Q28 = new int[2];
             int Fc_Q19, r_Q28, r_Q22;
 
-            Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / ((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/);
+            Inlines.OpusAssert(cutoff_Hz <= Integer.MAX_VALUE / ((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/);
             Fc_Q19 = Inlines.silk_DIV32_16(Inlines.silk_SMULBB(((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/, cutoff_Hz), Fs / 1000);
             Inlines.OpusAssert(Fc_Q19 > 0 && Fc_Q19 < 32768);
 

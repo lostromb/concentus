@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -144,7 +144,7 @@ package org.concentus;
             /* Check for invalid input */
             if (c[0] <= 0)
             {
-                Arrays.MemSet<int>(rc_Q16, 0, order);
+                Arrays.MemSet(rc_Q16, 0, order);
                 return 0;
             }
 

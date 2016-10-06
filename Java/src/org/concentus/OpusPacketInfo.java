@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -49,19 +49,19 @@ package org.concentus;
         /// <summary>
         /// The Table of Contents byte for this packet. Contains info about modes, frame length, etc.
         /// </summary>
-        public final sbyte TOCByte;
+        public final byte TOCByte;
 
         /// <summary>
         /// The list of subframes in this packet
         /// </summary>
-        public final IList<sbyte[]> Frames;
+        public final IList<byte[]> Frames;
 
         /// <summary>
         /// The index of the start of the payload within the packet
         /// </summary>
         public final int PayloadOffset;
 
-        private OpusPacketInfo(sbyte toc, IList<sbyte[]> frames, int payloadOffset)
+        private OpusPacketInfo(byte toc, IList<byte[]> frames, int payloadOffset)
         {
             TOCByte = toc;
             Frames = frames;
@@ -77,14 +77,14 @@ package org.concentus;
         /// <param name="packet_offset">The index of the beginning of the packet in the data array (usually 0)</param>
         /// <param name="len">The packet's length</param>
         /// <returns>A parsed packet info struct</returns>
-        public static OpusPacketInfo ParseOpusPacket(sbyte[] packet, int packet_offset, int len)
+        public static OpusPacketInfo ParseOpusPacket(byte[] packet, int packet_offset, int len)
         {
             // Find the number of frames first
             int numFrames = GetNumFrames(packet, packet_offset, len);
 
             int payload_offset;
-            sbyte out_toc;
-            sbyte[][] frames = new sbyte[numFrames][];
+            byte out_toc;
+            byte[][] frames = new byte[numFrames][];
             short[] size = new short[numFrames];
             int packetOffset;
             int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out out_toc, frames, 0, size, 0, out payload_offset, out packetOffset);
@@ -95,12 +95,12 @@ package org.concentus;
 
             // Since packet_parse_impl has created deep copies of each frame, we can return them safely from this function without
             // worrying about variable scoping or side effects
-            IList<sbyte[]> copiedFrames = new List<sbyte[]>(frames);
+            IList<byte[]> copiedFrames = new List<byte[]>(frames);
 
             return new OpusPacketInfo(out_toc, copiedFrames, payload_offset);
         }
         
-        public static int GetNumSamplesPerFrame(sbyte[] packet, int packet_offset, int Fs)
+        public static int GetNumSamplesPerFrame(byte[] packet, int packet_offset, int Fs)
         {
             int audiosize;
             if ((packet[packet_offset] & 0x80) != 0)
@@ -128,7 +128,7 @@ package org.concentus;
         /// </summary>
         /// <param name="data">An Opus packet (must be at least 1 byte)</param>
         /// <returns>An OpusBandwidth value</returns>
-        public static OpusBandwidth GetBandwidth(sbyte[] packet, int packet_offset)
+        public static OpusBandwidth GetBandwidth(byte[] packet, int packet_offset)
         {
             OpusBandwidth bandwidth;
             if ((packet[packet_offset] & 0x80) != 0)
@@ -148,7 +148,7 @@ package org.concentus;
             return bandwidth;
         }
         
-        public static int GetNumEncodedChannels(sbyte[] packet, int packet_offset)
+        public static int GetNumEncodedChannels(byte[] packet, int packet_offset)
         {
             return ((packet[packet_offset] & 0x4) != 0) ? 2 : 1;
         }
@@ -159,7 +159,7 @@ package org.concentus;
         /// <param name="packet">An Opus packet</param>
         /// <param name="len">The packet's length (must be at least 1)</param>
         /// <returns>The number of frames in the packet</returns>
-        public static int GetNumFrames(sbyte[] packet, int packet_offset, int len)
+        public static int GetNumFrames(byte[] packet, int packet_offset, int len)
         {
             int count;
             if (len < 1)
@@ -175,7 +175,7 @@ package org.concentus;
                 return packet[packet_offset + 1] & 0x3F;
         }
         
-        public static int GetNumSamples(sbyte[] packet, int packet_offset, int len,
+        public static int GetNumSamples(byte[] packet, int packet_offset, int len,
               int Fs)
         {
             int samples;
@@ -200,12 +200,12 @@ package org.concentus;
         /// <param name="len">The packet's length</param>
         /// <returns>The size of the PCM samples that this packet will be decoded to by the specified decoder</returns>
         public static int GetNumSamples(OpusDecoder dec,
-              sbyte[] packet, int packet_offset, int len)
+              byte[] packet, int packet_offset, int len)
         {
             return GetNumSamples(packet, packet_offset, len, dec.Fs);
         }
         
-        public static OpusMode GetEncoderMode(sbyte[] packet, int packet_offset)
+        public static OpusMode GetEncoderMode(byte[] packet, int packet_offset)
         {
             OpusMode mode;
             if ((packet[packet_offset] & 0x80) != 0)
@@ -222,22 +222,22 @@ package org.concentus;
             return mode;
         }
 
-        static int encode_size(int size, sbyte[] data, int data_ptr)
+        static int encode_size(int size, byte[] data, int data_ptr)
         {
             if (size < 252)
             {
-                data[data_ptr] = (sbyte)(size & 0xFF);
+                data[data_ptr] = (byte)(size & 0xFF);
                 return 1;
             }
             else {
                 int dp1 = 252 + (size & 0x3);
-                data[data_ptr] = (sbyte)(dp1 & 0xFF);
-                data[data_ptr + 1] = (sbyte)((size - dp1) >> 2);
+                data[data_ptr] = (byte)(dp1 & 0xFF);
+                data[data_ptr + 1] = (byte)((size - dp1) >> 2);
                 return 2;
             }
         }
 
-        static int parse_size(sbyte[] data, int data_ptr, int len, BoxedValue<short> size)
+        static int parse_size(byte[] data, int data_ptr, int len, BoxedValue<short> size)
         {
             if (len < 1)
             {
@@ -260,15 +260,15 @@ package org.concentus;
             }
         }
 
-        static int opus_packet_parse_impl(sbyte[] data, int data_ptr, int len,
-              int self_delimited, out sbyte out_toc,
-              sbyte[][] frames, int frames_ptr, short[] sizes, int sizes_ptr,
+        static int opus_packet_parse_impl(byte[] data, int data_ptr, int len,
+              int self_delimited, out byte out_toc,
+              byte[][] frames, int frames_ptr, short[] sizes, int sizes_ptr,
               out int payload_offset, out int packet_offset)
         {
             int i, bytes;
             int count;
             int cbr;
-            sbyte toc;
+            byte toc;
             int ch;
             int framesize;
             int last_size;
@@ -419,8 +419,8 @@ package org.concentus;
                 {
                     // The old code returned pointers to the single data array, but that can cause unwanted side effects.
                     // So I have replaced it with this code that creates a new copy of each frame. Slower, but more robust
-                    frames[frames_ptr + i] = new sbyte[data.Length - data_ptr];
-                    Array.Copy(data, data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
+                    frames[frames_ptr + i] = new byte[data.Length - data_ptr];
+                    System.arraycopy(data, data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
                 }
                 data_ptr += sizes[sizes_ptr + i];
             }

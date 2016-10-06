@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -109,7 +109,7 @@ package org.concentus;
             }
 
             /* Copy LPC state */
-            Array.Copy(psDec.sLPC_Q14_buf, sLPC_Q14, SilkConstants.MAX_LPC_ORDER);
+            System.arraycopy(psDec.sLPC_Q14_buf, sLPC_Q14, SilkConstants.MAX_LPC_ORDER);
 
             pexc_Q14 = 0;
             pxq = xq_ptr;
@@ -150,7 +150,7 @@ package org.concentus;
                     psDec.indices.signalType != SilkConstants.TYPE_VOICED && k < SilkConstants.MAX_NB_SUBFR / 2)
                 {
 
-                    Arrays.MemSetWithOffset<short>(B_Q14, 0, B_Q14_ptr, SilkConstants.LTP_ORDER);
+                    Arrays.MemSetWithOffset(B_Q14, 0, B_Q14_ptr, SilkConstants.LTP_ORDER);
                     B_Q14[B_Q14_ptr + (SilkConstants.LTP_ORDER / 2)] = (short)(((int)((0.25f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(0.25f, 14)*/);
 
                     signalType = SilkConstants.TYPE_VOICED;
@@ -171,7 +171,7 @@ package org.concentus;
 
                         if (k == 2)
                         {
-                            Array.Copy(xq, xq_ptr, psDec.outBuf, psDec.ltp_mem_length, 2 * psDec.subfr_length);
+                            System.arraycopy(xq, xq_ptr, psDec.outBuf, psDec.ltp_mem_length, 2 * psDec.subfr_length);
                         }
 
                         Filters.silk_LPC_analysis_filter(sLTP, start_idx, psDec.outBuf, (start_idx + k * psDec.subfr_length),
@@ -266,13 +266,13 @@ package org.concentus;
                 /* DEBUG_STORE_DATA( dec.pcm, pxq, psDec.subfr_length * sizeof( short ) ) */
 
                 /* Update LPC filter state */
-                Array.Copy(sLPC_Q14, psDec.subfr_length, sLPC_Q14, 0, SilkConstants.MAX_LPC_ORDER);
+                System.arraycopy(sLPC_Q14, psDec.subfr_length, sLPC_Q14, 0, SilkConstants.MAX_LPC_ORDER);
                 pexc_Q14 += psDec.subfr_length;
                 pxq += psDec.subfr_length;
             }
 
             /* Save LPC state */
-            Array.Copy(sLPC_Q14, 0, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+            System.arraycopy(sLPC_Q14, 0, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
         }
     }
 }

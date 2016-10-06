@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -78,9 +78,9 @@ package org.concentus;
                     ResNrgPart = Inlines.silk_RSHIFT_ROUND(ResNrgPart, psEncCtrl.ResNrgQ[k]);
                 }
                 else {
-                    if (ResNrgPart >= Inlines.silk_RSHIFT(int.MaxValue, -psEncCtrl.ResNrgQ[k]))
+                    if (ResNrgPart >= Inlines.silk_RSHIFT(Integer.MAX_VALUE, -psEncCtrl.ResNrgQ[k]))
                     {
-                        ResNrgPart = int.MaxValue;
+                        ResNrgPart = Integer.MAX_VALUE;
                     }
                     else {
                         ResNrgPart = Inlines.silk_LSHIFT(ResNrgPart, -psEncCtrl.ResNrgQ[k]);
@@ -94,23 +94,23 @@ package org.concentus;
                     gain_squared = Inlines.silk_SMLAWW(Inlines.silk_LSHIFT(ResNrgPart, 16), gain, gain);
                     Inlines.OpusAssert(gain_squared > 0);
                     gain = Inlines.silk_SQRT_APPROX(gain_squared);                    /* Q8   */
-                    gain = Inlines.silk_min(gain, int.MaxValue >> 8);
+                    gain = Inlines.silk_min(gain, Integer.MAX_VALUE >> 8);
                     psEncCtrl.Gains_Q16[k] = Inlines.silk_LSHIFT_SAT32(gain, 8);   /* Q16  */
                 }
                 else {
                     gain = Inlines.silk_SQRT_APPROX(gain_squared);                    /* Q0   */
-                    gain = Inlines.silk_min(gain, int.MaxValue >> 16);
+                    gain = Inlines.silk_min(gain, Integer.MAX_VALUE >> 16);
                     psEncCtrl.Gains_Q16[k] = Inlines.silk_LSHIFT_SAT32(gain, 16);  /* Q16  */
                 }
                 
             }
 
             /* Save unquantized gains and gain Index */
-            Array.Copy(psEncCtrl.Gains_Q16, psEncCtrl.GainsUnq_Q16, psEnc.nb_subfr);
+            System.arraycopy(psEncCtrl.Gains_Q16, psEncCtrl.GainsUnq_Q16, psEnc.nb_subfr);
             psEncCtrl.lastGainIndexPrev = psShapeSt.LastGainIndex;
 
             /* Quantize gains */
-            BoxedValue<sbyte> boxed_lastGainIndex = new BoxedValue<sbyte>(psShapeSt.LastGainIndex);
+            BoxedValue<byte> boxed_lastGainIndex = new BoxedValue<byte>(psShapeSt.LastGainIndex);
             GainQuantization.silk_gains_quant(psEnc.indices.GainsIndices, psEncCtrl.Gains_Q16,
                 boxed_lastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.nb_subfr);
             psShapeSt.LastGainIndex = boxed_lastGainIndex.Val;

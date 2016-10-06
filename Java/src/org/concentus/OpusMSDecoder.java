@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -143,12 +143,12 @@ package org.concentus;
           int frame_size
         );
 
-        static int opus_multistream_packet_validate(sbyte[] data, int data_ptr,
+        static int opus_multistream_packet_validate(byte[] data, int data_ptr,
             int len, int nb_streams, int Fs)
         {
             int s;
             int count;
-            sbyte toc;
+            byte toc;
             short[] size = new short[48];
             int samples = 0;
             int packet_offset;
@@ -177,7 +177,7 @@ package org.concentus;
         }
 
         internal int opus_multistream_decode_native<T>(
-      sbyte[] data,
+      byte[] data,
       int data_ptr,
       int len,
       T[] pcm,
@@ -338,7 +338,7 @@ package org.concentus;
         }
 
         public int DecodeMultistream(
-              sbyte[] data,
+              byte[] data,
               int data_offset,
               int len,
               short[] out_pcm,
@@ -351,7 +351,7 @@ package org.concentus;
                 out_pcm, out_pcm_offset, opus_copy_channel_out_short, frame_size, decode_fec, 0);
         }
 
-        public int DecodeMultistream(sbyte[] data, int data_offset,
+        public int DecodeMultistream(byte[] data, int data_offset,
           int len, float[] out_pcm, int out_pcm_offset, int frame_size, int decode_fec)
         {
             return opus_multistream_decode_native<float>(data, data_offset, len,

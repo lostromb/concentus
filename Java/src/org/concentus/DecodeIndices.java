@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -64,8 +64,8 @@ package org.concentus;
             else {
                 Ix = psRangeDec.dec_icdf(SilkTables.silk_type_offset_no_VAD_iCDF, 8);
             }
-            psDec.indices.signalType = (sbyte)Inlines.silk_RSHIFT(Ix, 1);
-            psDec.indices.quantOffsetType = (sbyte)(Ix & 1);
+            psDec.indices.signalType = (byte)Inlines.silk_RSHIFT(Ix, 1);
+            psDec.indices.quantOffsetType = (byte)(Ix & 1);
 
             /****************/
             /* Decode gains */
@@ -74,24 +74,24 @@ package org.concentus;
             if (condCoding == SilkConstants.CODE_CONDITIONALLY)
             {
                 /* Conditional coding */
-                psDec.indices.GainsIndices[0] = (sbyte)psRangeDec.dec_icdf(SilkTables.silk_delta_gain_iCDF, 8);
+                psDec.indices.GainsIndices[0] = (byte)psRangeDec.dec_icdf(SilkTables.silk_delta_gain_iCDF, 8);
             }
             else {
                 /* Independent coding, in two stages: MSB bits followed by 3 LSBs */
-                psDec.indices.GainsIndices[0] = (sbyte)Inlines.silk_LSHIFT(psRangeDec.dec_icdf(SilkTables.silk_gain_iCDF[psDec.indices.signalType], 8), 3);
-                psDec.indices.GainsIndices[0] += (sbyte)psRangeDec.dec_icdf(SilkTables.silk_uniform8_iCDF, 8);
+                psDec.indices.GainsIndices[0] = (byte)Inlines.silk_LSHIFT(psRangeDec.dec_icdf(SilkTables.silk_gain_iCDF[psDec.indices.signalType], 8), 3);
+                psDec.indices.GainsIndices[0] += (byte)psRangeDec.dec_icdf(SilkTables.silk_uniform8_iCDF, 8);
             }
 
             /* Remaining subframes */
             for (i = 1; i < psDec.nb_subfr; i++)
             {
-                psDec.indices.GainsIndices[i] = (sbyte)psRangeDec.dec_icdf(SilkTables.silk_delta_gain_iCDF, 8);
+                psDec.indices.GainsIndices[i] = (byte)psRangeDec.dec_icdf(SilkTables.silk_delta_gain_iCDF, 8);
             }
 
             /**********************/
             /* Decode LSF Indices */
             /**********************/
-            psDec.indices.NLSFIndices[0] = (sbyte)psRangeDec.dec_icdf(psDec.psNLSF_CB.CB1_iCDF, (psDec.indices.signalType >> 1) * psDec.psNLSF_CB.nVectors, 8);
+            psDec.indices.NLSFIndices[0] = (byte)psRangeDec.dec_icdf(psDec.psNLSF_CB.CB1_iCDF, (psDec.indices.signalType >> 1) * psDec.psNLSF_CB.nVectors, 8);
             NLSF.silk_NLSF_unpack(ec_ix, pred_Q8, psDec.psNLSF_CB, psDec.indices.NLSFIndices[0]);
             Inlines.OpusAssert(psDec.psNLSF_CB.order == psDec.LPC_order);
             for (i = 0; i < psDec.psNLSF_CB.order; i++)
@@ -105,13 +105,13 @@ package org.concentus;
                 {
                     Ix += psRangeDec.dec_icdf(SilkTables.silk_NLSF_EXT_iCDF, 8);
                 }
-                psDec.indices.NLSFIndices[i + 1] = (sbyte)(Ix - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE);
+                psDec.indices.NLSFIndices[i + 1] = (byte)(Ix - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE);
             }
 
             /* Decode LSF interpolation factor */
             if (psDec.nb_subfr == SilkConstants.MAX_NB_SUBFR)
             {
-                psDec.indices.NLSFInterpCoef_Q2 = (sbyte)psRangeDec.dec_icdf(SilkTables.silk_NLSF_interpolation_factor_iCDF, 8);
+                psDec.indices.NLSFInterpCoef_Q2 = (byte)psRangeDec.dec_icdf(SilkTables.silk_NLSF_interpolation_factor_iCDF, 8);
             }
             else {
                 psDec.indices.NLSFInterpCoef_Q2 = 4;
@@ -144,17 +144,17 @@ package org.concentus;
                 psDec.ec_prevLagIndex = psDec.indices.lagIndex;
 
                 /* Get countour index */
-                psDec.indices.contourIndex = (sbyte)psRangeDec.dec_icdf(psDec.pitch_contour_iCDF, 8);
+                psDec.indices.contourIndex = (byte)psRangeDec.dec_icdf(psDec.pitch_contour_iCDF, 8);
 
                 /********************/
                 /* Decode LTP gains */
                 /********************/
                 /* Decode PERIndex value */
-                psDec.indices.PERIndex = (sbyte)psRangeDec.dec_icdf(SilkTables.silk_LTP_per_index_iCDF, 8);
+                psDec.indices.PERIndex = (byte)psRangeDec.dec_icdf(SilkTables.silk_LTP_per_index_iCDF, 8);
 
                 for (k = 0; k < psDec.nb_subfr; k++)
                 {
-                    psDec.indices.LTPIndex[k] = (sbyte)psRangeDec.dec_icdf(SilkTables.silk_LTP_gain_iCDF_ptrs[psDec.indices.PERIndex], 8);
+                    psDec.indices.LTPIndex[k] = (byte)psRangeDec.dec_icdf(SilkTables.silk_LTP_gain_iCDF_ptrs[psDec.indices.PERIndex], 8);
                 }
 
                 /**********************/
@@ -162,7 +162,7 @@ package org.concentus;
                 /**********************/
                 if (condCoding == SilkConstants.CODE_INDEPENDENTLY)
                 {
-                    psDec.indices.LTP_scaleIndex = (sbyte)psRangeDec.dec_icdf(SilkTables.silk_LTPscale_iCDF, 8);
+                    psDec.indices.LTP_scaleIndex = (byte)psRangeDec.dec_icdf(SilkTables.silk_LTPscale_iCDF, 8);
                 }
                 else {
                     psDec.indices.LTP_scaleIndex = 0;
@@ -173,7 +173,7 @@ package org.concentus;
             /***************/
             /* Decode seed */
             /***************/
-            psDec.indices.Seed = (sbyte)psRangeDec.dec_icdf(SilkTables.silk_uniform4_iCDF, 8);
+            psDec.indices.Seed = (byte)psRangeDec.dec_icdf(SilkTables.silk_uniform4_iCDF, 8);
         }
     }
 }

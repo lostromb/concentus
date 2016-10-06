@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -59,9 +59,9 @@ package org.concentus;.Structs
         internal void Reset()
         {
             Arrays.MemSet<short>(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            Arrays.MemSet<int>(sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            Arrays.MemSet<int>(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-            Arrays.MemSet<int>(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
+            Arrays.MemSet(sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Arrays.MemSet(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
             sLF_AR_shp_Q14 = 0;
             lagPrev = 0;
             sLTP_buf_idx = 0;
@@ -81,10 +81,10 @@ package org.concentus;.Structs
             this.rand_seed = other.rand_seed;
             this.prev_gain_Q16 = other.prev_gain_Q16;
             this.rewhite_flag = other.rewhite_flag;
-            Array.Copy(other.xq, this.xq, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            Array.Copy(other.sLTP_shp_Q14, this.sLTP_shp_Q14, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            Array.Copy(other.sLPC_Q14, this.sLPC_Q14, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-            Array.Copy(other.sAR2_Q14, this.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
+            System.arraycopy(other.xq, this.xq, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            System.arraycopy(other.sLTP_shp_Q14, this.sLTP_shp_Q14, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            System.arraycopy(other.sLPC_Q14, this.sLPC_Q14, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+            System.arraycopy(other.sAR2_Q14, this.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
         }
 
         private class NSQ_del_dec_struct
@@ -152,7 +152,7 @@ package org.concentus;.Structs
                 SilkChannelEncoder psEncC,                                    /* I/O  Encoder State                   */
                 SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
                 int[] x_Q3,                                     /* I    Prefiltered input signal        */
-                sbyte[] pulses,                                   /* O    Quantized pulse signal          */
+                byte[] pulses,                                   /* O    Quantized pulse signal          */
                 short[][] PredCoef_Q12,          /* I    Short term prediction coefs [2][SilkConstants.MAX_LPC_ORDER]    */
                 short[] LTPCoef_Q14,    /* I    Long term prediction coefs [SilkConstants.LTP_ORDER * MAX_NB_SUBFR]     */
                 short[] AR2_Q13, /* I Noise shaping coefs [MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER]            */
@@ -277,7 +277,7 @@ package org.concentus;.Structs
         private void silk_noise_shape_quantizer(
                 int signalType,             /* I    Signal type                     */
                 int[] x_sc_Q10,             /* I [length]                                   */
-                sbyte[] pulses,               /* O [length]                                    */
+                byte[] pulses,               /* O [length]                                    */
                 int pulses_ptr,
                 short[] xq,                   /* O [length]                                    */
                 int xq_ptr,
@@ -458,7 +458,7 @@ package org.concentus;.Structs
                     q1_Q10 = q2_Q10;
                 }
 
-                pulses[pulses_ptr + i] = (sbyte)Inlines.silk_RSHIFT_ROUND(q1_Q10, 10);
+                pulses[pulses_ptr + i] = (byte)Inlines.silk_RSHIFT_ROUND(q1_Q10, 10);
 
                 /* Excitation */
                 exc_Q14 = Inlines.silk_LSHIFT(q1_Q10, 4);
@@ -490,7 +490,7 @@ package org.concentus;.Structs
             }
 
             /* Update LPC synth buffer */
-            Array.Copy(this.sLPC_Q14, length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
+            System.arraycopy(this.sLPC_Q14, length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
         }
 
         private void silk_nsq_scale_states(
@@ -584,7 +584,7 @@ package org.concentus;.Structs
             SilkChannelEncoder psEncC,                                    /* I  Encoder State                   */
             SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
             int[] x_Q3,                                     /* I    Prefiltered input signal        */
-            sbyte[] pulses,                                   /* O    Quantized pulse signal          */
+            byte[] pulses,                                   /* O    Quantized pulse signal          */
             short[][] PredCoef_Q12,          /* I    Short term prediction coefs [2 * MAX_LPC_ORDER]    */
             short[] LTPCoef_Q14,    /* I    Long term prediction coefs LTP_ORDER * MAX_NB_SUBFR]     */
             short[] AR2_Q13, /* I Noise shaping coefs  [MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER]           */
@@ -633,8 +633,8 @@ package org.concentus;.Structs
                 psDD.RD_Q10 = 0;
                 psDD.LF_AR_Q14 = this.sLF_AR_shp_Q14;
                 psDD.Shape_Q14[0] = this.sLTP_shp_Q14[psEncC.ltp_mem_length - 1];
-                Array.Copy(this.sLPC_Q14, psDD.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
-                Array.Copy(this.sAR2_Q14, psDD.sAR2_Q14, psEncC.shapingLPCOrder);
+                System.arraycopy(this.sLPC_Q14, psDD.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
+                System.arraycopy(this.sAR2_Q14, psDD.sAR2_Q14, psEncC.shapingLPCOrder);
             }
 
             offset_Q10 = SilkTables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
@@ -711,7 +711,7 @@ package org.concentus;.Structs
                             {
                                 if (i != Winner_ind)
                                 {
-                                    psDelDec[i].RD_Q10 += (int.MaxValue >> 4);
+                                    psDelDec[i].RD_Q10 += (Integer.MAX_VALUE >> 4);
                                     Inlines.OpusAssert(psDelDec[i].RD_Q10 >= 0);
                                 }
                             }
@@ -722,7 +722,7 @@ package org.concentus;.Structs
                             for (i = 0; i < decisionDelay; i++)
                             {
                                 last_smple_idx = (last_smple_idx - 1) & SilkConstants.DECISION_DELAY_MASK;
-                                pulses[pulses_ptr + i - decisionDelay] = (sbyte)Inlines.silk_RSHIFT_ROUND(psDD.Q_Q10[last_smple_idx], 10);
+                                pulses[pulses_ptr + i - decisionDelay] = (byte)Inlines.silk_RSHIFT_ROUND(psDD.Q_Q10[last_smple_idx], 10);
                                 this.xq[pxq + i - decisionDelay] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(
                                                             Inlines.silk_SMULWW(psDD.Xq_Q14[last_smple_idx], Gains_Q16[1]), 14));
                                 this.sLTP_shp_Q14[this.sLTP_shp_buf_idx - decisionDelay + i] = psDD.Shape_Q14[last_smple_idx];
@@ -811,19 +811,19 @@ package org.concentus;.Structs
 
             /* Copy final part of signals from winner state to output and long-term filter states */
             psDD = psDelDec[Winner_ind];
-            psIndices.Seed = (sbyte)(psDD.SeedInit);
+            psIndices.Seed = (byte)(psDD.SeedInit);
             last_smple_idx = smpl_buf_idx + decisionDelay;
             Gain_Q10 = Inlines.silk_RSHIFT32(Gains_Q16[psEncC.nb_subfr - 1], 6);
             for (i = 0; i < decisionDelay; i++)
             {
                 last_smple_idx = (last_smple_idx - 1) & SilkConstants.DECISION_DELAY_MASK;
-                pulses[pulses_ptr + i - decisionDelay] = (sbyte)Inlines.silk_RSHIFT_ROUND(psDD.Q_Q10[last_smple_idx], 10);
+                pulses[pulses_ptr + i - decisionDelay] = (byte)Inlines.silk_RSHIFT_ROUND(psDD.Q_Q10[last_smple_idx], 10);
                 this.xq[pxq + i - decisionDelay] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(
                             Inlines.silk_SMULWW(psDD.Xq_Q14[last_smple_idx], Gain_Q10), 8));
                 this.sLTP_shp_Q14[this.sLTP_shp_buf_idx - decisionDelay + i] = psDD.Shape_Q14[last_smple_idx];
             }
-            Array.Copy(psDD.sLPC_Q14, psEncC.subfr_length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
-            Array.Copy(psDD.sAR2_Q14, 0, this.sAR2_Q14, 0, psEncC.shapingLPCOrder);
+            System.arraycopy(psDD.sLPC_Q14, psEncC.subfr_length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
+            System.arraycopy(psDD.sAR2_Q14, 0, this.sAR2_Q14, 0, psEncC.shapingLPCOrder);
 
             /* Update states */
             this.sLF_AR_shp_Q14 = psDD.LF_AR_Q14;
@@ -841,7 +841,7 @@ package org.concentus;.Structs
             NSQ_del_dec_struct[] psDelDec,             /* I/O  Delayed decision states             */
             int signalType,             /* I    Signal type                         */
             int[] x_Q10,                /* I                                        */
-            sbyte[] pulses,               /* O                                        */
+            byte[] pulses,               /* O                                        */
             int pulses_ptr,
             short[] xq,                   /* O                                        */
             int xq_ptr,
@@ -1132,8 +1132,8 @@ package org.concentus;.Structs
                     if (psDelDec[k].RandState[last_smple_idx] != Winner_rand_state)
                     {
                         int k2 = k * 2;
-                        sampleStates[k2].RD_Q10 = Inlines.silk_ADD32(sampleStates[k2].RD_Q10, int.MaxValue >> 4);
-                        sampleStates[k2 + 1].RD_Q10 = Inlines.silk_ADD32(sampleStates[k2 + 1].RD_Q10, int.MaxValue >> 4);
+                        sampleStates[k2].RD_Q10 = Inlines.silk_ADD32(sampleStates[k2].RD_Q10, Integer.MAX_VALUE >> 4);
+                        sampleStates[k2 + 1].RD_Q10 = Inlines.silk_ADD32(sampleStates[k2 + 1].RD_Q10, Integer.MAX_VALUE >> 4);
                         Inlines.OpusAssert(sampleStates[k2].RD_Q10 >= 0);
                     }
                 }
@@ -1171,7 +1171,7 @@ package org.concentus;.Structs
                 psDD = psDelDec[Winner_ind];
                 if (subfr > 0 || i >= decisionDelay)
                 {
-                    pulses[pulses_ptr + i - decisionDelay] = (sbyte)Inlines.silk_RSHIFT_ROUND(psDD.Q_Q10[last_smple_idx], 10);
+                    pulses[pulses_ptr + i - decisionDelay] = (byte)Inlines.silk_RSHIFT_ROUND(psDD.Q_Q10[last_smple_idx], 10);
                     xq[xq_ptr + i - decisionDelay] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(
                         Inlines.silk_SMULWW(psDD.Xq_Q14[last_smple_idx], delayedGain_Q10[last_smple_idx]), 8));
                     this.sLTP_shp_Q14[this.sLTP_shp_buf_idx - decisionDelay] = psDD.Shape_Q14[last_smple_idx];

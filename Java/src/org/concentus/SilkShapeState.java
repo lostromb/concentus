@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ package org.concentus;.Structs
     /// </summary>
     class SilkShapeState
     {
-        internal sbyte LastGainIndex = 0;
+        internal byte LastGainIndex = 0;
         internal int HarmBoost_smth_Q16 = 0;
         internal int HarmShapeGain_smth_Q16 = 0;
         internal int Tilt_smth_Q16 = 0;

@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -45,15 +45,15 @@ package org.concentus;.Structs
         internal short smth_width_Q14 = 0;
         internal short width_prev_Q14 = 0;
         internal short silent_side_len = 0;
-        internal final sbyte[][][] predIx = Arrays.InitThreeDimensionalArray<sbyte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
-        internal final sbyte[] mid_only_flags = new sbyte[SilkConstants.MAX_FRAMES_PER_PACKET];
+        internal final byte[][][] predIx = Arrays.InitThreeDimensionalArray<byte>(SilkConstants.MAX_FRAMES_PER_PACKET, 2, 3);
+        internal final byte[] mid_only_flags = new byte[SilkConstants.MAX_FRAMES_PER_PACKET];
         
         internal void Reset()
         {
             Arrays.MemSet<short>(pred_prev_Q13, 0, 2);
             Arrays.MemSet<short>(sMid, 0, 2);
             Arrays.MemSet<short>(sSide, 0, 2);
-            Arrays.MemSet<int>(mid_side_amp_Q0, 0, 4);
+            Arrays.MemSet(mid_side_amp_Q0, 0, 4);
             smth_width_Q14 = 0;
             width_prev_Q14 = 0;
             silent_side_len = 0;
@@ -61,11 +61,11 @@ package org.concentus;.Structs
             {
                 for (int y= 0; y < 2; y++)
                 {
-                    Arrays.MemSet<sbyte>(predIx[x][y], 0, 3);
+                    Arrays.MemSet<byte>(predIx[x][y], 0, 3);
                 }
             }
 
-            Arrays.MemSet<sbyte>(mid_only_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSet<byte>(mid_only_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
         }
     }
 }

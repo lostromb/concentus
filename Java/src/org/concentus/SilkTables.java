@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -152,75 +152,75 @@ package org.concentus;
             silk_LTP_gain_BITS_Q5_2
         };
 
-        static final sbyte[][] silk_LTP_gain_vq_0 =
+        static final byte[][] silk_LTP_gain_vq_0 =
         {
-            new sbyte[] {      4,      6,     24,      7,      5 },
-            new sbyte[] {      0,      0,      2,      0,      0 },
-            new sbyte[] {  12,     28,     41,     13,     -4 },
-            new sbyte[] {  -9,     15,     42,     25,     14 },
-            new sbyte[] {      1,     -2,     62,     41,     -9 },
-            new sbyte[] {  -10,     37,     65,     -4,      3 },
-            new sbyte[] {  -6,      4,     66,      7,     -8 },
-            new sbyte[] {  16,     14,     38,     -3,     33 }
+            new byte[] {      4,      6,     24,      7,      5 },
+            new byte[] {      0,      0,      2,      0,      0 },
+            new byte[] {  12,     28,     41,     13,     -4 },
+            new byte[] {  -9,     15,     42,     25,     14 },
+            new byte[] {      1,     -2,     62,     41,     -9 },
+            new byte[] {  -10,     37,     65,     -4,      3 },
+            new byte[] {  -6,      4,     66,      7,     -8 },
+            new byte[] {  16,     14,     38,     -3,     33 }
         };
 
-        static final sbyte[][] silk_LTP_gain_vq_1 =
+        static final byte[][] silk_LTP_gain_vq_1 =
         {
-            new sbyte[] {13,     22,     39,     23,     12},
-            new sbyte[] {-1,     36,     64,     27,     -6},
-            new sbyte[] {-7,     10,     55,     43,     17},
-            new sbyte[] { 1,      1,      8,      1,      1},
-            new sbyte[] { 6,    -11,     74,     53,     -9 },
-            new sbyte[] {-12,     55,     76,    -12,      8 },
-            new sbyte[] { -3,      3,     93,     27,     -4 },
-            new sbyte[] { 26,     39,     59,      3,     -8 },
-            new sbyte[] {  2,      0,     77,     11,      9 },
-            new sbyte[] { -8,     22,     44,     -6,      7 },
-            new sbyte[] { 40,      9,     26,      3,      9 },
-            new sbyte[] { -7,     20,    101,     -7,      4 },
-            new sbyte[] {  3,     -8,     42,     26,      0 },
-            new sbyte[] { -15,     33,     68,      2,     23 },
-            new sbyte[] { -2,     55,     46,     -2,     15 },
-            new sbyte[] {  3,     -1,     21,     16,     41 }
+            new byte[] {13,     22,     39,     23,     12},
+            new byte[] {-1,     36,     64,     27,     -6},
+            new byte[] {-7,     10,     55,     43,     17},
+            new byte[] { 1,      1,      8,      1,      1},
+            new byte[] { 6,    -11,     74,     53,     -9 },
+            new byte[] {-12,     55,     76,    -12,      8 },
+            new byte[] { -3,      3,     93,     27,     -4 },
+            new byte[] { 26,     39,     59,      3,     -8 },
+            new byte[] {  2,      0,     77,     11,      9 },
+            new byte[] { -8,     22,     44,     -6,      7 },
+            new byte[] { 40,      9,     26,      3,      9 },
+            new byte[] { -7,     20,    101,     -7,      4 },
+            new byte[] {  3,     -8,     42,     26,      0 },
+            new byte[] { -15,     33,     68,      2,     23 },
+            new byte[] { -2,     55,     46,     -2,     15 },
+            new byte[] {  3,     -1,     21,     16,     41 }
         };
 
-        static final sbyte[][] silk_LTP_gain_vq_2 =
+        static final byte[][] silk_LTP_gain_vq_2 =
         {
-            new sbyte[] {    -6,     27,     61,     39,      5 },
-            new sbyte[] {   -11,     42,     88,      4,      1 },
-            new sbyte[] {    -2,     60,     65,      6,     -4 },
-            new sbyte[] {    -1,     -5,     73,     56,      1 },
-            new sbyte[] {    -9,     19,     94,     29,     -9 },
-            new sbyte[] {     0,     12,     99,      6,      4 },
-            new sbyte[] {     8,    -19,    102,     46,    -13 },
-            new sbyte[] {     3,      2,     13,      3,      2 },
-            new sbyte[] {     9,    -21,     84,     72,    -18 },
-            new sbyte[] {   -11,     46,    104,    -22,      8 },
-            new sbyte[] {    18,     38,     48,     23,      0 },
-            new sbyte[] {   -16,     70,     83,    -21,     11 },
-            new sbyte[] {     5,    -11,    117,     22,     -8 },
-            new sbyte[] {    -6,     23,    117,    -12,      3 },
-            new sbyte[] {     3,     -8,     95,     28,      4 },
-            new sbyte[] {   -10,     15,     77,     60,    -15 },
-            new sbyte[] {    -1,      4,    124,      2,     -4 },
-            new sbyte[] {     3,     38,     84,     24,    -25 },
-            new sbyte[] {     2,     13,     42,     13,     31 },
-            new sbyte[] {    21,     -4,     56,     46,     -1 },
-            new sbyte[] {    -1,     35,     79,    -13,     19 },
-            new sbyte[] {    -7,     65,     88,     -9,    -14 },
-            new sbyte[] {    20,      4,     81,     49,    -29 },
-            new sbyte[] {    20,      0,     75,      3,    -17 },
-            new sbyte[] {     5,     -9,     44,     92,     -8 },
-            new sbyte[] {     1,     -3,     22,     69,     31 },
-            new sbyte[] {    -6,     95,     41,    -12,      5 },
-            new sbyte[] {    39,     67,     16,     -4,      1 },
-            new sbyte[] {     0,     -6,    120,     55,    -36 },
-            new sbyte[] {   -13,     44,    122,      4,    -24 },
-            new sbyte[] {    81,      5,     11,      3,      7 },
-            new sbyte[] {     2,      0,      9,     10,     88 }
+            new byte[] {    -6,     27,     61,     39,      5 },
+            new byte[] {   -11,     42,     88,      4,      1 },
+            new byte[] {    -2,     60,     65,      6,     -4 },
+            new byte[] {    -1,     -5,     73,     56,      1 },
+            new byte[] {    -9,     19,     94,     29,     -9 },
+            new byte[] {     0,     12,     99,      6,      4 },
+            new byte[] {     8,    -19,    102,     46,    -13 },
+            new byte[] {     3,      2,     13,      3,      2 },
+            new byte[] {     9,    -21,     84,     72,    -18 },
+            new byte[] {   -11,     46,    104,    -22,      8 },
+            new byte[] {    18,     38,     48,     23,      0 },
+            new byte[] {   -16,     70,     83,    -21,     11 },
+            new byte[] {     5,    -11,    117,     22,     -8 },
+            new byte[] {    -6,     23,    117,    -12,      3 },
+            new byte[] {     3,     -8,     95,     28,      4 },
+            new byte[] {   -10,     15,     77,     60,    -15 },
+            new byte[] {    -1,      4,    124,      2,     -4 },
+            new byte[] {     3,     38,     84,     24,    -25 },
+            new byte[] {     2,     13,     42,     13,     31 },
+            new byte[] {    21,     -4,     56,     46,     -1 },
+            new byte[] {    -1,     35,     79,    -13,     19 },
+            new byte[] {    -7,     65,     88,     -9,    -14 },
+            new byte[] {    20,      4,     81,     49,    -29 },
+            new byte[] {    20,      0,     75,      3,    -17 },
+            new byte[] {     5,     -9,     44,     92,     -8 },
+            new byte[] {     1,     -3,     22,     69,     31 },
+            new byte[] {    -6,     95,     41,    -12,      5 },
+            new byte[] {    39,     67,     16,     -4,      1 },
+            new byte[] {     0,     -6,    120,     55,    -36 },
+            new byte[] {   -13,     44,    122,      4,    -24 },
+            new byte[] {    81,      5,     11,      3,      7 },
+            new byte[] {     2,      0,      9,     10,     88 }
         };
 
-        static final sbyte[][][] silk_LTP_vq_ptrs_Q7 = {
+        static final byte[][][] silk_LTP_vq_ptrs_Q7 = {
             silk_LTP_gain_vq_0,
             silk_LTP_gain_vq_1,
             silk_LTP_gain_vq_2
@@ -250,7 +250,7 @@ package org.concentus;
             silk_LTP_gain_vq_2_gain
         };
 
-        static final sbyte[] silk_LTP_vq_sizes = {
+        static final byte[] silk_LTP_vq_sizes = {
             8, 16, 32
         };
 
@@ -677,7 +677,7 @@ package org.concentus;
                113,     63,      0
         };
 
-        static final sbyte[] silk_max_pulses_table = {
+        static final byte[] silk_max_pulses_table = {
                  8,     10,     12,     16
         };
 
@@ -912,7 +912,7 @@ package org.concentus;
         // Resampler tables
 
         /* Tables with delay compensation values to equalize total delay for different modes */
-        static final sbyte[,] delay_matrix_enc = {
+        static final byte[,] delay_matrix_enc = {
             /* in  \ out  8  12  16 */
             /*  8 */   {  6,  0,  3 },
             /* 12 */   {  0,  7,  3 },
@@ -921,7 +921,7 @@ package org.concentus;
             /* 48 */   { 18, 10, 12 }
             };
 
-        static final sbyte[,] delay_matrix_dec = {
+        static final byte[,] delay_matrix_dec = {
             /* in  \ out  8  12  16  24  48 */
             /*  8 */   {  4,  0,  2,  0,  0 },
             /* 12 */   {  0,  9,  4,  7,  4 },
@@ -996,66 +996,66 @@ package org.concentus;
 
         // from pitch_estimation_tables.c
         
-        static final sbyte[][] silk_CB_lags_stage2_10_ms =
+        static final byte[][] silk_CB_lags_stage2_10_ms =
         {
-            new sbyte[] {0, 1, 0 },
-            new sbyte[] {0, 0, 1 }
+            new byte[] {0, 1, 0 },
+            new byte[] {0, 0, 1 }
         };
         
-        static final sbyte[][] silk_CB_lags_stage3_10_ms =
+        static final byte[][] silk_CB_lags_stage3_10_ms =
         {
-             new sbyte[] {0, 0, 1,-1, 1,-1, 2,-2, 2,-2, 3,-3 },
-             new sbyte[] {0, 1, 0, 1,-1, 2,-1, 2,-2, 3,-2, 3 }
+             new byte[] {0, 0, 1,-1, 1,-1, 2,-2, 2,-2, 3,-3 },
+             new byte[] {0, 1, 0, 1,-1, 2,-1, 2,-2, 3,-2, 3 }
         };
         
-        static final sbyte[][] silk_CB_lags_stage2 /*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ]*/ =
+        static final byte[][] silk_CB_lags_stage2 /*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ]*/ =
         {
-            new sbyte[] {0, 2,-1,-1,-1, 0, 0, 1, 1, 0, 1 },
-            new sbyte[] {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 },
-            new sbyte[] {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 },
-            new sbyte[] {0,-1, 2, 1, 0, 1, 1, 0, 0,-1,-1 }
+            new byte[] {0, 2,-1,-1,-1, 0, 0, 1, 1, 0, 1 },
+            new byte[] {0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 },
+            new byte[] {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 },
+            new byte[] {0,-1, 2, 1, 0, 1, 1, 0, 0,-1,-1 }
         };
         
-        static final sbyte[][] silk_CB_lags_stage3/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ]*/ =
+        static final byte[][] silk_CB_lags_stage3/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ]*/ =
         {
-            new sbyte[] {0, 0, 1,-1, 0, 1,-1, 0,-1, 1,-2, 2,-2,-2, 2,-3, 2, 3,-3,-4, 3,-4, 4, 4,-5, 5,-6,-5, 6,-7, 6, 5, 8,-9 },
-            new sbyte[] {0, 0, 1, 0, 0, 0, 0, 0, 0, 0,-1, 1, 0, 0, 1,-1, 0, 1,-1,-1, 1,-1, 2, 1,-1, 2,-2,-2, 2,-2, 2, 2, 3,-3 },
-            new sbyte[] {0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,-1, 1, 0, 0, 2, 1,-1, 2,-1,-1, 2,-1, 2, 2,-1, 3,-2,-2,-2, 3 },
-            new sbyte[] {0, 1, 0, 0, 1, 0, 1,-1, 2,-1, 2,-1, 2, 3,-2, 3,-2,-2, 4, 4,-3, 5,-3,-4, 6,-4, 6, 5,-5, 8,-6,-5,-7, 9 }
+            new byte[] {0, 0, 1,-1, 0, 1,-1, 0,-1, 1,-2, 2,-2,-2, 2,-3, 2, 3,-3,-4, 3,-4, 4, 4,-5, 5,-6,-5, 6,-7, 6, 5, 8,-9 },
+            new byte[] {0, 0, 1, 0, 0, 0, 0, 0, 0, 0,-1, 1, 0, 0, 1,-1, 0, 1,-1,-1, 1,-1, 2, 1,-1, 2,-2,-2, 2,-2, 2, 2, 3,-3 },
+            new byte[] {0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,-1, 1, 0, 0, 2, 1,-1, 2,-1,-1, 2,-1, 2, 2,-1, 3,-2,-2,-2, 3 },
+            new byte[] {0, 1, 0, 0, 1, 0, 1,-1, 2,-1, 2,-1, 2, 3,-2, 3,-2,-2, 4, 4,-3, 5,-3,-4, 6,-4, 6, 5,-5, 8,-6,-5,-7, 9 }
         };
 
-        static final sbyte[][] silk_Lag_range_stage3_10_ms =
+        static final byte[][] silk_Lag_range_stage3_10_ms =
         {
-            new sbyte[] {-3, 7 },
-            new sbyte[] {-2, 7 }
+            new byte[] {-3, 7 },
+            new byte[] {-2, 7 }
         };
 
-        static final sbyte[][][] silk_Lag_range_stage3 =
+        static final byte[][][] silk_Lag_range_stage3 =
         {
             /* Lags to search for low number of stage3 cbks */
-            new sbyte[][] {
-                new sbyte[] {-5,8 },
-                new sbyte[] {-1,6 },
-                new sbyte[] {-1,6 },
-                new sbyte[] {-4,10 }
+            new byte[][] {
+                new byte[] {-5,8 },
+                new byte[] {-1,6 },
+                new byte[] {-1,6 },
+                new byte[] {-4,10 }
             },
             /* Lags to search for middle number of stage3 cbks */
-            new sbyte[][] {
-                new sbyte[] {-6,10 },
-                new sbyte[] {-2,6 },
-                new sbyte[] {-1,6 },
-                new sbyte[] {-5,10 }
+            new byte[][] {
+                new byte[] {-6,10 },
+                new byte[] {-2,6 },
+                new byte[] {-1,6 },
+                new byte[] {-5,10 }
             },
             /* Lags to search for max number of stage3 cbks */
-            new sbyte[][] {
-                new sbyte[] {-9,12 },
-                new sbyte[] {-3,7 },
-                new sbyte[] {-2,7 },
-                new sbyte[] {-7,13 }
+            new byte[][] {
+                new byte[] {-9,12 },
+                new byte[] {-3,7 },
+                new byte[] {-2,7 },
+                new byte[] {-7,13 }
             }
         };
 
-        static final sbyte[] silk_nb_cbk_searchs_stage3 =
+        static final byte[] silk_nb_cbk_searchs_stage3 =
         {
             SilkConstants.PE_NB_CBKS_STAGE3_MIN,
             SilkConstants.PE_NB_CBKS_STAGE3_MID,

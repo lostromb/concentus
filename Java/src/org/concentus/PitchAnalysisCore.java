@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ package org.concentus;
             short[] frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
             int[] pitch_out,         /* O    4 pitch lag values                                          */
             BoxedValue<short> lagIndex,          /* O    Lag Index                                                   */
-            BoxedValue<sbyte> contourIndex,      /* O    Pitch contour Index                                         */
+            BoxedValue<byte> contourIndex,      /* O    Pitch contour Index                                         */
             BoxedValue<Integer> LTPCorr_Q15,       /* I/O  Normalized correlation; input: value from previous frame    */
             int prevLag,            /* I    Last lag of previous frame; set to zero is unvoiced         */
             int search_thres1_Q16,  /* I    First stage threshold for lag candidates 0 - 1              */
@@ -107,7 +107,7 @@ package org.concentus;
             int contour_bias_Q15, diff;
             int nb_cbk_search;
             int delta_lag_log2_sqr_Q7, lag_log2_Q7, prevLag_log2_Q7, prev_lag_bias_Q13;
-            sbyte[][] Lag_CB_ptr;
+            byte[][] Lag_CB_ptr;
 
             /* Check for valid sampling frequency */
             Inlines.OpusAssert(Fs_kHz == 8 || Fs_kHz == 12 || Fs_kHz == 16);
@@ -131,21 +131,21 @@ package org.concentus;
             frame_8kHz = new short[frame_length_8kHz];
             if (Fs_kHz == 16)
             {
-                Arrays.MemSet<int>(filt_state, 0, 2);
+                Arrays.MemSet(filt_state, 0, 2);
                 Resampler.silk_resampler_down2(filt_state, frame_8kHz, frame, frame_length);
             }
             else if (Fs_kHz == 12)
             {
-                Arrays.MemSet<int>(filt_state, 0, 6);
+                Arrays.MemSet(filt_state, 0, 6);
                 Resampler.silk_resampler_down2_3(filt_state, frame_8kHz, frame, frame_length);
             }
             else {
                 Inlines.OpusAssert(Fs_kHz == 8);
-                Array.Copy(frame, frame_8kHz, frame_length_8kHz);
+                System.arraycopy(frame, frame_8kHz, frame_length_8kHz);
             }
 
             /* Decimate again to 4 kHz */
-            Arrays.MemSet<int>(filt_state, 0, 2); /* Set state to zero */
+            Arrays.MemSet(filt_state, 0, 2); /* Set state to zero */
             frame_4kHz = new short[frame_length_4kHz];
             Resampler.silk_resampler_down2(filt_state, frame_4kHz, frame_8kHz, frame_length_8kHz);
 
@@ -244,7 +244,7 @@ package org.concentus;
             Cmax = (int)C[0];                                                    /* Q14 */
             if (Cmax < ((int)((0.2f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(0.2f, 14)*/)
             {
-                Arrays.MemSet<int>(pitch_out, 0, nb_subfr);
+                Arrays.MemSet(pitch_out, 0, nb_subfr);
                 LTPCorr_Q15.Val = 0;
                 lagIndex.Val = 0;
                 contourIndex.Val = 0;
@@ -364,8 +364,8 @@ package org.concentus;
             /* search over lag range and lags codebook */
             /* scale factor for lag codebook, as a function of center lag */
 
-            CCmax = int.MinValue;
-            CCmax_b = int.MinValue;
+            CCmax = Integer.MIN_VALUE;
+            CCmax_b = Integer.MIN_VALUE;
 
             CBimax = 0; /* To avoid returning undefined lag values */
             lag = -1;   /* To check if lag with strong enough correlation has been found */
@@ -422,7 +422,7 @@ package org.concentus;
                     }
                 }
                 /* Find best codebook */
-                CCmax_new = int.MinValue;
+                CCmax_new = Integer.MIN_VALUE;
                 CBimax_new = 0;
                 for (i = 0; i < nb_cbk_search; i++)
                 {
@@ -466,7 +466,7 @@ package org.concentus;
             if (lag == -1)
             {
                 /* No suitable candidate found */
-                Arrays.MemSet<int>(pitch_out, 0, nb_subfr);
+                Arrays.MemSet(pitch_out, 0, nb_subfr);
                 LTPCorr_Q15.Val = 0;
                 lagIndex.Val = 0;
                 contourIndex.Val = 0;
@@ -523,7 +523,7 @@ package org.concentus;
                 lag_new = lag;                                    /* to avoid undefined lag */
                 CBimax = 0;                                      /* to avoid undefined lag */
 
-                CCmax = int.MinValue;
+                CCmax = Integer.MIN_VALUE;
                 /* pitch lags according to second stage */
                 for (k = 0; k < nb_subfr; k++)
                 {
@@ -603,7 +603,7 @@ package org.concentus;
                     pitch_out[k] = Inlines.silk_LIMIT(pitch_out[k], min_lag, SilkConstants.PE_MAX_LAG_MS * Fs_kHz);
                 }
                 lagIndex.Val = (short)(lag_new - min_lag);
-                contourIndex.Val = (sbyte)CBimax;
+                contourIndex.Val = (byte)CBimax;
             }
             else {        /* Fs_kHz == 8 */
                           /* Save Lags */
@@ -613,7 +613,7 @@ package org.concentus;
                     pitch_out[k] = Inlines.silk_LIMIT(pitch_out[k], MIN_LAG_8KHZ, SilkConstants.PE_MAX_LAG_MS * 8);
                 }
                 lagIndex.Val = (short)(lag - MIN_LAG_8KHZ);
-                contourIndex.Val = (sbyte)CBimax;
+                contourIndex.Val = (byte)CBimax;
             }
             Inlines.OpusAssert(lagIndex.Val >= 0);
             /* return as voiced */
@@ -648,8 +648,8 @@ package org.concentus;
             int nb_cbk_search, delta, idx;
             int[] scratch_mem;
             int[] xcorr32;
-            sbyte[][] Lag_range_ptr;
-            sbyte[][] Lag_CB_ptr;
+            byte[][] Lag_range_ptr;
+            byte[][] Lag_CB_ptr;
             
             Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);
             Inlines.OpusAssert(complexity <= SilkConstants.SILK_PE_MAX_COMPLEX);
@@ -723,8 +723,8 @@ package org.concentus;
             int k, i, j, lag_counter;
             int nb_cbk_search, delta, idx, lag_diff;
             int[] scratch_mem;
-            sbyte[][] Lag_range_ptr;
-            sbyte[][] Lag_CB_ptr;
+            byte[][] Lag_range_ptr;
+            byte[][] Lag_CB_ptr;
 
 
             Inlines.OpusAssert(complexity >= SilkConstants.SILK_PE_MIN_COMPLEX);

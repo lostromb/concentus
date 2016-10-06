@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -186,7 +186,7 @@ package org.concentus;
                 NLSF.silk_NLSF2A(A_Q12, psCNG.CNG_smth_NLSF_Q15, psDec.LPC_order);
 
                 /* Generate CNG signal, by synthesis filtering */
-                Array.Copy(psCNG.CNG_synth_state, CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);
+                System.arraycopy(psCNG.CNG_synth_state, CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);
 
                 for (i = 0; i < length; i++)
                 {
@@ -221,11 +221,11 @@ package org.concentus;
                     frame[frame_ptr + i] = Inlines.silk_ADD_SAT16(frame[frame_ptr + i], (short)(Inlines.silk_RSHIFT_ROUND(CNG_sig_Q10[lpci], 10)));
                 }
 
-                Array.Copy(CNG_sig_Q10, length, psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
+                System.arraycopy(CNG_sig_Q10, length, psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
             }
             else
             {
-                Arrays.MemSet<int>(psCNG.CNG_synth_state, 0, psDec.LPC_order);
+                Arrays.MemSet(psCNG.CNG_synth_state, 0, psDec.LPC_order);
             }
         }
     }

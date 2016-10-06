@@ -204,9 +204,9 @@ package org.concentus;
 
             oldEBands_intra = Arrays.InitTwoDimensionalArray<int>(C, m.nbEBands);
             error_intra = Arrays.InitTwoDimensionalArray<int>(C, m.nbEBands);
-            Array.Copy(oldEBands[0], 0, oldEBands_intra[0], 0, m.nbEBands);
+            System.arraycopy(oldEBands[0], 0, oldEBands_intra[0], 0, m.nbEBands);
             if (C == 2)
-                Array.Copy(oldEBands[1], 0, oldEBands_intra[1], 0, m.nbEBands);
+                System.arraycopy(oldEBands[1], 0, oldEBands_intra[1], 0, m.nbEBands);
 
             if (two_pass != 0 || intra != 0)
             {
@@ -223,7 +223,7 @@ package org.concentus;
                 int nintra_bytes;
                 int save_bytes;
                 int badness2;
-                sbyte[] intra_bits = null;
+                byte[] intra_bits = null;
 
                 tell_intra = (int)enc.tell_frac();
 
@@ -236,9 +236,9 @@ package org.concentus;
 
                 if (save_bytes != 0)
                 {
-                    intra_bits = new sbyte[save_bytes];
+                    intra_bits = new byte[save_bytes];
                     /* Copy bits from intra bit-stream */
-                    Array.Copy(enc_intra_state.get_buffer(), intra_buf, intra_bits, 0, save_bytes);
+                    System.arraycopy(enc_intra_state.get_buffer(), intra_buf, intra_bits, 0, save_bytes);
                 }
 
                 enc.Assign(enc_start_state);
@@ -254,24 +254,24 @@ package org.concentus;
                     {
                         enc_intra_state.write_buffer(intra_bits, 0, intra_buf, (nintra_bytes - nstart_bytes));
                     }
-                    Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
-                    Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);
+                    System.arraycopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
+                    System.arraycopy(error_intra[0], 0, error[0], 0, m.nbEBands);
                     if (C == 2)
                     {
-                        Array.Copy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
-                        Array.Copy(error_intra[1], 0, error[1], 0, m.nbEBands);
+                        System.arraycopy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
+                        System.arraycopy(error_intra[1], 0, error[1], 0, m.nbEBands);
                     }
                     intra = 1;
                 }
             }
             else
             {
-                Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
-                Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);
+                System.arraycopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
+                System.arraycopy(error_intra[0], 0, error[0], 0, m.nbEBands);
                 if (C == 2)
                 {
-                    Array.Copy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
-                    Array.Copy(error_intra[1], 0, error[1], 0, m.nbEBands);
+                    System.arraycopy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
+                    System.arraycopy(error_intra[1], 0, error[1], 0, m.nbEBands);
                 }
             }
 

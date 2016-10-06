@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -51,10 +51,10 @@ package org.concentus;
             int i, k, Ix;
             short[] pNLSF_Q15 = new short[psDec.LPC_order];
             short[] pNLSF0_Q15 = new short[psDec.LPC_order];
-            sbyte[][] cbk_ptr_Q7;
+            byte[][] cbk_ptr_Q7;
 
             /* Dequant Gains */
-            BoxedValue<sbyte> boxedLastGainIndex = new BoxedValue<sbyte>(psDec.LastGainIndex);
+            BoxedValue<byte> boxedLastGainIndex = new BoxedValue<byte>(psDec.LastGainIndex);
             GainQuantization.silk_gains_dequant(psDecCtrl.Gains_Q16, psDec.indices.GainsIndices,
                 boxedLastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psDec.nb_subfr);
             psDec.LastGainIndex = boxedLastGainIndex.Val;
@@ -90,10 +90,10 @@ package org.concentus;
             else
             {
                 /* Copy LPC coefficients for first half from second half */
-                Array.Copy(psDecCtrl.PredCoef_Q12[1], psDecCtrl.PredCoef_Q12[0], psDec.LPC_order);
+                System.arraycopy(psDecCtrl.PredCoef_Q12[1], psDecCtrl.PredCoef_Q12[0], psDec.LPC_order);
             }
 
-            Array.Copy(pNLSF_Q15, psDec.prevNLSF_Q15, psDec.LPC_order);
+            System.arraycopy(pNLSF_Q15, psDec.prevNLSF_Q15, psDec.LPC_order);
 
             /* After a packet loss do BWE of LPC coefs */
             if (psDec.lossCnt != 0)
@@ -131,7 +131,7 @@ package org.concentus;
             }
             else
             {
-                Arrays.MemSet<int>(psDecCtrl.pitchL, 0, psDec.nb_subfr);
+                Arrays.MemSet(psDecCtrl.pitchL, 0, psDec.nb_subfr);
                 Arrays.MemSet<short>(psDecCtrl.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * psDec.nb_subfr);
                 psDec.indices.PERIndex = 0;
                 psDecCtrl.LTP_scale_Q14 = 0;

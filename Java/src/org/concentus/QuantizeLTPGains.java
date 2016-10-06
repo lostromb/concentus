@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -43,8 +43,8 @@ package org.concentus;
     {
         static void silk_quant_LTP_gains(
             short[] B_Q14,          /* I/O  (un)quantized LTP gains [MAX_NB_SUBFR * LTP_ORDER]        */
-            sbyte[] cbk_index,                  /* O    Codebook Index [MAX_NB_SUBFR]                 */
-            BoxedValue<sbyte> periodicity_index,                         /* O    Periodicity Index               */
+            byte[] cbk_index,                  /* O    Codebook Index [MAX_NB_SUBFR]                 */
+            BoxedValue<byte> periodicity_index,                         /* O    Periodicity Index               */
             BoxedValue<Integer> sum_log_gain_Q7,                           /* I/O  Cumulative max prediction gain  */
             int[] W_Q18,  /* I    Error Weights in Q18 [MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER]           */
             int mu_Q9,                                      /* I    Mu value (R/D tradeoff)         */
@@ -53,9 +53,9 @@ package org.concentus;
             )
         {
             int j, k, cbk_size;
-            sbyte[] temp_idx = new sbyte[SilkConstants.MAX_NB_SUBFR];
+            byte[] temp_idx = new byte[SilkConstants.MAX_NB_SUBFR];
             short[] cl_ptr_Q5;
-            sbyte[][] cbk_ptr_Q7;
+            byte[][] cbk_ptr_Q7;
             short[] cbk_gain_ptr_Q7;
             int b_Q14_ptr;
             int W_Q18_ptr;
@@ -66,7 +66,7 @@ package org.concentus;
             /* iterate over different codebooks with different */
             /* rates/distortions, and choose best */
             /***************************************************/
-            min_rate_dist_Q14 = int.MaxValue;
+            min_rate_dist_Q14 = Integer.MAX_VALUE;
             best_sum_log_gain_Q7 = 0;
             for (k = 0; k < 3; k++)
             {
@@ -90,7 +90,7 @@ package org.concentus;
                     max_gain_Q7 = Inlines.silk_log2lin((((int)((TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f, 7)*/ - sum_log_gain_tmp_Q7)
                                                 + ((int)((7) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(7, 7)*/) - gain_safety;
                     
-                    BoxedValue<sbyte> temp_idx_box = new BoxedValue<sbyte>(temp_idx[j]);
+                    BoxedValue<byte> temp_idx_box = new BoxedValue<byte>(temp_idx[j]);
                     BoxedValue<Integer> rate_dist_Q14_subfr_box = new BoxedValue<Integer>();
                     BoxedValue<Integer> gain_Q7_box = new BoxedValue<Integer>();
                     VQ_WMat_EC.silk_VQ_WMat_EC(
@@ -121,13 +121,13 @@ package org.concentus;
                 }
 
                 /* Avoid never finding a codebook */
-                rate_dist_Q14 = Inlines.silk_min(int.MaxValue - 1, rate_dist_Q14);
+                rate_dist_Q14 = Inlines.silk_min(Integer.MAX_VALUE - 1, rate_dist_Q14);
 
                 if (rate_dist_Q14 < min_rate_dist_Q14)
                 {
                     min_rate_dist_Q14 = rate_dist_Q14;
-                    periodicity_index.Val = (sbyte)k;
-                    Array.Copy(temp_idx, 0, cbk_index, 0, nb_subfr);
+                    periodicity_index.Val = (byte)k;
+                    System.arraycopy(temp_idx, 0, cbk_index, 0, nb_subfr);
                     best_sum_log_gain_Q7 = sum_log_gain_tmp_Q7;
                 }
 

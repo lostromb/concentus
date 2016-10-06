@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -153,7 +153,7 @@ package org.concentus;
         /// <param name="order">(I) Number of input values</param>
         static void silk_NLSF_residual_dequant(
                 short[] x_Q10,
-                sbyte[] indices,
+                byte[] indices,
                 int indices_ptr,
                 short[] pred_coef_Q8,
                 int quant_step_size_Q16,
@@ -325,7 +325,7 @@ package org.concentus;
         /// <param name="pNLSF_Q15">(O) Quantized NLSF vector [ LPC_ORDER ]</param>
         /// <param name="NLSFIndices">(I) Codebook path vector [ LPC_ORDER + 1 ]</param>
         /// <param name="psNLSF_CB">(I) Codebook object</param>
-        static void silk_NLSF_decode(short[] pNLSF_Q15, sbyte[] NLSFIndices, NLSFCodebook psNLSF_CB)
+        static void silk_NLSF_decode(short[] pNLSF_Q15, byte[] NLSFIndices, NLSFCodebook psNLSF_CB)
         {
             int i;
             short[] pred_Q8 = new short[psNLSF_CB.order];
@@ -385,7 +385,7 @@ package org.concentus;
         /// <returns>RD value in Q25</returns>
         /// Fixme: Optimize this method!
         static int silk_NLSF_del_dec_quant(
-            sbyte[] indices,
+            byte[] indices,
             short[] x_Q10,
             short[] w_Q5,
             short[] pred_coef_Q8,
@@ -400,10 +400,10 @@ package org.concentus;
             int pred_Q10, diff_Q10, out0_Q10, out1_Q10, rate0_Q5, rate1_Q5;
             int RD_tmp_Q25, min_Q25, min_max_Q25, max_min_Q25, pred_coef_Q16;
             int[] ind_sort = new int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
-            sbyte[][] ind = new sbyte[SilkConstants.NLSF_QUANT_DEL_DEC_STATES][];
+            byte[][] ind = new byte[SilkConstants.NLSF_QUANT_DEL_DEC_STATES][];
             for (i = 0; i < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; i++)
             {
-                ind[i] = new sbyte[SilkConstants.MAX_LPC_ORDER];
+                ind[i] = new byte[SilkConstants.MAX_LPC_ORDER];
             }
 
             short[] prev_out_Q10 = new short[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
@@ -460,7 +460,7 @@ package org.concentus;
                     res_Q10 = Inlines.silk_SUB16((short)(in_Q10), (short)(pred_Q10));
                     ind_tmp = Inlines.silk_SMULWB((int)inv_quant_step_size_Q6, res_Q10);
                     ind_tmp = Inlines.silk_LIMIT(ind_tmp, 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT, SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT - 1);
-                    ind[j][i] = (sbyte)ind_tmp;
+                    ind[j][i] = (byte)ind_tmp;
                     rates_Q5 = ec_ix[i] + ind_tmp;
 
                     // compute outputs for ind_tmp and ind_tmp + 1
@@ -517,7 +517,7 @@ package org.concentus;
                     // double number of states and copy
                     for (j = 0; j < nStates; j++)
                     {
-                        ind[j + nStates][i] = (sbyte)(ind[j][i] + 1);
+                        ind[j + nStates][i] = (byte)(ind[j][i] + 1);
                     }
                     nStates = Inlines.silk_LSHIFT(nStates, 1);
 
@@ -556,7 +556,7 @@ package org.concentus;
                     // afterwards ind_sort[] will contain the indices of the NLSF_QUANT_DEL_DEC_STATES winning RD values
                     while (true)
                     {
-                        min_max_Q25 = int.MaxValue;
+                        min_max_Q25 = Integer.MAX_VALUE;
                         max_min_Q25 = 0;
                         ind_min_max = 0;
                         ind_max_min = 0;
@@ -585,14 +585,14 @@ package org.concentus;
                         RD_Q25[ind_max_min] = RD_Q25[ind_min_max + SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
                         prev_out_Q10[ind_max_min] = prev_out_Q10[ind_min_max + SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
                         RD_min_Q25[ind_max_min] = 0;
-                        RD_max_Q25[ind_min_max] = int.MaxValue;
-                        Buffer.BlockCopy(ind[ind_min_max], 0, ind[ind_max_min], 0, order * sizeof(sbyte));
+                        RD_max_Q25[ind_min_max] = Integer.MAX_VALUE;
+                        Buffer.BlockCopy(ind[ind_min_max], 0, ind[ind_max_min], 0, order * sizeof(byte));
                     }
 
                     // increment index if it comes from the upper half
                     for (j = 0; j < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; j++)
                     {
-                        var x = (sbyte)Inlines.silk_RSHIFT(ind_sort[j], SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2);
+                        var x = (byte)Inlines.silk_RSHIFT(ind_sort[j], SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2);
                         ind[j][i] += x;
                     }
                 }
@@ -605,7 +605,7 @@ package org.concentus;
 
             // last sample: find winner, copy indices and return RD value
             ind_tmp = 0;
-            min_Q25 = int.MaxValue;
+            min_Q25 = Integer.MAX_VALUE;
             for (j = 0; j < 2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES; j++)
             {
                 if (min_Q25 > RD_Q25[j])
@@ -622,7 +622,7 @@ package org.concentus;
                 Inlines.OpusAssert(indices[j] <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
             }
 
-            indices[0] = (sbyte)(indices[0] + Inlines.silk_RSHIFT(ind_tmp, SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2));
+            indices[0] = (byte)(indices[0] + Inlines.silk_RSHIFT(ind_tmp, SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2));
             Inlines.OpusAssert(indices[0] <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
             Inlines.OpusAssert(min_Q25 >= 0);
             return min_Q25;
@@ -640,7 +640,7 @@ package org.concentus;
         /// <param name="signalType">(I) Signal type: 0/1/2</param>
         /// <returns>RD value in Q25</returns>
         static int silk_NLSF_encode(
-            sbyte[] NLSFIndices,
+            byte[] NLSFIndices,
             short[] pNLSF_Q15,
             NLSFCodebook psNLSF_CB,
             short[] pW_QW,
@@ -653,7 +653,7 @@ package org.concentus;
             int[] err_Q26;
             int[] RD_Q25;
             int[] tempIndices1;
-            sbyte[][] tempIndices2;
+            byte[][] tempIndices2;
             short[] res_Q15 = new short[psNLSF_CB.order];
             short[] res_Q10 = new short[psNLSF_CB.order];
             short[] NLSF_tmp_Q15 = new short[psNLSF_CB.order];
@@ -681,7 +681,7 @@ package org.concentus;
             Sort.silk_insertion_sort_increasing(err_Q26, tempIndices1, psNLSF_CB.nVectors, nSurvivors);
 
             RD_Q25 = new int[nSurvivors];
-            tempIndices2 = Arrays.InitTwoDimensionalArray<sbyte>(nSurvivors, SilkConstants.MAX_LPC_ORDER); 
+            tempIndices2 = Arrays.InitTwoDimensionalArray<byte>(nSurvivors, SilkConstants.MAX_LPC_ORDER); 
             
 
             // Loop over survivors
@@ -750,8 +750,8 @@ package org.concentus;
             int[] bestIndex = new int[1];
             Sort.silk_insertion_sort_increasing(RD_Q25, bestIndex, nSurvivors, 1);
 
-            NLSFIndices[0] = (sbyte)tempIndices1[bestIndex[0]];
-            Array.Copy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
+            NLSFIndices[0] = (byte)tempIndices1[bestIndex[0]];
+            System.arraycopy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
 
             // Decode
             silk_NLSF_decode(pNLSF_Q15, NLSFIndices, psNLSF_CB);
@@ -789,8 +789,8 @@ package org.concentus;
 
         /* This ordering was found to maximize quality. It improves numerical accuracy of
                silk_NLSF2A_find_poly() compared to "standard" ordering. */
-        private static final sbyte[] ordering16 = { 0, 15, 8, 7, 4, 11, 12, 3, 2, 13, 10, 5, 6, 9, 14, 1 };
-        private static final sbyte[] ordering10 = { 0, 9, 6, 3, 4, 5, 8, 1, 2, 7 };
+        private static final byte[] ordering16 = { 0, 15, 8, 7, 4, 11, 12, 3, 2, 13, 10, 5, 6, 9, 14, 1 };
+        private static final byte[] ordering10 = { 0, 9, 6, 3, 4, 5, 8, 1, 2, 7 };
         
         /// <summary>
         /// compute whitening filter coefficients from normalized line spectral frequencies
@@ -804,7 +804,7 @@ package org.concentus;
             int d)
         {
 
-            sbyte[] ordering;
+            byte[] ordering;
             int k, i, dd;
             int[] cos_LSF_QA = new int[d];
             int[] P = new int[d / 2 + 1];
@@ -1264,7 +1264,7 @@ package org.concentus;
             else
             {
                 /* Copy LPC coefficients for first half from second half */
-                Array.Copy(PredCoef_Q12[1], 0, PredCoef_Q12[0], 0, psEncC.predictLPCOrder);
+                System.arraycopy(PredCoef_Q12[1], 0, PredCoef_Q12[0], 0, psEncC.predictLPCOrder);
             }
         }
     }

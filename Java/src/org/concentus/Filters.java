@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -451,14 +451,14 @@ package org.concentus;
                 }
                 else
                 {
-                    Array.Copy(SilkTables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
-                    Array.Copy(SilkTables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
+                    System.arraycopy(SilkTables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                    System.arraycopy(SilkTables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
                 }
             }
             else
             {
-                Array.Copy(SilkTables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
-                Array.Copy(SilkTables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
+                System.arraycopy(SilkTables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                System.arraycopy(SilkTables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
             }
         }
         

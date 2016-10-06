@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -48,9 +48,9 @@ package org.concentus;.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(CNG_exc_buf_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet(CNG_exc_buf_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
             Arrays.MemSet<short>(CNG_smth_NLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
-            Arrays.MemSet<int>(CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet(CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
             CNG_smth_Gain_Q16 = 0;
             rand_seed = 0;
             fs_kHz = 0;

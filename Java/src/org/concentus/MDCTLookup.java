@@ -34,26 +34,19 @@
 */
 
 package org.concentus;
+
+class MDCTLookup
 {
-    using Concentus.Celt.Enums;
-    using Concentus.Common;
-    using Concentus.Common.CPlusPlus;
-    using Concentus.Enums;
-    using System;
+    int n = 0;
 
-    class MDCTLookup
+    int maxshift = 0;
+
+    // [porting note] these are pointers to static states defined in tables.cs
+    FFTState[] kfft = new FFTState[4];
+
+    short[] trig = null;
+
+    MDCTLookup()
     {
-        internal int n = 0;
-
-        internal int maxshift = 0;
-
-        // [porting note] these are pointers to static states defined in tables.cs
-        internal FFTState[] kfft = new FFTState[4];
-
-        internal short[] trig = null;
-
-        internal MDCTLookup()
-        {
-        }
     }
 }

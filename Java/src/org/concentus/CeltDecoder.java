@@ -114,7 +114,7 @@ package org.concentus;
             postfilter_gain_old = 0;
             postfilter_tapset = 0;
             postfilter_tapset_old = 0;
-            Arrays.MemSet<int>(preemph_memD, 0, 2);
+            Arrays.MemSet(preemph_memD, 0, 2);
             decode_mem = null;
             lpc = null;
             oldEBands = null;
@@ -252,7 +252,7 @@ package org.concentus;
                         for (j = 0; j < blen; j++)
                         {
                             seed = Bands.celt_lcg_rand(seed);
-                            X[c][boffs + j] = (unchecked((int)seed) >> 20);
+                            X[c][boffs + j] = (((int)seed) >> 20);
                         }
 
                         VQ.renormalise_vector(X[c], 0, blen, CeltConstants.Q15ONE);
@@ -463,7 +463,7 @@ package org.concentus;
             this.loss_count = loss_count + 1;
         }
 
-        internal int celt_decode_with_ec(sbyte[] data, int data_ptr,
+        internal int celt_decode_with_ec(byte[] data, int data_ptr,
               int len, short[] pcm, int pcm_ptr, int frame_size, EntropyCoder dec, int accum)
         {
             int c, i, N;
@@ -752,15 +752,15 @@ package org.concentus;
 
             if (C == 1)
             {
-                Array.Copy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
+                System.arraycopy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
             }
 
             /* In case start or end were to change */
             if (isTransient == 0)
             {
                 int max_background_increase;
-                Array.Copy(oldLogE, oldLogE2, 2 * nbEBands);
-                Array.Copy(oldBandE, oldLogE, 2 * nbEBands);
+                System.arraycopy(oldLogE, oldLogE2, 2 * nbEBands);
+                System.arraycopy(oldBandE, oldLogE, 2 * nbEBands);
                 /* In normal circumstances, we only allow the noise floor to increase by
                    up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB
                    increase for each update.*/

@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -99,7 +99,7 @@ package org.concentus;
                 }
                 else
                 {
-                    Arrays.MemSetWithOffset<short>(pulses, 0, Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH), SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                    Arrays.MemSetWithOffset(pulses, 0, Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH), SilkConstants.SHELL_CODEC_FRAME_LENGTH);
                 }
             }
 

@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2007-2008 CSIRO
+/* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation
    Originally written by Jean-Marc Valin, Gregory Maxwell, Koen Vos,
    Timothy B. Terriberry, and the Opus open-source contributors
@@ -33,34 +33,27 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 package org.concentus;
+
+public class OpusConstants
 {
-    public static class OpusConstants
-    {
-        /// <summary>
-        /// Auto/default setting
-        /// </summary>
-        public final int OPUS_AUTO = -1000;
+    /// <summary>
+    /// Auto/default setting
+    /// </summary>
+    public static final int OPUS_AUTO = -1000;
 
-        /// <summary>
-        /// Maximum bitrate
-        /// </summary>
-        public final int OPUS_BITRATE_MAX = -1;
+    /// <summary>
+    /// Maximum bitrate
+    /// </summary>
+    public static final int OPUS_BITRATE_MAX = -1;
 
-        // from analysis.c
-        public final int NB_FRAMES = 8;
-        public final int NB_TBANDS = 18;
-        public final int NB_TOT_BANDS = 21;
-        public final int NB_TONAL_SKIP_BANDS = 9;
-        public final int ANALYSIS_BUF_SIZE = 720; /* 15 ms at 48 kHz */
-        public final int DETECT_SIZE = 200;
+    // from analysis.c
+    public static final int NB_FRAMES = 8;
+    public static final int NB_TBANDS = 18;
+    public static final int NB_TOT_BANDS = 21;
+    public static final int NB_TONAL_SKIP_BANDS = 9;
+    public static final int ANALYSIS_BUF_SIZE = 720; /* 15 ms at 48 kHz */
+    public static final int DETECT_SIZE = 200;
 
-        public final int MAX_ENCODER_BUFFER = 480;
-    }
+    public static final int MAX_ENCODER_BUFFER = 480;
 }

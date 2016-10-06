@@ -1,4 +1,4 @@
-﻿/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
+/* Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
    Ported to Java by Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -170,7 +170,7 @@ package org.concentus;
                 if (psEnc.nChannelsAPI == 2)
                 {
                     psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
-                    Array.Copy(psEnc.state_Fxx[0].In_HP_State, psEnc.state_Fxx[1].In_HP_State, 2);
+                    System.arraycopy(psEnc.state_Fxx[0].In_HP_State, psEnc.state_Fxx[1].In_HP_State, 2);
                 }
             }
 
@@ -348,7 +348,7 @@ package org.concentus;
                 else
                 {
                     Inlines.OpusAssert(encControl.nChannelsAPI == 1 && encControl.nChannelsInternal == 1);
-                    Array.Copy(samplesIn, samplesIn_ptr, buf, 0, nSamplesFromInput);
+                    System.arraycopy(samplesIn, samplesIn_ptr, buf, 0, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf,
@@ -391,7 +391,7 @@ package org.concentus;
                                 LBRR_symbol |= Inlines.silk_LSHIFT(psEnc.state_Fxx[n].LBRR_flags[i], i);
                             }
 
-                            psEnc.state_Fxx[n].LBRR_flag = (sbyte)(LBRR_symbol > 0 ? 1 : 0);
+                            psEnc.state_Fxx[n].LBRR_flag = (byte)(LBRR_symbol > 0 ? 1 : 0);
                             if (LBRR_symbol != 0 && psEnc.state_Fxx[n].nFramesPerPacket > 1)
                             {
                                 psRangeEnc.enc_icdf( LBRR_symbol - 1, SilkTables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2], 8);
@@ -437,7 +437,7 @@ package org.concentus;
                         /* Reset LBRR flags */
                         for (n = 0; n < encControl.nChannelsInternal; n++)
                         {
-                            Arrays.MemSet<int>(psEnc.state_Fxx[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+                            Arrays.MemSet(psEnc.state_Fxx[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
                         }
 
                         psEnc.nBitsUsedLBRR = psRangeEnc.tell();
@@ -483,7 +483,7 @@ package org.concentus;
                     /* Convert Left/Right to Mid/Side */
                     if (encControl.nChannelsInternal == 2)
                     {
-                        BoxedValue<sbyte> midOnlyFlagBoxed = new BoxedValue<sbyte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
+                        BoxedValue<byte> midOnlyFlagBoxed = new BoxedValue<byte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                         Stereo.silk_stereo_LR_to_MS(psEnc.sStereo,
                             psEnc.state_Fxx[0].inputBuf,
                             2,
@@ -538,8 +538,8 @@ package org.concentus;
                     else
                     {
                         /* Buffering */
-                        Array.Copy(psEnc.sStereo.sMid, psEnc.state_Fxx[0].inputBuf, 2);
-                        Array.Copy(psEnc.state_Fxx[0].inputBuf, psEnc.state_Fxx[0].frame_length, psEnc.sStereo.sMid, 0, 2);
+                        System.arraycopy(psEnc.sStereo.sMid, psEnc.state_Fxx[0].inputBuf, 2);
+                        System.arraycopy(psEnc.state_Fxx[0].inputBuf, psEnc.state_Fxx[0].frame_length, psEnc.sStereo.sMid, 0, 2);
                     }
 
                     psEnc.state_Fxx[0].silk_encode_do_VAD();
