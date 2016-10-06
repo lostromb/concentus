@@ -32,11 +32,9 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus.common;
+package org.concentus;
 
-import org.concentus.celt.*;
-
-public class Inlines
+class Inlines
 {
     static void OpusAssert(boolean condition)
     {

@@ -29,9 +29,9 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus.common;
+package org.concentus;
 
-public class BoxedValue<T>
+class BoxedValue<T>
 {
     public T Val;
     

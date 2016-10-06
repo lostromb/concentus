@@ -33,9 +33,9 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus.celt;
+package org.concentus;
 
-public class CeltConstants
+class CeltConstants
 {
     public static final int Q15ONE = 32767;
 

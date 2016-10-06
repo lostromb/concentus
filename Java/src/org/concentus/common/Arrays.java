@@ -29,19 +29,21 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus.common;
+package org.concentus;
 
 import java.lang.reflect.Array;
 
-public class Arrays<T>
+class Arrays<T>
 {
+    @SuppressWarnings("unchecked")
     T[][] InitTwoDimensionalArray(Class<T> c, int x, int y)
     {
         T[][] returnVal = (T[][])Array.newInstance(c, x, y);
         
         return returnVal;
     }
-
+    
+    @SuppressWarnings("unchecked")
     T[][][] InitThreeDimensionalArray(Class<T> c, int x, int y, int z)
     {
         T[][][] returnVal = (T[][][])Array.newInstance(c, x, y, z);
