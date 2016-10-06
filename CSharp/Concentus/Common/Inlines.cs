@@ -664,12 +664,6 @@ namespace Concentus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint IMIN(uint a, uint b)
-        {
-            return ((a) < (b) ? (a) : (b));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long IMIN(long a, long b)
         {
             return ((a) < (b) ? (a) : (b));
@@ -730,13 +724,6 @@ namespace Concentus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint celt_udiv(uint n, uint d)
-        {
-            Inlines.OpusAssert(d > 0);
-            return n / d;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int celt_udiv(int n, int d)
         {
             Inlines.OpusAssert(d > 0);
@@ -766,7 +753,7 @@ namespace Concentus.Common
             if (x <= 0)
                 throw new ArgumentException("celt_ilog2() only defined for strictly positive numbers");
 #endif
-            return (EC_ILOG((uint)x) - 1);
+            return (EC_ILOG((long)x) - 1);
         }
 
         /** Integer log in base2. Defined for zero, but not for negative numbers */
@@ -837,46 +824,6 @@ namespace Concentus.Common
         /// <param name="_val"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint isqrt32(uint _val)
-        {
-#if PARITY
-            uint b;
-            uint g;
-            int bshift;
-            /*Uses the second method from
-               http://www.azillionmonkeys.com/qed/sqroot.html
-              The main idea is to search for the largest binary digit b such that
-               (g+b)*(g+b) <= _val, and add it to the solution g.*/
-            g = 0;
-            bshift = (EC_ILOG(_val) - 1) >> 1;
-            b = 1U << bshift;
-            do
-            {
-                uint t;
-                t = (((uint)g << 1) + b) << bshift;
-                if (t <= _val)
-                {
-                    g += b;
-                    _val -= t;
-                }
-                b >>= 1;
-                bshift--;
-            }
-            while (bshift >= 0);
-            return g;
-#else
-            // Is this faster/
-            return (uint)Math.Sqrt(_val);
-#endif
-        }
-
-        /// <summary>
-        /// Compute floor(sqrt(_val)) with exact arithmetic.
-        /// This has been tested on all possible 32-bit inputs.
-        /// </summary>
-        /// <param name="_val"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int isqrt32(long _val)
         {
 #if PARITY
@@ -905,8 +852,8 @@ namespace Concentus.Common
             while (bshift >= 0);
             return g;
 #else
-            // Is this faster/
-            return (uint)Math.Sqrt(_val);
+            // Is this faster?
+            return (int)Math.Sqrt(_val);
 #endif
         }
 
@@ -1198,28 +1145,11 @@ namespace Concentus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint silk_MUL_uint(uint a32, uint b32)
-        {
-            uint ret = a32 * b32;
-            Inlines.OpusAssert((ulong)ret == (ulong)a32 * (ulong)b32);
-            return ret;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int silk_MLA(int a32, int b32, int c32)
         {
             int ret = silk_ADD32((a32), ((b32) * (c32)));
             Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
             return ret;
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int silk_MLA_uint(uint a32, uint b32, uint c32)
-        {
-            uint ret = silk_ADD32((a32), ((b32) * (c32)));
-            Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
-            return (int)ret;
         }
 
         /// <summary>
@@ -1389,13 +1319,6 @@ namespace Concentus.Common
                 Inlines.OpusAssert(false);
             }
 #endif
-            return ret;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint silk_ADD32(uint a, uint b)
-        {
-            uint ret = a + b;
             return ret;
         }
 
@@ -1771,7 +1694,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint silk_RSHIFT_uint(uint a, int shift)
+        public static long silk_RSHIFT_uint(long a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 32))
@@ -1779,7 +1702,7 @@ namespace Concentus.Common
                 Inlines.OpusAssert(false);
             }
 #endif
-            return a >> shift;
+            return CapToUInt32(a) >> shift;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1801,20 +1724,6 @@ namespace Concentus.Common
             int ret = a + (b << shift);
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 31) || ((long)ret != (long)a + (((long)b) << shift)))
-            {
-                Inlines.OpusAssert(false);
-            }
-#endif
-            return ret;                /* shift >= 0 */
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint silk_ADD_LSHIFT_uint(uint a, uint b, int shift)
-        {
-            uint ret;
-            ret = a + (b << shift);
-#if DEBUG_MACROS
-            if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) << shift)))
             {
                 Inlines.OpusAssert(false);
             }
@@ -1849,10 +1758,9 @@ namespace Concentus.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint silk_ADD_RSHIFT_uint(uint a, uint b, int shift)
+        public static long silk_ADD_RSHIFT_uint(long a, long b, int shift)
         {
-            uint ret;
-            ret = a + (b >> shift);
+            long ret = CapToUInt32(a + (CapToUInt32(b) >> shift));
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 32) || ((long)ret != (long)a + (((long)b) >> shift)))
             {
@@ -2634,62 +2542,10 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint EC_MINI(uint a, uint b)
-        {
-            return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EC_MINI(int a, int b)
-        {
-            return (int)EC_MINI((uint)a, (uint)b);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long EC_MINI(long a, long b)
         {
             return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
         }
-
-        /// <summary>
-        /// Counts leading zeroes
-        /// </summary>
-        /// <param name="_x"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EC_CLZ(uint x)
-        {
-            if (x == 0)
-                return 0;
-            x |= (x >> 1);
-            x |= (x >> 2);
-            x |= (x >> 4);
-            x |= (x >> 8);
-            x |= (x >> 16);
-            uint y = x - ((x >> 1) & 0x55555555);
-            y = (((y >> 2) & 0x33333333) + (y & 0x33333333));
-            y = (((y >> 4) + y) & 0x0f0f0f0f);
-            y += (y >> 8);
-            y += (y >> 16);
-            y = (y & 0x0000003f);
-            return (int)(1 - y);
-        }
-
-        //public static int clz_fast(uint x)
-        //{
-        //    x |= (x >> 1);
-        //    x |= (x >> 2);
-        //    x |= (x >> 4);
-        //    x |= (x >> 8);
-        //    x |= (x >> 16);
-        //    uint y = x - ((x >> 1) & 0x55555555);
-        //    y = (((y >> 2) & 0x33333333) + (y & 0x33333333));
-        //    y = (((y >> 4) + y) & 0x0f0f0f0f);
-        //    y += (y >> 8);
-        //    y += (y >> 16);
-        //    y = (y & 0x0000003f);
-        //    return (int)(32 - y);
-        //}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int EC_ILOG(long x)
