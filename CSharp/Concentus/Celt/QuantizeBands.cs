@@ -156,7 +156,7 @@ namespace Concentus.Celt
                         qi = -1;
                     error[c][i] = (Inlines.PSHR32(f, 7) - Inlines.SHL16((qi), CeltConstants.DB_SHIFT));
                     badness += Inlines.abs(qi0 - qi);
-                    q = (int)Inlines.SHL32(qi, CeltConstants.DB_SHIFT); // opus bug: useless extend32
+                    q = (int)Inlines.SHL32(qi, CeltConstants.DB_SHIFT);
 
                     tmp = Inlines.PSHR32(Inlines.MULT16_16(coef, oldE), 8) + prev[c] + Inlines.SHL32(q, 7);
                     tmp = Inlines.MAX32(-((int)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7)*/, tmp);
@@ -168,7 +168,7 @@ namespace Concentus.Celt
         }
 
         internal static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
-              int[][] eBands, int[][] oldEBands, uint budget,
+              int[][] eBands, int[][] oldEBands, int budget,
               int[][] error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
               int force_intra, ref int delayedIntra, int two_pass, int loss_rate, int lfe)
         {
@@ -177,28 +177,28 @@ namespace Concentus.Celt
             int[][] oldEBands_intra;
             int[][] error_intra;
             EntropyCoder enc_start_state = new EntropyCoder(); // [porting note] stack variable
-            uint tell;
+            int tell;
             int badness1 = 0;
             int intra_bias;
             int new_distortion;
 
 
             intra = (force_intra != 0 || (two_pass == 0 && delayedIntra > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
-            intra_bias = (int)((budget * delayedIntra * loss_rate) / (C * 512));
+            intra_bias = ((budget * delayedIntra * loss_rate) / (C * 512));
             new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
 
-            tell = (uint)enc.tell();
+            tell = enc.tell();
             if (tell + 3 > budget)
                 two_pass = intra = 0;
 
-            max_decay = ((short)(0.5 + (16.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(16.0f, CeltConstants.DB_SHIFT)*/;
+            max_decay = ((short)(0.5 + (16.0f) * (1 << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(16.0f, CeltConstants.DB_SHIFT)*/;
             if (end - start > 10)
             {
                 max_decay = (Inlines.MIN32(max_decay, Inlines.SHL32(nbAvailableBytes, CeltConstants.DB_SHIFT - 3))); // opus bug: useless extend32
             }
             if (lfe != 0)
             {
-                max_decay = ((short)(0.5 + (3.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/;
+                max_decay = ((short)(0.5 + (3.0f) * (1 << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/;
             }
             enc_start_state.Assign(enc);
 
@@ -210,8 +210,8 @@ namespace Concentus.Celt
 
             if (two_pass != 0 || intra != 0)
             {
-                badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, (int)budget,
-                      (int)tell, Tables.e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
+                badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget,
+                      tell, Tables.e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
             }
 
             if (intra == 0)
@@ -243,10 +243,10 @@ namespace Concentus.Celt
 
                 enc.Assign(enc_start_state);
 
-                badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, (int)budget,
-                      (int)tell, Tables.e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
+                badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, budget,
+                      tell, Tables.e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
 
-                if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && ((int)enc.tell_frac()) + intra_bias > tell_intra)))
+                if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && (enc.tell_frac()) + intra_bias > tell_intra)))
                 {
                     enc.Assign(enc_intra_state);
                     /* Copy intra bits to bit-stream */
@@ -307,7 +307,7 @@ namespace Concentus.Celt
                         q2 = frac - 1;
                     if (q2 < 0)
                         q2 = 0;
-                    enc.enc_bits((uint)q2, fine_quant[i]);
+                    enc.enc_bits(q2, fine_quant[i]);
                     offset = Inlines.SUB16(
                         (Inlines.SHR32(
                             Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/,
@@ -339,7 +339,7 @@ namespace Concentus.Celt
                         int q2;
                         int offset;
                         q2 = error[c][i] < 0 ? 0 : 1;
-                        enc.enc_bits((uint)q2, 1);
+                        enc.enc_bits(q2, 1);
                         offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
                         oldEBands[c][i] += offset;
                         bits_left--;

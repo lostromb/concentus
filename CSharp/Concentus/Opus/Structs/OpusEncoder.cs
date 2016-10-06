@@ -1239,7 +1239,7 @@ namespace Concentus.Structs
                     redundancy_bytes = Inlines.IMIN(max_redundancy, this.bitrate_bps / 1600);
                     redundancy_bytes = Inlines.IMIN(257, Inlines.IMAX(2, redundancy_bytes));
                     if (this.mode == OpusMode.MODE_HYBRID)
-                        enc.enc_uint((uint)(redundancy_bytes - 2), 256);
+                        enc.enc_uint(redundancy_bytes - 2, 256);
                 }
             }
             else {

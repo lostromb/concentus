@@ -609,11 +609,11 @@ namespace Concentus.Celt.Structs
                     int octave;
                     enc.enc_bit_logp(1, 1);
                     pitch_index += 1;
-                    octave = Inlines.EC_ILOG((uint)pitch_index) - 5;
-                    enc.enc_uint((uint)octave, 6);
-                    enc.enc_bits((uint)(pitch_index - (16 << octave)), 4 + octave);
+                    octave = Inlines.EC_ILOG(pitch_index) - 5;
+                    enc.enc_uint(octave, 6);
+                    enc.enc_bits((pitch_index - (16 << octave)), 4 + octave);
                     pitch_index -= 1;
-                    enc.enc_bits((uint)qg, 3);
+                    enc.enc_bits(qg, 3);
                     enc.enc_icdf(prefilter_tapset, Tables.tapset_icdf, 2);
                 }
             }
@@ -842,7 +842,7 @@ namespace Concentus.Celt.Structs
 
             error = Arrays.InitTwoDimensionalArray<int>(C, nbEBands);
             QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE,
-                  this.oldBandE, (uint)total_bits, error, enc,
+                  this.oldBandE, total_bits, error, enc,
                   C, LM, nbAvailableBytes, this.force_intra,
                   ref this.delayedIntra, this.complexity >= 4 ? 1 : 0, this.loss_rate, this.lfe);
 
@@ -1094,7 +1094,7 @@ namespace Concentus.Celt.Structs
 #if FUZZING
                 anti_collapse_on = new Random().Next() & 0x1;
 #endif
-                enc.enc_bits((uint)anti_collapse_on, 1);
+                enc.enc_bits(anti_collapse_on, 1);
             }
 
             QuantizeBands.quant_energy_finalise(mode, start, end, this.oldBandE, error, fine_quant, fine_priority, nbCompressedBytes * 8 - (int)enc.tell(), enc, C);

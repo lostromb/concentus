@@ -104,7 +104,7 @@ namespace Concentus.Common
                 ac[0] += Inlines.SHL32((int)1, -shift);
             if (ac[0] < 268435456)
             {
-                int shift2 = 29 - Inlines.EC_ILOG((uint)ac[0]);
+                int shift2 = 29 - Inlines.EC_ILOG(ac[0]);
                 for (i = 0; i <= lag; i++)
                 {
                     ac[i] = Inlines.SHL32(ac[i], shift2);
@@ -197,7 +197,7 @@ namespace Concentus.Common
                 ac[0] += Inlines.SHL32((int)1, -shift);
             if (ac[0] < 268435456)
             {
-                int shift2 = 29 - Inlines.EC_ILOG((uint)ac[0]);
+                int shift2 = 29 - Inlines.EC_ILOG(ac[0]);
                 for (i = 0; i <= lag; i++)
                     ac[i] = Inlines.SHL32(ac[i], shift2);
                 shift -= shift2;

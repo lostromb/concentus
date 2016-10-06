@@ -637,7 +637,7 @@ namespace Concentus.Celt.Structs
 
             dynalloc_logp = 6;
             total_bits <<= EntropyCoder.BITRES;
-            tell = (int)dec.tell_frac();
+            tell = dec.tell_frac();
             for (i = start; i < end; i++)
             {
                 int width, quanta;
@@ -652,8 +652,8 @@ namespace Concentus.Celt.Structs
                 while (tell + (dynalloc_loop_logp << EntropyCoder.BITRES) < total_bits && boost < cap[i])
                 {
                     int flag;
-                    flag = dec.dec_bit_logp((uint)dynalloc_loop_logp);
-                    tell = (int)dec.tell_frac();
+                    flag = dec.dec_bit_logp(dynalloc_loop_logp);
+                    tell = dec.tell_frac();
                     if (flag == 0)
                         break;
                     boost += quanta;
@@ -670,7 +670,7 @@ namespace Concentus.Celt.Structs
             alloc_trim = tell + (6 << EntropyCoder.BITRES) <= total_bits ?
                   dec.dec_icdf(Tables.trim_icdf, 7) : 5;
 
-            bits = (((int)len * 8) << EntropyCoder.BITRES) - (int)dec.tell_frac() - 1;
+            bits = ((len * 8) << EntropyCoder.BITRES) - dec.tell_frac() - 1;
             anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;
             bits -= anti_collapse_rsv;
 

@@ -166,11 +166,11 @@ namespace Concentus.Celt
             do
             {
                 int j;
-                uint tmp = 0;
+                int tmp = 0;
                 j = 0;
                 do
                 {
-                    tmp |= unchecked((uint)iy[i * N0 + j]);
+                    tmp |= iy[i * N0 + j];
                 } while (++j < N0);
 
                 collapse_mask |= (tmp != 0 ? 1 : 0) << i;

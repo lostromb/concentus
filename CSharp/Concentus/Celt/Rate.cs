@@ -246,7 +246,7 @@ namespace Concentus.Celt
                 if (encode != 0)
                 {
                     intensity = Inlines.IMIN(intensity, codedBands);
-                    ec.enc_uint((uint)(intensity - start), (uint)(codedBands + 1 - start));
+                    ec.enc_uint((intensity - start), (codedBands + 1 - start));
                 }
                 else
                 {
