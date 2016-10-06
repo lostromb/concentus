@@ -763,13 +763,13 @@ namespace Concentus.Celt
                     if (encode != 0)
                     {
                         ec.encode(
-                            (uint)(x <= x0 ?
+                            (x <= x0 ?
                                 (p0 * x) :
                                 ((x - 1 - x0) + (x0 + 1) * p0)),
-                            (uint)(x <= x0 ?
+                            (x <= x0 ?
                                 (p0 * (x + 1)) :
                                 ((x - x0) + (x0 + 1) * p0)),
-                            (uint)ft);
+                            ft);
                     }
                     else
                     {
@@ -799,7 +799,7 @@ namespace Concentus.Celt
                     /* Uniform pdf */
                     if (encode != 0)
                     {
-                        ec.enc_uint((uint)itheta, (uint)(qn + 1));
+                        ec.enc_uint(itheta, (qn + 1));
                     }
                     else
                     {
@@ -818,7 +818,7 @@ namespace Concentus.Celt
                         fl = itheta <= (qn >> 1) ? itheta * (itheta + 1) >> 1 :
                          ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
 
-                        ec.encode((uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec.encode(fl, (fl + fs), ft);
                     }
                     else
                     {
@@ -829,13 +829,13 @@ namespace Concentus.Celt
 
                         if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
                         {
-                            itheta = (int)(Inlines.isqrt32(8 * (uint)fm + 1) - 1) >> 1;
+                            itheta = (Inlines.isqrt32(8 * fm + 1) - 1) >> 1;
                             fs = itheta + 1;
                             fl = itheta * (itheta + 1) >> 1;
                         }
                         else
                         {
-                            itheta = (int)(2 * (qn + 1) - Inlines.isqrt32(8 * (uint)(ft - fm - 1) + 1)) >> 1;
+                            itheta = (2 * (qn + 1) - Inlines.isqrt32(8 * (ft - fm - 1) + 1)) >> 1;
                             fs = qn + 1 - itheta;
                             fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
                         }
@@ -942,7 +942,7 @@ namespace Concentus.Celt
                     if (encode != 0)
                     {
                         sign = x[x_ptr] < 0 ? 1 : 0;
-                        ec.enc_bits((uint)sign, 1);
+                        ec.enc_bits(sign, 1);
                     }
                     else
                     {
@@ -1357,7 +1357,7 @@ namespace Concentus.Celt
                     {
                         /* Here we only need to encode a sign for the side. */
                         sign = (x2[x2_ptr] * y2[Y_ptr + 1] - x2[x2_ptr + 1] * y2[Y_ptr] < 0) ? 1 : 0;
-                        ec.enc_bits((uint)sign, 1);
+                        ec.enc_bits(sign, 1);
                     }
                     else
                     {
@@ -1593,7 +1593,7 @@ namespace Concentus.Celt
                    always) be non-zero. */
                 else
                 {
-                    x_cm = y_cm = (uint)((1 << B) - 1);
+                    x_cm = y_cm = ((1 << B) - 1);
                 }
 
                 if (dual_stereo != 0 && i == intensity)

@@ -865,7 +865,47 @@ namespace Concentus.Common
             while (bshift >= 0);
             return g;
 #else
-            // This is 100x faster
+            // Is this faster/
+            return (uint)Math.Sqrt(_val);
+#endif
+        }
+
+        /// <summary>
+        /// Compute floor(sqrt(_val)) with exact arithmetic.
+        /// This has been tested on all possible 32-bit inputs.
+        /// </summary>
+        /// <param name="_val"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int isqrt32(long _val)
+        {
+#if PARITY
+            int b;
+            int g;
+            int bshift;
+            /*Uses the second method from
+               http://www.azillionmonkeys.com/qed/sqroot.html
+              The main idea is to search for the largest binary digit b such that
+               (g+b)*(g+b) <= _val, and add it to the solution g.*/
+            g = 0;
+            bshift = (EC_ILOG(_val) - 1) >> 1;
+            b = 1 << bshift;
+            do
+            {
+                long t;
+                t = ((g << 1) + b) << bshift;
+                if (t <= _val)
+                {
+                    g += b;
+                    _val -= t;
+                }
+                b >>= 1;
+                bshift--;
+            }
+            while (bshift >= 0);
+            return g;
+#else
+            // Is this faster/
             return (uint)Math.Sqrt(_val);
 #endif
         }
