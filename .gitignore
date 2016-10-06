@@ -234,3 +234,7 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+/Java/Concentus/nbproject/private/
+/Java/build/
+/Java/dist/
+/Java/nbproject/private/private.properties
