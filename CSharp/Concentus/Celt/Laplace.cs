@@ -104,7 +104,7 @@ namespace Concentus.Celt
                 Inlines.OpusAssert(fs > 0);
             }
 
-            enc.encode_bin((uint)fl, (uint)(fl + fs), 15);
+            enc.encode_bin(fl, (fl + fs), 15);
         }
 
         internal static int ec_laplace_decode(EntropyCoder dec, long fs, int decay)

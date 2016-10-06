@@ -162,13 +162,13 @@ namespace Concentus.Celt
     year=1986
   }*/
 
-        internal static readonly uint[] CELT_PVQ_U_ROW =
+        internal static readonly int[] CELT_PVQ_U_ROW =
         {
             0,176,351,525,698,870,1041,1131,1178,1207,1226,1240,1248,1254,1257
         };
 
         /*U(N,K) = U(K,N) := N>0?K>0?U(N-1,K)+U(N,K-1)+U(N-1,K-1):0:K>0?1:0*/
-        private static uint CELT_PVQ_U(int _n, int _k)
+        private static long CELT_PVQ_U(int _n, int _k)
         {
             return Tables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[Inlines.IMIN(_n, _k)] + Inlines.IMAX(_n, _k)];
         }
@@ -176,14 +176,14 @@ namespace Concentus.Celt
 
         /*V(N,K) := U(N,K)+U(N,K+1) = the number of PVQ codewords for a band of size N
            with K pulses allocated to it.*/
-        private static uint CELT_PVQ_V(int _n, int _k)
+        private static long CELT_PVQ_V(int _n, int _k)
         {
             return (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1));
         }
 
-        internal static uint icwrs(int _n, int[] _y)
+        internal static long icwrs(int _n, int[] _y)
         {
-            uint i;
+            long i;
             int j;
             int k;
             Inlines.OpusAssert(_n >= 2);
@@ -195,7 +195,10 @@ namespace Concentus.Celt
                 j--;
                 i += CELT_PVQ_U(_n - j, k);
                 k += Inlines.abs(_y[j]);
-                if (_y[j] < 0) i += CELT_PVQ_U(_n - j, k + 1);
+                if (_y[j] < 0)
+                {
+                    i += CELT_PVQ_U(_n - j, k + 1);
+                }
             }
             while (j > 0);
             return i;
@@ -207,9 +210,9 @@ namespace Concentus.Celt
             _enc.enc_uint(icwrs(_n, _y), CELT_PVQ_V(_n, _k));
         }
 
-        internal static int cwrsi(int _n, int _k, uint _i, int[] _y)
+        internal static int cwrsi(int _n, int _k, long _i, int[] _y)
         {
-            uint p;
+            long p;
             int s;
             int k0;
             short val;
@@ -220,16 +223,16 @@ namespace Concentus.Celt
 
             while (_n > 2)
             {
-                uint q;
+                long q;
                 /*Lots of pulses case:*/
                 if (_k >= _n)
                 {
-                    uint row;
+                    int row;
                     row = CELT_PVQ_U_ROW[_n];
                     /*Are the pulses in this dimension negative?*/
                     p = Tables.CELT_PVQ_U_DATA[row + _k + 1];
                     s = 0 - (_i >= p ? 1 : 0);
-                    _i -= (p & unchecked((uint)s));
+                    _i = _i - Inlines.CapToUInt32(p & s);
                     /*Count how many pulses were placed in this dimension.*/
                     k0 = _k;
                     q = Tables.CELT_PVQ_U_DATA[row + _n];
@@ -272,7 +275,7 @@ namespace Concentus.Celt
                     {
                         /*Are the pulses in this dimension negative?*/
                         s = 0 - (_i >= q ? 1 : 0);
-                        _i -= (q & unchecked((uint)s));
+                        _i = _i - Inlines.CapToUInt32(q & s);
                         /*Count how many pulses were placed in this dimension.*/
                         k0 = _k;
                         do
@@ -290,14 +293,14 @@ namespace Concentus.Celt
             }
 
             /*_n==2*/
-            p = (uint)(2 * _k + 1);
+            p = (2L * _k + 1);
             s = 0 - (_i >= p ? 1 : 0);
-            _i -= (p & unchecked((uint)s));
+            _i = _i - Inlines.CapToUInt32(p & s);
             k0 = _k;
             _k = (int)((_i + 1) >> 1);
             if (_k != 0)
             {
-                _i -= (2 * (uint)_k - 1);
+                _i -= (2L * _k - 1);
             }
 
             val = (short)((k0 - _k + s) ^ s);
@@ -313,7 +316,7 @@ namespace Concentus.Celt
 
         internal static int decode_pulses(int[] _y, int _n, int _k, EntropyCoder _dec)
         {
-            return cwrsi(_n, _k, (uint)_dec.dec_uint(CELT_PVQ_V(_n, _k)), _y);
+            return cwrsi(_n, _k, _dec.dec_uint(CELT_PVQ_V(_n, _k)), _y);
         }
     }
 }

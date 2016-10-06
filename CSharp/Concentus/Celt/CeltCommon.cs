@@ -661,9 +661,9 @@ namespace Concentus.Celt
             int tf_changed;
             int logp;
             int budget;
-            uint tell;
+            int tell;
             budget = enc.storage * 8;
-            tell = (uint)enc.tell();
+            tell = enc.tell();
             logp = isTransient != 0 ? 2 : 4;
             /* Reserve space to code the tf_select decision. */
             tf_select_rsv = (LM > 0 && tell + logp + 1 <= budget) ? 1 : 0;
@@ -674,7 +674,7 @@ namespace Concentus.Celt
                 if (tell + logp <= budget)
                 {
                     enc.enc_bit_logp(tf_res[i] ^ curr, logp);
-                    tell = (uint)enc.tell();
+                    tell = enc.tell();
                     curr = tf_res[i];
                     tf_changed |= curr;
                 }
@@ -1160,10 +1160,10 @@ namespace Concentus.Celt
             int tf_changed;
             int logp;
             int budget;
-            uint tell;
+            int tell;
 
             budget = dec.storage * 8;
-            tell = (uint)dec.tell();
+            tell = dec.tell();
             logp = isTransient != 0 ? 2 : 4;
             tf_select_rsv = (LM > 0 && tell + logp + 1 <= budget) ? 1 : 0;
             budget -= tf_select_rsv;
@@ -1172,8 +1172,8 @@ namespace Concentus.Celt
             {
                 if (tell + logp <= budget)
                 {
-                    curr ^= dec.dec_bit_logp((uint)logp);
-                    tell = (uint)dec.tell();
+                    curr ^= dec.dec_bit_logp(logp);
+                    tell = dec.tell();
                     tf_changed |= curr;
                 }
                 tf_res[i] = curr;
