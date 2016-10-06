@@ -61,8 +61,8 @@ package org.concentus;.Structs
         {
             Arrays.MemSet(sIIR, 0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
             Arrays.MemSet(sFIR_i32, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            Arrays.MemSet<short>(sFIR_i16, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            Arrays.MemSet<short>(delayBuf, 0, 48);
+            Arrays.MemSet(sFIR_i16, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Arrays.MemSet(delayBuf, 0, 48);
             resampler_function = 0;
             batchSize = 0;
             invRatio_Q16 = 0;

@@ -34,47 +34,46 @@
 */
 
 package org.concentus;
+
+public enum OpusFramesize
 {
-    public enum OpusFramesize
-    {
-        /// <summary>
-        /// Select frame size from the argument (default)
-        /// </summary>
-        OPUS_FRAMESIZE_ARG = 5000,
+    /// <summary>
+    /// Select frame size from the argument (default)
+    /// </summary>
+    OPUS_FRAMESIZE_ARG,
 
-        /// <summary>
-        /// Use 2.5 ms frames
-        /// </summary>
-        OPUS_FRAMESIZE_2_5_MS = 5001,
+    /// <summary>
+    /// Use 2.5 ms frames
+    /// </summary>
+    OPUS_FRAMESIZE_2_5_MS,
 
-        /// <summary>
-        /// Use 5 ms frames
-        /// </summary>
-        OPUS_FRAMESIZE_5_MS = 5002,
+    /// <summary>
+    /// Use 5 ms frames
+    /// </summary>
+    OPUS_FRAMESIZE_5_MS,
 
-        /// <summary>
-        /// Use 10 ms frames
-        /// </summary>
-        OPUS_FRAMESIZE_10_MS = 5003,
+    /// <summary>
+    /// Use 10 ms frames
+    /// </summary>
+    OPUS_FRAMESIZE_10_MS,
 
-        /// <summary>
-        /// Use 20 ms frames
-        /// </summary>
-        OPUS_FRAMESIZE_20_MS = 5004,
+    /// <summary>
+    /// Use 20 ms frames
+    /// </summary>
+    OPUS_FRAMESIZE_20_MS,
 
-        /// <summary>
-        /// Use 40 ms frames
-        /// </summary>
-        OPUS_FRAMESIZE_40_MS = 5005,
+    /// <summary>
+    /// Use 40 ms frames
+    /// </summary>
+    OPUS_FRAMESIZE_40_MS,
 
-        /// <summary>
-        /// Use 60 ms frames
-        /// </summary>
-        OPUS_FRAMESIZE_60_MS = 5006,
+    /// <summary>
+    /// Use 60 ms frames
+    /// </summary>
+    OPUS_FRAMESIZE_60_MS,
 
-        /// <summary>
-        /// Do not use - not fully implemented. Optimize the frame size dynamically.
-        /// </summary>
-        OPUS_FRAMESIZE_VARIABLE = 5010
-    }
+    /// <summary>
+    /// Do not use - not fully implemented. Optimize the frame size dynamically.
+    /// </summary>
+    OPUS_FRAMESIZE_VARIABLE
 }

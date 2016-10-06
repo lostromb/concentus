@@ -349,7 +349,7 @@ package org.concentus;
             /* Initially faster smoothing */
             if (psSilk_VAD.counter < 1000)
             { /* 1000 = 20 sec */
-                min_coef = Inlines.silk_DIV32_16(short.MaxValue, (short)(Inlines.silk_RSHIFT(psSilk_VAD.counter, 4) + 1));
+                min_coef = Inlines.silk_DIV32_16(Short.MAX_VALUE, (short)(Inlines.silk_RSHIFT(psSilk_VAD.counter, 4) + 1));
             }
             else
             {

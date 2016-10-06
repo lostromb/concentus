@@ -151,7 +151,7 @@ package org.concentus;
             first = 0;
             energy_masking = null;
             width_mem.Reset();
-            Arrays.MemSet<short>(delay_buffer, 0, OpusConstants.MAX_ENCODER_BUFFER * 2);
+            Arrays.MemSet(delay_buffer, 0, OpusConstants.MAX_ENCODER_BUFFER * 2);
             detected_bandwidth = 0;
             rangeFinal = 0;
             //SilkEncoder.Reset();
@@ -1024,7 +1024,7 @@ package org.concentus;
                     prefill_offset = this.channels * (this.encoder_buffer - this.delay_compensation - this.Fs / 400);
                     CodecHelpers.gain_fade(this.delay_buffer, prefill_offset,
                           0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
-                    Arrays.MemSet<short>(this.delay_buffer, 0, prefill_offset);
+                    Arrays.MemSet(this.delay_buffer, 0, prefill_offset);
                     System.arraycopy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
                     EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, zero, 1);

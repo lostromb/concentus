@@ -54,7 +54,7 @@ package org.concentus;
             nb_channels = 0;
             nb_streams = 0;
             nb_coupled_streams = 0;
-            Arrays.MemSet<short>(mapping, 0);
+            Arrays.MemSet(mapping, 0);
         }
     }
 }

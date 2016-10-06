@@ -58,7 +58,7 @@ package org.concentus;.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<short>(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
             Arrays.MemSet(sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
             Arrays.MemSet(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
             Arrays.MemSet(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);

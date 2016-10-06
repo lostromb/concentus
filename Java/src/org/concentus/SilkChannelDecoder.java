@@ -92,7 +92,7 @@ package org.concentus;.Structs
             prev_gain_Q16 = 0;
             Arrays.MemSet(exc_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
             Arrays.MemSet(sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
-            Arrays.MemSet<short>(outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+            Arrays.MemSet(outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
             lagPrev = 0;
             LastGainIndex = 0;
             fs_kHz = 0;
@@ -102,7 +102,7 @@ package org.concentus;.Structs
             subfr_length = 0;
             ltp_mem_length = 0;
             LPC_order = 0;
-            Arrays.MemSet<short>(prevNLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet(prevNLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
             first_frame_after_reset = 0;
             pitch_lag_low_bits_iCDF = null;
             pitch_contour_iCDF = null;
@@ -153,7 +153,7 @@ package org.concentus;.Structs
         {
             int i, NLSF_step_Q15, NLSF_acc_Q15;
 
-            NLSF_step_Q15 = Inlines.silk_DIV32_16(short.MaxValue, this.LPC_order + 1);
+            NLSF_step_Q15 = Inlines.silk_DIV32_16(Short.MAX_VALUE, this.LPC_order + 1);
             NLSF_acc_Q15 = 0;
             for (i = 0; i < this.LPC_order; i++)
             {
@@ -254,7 +254,7 @@ package org.concentus;.Structs
                     this.lagPrev = 100;
                     this.LastGainIndex = 10;
                     this.prevSignalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
-                    Arrays.MemSet<short>(this.outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+                    Arrays.MemSet(this.outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
                     Arrays.MemSet(this.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
                 }
 

@@ -162,7 +162,7 @@ package org.concentus;.Structs
             sLP.Reset();
             sVAD.Reset();
             sNSQ.Reset();
-            Arrays.MemSet<short>(prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet(prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
             speech_activity_Q8 = 0;
             allow_bandwidth_switch = 0;
             LBRRprevLastGainIndex = 0;
@@ -215,7 +215,7 @@ package org.concentus;.Structs
             Arrays.MemSet(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             indices.Reset();
             Arrays.MemSet<byte>(pulses, 0, SilkConstants.MAX_FRAME_LENGTH);
-            Arrays.MemSet<short>(inputBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2);
+            Arrays.MemSet(inputBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2);
             inputBufIx = 0;
             nFramesPerPacket = 0;
             nFramesEncoded = 0;
@@ -239,7 +239,7 @@ package org.concentus;.Structs
             }
             sShape.Reset();
             sPrefilt.Reset();
-            Arrays.MemSet<short>(x_buf, 0, 2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
+            Arrays.MemSet(x_buf, 0, 2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
             LTPCorr_Q15 = 0;
         }
 
@@ -441,7 +441,7 @@ package org.concentus;.Structs
                 this.sShape.Reset();
                 this.sPrefilt.Reset();
                 this.sNSQ.Reset();
-                Arrays.MemSet<short>(this.prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemSet(this.prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
                 Arrays.MemSet(this.sLP.In_LP_State, 0, 2);
                 this.inputBufIx = 0;
                 this.nFramesEncoded = 0;

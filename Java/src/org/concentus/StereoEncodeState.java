@@ -50,9 +50,9 @@ package org.concentus;.Structs
         
         internal void Reset()
         {
-            Arrays.MemSet<short>(pred_prev_Q13, 0, 2);
-            Arrays.MemSet<short>(sMid, 0, 2);
-            Arrays.MemSet<short>(sSide, 0, 2);
+            Arrays.MemSet(pred_prev_Q13, 0, 2);
+            Arrays.MemSet(sMid, 0, 2);
+            Arrays.MemSet(sSide, 0, 2);
             Arrays.MemSet(mid_side_amp_Q0, 0, 4);
             smth_width_Q14 = 0;
             width_prev_Q14 = 0;

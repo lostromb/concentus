@@ -132,7 +132,7 @@ package org.concentus;
             else
             {
                 Arrays.MemSet(psDecCtrl.pitchL, 0, psDec.nb_subfr);
-                Arrays.MemSet<short>(psDecCtrl.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * psDec.nb_subfr);
+                Arrays.MemSet(psDecCtrl.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * psDec.nb_subfr);
                 psDec.indices.PERIndex = 0;
                 psDecCtrl.LTP_scale_Q14 = 0;
             }

@@ -212,7 +212,7 @@ class Analysis
             input[(2 * (N - i - 1))] = (int)(w * tonal.inmem[N - i - 1]);
             input[(2 * (N - i - 1)) + 1] = (int)(w * tonal.inmem[N + N2 - i - 1]);
         }
-        Arrays.MemMove<int>(tonal.inmem, OpusConstants.ANALYSIS_BUF_SIZE - 240, 0, 240);
+        Arrays.MemMove(tonal.inmem, OpusConstants.ANALYSIS_BUF_SIZE - 240, 0, 240);
 
         remaining = len - (OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill);
         downmix(x, x_ptr, tonal.inmem, 240, remaining, offset + OpusConstants.ANALYSIS_BUF_SIZE - tonal.mem_fill, c1, c2, C);

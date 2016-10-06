@@ -165,8 +165,8 @@ package org.concentus;
 
             if (decControl.nChannelsAPI == 2 && decControl.nChannelsInternal == 2 && (psDec.nChannelsAPI == 1 || psDec.nChannelsInternal == 1))
             {
-                Arrays.MemSet<short>(psDec.sStereo.pred_prev_Q13, 0, 2);
-                Arrays.MemSet<short>(psDec.sStereo.sSide, 0, 2);
+                Arrays.MemSet(psDec.sStereo.pred_prev_Q13, 0, 2);
+                Arrays.MemSet(psDec.sStereo.sSide, 0, 2);
                 channel_state[1].resampler_state.Assign(channel_state[0].resampler_state);
             }
             psDec.nChannelsAPI = decControl.nChannelsAPI;
@@ -282,7 +282,7 @@ package org.concentus;
             /* Reset side channel decoder prediction memory for first frame with side coding */
             if (decControl.nChannelsInternal == 2 && decode_only_middle == 0 && psDec.prev_decode_only_middle == 1)
             {
-                Arrays.MemSet<short>(psDec.channel_state[1].outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+                Arrays.MemSet(psDec.channel_state[1].outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
                 Arrays.MemSet(psDec.channel_state[1].sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
                 psDec.channel_state[1].lagPrev = 100;
                 psDec.channel_state[1].LastGainIndex = 10;

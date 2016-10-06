@@ -147,7 +147,7 @@ package org.concentus;
             for (i = 0; i < D; i++)
             {
                 cn[i] = Inlines.silk_LSHIFT((int)c[c_ptr + i], Qxtra);
-                Inlines.OpusAssert(Inlines.silk_abs(cn[i]) <= (short.MaxValue + 1)); /* Check that Inlines.silk_SMLAWB can be used */
+                Inlines.OpusAssert(Inlines.silk_abs(cn[i]) <= (Short.MAX_VALUE + 1)); /* Check that Inlines.silk_SMLAWB can be used */
             }
             lshifts -= Qxtra;
 

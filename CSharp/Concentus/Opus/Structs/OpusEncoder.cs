@@ -678,26 +678,30 @@ namespace Concentus.Structs
                 do
                 {
                     int threshold, hysteresis;
-                    threshold = bandwidth_thresholds[2 * (bandwidth - OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)];
-                    hysteresis = bandwidth_thresholds[2 * (bandwidth - OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND) + 1];
+                    threshold = bandwidth_thresholds[2 * (OpusBandwidthHelpers.GetOrdinal(bandwidth) - OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND))];
+                    hysteresis = bandwidth_thresholds[2 * (OpusBandwidthHelpers.GetOrdinal(bandwidth) - OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)) + 1];
                     if (this.first == 0)
                     {
-                        if (this.bandwidth >= bandwidth)
+                        if (OpusBandwidthHelpers.GetOrdinal(this.bandwidth) >= OpusBandwidthHelpers.GetOrdinal(bandwidth))
                             threshold -= hysteresis;
                         else
                             threshold += hysteresis;
                     }
                     if (equiv_rate2 >= threshold)
                         break;
-                } while (--bandwidth > OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND);
+
+                    bandwidth = OpusBandwidthHelpers.SUBTRACT(bandwidth, 1);
+                } while (OpusBandwidthHelpers.GetOrdinal(bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND));
                 this.bandwidth = bandwidth;
                 /* Prevents any transition to SWB/FB until the SILK layer has fully
                    switched to WB mode and turned the variable LP filter off */
-                if (this.first == 0 && this.mode != OpusMode.MODE_CELT_ONLY && this.silk_mode.inWBmodeWithoutVariableLP == 0 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+                if (this.first == 0 && this.mode != OpusMode.MODE_CELT_ONLY &&
+                    this.silk_mode.inWBmodeWithoutVariableLP == 0 &&
+                    OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
                     this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
             }
 
-            if (this.bandwidth > this.max_bandwidth)
+            if (OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(this.max_bandwidth))
                 this.bandwidth = this.max_bandwidth;
 
             if (this.user_bandwidth != OpusBandwidth.OPUS_BANDWIDTH_AUTO)
@@ -711,13 +715,13 @@ namespace Concentus.Structs
 
             /* Prevents Opus from wasting bits on frequencies that are above
                the Nyquist rate of the input signal */
-            if (this.Fs <= 24000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
+            if (this.Fs <= 24000 && OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND))
                 this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-            if (this.Fs <= 16000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+            if (this.Fs <= 16000 && OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
                 this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
-            if (this.Fs <= 12000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+            if (this.Fs <= 12000 && OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND))
                 this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND;
-            if (this.Fs <= 8000 && this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
+            if (this.Fs <= 8000 && OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND))
                 this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
             /* Use detected bandwidth to reduce the encoded bandwidth. */
             if (this.detected_bandwidth != 0 && this.user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_AUTO)
@@ -750,7 +754,7 @@ namespace Concentus.Structs
                 this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
 
             /* Can't support higher than wideband for >20 ms frames */
-            if (frame_size > this.Fs / 50 && (this.mode == OpusMode.MODE_CELT_ONLY || this.bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
+            if (frame_size > this.Fs / 50 && (this.mode == OpusMode.MODE_CELT_ONLY || OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)))
             {
                 sbyte[] tmp_data;
                 int nb_frames;
@@ -829,9 +833,9 @@ namespace Concentus.Structs
 
             /* Chooses the appropriate mode for speech
                *NEVER* switch to/from CELT-only mode here as this will invalidate some assumptions */
-            if (this.mode == OpusMode.MODE_SILK_ONLY && curr_bandwidth > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+            if (this.mode == OpusMode.MODE_SILK_ONLY && OpusBandwidthHelpers.GetOrdinal(curr_bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
                 this.mode = OpusMode.MODE_HYBRID;
-            if (this.mode == OpusMode.MODE_HYBRID && curr_bandwidth <= OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+            if (this.mode == OpusMode.MODE_HYBRID && OpusBandwidthHelpers.GetOrdinal(curr_bandwidth) <= OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
                 this.mode = OpusMode.MODE_SILK_ONLY;
 
             /* printf("%d %d %d %d\n", st.bitrate_bps, st.stream_channels, st.mode, curr_bandwidth); */

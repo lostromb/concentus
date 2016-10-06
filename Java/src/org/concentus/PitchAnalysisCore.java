@@ -176,7 +176,7 @@ package org.concentus;
             ******************************************************************************/
             C = new short[nb_subfr * CSTRIDE_8KHZ];
             xcorr32 = new int[MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1];
-            Arrays.MemSet<short>(C, 0, (nb_subfr >> 1) * CSTRIDE_4KHZ);
+            Arrays.MemSet(C, 0, (nb_subfr >> 1) * CSTRIDE_4KHZ);
             target = frame_4kHz;
             target_ptr = Inlines.silk_LSHIFT(SF_LENGTH_4KHZ, 2);
             for (k = 0; k < nb_subfr >> 1; k++)
@@ -330,7 +330,7 @@ package org.concentus;
             /*********************************************************************************
             * Find energy of each subframe projected onto its history, for a range of delays
             *********************************************************************************/
-            Arrays.MemSet<short>(C, 0, nb_subfr * CSTRIDE_8KHZ );
+            Arrays.MemSet(C, 0, nb_subfr * CSTRIDE_8KHZ );
 
             target = frame_8kHz;
             target_ptr = SilkConstants.PE_LTP_MEM_LENGTH_MS * 8;
@@ -579,7 +579,7 @@ package org.concentus;
                         {
                             CCmax_new = Inlines.silk_DIV32_varQ(cross_corr, energy, 13 + 1);          /* Q13 */
                                                                                                       /* Reduce depending on flatness of contour */
-                            diff = short.MaxValue - Inlines.silk_MUL(contour_bias_Q15, j);            /* Q15 */
+                            diff = Short.MAX_VALUE - Inlines.silk_MUL(contour_bias_Q15, j);            /* Q15 */
                             Inlines.OpusAssert(diff == Inlines.silk_SAT16(diff));
                             CCmax_new = Inlines.silk_SMULWB(CCmax_new, diff);                         /* Q14 */
                         }

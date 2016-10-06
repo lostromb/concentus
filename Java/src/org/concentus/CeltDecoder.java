@@ -263,7 +263,7 @@ package org.concentus;
                 c = 0;
                 do
                 {
-                    Arrays.MemMove<int>(this.decode_mem[c], N, 0, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
+                    Arrays.MemMove(this.decode_mem[c], N, 0, CeltConstants.DECODE_BUFFER_SIZE - N + (overlap >> 1));
                 } while (++c < C);
 
                 CeltCommon.celt_synthesis(mode, X, out_syn, out_syn_ptrs, this.oldEBands, start, effEnd, C, C, 0, LM, this.downsample, 0);
@@ -364,7 +364,7 @@ package org.concentus;
                     /* Move the decoder memory one frame to the left to give us room to
                        add the data for the new frame. We ignore the overlap that extends
                        past the end of the buffer, because we aren't going to use it. */
-                    Arrays.MemMove<int>(buf, N, 0, CeltConstants.DECODE_BUFFER_SIZE - N);
+                    Arrays.MemMove(buf, N, 0, CeltConstants.DECODE_BUFFER_SIZE - N);
 
                     /* Extrapolate from the end of the excitation with a period of
                        "pitch_index", scaling down each period by an additional factor of
@@ -686,7 +686,7 @@ package org.concentus;
             c = 0;
             do
             {
-                Arrays.MemMove<int>(decode_mem[c], N, 0, CeltConstants.DECODE_BUFFER_SIZE - N + overlap / 2);
+                Arrays.MemMove(decode_mem[c], N, 0, CeltConstants.DECODE_BUFFER_SIZE - N + overlap / 2);
             } while (++c < CC);
 
             /* Decode fixed codebook */

@@ -88,7 +88,7 @@ package org.concentus;
                 }
                 gain = psEncCtrl.Gains_Q16[k];
                 gain_squared = Inlines.silk_ADD_SAT32(ResNrgPart, Inlines.silk_SMMUL(gain, gain));
-                if (gain_squared < short.MaxValue)
+                if (gain_squared < Short.MAX_VALUE)
                 {
                     /* recalculate with higher precision */
                     gain_squared = Inlines.silk_SMLAWW(Inlines.silk_LSHIFT(ResNrgPart, 16), gain, gain);

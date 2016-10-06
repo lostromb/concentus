@@ -58,8 +58,8 @@ package org.concentus;.Structs
         internal void Reset()
         {
             pitchL_Q8 = 0;
-            Arrays.MemSet<short>(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
-            Arrays.MemSet<short>(prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
+            Arrays.MemSet(prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             last_frame_lost = 0;
             rand_seed = 0;
             randScale_Q14 = 0;

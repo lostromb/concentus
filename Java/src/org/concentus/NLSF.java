@@ -117,7 +117,7 @@ package org.concentus;
             tmp1_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp1_int);
             tmp2_int = Inlines.silk_max_int(pNLSF_Q15[1] - pNLSF_Q15[0], 1);
             tmp2_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp2_int);
-            pNLSFW_Q_OUT[0] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, short.MaxValue);
+            pNLSFW_Q_OUT[0] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, Short.MAX_VALUE);
 
             Inlines.OpusAssert(pNLSFW_Q_OUT[0] > 0);
 
@@ -126,19 +126,19 @@ package org.concentus;
             {
                 tmp1_int = Inlines.silk_max_int(pNLSF_Q15[k + 1] - pNLSF_Q15[k], 1);
                 tmp1_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp1_int);
-                pNLSFW_Q_OUT[k] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, short.MaxValue);
+                pNLSFW_Q_OUT[k] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, Short.MAX_VALUE);
                 Inlines.OpusAssert(pNLSFW_Q_OUT[k] > 0);
 
                 tmp2_int = Inlines.silk_max_int(pNLSF_Q15[k + 2] - pNLSF_Q15[k + 1], 1);
                 tmp2_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp2_int);
-                pNLSFW_Q_OUT[k + 1] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, short.MaxValue);
+                pNLSFW_Q_OUT[k + 1] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, Short.MAX_VALUE);
                 Inlines.OpusAssert(pNLSFW_Q_OUT[k + 1] > 0);
             }
 
             // Last value
             tmp1_int = Inlines.silk_max_int((1 << 15) - pNLSF_Q15[D - 1], 1);
             tmp1_int = Inlines.silk_DIV32((int)1 << (15 + SilkConstants.NLSF_W_Q), tmp1_int);
-            pNLSFW_Q_OUT[D - 1] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, short.MaxValue);
+            pNLSFW_Q_OUT[D - 1] = (short)Inlines.silk_min_int(tmp1_int + tmp2_int, Short.MAX_VALUE);
 
             Inlines.OpusAssert(pNLSFW_Q_OUT[D - 1] > 0);
         }
@@ -875,11 +875,11 @@ package org.concentus;
 
                 maxabs = Inlines.silk_RSHIFT_ROUND(maxabs, QA + 1 - 12);                                          /* QA+1 . Q12 */
 
-                if (maxabs > short.MaxValue)
+                if (maxabs > Short.MAX_VALUE)
                 {
                     /* Reduce magnitude of prediction coefficients */
                     maxabs = Inlines.silk_min(maxabs, 163838);  /* ( silk_int32_MAX >> 14 ) + silk_int16_MAX = 163838 */
-                    sc_Q16 = ((int)((0.999f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.999f, 16)*/ - Inlines.silk_DIV32(Inlines.silk_LSHIFT(maxabs - short.MaxValue, 14),
+                    sc_Q16 = ((int)((0.999f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.999f, 16)*/ - Inlines.silk_DIV32(Inlines.silk_LSHIFT(maxabs - Short.MAX_VALUE, 14),
                                                 Inlines.silk_RSHIFT32(Inlines.silk_MUL(maxabs, idx + 1), 2));
                     Filters.silk_bwexpander_32(a32_QA1, d, sc_Q16);
                 }
@@ -1116,7 +1116,7 @@ package org.concentus;
                         /* No risk of dividing by zero because abs(ylo - yhi) >= abs(ylo) >= 65536 */
                         ffrac += Inlines.silk_DIV32(ylo, Inlines.silk_RSHIFT(ylo - yhi, 8 - BIN_DIV_STEPS_A2NLSF));
                     }
-                    NLSF[root_ix] = (short)Inlines.silk_min_32(Inlines.silk_LSHIFT((int)k, 8) + ffrac, short.MaxValue);
+                    NLSF[root_ix] = (short)Inlines.silk_min_32(Inlines.silk_LSHIFT((int)k, 8) + ffrac, Short.MAX_VALUE);
 
                     Inlines.OpusAssert(NLSF[root_ix] >= 0);
 
