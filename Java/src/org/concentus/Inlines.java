@@ -1882,34 +1882,30 @@ class Inlines
         return (silk_ADD64((a64), ((long)(b32) * (long)(c32))));
     }
 
-
-    /*static void MatrixSet<T>(T[] Matrix_base_adr, int Matrix_ptr, int row, int column, int N, T value)
-    {
-        Matrix_base_adr[Matrix_ptr + (row * N) + column] = value;
-    }*/
-
-
     static int MatrixGetPointer(int row, int column, int N)
     {
         return (row * N) + column;
     }
 
-
-    /*static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
+    static int MatrixGet(int[] Matrix_base_adr, int row, int column, int N)
     {
         return Matrix_base_adr[((row) * (N)) + (column)];
     }
 
-    static T MatrixGet<T>(T[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
+    static int MatrixGet(int[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
     {
         return Matrix_base_adr[matrix_ptr + (row * N) + column];
     }
 
+    static void MatrixSet(int[] Matrix_base_adr, int matrix_ptr, int row, int column, int N, int value)
+    {
+        Matrix_base_adr[matrix_ptr + (row * N) + column] = value;
+    }
 
-    static void MatrixSet<T>(T[] Matrix_base_adr, int row, int column, int N, T value)
+    static void MatrixSet(int[] Matrix_base_adr, int row, int column, int N, int value)
     {
         Matrix_base_adr[((row) * (N)) + (column)] = value;
-    }*/
+    }
 
     /// <summary>
     /// (a32 * b32) >> 16

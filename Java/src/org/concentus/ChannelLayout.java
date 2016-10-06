@@ -32,29 +32,20 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-using Concentus.Common.CPlusPlus;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 package org.concentus;
-{
-    class ChannelLayout
-    {
-        internal int nb_channels;
-        internal int nb_streams;
-        internal int nb_coupled_streams;
-        internal final short[] mapping = new short[256];
 
-        internal void Reset()
-        {
-            nb_channels = 0;
-            nb_streams = 0;
-            nb_coupled_streams = 0;
-            Arrays.MemSet(mapping, 0);
-        }
+class ChannelLayout
+{
+    int nb_channels;
+    int nb_streams;
+    int nb_coupled_streams;
+    final short[] mapping = new short[256];
+
+    void Reset()
+    {
+        nb_channels = 0;
+        nb_streams = 0;
+        nb_coupled_streams = 0;
+        Arrays.MemSet(mapping, (short)0);
     }
 }

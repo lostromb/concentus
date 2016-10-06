@@ -731,7 +731,7 @@ public class EntropyCoder
         l = Inlines.EC_ILOG(this.rng);
         r = (int)(this.rng >> (l - 16));
         b = Inlines.CapToUInt32((r >> 12) - 8);
-        b = Inlines.CapToUInt32(b + (r > correction[b] ? 1 : 0));
+        b = Inlines.CapToUInt32(b + (r > correction[(int)b] ? 1 : 0));
         l = (int)((l << 3) + b);
         return nbits - l;
     }

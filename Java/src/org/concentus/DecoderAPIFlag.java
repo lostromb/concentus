@@ -30,12 +30,11 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus;.Enums
+package org.concentus;
+
+class DecoderAPIFlag
 {
-    class DecoderAPIFlag
-    {
-        public final int FLAG_DECODE_NORMAL = 0;
-        public final int FLAG_PACKET_LOST = 1;
-        public final int FLAG_DECODE_LBRR = 2;
-    }
+    public static final int FLAG_DECODE_NORMAL = 0;
+    public static final int FLAG_PACKET_LOST = 1;
+    public static final int FLAG_DECODE_LBRR = 2;
 }
