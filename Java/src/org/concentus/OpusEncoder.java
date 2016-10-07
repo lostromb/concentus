@@ -1517,7 +1517,7 @@ public class OpusEncoder
     /// (Bitrate &lt; 40Kbit/s and/or ForceMode == SILK). When enabled, the encoder detects silence and background noise
     /// and reduces the number of output packets, with up to 600ms in between separate packet transmissions.
     /// </summary>
-    public boolean setUseDTX()
+    public boolean getUseDTX()
     {
         return silk_mode.useDTX != 0;
     }
