@@ -47,10 +47,10 @@ class CeltPitchXCorr
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
-        BoxedValue<Integer> sum0 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum2 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum3 = new BoxedValue<Integer>(0);
+        BoxedValueInt sum0 = new BoxedValueInt(0);
+        BoxedValueInt sum1 = new BoxedValueInt(0);
+        BoxedValueInt sum2 = new BoxedValueInt(0);
+        BoxedValueInt sum3 = new BoxedValueInt(0);
         for (i = 0; i < max_pitch - 3; i += 4)
         {
             sum0.Val = 0;
@@ -89,10 +89,10 @@ class CeltPitchXCorr
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
-        BoxedValue<Integer> sum0 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum2 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum3 = new BoxedValue<Integer>(0);
+        BoxedValueInt sum0 = new BoxedValueInt(0);
+        BoxedValueInt sum1 = new BoxedValueInt(0);
+        BoxedValueInt sum2 = new BoxedValueInt(0);
+        BoxedValueInt sum3 = new BoxedValueInt(0);
         for (i = 0; i < max_pitch - 3; i += 4)
         {
             sum0.Val = 0;
@@ -130,10 +130,10 @@ class CeltPitchXCorr
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
-        BoxedValue<Integer> sum0 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum2 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum3 = new BoxedValue<Integer>(0);
+        BoxedValueInt sum0 = new BoxedValueInt(0);
+        BoxedValueInt sum1 = new BoxedValueInt(0);
+        BoxedValueInt sum2 = new BoxedValueInt(0);
+        BoxedValueInt sum3 = new BoxedValueInt(0);
         for (i = 0; i < max_pitch - 3; i += 4)
         {
             sum0.Val = 0;

@@ -49,7 +49,7 @@ class GainQuantization
     static void silk_gains_quant(
         byte[] ind,
         int[] gain_Q16,
-        BoxedValue<Byte> prev_ind,
+        BoxedValueByte prev_ind,
         int conditional,
         int nb_subfr)
     {
@@ -121,7 +121,7 @@ class GainQuantization
     static void silk_gains_dequant(
         int[] gain_Q16,
         byte[] ind,
-        BoxedValue<Byte> prev_ind,
+        BoxedValueByte prev_ind,
         int conditional,
         int nb_subfr)
     {

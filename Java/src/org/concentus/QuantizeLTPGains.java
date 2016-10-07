@@ -37,8 +37,8 @@ class QuantizeLTPGains
     static void silk_quant_LTP_gains(
         short[] B_Q14,          /* I/O  (un)quantized LTP gains [MAX_NB_SUBFR * LTP_ORDER]        */
         byte[] cbk_index,                  /* O    Codebook Index [MAX_NB_SUBFR]                 */
-        BoxedValue<Byte> periodicity_index,                         /* O    Periodicity Index               */
-        BoxedValue<Integer> sum_log_gain_Q7,                           /* I/O  Cumulative max prediction gain  */
+        BoxedValueByte periodicity_index,                         /* O    Periodicity Index               */
+        BoxedValueInt sum_log_gain_Q7,                           /* I/O  Cumulative max prediction gain  */
         int[] W_Q18,  /* I    Error Weights in Q18 [MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER]           */
         int mu_Q9,                                      /* I    Mu value (R/D tradeoff)         */
         int lowComplexity,                              /* I    Flag for low complexity         */
@@ -83,9 +83,9 @@ class QuantizeLTPGains
                 max_gain_Q7 = Inlines.silk_log2lin((((int)((TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f, 7)*/ - sum_log_gain_tmp_Q7)
                                             + ((int)((7) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(7, 7)*/) - gain_safety;
 
-                BoxedValue<Byte> temp_idx_box = new BoxedValue<Byte>(temp_idx[j]);
-                BoxedValue<Integer> rate_dist_Q14_subfr_box = new BoxedValue<Integer>(0);
-                BoxedValue<Integer> gain_Q7_box = new BoxedValue<Integer>(0);
+                BoxedValueByte temp_idx_box = new BoxedValueByte(temp_idx[j]);
+                BoxedValueInt rate_dist_Q14_subfr_box = new BoxedValueInt(0);
+                BoxedValueInt gain_Q7_box = new BoxedValueInt(0);
                 VQ_WMat_EC.silk_VQ_WMat_EC(
                     temp_idx_box,         /* O    index of best codebook vector                           */
                     rate_dist_Q14_subfr_box,   /* O    best weighted quantization error + mu * rate            */

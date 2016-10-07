@@ -181,10 +181,10 @@ class PLC
     /// <param name="subfr_length">I</param>
     /// <param name="nb_subfr">I</param>
     static void silk_PLC_energy(
-        BoxedValue<Integer> energy1,
-        BoxedValue<Integer> shift1,
-        BoxedValue<Integer> energy2,
-        BoxedValue<Integer> shift2,
+        BoxedValueInt energy1,
+        BoxedValueInt shift1,
+        BoxedValueInt energy2,
+        BoxedValueInt shift2,
         int[] exc_Q14,
         int[] prevGain_Q10,
         int subfr_length,
@@ -221,10 +221,10 @@ class PLC
         int i, j, k;
         int lag, idx, sLTP_buf_idx;
         int rand_seed, harm_Gain_Q15, rand_Gain_Q15, inv_gain_Q30;
-        BoxedValue<Integer> energy1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> energy2 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> shift1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> shift2 = new BoxedValue<Integer>(0);
+        BoxedValueInt energy1 = new BoxedValueInt(0);
+        BoxedValueInt energy2 = new BoxedValueInt(0);
+        BoxedValueInt shift1 = new BoxedValueInt(0);
+        BoxedValueInt shift2 = new BoxedValueInt(0);
         int rand_ptr;
         int pred_lag_ptr;
         int LPC_pred_Q10, LTP_pred_Q12;
@@ -419,15 +419,15 @@ class PLC
     )
     {
         int i;
-        BoxedValue<Integer> energy_shift = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> energy = new BoxedValue<Integer>(0);
+        BoxedValueInt energy_shift = new BoxedValueInt(0);
+        BoxedValueInt energy = new BoxedValueInt(0);
         PLCStruct psPLC = psDec.sPLC;
 
         if (psDec.lossCnt != 0)
         {
             /* Calculate energy in concealed residual */
-            BoxedValue<Integer> boxed_conc_e = new BoxedValue<Integer>(0);
-            BoxedValue<Integer> boxed_conc_shift = new BoxedValue<Integer>(0);
+            BoxedValueInt boxed_conc_e = new BoxedValueInt(0);
+            BoxedValueInt boxed_conc_shift = new BoxedValueInt(0);
             SumSqrShift.silk_sum_sqr_shift(boxed_conc_e, boxed_conc_shift, frame, frame_ptr, length);
             psPLC.conc_energy = boxed_conc_e.Val;
             psPLC.conc_energy_shift= boxed_conc_shift.Val;

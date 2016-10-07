@@ -69,12 +69,12 @@ class DecodeAPI
         EntropyCoder psRangeDec,        /* I/O  Compressor data structure                       */
         short[] samplesOut,        /* O    Decoded output speech vector                    */
         int samplesOut_ptr,
-        BoxedValue<Integer> nSamplesOut       /* O    Number of samples decoded                       */
+        BoxedValueInt nSamplesOut       /* O    Number of samples decoded                       */
     )
     {
         int i, n, decode_only_middle = 0, ret = SilkError.SILK_NO_ERROR;
         int LBRR_symbol;
-        BoxedValue<Integer> nSamplesOutDec = new BoxedValue<Integer>(0);
+        BoxedValueInt nSamplesOutDec = new BoxedValueInt(0);
         short[] samplesOut_tmp;
         int[] samplesOut_tmp_ptrs = new int[2];
         short[] samplesOut1_tmp_storage1;
@@ -220,7 +220,7 @@ class DecodeAPI
                                 Stereo.silk_stereo_decode_pred(psRangeDec, MS_pred_Q13);
                                 if (channel_state[1].LBRR_flags[i] == 0)
                                 {
-                                    BoxedValue<Integer> decodeOnlyMiddleBoxed = new BoxedValue<Integer>(decode_only_middle);
+                                    BoxedValueInt decodeOnlyMiddleBoxed = new BoxedValueInt(decode_only_middle);
                                     Stereo.silk_stereo_decode_mid_only(psRangeDec, decodeOnlyMiddleBoxed);
                                     decode_only_middle = decodeOnlyMiddleBoxed.Val;
                                 }
@@ -254,7 +254,7 @@ class DecodeAPI
                 if ((lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL && channel_state[1].VAD_flags[channel_state[0].nFramesDecoded] == 0) ||
                     (lostFlag == DecoderAPIFlag.FLAG_DECODE_LBRR && channel_state[1].LBRR_flags[channel_state[0].nFramesDecoded] == 0))
                 {
-                    BoxedValue<Integer> decodeOnlyMiddleBoxed = new BoxedValue<Integer>(decode_only_middle);
+                    BoxedValueInt decodeOnlyMiddleBoxed = new BoxedValueInt(decode_only_middle);
                     Stereo.silk_stereo_decode_mid_only(psRangeDec, decodeOnlyMiddleBoxed);
                     decode_only_middle = decodeOnlyMiddleBoxed.Val;
                 }

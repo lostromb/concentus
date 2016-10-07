@@ -102,10 +102,10 @@ class CeltLPC
         int[] y = new int[N + ord];
         Inlines.OpusAssert((ord & 3) == 0);
 
-        BoxedValue<Integer> _sum0 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> _sum1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> _sum2 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> _sum3 = new BoxedValue<Integer>(0);
+        BoxedValueInt _sum0 = new BoxedValueInt(0);
+        BoxedValueInt _sum1 = new BoxedValueInt(0);
+        BoxedValueInt _sum2 = new BoxedValueInt(0);
+        BoxedValueInt _sum3 = new BoxedValueInt(0);
         int sum0, sum1, sum2, sum3;
         
         for (i = 0; i < ord; i++)

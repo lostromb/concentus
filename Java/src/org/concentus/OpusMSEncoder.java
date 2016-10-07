@@ -214,7 +214,7 @@ public class OpusMSEncoder
         {
             System.arraycopy(mem, c * overlap, input, 0, overlap);
             opus_copy_channel_in_short(x, 0 , 1, pcm, pcm_ptr, channels, c, len);
-            BoxedValue<Integer> boxed_preemph = new BoxedValue<Integer>(preemph_mem[c]);
+            BoxedValueInt boxed_preemph = new BoxedValueInt(preemph_mem[c]);
             CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0);
             preemph_mem[c] = boxed_preemph.Val;
 
@@ -349,8 +349,8 @@ public class OpusMSEncoder
           int Fs,
           int channels,
           int mapping_family,
-          BoxedValue<Integer> streams,
-          BoxedValue<Integer> coupled_streams,
+          BoxedValueInt streams,
+          BoxedValueInt coupled_streams,
           short[] mapping,
           OpusApplication application
     )
@@ -429,7 +429,7 @@ public class OpusMSEncoder
         return st;
     }
 
-    static void GetStreamCount(int channels, int mapping_family, BoxedValue<Integer> nb_streams, BoxedValue<Integer> nb_coupled_streams)
+    static void GetStreamCount(int channels, int mapping_family, BoxedValueInt nb_streams, BoxedValueInt nb_coupled_streams)
     {
         if (mapping_family == 0)
         {
@@ -464,8 +464,8 @@ public class OpusMSEncoder
           int Fs,
           int channels,
           int mapping_family,
-          BoxedValue<Integer> streams,
-          BoxedValue<Integer> coupled_streams,
+          BoxedValueInt streams,
+          BoxedValueInt coupled_streams,
           short[] mapping,
           OpusApplication application
     ) throws OpusException
@@ -476,8 +476,8 @@ public class OpusMSEncoder
         {
             throw new IllegalArgumentException("Invalid channel count or application");
         }
-        BoxedValue<Integer> nb_streams = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> nb_coupled_streams = new BoxedValue<Integer>(0);
+        BoxedValueInt nb_streams = new BoxedValueInt(0);
+        BoxedValueInt nb_coupled_streams = new BoxedValueInt(0);
         GetStreamCount(channels, mapping_family, nb_streams, nb_coupled_streams);
 
         st = new OpusMSEncoder(nb_streams.Val, nb_coupled_streams.Val);

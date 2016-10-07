@@ -271,7 +271,7 @@ class SilkChannelDecoder
         EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
         short[] pOut,                         /* O    Pointer to output speech frame              */
         int pOut_ptr,
-        BoxedValue<Integer> pN,                            /* O    Pointer to size of output frame             */
+        BoxedValueInt pN,                            /* O    Pointer to size of output frame             */
         int lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
         int condCoding                     /* I    The type of conditional coding to use       */
     )

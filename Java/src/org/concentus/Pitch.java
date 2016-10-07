@@ -202,7 +202,7 @@ class Pitch
 
     // Fixme: remove pointers and optimize
     static void pitch_search(int[] x_lp, int x_lp_ptr, int[] y,
-              int len, int max_pitch, BoxedValue<Integer> pitch)
+              int len, int max_pitch, BoxedValueInt pitch)
     {
         int i, j;
         int lag;
@@ -297,7 +297,7 @@ class Pitch
     private static final int[] second_check = { 0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2 };
 
     static int remove_doubling(int[] x, int maxperiod, int minperiod,
-        int N, BoxedValue<Integer> T0_, int prev_period, int prev_gain)
+        int N, BoxedValueInt T0_, int prev_period, int prev_gain)
     {
         int k, i, T, T0;
         int g, g0;
@@ -318,9 +318,9 @@ class Pitch
 
         T = T0 = T0_.Val;
         int[] yy_lookup = new int[maxperiod + 1];
-        BoxedValue<Integer> boxed_xx = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> boxed_xy = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> boxed_xy2 = new BoxedValue<Integer>(0);
+        BoxedValueInt boxed_xx = new BoxedValueInt(0);
+        BoxedValueInt boxed_xy = new BoxedValueInt(0);
+        BoxedValueInt boxed_xy2 = new BoxedValueInt(0);
         Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, boxed_xx, boxed_xy);
         xx = boxed_xx.Val;
         xy = boxed_xy.Val;

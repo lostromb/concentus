@@ -231,8 +231,8 @@ class NoiseShapeAnalysis
             energy_variation_Q7 = 0;
             log_energy_prev_Q7 = 0;
             pitch_res_ptr2 = pitch_res_ptr;
-            BoxedValue<Integer> boxed_nrg = new BoxedValue<Integer>(0);
-            BoxedValue<Integer> boxed_scale = new BoxedValue<Integer>(0);
+            BoxedValueInt boxed_nrg = new BoxedValueInt(0);
+            BoxedValueInt boxed_scale = new BoxedValueInt(0);
             for (k = 0; k < Inlines.silk_SMULBB(SilkConstants.SUB_FRAME_LENGTH_MS, psEnc.nb_subfr) / 2; k++)
             {
                 SumSqrShift.silk_sum_sqr_shift(boxed_nrg, boxed_scale, pitch_res, pitch_res_ptr2, nSamples);
@@ -307,7 +307,7 @@ class NoiseShapeAnalysis
 
             /* Update pointer: next LPC analysis block */
             x_ptr2 += psEnc.subfr_length;
-            BoxedValue<Integer> scale_boxed = new BoxedValue<Integer>(scale);
+            BoxedValueInt scale_boxed = new BoxedValueInt(scale);
             if (psEnc.warping_Q16 > 0)
             {
                 /* Calculate warped auto correlation */

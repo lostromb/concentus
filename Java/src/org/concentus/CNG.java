@@ -51,7 +51,7 @@ class CNG
         int[] exc_buf_Q14,
         int Gain_Q16,
         int length,
-        BoxedValue<Integer> rand_seed)
+        BoxedValueInt rand_seed)
     {
         int seed;
         int i, idx, exc_mask;
@@ -174,7 +174,7 @@ class CNG
                 gain_Q16 = Inlines.silk_LSHIFT32(Inlines.silk_SQRT_APPROX(gain_Q16), 8);
             }
             
-            BoxedValue<Integer> boxed_rand_seed = new BoxedValue<Integer>(psCNG.rand_seed);
+            BoxedValueInt boxed_rand_seed = new BoxedValueInt(psCNG.rand_seed);
             silk_CNG_exc(CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER, psCNG.CNG_exc_buf_Q14, gain_Q16, length, boxed_rand_seed);
             psCNG.rand_seed = boxed_rand_seed.Val;
 

@@ -92,15 +92,15 @@ class FindPredCoefs
             WLTP = new int[psEnc.nb_subfr * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER];
 
             /* LTP analysis */
-            BoxedValue<Integer> boxed_codgain = new BoxedValue<Integer>(psEncCtrl.LTPredCodGain_Q7);
+            BoxedValueInt boxed_codgain = new BoxedValueInt(psEncCtrl.LTPredCodGain_Q7);
             FindLTP.silk_find_LTP(psEncCtrl.LTPCoef_Q14, WLTP, boxed_codgain,
                 res_pitch, psEncCtrl.pitchL, Wght_Q15, psEnc.subfr_length,
                 psEnc.nb_subfr, psEnc.ltp_mem_length, LTP_corrs_rshift);
             psEncCtrl.LTPredCodGain_Q7 = boxed_codgain.Val;
 
             /* Quantize LTP gain parameters */
-            BoxedValue<Byte> boxed_periodicity = new BoxedValue<Byte>(psEnc.indices.PERIndex);
-            BoxedValue<Integer> boxed_gain = new BoxedValue<Integer>(psEnc.sum_log_gain_Q7);
+            BoxedValueByte boxed_periodicity = new BoxedValueByte(psEnc.indices.PERIndex);
+            BoxedValueInt boxed_gain = new BoxedValueInt(psEnc.sum_log_gain_Q7);
             QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex, boxed_periodicity,
                 boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr
                 );

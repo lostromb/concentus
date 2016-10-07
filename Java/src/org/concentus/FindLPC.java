@@ -45,12 +45,12 @@ class FindLPC
         int k, subfr_length;
         int[] a_Q16 = new int[SilkConstants.MAX_LPC_ORDER];
         int isInterpLower, shift;
-        BoxedValue<Integer> res_nrg0 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> res_nrg1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> rshift0 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> rshift1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> scratch_box1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> scratch_box2 = new BoxedValue<Integer>(0);
+        BoxedValueInt res_nrg0 = new BoxedValueInt(0);
+        BoxedValueInt res_nrg1 = new BoxedValueInt(0);
+        BoxedValueInt rshift0 = new BoxedValueInt(0);
+        BoxedValueInt rshift1 = new BoxedValueInt(0);
+        BoxedValueInt scratch_box1 = new BoxedValueInt(0);
+        BoxedValueInt scratch_box2 = new BoxedValueInt(0);
 
         /* Used only for LSF interpolation */
         int[] a_tmp_Q16 = new int[SilkConstants.MAX_LPC_ORDER];

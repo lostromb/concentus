@@ -242,7 +242,7 @@ package org.concentus;
 //        return WORD2INT(32768.0f * cutoff * (float)Math.sin((float)Math.PI * xx) / ((float)Math.PI * xx) * (float)compute_func(Math.abs(2.0f * x / N), window_func));
 //    }
 //
-//    private static void cubic_coef(short x, BoxedValue<Short> interp0, BoxedValue<Short> interp1, BoxedValue<Short> interp2, BoxedValue<Short> interp3)
+//    private static void cubic_coef(short x, BoxedValueShort interp0, BoxedValueShort interp1, BoxedValueShort interp2, BoxedValueShort interp3)
 //    {
 //        /* Compute interpolation coefficients. I'm not sure whether this corresponds to cubic interpolation
 //        but I know it's MMSE-optimal on a sinc */

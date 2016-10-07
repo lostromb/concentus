@@ -154,7 +154,7 @@ class CeltCommon
         return target;
     }
 
-    static int transient_analysis(int[][] input, int len, int C, BoxedValue<Integer> tf_estimate, BoxedValue<Integer> tf_chan)
+    static int transient_analysis(int[][] input, int len, int C, BoxedValueInt tf_estimate, BoxedValueInt tf_chan)
     {
         int i;
         int[] tmp;
@@ -366,7 +366,7 @@ class CeltCommon
     }
 
     static void celt_preemphasis(short[] pcmp, int pcmp_ptr, int[] inp, int inp_ptr,
-                            int N, int CC, int upsample, int[] coef, BoxedValue<Integer> mem, int clip)
+                            int N, int CC, int upsample, int[] coef, BoxedValueInt mem, int clip)
     {
         int i;
         int coef0;
@@ -412,7 +412,7 @@ class CeltCommon
     }
 
     static void celt_preemphasis(short[] pcmp, int[] inp, int inp_ptr,
-                            int N, int CC, int upsample, int[] coef, BoxedValue<Integer> mem, int clip)
+                            int N, int CC, int upsample, int[] coef, BoxedValueInt mem, int clip)
     {
         int i;
         int coef0;
@@ -476,7 +476,7 @@ class CeltCommon
 
     static int tf_analysis(CeltMode m, int len, int isTransient,
           int[] tf_res, int lambda, int[][] X, int N0, int LM,
-          BoxedValue<Integer> tf_sum, int tf_estimate, int tf_chan)
+          BoxedValueInt tf_sum, int tf_estimate, int tf_chan)
     {
         int i;
         int[] metric;
@@ -676,7 +676,7 @@ class CeltCommon
 
     static int alloc_trim_analysis(CeltMode m, int[][] X,
           int[][] bandLogE, int end, int LM, int C,
-          AnalysisInfo analysis, BoxedValue<Integer> stereo_saving, int tf_estimate,
+          AnalysisInfo analysis, BoxedValueInt stereo_saving, int tf_estimate,
           int intensity, int surround_trim)
     {
         int i;
@@ -849,7 +849,7 @@ class CeltCommon
     static int dynalloc_analysis(int[][] bandLogE, int[][] bandLogE2,
           int nbEBands, int start, int end, int C, int[] offsets, int lsb_depth, short[] logN,
           int isTransient, int vbr, int constrained_vbr, short[] eBands, int LM,
-          int effectiveBytes, BoxedValue<Integer> tot_boost_, int lfe, int[] surround_dynalloc)
+          int effectiveBytes, BoxedValueInt tot_boost_, int lfe, int[] surround_dynalloc)
     {
         int i, c;
         int tot_boost = 0;
@@ -1171,7 +1171,7 @@ class CeltCommon
 
     static int celt_plc_pitch_search(int[][] decode_mem, int C)
     {
-        BoxedValue<Integer> pitch_index = new BoxedValue<Integer>(0);
+        BoxedValueInt pitch_index = new BoxedValueInt(0);
         int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
         Pitch.pitch_downsample(decode_mem, lp_pitch_buf,
               CeltConstants.DECODE_BUFFER_SIZE, C);

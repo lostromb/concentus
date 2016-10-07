@@ -367,8 +367,8 @@ class Bands
     static void stereo_merge(int[] X, int X_ptr, int[] Y, int Y_ptr, int mid, int N)
     {
         int j;
-        BoxedValue<Integer> xp = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> side = new BoxedValue<Integer>(0);
+        BoxedValueInt xp = new BoxedValueInt(0);
+        BoxedValueInt side = new BoxedValueInt(0);
         int El, Er;
         int mid2;
         int kl, kr;
@@ -412,8 +412,8 @@ class Bands
     }
 
     /* Decide whether we should spread the pulses in the current frame */
-    static int spreading_decision(CeltMode m, int[][] X, BoxedValue<Integer> average,
-          int last_decision, BoxedValue<Integer> hf_average, BoxedValue<Integer> tapset_decision, int update_hf,
+    static int spreading_decision(CeltMode m, int[][] X, BoxedValueInt average,
+          int last_decision, BoxedValueInt hf_average, BoxedValueInt tapset_decision, int update_hf,
           int end, int C, int M)
     {
         int i, c;
@@ -687,9 +687,9 @@ class Bands
     };
 
     static void compute_theta(band_ctx ctx, split_ctx sctx,
-           int[] X, int X_ptr, int[] Y, int Y_ptr, int N, BoxedValue<Integer> b, int B, int B0,
+           int[] X, int X_ptr, int[] Y, int Y_ptr, int N, BoxedValueInt b, int B, int B0,
           int LM,
-          int stereo, BoxedValue<Integer> fill)
+          int stereo, BoxedValueInt fill)
     {
         int qn;
         int itheta = 0;
@@ -1005,8 +1005,8 @@ class Bands
 
             B = (B + 1) >> 1;
 
-            BoxedValue<Integer> boxed_b = new BoxedValue<Integer>(b);
-            BoxedValue<Integer> boxed_fill = new BoxedValue<Integer>(fill);
+            BoxedValueInt boxed_b = new BoxedValueInt(b);
+            BoxedValueInt boxed_fill = new BoxedValueInt(fill);
             compute_theta(ctx, sctx, X, X_ptr, X, Y, N, boxed_b, B, B0, LM, 0, boxed_fill);
             b = boxed_b.Val;
             fill = boxed_fill.Val;
@@ -1308,8 +1308,8 @@ class Bands
 
         orig_fill = fill;
         
-        BoxedValue<Integer> boxed_b = new BoxedValue<Integer>(b);
-        BoxedValue<Integer> boxed_fill = new BoxedValue<Integer>(fill);
+        BoxedValueInt boxed_b = new BoxedValueInt(b);
+        BoxedValueInt boxed_fill = new BoxedValueInt(fill);
         compute_theta(ctx, sctx, X, X_ptr, Y, Y_ptr, N, boxed_b, B, B, LM, 1, boxed_fill);
         b = boxed_b.Val;
         fill = boxed_fill.Val;
@@ -1463,7 +1463,7 @@ class Bands
           int[][] bandE, int[] pulses, int shortBlocks, int spread,
           int dual_stereo, int intensity, int[] tf_res, int total_bits,
           int balance, EntropyCoder ec, int LM, int codedBands,
-          BoxedValue<Integer> seed)
+          BoxedValueInt seed)
     {
         int i;
         int remaining_bits;

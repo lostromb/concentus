@@ -51,7 +51,7 @@ class Laplace
         return (Inlines.CapToUInt32(ft * (16384 - decay)) >> 15);
     }
 
-    static void ec_laplace_encode(EntropyCoder enc, BoxedValue<Integer> value, long fs, int decay)
+    static void ec_laplace_encode(EntropyCoder enc, BoxedValueInt value, long fs, int decay)
     {
         long fl;
         int val = value.Val;

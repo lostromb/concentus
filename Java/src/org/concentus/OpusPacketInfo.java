@@ -76,11 +76,11 @@ public class OpusPacketInfo
         // Find the number of frames first
         int numFrames = GetNumFrames(packet, packet_offset, len);
 
-        BoxedValue<Integer> payload_offset = new BoxedValue<Integer>(0);
-        BoxedValue<Byte> out_toc = new BoxedValue<Byte>((byte)0);
+        BoxedValueInt payload_offset = new BoxedValueInt(0);
+        BoxedValueByte out_toc = new BoxedValueByte((byte)0);
         byte[][] frames = new byte[numFrames][];
         short[] size = new short[numFrames];
-        BoxedValue<Integer> packetOffset = new BoxedValue<Integer>(0);
+        BoxedValueInt packetOffset = new BoxedValueInt(0);
         int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out_toc, frames, 0, size, 0, payload_offset, packetOffset);
         if (error < 0)
         {
@@ -239,7 +239,7 @@ public class OpusPacketInfo
         }
     }
 
-    static int parse_size(byte[] data, int data_ptr, int len, BoxedValue<Short> size)
+    static int parse_size(byte[] data, int data_ptr, int len, BoxedValueShort size)
     {
         if (len < 1)
         {
@@ -263,9 +263,9 @@ public class OpusPacketInfo
     }
 
     static int opus_packet_parse_impl(byte[] data, int data_ptr, int len,
-          int self_delimited, BoxedValue<Byte> out_toc,
+          int self_delimited, BoxedValueByte out_toc,
           byte[][] frames, int frames_ptr, short[] sizes, int sizes_ptr,
-          BoxedValue<Integer> payload_offset, BoxedValue<Integer> packet_offset)
+          BoxedValueInt payload_offset, BoxedValueInt packet_offset)
     {
         int i, bytes;
         int count;
@@ -313,7 +313,7 @@ public class OpusPacketInfo
             /* Two VBR frames */
             case 2:
                 count = 2;
-                BoxedValue<Short> boxed_size = new BoxedValue<Short>(sizes[sizes_ptr]);
+                BoxedValueShort boxed_size = new BoxedValueShort(sizes[sizes_ptr]);
                 bytes = parse_size(data, data_ptr, len, boxed_size);
                 sizes[sizes_ptr] = boxed_size.Val;
                 len -= bytes;
@@ -358,7 +358,7 @@ public class OpusPacketInfo
                     last_size = len;
                     for (i = 0; i < count - 1; i++)
                     {
-                        boxed_size = new BoxedValue<Short>(sizes[sizes_ptr + i]);
+                        boxed_size = new BoxedValueShort(sizes[sizes_ptr + i]);
                         bytes = parse_size(data, data_ptr, len, boxed_size);
                         sizes[sizes_ptr + i] = boxed_size.Val;
                         len -= bytes;
@@ -385,7 +385,7 @@ public class OpusPacketInfo
         /* Self-delimited framing has an extra size for the last frame. */
         if (self_delimited != 0)
         {
-            BoxedValue<Short> boxed_size = new BoxedValue<Short>(sizes[sizes_ptr + count - 1]);
+            BoxedValueShort boxed_size = new BoxedValueShort(sizes[sizes_ptr + count - 1]);
             bytes = parse_size(data, data_ptr, len, boxed_size);
             sizes[sizes_ptr + count - 1] = boxed_size.Val;
             len -= bytes;

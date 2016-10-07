@@ -24,22 +24,23 @@ public class ConcentusTest {
         
         try
         {
-            FileInputStream fileIn = new FileInputStream("C:\\Users\\lostromb\\Desktop\\mic_check.raw");
-            OpusEncoder encoder = OpusEncoder.Create(48000, 2, OpusApplication.OPUS_APPLICATION_AUDIO);
-            encoder.setBitrate(96000);
+            FileInputStream fileIn = new FileInputStream("Y:\\grave.raw");
+            OpusEncoder encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
+            encoder.setBitrate(32000);
+            encoder.setForceMode(OpusMode.MODE_SILK_ONLY);
             encoder.setSignalType(OpusSignal.OPUS_SIGNAL_MUSIC);
             encoder.setComplexity(10);
             
-            OpusDecoder decoder = OpusDecoder.Create(48000, 2);
+            OpusDecoder decoder = OpusDecoder.Create(48000, 1);
             
-            FileOutputStream fileOut = new FileOutputStream("C:\\Users\\lostromb\\Desktop\\mic_check_out.raw");
+            FileOutputStream fileOut = new FileOutputStream("Y:\\grave_out.raw");
             int packetSamples = 960;
-            byte[] inBuf = new byte[packetSamples * 4];
+            byte[] inBuf = new byte[packetSamples * 2];
             byte[] data_packet = new byte[1275];
-            while (fileIn.available() >= packetSamples * 4)
+            while (fileIn.available() >= inBuf.length)
             {
-                int bytesRead = fileIn.read(inBuf, 0, packetSamples * 4);
-                short[] pcm = BytesToShorts(inBuf, 0, packetSamples * 4);
+                int bytesRead = fileIn.read(inBuf, 0, inBuf.length);
+                short[] pcm = BytesToShorts(inBuf, 0, inBuf.length);
                 int bytesEncoded = encoder.Encode(pcm, 0, packetSamples, data_packet, 0, 1275);
                 System.out.println(bytesEncoded + " bytes encoded");
                 

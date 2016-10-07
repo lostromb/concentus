@@ -378,7 +378,7 @@ public class OpusDecoder
             {
                 /* Call SILK decoder */
                 int first_frame = (decoded_samples == 0) ? 1 : 0;
-                BoxedValue<Integer> boxed_silk_frame_size = new BoxedValue<Integer>(0);
+                BoxedValueInt boxed_silk_frame_size = new BoxedValueInt(0);
                 silk_ret = DecodeAPI.silk_Decode(silk_dec, this.DecControl,
                                         lost_flag, first_frame, dec, pcm_ptr2, pcm_ptr2_ptr, boxed_silk_frame_size);
                 silk_frame_size = boxed_silk_frame_size.Val;
@@ -589,7 +589,7 @@ public class OpusDecoder
 
      int opus_decode_native(byte[] data, int data_ptr,
       int len, short[] pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
-      int self_delimited, BoxedValue<Integer> packet_offset, int soft_clip)
+      int self_delimited, BoxedValueInt packet_offset, int soft_clip)
     {
         int i, nb_samples;
         int count, offset;
@@ -629,8 +629,8 @@ public class OpusDecoder
         packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, this.Fs);
         packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data, data_ptr);
 
-        BoxedValue<Byte> boxed_toc = new BoxedValue<Byte>((byte)0);
-        BoxedValue<Integer> boxed_offset = new BoxedValue<Integer>(0);
+        BoxedValueByte boxed_toc = new BoxedValueByte((byte)0);
+        BoxedValueInt boxed_offset = new BoxedValueInt(0);
         count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, boxed_toc, null, 0,
                                        size, 0, boxed_offset, packet_offset);
         toc = boxed_toc.Val;
@@ -643,7 +643,7 @@ public class OpusDecoder
 
         if (decode_fec != 0)
         {
-            BoxedValue<Integer> dummy = new BoxedValue<Integer>(0);
+            BoxedValueInt dummy = new BoxedValueInt(0);
             int duration_copy;
             int ret;
             /* If no FEC can be present, run the PLC (recursive call) */
@@ -730,7 +730,7 @@ public class OpusDecoder
 
         try
         {
-            BoxedValue<Integer> dummy = new BoxedValue<Integer>(0);
+            BoxedValueInt dummy = new BoxedValueInt(0);
             int ret = opus_decode_native(in_data, in_data_offset, len, out_pcm, out_pcm_offset, frame_size, decode_fec ? 1 : 0, 0, dummy, 0);
 
             if (ret < 0)
@@ -743,7 +743,7 @@ public class OpusDecoder
 
             return ret;
         }
-        catch (ClassCastException e)
+        catch (ArithmeticException e)
         {
             throw new OpusException("Internal error during decoding: " + e.getMessage());
         }

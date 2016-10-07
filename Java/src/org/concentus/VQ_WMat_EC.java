@@ -36,9 +36,9 @@ class VQ_WMat_EC
 {
     /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
     static void silk_VQ_WMat_EC(
-        BoxedValue<Byte> ind,                           /* O    index of best codebook vector               */
-        BoxedValue<Integer> rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
-        BoxedValue<Integer> gain_Q7,                       /* O    sum of absolute LTP coefficients            */
+        BoxedValueByte ind,                           /* O    index of best codebook vector               */
+        BoxedValueInt rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
+        BoxedValueInt gain_Q7,                       /* O    sum of absolute LTP coefficients            */
         short[] in_Q14,                        /* I    input vector to be quantized                */
         int in_Q14_ptr,
         int[] W_Q18,                         /* I    weighting matrix                            */

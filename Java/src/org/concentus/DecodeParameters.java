@@ -47,7 +47,7 @@ class DecodeParameters
         byte[][] cbk_ptr_Q7;
 
         /* Dequant Gains */
-        BoxedValue<Byte> boxedLastGainIndex = new BoxedValue<Byte>(psDec.LastGainIndex);
+        BoxedValueByte boxedLastGainIndex = new BoxedValueByte(psDec.LastGainIndex);
         GainQuantization.silk_gains_dequant(psDecCtrl.Gains_Q16, psDec.indices.GainsIndices,
             boxedLastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psDec.nb_subfr);
         psDec.LastGainIndex = boxedLastGainIndex.Val;

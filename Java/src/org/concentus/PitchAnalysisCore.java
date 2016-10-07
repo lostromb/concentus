@@ -60,9 +60,9 @@ class PitchAnalysisCore
     static int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
         short[] frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
         int[] pitch_out,         /* O    4 pitch lag values                                          */
-        BoxedValue<Short> lagIndex,          /* O    Lag Index                                                   */
-        BoxedValue<Byte> contourIndex,      /* O    Pitch contour Index                                         */
-        BoxedValue<Integer> LTPCorr_Q15,       /* I/O  Normalized correlation; input: value from previous frame    */
+        BoxedValueShort lagIndex,          /* O    Lag Index                                                   */
+        BoxedValueByte contourIndex,      /* O    Pitch contour Index                                         */
+        BoxedValueInt LTPCorr_Q15,       /* I/O  Normalized correlation; input: value from previous frame    */
         int prevLag,            /* I    Last lag of previous frame; set to zero is unvoiced         */
         int search_thres1_Q16,  /* I    First stage threshold for lag candidates 0 - 1              */
         int search_thres2_Q13,  /* I    Final threshold for lag candidates 0 - 1                    */
@@ -153,8 +153,8 @@ class PitchAnalysisCore
         *******************************************************************************/
 
         /* Inner product is calculated with different lengths, so scale for the worst case */
-        BoxedValue<Integer> boxed_energy = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> boxed_shift = new BoxedValue<Integer>(0);
+        BoxedValueInt boxed_energy = new BoxedValueInt(0);
+        BoxedValueInt boxed_shift = new BoxedValueInt(0);
         SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_4kHz, frame_length_4kHz);
         energy = boxed_energy.Val;
         shift = boxed_shift.Val;

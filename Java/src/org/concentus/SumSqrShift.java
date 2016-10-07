@@ -43,8 +43,8 @@ class SumSqrShift
     /// <param name="x">I   Input vector</param>
     /// <param name="len">I   Length of input vector</param>
     static void silk_sum_sqr_shift(
-        BoxedValue<Integer> energy,
-        BoxedValue<Integer> shift,
+        BoxedValueInt energy,
+        BoxedValueInt shift,
         short[] x,
         int x_ptr,
         int len)
@@ -112,8 +112,8 @@ class SumSqrShift
     /// <param name="x">I   Input vector</param>
     /// <param name="len">I   Length of input vector</param>
     static void silk_sum_sqr_shift(
-        BoxedValue<Integer> energy,
-        BoxedValue<Integer> shift,
+        BoxedValueInt energy,
+        BoxedValueInt shift,
         short[] x,
         int len)
     {

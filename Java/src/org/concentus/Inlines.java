@@ -1983,7 +1983,7 @@ class Inlines
     /// <param name="lz">number of leading zeros</param>
     /// <param name="frac_Q7">the 7 bits right after the leading one</param>
 
-    static void silk_CLZ_FRAC(int input, BoxedValue<Integer> lz, BoxedValue<Integer> frac_Q7)
+    static void silk_CLZ_FRAC(int input, BoxedValueInt lz, BoxedValueInt frac_Q7)
     {
         int lzeros = silk_CLZ32(input);
 
@@ -2010,8 +2010,8 @@ class Inlines
             return 0;
         }
 
-        BoxedValue<Integer> boxed_lz = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> boxed_frac_Q7 = new BoxedValue<Integer>(0);
+        BoxedValueInt boxed_lz = new BoxedValueInt(0);
+        BoxedValueInt boxed_frac_Q7 = new BoxedValueInt(0);
         silk_CLZ_FRAC(x, boxed_lz, boxed_frac_Q7);
         lz = boxed_lz.Val;
         frac_Q7 = boxed_frac_Q7.Val;
@@ -2048,8 +2048,8 @@ class Inlines
 
     static int silk_lin2log(int inLin)
     {
-        BoxedValue<Integer> lz = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> frac_Q7 = new BoxedValue<Integer>(0);
+        BoxedValueInt lz = new BoxedValueInt(0);
+        BoxedValueInt frac_Q7 = new BoxedValueInt(0);
 
         silk_CLZ_FRAC(inLin, lz, frac_Q7);
 

@@ -54,7 +54,7 @@ class FindLTP
     static void silk_find_LTP(
          short[] b_Q14,      /* O    LTP coefs [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER]                                                                  */
          int[] WLTP, /* O    Weight for LTP quantization [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER]                                          */
-         BoxedValue<Integer> LTPredCodGain_Q7,                      /* O    LTP coding gain                                                             */
+         BoxedValueInt LTPredCodGain_Q7,                      /* O    LTP coding gain                                                             */
          short[] r_lpc,                                /* I    residual signal after LPC signal + state for first 10 ms                    */
          int[] lag,                    /* I    LTP lags   [SilkConstants.MAX_NB_SUBFR]                                                                 */
          int[] Wght_Q15,               /* I    weights [SilkConstants.MAX_NB_SUBFR]                                                                    */
@@ -93,8 +93,8 @@ class FindLTP
         for (k = 0; k < nb_subfr; k++)
         {
             lag_ptr = r_ptr - (lag[k] + SilkConstants.LTP_ORDER / 2);
-            BoxedValue<Integer> boxed_rr = new BoxedValue<Integer>(0);
-            BoxedValue<Integer> boxed_rr_shift = new BoxedValue<Integer>(0);
+            BoxedValueInt boxed_rr = new BoxedValueInt(0);
+            BoxedValueInt boxed_rr_shift = new BoxedValueInt(0);
             SumSqrShift.silk_sum_sqr_shift(boxed_rr, boxed_rr_shift, r_lpc, r_ptr, subfr_length); /* rr[ k ] in Q( -rr_shifts ) */
             rr[k] = boxed_rr.Val;
             rr_shifts = boxed_rr_shift.Val;
@@ -107,7 +107,7 @@ class FindLTP
                 rr_shifts += (LTP_CORRS_HEAD_ROOM - LZs);
             }
             corr_rshifts[k] = rr_shifts;
-            BoxedValue<Integer> boxed_shifts = new BoxedValue<Integer>(corr_rshifts[k]);
+            BoxedValueInt boxed_shifts = new BoxedValueInt(corr_rshifts[k]);
             CorrelateMatrix.silk_corrMatrix(r_lpc, lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP, WLTP_ptr, boxed_shifts);  /* WLTP_ptr in Q( -corr_rshifts[ k ] ) */
             corr_rshifts[k] = boxed_shifts.Val;
 

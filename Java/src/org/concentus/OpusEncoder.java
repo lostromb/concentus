@@ -994,7 +994,7 @@ public class OpusEncoder
 
             if (prefill != 0)
             {
-                BoxedValue<Integer> zero = new BoxedValue<Integer>(0);
+                BoxedValueInt zero = new BoxedValueInt(0);
                 int prefill_offset;
 
                 /* Use a smooth onset for the SILK prefill to avoid the encoder trying to encode
@@ -1014,7 +1014,7 @@ public class OpusEncoder
 
             System.arraycopy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
 
-            BoxedValue<Integer> boxed_silkBytes = new BoxedValue<Integer>(nBytes);
+            BoxedValueInt boxed_silkBytes = new BoxedValueInt(nBytes);
             ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
             nBytes = boxed_silkBytes.Val;
 
@@ -1396,7 +1396,7 @@ public class OpusEncoder
 
             return ret;
         }
-        catch (Exception e)
+        catch (ArithmeticException e)
         {
             throw new OpusException("Internal error during encoding: " + e.getMessage());
         }

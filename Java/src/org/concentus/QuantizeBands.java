@@ -133,7 +133,7 @@ class QuantizeBands
                 {
                     int pi;
                     pi = 2 * Inlines.IMIN(i, 20);
-                    BoxedValue<Integer> boxed_qi = new BoxedValue<Integer>(qi);
+                    BoxedValueInt boxed_qi = new BoxedValueInt(qi);
                     Laplace.ec_laplace_encode(enc, boxed_qi, ((prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
                     qi = boxed_qi.Val;
                 }
@@ -165,7 +165,7 @@ class QuantizeBands
     static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
           int[][] eBands, int[][] oldEBands, int budget,
           int[][] error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
-          int force_intra, BoxedValue<Integer> delayedIntra, int two_pass, int loss_rate, int lfe)
+          int force_intra, BoxedValueInt delayedIntra, int two_pass, int loss_rate, int lfe)
     {
         int intra;
         int max_decay;

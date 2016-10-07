@@ -877,7 +877,7 @@ class SilkChannelEncoder
     /* Encode frame */
     /****************/
     int silk_encode_frame(
-        BoxedValue<Integer> pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
+        BoxedValueInt pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
         EntropyCoder psRangeEnc,                            /* I/O  compressor data structure                                                   */
         int condCoding,                             /* I    The type of conditional coding to use                                       */
         int maxBits,                                /* I    If > 0: maximum number of output bits                                       */
@@ -1143,7 +1143,7 @@ class SilkChannelEncoder
 
                 /* Quantize gains */
                 this.sShape.LastGainIndex = sEncCtrl.lastGainIndexPrev;
-                BoxedValue<Byte> boxed_gainIndex = new BoxedValue<Byte>(this.sShape.LastGainIndex);
+                BoxedValueByte boxed_gainIndex = new BoxedValueByte(this.sShape.LastGainIndex);
                 GainQuantization.silk_gains_quant(this.indices.GainsIndices, sEncCtrl.Gains_Q16,
                       boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                 this.sShape.LastGainIndex = boxed_gainIndex.Val;
@@ -1216,7 +1216,7 @@ class SilkChannelEncoder
 
             /* Decode to get gains in sync with decoder         */
             /* Overwrite unquantized gains with quantized gains */
-            BoxedValue<Byte> boxed_gainIndex = new BoxedValue<Byte>(this.LBRRprevLastGainIndex);
+            BoxedValueByte boxed_gainIndex = new BoxedValueByte(this.LBRRprevLastGainIndex);
             GainQuantization.silk_gains_dequant(thisCtrl.Gains_Q16, psIndices_LBRR.GainsIndices,
                 boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
             this.LBRRprevLastGainIndex = boxed_gainIndex.Val;

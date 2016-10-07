@@ -86,8 +86,8 @@ class Rate
     }
 
     static int interp_bits2pulses(CeltMode m, int start, int end, int skip_start,
-          int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, BoxedValue<Integer> _balance,
-          int skip_rsv, BoxedValue<Integer> intensity, int intensity_rsv, BoxedValue<Integer> dual_stereo, int dual_stereo_rsv, int[] bits,
+          int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, BoxedValueInt _balance,
+          int skip_rsv, BoxedValueInt intensity, int intensity_rsv, BoxedValueInt dual_stereo, int dual_stereo_rsv, int[] bits,
           int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
     {
         int psum;
@@ -382,8 +382,8 @@ class Rate
         return codedBands;
     }
 
-    static int compute_allocation(CeltMode m, int start, int end, int[] offsets, int[] cap, int alloc_trim, BoxedValue<Integer> intensity, BoxedValue<Integer> dual_stereo,
-          int total, BoxedValue<Integer> balance, int[] pulses, int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
+    static int compute_allocation(CeltMode m, int start, int end, int[] offsets, int[] cap, int alloc_trim, BoxedValueInt intensity, BoxedValueInt dual_stereo,
+          int total, BoxedValueInt balance, int[] pulses, int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, int encode, int prev, int signalBandwidth)
     {
         int lo, hi, len, j;
         int codedBands;

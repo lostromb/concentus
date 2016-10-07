@@ -72,10 +72,10 @@ class Kernels
             mem[i] = x[x_ptr + N - i - 1];
         }
 
-        BoxedValue<Integer> sum0 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum2 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum3 = new BoxedValue<Integer>(0);
+        BoxedValueInt sum0 = new BoxedValueInt(0);
+        BoxedValueInt sum1 = new BoxedValueInt(0);
+        BoxedValueInt sum2 = new BoxedValueInt(0);
+        BoxedValueInt sum3 = new BoxedValueInt(0);
         
         for (i = 0; i < N - 3; i += 4)
         {
@@ -139,10 +139,10 @@ class Kernels
             mem[i] = x[x_ptr + N - i - 1];
         }
 
-        BoxedValue<Integer> sum0 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum2 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> sum3 = new BoxedValue<Integer>(0);
+        BoxedValueInt sum0 = new BoxedValueInt(0);
+        BoxedValueInt sum1 = new BoxedValueInt(0);
+        BoxedValueInt sum2 = new BoxedValueInt(0);
+        BoxedValueInt sum3 = new BoxedValueInt(0);
         
         for (i = 0; i < N - 3; i += 4)
         {
@@ -177,7 +177,7 @@ class Kernels
     /// <param name="y"></param>
     /// <param name="sum"></param>
     /// <param name="len"></param>
-    static void xcorr_kernel(short[] x, int x_ptr, short[] y, int y_ptr, BoxedValue<Integer> _sum0, BoxedValue<Integer> _sum1, BoxedValue<Integer> _sum2, BoxedValue<Integer> _sum3, int len)
+    static void xcorr_kernel(short[] x, int x_ptr, short[] y, int y_ptr, BoxedValueInt _sum0, BoxedValueInt _sum1, BoxedValueInt _sum2, BoxedValueInt _sum3, int len)
     {
         int sum0 = _sum0.Val;
         int sum1 = _sum1.Val;
@@ -255,7 +255,7 @@ class Kernels
         _sum3.Val = sum3;
     }
 
-    static void xcorr_kernel(int[] x, int[] y, int y_ptr, BoxedValue<Integer> _sum0, BoxedValue<Integer> _sum1, BoxedValue<Integer> _sum2, BoxedValue<Integer> _sum3, int len)
+    static void xcorr_kernel(int[] x, int[] y, int y_ptr, BoxedValueInt _sum0, BoxedValueInt _sum1, BoxedValueInt _sum2, BoxedValueInt _sum3, int len)
     {
         int sum0 = _sum0.Val;
         int sum1 = _sum1.Val;
@@ -361,7 +361,7 @@ class Kernels
         return xy;
     }
 
-    static void dual_inner_prod(int[] x, int x_ptr, int[] y01,int y01_ptr, int[] y02, int y02_ptr, int N, BoxedValue<Integer> xy1, BoxedValue<Integer> xy2)
+    static void dual_inner_prod(int[] x, int x_ptr, int[] y01,int y01_ptr, int[] y02, int y02_ptr, int N, BoxedValueInt xy1, BoxedValueInt xy2)
     {
         int i;
         int xy01 = 0;

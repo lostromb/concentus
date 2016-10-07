@@ -103,7 +103,7 @@ class ProcessGains
         psEncCtrl.lastGainIndexPrev = psShapeSt.LastGainIndex;
 
         /* Quantize gains */
-        BoxedValue<Byte> boxed_lastGainIndex = new BoxedValue<Byte>(psShapeSt.LastGainIndex);
+        BoxedValueByte boxed_lastGainIndex = new BoxedValueByte(psShapeSt.LastGainIndex);
         GainQuantization.silk_gains_quant(psEnc.indices.GainsIndices, psEncCtrl.Gains_Q16,
             boxed_lastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.nb_subfr);
         psShapeSt.LastGainIndex = boxed_lastGainIndex.Val;

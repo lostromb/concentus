@@ -31,11 +31,31 @@
 
 package org.concentus;
 
-class BoxedValue<T>
+class BoxedValueByte
 {
-    public T Val;
+    public byte Val;
     
-    public BoxedValue(T v)
+    public BoxedValueByte(byte v)
+    {
+        Val = v;
+    }
+}
+
+class BoxedValueShort
+{
+    public short Val;
+    
+    public BoxedValueShort(short v)
+    {
+        Val = v;
+    }
+}
+
+class BoxedValueInt
+{
+    public int Val;
+    
+    public BoxedValueInt(int v)
     {
         Val = v;
     }

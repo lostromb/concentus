@@ -37,7 +37,7 @@ class Autocorrelation
     /* Compute autocorrelation */
     static void silk_autocorr(
         int[] results,           /* O    Result (length correlationCount)                            */
-        BoxedValue<Integer> scale,             /* O    Scaling of the correlation vector                           */
+        BoxedValueInt scale,             /* O    Scaling of the correlation vector                           */
         short[] inputData,         /* I    Input data to correlate                                     */
         int inputDataSize,      /* I    Length of input                                             */
         int correlationCount   /* I    Number of correlation taps to compute                       */
@@ -218,7 +218,7 @@ class Autocorrelation
     /* Autocorrelations for a warped frequency axis */
     static void silk_warped_autocorrelation(
               int[] corr,                                  /* O    Result [order + 1]                                                          */
-              BoxedValue<Integer> scale,                                 /* O    Scaling of the correlation vector                                           */
+              BoxedValueInt scale,                                 /* O    Scaling of the correlation vector                                           */
                 short[] input,                                 /* I    Input data to correlate                                                     */
                 int warping_Q16,                            /* I    Warping coefficient                                                         */
                 int length,                                 /* I    Length of input                                                             */

@@ -755,7 +755,7 @@ class SilkNSQState
                 psIndices.signalType,
                 decisionDelay);
 
-            BoxedValue<Integer> smpl_buf_idx_boxed = new BoxedValue<Integer>(smpl_buf_idx);
+            BoxedValueInt smpl_buf_idx_boxed = new BoxedValueInt(smpl_buf_idx);
             silk_noise_shape_quantizer_del_dec(
                 psDelDec,
                 psIndices.signalType,
@@ -861,7 +861,7 @@ class SilkNSQState
         int predictLPCOrder,        /* I    Prediction filter order             */
         int warping_Q16,            /* I                                        */
         int nStatesDelayedDecision, /* I    Number of states in decision tree   */
-        BoxedValue<Integer> smpl_buf_idx,          /* I    Index to newest samples in buffers  */
+        BoxedValueInt smpl_buf_idx,          /* I    Index to newest samples in buffers  */
         int decisionDelay           /* I                                        */
     )
     {

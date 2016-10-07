@@ -669,9 +669,9 @@ class CeltDecoder
         pulses = new int[nbEBands];
         fine_priority = new int[nbEBands];
 
-        BoxedValue<Integer> boxed_intensity = new BoxedValue<Integer>(intensity);
-        BoxedValue<Integer> boxed_dual_stereo = new BoxedValue<Integer>(dual_stereo);
-        BoxedValue<Integer> boxed_balance = new BoxedValue<Integer>(0);
+        BoxedValueInt boxed_intensity = new BoxedValueInt(intensity);
+        BoxedValueInt boxed_dual_stereo = new BoxedValueInt(dual_stereo);
+        BoxedValueInt boxed_balance = new BoxedValueInt(0);
         codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
               alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
               fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
@@ -692,7 +692,7 @@ class CeltDecoder
 
         X = Arrays.InitTwoDimensionalArrayInt(C, N);   /**< Interleaved normalised MDCTs */
 
-        BoxedValue<Integer> boxed_rng = new BoxedValue<Integer>(this.rng);
+        BoxedValueInt boxed_rng = new BoxedValueInt(this.rng);
         Bands.quant_all_bands(0, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
               null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
               len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, boxed_rng);

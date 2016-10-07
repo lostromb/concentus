@@ -78,7 +78,7 @@ class Stereo
     /// <param name="decode_only_mid">O    Flag that only mid channel has been coded</param>
     static void silk_stereo_decode_mid_only(
         EntropyCoder psRangeDec,
-        BoxedValue<Integer> decode_only_mid
+        BoxedValueInt decode_only_mid
     )
     {
         /* Decode flag that only mid channel is coded */
@@ -129,7 +129,7 @@ class Stereo
     /// <param name="smooth_coef_Q16">I    Smoothing coefficient</param>
     /// <returns>O    Returns predictor in Q13</returns>
     static int silk_stereo_find_predictor(
-        BoxedValue<Integer> ratio_Q14,
+        BoxedValueInt ratio_Q14,
         short[] x,
         short[] y,
         int[] mid_res_amp_Q0,
@@ -139,10 +139,10 @@ class Stereo
     {
         int scale;
         // fixme optimize this unboxing
-        BoxedValue<Integer> nrgx = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> nrgy = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> scale1 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> scale2 = new BoxedValue<Integer>(0);
+        BoxedValueInt nrgx = new BoxedValueInt(0);
+        BoxedValueInt nrgy = new BoxedValueInt(0);
+        BoxedValueInt scale1 = new BoxedValueInt(0);
+        BoxedValueInt scale2 = new BoxedValueInt(0);
         int corr, pred_Q13, pred2_Q10;
 
         /* Find predictor */
@@ -200,7 +200,7 @@ class Stereo
         short[] x2,
         int x2_ptr,
         byte[][] ix,
-        BoxedValue<Byte> mid_only_flag,
+        BoxedValueByte mid_only_flag,
         int[] mid_side_rates_bps,
         int total_rate_bps,
         int prev_speech_act_Q8,
@@ -212,8 +212,8 @@ class Stereo
         int sum, diff, smooth_coef_Q16, pred0_Q13, pred1_Q13;
         int[] pred_Q13 = new int[2];
         int frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
-        BoxedValue<Integer> LP_ratio_Q14 = new BoxedValue<Integer>(0);
-        BoxedValue<Integer> HP_ratio_Q14 = new BoxedValue<Integer>(0);
+        BoxedValueInt LP_ratio_Q14 = new BoxedValueInt(0);
+        BoxedValueInt HP_ratio_Q14 = new BoxedValueInt(0);
         short[] side;
         short[] LP_mid;
         short[] HP_mid;

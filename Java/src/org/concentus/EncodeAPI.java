@@ -116,7 +116,7 @@ class EncodeAPI
         short[] samplesIn,
         int nSamplesIn,
         EntropyCoder psRangeEnc,
-        BoxedValue<Integer> nBytesOut,
+        BoxedValueInt nBytesOut,
         int prefillFlag)
     {
         int ret = SilkError.SILK_NO_ERROR;
@@ -476,7 +476,7 @@ class EncodeAPI
                 /* Convert Left/Right to Mid/Side */
                 if (encControl.nChannelsInternal == 2)
                 {
-                    BoxedValue<Byte> midOnlyFlagBoxed = new BoxedValue<Byte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
+                    BoxedValueByte midOnlyFlagBoxed = new BoxedValueByte(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                     Stereo.silk_stereo_LR_to_MS(psEnc.sStereo,
                         psEnc.state_Fxx[0].inputBuf,
                         2,
