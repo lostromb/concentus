@@ -65,6 +65,16 @@ class Arrays<T>
         return returnVal;
     }
     
+    static byte[][] InitTwoDimensionalArrayByte(int x, int y)
+    {
+        byte[][] returnVal = new byte[x][];
+        for (int c = 0; c < x; c++)
+        {
+            returnVal[c] = new byte[y];
+        }
+        return returnVal;
+    }
+    
     static byte[][][] InitThreeDimensionalArrayByte(int x, int y, int z)
     {
         byte[][][] returnVal = new byte[x][][];
@@ -94,7 +104,16 @@ class Arrays<T>
             array[c] = value;
         }
     }
+    
     static void MemSet(int[] array, int value)
+    {
+        for (int c = 0; c < array.length; c++)
+        {
+            array[c] = value;
+        }
+    }
+    
+    static void MemSet(float[] array, float value)
     {
         for (int c = 0; c < array.length; c++)
         {
@@ -119,6 +138,14 @@ class Arrays<T>
     }
     
     static void MemSet(int[] array, int value, int length)
+    {
+        for (int c = 0; c < length; c++)
+        {
+            array[c] = value;
+        }
+    }
+    
+    static void MemSet(float[] array, float value, int length)
     {
         for (int c = 0; c < length; c++)
         {

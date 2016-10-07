@@ -54,7 +54,7 @@ class SilkNSQState
 
     void Reset()
     {
-        Arrays.MemSet(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+        Arrays.MemSet(xq, (short)0, 2 * SilkConstants.MAX_FRAME_LENGTH);
         Arrays.MemSet(sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
         Arrays.MemSet(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
         Arrays.MemSet(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
@@ -77,10 +77,10 @@ class SilkNSQState
         this.rand_seed = other.rand_seed;
         this.prev_gain_Q16 = other.prev_gain_Q16;
         this.rewhite_flag = other.rewhite_flag;
-        System.arraycopy(other.xq, this.xq, 2 * SilkConstants.MAX_FRAME_LENGTH);
-        System.arraycopy(other.sLTP_shp_Q14, this.sLTP_shp_Q14, 2 * SilkConstants.MAX_FRAME_LENGTH);
-        System.arraycopy(other.sLPC_Q14, this.sLPC_Q14, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-        System.arraycopy(other.sAR2_Q14, this.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
+        System.arraycopy(other.xq, 0, this.xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+        System.arraycopy(other.sLTP_shp_Q14, 0, this.sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+        System.arraycopy(other.sLPC_Q14, 0, this.sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+        System.arraycopy(other.sAR2_Q14, 0, this.sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
     }
 
     private class NSQ_del_dec_struct
@@ -104,13 +104,13 @@ class SilkNSQState
 
         void PartialCopyFrom(NSQ_del_dec_struct other, int q14Offset)
         {
-            Buffer.BlockCopy(other.sLPC_Q14, q14Offset * sizeof(int), sLPC_Q14, q14Offset * sizeof(int), (SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH - q14Offset) * sizeof(int));
-            Buffer.BlockCopy(other.RandState, 0, RandState, 0, SilkConstants.DECISION_DELAY * sizeof(int));
-            Buffer.BlockCopy(other.Q_Q10, 0, Q_Q10, 0, SilkConstants.DECISION_DELAY * sizeof(int));
-            Buffer.BlockCopy(other.Xq_Q14, 0, Xq_Q14, 0, SilkConstants.DECISION_DELAY * sizeof(int));
-            Buffer.BlockCopy(other.Pred_Q15, 0, Pred_Q15, 0, SilkConstants.DECISION_DELAY * sizeof(int));
-            Buffer.BlockCopy(other.Shape_Q14, 0, Shape_Q14, 0, SilkConstants.DECISION_DELAY * sizeof(int));
-            Buffer.BlockCopy(other.sAR2_Q14, 0, sAR2_Q14, 0, sAR2_Q14.Length * sizeof(int));
+            System.arraycopy(other.sLPC_Q14, q14Offset, sLPC_Q14, q14Offset, (SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH - q14Offset));
+            System.arraycopy(other.RandState, 0, RandState, 0, SilkConstants.DECISION_DELAY);
+            System.arraycopy(other.Q_Q10, 0, Q_Q10, 0, SilkConstants.DECISION_DELAY);
+            System.arraycopy(other.Xq_Q14, 0, Xq_Q14, 0, SilkConstants.DECISION_DELAY);
+            System.arraycopy(other.Pred_Q15, 0, Pred_Q15, 0, SilkConstants.DECISION_DELAY);
+            System.arraycopy(other.Shape_Q14, 0, Shape_Q14, 0, SilkConstants.DECISION_DELAY);
+            System.arraycopy(other.sAR2_Q14, 0, sAR2_Q14, 0, sAR2_Q14.length);
             LF_AR_Q14 = other.LF_AR_Q14;
             Seed = other.Seed;
             SeedInit = other.SeedInit;
@@ -123,7 +123,7 @@ class SilkNSQState
         }
     }
 
-    private struct NSQ_sample_struct
+    private class NSQ_sample_struct
     {
         int Q_Q10;
         int RD_Q10;
@@ -132,15 +132,15 @@ class SilkNSQState
         int sLTP_shp_Q14;
         int LPC_exc_Q14;
 
-        //void Assign(NSQ_sample_struct other)
-        //{
-        //    this.Q_Q10 = other.Q_Q10;
-        //    this.RD_Q10 = other.RD_Q10;
-        //    this.xq_Q14 = other.xq_Q14;
-        //    this.LF_AR_Q14 = other.LF_AR_Q14;
-        //    this.sLTP_shp_Q14 = other.sLTP_shp_Q14;
-        //    this.LPC_exc_Q14 = other.LPC_exc_Q14;
-        //}
+        void Assign(NSQ_sample_struct other)
+        {
+            this.Q_Q10 = other.Q_Q10;
+            this.RD_Q10 = other.RD_Q10;
+            this.xq_Q14 = other.xq_Q14;
+            this.LF_AR_Q14 = other.LF_AR_Q14;
+            this.sLTP_shp_Q14 = other.sLTP_shp_Q14;
+            this.LPC_exc_Q14 = other.LPC_exc_Q14;
+        }
     }
 
     void silk_NSQ
@@ -629,8 +629,8 @@ class SilkNSQState
             psDD.RD_Q10 = 0;
             psDD.LF_AR_Q14 = this.sLF_AR_shp_Q14;
             psDD.Shape_Q14[0] = this.sLTP_shp_Q14[psEncC.ltp_mem_length - 1];
-            System.arraycopy(this.sLPC_Q14, psDD.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
-            System.arraycopy(this.sAR2_Q14, psDD.sAR2_Q14, psEncC.shapingLPCOrder);
+            System.arraycopy(this.sLPC_Q14, 0, psDD.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
+            System.arraycopy(this.sAR2_Q14, 0, psDD.sAR2_Q14, 0, psEncC.shapingLPCOrder);
         }
 
         offset_Q10 = SilkTables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
@@ -1160,7 +1160,7 @@ class SilkNSQState
             if (RDmin_Q10 < RDmax_Q10)
             {
                 psDelDec[RDmax_ind].PartialCopyFrom(psDelDec[RDmin_ind], i);
-                sampleStates[RDmax_ind * 2] = (sampleStates[RDmin_ind * 2 + 1]); // porting note: this uses struct copy-on-assign semantics
+                sampleStates[RDmax_ind * 2].Assign(sampleStates[RDmin_ind * 2 + 1]);
             }
 
             /* Write samples from winner to output and long-term filter states */
@@ -1198,7 +1198,7 @@ class SilkNSQState
         for (k = 0; k < nStatesDelayedDecision; k++)
         {
             psDD = psDelDec[k];
-            Buffer.BlockCopy(psDD.sLPC_Q14, length * sizeof(int), psDD.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH * sizeof(int));
+            System.arraycopy(psDD.sLPC_Q14, length, psDD.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
         }
     }
 

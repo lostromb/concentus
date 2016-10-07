@@ -300,7 +300,7 @@ class VoiceActivityDetection
         }
 
         /* Copy the resulting speech activity in Q8 */
-        psEncC.speech_activity_Q8 = Inlines.silk_min_int(Inlines.silk_RSHIFT(SA_Q15, 7), byte.MaxValue);
+        psEncC.speech_activity_Q8 = Inlines.silk_min_int(Inlines.silk_RSHIFT(SA_Q15, 7), 255);
 
         /***********************************/
         /* Energy Level and SNR estimation */

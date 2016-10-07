@@ -351,24 +351,24 @@ public class OpusDecoder
                 {
                     if (this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
                     {
-                        this.DecControl.SampleRate = 8000;
+                        this.DecControl.internalSampleRate = 8000;
                     }
                     else if (this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
                     {
-                        this.DecControl.SampleRate = 12000;
+                        this.DecControl.internalSampleRate = 12000;
                     }
                     else if (this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
                     {
-                        this.DecControl.SampleRate = 16000;
+                        this.DecControl.internalSampleRate = 16000;
                     }
                     else {
-                        this.DecControl.SampleRate = 16000;
+                        this.DecControl.internalSampleRate = 16000;
                         Inlines.OpusAssert(false);
                     }
                 }
                 else {
                     /* Hybrid mode */
-                    this.DecControl.SampleRate = 16000;
+                    this.DecControl.internalSampleRate = 16000;
                 }
             }
 

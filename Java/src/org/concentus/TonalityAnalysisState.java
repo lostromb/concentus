@@ -45,7 +45,7 @@ class TonalityAnalysisState
     int mem_fill;                      /* number of usable samples in the buffer */
     final float[] prev_band_tonality = new float[OpusConstants.NB_TBANDS];
     float prev_tonality;
-    final float[][] E = Arrays.InitTwoDimensionalArray<float>(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
+    final float[][] E = Arrays.InitTwoDimensionalArrayFloat(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
     final float[] lowE = new float[OpusConstants.NB_TBANDS];
     final float[] highE = new float[OpusConstants.NB_TBANDS];
     final float[] meanE = new float[OpusConstants.NB_TOT_BANDS];
@@ -86,23 +86,23 @@ class TonalityAnalysisState
 
     void Reset()
     {
-        Arrays.MemSet<float>(angle,0, 240);
-        Arrays.MemSet<float>(d_angle,0, 240);
-        Arrays.MemSet<float>(d2_angle,0, 240);
+        Arrays.MemSet(angle, 0f, 240);
+        Arrays.MemSet(d_angle,0f, 240);
+        Arrays.MemSet(d2_angle,0f, 240);
         Arrays.MemSet(inmem, 0, OpusConstants.ANALYSIS_BUF_SIZE);
         mem_fill = 0;
-        Arrays.MemSet<float>(prev_band_tonality,0, OpusConstants.NB_TBANDS);
+        Arrays.MemSet(prev_band_tonality,0f, OpusConstants.NB_TBANDS);
         prev_tonality = 0;
         for (int c = 0; c < OpusConstants.NB_FRAMES; c++)
         {
-            Arrays.MemSet<float>(E[c], 0, OpusConstants.NB_TBANDS);
+            Arrays.MemSet(E[c], 0f, OpusConstants.NB_TBANDS);
         }
-        Arrays.MemSet<float>(lowE,0, OpusConstants.NB_TBANDS);
-        Arrays.MemSet<float>(highE,0, OpusConstants.NB_TBANDS);
-        Arrays.MemSet<float>(meanE,0, OpusConstants.NB_TOT_BANDS);
-        Arrays.MemSet<float>(mem,0, 32);
-        Arrays.MemSet<float>(cmean,0, 8);
-        Arrays.MemSet<float>(std,0, 9);
+        Arrays.MemSet(lowE,0f, OpusConstants.NB_TBANDS);
+        Arrays.MemSet(highE,0f, OpusConstants.NB_TBANDS);
+        Arrays.MemSet(meanE,0f, OpusConstants.NB_TOT_BANDS);
+        Arrays.MemSet(mem,0f, 32);
+        Arrays.MemSet(cmean,0f, 8);
+        Arrays.MemSet(std,0f, 9);
         music_prob = 0;
         Etracker = 0;
         lowECount = 0;
@@ -110,10 +110,10 @@ class TonalityAnalysisState
         last_music = 0;
         last_transition = 0;
         count = 0;
-        Arrays.MemSet<float>(subframe_mem,0, 3);
+        Arrays.MemSet(subframe_mem, 0f, 3);
         analysis_offset = 0;
-        Arrays.MemSet<float>(pspeech,0, OpusConstants.DETECT_SIZE);
-        Arrays.MemSet<float>(pmusic,0, OpusConstants.DETECT_SIZE);
+        Arrays.MemSet(pspeech, 0f, OpusConstants.DETECT_SIZE);
+        Arrays.MemSet(pmusic, 0f, OpusConstants.DETECT_SIZE);
         speech_confidence = 0;
         music_confidence = 0;
         speech_confidence_count = 0;

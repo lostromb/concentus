@@ -30,7 +30,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.concentus;.Structs
+package org.concentus;
 
 /// <summary>
 /// Encoder Super Struct

@@ -501,7 +501,7 @@ class Filters
         }
     }
 
-    private final int QA = 24;
+    private static final int QA = 24;
     private static final int A_LIMIT = ((int)((0.99975f) * ((long)1 << (QA)) + 0.5))/*Inlines.SILK_CONST(0.99975f, QA)*/;
 
     /// <summary>

@@ -128,7 +128,7 @@ class SilkChannelEncoder
     int LBRR_enabled = 0;                      /* Depends on useInBandFRC, bitrate and packet loss rate            */
     int LBRR_GainIncreases = 0;                /* Gains increment for coding LBRR frames                           */
     final SideInfoIndices[] indices_LBRR = new SideInfoIndices[SilkConstants.MAX_FRAMES_PER_PACKET];
-    final byte[][] pulses_LBRR = Arrays.InitTwoDimensionalArray<byte>(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
+    final byte[][] pulses_LBRR = Arrays.InitTwoDimensionalArrayByte(SilkConstants.MAX_FRAMES_PER_PACKET, SilkConstants.MAX_FRAME_LENGTH);
 
     /* Noise shaping state */
     final SilkShapeState sShape = new SilkShapeState();
@@ -158,7 +158,7 @@ class SilkChannelEncoder
         sLP.Reset();
         sVAD.Reset();
         sNSQ.Reset();
-        Arrays.MemSet(prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+        Arrays.MemSet(prev_NLSFq_Q15, (short)0, SilkConstants.MAX_LPC_ORDER);
         speech_activity_Q8 = 0;
         allow_bandwidth_switch = 0;
         LBRRprevLastGainIndex = 0;
@@ -206,12 +206,12 @@ class SilkChannelEncoder
         Arrays.MemSet(input_quality_bands_Q15, 0, SilkConstants.VAD_N_BANDS);
         input_tilt_Q15 = 0;
         SNR_dB_Q7 = 0;
-        Arrays.MemSet<byte>(VAD_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+        Arrays.MemSet(VAD_flags, (byte)0, SilkConstants.MAX_FRAMES_PER_PACKET);
         LBRR_flag = 0;
         Arrays.MemSet(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
         indices.Reset();
-        Arrays.MemSet<byte>(pulses, 0, SilkConstants.MAX_FRAME_LENGTH);
-        Arrays.MemSet(inputBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2);
+        Arrays.MemSet(pulses, (byte)0, SilkConstants.MAX_FRAME_LENGTH);
+        Arrays.MemSet(inputBuf, (short)0, SilkConstants.MAX_FRAME_LENGTH + 2);
         inputBufIx = 0;
         nFramesPerPacket = 0;
         nFramesEncoded = 0;
@@ -231,11 +231,11 @@ class SilkChannelEncoder
         for (int c = 0; c < SilkConstants.MAX_FRAMES_PER_PACKET; c++)
         {
             indices_LBRR[c].Reset();
-            Arrays.MemSet<byte>(pulses_LBRR[c], 0, SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSet(pulses_LBRR[c], (byte)0, SilkConstants.MAX_FRAME_LENGTH);
         }
         sShape.Reset();
         sPrefilt.Reset();
-        Arrays.MemSet(x_buf, 0, 2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
+        Arrays.MemSet(x_buf, (short)0, 2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
         LTPCorr_Q15 = 0;
     }
 
@@ -437,7 +437,7 @@ class SilkChannelEncoder
             this.sShape.Reset();
             this.sPrefilt.Reset();
             this.sNSQ.Reset();
-            Arrays.MemSet(this.prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet(this.prev_NLSFq_Q15, (short)0, SilkConstants.MAX_LPC_ORDER);
             Arrays.MemSet(this.sLP.In_LP_State, 0, 2);
             this.inputBufIx = 0;
             this.nFramesEncoded = 0;
@@ -1202,7 +1202,7 @@ class SilkChannelEncoder
             psIndices_LBRR.Assign(this.indices);
 
             /* Save original gains */
-            System.arraycopy(thisCtrl.Gains_Q16, TempGains_Q16, this.nb_subfr);
+            System.arraycopy(thisCtrl.Gains_Q16, 0, TempGains_Q16, 0, this.nb_subfr);
 
             if (this.nFramesEncoded == 0 || this.LBRR_flags[this.nFramesEncoded - 1] == 0)
             {
@@ -1259,7 +1259,7 @@ class SilkChannelEncoder
             }
 
             /* Restore original gains */
-            System.arraycopy(TempGains_Q16, thisCtrl.Gains_Q16, this.nb_subfr);
+            System.arraycopy(TempGains_Q16, 0, thisCtrl.Gains_Q16, 0, this.nb_subfr);
         }
     }
 }

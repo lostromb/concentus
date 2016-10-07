@@ -391,7 +391,7 @@ public class OpusEncoder
             {
                 analysis_read_pos_bak = this.analysis.read_pos;
                 analysis_read_subframe_bak = this.analysis.read_subframe;
-                Analysis.run_analysis<T>(this.analysis,
+                Analysis.run_analysis(this.analysis,
                     celt_mode,
                     analysis_pcm != null ? analysis_pcm : null,
                     analysis_pcm_ptr,
@@ -402,7 +402,6 @@ public class OpusEncoder
                     analysis_channels,
                     this.Fs,
                     lsb_depth,
-                    downmix,
                     analysis_info);
             }
 
@@ -1007,7 +1006,7 @@ public class OpusEncoder
                 prefill_offset = this.channels * (this.encoder_buffer - this.delay_compensation - this.Fs / 400);
                 CodecHelpers.gain_fade(this.delay_buffer, prefill_offset,
                       0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
-                Arrays.MemSet<short>(this.delay_buffer, 0, prefill_offset);
+                Arrays.MemSet(this.delay_buffer, (short)0, prefill_offset);
                 Array.Copy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
                 EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, zero, 1);
@@ -1146,7 +1145,7 @@ public class OpusEncoder
 
         if (this.channels * (this.encoder_buffer - (frame_size + total_buffer)) > 0)
         {
-            Arrays.MemMove<short>(this.delay_buffer, this.channels * frame_size, 0, this.channels * (this.encoder_buffer - frame_size - total_buffer));
+            Arrays.MemMove(this.delay_buffer, this.channels * frame_size, 0, this.channels * (this.encoder_buffer - frame_size - total_buffer));
             Array.Copy(pcm_buf, 0, this.delay_buffer, (this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
         }
         else
@@ -1388,7 +1387,7 @@ public class OpusEncoder
 
         try
         {
-            int ret = opus_encode_native<short>(in_pcm, pcm_offset, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
+            int ret = opus_encode_native(in_pcm, pcm_offset, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
                                      in_pcm, pcm_offset, frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
 
             if (ret < 0)
@@ -1408,196 +1407,112 @@ public class OpusEncoder
     }
 
     /// <summary>
-    /// Encodes an Opus frame using floating point input.
-    /// </summary>
-    /// <param name="in_pcm">Input signal in float format (Interleaved if stereo). Length should be at least frame_size * channels.
-    /// Value should be normalized to the +/- 1.0 range. Samples with a range beyond +/-1.0 will be clipped.</param>
-    /// <param name="pcm_offset">Offset to use when reading the in_pcm buffer</param>
-    /// <param name="frame_size">The number of samples per channel in the inpus signal.
-    /// The frame size must be a valid Opus framesize for the given sample rate.
-    /// For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
-    /// (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.</param>
-    /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
-    /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
-    /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
-    /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
-    /// <returns>The length of the encoded packet, in bytes</returns>
-    public int Encode(float[] in_pcm, int pcm_offset, int frame_size,
-                          byte[] out_data, int out_data_offset, int max_data_bytes)
-    {
-        // Check that the caller is telling the truth about its input buffers
-        if (out_data_offset + max_data_bytes > out_data.Length)
-        {
-            throw new IllegalArgumentException(string.Format(
-                "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
-                max_data_bytes, out_data.Length - out_data_offset));
-        }
-
-        int i, ret;
-        int internal_frame_size;
-        int delay_compensation;
-        short[] input;
-
-        if (this.application == OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-            delay_compensation = 0;
-        else
-            delay_compensation = this.delay_compensation;
-
-        internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, pcm_offset, frame_size,
-              this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
-              delay_compensation, Downmix.downmix_float, this.analysis.subframe_mem, this.analysis.enabled);
-
-        // Check that input pcm length is >= frame_size
-        if (pcm_offset + internal_frame_size > in_pcm.Length)
-        {
-            throw new IllegalArgumentException(string.Format(
-                "Not enough samples provided in input signal: Expected {0} samples, found {1}",
-                internal_frame_size, in_pcm.Length - pcm_offset));
-        }
-
-        input = new short[internal_frame_size * this.channels];
-
-        for (i = 0; i < internal_frame_size * this.channels; i++)
-            input[i] = Inlines.FLOAT2INT16(in_pcm[pcm_offset + i]);
-
-        try
-        {
-            ret = opus_encode_native(input, 0, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
-                                 in_pcm, pcm_offset, frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
-
-            if (ret < 0)
-            {
-                // An error happened; report it
-                if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new IllegalArgumentException("OPUS_BAD_ARG while decoding");
-                throw new OpusException("An error occurred during encoding", ret);
-            }
-
-            return ret;
-        }
-        catch (OutOfMemoryException e)
-        {
-            throw new OpusException("Internal error during encoding: " + e.Message);
-        }
-    }
-
-    /// <summary>
     /// Gets or sets the application (or signal type) of the input signal. This hints
     /// to the encoder what type of details we want to preserve in the encoding.
     /// This cannot be changed after the encoder has started
     /// </summary>
-    public OpusApplication Application
+    public OpusApplication getApplication()
     {
-        get
+        return application;
+    }
+    
+    public void setApplication(OpusApplication value)
+    {
+        if (first == 0 && application != value)
         {
-            return application;
+            throw new IllegalArgumentException("Application cannot be changed after encoding has started");
         }
-        set
-        {
-            if (first == 0 && application != value)
-            {
-                throw new IllegalArgumentException("Application cannot be changed after encoding has started");
-            }
 
-            application = value;
-        }
+        application = value;
     }
 
     /// <summary>
     /// Gets or sets the bitrate for encoder, in bits per second. Valid bitrates are be between 6K (6144) and 510K (522240)
     /// </summary>
-    public int Bitrate
+    public int getBitrate()
     {
-        get
+        return user_bitrate_to_bitrate(prev_framesize, 1276);
+    }
+    
+    public void setBitrate(int value)
+{
+        if (value != OpusConstants.OPUS_AUTO && value != OpusConstants.OPUS_BITRATE_MAX)
         {
-            return user_bitrate_to_bitrate(prev_framesize, 1276);
+            if (value <= 0)
+                throw new IllegalArgumentException("Bitrate must be positive");
+            else if (value <= 500)
+                value = 500;
+            else if (value > (int)300000 * channels)
+                value = (int)300000 * channels;
         }
-        set
-        {
-            if (value != OpusConstants.OPUS_AUTO && value != OpusConstants.OPUS_BITRATE_MAX)
-            {
-                if (value <= 0)
-                    throw new IllegalArgumentException("Bitrate must be positive");
-                else if (value <= 500)
-                    value = 500;
-                else if (value > (int)300000 * channels)
-                    value = (int)300000 * channels;
-            }
 
-            user_bitrate_bps = value;
-        }
+        user_bitrate_bps = value;
     }
 
     /// <summary>
     /// Gets or sets the maximum number of channels to be encoded. This can be used to force a downmix from stereo to mono if stereo
     /// separation is not important
     /// </summary>
-    public int ForceChannels
+    public int getForceChannels()
     {
-        get
-        {
             return force_channels;
-        }
-        set
+    }
+    
+    public void setForceChannels(int value)
+    {
+        if ((value < 1 || value > channels) && value != OpusConstants.OPUS_AUTO)
         {
-            if ((value < 1 || value > channels) && value != OpusConstants.OPUS_AUTO)
-            {
-                throw new IllegalArgumentException("Force channels must be <= num. of channels");
-            }
-
-            force_channels = value;
+            throw new IllegalArgumentException("Force channels must be <= num. of channels");
         }
+
+        force_channels = value;
     }
 
     /// <summary>
     /// Gets or sets the maximum bandwidth to be used by the encoder.
     /// </summary>
-    public OpusBandwidth MaxBandwidth
+    public OpusBandwidth getMaxBandwidth()
     {
-        get
+        return max_bandwidth;
+    }
+    
+    public void setMaxBandwidth(OpusBandwidth value)
+    {
+        max_bandwidth = value;
+        if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
         {
-            return max_bandwidth;
+            silk_mode.maxInternalSampleRate = 8000;
         }
-        set
+        else if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
         {
-            max_bandwidth = value;
-            if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
-            {
-                silk_mode.maxInternalSampleRate = 8000;
-            }
-            else if (max_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
-            {
-                silk_mode.maxInternalSampleRate = 12000;
-            }
-            else {
-                silk_mode.maxInternalSampleRate = 16000;
-            }
+            silk_mode.maxInternalSampleRate = 12000;
+        }
+        else {
+            silk_mode.maxInternalSampleRate = 16000;
         }
     }
 
     /// <summary>
     /// Gets or sets the "preferred" encoded bandwidth
     /// </summary>
-    public OpusBandwidth Bandwidth
+    public OpusBandwidth getBandwidth()
     {
-        get
+        return bandwidth;
+    }
+    
+    public void setBandwidth(OpusBandwidth value)
+    {
+        user_bandwidth = value;
+        if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
         {
-            return bandwidth;
+            silk_mode.maxInternalSampleRate = 8000;
         }
-        set
+        else if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
         {
-            user_bandwidth = value;
-            if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
-            {
-                silk_mode.maxInternalSampleRate = 8000;
-            }
-            else if (user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
-            {
-                silk_mode.maxInternalSampleRate = 12000;
-            }
-            else {
-                silk_mode.maxInternalSampleRate = 16000;
-            }
+            silk_mode.maxInternalSampleRate = 12000;
+        }
+        else {
+            silk_mode.maxInternalSampleRate = 16000;
         }
     }
 
@@ -1606,36 +1521,32 @@ public class OpusEncoder
     /// (Bitrate &lt; 40Kbit/s and/or ForceMode == SILK). When enabled, the encoder detects silence and background noise
     /// and reduces the number of output packets, with up to 600ms in between separate packet transmissions.
     /// </summary>
-    public bool UseDTX
+    public boolean setUseDTX()
     {
-        get
-        {
-            return silk_mode.useDTX != 0;
-        }
-        set
-        {
-            silk_mode.useDTX = value ? 1 : 0;
-        }
+        return silk_mode.useDTX != 0;
+    }
+    
+    public void setUseDTX(boolean value)
+    {
+        silk_mode.useDTX = value ? 1 : 0;
     }
 
     /// <summary>
     /// Gets or sets the encoder complexity, between 0 and 10
     /// </summary>
-    public int Complexity
+    public int getComplexity()
     {
-        get
+        return silk_mode.complexity;
+    }
+    
+    public void setComplexity(int value)
+    {
+        if (value < 0 || value > 10)
         {
-            return silk_mode.complexity;
+            throw new IllegalArgumentException("Complexity must be between 0 and 10");
         }
-        set
-        {
-            if (value < 0 || value > 10)
-            {
-                throw new IllegalArgumentException("Complexity must be between 0 and 10");
-            }
-            silk_mode.complexity = value;
-            Celt_Encoder.SetComplexity(value);
-        }
+        silk_mode.complexity = value;
+        Celt_Encoder.SetComplexity(value);
     }
 
     /// <summary>
@@ -1643,177 +1554,133 @@ public class OpusEncoder
     /// (Bitrate &lt; 40Kbit/s and/or ForceMode == SILK). When enabled, lost packets can be partially recovered
     /// by decoding data stored in the following packet.
     /// </summary>
-    public bool UseInbandFEC
+    public boolean getUseInbandFEC()
     {
-        get
-        {
-            return silk_mode.useInBandFEC != 0;
-        }
-        set
-        {
-            silk_mode.useInBandFEC = value ? 1 : 0;
-        }
+        return silk_mode.useInBandFEC != 0;
+    }
+    
+    public void setUseInbandFEC(boolean value)
+    {
+        silk_mode.useInBandFEC = value ? 1 : 0;
     }
 
     /// <summary>
     /// Gets or sets the expected amount of packet loss in the transmission medium, from 0 to 100.
     /// Only applies if UseInbandFEC is also enabled, and the encoder is in SILK mode.
     /// </summary>
-    public int PacketLossPercent
+    public int getPacketLossPercent()
     {
-        get
+        return silk_mode.packetLossPercentage;
+    }
+    
+    public void setPacketLossPercent(int value)
+    {
+        if (value < 0 || value > 100)
         {
-            return silk_mode.packetLossPercentage;
+            throw new IllegalArgumentException("Packet loss must be between 0 and 100");
         }
-        set
-        {
-            if (value < 0 || value > 100)
-            {
-                throw new IllegalArgumentException("Packet loss must be between 0 and 100");
-            }
-            silk_mode.packetLossPercentage = value;
-            Celt_Encoder.SetPacketLossPercent(value);
-        }
+        silk_mode.packetLossPercentage = value;
+        Celt_Encoder.SetPacketLossPercent(value);
     }
 
     /// <summary>
     /// Gets or sets a flag to enable Variable Bitrate encoding. This is recommended as it generally improves audio quality
     /// with little impact on average bitrate
     /// </summary>
-    public bool UseVBR
+    public boolean getUseVBR()
     {
-        get
-        {
-            return use_vbr != 0;
-        }
-        set
-        {
-            use_vbr = value ? 1 : 0;
-            silk_mode.useCBR = value ? 0 : 1;
-        }
+        return use_vbr != 0;
     }
-
-    /// <summary>
-    /// Gets or sets the "voice ratio". This is not implemented, but the idea is to hint the amount of voice vs. music in the input signal
-    /// </summary>
-    public int VoiceRatio
+        
+    public void setUseVBR(boolean value)
     {
-        get
-        {
-            return voice_ratio;
-        }
-        set
-        {
-            if (value < -1 || value > 100)
-            {
-                throw new IllegalArgumentException("Voice ratio must be between -1 and 100");
-            }
-
-            voice_ratio = value;
-        }
+        use_vbr = value ? 1 : 0;
+        silk_mode.useCBR = value ? 0 : 1;
     }
 
     /// <summary>
     /// Gets or sets a flag to enable constrained VBR. This only applies when the encoder is in CELT mode (i.e. high bitrates)
     /// </summary>
-    public bool UseConstrainedVBR
+    public boolean getUseConstrainedVBR()
     {
-        get
-        {
-            return vbr_constraint != 0;
-        }
-        set
-        {
-            vbr_constraint = value ? 1 : 0;
-        }
+        return vbr_constraint != 0;
+    }
+        
+    public void setUseConstrainedVBR(boolean value)
+    {
+        vbr_constraint = value ? 1 : 0;
     }
 
     /// <summary>
     /// Gets or sets a hint to the encoder for what type of audio is being processed, voice or music 
     /// </summary>
-    public OpusSignal SignalType
+    public OpusSignal getSignalType()
     {
-        get
-        {
-            return signal_type;
-        }
-        set
-        {
-            signal_type = value;
-        }
+        return signal_type;
+    }
+        
+    public void setSignalType(OpusSignal value)
+    {
+        signal_type = value;
     }
 
     /// <summary>
     /// Gets the number of samples of audio that are being stored in a buffer and are therefore contributing to latency.
     /// </summary>
-    public int Lookahead
+    public int getLookahead()
     {
-        get
-        {
-            int returnVal = Fs / 400;
-            if (application != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-                returnVal += delay_compensation;
+        int returnVal = Fs / 400;
+        if (application != OpusApplication.OPUS_APPLICATION_RESTRICTED_LOWDELAY)
+            returnVal += delay_compensation;
 
-            return returnVal;
-        }
+        return returnVal;
     }
 
     /// <summary>
     /// Gets the encoder's input sample rate.
     /// </summary>
-    public int SampleRate
+    public int getSampleRate()
     {
-        get
-        {
-            return Fs;
-        }
+        return Fs;
     }
 
-    public int FinalRange
+    public int getFinalRange()
     {
-        get
-        {
-            return rangeFinal;
-        }
+        return rangeFinal;
     }
 
     /// <summary>
     /// Gets or sets the bit resolution of the input audio signal. Though the encoder always uses 16-bit internally, this can help
     /// it make better decisions about bandwidth and cutoff values
     /// </summary>
-    public int LSBDepth
+    public int getLSBDepth()
     {
-        get
+        return lsb_depth;
+    }
+    
+    public void setLSBDepth(int value)
+    {
+        if (value < 8 || value > 24)
         {
-            return lsb_depth;
+            throw new IllegalArgumentException("LSB depth must be between 8 and 24");
         }
-        set
-        {
-            if (value < 8 || value > 24)
-            {
-                throw new IllegalArgumentException("LSB depth must be between 8 and 24");
-            }
 
-            lsb_depth = value;
-        }
+        lsb_depth = value;
     }
 
     /// <summary>
     /// Gets or sets a fixed length for each encoded frame. Typically, the encoder just chooses a frame duration based on the input length
     /// and the current mode. This can be used to enforce an exact length if it is required by your application (e.g. monotonous transmission)
     /// </summary>
-    public OpusFramesize ExpertFrameDuration
+    public OpusFramesize getExpertFrameDuration()
     {
-        get
-        {
-            return variable_duration;
-
-        }
-        set
-        {
-            variable_duration = value;
-            Celt_Encoder.SetExpertFrameDuration(value);
-        }
+        return variable_duration;
+    }
+    
+    public void setExpertFrameDuration(OpusFramesize value)
+    {
+        variable_duration = value;
+        Celt_Encoder.SetExpertFrameDuration(value);
     }
 
     /// <summary>
@@ -1822,65 +1689,57 @@ public class OpusEncoder
     /// Hybrid is used to create a smooth transition between the two modes. Note that this value may not always be honored due to other factors such
     /// as frame size and bitrate.
     /// </summary>
-    public OpusMode ForceMode
+    public OpusMode getForceMode()
     {
-        get
-        {
-            return user_forced_mode;
-        }
-        set
-        {
-            user_forced_mode = value;
-        }
+        return user_forced_mode;
+    }
+    
+    public void setForceMode(OpusMode value)
+    {
+        user_forced_mode = value;
     }
 
     /// <summary>
     /// Gets or sets a value indicating that this stream is a low-frequency channel. This is used when encoding 5.1 surround audio.
     /// </summary>
-    public bool IsLFE
+    public boolean getIsLFE()
     {
-        get
-        {
-            return lfe != 0;
-        }
-        set
-        {
-            lfe = value ? 1 : 0;
-            Celt_Encoder.SetLFE(value ? 1 : 0);
-        }
+        return lfe != 0;
+    }
+    
+    public void setIsLFE(boolean value)
+    {
+        lfe = value ? 1 : 0;
+        Celt_Encoder.SetLFE(value ? 1 : 0);
     }
 
     /// <summary>
     /// Gets or sets a flag to enable prediction, which does something.
     /// </summary>
-    public bool PredictionDisabled
+    public boolean getPredictionDisabled()
     {
-        get
-        {
-            return silk_mode.reducedDependency != 0;
-        }
-        set
-        {
-            silk_mode.reducedDependency = value ? 1 : 0;
-        }
+        return silk_mode.reducedDependency != 0;
+    }
+    
+    public void setPredictionDisabled(boolean value)
+    {
+        silk_mode.reducedDependency = value ? 1 : 0;
     }
 
     /// <summary>
     /// Gets or sets a value indicating whether neural net analysis functions should be enabled, increasing encode quality
     /// at the expense of speed.
     /// </summary>
-    public bool EnableAnalysis
+    public boolean getEnableAnalysis()
     {
-        get
-        {
-            return analysis.enabled;
-        }
-        set
-        {
-            analysis.enabled = value;
-        }
+        return analysis.enabled;
     }
-
+    
+    public void setEnableAnalysis(boolean value)
+    {
+        analysis.enabled = value;
+    }
+    
     void SetEnergyMask(int[] value)
     {
         energy_masking = value;

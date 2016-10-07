@@ -152,8 +152,8 @@ class EncodeAPI
             /* Mono . Stereo transition: init state of second channel and stereo state */
             ret += SilkEncoder.silk_init_encoder(psEnc.state_Fxx[1]);
 
-            Arrays.MemSet(psEnc.sStereo.pred_prev_Q13, 0, 2);
-            Arrays.MemSet(psEnc.sStereo.sSide, 0, 2);
+            Arrays.MemSet(psEnc.sStereo.pred_prev_Q13, (short)0, 2);
+            Arrays.MemSet(psEnc.sStereo.sSide, (short)0, 2);
             psEnc.sStereo.mid_side_amp_Q0[0] = 0;
             psEnc.sStereo.mid_side_amp_Q0[1] = 1;
             psEnc.sStereo.mid_side_amp_Q0[2] = 0;
@@ -163,7 +163,7 @@ class EncodeAPI
             if (psEnc.nChannelsAPI == 2)
             {
                 psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
-                System.arraycopy(psEnc.state_Fxx[0].In_HP_State, psEnc.state_Fxx[1].In_HP_State, 2);
+                System.arraycopy(psEnc.state_Fxx[0].In_HP_State, 0, psEnc.state_Fxx[1].In_HP_State, 0, 2);
             }
         }
 
@@ -501,7 +501,7 @@ class EncodeAPI
                             psEnc.state_Fxx[1].sShape.Reset();
                             psEnc.state_Fxx[1].sPrefilt.Reset();
                             psEnc.state_Fxx[1].sNSQ.Reset();
-                            Arrays.MemSet(psEnc.state_Fxx[1].prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+                            Arrays.MemSet(psEnc.state_Fxx[1].prev_NLSFq_Q15, (short)0, SilkConstants.MAX_LPC_ORDER);
                             Arrays.MemSet(psEnc.state_Fxx[1].sLP.In_LP_State, 0, 2);
 
                             psEnc.state_Fxx[1].prevLag = 100;
@@ -531,7 +531,7 @@ class EncodeAPI
                 else
                 {
                     /* Buffering */
-                    System.arraycopy(psEnc.sStereo.sMid, psEnc.state_Fxx[0].inputBuf, 2);
+                    System.arraycopy(psEnc.sStereo.sMid, 0, psEnc.state_Fxx[0].inputBuf, 0, 2);
                     System.arraycopy(psEnc.state_Fxx[0].inputBuf, psEnc.state_Fxx[0].frame_length, psEnc.sStereo.sMid, 0, 2);
                 }
 

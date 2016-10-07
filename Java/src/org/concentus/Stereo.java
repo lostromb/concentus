@@ -138,19 +138,23 @@ class Stereo
         int smooth_coef_Q16)
     {
         int scale;
-        int nrgx, nrgy, scale1, scale2;
+        // fixme optimize this unboxing
+        BoxedValue<Integer> nrgx = new BoxedValue<Integer>();
+        BoxedValue<Integer> nrgy = new BoxedValue<Integer>();
+        BoxedValue<Integer> scale1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> scale2 = new BoxedValue<Integer>();
         int corr, pred_Q13, pred2_Q10;
 
         /* Find predictor */
-        SumSqrShift.silk_sum_sqr_shift(out nrgx, out scale1, x, length);
-        SumSqrShift.silk_sum_sqr_shift(out nrgy, out scale2, y, length);
-        scale = Inlines.silk_max_int(scale1, scale2);
+        SumSqrShift.silk_sum_sqr_shift(nrgx, scale1, x, length);
+        SumSqrShift.silk_sum_sqr_shift(nrgy, scale2, y, length);
+        scale = Inlines.silk_max_int(scale1.Val, scale2.Val);
         scale = scale + (scale & 1);          /* make even */
-        nrgy = Inlines.silk_RSHIFT32(nrgy, scale - scale2);
-        nrgx = Inlines.silk_RSHIFT32(nrgx, scale - scale1);
-        nrgx = Inlines.silk_max_int(nrgx, 1);
+        nrgy.Val = Inlines.silk_RSHIFT32(nrgy.Val, scale - scale2.Val);
+        nrgx.Val = Inlines.silk_RSHIFT32(nrgx.Val, scale - scale1.Val);
+        nrgx.Val = Inlines.silk_max_int(nrgx.Val, 1);
         corr = Inlines.silk_inner_prod_aligned_scale(x, y, scale, length);
-        pred_Q13 = Inlines.silk_DIV32_varQ(corr, nrgx, 13);
+        pred_Q13 = Inlines.silk_DIV32_varQ(corr, nrgx.Val, 13);
         pred_Q13 = Inlines.silk_LIMIT(pred_Q13, -(1 << 14), 1 << 14);
         pred2_Q10 = Inlines.silk_SMULWB(pred_Q13, pred_Q13);
 
@@ -161,12 +165,12 @@ class Stereo
         Inlines.OpusAssert(smooth_coef_Q16 < 32768);
         scale = Inlines.silk_RSHIFT(scale, 1);
         mid_res_amp_Q0[mid_res_amp_Q0_ptr] = Inlines.silk_SMLAWB(mid_res_amp_Q0[mid_res_amp_Q0_ptr],
-            Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgx), scale) - mid_res_amp_Q0[mid_res_amp_Q0_ptr], smooth_coef_Q16);
+            Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgx.Val), scale) - mid_res_amp_Q0[mid_res_amp_Q0_ptr], smooth_coef_Q16);
         /* Residual energy = nrgy - 2 * pred * corr + pred^2 * nrgx */
-        nrgy = Inlines.silk_SUB_LSHIFT32(nrgy, Inlines.silk_SMULWB(corr, pred_Q13), 3 + 1);
-        nrgy = Inlines.silk_ADD_LSHIFT32(nrgy, Inlines.silk_SMULWB(nrgx, pred2_Q10), 6);
+        nrgy.Val = Inlines.silk_SUB_LSHIFT32(nrgy.Val, Inlines.silk_SMULWB(corr, pred_Q13), 3 + 1);
+        nrgy.Val = Inlines.silk_ADD_LSHIFT32(nrgy.Val, Inlines.silk_SMULWB(nrgx.Val, pred2_Q10), 6);
         mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1] = Inlines.silk_SMLAWB(mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1],
-            Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgy), scale) - mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1], smooth_coef_Q16);
+            Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgy.Val), scale) - mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1], smooth_coef_Q16);
 
         /* Ratio of smoothed residual and mid norms */
         ratio_Q14.Val = Inlines.silk_DIV32_varQ(mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1], Inlines.silk_max(mid_res_amp_Q0[mid_res_amp_Q0_ptr], 1), 14);
@@ -230,7 +234,7 @@ class Stereo
 
         /* Buffering */
         System.arraycopy(state.sMid, 0, x1, mid, 2);
-        System.arraycopy(state.sSide, side, 2);
+        System.arraycopy(state.sSide, 0, side, 0, 2);
         System.arraycopy(x1, mid + frame_length, state.sMid, 0, 2);
         System.arraycopy(side, frame_length, state.sSide, 0, 2);
 
@@ -489,21 +493,23 @@ class Stereo
         // FIXME: ix was formerly an out parameter that was newly allocated here
         // but now it relies on the caller to initialize it
         // clear ix
-        Arrays.MemSet<byte>(ix[0], 0, 3);
-        Arrays.MemSet<byte>(ix[1], 0, 3);
-
+        Arrays.MemSet(ix[0], (byte)0, 3);
+        Arrays.MemSet(ix[1], (byte)0, 3);
+        
         /* Quantize */
         for (n = 0; n < 2; n++)
         {
+            boolean done = false;
+            
             /* Brute-force search over quantization levels */
             err_min_Q13 = Integer.MAX_VALUE;
-            for (i = 0; i < SilkConstants.STEREO_QUANT_TAB_SIZE - 1; i++)
+            for (i = 0; !done && i < SilkConstants.STEREO_QUANT_TAB_SIZE - 1; i++)
             {
                 low_Q13 = SilkTables.silk_stereo_pred_quant_Q13[i];
                 step_Q13 = Inlines.silk_SMULWB(SilkTables.silk_stereo_pred_quant_Q13[i + 1] - low_Q13,
                     ((int)((0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16)*/);
 
-                for (j = 0; j < SilkConstants.STEREO_QUANT_SUB_STEPS; j++)
+                for (j = 0; !done && j < SilkConstants.STEREO_QUANT_SUB_STEPS; j++)
                 {
                     lvl_Q13 = Inlines.silk_SMLABB(low_Q13, step_Q13, 2 * j + 1);
                     err_Q13 = Inlines.silk_abs(pred_Q13[n] - lvl_Q13);
@@ -517,13 +523,11 @@ class Stereo
                     else
                     {
                         /* Error increasing, so we're past the optimum */
-                        // FIXME: get this crap out of here
-                        goto done;
+                        done = true;
                     }
                 }
             }
 
-        done:
             ix[n][2] = (byte)(Inlines.silk_DIV32_16(ix[n][0], 3));
             ix[n][0] = (byte)(ix[n][0] - (byte)(ix[n][2] * 3));
             pred_Q13[n] = quant_pred_Q13;

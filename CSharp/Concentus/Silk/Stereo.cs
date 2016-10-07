@@ -499,18 +499,22 @@ namespace Concentus.Silk
             Arrays.MemSet<sbyte>(ix[0], 0, 3);
             Arrays.MemSet<sbyte>(ix[1], 0, 3);
 
+            
+
             /* Quantize */
             for (n = 0; n < 2; n++)
             {
+                bool done = false;
+
                 /* Brute-force search over quantization levels */
                 err_min_Q13 = int.MaxValue;
-                for (i = 0; i < SilkConstants.STEREO_QUANT_TAB_SIZE - 1; i++)
+                for (i = 0; !done && i < SilkConstants.STEREO_QUANT_TAB_SIZE - 1; i++)
                 {
                     low_Q13 = SilkTables.silk_stereo_pred_quant_Q13[i];
                     step_Q13 = Inlines.silk_SMULWB(SilkTables.silk_stereo_pred_quant_Q13[i + 1] - low_Q13,
                         ((int)((0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16)*/);
 
-                    for (j = 0; j < SilkConstants.STEREO_QUANT_SUB_STEPS; j++)
+                    for (j = 0; !done && j < SilkConstants.STEREO_QUANT_SUB_STEPS; j++)
                     {
                         lvl_Q13 = Inlines.silk_SMLABB(low_Q13, step_Q13, 2 * j + 1);
                         err_Q13 = Inlines.silk_abs(pred_Q13[n] - lvl_Q13);
@@ -525,12 +529,11 @@ namespace Concentus.Silk
                         {
                             /* Error increasing, so we're past the optimum */
                             // FIXME: get this crap out of here
-                            goto done;
+                            done = true;
                         }
                     }
                 }
-
-            done:
+                
                 ix[n][2] = (sbyte)(Inlines.silk_DIV32_16(ix[n][0], 3));
                 ix[n][0] = (sbyte)(ix[n][0] - (sbyte)(ix[n][2] * 3));
                 pred_Q13[n] = quant_pred_Q13;
