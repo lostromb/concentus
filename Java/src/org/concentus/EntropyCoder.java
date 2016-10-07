@@ -85,7 +85,7 @@ month=Jul,
 URL="http://www.stanford.edu/class/ee398a/handouts/papers/Moffat98ArithmCoding.pdf"
 }*/
 
-public class EntropyCoder
+class EntropyCoder
 {
     private final int EC_WINDOW_SIZE = 32;
 
