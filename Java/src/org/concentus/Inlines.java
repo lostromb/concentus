@@ -38,11 +38,19 @@ class Inlines
 {
     static void OpusAssert(boolean condition)
     {
+        if (!condition)
+        {
+            throw new AssertionError();
+        }
         //Debug.Assert(condition);
     }
     
     static void OpusAssert(boolean condition, String message)
     {
+        if (!condition)
+        {
+            throw new AssertionError(message);
+        }
         //Debug.Assert(condition, message);
     }
 

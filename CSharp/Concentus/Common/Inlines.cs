@@ -42,6 +42,7 @@ namespace Concentus.Common
 
     internal static class Inlines
     {
+        [Conditional("DEBUG")]
         internal static void OpusAssert(bool condition, string message = "Unknown error")
         {
             Debug.Assert(condition, message);

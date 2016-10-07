@@ -3,12 +3,64 @@ using System.Diagnostics;
 using System.IO;
 using Concentus.Common;
 using Concentus.Common.CPlusPlus;
+using Concentus.Structs;
+using Concentus.Enums;
+using Concentus;
 
 namespace ConcentusDemo
 {
     public class Program
     {
         public static void Main(string[] args)
+        {
+            JavaParity();
+        }
+
+        public static void JavaParity()
+        {
+            try
+            {
+                FileStream fileIn = new FileStream("C:\\Users\\lostromb\\Desktop\\grave.raw", FileMode.Open);
+                OpusEncoder encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
+                encoder.Bitrate =(96000);
+                encoder.ForceMode =(OpusMode.MODE_CELT_ONLY);
+                encoder.SignalType =(OpusSignal.OPUS_SIGNAL_MUSIC);
+                encoder.Complexity =(10);
+
+                FileStream fileOut = new FileStream("C:\\Users\\lostromb\\Desktop\\grave_out_c.raw", FileMode.Create);
+
+                OpusDecoder decoder = OpusDecoder.Create(48000, 1);
+                
+                int packetSamples = 960;
+                byte[] inBuf = new byte[packetSamples * 2];
+                sbyte[] data_packet = new sbyte[1275];
+                long start = DateTime.Now.Ticks / 10000;
+                while (fileIn.Length - fileIn.Position >= inBuf.Length)
+                {
+                    int bytesRead = fileIn.Read(inBuf, 0, inBuf.Length);
+                    short[] pcm = BytesToShorts(inBuf, 0, inBuf.Length);
+                    int bytesEncoded = encoder.Encode(pcm, 0, packetSamples, data_packet, 0, 1275);
+                    //System.out.println(bytesEncoded + " bytes encoded");
+
+                    int samplesDecoded = decoder.Decode(data_packet, 0, bytesEncoded, pcm, 0, packetSamples, false);
+                    //System.out.println(samplesDecoded + " samples decoded");
+                    byte[] bytesOut = ShortsToBytes(pcm);
+                    fileOut.Write(bytesOut, 0, bytesOut.Length);
+                }
+                long end = DateTime.Now.Ticks / 10000;
+                Console.WriteLine("Time was " + (end - start) + "ms");
+                fileIn.Close();
+                fileOut.Close();
+            }
+            catch (IOException e)
+            {
+            }
+            catch (OpusException e)
+            {
+            }
+        }
+
+        public static void Resampler()
         {
             int sourceFreq = 48000;
             int targetFreq = 8000;

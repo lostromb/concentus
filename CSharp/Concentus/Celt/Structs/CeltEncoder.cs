@@ -40,7 +40,7 @@ namespace Concentus.Celt.Structs
     using Concentus.Common.CPlusPlus;
     using Concentus.Enums;
     using System;
-
+    using System.Diagnostics;
     internal class CeltEncoder
     {
         #region Encoder state
@@ -590,7 +590,7 @@ namespace Concentus.Celt.Structs
 
                 prefilter_tapset = this.tapset_decision;
                 pf_on = this.run_prefilter(input, this.prefilter_mem, CC, N, prefilter_tapset, out pitch_index, out gain1, out qg, enabled, nbAvailableBytes);
-
+                
                 if ((gain1 > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/ || this.prefilter_gain > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/) && (this.analysis.valid == 0 || this.analysis.tonality > .3)
                       && (pitch_index > 1.26 * this.prefilter_period || pitch_index < .79 * this.prefilter_period))
                     pitch_change = 1;

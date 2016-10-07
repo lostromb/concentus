@@ -369,7 +369,7 @@ class CeltEncoder
 
 
         gain.Val = gain1;
-        pitch = pitch_index;
+        pitch.Val = pitch_index.Val;
         qgain.Val = qg;
         return pf_on;
     }
