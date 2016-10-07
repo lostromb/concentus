@@ -251,7 +251,7 @@ class CeltEncoder
         int c;
         int[][] pre = new int[CC][];
         CeltMode mode; // [porting note] pointer
-        BoxedValue<Integer> pitch_index = new BoxedValue<Integer>();
+        BoxedValue<Integer> pitch_index = new BoxedValue<Integer>(0);
         int gain1;
         int pf_threshold;
         int pf_on;
@@ -563,7 +563,7 @@ class CeltEncoder
             enc.nbits_total += tell - enc.tell();
         }
         c = 0;
-        BoxedValue<Integer> boxed_memE = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_memE = new BoxedValue<Integer>(0);
         do
         {
             int need_clip = 0;
@@ -581,9 +581,9 @@ class CeltEncoder
                   && this.complexity >= 5 && !(this.consec_transient != 0 && LM != 3 && this.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE)) ? 1 : 0;
 
             prefilter_tapset = this.tapset_decision;
-            BoxedValue<Integer> boxed_pitch_index = new BoxedValue<Integer>();
-            BoxedValue<Integer> boxed_gain1 = new BoxedValue<Integer>();
-            BoxedValue<Integer> boxed_qg = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_pitch_index = new BoxedValue<Integer>(0);
+            BoxedValue<Integer> boxed_gain1 = new BoxedValue<Integer>(0);
+            BoxedValue<Integer> boxed_qg = new BoxedValue<Integer>(0);
             pf_on = this.run_prefilter(input, this.prefilter_mem, CC, N, prefilter_tapset, boxed_pitch_index, boxed_gain1, boxed_qg, enabled, nbAvailableBytes);
             pitch_index = boxed_pitch_index.Val;
             gain1 = boxed_gain1.Val;
@@ -616,8 +616,8 @@ class CeltEncoder
         shortBlocks = 0;
         if (this.complexity >= 1 && this.lfe == 0)
         {
-            BoxedValue<Integer> boxed_tf_estimate = new BoxedValue<Integer>();
-            BoxedValue<Integer> boxed_tf_chan = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_tf_estimate = new BoxedValue<Integer>(0);
+            BoxedValue<Integer> boxed_tf_chan = new BoxedValue<Integer>(0);
             isTransient = CeltCommon.transient_analysis(input, N + overlap, CC,
                   boxed_tf_estimate, boxed_tf_chan);
             tf_estimate = boxed_tf_estimate.Val;
@@ -826,7 +826,7 @@ class CeltEncoder
             else
                 lambda = 3;
             lambda *= 2;
-            BoxedValue<Integer> boxed_tf_sum = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_tf_sum = new BoxedValue<Integer>(0);
             tf_select = CeltCommon.tf_analysis(mode, effEnd, isTransient, tf_res, lambda, X, N, LM, boxed_tf_sum, tf_estimate, tf_chan);
             tf_sum = boxed_tf_sum.Val;
 
@@ -884,7 +884,7 @@ class CeltEncoder
 
         offsets = new int[nbEBands];
 
-        BoxedValue<Integer> boxed_tot_boost = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_tot_boost = new BoxedValue<Integer>(0);
         maxDepth = CeltCommon.dynalloc_analysis(bandLogE, bandLogE2, nbEBands, start, end, C, offsets,
               this.lsb_depth, mode.logN, isTransient, this.vbr, this.constrained_vbr,
               eBands, LM, effectiveBytes, boxed_tot_boost, this.lfe, surround_dynalloc);
@@ -1083,7 +1083,7 @@ class CeltEncoder
         }
 
         BoxedValue<Integer> boxed_intensity = new BoxedValue<Integer>(this.intensity);
-        BoxedValue<Integer> boxed_balance = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_balance = new BoxedValue<Integer>(0);
         BoxedValue<Integer> boxed_dual_stereo = new BoxedValue<Integer>(dual_stereo);
         codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
               alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,

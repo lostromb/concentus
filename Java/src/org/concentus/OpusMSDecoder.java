@@ -125,11 +125,11 @@ public class OpusMSDecoder
     {
         int s;
         int count;
-        BoxedValue<Byte> toc = new BoxedValue<Byte>();
+        BoxedValue<Byte> toc = new BoxedValue<Byte>((byte)0);
         short[] size = new short[48];
         int samples = 0;
-        BoxedValue<Integer> packet_offset = new BoxedValue<Integer>();
-        BoxedValue<Integer> dummy = new BoxedValue<Integer>();
+        BoxedValue<Integer> packet_offset = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> dummy = new BoxedValue<Integer>(0);
 
         for (s = 0; s < nb_streams; s++)
         {
@@ -209,7 +209,7 @@ public class OpusMSDecoder
             {
                 return OpusError.OPUS_INTERNAL_ERROR;
             }
-            BoxedValue<Integer> packet_offset = new BoxedValue<Integer>();
+            BoxedValue<Integer> packet_offset = new BoxedValue<Integer>(0);
             ret = dec.opus_decode_native(
                 data, data_ptr, len, buf, 0, frame_size, decode_fec,
                 (s != this.layout.nb_streams - 1) ? 1 : 0, packet_offset, soft_clip);

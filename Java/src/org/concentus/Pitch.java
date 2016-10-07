@@ -318,9 +318,9 @@ class Pitch
 
         T = T0 = T0_.Val;
         int[] yy_lookup = new int[maxperiod + 1];
-        BoxedValue<Integer> boxed_xx = new BoxedValue<Integer>();
-        BoxedValue<Integer> boxed_xy = new BoxedValue<Integer>();
-        BoxedValue<Integer> boxed_xy2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_xx = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> boxed_xy = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> boxed_xy2 = new BoxedValue<Integer>(0);
         Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, boxed_xx, boxed_xy);
         xx = boxed_xx.Val;
         xy = boxed_xy.Val;

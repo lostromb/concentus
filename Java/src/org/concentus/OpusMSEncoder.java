@@ -476,8 +476,8 @@ public class OpusMSEncoder
         {
             throw new IllegalArgumentException("Invalid channel count or application");
         }
-        BoxedValue<Integer> nb_streams = new BoxedValue<Integer>();
-        BoxedValue<Integer> nb_coupled_streams = new BoxedValue<Integer>();
+        BoxedValue<Integer> nb_streams = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> nb_coupled_streams = new BoxedValue<Integer>(0);
         GetStreamCount(channels, mapping_family, nb_streams, nb_coupled_streams);
 
         st = new OpusMSEncoder(nb_streams.Val, nb_coupled_streams.Val);

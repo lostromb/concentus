@@ -72,10 +72,10 @@ class Kernels
             mem[i] = x[x_ptr + N - i - 1];
         }
 
-        BoxedValue<Integer> sum0 = new BoxedValue<Integer>();
-        BoxedValue<Integer> sum1 = new BoxedValue<Integer>();
-        BoxedValue<Integer> sum2 = new BoxedValue<Integer>();
-        BoxedValue<Integer> sum3 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum0 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> sum1 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> sum2 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> sum3 = new BoxedValue<Integer>(0);
         
         for (i = 0; i < N - 3; i += 4)
         {
@@ -139,10 +139,10 @@ class Kernels
             mem[i] = x[x_ptr + N - i - 1];
         }
 
-        BoxedValue<Integer> sum0 = new BoxedValue<Integer>();
-        BoxedValue<Integer> sum1 = new BoxedValue<Integer>();
-        BoxedValue<Integer> sum2 = new BoxedValue<Integer>();
-        BoxedValue<Integer> sum3 = new BoxedValue<Integer>();
+        BoxedValue<Integer> sum0 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> sum1 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> sum2 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> sum3 = new BoxedValue<Integer>(0);
         
         for (i = 0; i < N - 3; i += 4)
         {

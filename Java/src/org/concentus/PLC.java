@@ -221,10 +221,10 @@ class PLC
         int i, j, k;
         int lag, idx, sLTP_buf_idx;
         int rand_seed, harm_Gain_Q15, rand_Gain_Q15, inv_gain_Q30;
-        BoxedValue<Integer> energy1 = new BoxedValue<Integer>();
-        BoxedValue<Integer> energy2 = new BoxedValue<Integer>();
-        BoxedValue<Integer> shift1 = new BoxedValue<Integer>();
-        BoxedValue<Integer> shift2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> energy1 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> energy2 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> shift1 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> shift2 = new BoxedValue<Integer>(0);
         int rand_ptr;
         int pred_lag_ptr;
         int LPC_pred_Q10, LTP_pred_Q12;
@@ -419,15 +419,15 @@ class PLC
     )
     {
         int i;
-        BoxedValue<Integer> energy_shift = new BoxedValue<Integer>();
-        BoxedValue<Integer> energy = new BoxedValue<Integer>();
+        BoxedValue<Integer> energy_shift = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> energy = new BoxedValue<Integer>(0);
         PLCStruct psPLC = psDec.sPLC;
 
         if (psDec.lossCnt != 0)
         {
             /* Calculate energy in concealed residual */
-            BoxedValue<Integer> boxed_conc_e = new BoxedValue<Integer>();
-            BoxedValue<Integer> boxed_conc_shift = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_conc_e = new BoxedValue<Integer>(0);
+            BoxedValue<Integer> boxed_conc_shift = new BoxedValue<Integer>(0);
             SumSqrShift.silk_sum_sqr_shift(boxed_conc_e, boxed_conc_shift, frame, frame_ptr, length);
             psPLC.conc_energy = boxed_conc_e.Val;
             psPLC.conc_energy_shift= boxed_conc_shift.Val;

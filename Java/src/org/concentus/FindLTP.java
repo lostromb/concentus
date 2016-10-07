@@ -93,8 +93,8 @@ class FindLTP
         for (k = 0; k < nb_subfr; k++)
         {
             lag_ptr = r_ptr - (lag[k] + SilkConstants.LTP_ORDER / 2);
-            BoxedValue<Integer> boxed_rr = new BoxedValue<Integer>();
-            BoxedValue<Integer> boxed_rr_shift = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_rr = new BoxedValue<Integer>(0);
+            BoxedValue<Integer> boxed_rr_shift = new BoxedValue<Integer>(0);
             SumSqrShift.silk_sum_sqr_shift(boxed_rr, boxed_rr_shift, r_lpc, r_ptr, subfr_length); /* rr[ k ] in Q( -rr_shifts ) */
             rr[k] = boxed_rr.Val;
             rr_shifts = boxed_rr_shift.Val;

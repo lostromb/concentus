@@ -78,8 +78,8 @@ public class OpusRepacketizer
 
     int opus_repacketizer_cat_impl(byte[] data, int data_ptr, int len, int self_delimited)
     {
-        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>();
-        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>();
+        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>((byte)0);
+        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>(0);
         int curr_nb_frames, ret;
         /* Set of check ToC */
         if (len < 1)
@@ -475,10 +475,10 @@ public class OpusRepacketizer
     {
         int s;
         int count;
-        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>();
+        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>((byte)0);
         short[] size = new short[48];
-        BoxedValue<Integer> packet_offset= new BoxedValue<Integer>();
-        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>();
+        BoxedValue<Integer> packet_offset= new BoxedValue<Integer>(0);
+        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>(0);
         int amount;
 
         if (len < 1)
@@ -520,10 +520,10 @@ public class OpusRepacketizer
     public static int UnpadMultistreamPacket(byte[] data, int data_offset, int len, int nb_streams)
     {
         int s;
-        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>();
+        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>((byte)0);
         short[] size = new short[48];
-        BoxedValue<Integer> packet_offset = new BoxedValue<Integer>();
-        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>();
+        BoxedValue<Integer> packet_offset = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>(0);
         OpusRepacketizer rp = new OpusRepacketizer();
         int dst;
         int dst_len;

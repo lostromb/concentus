@@ -48,8 +48,8 @@ class ResidualEnergy
         )
     {
         int offset, i, j, lz1, lz2;
-        BoxedValue<Integer> rshift = new BoxedValue<Integer>();
-        BoxedValue<Integer> energy = new BoxedValue<Integer>();
+        BoxedValue<Integer> rshift = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> energy = new BoxedValue<Integer>(0);
         int LPC_res_ptr;
         short[] LPC_res;
         int x_ptr;

@@ -1171,7 +1171,7 @@ class CeltCommon
 
     static int celt_plc_pitch_search(int[][] decode_mem, int C)
     {
-        BoxedValue<Integer> pitch_index = new BoxedValue<Integer>();
+        BoxedValue<Integer> pitch_index = new BoxedValue<Integer>(0);
         int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
         Pitch.pitch_downsample(decode_mem, lp_pitch_buf,
               CeltConstants.DECODE_BUFFER_SIZE, C);

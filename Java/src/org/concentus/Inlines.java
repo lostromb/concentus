@@ -2010,8 +2010,8 @@ class Inlines
             return 0;
         }
 
-        BoxedValue<Integer> boxed_lz = new BoxedValue<Integer>();
-        BoxedValue<Integer> boxed_frac_Q7 = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_lz = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> boxed_frac_Q7 = new BoxedValue<Integer>(0);
         silk_CLZ_FRAC(x, boxed_lz, boxed_frac_Q7);
         lz = boxed_lz.Val;
         frac_Q7 = boxed_frac_Q7.Val;
@@ -2048,8 +2048,8 @@ class Inlines
 
     static int silk_lin2log(int inLin)
     {
-        BoxedValue<Integer> lz = new BoxedValue<Integer>();
-        BoxedValue<Integer> frac_Q7 = new BoxedValue<Integer>();
+        BoxedValue<Integer> lz = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> frac_Q7 = new BoxedValue<Integer>(0);
 
         silk_CLZ_FRAC(inLin, lz, frac_Q7);
 

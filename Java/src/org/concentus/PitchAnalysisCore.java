@@ -153,8 +153,8 @@ class PitchAnalysisCore
         *******************************************************************************/
 
         /* Inner product is calculated with different lengths, so scale for the worst case */
-        BoxedValue<Integer> boxed_energy = new BoxedValue<Integer>();
-        BoxedValue<Integer> boxed_shift = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_energy = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> boxed_shift = new BoxedValue<Integer>(0);
         SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_4kHz, frame_length_4kHz);
         energy = boxed_energy.Val;
         shift = boxed_shift.Val;

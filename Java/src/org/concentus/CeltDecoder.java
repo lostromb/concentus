@@ -671,7 +671,7 @@ class CeltDecoder
 
         BoxedValue<Integer> boxed_intensity = new BoxedValue<Integer>(intensity);
         BoxedValue<Integer> boxed_dual_stereo = new BoxedValue<Integer>(dual_stereo);
-        BoxedValue<Integer> boxed_balance = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_balance = new BoxedValue<Integer>(0);
         codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
               alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
               fine_quant, fine_priority, C, LM, dec, 0, 0, 0);

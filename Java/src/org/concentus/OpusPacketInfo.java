@@ -76,11 +76,11 @@ public class OpusPacketInfo
         // Find the number of frames first
         int numFrames = GetNumFrames(packet, packet_offset, len);
 
-        BoxedValue<Integer> payload_offset = new BoxedValue<Integer>();
-        BoxedValue<Byte> out_toc = new BoxedValue<Byte>();
+        BoxedValue<Integer> payload_offset = new BoxedValue<Integer>(0);
+        BoxedValue<Byte> out_toc = new BoxedValue<Byte>((byte)0);
         byte[][] frames = new byte[numFrames][];
         short[] size = new short[numFrames];
-        BoxedValue<Integer> packetOffset = new BoxedValue<Integer>();
+        BoxedValue<Integer> packetOffset = new BoxedValue<Integer>(0);
         int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out_toc, frames, 0, size, 0, payload_offset, packetOffset);
         if (error < 0)
         {

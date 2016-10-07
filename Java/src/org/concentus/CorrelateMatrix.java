@@ -98,8 +98,8 @@ class CorrelateMatrix
         int ptr1, ptr2;
 
         /* Calculate energy to find shift used to fit in 32 bits */
-        BoxedValue<Integer> boxed_energy = new BoxedValue<Integer>();
-        BoxedValue<Integer> boxed_rshifts_local = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_energy = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> boxed_rshifts_local = new BoxedValue<Integer>(0);
         SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_rshifts_local, x, x_ptr, L + order - 1);
         energy = boxed_energy.Val;
         rshifts_local = boxed_rshifts_local.Val;

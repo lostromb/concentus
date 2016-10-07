@@ -35,10 +35,6 @@ class BoxedValue<T>
 {
     public T Val;
     
-    public BoxedValue()
-    {
-    }
-
     public BoxedValue(T v)
     {
         Val = v;

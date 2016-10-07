@@ -88,7 +88,7 @@ class FindPitchLags
         ApplySineWindow.silk_apply_sine_window(Wsig, Wsig_ptr, x, x_buf_ptr, 2, psEnc.la_pitch);
 
         /* Calculate autocorrelation sequence */
-        BoxedValue<Integer> boxed_scale = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_scale = new BoxedValue<Integer>(0);
         Autocorrelation.silk_autocorr(auto_corr, boxed_scale, Wsig, psEnc.pitch_LPC_win_length, psEnc.pitchEstimationLPCOrder + 1);
         scale = boxed_scale.Val;
 

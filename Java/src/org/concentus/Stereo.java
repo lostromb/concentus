@@ -139,10 +139,10 @@ class Stereo
     {
         int scale;
         // fixme optimize this unboxing
-        BoxedValue<Integer> nrgx = new BoxedValue<Integer>();
-        BoxedValue<Integer> nrgy = new BoxedValue<Integer>();
-        BoxedValue<Integer> scale1 = new BoxedValue<Integer>();
-        BoxedValue<Integer> scale2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> nrgx = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> nrgy = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> scale1 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> scale2 = new BoxedValue<Integer>(0);
         int corr, pred_Q13, pred2_Q10;
 
         /* Find predictor */
@@ -212,8 +212,8 @@ class Stereo
         int sum, diff, smooth_coef_Q16, pred0_Q13, pred1_Q13;
         int[] pred_Q13 = new int[2];
         int frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
-        BoxedValue<Integer> LP_ratio_Q14 = new BoxedValue<Integer>();
-        BoxedValue<Integer> HP_ratio_Q14 = new BoxedValue<Integer>();
+        BoxedValue<Integer> LP_ratio_Q14 = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> HP_ratio_Q14 = new BoxedValue<Integer>(0);
         short[] side;
         short[] LP_mid;
         short[] HP_mid;

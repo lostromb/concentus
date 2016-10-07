@@ -74,7 +74,7 @@ class DecodeAPI
     {
         int i, n, decode_only_middle = 0, ret = SilkError.SILK_NO_ERROR;
         int LBRR_symbol;
-        BoxedValue<Integer> nSamplesOutDec = new BoxedValue<Integer>();
+        BoxedValue<Integer> nSamplesOutDec = new BoxedValue<Integer>(0);
         short[] samplesOut_tmp;
         int[] samplesOut_tmp_ptrs = new int[2];
         short[] samplesOut1_tmp_storage1;

@@ -84,8 +84,8 @@ class QuantizeLTPGains
                                             + ((int)((7) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(7, 7)*/) - gain_safety;
 
                 BoxedValue<Byte> temp_idx_box = new BoxedValue<Byte>(temp_idx[j]);
-                BoxedValue<Integer> rate_dist_Q14_subfr_box = new BoxedValue<Integer>();
-                BoxedValue<Integer> gain_Q7_box = new BoxedValue<Integer>();
+                BoxedValue<Integer> rate_dist_Q14_subfr_box = new BoxedValue<Integer>(0);
+                BoxedValue<Integer> gain_Q7_box = new BoxedValue<Integer>(0);
                 VQ_WMat_EC.silk_VQ_WMat_EC(
                     temp_idx_box,         /* O    index of best codebook vector                           */
                     rate_dist_Q14_subfr_box,   /* O    best weighted quantization error + mu * rate            */

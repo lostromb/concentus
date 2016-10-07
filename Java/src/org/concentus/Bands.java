@@ -367,8 +367,8 @@ class Bands
     static void stereo_merge(int[] X, int X_ptr, int[] Y, int Y_ptr, int mid, int N)
     {
         int j;
-        BoxedValue<Integer> xp = new BoxedValue<Integer>();
-        BoxedValue<Integer> side = new BoxedValue<Integer>();
+        BoxedValue<Integer> xp = new BoxedValue<Integer>(0);
+        BoxedValue<Integer> side = new BoxedValue<Integer>(0);
         int El, Er;
         int mid2;
         int kl, kr;
@@ -1200,6 +1200,12 @@ class Bands
                 haar1(X, X_ptr, N >> k, 1 << k);
             if (lowband != null)
                 haar1(lowband, lowband_ptr, N >> k, 1 << k);
+            int idx1 = fill & 0xF;
+            int idx2 = fill >> 4;
+            if (idx1 < 0)
+                System.out.println("e");
+            if (idx2 < 0)
+                System.out.println("e");
             fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2;
         }
         B >>= recombine;
@@ -1301,7 +1307,7 @@ class Bands
         }
 
         orig_fill = fill;
-
+        
         BoxedValue<Integer> boxed_b = new BoxedValue<Integer>(b);
         BoxedValue<Integer> boxed_fill = new BoxedValue<Integer>(fill);
         compute_theta(ctx, sctx, X, X_ptr, Y, Y_ptr, N, boxed_b, B, B, LM, 1, boxed_fill);
@@ -1685,8 +1691,8 @@ class Bands
                 }
                 y_cm = x_cm;
             }
-            collapse_masks[i * C + 0] = (byte)(x_cm & 0xFF);
-            collapse_masks[i * C + C - 1] = (byte)(y_cm & 0xFF);
+            collapse_masks[i * C + 0] = (short)(x_cm & 0xFF);
+            collapse_masks[i * C + C - 1] = (short)(y_cm & 0xFF);
             balance += pulses[i] + tell;
 
             /* Update the folding position only as long as we have 1 bit/sample depth. */
