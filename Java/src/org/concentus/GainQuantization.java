@@ -93,11 +93,11 @@ class GainQuantization
                 /* Accumulate deltas */
                 if (ind[k] > double_step_size_threshold)
                 {
-                    prev_ind.Val = prev_ind.Val + (byte)(Inlines.silk_LSHIFT(ind[k], 1) - double_step_size_threshold);
+                    prev_ind.Val = (byte)(prev_ind.Val + (byte)(Inlines.silk_LSHIFT(ind[k], 1) - double_step_size_threshold));
                 }
                 else
                 {
-                    prev_ind.Val = prev_ind.Val + ind[k];
+                    prev_ind.Val = (byte)(prev_ind.Val + ind[k]);
                 }
 
                 /* Shift to make non-negative */
@@ -143,11 +143,11 @@ class GainQuantization
                 double_step_size_threshold = 2 * SilkConstants.MAX_DELTA_GAIN_QUANT - SilkConstants.N_LEVELS_QGAIN + prev_ind.Val;
                 if (ind_tmp > double_step_size_threshold)
                 {
-                    prev_ind.Val = prev_ind.Val + (byte)(Inlines.silk_LSHIFT(ind_tmp, 1) - double_step_size_threshold);
+                    prev_ind.Val = (byte)(prev_ind.Val + (byte)(Inlines.silk_LSHIFT(ind_tmp, 1) - double_step_size_threshold));
                 }
                 else
                 {
-                    prev_ind.Val = prev_ind.Val + (byte)(ind_tmp);
+                    prev_ind.Val = (byte)(prev_ind.Val + (byte)(ind_tmp));
                 }
             }
 

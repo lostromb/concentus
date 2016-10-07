@@ -35,6 +35,7 @@
 
 package org.concentus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OpusPacketInfo
@@ -47,14 +48,14 @@ public class OpusPacketInfo
     /// <summary>
     /// The list of subframes in this packet
     /// </summary>
-    public List<byte[]> Frames;
+    public List<Byte[]> Frames;
 
     /// <summary>
     /// The index of the start of the payload within the packet
     /// </summary>
     public int PayloadOffset;
 
-    private OpusPacketInfo(byte toc, List<byte[]> frames, int payloadOffset)
+    private OpusPacketInfo(byte toc, List<Byte[]> frames, int payloadOffset)
     {
         TOCByte = toc;
         Frames = frames;
@@ -70,17 +71,17 @@ public class OpusPacketInfo
     /// <param name="packet_offset">The index of the beginning of the packet in the data array (usually 0)</param>
     /// <param name="len">The packet's length</param>
     /// <returns>A parsed packet info struct</returns>
-    public static OpusPacketInfo ParseOpusPacket(byte[] packet, int packet_offset, int len)
+    public static OpusPacketInfo ParseOpusPacket(byte[] packet, int packet_offset, int len) throws OpusException
     {
         // Find the number of frames first
         int numFrames = GetNumFrames(packet, packet_offset, len);
 
-        int payload_offset;
-        byte out_toc;
+        BoxedValue<Integer> payload_offset = new BoxedValue<Integer>();
+        BoxedValue<Byte> out_toc = new BoxedValue<Byte>();
         byte[][] frames = new byte[numFrames][];
         short[] size = new short[numFrames];
-        int packetOffset;
-        int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out out_toc, frames, 0, size, 0, out payload_offset, out packetOffset);
+        BoxedValue<Integer> packetOffset = new BoxedValue<Integer>();
+        int error = opus_packet_parse_impl(packet, packet_offset, len, 0, out_toc, frames, 0, size, 0, payload_offset, packetOffset);
         if (error < 0)
         {
             throw new OpusException("An error occurred while parsing the packet", error);
@@ -88,9 +89,17 @@ public class OpusPacketInfo
 
         // Since packet_parse_impl has created deep copies of each frame, we can return them safely from this function without
         // worrying about variable scoping or side effects
-        List<byte[]> copiedFrames = new List<byte[]>(frames);
+        ArrayList<Byte[]> copiedFrames = new ArrayList<Byte[]>();
+        for (int c = 0; c < frames.length; c++)
+        {
+            // Java does not let us unbox an array (?) so we have to copy the bytes _again
+            Byte[] convertedFrame = new Byte[frames[c].length];
+            for (int d = 0; d < convertedFrame.length; d++)
+                convertedFrame[d] = frames[c][d];
+            copiedFrames.add(convertedFrame);
+        }
 
-        return new OpusPacketInfo(out_toc, copiedFrames, payload_offset);
+        return new OpusPacketInfo(out_toc.Val, copiedFrames, payload_offset.Val);
     }
 
     public static int GetNumSamplesPerFrame(byte[] packet, int packet_offset, int Fs)
@@ -215,7 +224,7 @@ public class OpusPacketInfo
         return mode;
     }
 
-    internal static int encode_size(int size, byte[] data, int data_ptr)
+    static int encode_size(int size, byte[] data, int data_ptr)
     {
         if (size < 252)
         {
@@ -230,7 +239,7 @@ public class OpusPacketInfo
         }
     }
 
-    internal static int parse_size(byte[] data, int data_ptr, int len, BoxedValue<short> size)
+    static int parse_size(byte[] data, int data_ptr, int len, BoxedValue<Short> size)
     {
         if (len < 1)
         {
@@ -253,10 +262,10 @@ public class OpusPacketInfo
         }
     }
 
-    internal static int opus_packet_parse_impl(byte[] data, int data_ptr, int len,
-          int self_delimited, out byte out_toc,
+    static int opus_packet_parse_impl(byte[] data, int data_ptr, int len,
+          int self_delimited, BoxedValue<Byte> out_toc,
           byte[][] frames, int frames_ptr, short[] sizes, int sizes_ptr,
-          out int payload_offset, out int packet_offset)
+          BoxedValue<Integer> payload_offset, BoxedValue<Integer> packet_offset)
     {
         int i, bytes;
         int count;
@@ -267,9 +276,9 @@ public class OpusPacketInfo
         int last_size;
         int pad = 0;
         int data0 = data_ptr;
-        out_toc = 0;
-        payload_offset = 0;
-        packet_offset = 0;
+        out_toc.Val = 0;
+        payload_offset.Val = 0;
+        packet_offset.Val = 0;
 
         if (sizes == null || len < 0)
             return OpusError.OPUS_BAD_ARG;
@@ -304,7 +313,7 @@ public class OpusPacketInfo
             /* Two VBR frames */
             case 2:
                 count = 2;
-                BoxedValue<short> boxed_size = new BoxedValue<short>(sizes[sizes_ptr]);
+                BoxedValue<Short> boxed_size = new BoxedValue<Short>(sizes[sizes_ptr]);
                 bytes = parse_size(data, data_ptr, len, boxed_size);
                 sizes[sizes_ptr] = boxed_size.Val;
                 len -= bytes;
@@ -349,7 +358,7 @@ public class OpusPacketInfo
                     last_size = len;
                     for (i = 0; i < count - 1; i++)
                     {
-                        boxed_size = new BoxedValue<short>(sizes[sizes_ptr + i]);
+                        boxed_size = new BoxedValue<Short>(sizes[sizes_ptr + i]);
                         bytes = parse_size(data, data_ptr, len, boxed_size);
                         sizes[sizes_ptr + i] = boxed_size.Val;
                         len -= bytes;
@@ -376,7 +385,7 @@ public class OpusPacketInfo
         /* Self-delimited framing has an extra size for the last frame. */
         if (self_delimited != 0)
         {
-            BoxedValue<short> boxed_size = new BoxedValue<short>(sizes[sizes_ptr + count - 1]);
+            BoxedValue<Short> boxed_size = new BoxedValue<Short>(sizes[sizes_ptr + count - 1]);
             bytes = parse_size(data, data_ptr, len, boxed_size);
             sizes[sizes_ptr + count - 1] = boxed_size.Val;
             len -= bytes;
@@ -404,7 +413,7 @@ public class OpusPacketInfo
             sizes[sizes_ptr + count - 1] = (short)last_size;
         }
 
-        payload_offset = (int)(data_ptr - data0);
+        payload_offset.Val = (int)(data_ptr - data0);
 
         for (i = 0; i < count; i++)
         {
@@ -412,15 +421,15 @@ public class OpusPacketInfo
             {
                 // The old code returned pointers to the single data array, but that can cause unwanted side effects.
                 // So I have replaced it with this code that creates a new copy of each frame. Slower, but more robust
-                frames[frames_ptr + i] = new byte[data.Length - data_ptr];
-                Array.Copy(data, data_ptr, frames[frames_ptr + i], 0, data.Length - data_ptr);
+                frames[frames_ptr + i] = new byte[data.length - data_ptr];
+                System.arraycopy(data, data_ptr, frames[frames_ptr + i], 0, data.length - data_ptr);
             }
             data_ptr += sizes[sizes_ptr + i];
         }
 
-        packet_offset = pad + (int)(data_ptr - data0);
+        packet_offset.Val = pad + (int)(data_ptr - data0);
 
-        out_toc = toc;
+        out_toc.Val = toc;
 
         return count;
     }

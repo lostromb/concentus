@@ -34,22 +34,22 @@ package org.concentus;
 
 class PitchAnalysisCore
 {
-    private final int SCRATCH_SIZE = 22;
-    private final int SF_LENGTH_4KHZ = (SilkConstants.PE_SUBFR_LENGTH_MS * 4);
-    private final int SF_LENGTH_8KHZ = (SilkConstants.PE_SUBFR_LENGTH_MS * 8);
-    private final int MIN_LAG_4KHZ = (SilkConstants.PE_MIN_LAG_MS * 4);
-    private final int MIN_LAG_8KHZ = (SilkConstants.PE_MIN_LAG_MS * 8);
-    private final int MAX_LAG_4KHZ = (SilkConstants.PE_MAX_LAG_MS * 4);
-    private final int MAX_LAG_8KHZ = (SilkConstants.PE_MAX_LAG_MS * 8 - 1);
-    private final int CSTRIDE_4KHZ = (MAX_LAG_4KHZ + 1 - MIN_LAG_4KHZ);
-    private final int CSTRIDE_8KHZ = (MAX_LAG_8KHZ + 3 - (MIN_LAG_8KHZ - 2));
-    private final int D_COMP_MIN = (MIN_LAG_8KHZ - 3);
-    private final int D_COMP_MAX = (MAX_LAG_8KHZ + 4);
-    private final int D_COMP_STRIDE = (D_COMP_MAX - D_COMP_MIN);
+    private static final int SCRATCH_SIZE = 22;
+    private static final int SF_LENGTH_4KHZ = (SilkConstants.PE_SUBFR_LENGTH_MS * 4);
+    private static final int SF_LENGTH_8KHZ = (SilkConstants.PE_SUBFR_LENGTH_MS * 8);
+    private static final int MIN_LAG_4KHZ = (SilkConstants.PE_MIN_LAG_MS * 4);
+    private static final int MIN_LAG_8KHZ = (SilkConstants.PE_MIN_LAG_MS * 8);
+    private static final int MAX_LAG_4KHZ = (SilkConstants.PE_MAX_LAG_MS * 4);
+    private static final int MAX_LAG_8KHZ = (SilkConstants.PE_MAX_LAG_MS * 8 - 1);
+    private static final int CSTRIDE_4KHZ = (MAX_LAG_4KHZ + 1 - MIN_LAG_4KHZ);
+    private static final int CSTRIDE_8KHZ = (MAX_LAG_8KHZ + 3 - (MIN_LAG_8KHZ - 2));
+    private static final int D_COMP_MIN = (MIN_LAG_8KHZ - 3);
+    private static final int D_COMP_MAX = (MAX_LAG_8KHZ + 4);
+    private static final int D_COMP_STRIDE = (D_COMP_MAX - D_COMP_MIN);
 
     // typedef int silk_pe_stage3_vals[SilkConstants.PE_NB_STAGE3_LAGS];
     // fixme can I linearize this?
-    private class silk_pe_stage3_vals
+    static class silk_pe_stage3_vals
     {
         public final int[] Values = new int[SilkConstants.PE_NB_STAGE3_LAGS];
     }
@@ -60,7 +60,7 @@ class PitchAnalysisCore
     static int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
         short[] frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
         int[] pitch_out,         /* O    4 pitch lag values                                          */
-        BoxedValue<short> lagIndex,          /* O    Lag Index                                                   */
+        BoxedValue<Short> lagIndex,          /* O    Lag Index                                                   */
         BoxedValue<Byte> contourIndex,      /* O    Pitch contour Index                                         */
         BoxedValue<Integer> LTPCorr_Q15,       /* I/O  Normalized correlation; input: value from previous frame    */
         int prevLag,            /* I    Last lag of previous frame; set to zero is unvoiced         */
@@ -133,7 +133,7 @@ class PitchAnalysisCore
         }
         else {
             Inlines.OpusAssert(Fs_kHz == 8);
-            System.arraycopy(frame, frame_8kHz, frame_length_8kHz);
+            System.arraycopy(frame, 0, frame_8kHz, 0, frame_length_8kHz);
         }
 
         /* Decimate again to 4 kHz */
@@ -153,7 +153,12 @@ class PitchAnalysisCore
         *******************************************************************************/
 
         /* Inner product is calculated with different lengths, so scale for the worst case */
-        SumSqrShift.silk_sum_sqr_shift(out energy, out shift, frame_4kHz, frame_length_4kHz);
+        BoxedValue<Integer> boxed_energy = new BoxedValue<Integer>();
+        BoxedValue<Integer> boxed_shift = new BoxedValue<Integer>();
+        SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_4kHz, frame_length_4kHz);
+        energy = boxed_energy.Val;
+        shift = boxed_shift.Val;
+        
         if (shift > 0)
         {
             shift = Inlines.silk_RSHIFT(shift, 1);
@@ -168,7 +173,7 @@ class PitchAnalysisCore
         ******************************************************************************/
         C = new short[nb_subfr * CSTRIDE_8KHZ];
         xcorr32 = new int[MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1];
-        Arrays.MemSet(C, 0, (nb_subfr >> 1) * CSTRIDE_4KHZ);
+        Arrays.MemSet(C, (short)0, (nb_subfr >> 1) * CSTRIDE_4KHZ);
         target = frame_4kHz;
         target_ptr = Inlines.silk_LSHIFT(SF_LENGTH_4KHZ, 2);
         for (k = 0; k < nb_subfr >> 1; k++)
@@ -309,7 +314,12 @@ class PitchAnalysisCore
         ** Scale signal down to avoid correlations measures from overflowing
         *******************************************************************************/
         /* find scaling as max scaling for each subframe */
-        SumSqrShift.silk_sum_sqr_shift(out energy, out shift, frame_8kHz, frame_length_8kHz);
+        boxed_energy.Val = 0;
+        boxed_shift.Val = 0;
+        SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame_8kHz, frame_length_8kHz);
+        energy = boxed_energy.Val;
+        shift = boxed_shift.Val;
+        
         if (shift > 0)
         {
             shift = Inlines.silk_RSHIFT(shift, 1);
@@ -322,7 +332,7 @@ class PitchAnalysisCore
         /*********************************************************************************
         * Find energy of each subframe projected onto its history, for a range of delays
         *********************************************************************************/
-        Arrays.MemSet(C, 0, nb_subfr * CSTRIDE_8KHZ );
+        Arrays.MemSet(C, (short)0, nb_subfr * CSTRIDE_8KHZ );
 
         target = frame_8kHz;
         target_ptr = SilkConstants.PE_LTP_MEM_LENGTH_MS * 8;
@@ -347,7 +357,7 @@ class PitchAnalysisCore
                                                      13 + 1));                                      /* Q13 */
                 }
                 else {
-                    Inlines.MatrixSet<short>(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ, 0);
+                    Inlines.MatrixSet(C, k, d - (MIN_LAG_8KHZ - 2), CSTRIDE_8KHZ, (short)0);
                 }
             }
             target_ptr += SF_LENGTH_8KHZ;
@@ -477,7 +487,12 @@ class PitchAnalysisCore
             /* Scale input signal down to avoid correlations measures from overflowing */
             /***************************************************************************/
             /* find scaling as max scaling for each subframe */
-            SumSqrShift.silk_sum_sqr_shift(out energy, out shift, frame, frame_length);
+            boxed_energy.Val = 0;
+            boxed_shift.Val = 0;
+            SumSqrShift.silk_sum_sqr_shift(boxed_energy, boxed_shift, frame, frame_length);
+            energy = boxed_energy.Val;
+            shift = boxed_shift.Val;
+            
             if (shift > 0)
             {
                 scratch_mem = new short[frame_length];

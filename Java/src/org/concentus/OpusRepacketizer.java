@@ -78,8 +78,8 @@ public class OpusRepacketizer
 
     int opus_repacketizer_cat_impl(byte[] data, int data_ptr, int len, int self_delimited)
     {
-        byte dummy_toc;
-        int dummy_offset;
+        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>();
+        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>();
         int curr_nb_frames, ret;
         /* Set of check ToC */
         if (len < 1)
@@ -107,7 +107,7 @@ public class OpusRepacketizer
             return OpusError.OPUS_INVALID_PACKET;
         }
 
-        ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out dummy_toc, this.frames, this.nb_frames, this.len, this.nb_frames, out dummy_offset, out dummy_offset);
+        ret = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, dummy_toc, this.frames, this.nb_frames, this.len, this.nb_frames, dummy_offset, dummy_offset);
         if (ret < 1) return ret;
 
         this.nb_frames += curr_nb_frames;
@@ -475,10 +475,10 @@ public class OpusRepacketizer
     {
         int s;
         int count;
-        byte dummy_toc;
+        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>();
         short[] size = new short[48];
-        int packet_offset;
-        int dummy_offset;
+        BoxedValue<Integer> packet_offset= new BoxedValue<Integer>();
+        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>();
         int amount;
 
         if (len < 1)
@@ -493,12 +493,12 @@ public class OpusRepacketizer
         {
             if (len <= 0)
                 return OpusError.OPUS_INVALID_PACKET;
-            count = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, 1, out dummy_toc, null, 0, 
-                                           size, 0, out dummy_offset, out packet_offset);
+            count = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, 1, dummy_toc, null, 0, 
+                                           size, 0, dummy_offset, packet_offset);
             if (count < 0)
                 return count;
-            data_offset += packet_offset;
-            len -= packet_offset;
+            data_offset += packet_offset.Val;
+            len -= packet_offset.Val;
         }
         return PadPacket(data, data_offset, len, len + amount);
     }
@@ -520,10 +520,10 @@ public class OpusRepacketizer
     public static int UnpadMultistreamPacket(byte[] data, int data_offset, int len, int nb_streams)
     {
         int s;
-        byte dummy_toc;
+        BoxedValue<Byte> dummy_toc = new BoxedValue<Byte>();
         short[] size = new short[48];
-        int packet_offset;
-        int dummy_offset;
+        BoxedValue<Integer> packet_offset = new BoxedValue<Integer>();
+        BoxedValue<Integer> dummy_offset = new BoxedValue<Integer>();
         OpusRepacketizer rp = new OpusRepacketizer();
         int dst;
         int dst_len;
@@ -540,11 +540,11 @@ public class OpusRepacketizer
             if (len <= 0)
                 return OpusError.OPUS_INVALID_PACKET;
             rp.Reset();
-            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, self_delimited, out dummy_toc, null, 0,
-                                           size, 0, out dummy_offset, out packet_offset);
+            ret = OpusPacketInfo.opus_packet_parse_impl(data, data_offset, len, self_delimited, dummy_toc, null, 0,
+                                           size, 0, dummy_offset, packet_offset);
             if (ret < 0)
                 return ret;
-            ret = rp.opus_repacketizer_cat_impl(data, data_offset, packet_offset, self_delimited);
+            ret = rp.opus_repacketizer_cat_impl(data, data_offset, packet_offset.Val, self_delimited);
             if (ret < 0)
                 return ret;
             ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, dst, len, self_delimited, 0);
@@ -553,8 +553,8 @@ public class OpusRepacketizer
             else
                 dst_len += ret;
             dst += ret;
-            data_offset += packet_offset;
-            len -= packet_offset;
+            data_offset += packet_offset.Val;
+            len -= packet_offset.Val;
         }
         return dst_len;
     }

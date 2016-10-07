@@ -37,6 +37,7 @@ package org.concentus;
 
 public enum OpusBandwidth
 {
+    OPUS_BANDWIDTH_UNKNOWN,
     OPUS_BANDWIDTH_AUTO, 
     OPUS_BANDWIDTH_NARROWBAND,
     OPUS_BANDWIDTH_MEDIUMBAND,

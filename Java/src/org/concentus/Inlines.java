@@ -1891,8 +1891,23 @@ class Inlines
     {
         return Matrix_base_adr[((row) * (N)) + (column)];
     }
+    
+    static short MatrixGet(short[] Matrix_base_adr, int row, int column, int N)
+    {
+        return Matrix_base_adr[((row) * (N)) + (column)];
+    }
+    
+    static PitchAnalysisCore.silk_pe_stage3_vals MatrixGet(PitchAnalysisCore.silk_pe_stage3_vals[] Matrix_base_adr, int row, int column, int N)
+    {
+        return Matrix_base_adr[((row) * (N)) + (column)];
+    }
 
     static int MatrixGet(int[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
+    {
+        return Matrix_base_adr[matrix_ptr + (row * N) + column];
+    }
+    
+    static short MatrixGet(short[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
     {
         return Matrix_base_adr[matrix_ptr + (row * N) + column];
     }
@@ -1901,8 +1916,18 @@ class Inlines
     {
         Matrix_base_adr[matrix_ptr + (row * N) + column] = value;
     }
+    
+    static void MatrixSet(short[] Matrix_base_adr, int matrix_ptr, int row, int column, int N, short value)
+    {
+        Matrix_base_adr[matrix_ptr + (row * N) + column] = value;
+    }
 
     static void MatrixSet(int[] Matrix_base_adr, int row, int column, int N, int value)
+    {
+        Matrix_base_adr[((row) * (N)) + (column)] = value;
+    }
+    
+    static void MatrixSet(short[] Matrix_base_adr, int row, int column, int N, short value)
     {
         Matrix_base_adr[((row) * (N)) + (column)] = value;
     }

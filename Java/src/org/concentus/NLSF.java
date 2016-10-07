@@ -579,7 +579,7 @@ class NLSF
                     prev_out_Q10[ind_max_min] = prev_out_Q10[ind_min_max + SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
                     RD_min_Q25[ind_max_min] = 0;
                     RD_max_Q25[ind_min_max] = Integer.MAX_VALUE;
-                    Buffer.BlockCopy(ind[ind_min_max], 0, ind[ind_max_min], 0, order * sizeof(byte));
+                    System.arraycopy(ind[ind_min_max], 0, ind[ind_max_min], 0, order);
                 }
 
                 // increment index if it comes from the upper half
@@ -674,7 +674,7 @@ class NLSF
         Sort.silk_insertion_sort_increasing(err_Q26, tempIndices1, psNLSF_CB.nVectors, nSurvivors);
 
         RD_Q25 = new int[nSurvivors];
-        tempIndices2 = Arrays.InitTwoDimensionalArray<byte>(nSurvivors, SilkConstants.MAX_LPC_ORDER); 
+        tempIndices2 = Arrays.InitTwoDimensionalArrayByte(nSurvivors, SilkConstants.MAX_LPC_ORDER); 
 
 
         // Loop over survivors

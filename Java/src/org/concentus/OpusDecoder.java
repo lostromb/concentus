@@ -86,9 +86,9 @@ public class OpusDecoder
      void PartialReset()
     {
         stream_channels = 0;
-        bandwidth = 0;
-        mode = 0;
-        prev_mode = 0;
+        bandwidth = OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN;
+        mode = OpusMode.MODE_UNKNOWN;
+        prev_mode = OpusMode.MODE_UNKNOWN;
         frame_size = 0;
         prev_redundancy = 0;
         last_packet_duration = 0;
@@ -140,7 +140,7 @@ public class OpusDecoder
 
         celt_dec.SetSignalling(0);
 
-        this.prev_mode = 0;
+        this.prev_mode = OpusMode.MODE_UNKNOWN;
         this.frame_size = Fs / 400;
         return OpusError.OPUS_OK;
     }
@@ -158,7 +158,7 @@ public class OpusDecoder
     /// <param name="Fs">Sample rate to decode at (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
     /// <param name="channels">Number of channels (1 or 2) to decode</param>
     /// <returns>The created encoder</returns>
-    public static OpusDecoder Create(int Fs, int channels)
+    public static OpusDecoder Create(int Fs, int channels) throws OpusException
     {
         int ret;
         OpusDecoder st; // porting note: pointer
@@ -183,9 +183,9 @@ public class OpusDecoder
         return st;
     }
 
-    private static final sbyte[] SILENCE = new sbyte[] { -1, -1 };
+    private static final byte[] SILENCE = new byte[] { -1, -1 };
 
-     int opus_decode_frame(sbyte[] data, int data_ptr,
+     int opus_decode_frame(byte[] data, int data_ptr,
   int len, short[] pcm, int pcm_ptr, int frame_size, int decode_fec)
     {
         SilkDecoder silk_dec;
@@ -246,7 +246,7 @@ public class OpusDecoder
             audiosize = frame_size;
             mode = this.prev_mode;
 
-            if (mode == 0)
+            if (mode == OpusMode.MODE_UNKNOWN)
             {
                 /* If we haven't got any packet yet, all we can do is return zeros */
                 for (i = pcm_ptr; i < pcm_ptr + (audiosize * this.channels); i++)
@@ -288,7 +288,7 @@ public class OpusDecoder
 
         pcm_transition_silk_size = 0;
         pcm_transition_celt_size = 0;
-        if (data != null && this.prev_mode > 0 && (
+        if (data != null && (this.prev_mode != OpusMode.MODE_UNKNOWN && this.prev_mode != OpusMode.MODE_AUTO) && (
             (mode == OpusMode.MODE_CELT_ONLY && this.prev_mode != OpusMode.MODE_CELT_ONLY && (this.prev_redundancy == 0))
          || (mode != OpusMode.MODE_CELT_ONLY && this.prev_mode == OpusMode.MODE_CELT_ONLY))
            )
@@ -378,15 +378,18 @@ public class OpusDecoder
             {
                 /* Call SILK decoder */
                 int first_frame = (decoded_samples == 0) ? 1 : 0;
+                BoxedValue<Integer> boxed_silk_frame_size = new BoxedValue<Integer>();
                 silk_ret = DecodeAPI.silk_Decode(silk_dec, this.DecControl,
-                                        lost_flag, first_frame, dec, pcm_ptr2, pcm_ptr2_ptr, out silk_frame_size);
+                                        lost_flag, first_frame, dec, pcm_ptr2, pcm_ptr2_ptr, boxed_silk_frame_size);
+                silk_frame_size = boxed_silk_frame_size.Val;
+                
                 if (silk_ret != 0)
                 {
                     if (lost_flag != 0)
                     {
                         /* PLC failure should not be fatal */
                         silk_frame_size = frame_size;
-                        Arrays.MemSetWithOffset<short>(pcm_ptr2, 0, pcm_ptr2_ptr, frame_size * this.channels);
+                        Arrays.MemSetWithOffset(pcm_ptr2, (short)0, pcm_ptr2_ptr, frame_size * this.channels);
                     }
                     else {
 
@@ -436,17 +439,17 @@ public class OpusDecoder
 
             switch (this.bandwidth)
             {
-                case OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND:
+                case OPUS_BANDWIDTH_NARROWBAND:
                     endband = 13;
                     break;
-                case OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND:
-                case OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND:
+                case OPUS_BANDWIDTH_MEDIUMBAND:
+                case OPUS_BANDWIDTH_WIDEBAND:
                     endband = 17;
                     break;
-                case OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND:
+                case OPUS_BANDWIDTH_SUPERWIDEBAND:
                     endband = 19;
                     break;
-                case OpusBandwidth.OPUS_BANDWIDTH_FULLBAND:
+                case OPUS_BANDWIDTH_FULLBAND:
                     endband = 21;
                     break;
             }
@@ -488,7 +491,7 @@ public class OpusDecoder
         {
             int celt_frame_size = Inlines.IMIN(F20, frame_size);
             /* Make sure to discard any previous CELT state */
-            if (mode != this.prev_mode && this.prev_mode > 0 && this.prev_redundancy == 0)
+            if (mode != this.prev_mode && (this.prev_mode != OpusMode.MODE_AUTO && this.prev_mode != OpusMode.MODE_UNKNOWN) && this.prev_redundancy == 0)
                 celt_dec.ResetState();
             /* Decode CELT */
             celt_ret = celt_dec.celt_decode_with_ec(decode_fec != 0 ? null : data, data_ptr,
@@ -584,15 +587,15 @@ public class OpusDecoder
         return celt_ret < 0 ? celt_ret : audiosize;
     }
 
-     int opus_decode_native(sbyte[] data, int data_ptr,
+     int opus_decode_native(byte[] data, int data_ptr,
       int len, short[] pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
-      int self_delimited, out int packet_offset, int soft_clip)
+      int self_delimited, BoxedValue<Integer> packet_offset, int soft_clip)
     {
         int i, nb_samples;
         int count, offset;
-        sbyte toc;
+        byte toc;
         int packet_frame_size, packet_stream_channels;
-        packet_offset = 0;
+        packet_offset.Val = 0;
         OpusBandwidth packet_bandwidth;
         OpusMode packet_mode;
         /* 48 x 2.5 ms = 120 ms */
@@ -626,9 +629,13 @@ public class OpusDecoder
         packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, this.Fs);
         packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data, data_ptr);
 
-        count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out toc, null, 0,
-                                       size, 0, out offset, out packet_offset);
-
+        BoxedValue<Byte> boxed_toc = new BoxedValue<Byte>();
+        BoxedValue<Integer> boxed_offset = new BoxedValue<Integer>();
+        count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, boxed_toc, null, 0,
+                                       size, 0, boxed_offset, packet_offset);
+        toc = boxed_toc.Val;
+        offset = boxed_offset.Val;
+                                       
         if (count < 0)
             return count;
 
@@ -636,17 +643,17 @@ public class OpusDecoder
 
         if (decode_fec != 0)
         {
-            int dummy;
+            BoxedValue<Integer> dummy = new BoxedValue<Integer>();
             int duration_copy;
             int ret;
             /* If no FEC can be present, run the PLC (recursive call) */
             if (frame_size < packet_frame_size || packet_mode == OpusMode.MODE_CELT_ONLY || this.mode == OpusMode.MODE_CELT_ONLY)
-                return opus_decode_native(null, 0, 0, pcm_out, pcm_out_ptr, frame_size, 0, 0, out dummy, soft_clip);
+                return opus_decode_native(null, 0, 0, pcm_out, pcm_out_ptr, frame_size, 0, 0, dummy, soft_clip);
             /* Otherwise, run the PLC on everything except the size for which we might have FEC */
             duration_copy = this.last_packet_duration;
             if (frame_size - packet_frame_size != 0)
             {
-                ret = opus_decode_native(null, 0, 0, pcm_out, pcm_out_ptr, frame_size - packet_frame_size, 0, 0, out dummy, soft_clip);
+                ret = opus_decode_native(null, 0, 0, pcm_out, pcm_out_ptr, frame_size - packet_frame_size, 0, 0, dummy, soft_clip);
                 if (ret < 0)
                 {
                     this.last_packet_duration = duration_copy;
@@ -713,8 +720,8 @@ public class OpusDecoder
     /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
     /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
     /// <returns>The number of decoded samples</returns>
-    public int Decode(sbyte[] in_data, int in_data_offset,
-         int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
+    public int Decode(byte[] in_data, int in_data_offset,
+         int len, short[] out_pcm, int out_pcm_offset, int frame_size, boolean decode_fec) throws OpusException
     {
         if (frame_size <= 0)
         {
@@ -723,8 +730,8 @@ public class OpusDecoder
 
         try
         {
-            int dummy;
-            int ret = opus_decode_native(in_data, in_data_offset, len, out_pcm, out_pcm_offset, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
+            BoxedValue<Integer> dummy = new BoxedValue<Integer>();
+            int ret = opus_decode_native(in_data, in_data_offset, len, out_pcm, out_pcm_offset, frame_size, decode_fec ? 1 : 0, 0, dummy, 0);
 
             if (ret < 0)
             {
@@ -736,139 +743,55 @@ public class OpusDecoder
 
             return ret;
         }
-        catch (ArgumentException e)
+        catch (IllegalArgumentException e)
         {
-            throw new OpusException("Internal error during decoding: " + e.Message);
+            throw new OpusException("Internal error during decoding: " + e.getMessage());
         }
     }
-
-    /// <summary>
-    /// Decodes an Opus packet, putting the output data into a floating-point buffer.
-    /// </summary>
-    /// <param name="in_data">The input payload. This may be NULL if that previous packet was lost in transit (when PLC is enabled)</param>
-    /// <param name="in_data_offset">The offset to use when reading the input payload. Usually 0</param>
-    /// <param name="len">The number of bytes in the payload</param>
-    /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
-    /// You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need
-    /// exact sizing.</param>
-    /// <param name="out_pcm_offset">The offset to use when writing to the output buffer</param>
-    /// <param name="frame_size">The number of samples (per channel) of available space in the output PCM buf.
-    /// If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
-    /// not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
-    /// then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
-    /// not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
-    /// be a multiple of 2.5 ms.</param>
-    /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
-    /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
-    /// <returns>The number of decoded samples</returns>
-    public int Decode(sbyte[] in_data, int in_data_offset,
-        int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
+    
+    public OpusBandwidth getBandwidth()
     {
-        short[] output;
-        int ret, i;
-        int nb_samples;
-
-        if (frame_size <= 0)
-        {
-            throw new IllegalArgumentException("Frame size must be > 0");
-        }
-        if (in_data != null && len > 0 && !decode_fec)
-        {
-            nb_samples = OpusPacketInfo.GetNumSamples(this, in_data, in_data_offset, len);
-            if (nb_samples > 0)
-                frame_size = Inlines.IMIN(frame_size, nb_samples);
-            else
-                throw new OpusException("An invalid packet was provided (unable to parse # of samples)");
-        }
-        output = new short[frame_size * this.channels];
-
-        try
-        {
-            int dummy;
-            ret = opus_decode_native(in_data, in_data_offset, len, output, 0, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
-
-            if (ret < 0)
-            {
-                // An error happened; report it
-                if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new IllegalArgumentException("OPUS_BAD_ARG when decoding");
-                throw new OpusException("An error occurred during decoding", ret);
-            }
-
-            if (ret > 0)
-            {
-                for (i = 0; i < ret * this.channels; i++)
-                    out_pcm[out_pcm_offset + i] = (1.0f / 32768.0f) * (output[i]);
-            }
-
-            return ret;
-        }
-        catch (ArgumentException e)
-        {
-            throw new OpusException("Internal error during decoding: " + e.Message);
-        }
+        return bandwidth;
     }
 
-    public OpusBandwidth Bandwidth
+    public int getFinalRange()
     {
-        get
-        {
-            return bandwidth;
-        }
+        return rangeFinal;
     }
 
-    public int FinalRange
+    public int getSampleRate()
     {
-        get
-        {
-            return rangeFinal;
-        }
+        return Fs;
     }
 
-    public int SampleRate
+    public int getPitch()
     {
-        get
+        if (prev_mode == OpusMode.MODE_CELT_ONLY)
         {
-            return Fs;
+            return Celt_Decoder.GetPitch();
         }
+        else
+            return DecControl.prevPitchLag;
     }
 
-    public int Pitch
+    public int getGain()
     {
-        get
-        {
-            if (prev_mode == OpusMode.MODE_CELT_ONLY)
-            {
-                return Celt_Decoder.GetPitch();
-            }
-            else
-                return DecControl.prevPitchLag;
-        }
-    }
-
-    public int Gain
-    {
-        get
-        {
             return decode_gain;
-        }
-        set
+    }
+    
+    public void setGain(int value)
+    {
+        if (value < -32768 || value > 32767)
         {
-            if (value < -32768 || value > 32767)
-            {
-                throw new IllegalArgumentException("Gain must be within the range of a signed int16");
-            }
-
-            decode_gain = value;
+            throw new IllegalArgumentException("Gain must be within the range of a signed int16");
         }
+
+        decode_gain = value;
     }
 
-    public int LastPacketDuration
+    public int getLastPacketDuration()
     {
-        get
-        {
-            return last_packet_duration;
-        }
+        return last_packet_duration;
     }
 
     public void ResetState()

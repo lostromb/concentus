@@ -45,8 +45,10 @@ class FindLPC
         int k, subfr_length;
         int[] a_Q16 = new int[SilkConstants.MAX_LPC_ORDER];
         int isInterpLower, shift;
-        int res_nrg0, res_nrg1;
-        int rshift0, rshift1;
+        BoxedValue<Integer> res_nrg0 = new BoxedValue<Integer>();
+        BoxedValue<Integer> res_nrg1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> rshift0 = new BoxedValue<Integer>();
+        BoxedValue<Integer> rshift1 = new BoxedValue<Integer>();
         BoxedValue<Integer> scratch_box1 = new BoxedValue<Integer>();
         BoxedValue<Integer> scratch_box2 = new BoxedValue<Integer>();
 
@@ -96,7 +98,7 @@ class FindLPC
             NLSF.silk_A2NLSF(NLSF_Q15, a_tmp_Q16, psEncC.predictLPCOrder);
 
            LPC_res = new short[2 * subfr_length];
-
+           
             /* Search over interpolation indices to find the one with lowest residual energy */
             for (k = 3; k >= 0; k--)
             {
@@ -109,22 +111,22 @@ class FindLPC
                 /* Calculate residual energy with NLSF interpolation */
                 Filters.silk_LPC_analysis_filter(LPC_res, 0, x, 0, a_tmp_Q12, 0, 2 * subfr_length, psEncC.predictLPCOrder);
 
-                SumSqrShift.silk_sum_sqr_shift(out res_nrg0, out rshift0, LPC_res, psEncC.predictLPCOrder, subfr_length - psEncC.predictLPCOrder);
+                SumSqrShift.silk_sum_sqr_shift(res_nrg0, rshift0, LPC_res, psEncC.predictLPCOrder, subfr_length - psEncC.predictLPCOrder);
 
-                SumSqrShift.silk_sum_sqr_shift(out res_nrg1, out rshift1, LPC_res, psEncC.predictLPCOrder + subfr_length, subfr_length - psEncC.predictLPCOrder);
+                SumSqrShift.silk_sum_sqr_shift(res_nrg1, rshift1, LPC_res, psEncC.predictLPCOrder + subfr_length, subfr_length - psEncC.predictLPCOrder);
 
                 /* Add subframe energies from first half frame */
-                shift = rshift0 - rshift1;
+                shift = rshift0.Val - rshift1.Val;
                 if (shift >= 0)
                 {
-                    res_nrg1 = Inlines.silk_RSHIFT(res_nrg1, shift);
-                    res_nrg_interp_Q = -rshift0;
+                    res_nrg1.Val = Inlines.silk_RSHIFT(res_nrg1.Val, shift);
+                    res_nrg_interp_Q = 0 - rshift0.Val;
                 }
                 else {
-                    res_nrg0 = Inlines.silk_RSHIFT(res_nrg0, -shift);
-                    res_nrg_interp_Q = -rshift1;
+                    res_nrg0.Val = Inlines.silk_RSHIFT(res_nrg0.Val, 0 - shift);
+                    res_nrg_interp_Q = 0 - rshift1.Val;
                 }
-                res_nrg_interp = Inlines.silk_ADD32(res_nrg0, res_nrg1);
+                res_nrg_interp = Inlines.silk_ADD32(res_nrg0.Val, res_nrg1.Val);
 
                 /* Compare with first half energy without NLSF interpolation, or best interpolated value so far */
                 shift = res_nrg_interp_Q - res_nrg_Q;

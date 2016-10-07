@@ -37,7 +37,7 @@ package org.concentus;
 /// </summary>
 class PLC
 {
-    private final int NB_ATT = 2;
+    private static final int NB_ATT = 2;
     private static final short[] HARM_ATT_Q15 = { 32440, 31130 }; /* 0.99, 0.95 */
     private static final short[] PLC_RAND_ATTENUATE_V_Q15 = { 31130, 26214 }; /* 0.95, 0.8 */
     private static final short[] PLC_RAND_ATTENUATE_UV_Q15 = { 32440, 29491 }; /* 0.99, 0.9 */
@@ -181,10 +181,10 @@ class PLC
     /// <param name="subfr_length">I</param>
     /// <param name="nb_subfr">I</param>
     static void silk_PLC_energy(
-        out int energy1,
-        out int shift1,
-        out int energy2,
-        out int shift2,
+        BoxedValue<Integer> energy1,
+        BoxedValue<Integer> shift1,
+        BoxedValue<Integer> energy2,
+        BoxedValue<Integer> shift2,
         int[] exc_Q14,
         int[] prevGain_Q10,
         int subfr_length,
@@ -207,8 +207,8 @@ class PLC
         }
 
         /* Find the subframe with lowest energy of the last two and use that as random noise generator */
-        SumSqrShift.silk_sum_sqr_shift(out energy1, out shift1, exc_buf, subfr_length);
-        SumSqrShift.silk_sum_sqr_shift(out energy2, out shift2, exc_buf, subfr_length, subfr_length);
+        SumSqrShift.silk_sum_sqr_shift(energy1, shift1, exc_buf, subfr_length);
+        SumSqrShift.silk_sum_sqr_shift(energy2, shift2, exc_buf, subfr_length, subfr_length);
     }
 
     static void silk_PLC_conceal(
@@ -221,7 +221,10 @@ class PLC
         int i, j, k;
         int lag, idx, sLTP_buf_idx;
         int rand_seed, harm_Gain_Q15, rand_Gain_Q15, inv_gain_Q30;
-        int energy1, energy2, shift1, shift2;
+        BoxedValue<Integer> energy1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> energy2 = new BoxedValue<Integer>();
+        BoxedValue<Integer> shift1 = new BoxedValue<Integer>();
+        BoxedValue<Integer> shift2 = new BoxedValue<Integer>();
         int rand_ptr;
         int pred_lag_ptr;
         int LPC_pred_Q10, LTP_pred_Q12;
@@ -238,12 +241,12 @@ class PLC
 
         if (psDec.first_frame_after_reset != 0)
         {
-            Arrays.MemSet(psPLC.prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSet(psPLC.prevLPC_Q12, (short)0, SilkConstants.MAX_LPC_ORDER);
         }
 
-        silk_PLC_energy(out energy1, out shift1, out energy2, out shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
+        silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
 
-        if (Inlines.silk_RSHIFT(energy1, shift2) < Inlines.silk_RSHIFT(energy2, shift1))
+        if (Inlines.silk_RSHIFT(energy1.Val, shift2.Val) < Inlines.silk_RSHIFT(energy2.Val, shift1.Val))
         {
             /* First sub-frame has lowest energy */
             rand_ptr = Inlines.silk_max_int(0, (psPLC.nb_subfr - 1) * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE);
@@ -282,7 +285,7 @@ class PLC
                 {
                     rand_scale_Q14 -= B_Q14[i];
                 }
-                rand_scale_Q14 = Inlines.silk_max_16(3277, rand_scale_Q14); /* 0.2 */
+                rand_scale_Q14 = Inlines.silk_max_16((short)3277, rand_scale_Q14); /* 0.2 */
                 rand_scale_Q14 = (short)Inlines.silk_RSHIFT(Inlines.silk_SMULBB(rand_scale_Q14, psPLC.prevLTP_scale_Q14), 14);
             }
             else

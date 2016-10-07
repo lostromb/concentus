@@ -40,59 +40,57 @@ package org.concentus;
 /// </summary>
 public class OpusEncoder
 {
-    #region Encoder state
-
-    internal readonly EncControlState silk_mode = new EncControlState();
-    internal OpusApplication application;
-    internal int channels;
-    internal int delay_compensation;
-    internal int force_channels;
-    internal OpusSignal signal_type;
-    internal OpusBandwidth user_bandwidth;
-    internal OpusBandwidth max_bandwidth;
-    internal OpusMode user_forced_mode;
-    internal int voice_ratio;
-    internal int Fs;
-    internal int use_vbr;
-    internal int vbr_constraint;
-    internal OpusFramesize variable_duration;
-    internal int bitrate_bps;
-    internal int user_bitrate_bps;
-    internal int lsb_depth;
-    internal int encoder_buffer;
-    internal int lfe;
-    internal readonly TonalityAnalysisState analysis = new TonalityAnalysisState();
+    final EncControlState silk_mode = new EncControlState();
+    OpusApplication application;
+    int channels;
+    int delay_compensation;
+    int force_channels;
+    OpusSignal signal_type;
+    OpusBandwidth user_bandwidth;
+    OpusBandwidth max_bandwidth;
+    OpusMode user_forced_mode;
+    int voice_ratio;
+    int Fs;
+    int use_vbr;
+    int vbr_constraint;
+    OpusFramesize variable_duration;
+    int bitrate_bps;
+    int user_bitrate_bps;
+    int lsb_depth;
+    int encoder_buffer;
+    int lfe;
+    final TonalityAnalysisState analysis = new TonalityAnalysisState();
 
     // partial reset happens below this line
-    internal int stream_channels;
-    internal short hybrid_stereo_width_Q14;
-    internal int variable_HP_smth2_Q15;
-    internal int prev_HB_gain;
-    internal readonly int[] hp_mem = new int[4];
-    internal OpusMode mode;
-    internal OpusMode prev_mode;
-    internal int prev_channels;
-    internal int prev_framesize;
-    internal OpusBandwidth bandwidth;
-    internal int silk_bw_switch;
+    int stream_channels;
+    short hybrid_stereo_width_Q14;
+    int variable_HP_smth2_Q15;
+    int prev_HB_gain;
+    final int[] hp_mem = new int[4];
+    OpusMode mode;
+    OpusMode prev_mode;
+    int prev_channels;
+    int prev_framesize;
+    OpusBandwidth bandwidth;
+    int silk_bw_switch;
     /* Sampling rate (at the API level) */
-    internal int first;
-    internal int[] energy_masking;
-    internal readonly StereoWidthState width_mem = new StereoWidthState();
-    internal readonly short[] delay_buffer = new short[OpusConstants.MAX_ENCODER_BUFFER * 2];
-    internal OpusBandwidth detected_bandwidth;
-    internal int rangeFinal;
+    int first;
+    int[] energy_masking;
+    final StereoWidthState width_mem = new StereoWidthState();
+    final short[] delay_buffer = new short[OpusConstants.MAX_ENCODER_BUFFER * 2];
+    OpusBandwidth detected_bandwidth;
+    int rangeFinal;
 
     // [Porting Note] There were originally "cabooses" that were tacked onto the end
     // of the struct without being explicitly included (since they have a variable size).
     // Here they are just included as an intrinsic variable.
-    internal readonly SilkEncoder SilkEncoder = new SilkEncoder();
-    internal readonly CeltEncoder Celt_Encoder = new CeltEncoder();
+    final SilkEncoder SilkEncoder = new SilkEncoder();
+    final CeltEncoder Celt_Encoder = new CeltEncoder();
 
     // Hide the public constructor
-    internal OpusEncoder() { }
+    OpusEncoder() { }
 
-    internal void Reset()
+    void Reset()
     {
         silk_mode.Reset();
         application = 0;
@@ -120,13 +118,13 @@ public class OpusEncoder
     /// <summary>
     /// OPUS_ENCODER_RESET_START
     /// </summary>
-    internal void PartialReset()
+    void PartialReset()
     {
         stream_channels = 0;
         hybrid_stereo_width_Q14 = 0;
         variable_HP_smth2_Q15 = 0;
         prev_HB_gain = 0;
-        Arrays.MemSet<int>(hp_mem, 0, 4);
+        Arrays.MemSet(hp_mem, (int)0, 4);
         mode = 0;
         prev_mode = 0;
         prev_channels = 0;
@@ -136,7 +134,7 @@ public class OpusEncoder
         first = 0;
         energy_masking = null;
         width_mem.Reset();
-        Arrays.MemSet<short>(delay_buffer, 0, OpusConstants.MAX_ENCODER_BUFFER * 2);
+        Arrays.MemSet(delay_buffer, (short)0, OpusConstants.MAX_ENCODER_BUFFER * 2);
         detected_bandwidth = 0;
         rangeFinal = 0;
         //SilkEncoder.Reset();
@@ -159,10 +157,6 @@ public class OpusEncoder
         bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
         variable_HP_smth2_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
     }
-
-    #endregion
-
-    #region Encoder API functions
 
     /// <summary>
     /// Allocates and initializes an encoder state.
@@ -217,7 +211,7 @@ public class OpusEncoder
         return st;
     }
 
-    internal int opus_init_encoder(int Fs, int channels, OpusApplication application)
+    int opus_init_encoder(int Fs, int channels, OpusApplication application)
     {
         SilkEncoder silk_enc;
         CeltEncoder celt_enc;
@@ -297,7 +291,7 @@ public class OpusEncoder
     }
 
 
-    internal int user_bitrate_to_bitrate(int frame_size, int max_data_bytes)
+    int user_bitrate_to_bitrate(int frame_size, int max_data_bytes)
     {
         if (frame_size == 0)
         {
@@ -329,10 +323,10 @@ public class OpusEncoder
     /// <param name="downmix"></param>
     /// <param name="float_api"></param>
     /// <returns></returns>
-    internal int opus_encode_native<T>(short[] pcm, int pcm_ptr, int frame_size,
-                    sbyte[] data, int data_ptr, int out_data_bytes, int lsb_depth,
-                    T[] analysis_pcm, int analysis_pcm_ptr, int analysis_size, int c1, int c2,
-                    int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
+    int opus_encode_native(short[] pcm, int pcm_ptr, int frame_size,
+                    byte[] data, int data_ptr, int out_data_bytes, int lsb_depth,
+                    short[] analysis_pcm, int analysis_pcm_ptr, int analysis_size, int c1, int c2,
+                    int analysis_channels, int float_api)
     {
         SilkEncoder silk_enc;
         CeltEncoder celt_enc;
@@ -741,7 +735,7 @@ public class OpusEncoder
         /* Can't support higher than wideband for >20 ms frames */
         if (frame_size > this.Fs / 50 && (this.mode == OpusMode.MODE_CELT_ONLY || OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)))
         {
-            sbyte[] tmp_data;
+            byte[] tmp_data;
             int nb_frames;
             OpusBandwidth bak_bandwidth;
             int bak_channels, bak_to_mono;
@@ -759,7 +753,7 @@ public class OpusEncoder
             nb_frames = frame_size > this.Fs / 25 ? 3 : 2;
             bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
 
-            tmp_data = new sbyte[nb_frames * bytes_per_frame];
+            tmp_data = new byte[nb_frames * bytes_per_frame];
 
             rp = OpusRepacketizer.Create();
 
@@ -1256,7 +1250,7 @@ public class OpusEncoder
         {
             if (this.mode != this.prev_mode && this.prev_mode > 0)
             {
-                sbyte[] dummy = new sbyte[2];
+                byte[] dummy = new byte[2];
                 celt_enc.ResetState();
 
                 /* Prefilling */
@@ -1278,7 +1272,7 @@ public class OpusEncoder
         if (redundancy != 0 && celt_to_silk == 0)
         {
             int err;
-            sbyte[] dummy = new sbyte[2];
+            byte[] dummy = new byte[2];
             int N2, N4;
             N2 = this.Fs / 200;
             N4 = this.Fs / 400;
@@ -1364,7 +1358,7 @@ public class OpusEncoder
     /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use he Bitrate parameter for that)</param>
     /// <returns>The length of the encoded packet, in bytes</returns>
     public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
-          sbyte[] out_data, int out_data_offset, int max_data_bytes)
+          byte[] out_data, int out_data_offset, int max_data_bytes)
     {
         // Check that the caller is telling the truth about its input buffers
         if (out_data_offset + max_data_bytes > out_data.Length)
@@ -1429,7 +1423,7 @@ public class OpusEncoder
     /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
     /// <returns>The length of the encoded packet, in bytes</returns>
     public int Encode(float[] in_pcm, int pcm_offset, int frame_size,
-                          sbyte[] out_data, int out_data_offset, int max_data_bytes)
+                          byte[] out_data, int out_data_offset, int max_data_bytes)
     {
         // Check that the caller is telling the truth about its input buffers
         if (out_data_offset + max_data_bytes > out_data.Length)
@@ -1486,10 +1480,6 @@ public class OpusEncoder
             throw new OpusException("Internal error during encoding: " + e.Message);
         }
     }
-
-    #endregion
-
-    #region Getters and Setters
 
     /// <summary>
     /// Gets or sets the application (or signal type) of the input signal. This hints
@@ -1810,7 +1800,7 @@ public class OpusEncoder
 
     /// <summary>
     /// Gets or sets a fixed length for each encoded frame. Typically, the encoder just chooses a frame duration based on the input length
-    /// and the current internal mode. This can be used to enforce an exact length if it is required by your application (e.g. monotonous transmission)
+    /// and the current mode. This can be used to enforce an exact length if it is required by your application (e.g. monotonous transmission)
     /// </summary>
     public OpusFramesize ExpertFrameDuration
     {
@@ -1891,16 +1881,14 @@ public class OpusEncoder
         }
     }
 
-    internal void SetEnergyMask(int[] value)
+    void SetEnergyMask(int[] value)
     {
         energy_masking = value;
         Celt_Encoder.SetEnergyMask(value);
     }
 
-    internal CeltMode GetCeltMode()
+    CeltMode GetCeltMode()
     {
         return Celt_Encoder.GetMode();
     }
-
-    #endregion
 }

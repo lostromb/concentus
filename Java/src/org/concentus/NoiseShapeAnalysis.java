@@ -231,9 +231,13 @@ class NoiseShapeAnalysis
             energy_variation_Q7 = 0;
             log_energy_prev_Q7 = 0;
             pitch_res_ptr2 = pitch_res_ptr;
+            BoxedValue<Integer> boxed_nrg = new BoxedValue<Integer>();
+            BoxedValue<Integer> boxed_scale = new BoxedValue<Integer>();
             for (k = 0; k < Inlines.silk_SMULBB(SilkConstants.SUB_FRAME_LENGTH_MS, psEnc.nb_subfr) / 2; k++)
             {
-                SumSqrShift.silk_sum_sqr_shift(out nrg, out scale, pitch_res, pitch_res_ptr2, nSamples);
+                SumSqrShift.silk_sum_sqr_shift(boxed_nrg, boxed_scale, pitch_res, pitch_res_ptr2, nSamples);
+                nrg = boxed_nrg.Val;
+                scale = boxed_scale.Val;
                 nrg += Inlines.silk_RSHIFT(nSamples, scale);           /* Q(-scale)*/
 
                 log_energy_Q7 = Inlines.silk_lin2log(nrg);
