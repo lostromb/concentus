@@ -36,7 +36,7 @@ package org.concentus;
 /// <summary>
 /// multi-layer perceptron processor
 /// </summary>
-class mlp
+class MultiLayerPerceptron
 {
     private static final int MAX_NEURONS = 100;
 
@@ -63,7 +63,7 @@ class mlp
         return sign * y;
     }
 
-    static void mlp_process(MLP m, float[] input, float[] output)
+    static void mlp_process(MLPState m, float[] input, float[] output)
     {
         int j;
         float[] hidden = new float[MAX_NEURONS];

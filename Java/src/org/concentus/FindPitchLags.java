@@ -131,7 +131,7 @@ class FindPitchLags
             /*****************************************/
             /* Call pitch estimator                  */
             /*****************************************/
-            BoxedValue<short> boxed_lagIndex = new BoxedValue<short>(psEnc.indices.lagIndex);
+            BoxedValue<Short> boxed_lagIndex = new BoxedValue<Short>(psEnc.indices.lagIndex);
             BoxedValue<Byte> boxed_contourIndex = new BoxedValue<Byte>(psEnc.indices.contourIndex);
             BoxedValue<Integer> boxed_LTPcorr = new BoxedValue<Integer>(psEnc.LTPCorr_Q15);
             if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL, boxed_lagIndex, boxed_contourIndex,

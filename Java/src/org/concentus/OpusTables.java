@@ -196,7 +196,7 @@ class OpusTables
     static final int[] topo = { 25, 15, 2 };
 
     // fixme: move this into an MLP class singleton or something?
-    static final MLP net = new MLP();
+    static final MLPState net = new MLPState();
     
     static
     {
@@ -279,8 +279,8 @@ class OpusTables
     };
 
     /* Threshold bit-rates for switching between mono and stereo */
-    public final int stereo_voice_threshold = 30000;
-    public final int stereo_music_threshold = 30000;
+    public static final int stereo_voice_threshold = 30000;
+    public static final int stereo_music_threshold = 30000;
 
     /* Threshold bit-rate for switching between SILK/hybrid and CELT-only */
     static final int[][] mode_thresholds = {

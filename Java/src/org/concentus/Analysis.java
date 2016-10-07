@@ -422,7 +422,7 @@ class Analysis
 
         if (info.enabled)
         {
-            mlp.mlp_process(OpusTables.net, features, frame_probs);
+            MultiLayerPerceptron.mlp_process(OpusTables.net, features, frame_probs);
             frame_probs[0] = .5f * (frame_probs[0] + 1);
             /* Curve fitting between the MLP probability and the actual probability */
             frame_probs[0] = .01f + 1.21f * frame_probs[0] * frame_probs[0] - .23f * (float)Math.pow(frame_probs[0], 10);

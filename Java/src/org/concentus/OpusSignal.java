@@ -37,6 +37,8 @@ package org.concentus;
 
 public enum OpusSignal
 {
+    OPUS_SIGNAL_UNKNOWN,
+    
     OPUS_SIGNAL_AUTO,
 
     /// <summary>

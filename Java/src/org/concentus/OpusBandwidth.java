@@ -46,7 +46,7 @@ public enum OpusBandwidth
     OPUS_BANDWIDTH_FULLBAND
 }
 
-// FIXME: We should remove all cases where bandwidth is cast to int, it's.....improper
+// Helpers to port over uses of OpusBandwidth as an integer
 class OpusBandwidthHelpers
 {
     static int GetOrdinal(OpusBandwidth bw)

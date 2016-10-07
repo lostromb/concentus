@@ -93,19 +93,19 @@ public class OpusEncoder
     void Reset()
     {
         silk_mode.Reset();
-        application = 0;
+        application = OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED;
         channels = 0;
         delay_compensation = 0;
         force_channels = 0;
-        signal_type = 0;
-        user_bandwidth = 0;
-        max_bandwidth = 0;
-        user_forced_mode = 0;
+        signal_type = OpusSignal.OPUS_SIGNAL_UNKNOWN;
+        user_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN;
+        max_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN;
+        user_forced_mode = OpusMode.MODE_UNKNOWN;
         voice_ratio = 0;
         Fs = 0;
         use_vbr = 0;
         vbr_constraint = 0;
-        variable_duration = 0;
+        variable_duration = OpusFramesize.OPUS_FRAMESIZE_UNKNOWN;
         bitrate_bps = 0;
         user_bitrate_bps = 0;
         lsb_depth = 0;
@@ -125,17 +125,17 @@ public class OpusEncoder
         variable_HP_smth2_Q15 = 0;
         prev_HB_gain = 0;
         Arrays.MemSet(hp_mem, (int)0, 4);
-        mode = 0;
-        prev_mode = 0;
+        mode = OpusMode.MODE_UNKNOWN;
+        prev_mode = OpusMode.MODE_UNKNOWN;
         prev_channels = 0;
         prev_framesize = 0;
-        bandwidth = 0;
+        bandwidth = OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN;
         silk_bw_switch = 0;
         first = 0;
         energy_masking = null;
         width_mem.Reset();
         Arrays.MemSet(delay_buffer, (short)0, OpusConstants.MAX_ENCODER_BUFFER * 2);
-        detected_bandwidth = 0;
+        detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN;
         rangeFinal = 0;
         //SilkEncoder.Reset();
         //CeltEncoder.Reset();
@@ -187,7 +187,7 @@ public class OpusEncoder
     /// This mode can only be set on an newly initialized or freshly reset encoder
     /// because it changes the codec delay.</param>
     /// <returns>The created encoder</returns>
-    public static OpusEncoder Create(int Fs, int channels, OpusApplication application)
+    public static OpusEncoder Create(int Fs, int channels, OpusApplication application) throws OpusException
     {
         int ret;
         OpusEncoder st;
@@ -364,7 +364,7 @@ public class OpusEncoder
         max_data_bytes = Inlines.IMIN(1276, out_data_bytes);
 
         this.rangeFinal = 0;
-        if ((this.variable_duration == 0 && 400 * frame_size != this.Fs && 200 * frame_size != this.Fs && 100 * frame_size != this.Fs &&
+        if ((this.variable_duration == OpusFramesize.OPUS_FRAMESIZE_UNKNOWN && 400 * frame_size != this.Fs && 200 * frame_size != this.Fs && 100 * frame_size != this.Fs &&
              50 * frame_size != this.Fs && 25 * frame_size != this.Fs && 50 * frame_size != 3 * this.Fs)
              || (400 * frame_size < this.Fs)
              || max_data_bytes <= 0
@@ -405,12 +405,12 @@ public class OpusEncoder
                     analysis_info);
             }
 
-            this.detected_bandwidth = 0;
+            this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN;
             if (analysis_info.valid != 0)
             {
                 int analysis_bandwidth;
                 if (this.signal_type == OpusSignal.OPUS_SIGNAL_AUTO)
-                    this.voice_ratio = (int)Math.Floor(.5f + 100 * (1 - analysis_info.music_prob));
+                    this.voice_ratio = (int)Math.floor(.5f + 100 * (1 - analysis_info.music_prob));
 
                 analysis_bandwidth = analysis_info.bandwidth;
                 if (analysis_bandwidth <= 12)
@@ -449,18 +449,18 @@ public class OpusEncoder
         {
             /*If the space is too low to do something useful, emit 'PLC' frames.*/
             OpusMode tocmode = this.mode;
-            OpusBandwidth bw = this.bandwidth == 0 ? OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND : this.bandwidth;
-            if (tocmode == 0)
+            OpusBandwidth bw = this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN ? OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND : this.bandwidth;
+            if (tocmode == OpusMode.MODE_UNKNOWN)
                 tocmode = OpusMode.MODE_SILK_ONLY;
             if (frame_rate > 100)
                 tocmode = OpusMode.MODE_CELT_ONLY;
             if (frame_rate < 50)
                 tocmode = OpusMode.MODE_SILK_ONLY;
-            if (tocmode == OpusMode.MODE_SILK_ONLY && bw > OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND)
+            if (tocmode == OpusMode.MODE_SILK_ONLY && OpusBandwidthHelpers.GetOrdinal(bw) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND))
                 bw = OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND;
-            else if (tocmode == OpusMode.MODE_CELT_ONLY && bw == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+            else if (tocmode == OpusMode.MODE_CELT_ONLY && OpusBandwidthHelpers.GetOrdinal(bw) == OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND))
                 bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
-            else if (tocmode == OpusMode.MODE_HYBRID && bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
+            else if (tocmode == OpusMode.MODE_HYBRID && OpusBandwidthHelpers.GetOrdinal(bw) <= OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND))
                 bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
             data[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
             ret = 1;
@@ -540,7 +540,7 @@ public class OpusEncoder
             /* Hysteresis */
             if (this.prev_mode == OpusMode.MODE_CELT_ONLY)
                 threshold -= 4000;
-            else if (this.prev_mode > 0)
+            else if (this.prev_mode != OpusMode.MODE_AUTO && this.prev_mode != OpusMode.MODE_UNKNOWN)
                 threshold += 4000;
 
             this.mode = (equiv_rate >= threshold) ? OpusMode.MODE_CELT_ONLY : OpusMode.MODE_SILK_ONLY;
@@ -576,7 +576,7 @@ public class OpusEncoder
             this.silk_mode.toMono = 0;
         }
 
-        if (this.prev_mode > 0 &&
+        if ((this.prev_mode != OpusMode.MODE_AUTO && this.prev_mode != OpusMode.MODE_UNKNOWN) &&
             ((this.mode != OpusMode.MODE_CELT_ONLY && this.prev_mode == OpusMode.MODE_CELT_ONLY) ||
         (this.mode == OpusMode.MODE_CELT_ONLY && this.prev_mode != OpusMode.MODE_CELT_ONLY)))
         {
@@ -702,7 +702,7 @@ public class OpusEncoder
         if (this.Fs <= 8000 && OpusBandwidthHelpers.GetOrdinal(this.bandwidth) > OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND))
             this.bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
         /* Use detected bandwidth to reduce the encoded bandwidth. */
-        if (this.detected_bandwidth != 0 && this.user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_AUTO)
+        if (this.detected_bandwidth != OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN && this.user_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_AUTO)
         {
             OpusBandwidth min_detected_bandwidth;
             /* Makes bandwidth detection more conservative just in case the detector
@@ -778,7 +778,7 @@ public class OpusEncoder
                     this.user_forced_mode = OpusMode.MODE_CELT_ONLY;
                 tmp_len = opus_encode_native(pcm, pcm_ptr + (i * (this.channels * this.Fs / 50)), this.Fs / 50,
                       tmp_data, i * bytes_per_frame, bytes_per_frame, lsb_depth,
-                      null, 0, 0, c1, c2, analysis_channels, downmix, float_api);
+                      null, 0, 0, c1, c2, analysis_channels, float_api);
                 if (tmp_len < 0)
                 {
 
@@ -824,7 +824,7 @@ public class OpusEncoder
         enc.enc_init(data, data_ptr, (max_data_bytes - 1));
 
         pcm_buf = new short[(total_buffer + frame_size) * this.channels];
-        Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
+        System.arraycopy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
 
         if (this.mode == OpusMode.MODE_CELT_ONLY)
             hp_freq_smth1 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
@@ -994,7 +994,7 @@ public class OpusEncoder
 
             if (prefill != 0)
             {
-                BoxedValue<int> zero = new BoxedValue<int>(0);
+                BoxedValue<Integer> zero = new BoxedValue<Integer>(0);
                 int prefill_offset;
 
                 /* Use a smooth onset for the SILK prefill to avoid the encoder trying to encode
@@ -1007,14 +1007,14 @@ public class OpusEncoder
                 CodecHelpers.gain_fade(this.delay_buffer, prefill_offset,
                       0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
                 Arrays.MemSet(this.delay_buffer, (short)0, prefill_offset);
-                Array.Copy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
+                System.arraycopy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
                 EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, zero, 1);
             }
 
-            Array.Copy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
+            System.arraycopy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
 
-            BoxedValue<int> boxed_silkBytes = new BoxedValue<int>(nBytes);
+            BoxedValue<Integer> boxed_silkBytes = new BoxedValue<Integer>(nBytes);
             ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
             nBytes = boxed_silkBytes.Val;
 
@@ -1068,17 +1068,17 @@ public class OpusEncoder
 
             switch (curr_bandwidth)
             {
-                case OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND:
+                case OPUS_BANDWIDTH_NARROWBAND:
                     endband = 13;
                     break;
-                case OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND:
-                case OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND:
+                case OPUS_BANDWIDTH_MEDIUMBAND:
+                case OPUS_BANDWIDTH_WIDEBAND:
                     endband = 17;
                     break;
-                case OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND:
+                case OPUS_BANDWIDTH_SUPERWIDEBAND:
                     endband = 19;
                     break;
-                case OpusBandwidth.OPUS_BANDWIDTH_FULLBAND:
+                case OPUS_BANDWIDTH_FULLBAND:
                     endband = 21;
                     break;
             }
@@ -1138,19 +1138,19 @@ public class OpusEncoder
 
 
         tmp_prefill = new short[this.channels * this.Fs / 400];
-        if (this.mode != OpusMode.MODE_SILK_ONLY && this.mode != this.prev_mode && this.prev_mode > 0)
+        if (this.mode != OpusMode.MODE_SILK_ONLY && this.mode != this.prev_mode && (this.prev_mode != OpusMode.MODE_AUTO && this.prev_mode != OpusMode.MODE_UNKNOWN))
         {
-            Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels), tmp_prefill, 0, this.channels * this.Fs / 400);
+            System.arraycopy(this.delay_buffer, ((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels), tmp_prefill, 0, this.channels * this.Fs / 400);
         }
 
         if (this.channels * (this.encoder_buffer - (frame_size + total_buffer)) > 0)
         {
             Arrays.MemMove(this.delay_buffer, this.channels * frame_size, 0, this.channels * (this.encoder_buffer - frame_size - total_buffer));
-            Array.Copy(pcm_buf, 0, this.delay_buffer, (this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
+            System.arraycopy(pcm_buf, 0, this.delay_buffer, (this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
         }
         else
         {
-            Array.Copy(pcm_buf, (frame_size + total_buffer - this.encoder_buffer) * this.channels, this.delay_buffer, 0, this.encoder_buffer * this.channels);
+            System.arraycopy(pcm_buf, (frame_size + total_buffer - this.encoder_buffer) * this.channels, this.delay_buffer, 0, this.encoder_buffer * this.channels);
         }
 
         /* gain_fade() and stereo_fade() need to be after the buffer copying
@@ -1247,7 +1247,7 @@ public class OpusEncoder
 
         if (this.mode != OpusMode.MODE_SILK_ONLY)
         {
-            if (this.mode != this.prev_mode && this.prev_mode > 0)
+            if (this.mode != this.prev_mode && (this.prev_mode != OpusMode.MODE_AUTO && this.prev_mode != OpusMode.MODE_UNKNOWN))
             {
                 byte[] dummy = new byte[2];
                 celt_enc.ResetState();
@@ -1357,14 +1357,12 @@ public class OpusEncoder
     /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use he Bitrate parameter for that)</param>
     /// <returns>The length of the encoded packet, in bytes</returns>
     public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
-          byte[] out_data, int out_data_offset, int max_data_bytes)
+          byte[] out_data, int out_data_offset, int max_data_bytes) throws OpusException
     {
         // Check that the caller is telling the truth about its input buffers
-        if (out_data_offset + max_data_bytes > out_data.Length)
+        if (out_data_offset + max_data_bytes > out_data.length)
         {
-            throw new IllegalArgumentException(string.Format(
-                "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
-                max_data_bytes, out_data.Length - out_data_offset));
+            throw new IllegalArgumentException("Output buffer is too small: Stated size is " + max_data_bytes + " bytes, actual size is " + (out_data.length - out_data_offset) + " bytes");
         }
 
         int delay_compensation;
@@ -1375,20 +1373,18 @@ public class OpusEncoder
 
         int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, pcm_offset, frame_size,
               this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
-              delay_compensation, Downmix.downmix_int, this.analysis.subframe_mem, this.analysis.enabled);
+              delay_compensation, this.analysis.subframe_mem, this.analysis.enabled);
 
         // Check that input pcm length is >= frame_size
-        if (pcm_offset + internal_frame_size > in_pcm.Length)
+        if (pcm_offset + internal_frame_size > in_pcm.length)
         {
-            throw new IllegalArgumentException(string.Format(
-                "Not enough samples provided in input signal: Expected {0} samples, found {1}",
-                internal_frame_size, in_pcm.Length - pcm_offset));
+            throw new IllegalArgumentException("Not enough samples provided in input signal: Expected " + internal_frame_size + " samples, found " + (in_pcm.length - pcm_offset));
         }
 
         try
         {
             int ret = opus_encode_native(in_pcm, pcm_offset, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
-                                     in_pcm, pcm_offset, frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
+                                     in_pcm, pcm_offset, frame_size, 0, -2, this.channels, 0);
 
             if (ret < 0)
             {
@@ -1400,9 +1396,9 @@ public class OpusEncoder
 
             return ret;
         }
-        catch (OutOfMemoryException e)
+        catch (Exception e)
         {
-            throw new OpusException("Internal error during encoding: " + e.Message);
+            throw new OpusException("Internal error during encoding: " + e.getMessage());
         }
     }
 

@@ -99,7 +99,7 @@ class ProcessGains
         }
 
         /* Save unquantized gains and gain Index */
-        System.arraycopy(psEncCtrl.Gains_Q16, psEncCtrl.GainsUnq_Q16, psEnc.nb_subfr);
+        System.arraycopy(psEncCtrl.Gains_Q16, 0, psEncCtrl.GainsUnq_Q16, 0, psEnc.nb_subfr);
         psEncCtrl.lastGainIndexPrev = psShapeSt.LastGainIndex;
 
         /* Quantize gains */

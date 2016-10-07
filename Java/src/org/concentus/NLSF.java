@@ -411,7 +411,7 @@ class NLSF
         for (i = 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT; i <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT - 1; i++)
         {
             out0_Q10 = Inlines.silk_LSHIFT(i, 10);
-            out1_Q10 = Inlines.silk_ADD16((short)(out0_Q10), 1024);
+            out1_Q10 = Inlines.silk_ADD16((short)(out0_Q10), (short)1024);
 
             if (i > 0)
             {
@@ -476,7 +476,7 @@ class NLSF
                     else
                     {
                         rate0_Q5 = Inlines.silk_SMLABB(280 - (43 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE), 43, ind_tmp);
-                        rate1_Q5 = Inlines.silk_ADD16((short)(rate0_Q5), 43);
+                        rate1_Q5 = Inlines.silk_ADD16((short)(rate0_Q5), (short)43);
                     }
                 }
                 else if (ind_tmp <= 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE)
@@ -489,7 +489,7 @@ class NLSF
                     else
                     {
                         rate0_Q5 = Inlines.silk_SMLABB(280 - 43 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE, -43, ind_tmp);
-                        rate1_Q5 = Inlines.silk_SUB16((short)(rate0_Q5), 43);
+                        rate1_Q5 = Inlines.silk_SUB16((short)(rate0_Q5), (short)43);
                     }
                 }
                 else
@@ -585,7 +585,7 @@ class NLSF
                 // increment index if it comes from the upper half
                 for (j = 0; j < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; j++)
                 {
-                    var x = (byte)Inlines.silk_RSHIFT(ind_sort[j], SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2);
+                    byte x = (byte)Inlines.silk_RSHIFT(ind_sort[j], SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2);
                     ind[j][i] += x;
                 }
             }

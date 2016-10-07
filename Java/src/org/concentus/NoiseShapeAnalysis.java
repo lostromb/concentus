@@ -364,7 +364,7 @@ class NoiseShapeAnalysis
             BWExpander.silk_bwexpander_32(AR2_Q24, psEnc.shapingLPCOrder, BWExp2_Q16);
 
             /* Compute noise shaping filter coefficients */
-            System.arraycopy(AR2_Q24, AR1_Q24, psEnc.shapingLPCOrder);
+            System.arraycopy(AR2_Q24, 0, AR1_Q24, 0, psEnc.shapingLPCOrder);
 
             /* Bandwidth expansion for analysis filter shaping */
             Inlines.OpusAssert(BWExp1_Q16 <= ((int)((1.0f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1.0f, 16)*/);

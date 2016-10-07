@@ -130,7 +130,7 @@ class FindPredCoefs
                 x_ptr2 += psEnc.subfr_length;
             }
 
-           Arrays.MemSet(psEncCtrl.LTPCoef_Q14, 0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);
+            Arrays.MemSet(psEncCtrl.LTPCoef_Q14, (short)0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);
             psEncCtrl.LTPredCodGain_Q7 = 0;
             psEnc.sum_log_gain_Q7 = 0;
         }

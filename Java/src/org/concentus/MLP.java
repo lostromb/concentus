@@ -36,7 +36,7 @@ package org.concentus;
 /// <summary>
 /// state object for multi-layer perceptron
 /// </summary>
-class MLP
+class MLPState
 {
     int layers;
     int[] topo;
