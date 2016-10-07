@@ -1,0 +1,41 @@
+{
+  "name": "opusenc.js",
+  "version": "0.0.1",
+  "description": "JavaScript Opus (audio format) Encoder",
+  "keywords": [
+    "plugin"
+  ],
+  "homepage": "https://rillke.github.io/opusenc.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Rillke/opusenc.js.git"
+  },
+  "bugs": "https://github.com/Rillke/opusenc.js/issues",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://mit-license.org/"
+    }
+  ],
+  "author": {
+    "name": "Rainer Rillke",
+    "web": "https://rillke.com"
+  },
+  "contributors": [
+    "Rainer Rillke (https://rillke.com/)"
+  ],
+  "main": "./recorder.js",
+  "scripts": {
+    "test": "grunt test && node test/node-index.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "coveralls": "~2.11.2",
+    "qunit": "~0.5.15",
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.4.3",
+    "grunt-contrib-qunit": "~0.2.1",
+    "grunt-jsduck": "~0.1.4",
+    "qunitjs": "~1.11.0"
+  }
+}

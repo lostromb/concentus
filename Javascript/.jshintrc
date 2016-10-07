@@ -1,0 +1,26 @@
+{
+	"predef": [
+		"QUnit"
+	],
+
+	"camelcase": true,
+	"curly": true,
+	"eqeqeq": true,
+	"immed": true,
+	"latedef": true,
+	"newcap": true,
+	"noarg": true,
+	"noempty": true,
+	"nonew": true,
+	"quotmark": "single",
+	"undef": true,
+	"unused": true,
+	"strict": true,
+	"trailing": true,
+
+	"node": false,
+
+	"onevar": true,
+	"white": true,
+	"laxbreak": true
+}

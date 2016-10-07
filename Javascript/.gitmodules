@@ -1,0 +1,12 @@
+[submodule "flac"]
+	path = flac
+	url = git://github.com/Rillke/flac.git
+[submodule "opus-tools"]
+	path = opus-tools
+	url = git://github.com/Rillke/opus-tools.git
+[submodule "opus"]
+	path = opus
+	url = git://github.com/Rillke/opus.git
+[submodule "libogg"]
+	path = libogg
+	url = git://github.com/Rillke/libogg.git

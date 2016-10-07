@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>Recorderjs Test Suite</title>
+  
+  <!-- Include the test framework -->
+  <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+  <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+  
+  <!-- Include the source code -->
+  <script src="../worker/lib/Blob.js"></script>
+  <script src="../worker/lib/html5.js"></script>
+  <script src="../worker/metaTags.js"></script>
+  <script src="../worker/Encoding.js"></script>
+  <script src="../worker/Id3v2.js"></script>
+  <script src="../worker/Wave.js"></script>
+  <script src="../worker/recorderWorker.js"></script>
+  <script src="../worker/lib/encoding-indexes.js"></script>
+  <script src="../worker/lib/encoding.js"></script>
+  <script src="../recorder.js"></script>
+  
+  <!-- Include the test suite(s) -->
+  <script src="./encoderWorker.test.js"></script>
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture">test markup</div>
+</body>
+</html>
