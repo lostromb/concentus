@@ -33,8 +33,7 @@
     <DefineConstants>TRACE;PARITY</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\Release\Concentus.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Celt\Bands.cs" />
