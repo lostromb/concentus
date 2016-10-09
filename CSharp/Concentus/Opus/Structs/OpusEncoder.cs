@@ -104,7 +104,7 @@ namespace Concentus.Structs
         internal readonly SilkEncoder SilkEncoder = new SilkEncoder();
         internal readonly CeltEncoder Celt_Encoder = new CeltEncoder();
 
-        // Hide the public constructor
+        // used by multichannel structs
         internal OpusEncoder() { }
 
         internal void Reset()
@@ -178,7 +178,15 @@ namespace Concentus.Structs
         #endregion
 
         #region Encoder API functions
-        
+
+        /// <summary>
+        /// Deprecated. Just use the regular constructor
+        /// </summary>
+        public static OpusEncoder Create(int Fs, int channels, OpusApplication application)
+        {
+            return new OpusEncoder(Fs, channels, application);
+        }
+
         /// <summary>
         /// Allocates and initializes an encoder state.
         /// Note that regardless of the sampling rate and number channels selected, the Opus encoder
@@ -190,7 +198,7 @@ namespace Concentus.Structs
         /// <param name="Fs">Sampling rate of input signal (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
         /// <param name="channels">Number of channels (1 or 2) in input signal</param>
         /// <param name="application">There are three coding modes:
-        ///
+        /// 
         /// OPUS_APPLICATION_VOIP gives best quality at a given bitrate for voice
         /// signals.It enhances the  input signal by high-pass filtering and
         /// emphasizing formants and harmonics.Optionally it includes in-band
@@ -208,7 +216,7 @@ namespace Concentus.Structs
         /// This mode can only be set on an newly initialized or freshly reset encoder
         /// because it changes the codec delay.</param>
         /// <returns>The created encoder</returns>
-        public static OpusEncoder Create(int Fs, int channels, OpusApplication application)
+        public OpusEncoder(int Fs, int channels, OpusApplication application)
         {
             int ret;
             OpusEncoder st;
@@ -220,18 +228,16 @@ namespace Concentus.Structs
             {
                 throw new ArgumentException("Number of channels must be 1 or 2");
             }
-
-            st = new OpusEncoder();
-            ret = st.opus_init_encoder(Fs, channels, application);
+            
+            ret = this.opus_init_encoder(Fs, channels, application);
             if (ret != OpusError.OPUS_OK)
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("OPUS_BAD_ARG when creating encoder");
                 throw new OpusException("Error while initializing encoder", ret);
             }
-            return st;
         }
-        
+
         internal int opus_init_encoder(int Fs, int channels, OpusApplication application)
         {
             SilkEncoder silk_enc;
@@ -795,7 +801,7 @@ namespace Concentus.Structs
 
                 tmp_data = new byte[nb_frames * bytes_per_frame];
 
-                rp = OpusRepacketizer.Create();
+                rp = new OpusRepacketizer();
 
                 bak_mode = this.user_forced_mode;
                 bak_bandwidth = this.user_bandwidth;

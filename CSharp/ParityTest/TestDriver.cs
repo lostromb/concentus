@@ -42,7 +42,7 @@ namespace ParityTest
 
         private static OpusEncoder CreateConcentusEncoder(TestParameters parameters)
         {
-            OpusEncoder concentusEncoder = OpusEncoder.Create(parameters.SampleRate, parameters.Channels, parameters.Application);
+            OpusEncoder concentusEncoder = new OpusEncoder(parameters.SampleRate, parameters.Channels, parameters.Application);
 
             if (parameters.Bitrate > 0)
             {
@@ -131,7 +131,7 @@ namespace ParityTest
             OpusDecoder concentusDecoder;
             try
             {
-                concentusDecoder = OpusDecoder.Create(parameters.DecoderSampleRate, parameters.DecoderChannels);
+                concentusDecoder = new OpusDecoder(parameters.DecoderSampleRate, parameters.DecoderChannels);
             }
             catch (OpusException e)
             {

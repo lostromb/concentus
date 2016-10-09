@@ -100,11 +100,6 @@ namespace Concentus.Common
         int in_stride = 0;
         int out_stride = 0;
 
-        /// <summary>
-        /// Create() is the only way to make a resampler instance publically
-        /// </summary>
-        private SpeexResampler() { }
-
         #endregion
 
         #region Helper classes and tables
@@ -574,10 +569,8 @@ namespace Concentus.Common
         /// <param name="in_rate">Input sampling rate, in hertz</param>
         /// <param name="out_rate">Output sampling rate, in hertz</param>
         /// <param name="quality">Resampling quality, from 0 to 10</param>
-        /// <returns>A newly created restampler</returns>
-        public static SpeexResampler Create(int nb_channels, int in_rate, int out_rate, int quality)
+        public SpeexResampler(int nb_channels, int in_rate, int out_rate, int quality) : this(nb_channels, in_rate, out_rate, in_rate, out_rate, quality)
         {
-            return Create(nb_channels, in_rate, out_rate, in_rate, out_rate, quality);
         }
 
         /// <summary>
@@ -592,52 +585,48 @@ namespace Concentus.Common
         /// <param name="out_rate">Output sample rate rounded to the nearest integer (in hz)</param>
         /// <param name="quality">Resampling quality, from 0 to 10</param>
         /// <returns>A newly created restampler</returns>
-        public static SpeexResampler Create(int nb_channels, int ratio_num, int ratio_den, int in_rate, int out_rate, int quality)
+        public SpeexResampler(int nb_channels, int ratio_num, int ratio_den, int in_rate, int out_rate, int quality)
         {
             int i;
-            SpeexResampler st;
             if (quality > 10 || quality < 0)
             {
                 throw new ArgumentException("Quality must be between 0 and 10");
             }
-            st = new SpeexResampler();
-            st.initialised = 0;
-            st.started = 0;
-            st.in_rate = 0;
-            st.out_rate = 0;
-            st.num_rate = 0;
-            st.den_rate = 0;
-            st.quality = -1;
-            st.sinc_table_length = 0;
-            st.mem_alloc_size = 0;
-            st.filt_len = 0;
-            st.mem = null;
-            st.resampler_ptr = null;
-            st.cutoff = 1.0f;
-            st.nb_channels = nb_channels;
-            st.in_stride = 1;
-            st.out_stride = 1;
-            st.buffer_size = 160;
+            this.initialised = 0;
+            this.started = 0;
+            this.in_rate = 0;
+            this.out_rate = 0;
+            this.num_rate = 0;
+            this.den_rate = 0;
+            this.quality = -1;
+            this.sinc_table_length = 0;
+            this.mem_alloc_size = 0;
+            this.filt_len = 0;
+            this.mem = null;
+            this.resampler_ptr = null;
+            this.cutoff = 1.0f;
+            this.nb_channels = nb_channels;
+            this.in_stride = 1;
+            this.out_stride = 1;
+            this.buffer_size = 160;
 
             /* Per channel data */
-            st.last_sample = new int[nb_channels];
-            st.magic_samples = new int[nb_channels];
-            st.samp_frac_num = new int[nb_channels];
+            this.last_sample = new int[nb_channels];
+            this.magic_samples = new int[nb_channels];
+            this.samp_frac_num = new int[nb_channels];
             for (i = 0; i < nb_channels; i++)
             {
-                st.last_sample[i] = 0;
-                st.magic_samples[i] = 0;
-                st.samp_frac_num[i] = 0;
+                this.last_sample[i] = 0;
+                this.magic_samples[i] = 0;
+                this.samp_frac_num[i] = 0;
             }
 
-            st.Quality = quality;
-            st.SetRateFraction(ratio_num, ratio_den, in_rate, out_rate);
+            this.Quality = quality;
+            this.SetRateFraction(ratio_num, ratio_den, in_rate, out_rate);
 
-            st.update_filter();
+            this.update_filter();
 
-            st.initialised = 1;
-
-            return st;
+            this.initialised = 1;
         }
 
         /// <summary>

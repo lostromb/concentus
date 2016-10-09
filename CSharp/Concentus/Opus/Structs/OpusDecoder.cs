@@ -81,7 +81,7 @@ namespace Concentus.Structs
         internal SilkDecoder SilkDecoder = new SilkDecoder();
         internal CeltDecoder Celt_Decoder = new CeltDecoder();
 
-        // Hide the public constructor
+        // Used by multistream decoder
         internal OpusDecoder() { }
 
         internal void Reset()
@@ -109,6 +109,48 @@ namespace Concentus.Structs
             // fixme: do these get reset here? I don't think they do because init_celt and init_silk should both call RESET_STATE on their respective states
             //SilkDecoder.Reset();
             //CeltDecoder.Reset();
+        }
+
+        /// <summary>
+        /// Deprecated. Just use the regular constructor
+        /// </summary>
+        public static OpusDecoder Create(int Fs, int channels)
+        {
+            return new OpusDecoder(Fs, channels);
+        }
+
+        /// <summary>
+        /// Allocates and initializes a decoder state.
+        /// Internally Opus stores data at 48000 Hz, so that should be the default
+        /// value for Fs. However, the decoder can efficiently decode to buffers
+        /// at 8, 12, 16, and 24 kHz so if for some reason the caller cannot use
+        /// data at the full sample rate, or knows the compressed data doesn't
+        /// use the full frequency range, it can request decoding at a reduced
+        /// rate. Likewise, the decoder is capable of filling in either mono or
+        /// interleaved stereo pcm buffers, at the caller's request.
+        /// </summary>
+        /// <param name="Fs">Sample rate to decode at (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
+        /// <param name="channels">Number of channels (1 or 2) to decode</param>
+        /// <returns>The created encoder</returns>
+        public OpusDecoder(int Fs, int channels)
+        {
+            int ret;
+            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000))
+            {
+                throw new ArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
+            }
+            if (channels != 1 && channels != 2)
+            {
+                throw new ArgumentException("Number of channels must be 1 or 2");
+            }
+
+            ret = this.opus_decoder_init(Fs, channels);
+            if (ret != OpusError.OPUS_OK)
+            {
+                if (ret == OpusError.OPUS_BAD_ARG)
+                    throw new ArgumentException("OPUS_BAD_ARG when creating decoder");
+                throw new OpusException("Error while initializing decoder", ret);
+            }
         }
 
         /** Initializes a previously allocated decoder state.
@@ -156,44 +198,6 @@ namespace Concentus.Structs
             this.prev_mode = 0;
             this.frame_size = Fs / 400;
             return OpusError.OPUS_OK;
-        }
-        
-        /// <summary>
-        /// Allocates and initializes a decoder state.
-        /// Internally Opus stores data at 48000 Hz, so that should be the default
-        /// value for Fs. However, the decoder can efficiently decode to buffers
-        /// at 8, 12, 16, and 24 kHz so if for some reason the caller cannot use
-        /// data at the full sample rate, or knows the compressed data doesn't
-        /// use the full frequency range, it can request decoding at a reduced
-        /// rate.Likewise, the decoder is capable of filling in either mono or
-        /// interleaved stereo pcm buffers, at the caller's request.
-        /// </summary>
-        /// <param name="Fs">Sample rate to decode at (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
-        /// <param name="channels">Number of channels (1 or 2) to decode</param>
-        /// <returns>The created encoder</returns>
-        public static OpusDecoder Create(int Fs, int channels)
-        {
-            int ret;
-            OpusDecoder st; // porting note: pointer
-            if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000))
-            {
-                throw new ArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
-            }
-            if (channels != 1 && channels != 2)
-            {
-                throw new ArgumentException("Number of channels must be 1 or 2");
-            }
-
-            st = new OpusDecoder();
-            
-            ret = st.opus_decoder_init(Fs, channels);
-            if (ret != OpusError.OPUS_OK)
-            {
-                if (ret == OpusError.OPUS_BAD_ARG)
-                    throw new ArgumentException("OPUS_BAD_ARG when creating decoder");
-                throw new OpusException("Error while initializing decoder", ret);
-            }
-            return st;
         }
         
         private static readonly byte[] SILENCE = { 0xFF, 0xFF };

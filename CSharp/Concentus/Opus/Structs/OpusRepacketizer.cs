@@ -53,8 +53,6 @@ namespace Concentus.Structs
         internal readonly short[] len = new short[48];
         internal int framesize = 0;
         
-        private OpusRepacketizer() { }
-        
         /** (Re)initializes a previously allocated repacketizer state.
   * The state must be at least the size returned by opus_repacketizer_get_size().
   * This can be used for applications which use their own allocator instead of
@@ -76,14 +74,12 @@ namespace Concentus.Structs
             this.nb_frames = 0;
         }
 
-        /** Allocates memory and initializes the new repacketizer with
- * opus_repacketizer_init().
-  */
-        public static OpusRepacketizer Create()
+        /// <summary>
+        /// Creates a new repacketizer
+        /// </summary>
+        public OpusRepacketizer()
         {
-            OpusRepacketizer rp = new OpusRepacketizer();
-            rp.Reset();
-            return rp;
+            this.Reset();
         }
 
         internal int opus_repacketizer_cat_impl(byte[] data, int data_ptr, int len, int self_delimited)

@@ -39,7 +39,8 @@ namespace Concentus.Common
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
-    public static class Inlines
+
+    internal static class Inlines
     {
         [Conditional("DEBUG")]
         public static void OpusAssert(bool condition, string message = "Unknown error")

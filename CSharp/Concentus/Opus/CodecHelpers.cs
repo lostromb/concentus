@@ -671,7 +671,7 @@ namespace Concentus
         //}
 
 
-        public static string opus_strerror(int error)
+        internal static string opus_strerror(int error)
         {
             string[] error_strings = {
               "success",
@@ -689,9 +689,13 @@ namespace Concentus
                 return error_strings[-error];
         }
 
+        /// <summary>
+        /// Returns the version number of this library
+        /// </summary>
+        /// <returns></returns>
         public static string GetVersionString()
         {
-            return "concentus 1.0a-fixed"
+            return "concentus 1.1.4-fixed"
 #if DEBUG
           + "-debug"
 #endif

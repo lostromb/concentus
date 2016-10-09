@@ -416,6 +416,15 @@ namespace Concentus.Structs
                   mapping, application, (channels > 2 && mapping_family == 1) ? 1 : 0);
         }
 
+        /// <summary>
+        /// Creates a new multichannel Opus encoder using the "old API".
+        /// </summary>
+        /// <param name="Fs">The sample rate of the input signal</param>
+        /// <param name="channels">The number of channels to encode (1 - 255)</param>
+        /// <param name="streams">The number of streams to encode</param>
+        /// <param name="coupled_streams">The number of coupled streams</param>
+        /// <param name="mapping">A raw mapping between input and output channels</param>
+        /// <param name="application">The application to use for the encoder</param>
         public static OpusMSEncoder Create(
               int Fs,
               int channels,
@@ -426,13 +435,12 @@ namespace Concentus.Structs
         )
         {
             int ret;
-            OpusMSEncoder st;
             if ((channels > 255) || (channels < 1) || (coupled_streams > streams) ||
                 (streams < 1) || (coupled_streams < 0) || (streams > 255 - coupled_streams))
             {
                 throw new ArgumentException("Invalid channel / stream configuration");
             }
-            st = new OpusMSEncoder(streams, coupled_streams);
+            OpusMSEncoder st = new OpusMSEncoder(streams, coupled_streams);
             ret = st.opus_multistream_encoder_init(Fs, channels, streams, coupled_streams, mapping, application, 0);
             if (ret != OpusError.OPUS_OK)
             {
@@ -474,6 +482,16 @@ namespace Concentus.Structs
                 throw new ArgumentException("Invalid mapping family");
         }
 
+        /// <summary>
+        /// Creates a multichannel Opus encoder using the "new API". This constructor allows you to use predefined Vorbis channel mappings, or specify your own.
+        /// </summary>
+        /// <param name="Fs">The samples rate of the input</param>
+        /// <param name="channels">The total number of channels to encode (1 - 255)</param>
+        /// <param name="mapping_family">The mapping family to use. 0 = mono/stereo, 1 = use Vorbis mappings, 255 = use raw channel mapping</param>
+        /// <param name="streams">The number of streams to encode</param>
+        /// <param name="coupled_streams">The number of coupled streams</param>
+        /// <param name="mapping">A raw mapping of input/output channels</param>
+        /// <param name="application">The application to use for the encoders</param>
         public static OpusMSEncoder CreateSurround(
               int Fs,
               int channels,
@@ -598,7 +616,7 @@ namespace Concentus.Structs
             short[] buf;
             int[] bandSMR;
             byte[] tmp_data = new byte[MS_FRAME_TMP];
-            OpusRepacketizer rp = OpusRepacketizer.Create();
+            OpusRepacketizer rp = new OpusRepacketizer();
             int vbr;
             CeltMode celt_mode;
             int[] bitrates = new int[256];

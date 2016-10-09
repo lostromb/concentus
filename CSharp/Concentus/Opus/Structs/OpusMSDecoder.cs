@@ -99,7 +99,7 @@ namespace Concentus.Structs
         }
 
         /// <summary>
-        /// Creates a new MS decoder
+        /// Creates a new multichannel decoder
         /// </summary>
         /// <param name="Fs"></param>
         /// <param name="channels"></param>
@@ -107,29 +107,27 @@ namespace Concentus.Structs
         /// <param name="coupled_streams"></param>
         /// <param name="mapping">A mapping family (just use { 0, 1, 255 })</param>
         /// <returns></returns>
-        public static OpusMSDecoder Create(
+        public OpusMSDecoder(
               int Fs,
               int channels,
               int streams,
               int coupled_streams,
-              byte[] mapping)
+              byte[] mapping) : this(streams, coupled_streams)
         {
             int ret;
-            OpusMSDecoder st;
             if ((channels > 255) || (channels < 1) || (coupled_streams > streams) ||
                 (streams < 1) || (coupled_streams < 0) || (streams > 255 - coupled_streams))
             {
                 throw new ArgumentException("Invalid channel / stream configuration");
             }
-            st = new OpusMSDecoder(streams, coupled_streams);
-            ret = st.opus_multistream_decoder_init(Fs, channels, streams, coupled_streams, mapping);
+
+            ret = this.opus_multistream_decoder_init(Fs, channels, streams, coupled_streams, mapping);
             if (ret != OpusError.OPUS_OK)
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("Bad argument while creating MS decoder");
                 throw new OpusException("Could not create MS decoder", ret);
             }
-            return st;
         }
 
         internal delegate void opus_copy_channel_out_func<T>(
