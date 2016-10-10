@@ -2,6 +2,8 @@
 
 This project is an effort to port the Opus reference library to work natively in other languages, and to gather together any such ports that may exist. With this code, developers should be left with no excuse to use an inferior codec, regardless of their language or runtime environment.
 
+[NuGet Package](https://www.nuget.org/packages/Concentus)  
+
 ## Project Status
 
 This repo contains completely functional Opus implementations in portable C# and Java. They are based on libopus master 1.1.2 configured with FIXED_POINT and with an extra switch to enable/disable the floating-point analysis functions. Both the encoder and decoder paths have been thoroughly tested to be bit-exact with their equivalent C functions in all common use cases. I have also included a port of the libspeexdsp resampler for general use.
