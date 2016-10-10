@@ -61,7 +61,7 @@ public class OpusMSEncoder {
         preemph_mem = new int[nb_streams];
     }
 
-    public void ResetState() {
+    public void resetState() {
         int s;
         subframe_mem[0] = subframe_mem[1] = subframe_mem[2] = 0;
         if (surround != 0) {
@@ -71,7 +71,7 @@ public class OpusMSEncoder {
         int encoder_ptr = 0;
         for (s = 0; s < layout.nb_streams; s++) {
             OpusEncoder enc = encoders[encoder_ptr++];
-            enc.ResetState();
+            enc.resetState();
         }
     }
 
@@ -714,8 +714,8 @@ public class OpusMSEncoder {
             /* We need to use the repacketizer to add the self-delimiting lengths
                while taking into account the fact that the encoder can now return
                more than one frame at a time (e.g. 60 ms CELT-only) */
-            rp.AddPacket(tmp_data, 0, len);
-            len = rp.opus_repacketizer_out_range_impl(0, rp.GetNumFrames(),
+            rp.addPacket(tmp_data, 0, len);
+            len = rp.opus_repacketizer_out_range_impl(0, rp.getNumFrames(),
                     data, data_ptr, max_data_bytes - tot_size, (s != this.layout.nb_streams - 1) ? 1 : 0, (vbr == 0 && s == this.layout.nb_streams - 1) ? 1 : 0);
             data_ptr += len;
             tot_size += len;
@@ -740,7 +740,7 @@ public class OpusMSEncoder {
         }
     }
 
-    public int EncodeMultistream(
+    public int encodeMultistream(
             short[] pcm,
             int pcm_offset,
             int frame_size,

@@ -234,3 +234,7 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+/Java/Concentus/target/
+/Java/ContentusTestConsole/ContentusTestConsole/target/
+/Java/ContentusTestConsole/ConcentusTestConsole/target/
+/Java/ConcentusTestConsole/target/

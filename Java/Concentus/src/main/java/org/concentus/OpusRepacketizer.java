@@ -82,12 +82,12 @@ public class OpusRepacketizer {
 
         if (this.nb_frames == 0) {
             this.toc = data[data_ptr];
-            this.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, 8000);
+            this.framesize = OpusPacketInfo.getNumSamplesPerFrame(data, data_ptr, 8000);
         } else if ((this.toc & 0xFC) != (data[data_ptr] & 0xFC)) {
             /*fprintf(stderr, "toc mismatch: 0x%x vs 0x%x\n", rp.toc, data[0]);*/
             return OpusError.OPUS_INVALID_PACKET;
         }
-        curr_nb_frames = OpusPacketInfo.GetNumFrames(data, data_ptr, len);
+        curr_nb_frames = OpusPacketInfo.getNumFrames(data, data_ptr, len);
         if (curr_nb_frames < 1) {
             return OpusError.OPUS_INVALID_PACKET;
         }
@@ -146,7 +146,7 @@ public class OpusRepacketizer {
      * total amount of audio stored in the repacketizer state to more than 120
      * ms.
      */
-    public int AddPacket(byte[] data, int data_offset, int len) {
+    public int addPacket(byte[] data, int data_offset, int len) {
         return opus_repacketizer_cat_impl(data, data_offset, len, 0);
     }
 
@@ -162,7 +162,7 @@ public class OpusRepacketizer {
      * @returns The total number of frames contained in the packet data
      * submitted to the repacketizer state.
      */
-    public int GetNumFrames() {
+    public int getNumFrames() {
         return this.nb_frames;
     }
 
@@ -324,7 +324,7 @@ public class OpusRepacketizer {
      * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
      * complete output packet.
      */
-    public int CreatePacket(int begin, int end, byte[] data, int data_offset, int maxlen) {
+    public int createPacket(int begin, int end, byte[] data, int data_offset, int maxlen) {
         return opus_repacketizer_out_range_impl(begin, end, data, data_offset, maxlen, 0, 0);
     }
 
@@ -357,7 +357,7 @@ public class OpusRepacketizer {
      * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
      *                                complete output packet.
      */
-    public int CreatePacket(byte[] data, int data_offset, int maxlen) {
+    public int createPacket(byte[] data, int data_offset, int maxlen) {
         return opus_repacketizer_out_range_impl(0, this.nb_frames, data, data_offset, maxlen, 0, 0);
     }
 
@@ -377,7 +377,7 @@ public class OpusRepacketizer {
      * len.
      * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
      */
-    public static int PadPacket(byte[] data, int data_offset, int len, int new_len) {
+    public static int padPacket(byte[] data, int data_offset, int len, int new_len) {
         OpusRepacketizer rp = new OpusRepacketizer();
         int ret;
         if (len < 1) {
@@ -392,7 +392,7 @@ public class OpusRepacketizer {
         /* Moving payload to the end of the packet so we can do in-place padding */
         Arrays.MemMove(data, data_offset, data_offset + new_len - len, len);
         //data.MemMoveTo(data.Point(new_len - len), len);
-        rp.AddPacket(data, data_offset + new_len - len, len);
+        rp.addPacket(data, data_offset + new_len - len, len);
         ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, data_offset, new_len, 0, 1);
         if (ret > 0) {
             return OpusError.OPUS_OK;
@@ -414,7 +414,7 @@ public class OpusRepacketizer {
      * @retval #OPUS_BAD_ARG \a len was less than 1.
      * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
      */
-    public static int UnpadPacket(byte[] data, int data_offset, int len) {
+    public static int unpadPacket(byte[] data, int data_offset, int len) {
         int ret;
         if (len < 1) {
             return OpusError.OPUS_BAD_ARG;
@@ -422,7 +422,7 @@ public class OpusRepacketizer {
 
         OpusRepacketizer rp = new OpusRepacketizer();
         rp.Reset();
-        ret = rp.AddPacket(data, data_offset, len);
+        ret = rp.addPacket(data, data_offset, len);
         if (ret < 0) {
             return ret;
         }
@@ -449,7 +449,7 @@ public class OpusRepacketizer {
      * @retval #OPUS_BAD_ARG \a len was less than 1.
      * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
      */
-    public static int PadMultistreamPacket(byte[] data, int data_offset, int len, int new_len, int nb_streams) {
+    public static int padMultistreamPacket(byte[] data, int data_offset, int len, int new_len, int nb_streams) {
         int s;
         int count;
         BoxedValueByte dummy_toc = new BoxedValueByte((byte) 0);
@@ -480,7 +480,7 @@ public class OpusRepacketizer {
             data_offset += packet_offset.Val;
             len -= packet_offset.Val;
         }
-        return PadPacket(data, data_offset, len, len + amount);
+        return padPacket(data, data_offset, len, len + amount);
     }
 
     // FIXME THIS METHOD FAILS IN TEST_OPUS_ENCODE
@@ -500,7 +500,7 @@ public class OpusRepacketizer {
      * len.
      * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
      */
-    public static int UnpadMultistreamPacket(byte[] data, int data_offset, int len, int nb_streams) {
+    public static int unpadMultistreamPacket(byte[] data, int data_offset, int len, int nb_streams) {
         int s;
         BoxedValueByte dummy_toc = new BoxedValueByte((byte) 0);
         short[] size = new short[48];

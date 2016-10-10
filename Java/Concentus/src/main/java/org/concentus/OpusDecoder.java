@@ -34,20 +34,20 @@
  */
 package org.concentus;
 
-/// <summary>
-/// The Opus decoder structure.
-/// 
-///  Opus is a stateful codec with overlapping blocks and as a result Opus
-///  packets are not coded independently of each other. Packets must be
-///  passed into the decoder serially and in the correct order for a correct
-///  decode. Lost packets can be replaced with loss concealment by calling
-///  the decoder with a null reference and zero length for the missing packet.
-/// 
-///  A single codec state may only be accessed from a single thread at
-///  a time and any required locking must be performed by the caller. Separate
-///  streams must be decoded with separate decoder states and can be decoded
-///  in parallel.
-/// </summary>
+/**
+ * The Opus decoder structure.
+ * 
+ * Opus is a stateful codec with overlapping blocks and as a result Opus
+ *  packets are not coded independently of each other. Packets must be
+ *  passed into the decoder serially and in the correct order for a correct
+ *  decode. Lost packets can be replaced with loss concealment by calling
+ *  the decoder with a null reference and zero length for the missing packet.
+ * 
+ * A single codec state may only be accessed from a single thread at
+ *  a time and any required locking must be performed by the caller. Separate
+ *  streams must be decoded with separate decoder states and can be decoded
+ *  in parallel.
+ */
 public class OpusDecoder {
 
     int channels;
@@ -73,7 +73,7 @@ public class OpusDecoder {
     OpusDecoder() {
     } // used internally
 
-    void Reset() {
+    void reset() {
         channels = 0;
         Fs = 0;
         /**
@@ -81,13 +81,13 @@ public class OpusDecoder {
          */
         DecControl.Reset();
         decode_gain = 0;
-        PartialReset();
+        partialReset();
     }
 
     /// <summary>
     /// OPUS_DECODER_RESET_START
     /// </summary>
-    void PartialReset() {
+    void partialReset() {
         stream_channels = 0;
         bandwidth = OpusBandwidth.OPUS_BANDWIDTH_UNKNOWN;
         mode = OpusMode.MODE_UNKNOWN;
@@ -101,19 +101,6 @@ public class OpusDecoder {
         //CeltDecoder.Reset();
     }
 
-    /**
-     * Initializes a previously allocated decoder state. The state must be at
-     * least the size returned by opus_decoder_get_size(). This is intended for
-     * applications which use their own allocator instead of malloc. @see
-     * opus_decoder_create,opus_decoder_get_size To reset a previously
-     * initialized state, use the #OPUS_RESET_STATE CTL.
-     *
-     * @param [in] st <tt>OpusDecoder*</tt>: Decoder state.
-     * @param [in] Fs <tt>opus_int32</tt>: Sampling rate to decode to (Hz). This
-     * must be one of 8000, 12000, 16000, 24000, or 48000.
-     * @param [in] channels <tt>int</tt>: Number of channels (1 or 2) to decode
-     * @retval #OPUS_OK Success or @ref opus_errorcodes
-     */
     int opus_decoder_init(int Fs, int channels) {
         SilkDecoder silk_dec;
         CeltDecoder celt_dec;
@@ -123,7 +110,7 @@ public class OpusDecoder {
                 || (channels != 1 && channels != 2)) {
             return OpusError.OPUS_BAD_ARG;
         }
-        this.Reset();
+        this.reset();
 
         /* Initialize SILK encoder */
         silk_dec = this.SilkDecoder;
@@ -585,10 +572,10 @@ public class OpusDecoder {
             return OpusError.OPUS_BAD_ARG;
         }
 
-        packet_mode = OpusPacketInfo.GetEncoderMode(data, data_ptr);
-        packet_bandwidth = OpusPacketInfo.GetBandwidth(data, data_ptr);
-        packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, this.Fs);
-        packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data, data_ptr);
+        packet_mode = OpusPacketInfo.getEncoderMode(data, data_ptr);
+        packet_bandwidth = OpusPacketInfo.getBandwidth(data, data_ptr);
+        packet_frame_size = OpusPacketInfo.getNumSamplesPerFrame(data, data_ptr, this.Fs);
+        packet_stream_channels = OpusPacketInfo.getNumEncodedChannels(data, data_ptr);
 
         BoxedValueByte boxed_toc = new BoxedValueByte((byte) 0);
         BoxedValueInt boxed_offset = new BoxedValueInt(0);
@@ -665,23 +652,39 @@ public class OpusDecoder {
     /// <summary>
     /// Decodes an Opus packet.
     /// </summary>
-    /// <param name="in_data">The input payload. This may be NULL if that previous packet was lost in transit (when PLC is enabled)</param>
-    /// <param name="in_data_offset">The offset to use when reading the input payload. Usually 0</param>
-    /// <param name="len">The number of bytes in the payload</param>
-    /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
-    /// You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need
+    /// <param name="in_data"></param>
+    /// <param name="in_data_offset"></param>
+    /// <param name="len"></param>
+    /// <param name="out_pcm">
+    /// 
     /// exact sizing.</param>
-    /// <param name="out_pcm_offset">The offset to use when writing to the output buffer</param>
-    /// <param name="frame_size">The number of samples (per channel) of available space in the output PCM buf.
-    /// If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
-    /// not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
-    /// then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
-    /// not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
-    /// be a multiple of 2.5 ms.</param>
+    /// <param name="out_pcm_offset"></param>
+    /// <param name="frame_size"></param>
     /// <param name="decode_fec">Flag to request that any in-band forward error correction data be
     /// decoded. If no such data is available, the frame is decoded as if it were lost.</param>
     /// <returns>The number of decoded samples</returns>
-    public int Decode(byte[] in_data, int in_data_offset,
+    /**
+     * Decodes an Opus packet.
+     * @param in_data The input payload. This may be NULL if that previous packet was lost in transit (when PLC is enabled)
+     * @param in_data_offset The offset to use when reading the input payload. Usually 0
+     * @param len The number of bytes in the payload (the packet size)
+     * @param out_pcm A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
+     *      You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need exact sizing.
+     * @param out_pcm_offset The offset to use when writing to the output buffer
+     * @param frame_size The number of samples (per channel) of available space in the output PCM buf.
+     * If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
+     * not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
+     * then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
+     * not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
+     * be a multiple of 2.5 ms.
+     * @param decode_fec Indicates that we want to recreate the PREVIOUS (lost) packet using FEC data from THIS packet. Using this packet
+     * recovery scheme, you will actually decode this packet twice, first with decode_fec TRUE and then again with FALSE. If FEC data is not
+     * available in this packet, the decoder will simply generate a best-effort recreation of the lost packet. In that case,
+     * the length of frame_size must be EXACTLY the length of the audio that was lost, or else the decoder will be in an inconsistent state.
+     * @return The number of decoded samples (per channel)
+     * @throws OpusException 
+     */
+    public int decode(byte[] in_data, int in_data_offset,
             int len, short[] out_pcm, int out_pcm_offset, int frame_size, boolean decode_fec) throws OpusException {
         if (frame_size <= 0) {
             throw new IllegalArgumentException("Frame size must be <= 0");
@@ -741,8 +744,8 @@ public class OpusDecoder {
         return last_packet_duration;
     }
 
-    public void ResetState() {
-        PartialReset();
+    public void resetState() {
+        partialReset();
         Celt_Decoder.ResetState();
         DecodeAPI.silk_InitDecoder(SilkDecoder);
         stream_channels = channels;

@@ -39,19 +39,19 @@ import java.util.List;
 
 public class OpusPacketInfo {
 
-    /// <summary>
-    /// The Table of Contents byte for this packet. Contains info about modes, frame length, etc.
-    /// </summary>
+    /**
+     * The Table of Contents byte for this packet. Contains info about modes, frame length, etc.
+     */
     public byte TOCByte;
 
-    /// <summary>
-    /// The list of subframes in this packet
-    /// </summary>
+    /**
+     * The list of subframes in this packet
+     */
     public List<Byte[]> Frames;
 
-    /// <summary>
-    /// The index of the start of the payload within the packet
-    /// </summary>
+    /**
+     * The index of the start of the payload within the packet
+     */
     public int PayloadOffset;
 
     private OpusPacketInfo(byte toc, List<Byte[]> frames, int payloadOffset) {
@@ -60,18 +60,19 @@ public class OpusPacketInfo {
         PayloadOffset = payloadOffset;
     }
 
-    /// <summary>
-    /// Parse an opus packet into a packetinfo object containing one or more frames.
-    /// Opus_decode will perform this operation internally so most applications do
-    /// not need to use this function.
-    /// </summary>
-    /// <param name="packet">The packet data to be parsed</param>
-    /// <param name="packet_offset">The index of the beginning of the packet in the data array (usually 0)</param>
-    /// <param name="len">The packet's length</param>
-    /// <returns>A parsed packet info struct</returns>
-    public static OpusPacketInfo ParseOpusPacket(byte[] packet, int packet_offset, int len) throws OpusException {
+    /**
+     * Parse an opus packet into a packetinfo object containing one or more frames.
+     * Opus_decode will perform this operation internally so most applications do
+     * not need to use this function.
+     * @param packet The packet data to be parsed
+     * @param packet_offset The index of the beginning of the packet in the data array (usually 0)
+     * @param len The packet's length
+     * @return A parsed packet info struct
+     * @throws OpusException 
+     */
+    public static OpusPacketInfo parseOpusPacket(byte[] packet, int packet_offset, int len) throws OpusException {
         // Find the number of frames first
-        int numFrames = GetNumFrames(packet, packet_offset, len);
+        int numFrames = getNumFrames(packet, packet_offset, len);
 
         BoxedValueInt payload_offset = new BoxedValueInt(0);
         BoxedValueByte out_toc = new BoxedValueByte((byte) 0);
@@ -98,7 +99,7 @@ public class OpusPacketInfo {
         return new OpusPacketInfo(out_toc.Val, copiedFrames, payload_offset.Val);
     }
 
-    public static int GetNumSamplesPerFrame(byte[] packet, int packet_offset, int Fs) {
+    public static int getNumSamplesPerFrame(byte[] packet, int packet_offset, int Fs) {
         int audiosize;
         if ((packet[packet_offset] & 0x80) != 0) {
             audiosize = ((packet[packet_offset] >> 3) & 0x3);
@@ -121,7 +122,7 @@ public class OpusPacketInfo {
     /// </summary>
     /// <param name="data">An Opus packet (must be at least 1 byte)</param>
     /// <returns>An OpusBandwidth value</returns>
-    public static OpusBandwidth GetBandwidth(byte[] packet, int packet_offset) {
+    public static OpusBandwidth getBandwidth(byte[] packet, int packet_offset) {
         OpusBandwidth bandwidth;
         if ((packet[packet_offset] & 0x80) != 0) {
             bandwidth = OpusBandwidthHelpers.GetBandwidth(OpusBandwidthHelpers.GetOrdinal(OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND) + ((packet[packet_offset] >> 5) & 0x3));
@@ -137,7 +138,7 @@ public class OpusPacketInfo {
         return bandwidth;
     }
 
-    public static int GetNumEncodedChannels(byte[] packet, int packet_offset) {
+    public static int getNumEncodedChannels(byte[] packet, int packet_offset) {
         return ((packet[packet_offset] & 0x4) != 0) ? 2 : 1;
     }
 
@@ -147,7 +148,7 @@ public class OpusPacketInfo {
     /// <param name="packet">An Opus packet</param>
     /// <param name="len">The packet's length (must be at least 1)</param>
     /// <returns>The number of frames in the packet</returns>
-    public static int GetNumFrames(byte[] packet, int packet_offset, int len) {
+    public static int getNumFrames(byte[] packet, int packet_offset, int len) {
         int count;
         if (len < 1) {
             return OpusError.OPUS_BAD_ARG;
@@ -164,16 +165,16 @@ public class OpusPacketInfo {
         }
     }
 
-    public static int GetNumSamples(byte[] packet, int packet_offset, int len,
+    public static int getNumSamples(byte[] packet, int packet_offset, int len,
             int Fs) {
         int samples;
-        int count = GetNumFrames(packet, packet_offset, len);
+        int count = getNumFrames(packet, packet_offset, len);
 
         if (count < 0) {
             return count;
         }
 
-        samples = count * GetNumSamplesPerFrame(packet, packet_offset, Fs);
+        samples = count * getNumSamplesPerFrame(packet, packet_offset, Fs);
         /* Can't have more than 120 ms */
         if (samples * 25 > Fs * 3) {
             return OpusError.OPUS_INVALID_PACKET;
@@ -189,12 +190,12 @@ public class OpusPacketInfo {
     /// <param name="packet">An Opus packet</param>
     /// <param name="len">The packet's length</param>
     /// <returns>The size of the PCM samples that this packet will be decoded to by the specified decoder</returns>
-    public static int GetNumSamples(OpusDecoder dec,
+    public static int getNumSamples(OpusDecoder dec,
             byte[] packet, int packet_offset, int len) {
-        return GetNumSamples(packet, packet_offset, len, dec.Fs);
+        return getNumSamples(packet, packet_offset, len, dec.Fs);
     }
 
-    public static OpusMode GetEncoderMode(byte[] packet, int packet_offset) {
+    public static OpusMode getEncoderMode(byte[] packet, int packet_offset) {
         OpusMode mode;
         if ((packet[packet_offset] & 0x80) != 0) {
             mode = OpusMode.MODE_CELT_ONLY;
@@ -258,7 +259,7 @@ public class OpusPacketInfo {
             return OpusError.OPUS_INVALID_PACKET;
         }
 
-        framesize = GetNumSamplesPerFrame(data, data_ptr, 48000);
+        framesize = getNumSamplesPerFrame(data, data_ptr, 48000);
 
         cbr = 0;
         toc = data[data_ptr++];

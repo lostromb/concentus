@@ -89,7 +89,7 @@ public class OpusEncoder {
     OpusEncoder() {
     } // used internally
 
-    void Reset() {
+    void reset() {
         silk_mode.Reset();
         application = OpusApplication.OPUS_APPLICATION_UNIMPLEMENTED;
         channels = 0;
@@ -138,7 +138,7 @@ public class OpusEncoder {
         //CeltEncoder.Reset();
     }
 
-    public void ResetState() {
+    public void resetState() {
         EncControlState dummy = new EncControlState();
         analysis.Reset();
         PartialReset();
@@ -215,7 +215,7 @@ public class OpusEncoder {
             return OpusError.OPUS_BAD_ARG;
         }
 
-        this.Reset();
+        this.reset();
         /* Create SILK encoder */
         silk_enc = this.SilkEncoder;
         celt_enc = this.Celt_Encoder;
@@ -464,7 +464,7 @@ public class OpusEncoder {
             data[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
             ret = 1;
             if (this.use_vbr == 0) {
-                ret = OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes);
+                ret = OpusRepacketizer.padPacket(data, data_ptr, ret, max_data_bytes);
                 if (ret == OpusError.OPUS_OK) {
                     ret = max_data_bytes;
                 }
@@ -774,7 +774,7 @@ public class OpusEncoder {
 
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
-                ret = rp.AddPacket(tmp_data, i * bytes_per_frame, tmp_len);
+                ret = rp.addPacket(tmp_data, i * bytes_per_frame, tmp_len);
                 if (ret < 0) {
 
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1263,7 +1263,7 @@ public class OpusEncoder {
         /* Count ToC and redundancy */
         ret += 1 + redundancy_bytes;
         if (this.use_vbr == 0) {
-            if (OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK) {
+            if (OpusRepacketizer.padPacket(data, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK) {
                 return OpusError.OPUS_INTERNAL_ERROR;
             }
             ret = max_data_bytes;
@@ -1272,21 +1272,21 @@ public class OpusEncoder {
         return ret;
     }
 
-    /// <summary>
-    /// Encodes an Opus frame.
-    /// </summary>
-    /// <param name="in_pcm">Input signal (Interleaved if stereo). Length should be at least frame_size * channels</param>
-    /// <param name="pcm_offset">Offset to use when reading the in_pcm buffer</param>
-    /// <param name="frame_size">The number of samples per channel in the inpus signal.
-    /// The frame size must be a valid Opus framesize for the given sample rate.
-    /// For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
-    /// (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.</param>
-    /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
-    /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
-    /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
-    /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use he Bitrate parameter for that)</param>
-    /// <returns>The length of the encoded packet, in bytes</returns>
-    public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
+    /**
+     * Encodes an Opus frame, putting the output into a specified data buffer
+     * @param in_pcm 16-bit input signal (Interleaved if stereo). Length should be at least frame_size * channels
+     * @param pcm_offset Offset to use when reading the in_pcm buffer
+     * @param frame_size The number of samples _per channel_ in the inpus signal. The frame size must be a valid Opus framesize for the given sample rate.
+     * For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
+     * (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.
+     * @param out_data Destination buffer for the output payload. This must contain at least max_data_bytes
+     * @param out_data_offset The offset to use when writing to the output data buffer
+     * @param max_data_bytes The maximum amount of space allocated for the output payload. This may be used to impose
+     * an upper limit on the instant bitrate, but should not be used as the only bitrate control (use setBitrate for that)
+     * @return The length of the encoded packet, in bytes
+     * @throws OpusException 
+     */
+    public int encode(short[] in_pcm, int pcm_offset, int frame_size,
             byte[] out_data, int out_data_offset, int max_data_bytes) throws OpusException {
         // Check that the caller is telling the truth about its input buffers
         if (out_data_offset + max_data_bytes > out_data.length) {

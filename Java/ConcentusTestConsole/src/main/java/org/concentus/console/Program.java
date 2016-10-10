@@ -1,4 +1,4 @@
-package concentustest;
+package org.concentus.console;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,7 +14,7 @@ import org.concentus.*;
  *
  * @author lostromb
  */
-public class ConcentusTest {
+public class Program {
 
     /**
      * @param args the command line arguments
@@ -28,7 +28,7 @@ public class ConcentusTest {
             encoder.setForceMode(OpusMode.MODE_CELT_ONLY);
             encoder.setSignalType(OpusSignal.OPUS_SIGNAL_MUSIC);
             encoder.setComplexity(0);
-
+            
             OpusDecoder decoder = new OpusDecoder(48000, 2);
 
             FileOutputStream fileOut = new FileOutputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\out_j.raw");

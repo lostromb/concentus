@@ -98,7 +98,7 @@ public class OpusMSDecoder {
     /// <param name="coupled_streams"></param>
     /// <param name="mapping">A mapping family (just use { 0, 1, 255 })</param>
     /// <returns></returns>
-    public static OpusMSDecoder Create(
+    public static OpusMSDecoder create(
             int Fs,
             int channels,
             int streams,
@@ -143,7 +143,7 @@ public class OpusMSDecoder {
                 return count;
             }
 
-            tmp_samples = OpusPacketInfo.GetNumSamples(data, data_ptr, packet_offset.Val, Fs);
+            tmp_samples = OpusPacketInfo.getNumSamples(data, data_ptr, packet_offset.Val, Fs);
             if (s != 0 && samples != tmp_samples) {
                 return OpusError.OPUS_INVALID_PACKET;
             }
@@ -273,7 +273,7 @@ public class OpusMSDecoder {
         }
     }
 
-    public int DecodeMultistream(
+    public int decodeMultistream(
             byte[] data,
             int data_offset,
             int len,
@@ -330,7 +330,7 @@ public class OpusMSDecoder {
 
     public void ResetState() {
         for (int s = 0; s < layout.nb_streams; s++) {
-            decoders[s].ResetState();
+            decoders[s].resetState();
         }
     }
 
