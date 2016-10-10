@@ -10,4 +10,6 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+    <name>Concentus</name>
+    <description>This package is a pure portable Java implementation of the Opus audio compression codec (see https://opus-codec.org/ for more details). This package contains the Opus encoder, decoder, multistream codecs, and repacketizer. It does NOT contain code to parse .ogg or .opus container files or to manage RTP packet streams.</description>
 </project>

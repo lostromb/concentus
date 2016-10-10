@@ -39,10 +39,10 @@ public class Program {
             while (fileIn.available() >= inBuf.length) {
                 int bytesRead = fileIn.read(inBuf, 0, inBuf.length);
                 short[] pcm = BytesToShorts(inBuf, 0, inBuf.length);
-                int bytesEncoded = encoder.Encode(pcm, 0, packetSamples, data_packet, 0, 1275);
+                int bytesEncoded = encoder.encode(pcm, 0, packetSamples, data_packet, 0, 1275);
                 //System.out.println(bytesEncoded + " bytes encoded");
 
-                int samplesDecoded = decoder.Decode(data_packet, 0, bytesEncoded, pcm, 0, packetSamples, false);
+                int samplesDecoded = decoder.decode(data_packet, 0, bytesEncoded, pcm, 0, packetSamples, false);
                 //System.out.println(samplesDecoded + " samples decoded");
                 byte[] bytesOut = ShortsToBytes(pcm);
                 fileOut.write(bytesOut, 0, bytesOut.length);
