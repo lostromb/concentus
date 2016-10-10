@@ -109,7 +109,7 @@ class EntropyCoder
     private final int EC_CODE_SHIFT = 0x00000017;
 
     /*Carry bit of the high-order range symbol.*/
-    private final long EC_CODE_TOP = 0x80000000;
+    private final long EC_CODE_TOP = 0x80000000L;
 
     /*Low-order bit of the high-order range symbol.*/
     private final long EC_CODE_BOT = 0x00800000;
@@ -254,13 +254,13 @@ class EntropyCoder
             int sym;
             this.nbits_total += EC_SYM_BITS;
             this.rng = Inlines.CapToUInt32(this.rng << EC_SYM_BITS);
-
+            
             /*Use up the remaining bits from our last symbol.*/
             sym = this.rem;
 
             /*Read the next value from the input.*/
             this.rem = read_byte();
-
+            
             /*Take the rest of the bits we need from this new symbol.*/
             sym = (sym << EC_SYM_BITS | this.rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
 
@@ -336,7 +336,9 @@ class EntropyCoder
         s = r >> (int)_logp;
         ret = d < s ? 1 : 0;
         if (ret == 0)
+        {
             this.val = Inlines.CapToUInt32(d - s);
+        }
         this.rng = ret != 0 ? s : r - s;
         dec_normalize();
         return ret;
@@ -746,7 +748,7 @@ class EntropyCoder
         /*We output the minimum number of bits that ensures that the symbols encoded
            thus far will be decoded correctly regardless of the bits that follow.*/
         l = EC_CODE_BITS - Inlines.EC_ILOG(this.rng);
-        msk = Inlines.CapToUInt32((EC_CODE_TOP - 1) >> l);
+        msk = Inlines.CapToUInt32((EC_CODE_TOP - 1) >>> l);
         end = Inlines.CapToUInt32((Inlines.CapToUInt32(this.val + msk)) & ~msk);
 
         if ((end | msk) >= this.val + this.rng)
