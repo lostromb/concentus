@@ -60,7 +60,7 @@
 
 package org.concentus;
 
-//public class Resampler
+//public class SpeexResampler
 //{
 //    private final int FIXED_STACK_ALLOC = 8192;
 //
@@ -89,7 +89,6 @@ package org.concentus;
 //    private short[] mem = null;
 //    private short[] sinc_table = null;
 //    private int sinc_table_length = 0;
-//    private resampler_basic_func resampler_ptr = null;
 //
 //    int in_stride = 0;
 //    int out_stride = 0;
@@ -97,7 +96,7 @@ package org.concentus;
 //    /// <summary>
 //    /// Create() is the only way to make a resampler instance publically
 //    /// </summary>
-//    private Resampler() { }
+//    private SpeexResampler() { }
 //
 //    private class FuncDef
 //    {
@@ -198,11 +197,6 @@ package org.concentus;
 //        };
 //    }
 //
-//    /// <summary>
-//    /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer<short>, int *, Pointer<short>, Pointer<int>);
-//    /// </summary>
-//    private delegate int resampler_basic_func(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len);
-//
 //    private static short WORD2INT(float x)
 //    {
 //        return x < Short.MIN_VALUE ? Short.MIN_VALUE : (x > Short.MAX_VALUE ? Short.MAX_VALUE : (short)x);
@@ -249,16 +243,16 @@ package org.concentus;
 //        short x2, x3;
 //        x2 = Inlines.MULT16_16_P15(x, x);
 //        x3 = Inlines.MULT16_16_P15(x, x2);
-//        interp0 = (short)Inlines.PSHR32(Inlines.MULT16_16(Inlines.QCONST16(-0.16667f, 15), x) + Inlines.MULT16_16(Inlines.QCONST16(0.16667f, 15), x3), 15);
-//        interp1 = Inlines.EXTRACT16(Inlines.EXTEND32(x) + Inlines.SHR32(Inlines.SUB32(Inlines.EXTEND32(x2), Inlines.EXTEND32(x3)), 1));
-//        interp3 = (short)Inlines.PSHR32(Inlines.MULT16_16(Inlines.QCONST16(-0.33333f, 15), x) + Inlines.MULT16_16(Inlines.QCONST16(.5f, 15), x2) - Inlines.MULT16_16(Inlines.QCONST16(0.16667f, 15), x3), 15);
+//        interp0.Val = (short)Inlines.PSHR32(Inlines.MULT16_16(Inlines.QCONST16(-0.16667f, 15), x) + Inlines.MULT16_16(Inlines.QCONST16(0.16667f, 15), x3), 15);
+//        interp1.Val = Inlines.EXTRACT16(Inlines.EXTEND32(x) + Inlines.SHR32(Inlines.SUB32(Inlines.EXTEND32(x2), Inlines.EXTEND32(x3)), 1));
+//        interp3.Val = (short)Inlines.PSHR32(Inlines.MULT16_16(Inlines.QCONST16(-0.33333f, 15), x) + Inlines.MULT16_16(Inlines.QCONST16(.5f, 15), x2) - Inlines.MULT16_16(Inlines.QCONST16(0.16667f, 15), x3), 15);
 //        /* Just to make sure we don't have rounding problems */
-//        interp2 = (short)(CeltConstants.Q15_ONE - interp0 - interp1 - interp3);
-//        if (interp2 < 32767)
-//            interp2 += 1;
+//        interp2.Val = (short)(CeltConstants.Q15_ONE - interp0.Val - interp1.Val - interp3.Val);
+//        if (interp2.Val < 32767)
+//            interp2.Val += 1;
 //    }
 //
-//    private int resampler_basic_direct_single(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+//    private int resampler_basic_direct_single(int channel_index, short[] input, int input_ptr, BoxedValueInt in_len, short[] output, int output_ptr, BoxedValueInt out_len)
 //    {
 //        int N = this.filt_len;
 //        int out_sample = 0;
@@ -267,7 +261,7 @@ package org.concentus;
 //
 //        int sum;
 //
-//        while (!(last_sample >= in_len || out_sample >= out_len))
+//        while (!(last_sample >= in_len.Val || out_sample >= out_len.Val))
 //        {
 //            int sinct = (int)samp_frac_num * N;
 //            int iptr = input_ptr + last_sample;
@@ -294,22 +288,24 @@ package org.concentus;
 //        return out_sample;
 //    }
 //
-//    private int resampler_basic_interpolate_single(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+//    private int resampler_basic_interpolate_single(int channel_index, short[] input, int input_ptr, BoxedValueInt in_len, short[] output, int output_ptr, BoxedValueInt out_len)
 //    {
 //        int N = this.filt_len;
 //        int out_sample = 0;
 //        int last_sample = this.last_sample[channel_index];
 //        int samp_frac_num = this.samp_frac_num[channel_index];
 //        int sum;
-//
-//        while (!(last_sample >= in_len || out_sample >= out_len))
+//        BoxedValueShort interp0 = new BoxedValueShort((short)0);
+//        BoxedValueShort interp1 = new BoxedValueShort((short)0);
+//        BoxedValueShort interp2 = new BoxedValueShort((short)0);
+//        BoxedValueShort interp3 = new BoxedValueShort((short)0);
+//        while (!(last_sample >= in_len.Val || out_sample >= out_len.Val))
 //        {
 //            int iptr = input_ptr + last_sample;
 //
 //            int offset = samp_frac_num * this.oversample / this.den_rate;
 //            short frac = (short)Inlines.PDIV32(Inlines.SHL32((samp_frac_num * this.oversample) % this.den_rate, 15), this.den_rate);
-//            short interp0, interp1, interp2, interp3;
-//
+//            
 //            int j;
 //            int accum0 = 0;
 //            int accum1 = 0;
@@ -325,11 +321,11 @@ package org.concentus;
 //                accum3 += Inlines.MULT16_16(curr_in, this.sinc_table[4 + (j + 1) * (int)this.oversample - offset + 1]);
 //            }
 //
-//            cubic_coef(frac, out interp0, out interp1, out interp2, out interp3);
-//            sum =   Inlines.MULT16_32_Q15(interp0, Inlines.SHR32(accum0, 1)) + 
-//                    Inlines.MULT16_32_Q15(interp1, Inlines.SHR32(accum1, 1)) + 
-//                    Inlines.MULT16_32_Q15(interp2, Inlines.SHR32(accum2, 1)) + 
-//                    Inlines.MULT16_32_Q15(interp3, Inlines.SHR32(accum3, 1));
+//            cubic_coef(frac, interp0, interp1, interp2, interp3);
+//            sum =   Inlines.MULT16_32_Q15(interp0.Val, Inlines.SHR32(accum0, 1)) + 
+//                    Inlines.MULT16_32_Q15(interp1.Val, Inlines.SHR32(accum1, 1)) + 
+//                    Inlines.MULT16_32_Q15(interp2.Val, Inlines.SHR32(accum2, 1)) + 
+//                    Inlines.MULT16_32_Q15(interp3.Val, Inlines.SHR32(accum3, 1));
 //
 //            output[output_ptr + (out_stride * out_sample++)] = Inlines.SATURATE16(Inlines.PSHR32(sum, 14));
 //            last_sample += int_advance;
@@ -504,7 +500,7 @@ package org.concentus;
 //        }
 //    }
 //
-//    private void speex_resampler_process_native(int channel_index, ref int in_len, short[] output, int output_ptr, ref int out_len)
+//    private void speex_resampler_process_native(int channel_index, BoxedValueInt in_len, short[] output, int output_ptr, BoxedValueInt out_len)
 //    {
 //        int j = 0;
 //        int N = this.filt_len;
@@ -517,18 +513,18 @@ package org.concentus;
 //        /* Call the right resampler through the function ptr */
 //        out_sample = this.resampler_ptr(channel_index, this.mem, mem_ptr, ref in_len, output, output_ptr, ref out_len);
 //
-//        if (this.last_sample[channel_index] < (int)in_len)
-//            in_len = this.last_sample[channel_index];
+//        if (this.last_sample[channel_index] < (int)in_len.Val)
+//            in_len.Val = this.last_sample[channel_index];
 //        out_len = out_sample;
 //        this.last_sample[channel_index] -= in_len;
 //
-//        ilen = in_len;
+//        ilen = in_len.Val;
 //
 //        for (j = mem_ptr; j < N - 1 + mem_ptr; ++j)
 //            this.mem[j] = this.mem[j + ilen];
 //    }
 //
-//    private int speex_resampler_magic(int channel_index, short[] output, ref int output_ptr, int out_len)
+//    private int speex_resampler_magic(int channel_index, short[] output, BoxedValueInt output_ptr, int out_len)
 //    {
 //        int tmp_in_len = this.magic_samples[channel_index];
 //        int mem_ptr = channel_index * this.mem_alloc_size;
@@ -545,13 +541,9 @@ package org.concentus;
 //            for (i = mem_ptr; i < this.magic_samples[channel_index] + mem_ptr; i++)
 //                this.mem[N - 1 + i] = this.mem[N - 1 + i + tmp_in_len];
 //        }
-//        output_ptr += out_len * this.out_stride;
+//        output_ptr.Val += out_len * this.out_stride;
 //        return out_len;
 //    }
-//
-//    #endregion
-//
-//    #region Public API
 //
 //    /// <summary>
 //    /// Create a new resampler with integer input and output rates (in hertz).
@@ -598,7 +590,6 @@ package org.concentus;
 //        st.mem_alloc_size = 0;
 //        st.filt_len = 0;
 //        st.mem = null;
-//        st.resampler_ptr = null;
 //        st.cutoff = 1.0f;
 //        st.nb_channels = nb_channels;
 //        st.in_stride = 1;
@@ -625,6 +616,18 @@ package org.concentus;
 //
 //        return st;
 //    }
+//    
+//    public class ResamplerResult
+//    {
+//        ResamplerResult(int in_len, int out_len)
+//        {
+//            inputSamplesProcessed = in_len;
+//            outputSamplesGenerated = out_len;
+//        }
+//        
+//        int inputSamplesProcessed;
+//        int outputSamplesGenerated;
+//    }
 //
 //    /// <summary>
 //    /// Resample an int array. The input and output buffers must *not* overlap
@@ -638,7 +641,7 @@ package org.concentus;
 //    /// <param name="output_ptr">Offset to start from when writing output</param>
 //    /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
 //    /// of output samples actually produced</param>
-//    public void Process(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+//    public ResamplerResult Process(int channel_index, short[] input, int input_ptr, int in_len, short[] output, int output_ptr, int out_len)
 //    {
 //        int j;
 //        int ilen = in_len;
@@ -650,9 +653,7 @@ package org.concentus;
 //
 //        if (this.magic_samples[channel_index] != 0)
 //        {
-//
 //            olen -= this.speex_resampler_magic(channel_index, output, ref output_ptr, olen);
-//
 //        }
 //        if (this.magic_samples[channel_index] == 0)
 //        {
@@ -680,116 +681,7 @@ package org.concentus;
 //                    input_ptr += ichunk * istride;
 //            }
 //        }
-//        in_len -= ilen;
-//        out_len -= olen;
-//    }
-//
-//    /// <summary>
-//    /// Resample a float array array. The input and output buffers must *not* overlap
-//    /// </summary>
-//    /// <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
-//    /// <param name="input">Input buffer</param>
-//    /// <param name="input_ptr">Offset to start from when reading input</param>
-//    /// <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
-//    /// will be set to the number of input samples actually processed</param>
-//    /// <param name="output">Output buffer</param>
-//    /// <param name="output_ptr">Offset to start from when writing output</param>
-//    /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
-//    /// of output samples actually produced</param>
-//    public void Process(int channel_index, float[] input, int input_ptr, ref int in_len, float[] output, int output_ptr, ref int out_len)
-//    {
-//        int j;
-//        int istride_save = this.in_stride;
-//        int ostride_save = this.out_stride;
-//        int ilen = in_len;
-//        int olen = out_len;
-//        int x = channel_index * this.mem_alloc_size;
-//        int xlen = this.mem_alloc_size - (this.filt_len - 1);
-//        int ylen = (olen < FIXED_STACK_ALLOC) ? olen : FIXED_STACK_ALLOC;
-//        short[] ystack = new short[ylen];
-//
-//        this.out_stride = 1;
-//
-//        while (ilen != 0 && olen != 0)
-//        {
-//
-//            int y = 0;
-//            int ichunk = (ilen > xlen) ? xlen : ilen;
-//            int ochunk = (olen > ylen) ? ylen : olen;
-//            int omagic = 0;
-//
-//            if (this.magic_samples[channel_index] != 0)
-//            {
-//
-//                omagic = this.speex_resampler_magic(channel_index, ystack, ref y, ochunk);
-//
-//                ochunk -= omagic;
-//                olen -= omagic;
-//            }
-//            if (this.magic_samples[channel_index] == 0)
-//            {
-//                if (input != null)
-//                {
-//                    for (j = 0; j < ichunk; ++j)
-//                        this.mem[x + j + this.filt_len - 1] = WORD2INT(input[input_ptr + j * istride_save]);
-//                }
-//                else {
-//                    for (j = 0; j < ichunk; ++j)
-//                        this.mem[x + j + this.filt_len - 1] = 0;
-//                }
-//
-//                this.speex_resampler_process_native(channel_index, ref ichunk, ystack, y, ref ochunk);
-//            }
-//            else {
-//                ichunk = 0;
-//                ochunk = 0;
-//            }
-//
-//            for (j = 0; j < ochunk + omagic; ++j)
-//                output[output_ptr + j * ostride_save] = ystack[j];
-//
-//            ilen -= ichunk;
-//            olen -= ochunk;
-//            output_ptr += ((ochunk + omagic) * ostride_save);
-//            if (input != null)
-//                input_ptr += ichunk * istride_save;
-//        }
-//        this.out_stride = ostride_save;
-//        in_len -= ilen;
-//        out_len -= olen;
-//    }
-//
-//    /// <summary>
-//    /// Resamples an interleaved int array. The stride is automatically determined by the number of channels of the resampler.
-//    /// </summary>
-//    /// <param name="input">Input buffer</param>
-//    /// <param name="input_ptr">Offset to start from when reading input</param>
-//    /// <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
-//    /// value will be set to the number of input samples actually processed</param>
-//    /// <param name="output">Output buffer</param>
-//    /// <param name="output_ptr">Offset to start from when writing output</param>
-//    /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
-//    /// will be set to the number of samples per channel actually produced</param>
-//    public void ProcessInterleaved(float[] input, int input_ptr, ref int in_len, float[] output, int output_ptr, ref int out_len)
-//    {
-//        int i;
-//        int istride_save, ostride_save;
-//        int bak_out_len = out_len;
-//        int bak_in_len = in_len;
-//        istride_save = this.in_stride;
-//        ostride_save = this.out_stride;
-//        this.in_stride = this.out_stride = this.nb_channels;
-//        for (i = 0; i < this.nb_channels; i++)
-//        {
-//            out_len = bak_out_len;
-//            in_len = bak_in_len;
-//            if (input != null)
-//                this.Process(i, input, input_ptr + i, ref in_len, output, output_ptr + i, ref out_len);
-//            else
-//                this.Process(i, null, 0, ref in_len, output, output_ptr + i, ref out_len);
-//        }
-//        this.in_stride = istride_save;
-//        this.out_stride = ostride_save;
+//        return new ResamplerResult(in_len - ilen, out_len - olen);
 //    }
 //
 //    /// <summary>
@@ -803,7 +695,7 @@ package org.concentus;
 //    /// <param name="output_ptr">Offset to start from when writing output</param>
 //    /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
 //    /// will be set to the number of samples per channel actually produced</param>
-//    public void ProcessInterleaved(short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+//    public ResamplerResult ProcessInterleaved(short[] input, int input_ptr, int in_len, short[] output, int output_ptr, int out_len)
 //    {
 //        int i;
 //        int istride_save, ostride_save;
@@ -816,13 +708,23 @@ package org.concentus;
 //        {
 //            out_len = bak_out_len;
 //            in_len = bak_in_len;
+//            ResamplerResult r;
 //            if (input != null)
-//                this.Process(i, input, input_ptr + i, ref in_len, output, output_ptr + i, ref out_len);
+//            {
+//                r = this.Process(i, input, input_ptr + i, in_len, output, output_ptr + i, out_len);
+//            }
 //            else
-//                this.Process(i, null, 0, ref in_len, output, output_ptr + i, ref out_len);
+//            {
+//                r = this.Process(i, null, 0, in_len, output, output_ptr + i, out_len);
+//            }
+//            
+//            in_len = r.inputSamplesProcessed;
+//            out_len = r.outputSamplesGenerated;
 //        }
 //        this.in_stride = istride_save;
 //        this.out_stride = ostride_save;
+//        
+//        return new ResamplerResult(in_len, out_len);
 //    }
 //
 //    /// <summary>

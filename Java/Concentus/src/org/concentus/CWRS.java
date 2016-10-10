@@ -31,12 +31,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class CWRS
-{
+class CWRS {
+
     /*Although derived separately, the pulse vector coding scheme is equivalent to
 a Pyramid Vector Quantizer \cite{Fis86}.
 Some additional notes about an early version appear at
@@ -156,27 +155,24 @@ month=Jul,
 year=1986
 }*/
 
-    static final int[] CELT_PVQ_U_ROW =
-    {
-        0,176,351,525,698,870,1041,1131,1178,1207,1226,1240,1248,1254,1257
-    };
+    static final int[] CELT_PVQ_U_ROW
+            = {
+                0, 176, 351, 525, 698, 870, 1041, 1131, 1178, 1207, 1226, 1240, 1248, 1254, 1257
+            };
 
     /*U(N,K) = U(K,N) := N>0?K>0?U(N-1,K)+U(N,K-1)+U(N-1,K-1):0:K>0?1:0*/
-    private static long CELT_PVQ_U(int _n, int _k)
-    {
+    private static long CELT_PVQ_U(int _n, int _k) {
         return CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[Inlines.IMIN(_n, _k)] + Inlines.IMAX(_n, _k)];
     }
 
 
     /*V(N,K) := U(N,K)+U(N,K+1) = the number of PVQ codewords for a band of size N
        with K pulses allocated to it.*/
-    private static long CELT_PVQ_V(int _n, int _k)
-    {
+    private static long CELT_PVQ_V(int _n, int _k) {
         return (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1));
     }
 
-    static long icwrs(int _n, int[] _y)
-    {
+    static long icwrs(int _n, int[] _y) {
         long i;
         int j;
         int k;
@@ -184,28 +180,23 @@ year=1986
         j = _n - 1;
         i = (_y[j] < 0) ? 1 : 0;
         k = Inlines.abs(_y[j]);
-        do
-        {
+        do {
             j--;
             i += CELT_PVQ_U(_n - j, k);
             k += Inlines.abs(_y[j]);
-            if (_y[j] < 0)
-            {
+            if (_y[j] < 0) {
                 i += CELT_PVQ_U(_n - j, k + 1);
             }
-        }
-        while (j > 0);
+        } while (j > 0);
         return i;
     }
 
-    static void encode_pulses(int[] _y, int _n, int _k, EntropyCoder _enc)
-    {
+    static void encode_pulses(int[] _y, int _n, int _k, EntropyCoder _enc) {
         Inlines.OpusAssert(_k > 0);
         _enc.enc_uint(icwrs(_n, _y), CELT_PVQ_V(_n, _k));
     }
 
-    static int cwrsi(int _n, int _k, long _i, int[] _y)
-    {
+    static int cwrsi(int _n, int _k, long _i, int[] _y) {
         long p;
         int s;
         int k0;
@@ -215,12 +206,10 @@ year=1986
         Inlines.OpusAssert(_k > 0);
         Inlines.OpusAssert(_n > 1);
 
-        while (_n > 2)
-        {
+        while (_n > 2) {
             long q;
             /*Lots of pulses case:*/
-            if (_k >= _n)
-            {
+            if (_k >= _n) {
                 int row;
                 row = CELT_PVQ_U_ROW[_n];
                 /*Are the pulses in this dimension negative?*/
@@ -231,54 +220,42 @@ year=1986
                 k0 = _k;
                 q = CeltTables.CELT_PVQ_U_DATA[row + _n];
 
-                if (q > _i)
-                {
+                if (q > _i) {
                     Inlines.OpusAssert(p > q);
                     _k = _n;
 
-                    do
-                    {
+                    do {
                         p = CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[--_k] + _n];
                     } while (p > _i);
-                }
-                else
-                {
-                    for (p = CeltTables.CELT_PVQ_U_DATA[row + _k]; p > _i; p = CeltTables.CELT_PVQ_U_DATA[row + _k])
-                    {
+                } else {
+                    for (p = CeltTables.CELT_PVQ_U_DATA[row + _k]; p > _i; p = CeltTables.CELT_PVQ_U_DATA[row + _k]) {
                         _k--;
                     }
                 }
 
                 _i -= p;
-                val = (short)((k0 - _k + s) ^ s);
+                val = (short) ((k0 - _k + s) ^ s);
                 _y[y_ptr++] = val;
                 yy = Inlines.MAC16_16(yy, val, val);
-            }
-            /*Lots of dimensions case:*/
-            else
-            {
+            } /*Lots of dimensions case:*/ else {
                 /*Are there any pulses in this dimension at all?*/
                 p = CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[_k] + _n];
                 q = CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[_k + 1] + _n];
-                if (p <= _i && _i < q)
-                {
+                if (p <= _i && _i < q) {
                     _i -= p;
                     _y[y_ptr++] = 0;
-                }
-                else
-                {
+                } else {
                     /*Are the pulses in this dimension negative?*/
                     s = 0 - (_i >= q ? 1 : 0);
                     _i = _i - Inlines.CapToUInt32(q & s);
                     /*Count how many pulses were placed in this dimension.*/
                     k0 = _k;
-                    do
-                    {
+                    do {
                         p = CeltTables.CELT_PVQ_U_DATA[CELT_PVQ_U_ROW[--_k] + _n];
                     } while (p > _i);
 
                     _i -= p;
-                    val = (short)((k0 - _k + s) ^ s);
+                    val = (short) ((k0 - _k + s) ^ s);
                     _y[y_ptr++] = val;
                     yy = Inlines.MAC16_16(yy, val, val);
                 }
@@ -291,25 +268,23 @@ year=1986
         s = 0 - (_i >= p ? 1 : 0);
         _i = _i - Inlines.CapToUInt32(p & s);
         k0 = _k;
-        _k = (int)((_i + 1) >> 1);
-        if (_k != 0)
-        {
+        _k = (int) ((_i + 1) >> 1);
+        if (_k != 0) {
             _i -= (2L * _k - 1);
         }
 
-        val = (short)((k0 - _k + s) ^ s);
+        val = (short) ((k0 - _k + s) ^ s);
         _y[y_ptr++] = val;
         yy = Inlines.MAC16_16(yy, val, val);
         /*_n==1*/
-        s = -(int)_i;
-        val = (short)((_k + s) ^ s);
+        s = -(int) _i;
+        val = (short) ((_k + s) ^ s);
         _y[y_ptr] = val;
         yy = Inlines.MAC16_16(yy, val, val);
         return yy;
     }
 
-    static int decode_pulses(int[] _y, int _n, int _k, EntropyCoder _dec)
-    {
+    static int decode_pulses(int[] _y, int _n, int _k, EntropyCoder _dec) {
         return cwrsi(_n, _k, _dec.dec_uint(CELT_PVQ_V(_n, _k)), _y);
     }
 }

@@ -31,12 +31,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-public class OpusConstants
-{
+public class OpusConstants {
+
     /// <summary>
     /// Auto/default setting
     /// </summary>
@@ -52,7 +51,8 @@ public class OpusConstants
     public static final int NB_TBANDS = 18;
     public static final int NB_TOT_BANDS = 21;
     public static final int NB_TONAL_SKIP_BANDS = 9;
-    public static final int ANALYSIS_BUF_SIZE = 720; /* 15 ms at 48 kHz */
+    public static final int ANALYSIS_BUF_SIZE = 720;
+    /* 15 ms at 48 kHz */
     public static final int DETECT_SIZE = 200;
 
     public static final int MAX_ENCODER_BUFFER = 480;

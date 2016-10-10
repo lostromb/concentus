@@ -31,21 +31,16 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-public enum OpusSignal
-{
+public enum OpusSignal {
     OPUS_SIGNAL_UNKNOWN,
-    
     OPUS_SIGNAL_AUTO,
-
     /// <summary>
     /// Signal being encoded is voice
     /// </summary>
     OPUS_SIGNAL_VOICE,
-
     /// <summary>
     /// Signal being encoded is music
     /// </summary>

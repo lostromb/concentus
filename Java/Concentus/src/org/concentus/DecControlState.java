@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Structure for controlling decoder operation and reading decoder status
 /// </summary>
-class DecControlState
-{
+class DecControlState {
+
     /* I:   Number of channels; 1/2                                                         */
     int nChannelsAPI = 0;
 
@@ -55,8 +54,7 @@ class DecControlState
     /* O:   Pitch lag of previous frame (0 if unvoiced), measured in samples at 48 kHz      */
     int prevPitchLag = 0;
 
-    void Reset()
-    {
+    void Reset() {
         nChannelsAPI = 0;
         nChannelsInternal = 0;
         API_sampleRate = 0;

@@ -31,12 +31,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class AnalysisInfo
-{
+class AnalysisInfo {
+
     boolean enabled = false;
     int valid = 0;
     float tonality = 0;
@@ -46,12 +45,10 @@ class AnalysisInfo
     float music_prob = 0;
     int bandwidth = 0;
 
-    AnalysisInfo()
-    {
+    AnalysisInfo() {
     }
 
-    void Assign(AnalysisInfo other)
-    {
+    void Assign(AnalysisInfo other) {
         this.valid = other.valid;
         this.tonality = other.tonality;
         this.tonality_slope = other.tonality_slope;
@@ -61,8 +58,7 @@ class AnalysisInfo
         this.bandwidth = other.bandwidth;
     }
 
-    void Reset()
-    {
+    void Reset() {
         valid = 0;
         tonality = 0;
         tonality_slope = 0;

@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Encoder Super Struct
 /// </summary>
-class SilkEncoder
-{
+class SilkEncoder {
+
     final SilkChannelEncoder[] state_Fxx = new SilkChannelEncoder[SilkConstants.ENCODER_NUM_CHANNELS];
     final StereoEncodeState sStereo = new StereoEncodeState();
     int nBitsUsedLBRR = 0;
@@ -48,18 +47,14 @@ class SilkEncoder
     int allowBandwidthSwitch = 0;
     int prev_decode_only_middle = 0;
 
-    SilkEncoder()
-    {
-        for (int c = 0; c < SilkConstants.ENCODER_NUM_CHANNELS; c++)
-        {
+    SilkEncoder() {
+        for (int c = 0; c < SilkConstants.ENCODER_NUM_CHANNELS; c++) {
             state_Fxx[c] = new SilkChannelEncoder();
         }
     }
 
-    void Reset()
-    {
-        for (int c = 0; c < SilkConstants.ENCODER_NUM_CHANNELS; c++)
-        {
+    void Reset() {
+        for (int c = 0; c < SilkConstants.ENCODER_NUM_CHANNELS; c++) {
             state_Fxx[c].Reset();
         }
 
@@ -80,14 +75,13 @@ class SilkEncoder
     /// <param name="psEnc">I/O  Pointer to Silk FIX encoder state</param>
     /// <param name="arch">I    Run-time architecture</param>
     /// <returns></returns>
-    static int silk_init_encoder(SilkChannelEncoder psEnc)
-    {
+    static int silk_init_encoder(SilkChannelEncoder psEnc) {
         int ret = 0;
 
         // Clear the entire encoder state
         psEnc.Reset();
 
-        psEnc.variable_HP_smth1_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(((int)((TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ, 16)*/) - (16 << 7), 8);
+        psEnc.variable_HP_smth1_Q15 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(((int) ((TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ) * ((long) 1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ, 16)*/) - (16 << 7), 8);
         psEnc.variable_HP_smth2_Q15 = psEnc.variable_HP_smth1_Q15;
 
         // Used to deactivate LSF interpolation, pitch prediction

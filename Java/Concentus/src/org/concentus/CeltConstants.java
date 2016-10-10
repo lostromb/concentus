@@ -31,12 +31,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class CeltConstants
-{
+class CeltConstants {
+
     public static final int Q15ONE = 32767;
 
     public static final float CELT_SIG_SCALE = 32768.0f;
@@ -49,8 +48,8 @@ class CeltConstants
 
     public static final int EPSILON = 1;
     public static final int VERY_SMALL = 0;
-    public static final short VERY_LARGE16 = ((short)32767);
-    public static final short Q15_ONE = ((short)32767);
+    public static final short VERY_LARGE16 = ((short) 32767);
+    public static final short Q15_ONE = ((short) 32767);
 
     public static final int COMBFILTER_MAXPERIOD = 1024;
     public static final int COMBFILTER_MINPERIOD = 15;
@@ -65,7 +64,6 @@ class CeltConstants
 
     // from static_modes_float.h
     public static final int TOTAL_MODES = 1;
-
 
     // from rate.h
     public static final int MAX_PSEUDO = 40;

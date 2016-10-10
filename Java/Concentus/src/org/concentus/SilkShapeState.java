@@ -28,22 +28,20 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Noise shaping analysis state
 /// </summary>
-class SilkShapeState
-{
+class SilkShapeState {
+
     byte LastGainIndex = 0;
     int HarmBoost_smth_Q16 = 0;
     int HarmShapeGain_smth_Q16 = 0;
     int Tilt_smth_Q16 = 0;
 
-    void Reset()
-    {
+    void Reset() {
         LastGainIndex = 0;
         HarmBoost_smth_Q16 = 0;
         HarmShapeGain_smth_Q16 = 0;

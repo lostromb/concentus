@@ -28,13 +28,13 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class SilkResamplerState
-{
-    final int[] sIIR = new int[SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER]; /* this must be the first element of this struct FIXME why? */
+class SilkResamplerState {
+
+    final int[] sIIR = new int[SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER];
+    /* this must be the first element of this struct FIXME why? */
     final int[] sFIR_i32 = new int[SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER]; // porting note: these two fields were originally a union, so that means only 1 will ever be used at a time.
     final short[] sFIR_i16 = new short[SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER];
 
@@ -53,12 +53,11 @@ class SilkResamplerState
     /// </summary>
     short[] Coefs = null;
 
-    void Reset()
-    {
+    void Reset() {
         Arrays.MemSet(sIIR, 0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
         Arrays.MemSet(sFIR_i32, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-        Arrays.MemSet(sFIR_i16, (short)0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-        Arrays.MemSet(delayBuf, (short)0, 48);
+        Arrays.MemSet(sFIR_i16, (short) 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+        Arrays.MemSet(delayBuf, (short) 0, 48);
         resampler_function = 0;
         batchSize = 0;
         invRatio_Q16 = 0;
@@ -70,8 +69,7 @@ class SilkResamplerState
         Coefs = null;
     }
 
-    void Assign(SilkResamplerState other)
-    {
+    void Assign(SilkResamplerState other) {
         resampler_function = other.resampler_function;
         batchSize = other.batchSize;
         invRatio_Q16 = other.invRatio_Q16;

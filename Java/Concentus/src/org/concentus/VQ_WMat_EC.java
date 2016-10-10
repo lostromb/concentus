@@ -28,29 +28,27 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class VQ_WMat_EC
-{
+class VQ_WMat_EC {
+
     /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
     static void silk_VQ_WMat_EC(
-        BoxedValueByte ind,                           /* O    index of best codebook vector               */
-        BoxedValueInt rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
-        BoxedValueInt gain_Q7,                       /* O    sum of absolute LTP coefficients            */
-        short[] in_Q14,                        /* I    input vector to be quantized                */
-        int in_Q14_ptr,
-        int[] W_Q18,                         /* I    weighting matrix                            */
-        int W_Q18_ptr,
-        byte[][] cb_Q7,                         /* I    codebook                                    */
-        short[] cb_gain_Q7,                    /* I    codebook effective gain                     */
-        short[] cl_Q5,                         /* I    code length for each codebook vector        */
-        int mu_Q9,                          /* I    tradeoff betw. weighted error and rate      */
-        int max_gain_Q7,                    /* I    maximum sum of absolute LTP coefficients    */
-        int L                               /* I    number of vectors in codebook               */
-)
-    {
+            BoxedValueByte ind, /* O    index of best codebook vector               */
+            BoxedValueInt rate_dist_Q14, /* O    best weighted quant error + mu * rate       */
+            BoxedValueInt gain_Q7, /* O    sum of absolute LTP coefficients            */
+            short[] in_Q14, /* I    input vector to be quantized                */
+            int in_Q14_ptr,
+            int[] W_Q18, /* I    weighting matrix                            */
+            int W_Q18_ptr,
+            byte[][] cb_Q7, /* I    codebook                                    */
+            short[] cb_gain_Q7, /* I    codebook effective gain                     */
+            short[] cl_Q5, /* I    code length for each codebook vector        */
+            int mu_Q9, /* I    tradeoff betw. weighted error and rate      */
+            int max_gain_Q7, /* I    maximum sum of absolute LTP coefficients    */
+            int L /* I    number of vectors in codebook               */
+    ) {
         int k, gain_tmp_Q7;
         byte[] cb_row_Q7;
         int cb_row_Q7_ptr = 0;
@@ -59,17 +57,16 @@ class VQ_WMat_EC
 
         /* Loop over codebook */
         rate_dist_Q14.Val = Integer.MAX_VALUE;
-        for (k = 0; k < L; k++)
-        {
+        for (k = 0; k < L; k++) {
             /* Go to next cbk vector */
             cb_row_Q7 = cb_Q7[cb_row_Q7_ptr++];
             gain_tmp_Q7 = cb_gain_Q7[k];
 
-            diff_Q14[0] = (short)(in_Q14[in_Q14_ptr] - Inlines.silk_LSHIFT(cb_row_Q7[0], 7));
-            diff_Q14[1] = (short)(in_Q14[in_Q14_ptr + 1] - Inlines.silk_LSHIFT(cb_row_Q7[1], 7));
-            diff_Q14[2] = (short)(in_Q14[in_Q14_ptr + 2] - Inlines.silk_LSHIFT(cb_row_Q7[2], 7));
-            diff_Q14[3] = (short)(in_Q14[in_Q14_ptr + 3] - Inlines.silk_LSHIFT(cb_row_Q7[3], 7));
-            diff_Q14[4] = (short)(in_Q14[in_Q14_ptr + 4] - Inlines.silk_LSHIFT(cb_row_Q7[4], 7));
+            diff_Q14[0] = (short) (in_Q14[in_Q14_ptr] - Inlines.silk_LSHIFT(cb_row_Q7[0], 7));
+            diff_Q14[1] = (short) (in_Q14[in_Q14_ptr + 1] - Inlines.silk_LSHIFT(cb_row_Q7[1], 7));
+            diff_Q14[2] = (short) (in_Q14[in_Q14_ptr + 2] - Inlines.silk_LSHIFT(cb_row_Q7[2], 7));
+            diff_Q14[3] = (short) (in_Q14[in_Q14_ptr + 3] - Inlines.silk_LSHIFT(cb_row_Q7[3], 7));
+            diff_Q14[4] = (short) (in_Q14[in_Q14_ptr + 4] - Inlines.silk_LSHIFT(cb_row_Q7[4], 7));
 
             /* Weighted rate */
             sum1_Q14 = Inlines.silk_SMULBB(mu_Q9, cl_Q5[k]);
@@ -116,10 +113,9 @@ class VQ_WMat_EC
             Inlines.OpusAssert(sum1_Q14 >= 0);
 
             /* find best */
-            if (sum1_Q14 < rate_dist_Q14.Val)
-            {
+            if (sum1_Q14 < rate_dist_Q14.Val) {
                 rate_dist_Q14.Val = sum1_Q14;
-                ind.Val = (byte)k;
+                ind.Val = (byte) k;
                 gain_Q7.Val = gain_tmp_Q7;
             }
         }

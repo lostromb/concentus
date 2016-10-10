@@ -31,16 +31,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class MDCT
-{
+class MDCT {
+
     /* Forward MDCT trashes the input array */
     static void clt_mdct_forward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
-        int[] window, int overlap, int shift, int stride)
-    {
+            int[] window, int overlap, int shift, int stride) {
         int i;
         int N, N2, N4;
         int[] f;
@@ -55,8 +53,7 @@ class MDCT
 
         N = l.n;
         trig = l.trig;
-        for (i = 0; i < shift; i++)
-        {
+        for (i = 0; i < shift; i++) {
             N = N >> 1;
             trig_ptr += N;
         }
@@ -67,7 +64,7 @@ class MDCT
         f2 = new int[N4 * 2];
 
         /* Consider the input to be composed of four blocks: [a, b, c, d] */
-        /* Window, shuffle, fold */
+ /* Window, shuffle, fold */
         {
             /* Temp pointers to make it really clear to the compiler what we're doing */
             int xp1 = input_ptr + (overlap >> 1);
@@ -75,8 +72,7 @@ class MDCT
             int yp = 0;
             int wp1 = (overlap >> 1);
             int wp2 = ((overlap >> 1) - 1);
-            for (i = 0; i < ((overlap + 3) >> 2); i++)
-            {
+            for (i = 0; i < ((overlap + 3) >> 2); i++) {
                 /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
                 f[yp++] = Inlines.MULT16_32_Q15(window[wp2], input[xp1 + N2]) + Inlines.MULT16_32_Q15(window[wp1], input[xp2]);
                 f[yp++] = Inlines.MULT16_32_Q15(window[wp1], input[xp1]) - Inlines.MULT16_32_Q15(window[wp2], input[xp2 - N2]);
@@ -87,16 +83,14 @@ class MDCT
             }
             wp1 = 0;
             wp2 = (overlap - 1);
-            for (; i < N4 - ((overlap + 3) >> 2); i++)
-            {
+            for (; i < N4 - ((overlap + 3) >> 2); i++) {
                 /* Real part arranged as a-bR, Imag part arranged as -c-dR */
                 f[yp++] = input[xp2];
                 f[yp++] = input[xp1];
                 xp1 += 2;
                 xp2 -= 2;
             }
-            for (; i < N4; i++)
-            {
+            for (; i < N4; i++) {
                 /* Real part arranged as a-bR, Imag part arranged as -c-dR */
                 f[yp++] = Inlines.MULT16_32_Q15(window[wp2], input[xp2]) - Inlines.MULT16_32_Q15(window[wp1], input[xp1 - N2]);
                 f[yp++] = Inlines.MULT16_32_Q15(window[wp2], input[xp1]) + Inlines.MULT16_32_Q15(window[wp1], input[xp2 + N2]);
@@ -110,8 +104,7 @@ class MDCT
         {
             int yp = 0;
             int t = trig_ptr;
-            for (i = 0; i < N4; i++)
-            {
+            for (i = 0; i < N4; i++) {
                 short t0, t1;
                 int re, im, yr, yi;
                 t0 = trig[t + i];
@@ -135,8 +128,7 @@ class MDCT
             int yp1 = output_ptr;
             int yp2 = output_ptr + (stride * (N2 - 1));
             int t = trig_ptr;
-            for (i = 0; i < N4; i++)
-            {
+            for (i = 0; i < N4; i++) {
                 int yr, yi;
                 yr = KissFFT.S_MUL(f2[fp + 1], trig[t + N4 + i]) - KissFFT.S_MUL(f2[fp], trig[t + i]);
                 yi = KissFFT.S_MUL(f2[fp], trig[t + N4 + i]) + KissFFT.S_MUL(f2[fp + 1], trig[t + i]);
@@ -150,16 +142,14 @@ class MDCT
     }
 
     static void clt_mdct_backward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
-          int[] window, int overlap, int shift, int stride)
-    {
+            int[] window, int overlap, int shift, int stride) {
         int i;
         int N, N2, N4;
         int trig = 0;
         int xp1, xp2, yp, yp0, yp1;
 
         N = l.n;
-        for (i = 0; i < shift; i++)
-        {
+        for (i = 0; i < shift; i++) {
             N >>= 1;
             trig += N;
         }
@@ -167,13 +157,12 @@ class MDCT
         N4 = N >> 2;
 
         /* Pre-rotate */
-        /* Temp pointers to make it really clear to the compiler what we're doing */
+ /* Temp pointers to make it really clear to the compiler what we're doing */
         xp2 = input_ptr + (stride * (N2 - 1));
         yp = output_ptr + (overlap >> 1);
         short[] bitrev = l.kfft[shift].bitrev;
         int bitrav_ptr = 0;
-        for (i = 0; i < N4; i++)
-        {
+        for (i = 0; i < N4; i++) {
             int rev = bitrev[bitrav_ptr++];
             int ypr = yp + 2 * rev;
             /* We swap real and imag because we use an FFT instead of an IFFT. */
@@ -196,8 +185,7 @@ class MDCT
             middle pair will be computed twice. */
         int tN4m1 = t + N4 - 1;
         int tN2m1 = t + N2 - 1;
-        for (i = 0; i < (N4 + 1) >> 1; i++)
-        {
+        for (i = 0; i < (N4 + 1) >> 1; i++) {
             int re, im, yr, yi;
             short t0, t1;
             /* We swap real and imag because we're using an FFT instead of an IFFT. */
@@ -230,8 +218,7 @@ class MDCT
         int wp1 = 0;
         int wp2 = (overlap - 1);
 
-        for (i = 0; i < overlap / 2; i++)
-        {
+        for (i = 0; i < overlap / 2; i++) {
             int x1 = output[xp1];
             int x2 = output[yp1];
             output[yp1++] = Inlines.MULT16_32_Q15(window[wp2], x2) - Inlines.MULT16_32_Q15(window[wp1], x1);

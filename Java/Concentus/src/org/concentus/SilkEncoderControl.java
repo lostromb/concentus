@@ -28,18 +28,22 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-/************************/
+/**
+ * *********************
+ */
 /* Encoder control FIX  */
-/************************/
-class SilkEncoderControl
-{
+/**
+ * *********************
+ */
+class SilkEncoderControl {
+
     /* Prediction and coding parameters */
     final int[] Gains_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
-    final short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArrayShort(2, SilkConstants.MAX_LPC_ORDER);     /* holds interpolated and final coefficients */
+    final short[][] PredCoef_Q12 = Arrays.InitTwoDimensionalArrayShort(2, SilkConstants.MAX_LPC_ORDER);
+    /* holds interpolated and final coefficients */
     final short[] LTPCoef_Q14 = new short[SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR];
     int LTP_scale_Q14 = 0;
     final int[] pitchL = new int[SilkConstants.MAX_NB_SUBFR];
@@ -47,7 +51,8 @@ class SilkEncoderControl
     /* Noise shaping parameters */
     final short[] AR1_Q13 = new short[SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER];
     final short[] AR2_Q13 = new short[SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER];
-    final int[] LF_shp_Q14 = new int[SilkConstants.MAX_NB_SUBFR]; /* Packs two int16 coefficients per int32 value         */
+    final int[] LF_shp_Q14 = new int[SilkConstants.MAX_NB_SUBFR];
+    /* Packs two int16 coefficients per int32 value         */
     final int[] GainsPre_Q14 = new int[SilkConstants.MAX_NB_SUBFR];
     final int[] HarmBoost_Q14 = new int[SilkConstants.MAX_NB_SUBFR];
     final int[] Tilt_Q14 = new int[SilkConstants.MAX_NB_SUBFR];
@@ -71,16 +76,15 @@ class SilkEncoderControl
     final int[] GainsUnq_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
     byte lastGainIndexPrev = 0;
 
-    void Reset()
-    {
+    void Reset() {
         Arrays.MemSet(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
-        Arrays.MemSet(PredCoef_Q12[0], (short)0, SilkConstants.MAX_LPC_ORDER);
-        Arrays.MemSet(PredCoef_Q12[1], (short)0, SilkConstants.MAX_LPC_ORDER);
-        Arrays.MemSet(LTPCoef_Q14, (short)0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
+        Arrays.MemSet(PredCoef_Q12[0], (short) 0, SilkConstants.MAX_LPC_ORDER);
+        Arrays.MemSet(PredCoef_Q12[1], (short) 0, SilkConstants.MAX_LPC_ORDER);
+        Arrays.MemSet(LTPCoef_Q14, (short) 0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
         LTP_scale_Q14 = 0;
         Arrays.MemSet(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
-        Arrays.MemSet(AR1_Q13, (short)0, SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
-        Arrays.MemSet(AR2_Q13, (short)0, SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
+        Arrays.MemSet(AR1_Q13, (short) 0, SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
+        Arrays.MemSet(AR2_Q13, (short) 0, SilkConstants.MAX_NB_SUBFR * SilkConstants.MAX_SHAPE_LPC_ORDER);
         Arrays.MemSet(LF_shp_Q14, 0, SilkConstants.MAX_NB_SUBFR);
         Arrays.MemSet(GainsPre_Q14, 0, SilkConstants.MAX_NB_SUBFR);
         Arrays.MemSet(HarmBoost_Q14, 0, SilkConstants.MAX_NB_SUBFR);

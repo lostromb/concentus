@@ -27,34 +27,29 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-public class OpusException extends Exception
-{
+public class OpusException extends Exception {
+
     private String _message;
     private int _opus_error_code;
-    
-    public OpusException()
-    {
+
+    public OpusException() {
         this("", 0);
     }
-    
-    public OpusException(String message)
-    {
+
+    public OpusException(String message) {
         this(message, 1);
     }
-    
-    public OpusException(String message, int opus_error_code)
-    {
+
+    public OpusException(String message, int opus_error_code) {
         _message = message + ": " + CodecHelpers.opus_strerror(opus_error_code);
         _opus_error_code = opus_error_code;
     }
-    
+
     @Override
-    public String getMessage()
-    {
+    public String getMessage() {
         return _message;
     }
 }

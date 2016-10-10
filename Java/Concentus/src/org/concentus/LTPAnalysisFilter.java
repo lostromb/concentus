@@ -28,24 +28,22 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class LTPAnalysisFilter
-{
+class LTPAnalysisFilter {
+
     static void silk_LTP_analysis_filter(
-        short[] LTP_res,                               /* O    LTP residual signal of length SilkConstants.MAX_NB_SUBFR * ( pre_length + subfr_length )  */
-        short[] x,                                     /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
-        int x_ptr,
-        short[] LTPCoef_Q14,/* I     LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe  [SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR]                 */
-        int[] pitchL,                 /* I    Pitch lag, one for each subframe [SilkConstants.MAX_NB_SUBFR]                                           */
-        int[] invGains_Q16,           /* I    Inverse quantization gains, one for each subframe [SilkConstants.MAX_NB_SUBFR]                           */
-        int subfr_length,                           /* I    Length of each subframe                                                     */
-        int nb_subfr,                               /* I    Number of subframes                                                         */
-        int pre_length                              /* I    Length of the preceding samples starting at &x[0] for each subframe         */
-)
-    {
+            short[] LTP_res, /* O    LTP residual signal of length SilkConstants.MAX_NB_SUBFR * ( pre_length + subfr_length )  */
+            short[] x, /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
+            int x_ptr,
+            short[] LTPCoef_Q14,/* I     LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe  [SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR]                 */
+            int[] pitchL, /* I    Pitch lag, one for each subframe [SilkConstants.MAX_NB_SUBFR]                                           */
+            int[] invGains_Q16, /* I    Inverse quantization gains, one for each subframe [SilkConstants.MAX_NB_SUBFR]                           */
+            int subfr_length, /* I    Length of each subframe                                                     */
+            int nb_subfr, /* I    Number of subframes                                                         */
+            int pre_length /* I    Length of the preceding samples starting at &x[0] for each subframe         */
+    ) {
         int x_ptr2, x_lag_ptr;
         short[] Btmp_Q14 = new short[SilkConstants.LTP_ORDER];
         int LTP_res_ptr;
@@ -54,8 +52,7 @@ class LTPAnalysisFilter
 
         x_ptr2 = x_ptr;
         LTP_res_ptr = 0;
-        for (k = 0; k < nb_subfr; k++)
-        {
+        for (k = 0; k < nb_subfr; k++) {
             x_lag_ptr = x_ptr2 - pitchL[k];
 
             Btmp_Q14[0] = LTPCoef_Q14[k * SilkConstants.LTP_ORDER];
@@ -65,8 +62,7 @@ class LTPAnalysisFilter
             Btmp_Q14[4] = LTPCoef_Q14[k * SilkConstants.LTP_ORDER + 4];
 
             /* LTP analysis FIR filter */
-            for (i = 0; i < subfr_length + pre_length; i++)
-            {
+            for (i = 0; i < subfr_length + pre_length; i++) {
                 int LTP_res_ptri = LTP_res_ptr + i;
                 LTP_res[LTP_res_ptri] = x[x_ptr2 + i];
 
@@ -77,13 +73,14 @@ class LTPAnalysisFilter
                 LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x[x_lag_ptr - 1], Btmp_Q14[3]);
                 LTP_est = Inlines.silk_SMLABB_ovflw(LTP_est, x[x_lag_ptr - 2], Btmp_Q14[4]);
 
-                LTP_est = Inlines.silk_RSHIFT_ROUND(LTP_est, 14); /* round and . Q0*/
+                LTP_est = Inlines.silk_RSHIFT_ROUND(LTP_est, 14);
+                /* round and . Q0*/
 
-                /* Subtract long-term prediction */
-                LTP_res[LTP_res_ptri] = (short)Inlines.silk_SAT16((int)x[x_ptr2 + i] - LTP_est);
+ /* Subtract long-term prediction */
+                LTP_res[LTP_res_ptri] = (short) Inlines.silk_SAT16((int) x[x_ptr2 + i] - LTP_est);
 
                 /* Scale residual */
-                LTP_res[LTP_res_ptri] = (short)(Inlines.silk_SMULWB(invGains_Q16[k], LTP_res[LTP_res_ptri]));
+                LTP_res[LTP_res_ptri] = (short) (Inlines.silk_SMULWB(invGains_Q16[k], LTP_res[LTP_res_ptri]));
 
                 x_lag_ptr++;
             }

@@ -22,18 +22,18 @@ public class ConcentusTest {
     public static void main(String[] args) {
 
         try {
-            FileInputStream fileIn = new FileInputStream("C:\\Users\\lostromb\\Desktop\\grave.raw");
-            OpusEncoder encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
+            FileInputStream fileIn = new FileInputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\48Khz Stereo.raw");
+            OpusEncoder encoder = new OpusEncoder(48000, 2, OpusApplication.OPUS_APPLICATION_AUDIO);
             encoder.setBitrate(96000);
             encoder.setForceMode(OpusMode.MODE_CELT_ONLY);
             encoder.setSignalType(OpusSignal.OPUS_SIGNAL_MUSIC);
-            encoder.setComplexity(10);
+            encoder.setComplexity(0);
 
-            OpusDecoder decoder = OpusDecoder.Create(48000, 1);
+            OpusDecoder decoder = new OpusDecoder(48000, 2);
 
-            FileOutputStream fileOut = new FileOutputStream("C:\\Users\\lostromb\\Desktop\\grave_out_j.raw");
+            FileOutputStream fileOut = new FileOutputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\out_j.raw");
             int packetSamples = 960;
-            byte[] inBuf = new byte[packetSamples * 2];
+            byte[] inBuf = new byte[packetSamples * 2 * 2];
             byte[] data_packet = new byte[1275];
             long start = System.currentTimeMillis();
             while (fileIn.available() >= inBuf.length) {

@@ -31,19 +31,17 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class PulseCache
-{
+class PulseCache {
+
     int size = 0;
     short[] index = null;
     short[] bits = null;
     short[] caps = null;
 
-    void Reset()
-    {
+    void Reset() {
         size = 0;
         index = null;
         bits = null;

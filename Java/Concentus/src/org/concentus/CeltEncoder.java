@@ -31,13 +31,16 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class CeltEncoder
-{
-    CeltMode mode = null;     /**< Mode used by the encoder. Without custom modes, this always refers to the same predefined struct */
+class CeltEncoder {
+
+    CeltMode mode = null;
+    /**
+     * < Mode used by the encoder. Without custom modes, this always refers to
+     * the same predefined struct
+     */
     int channels = 0;
     int stream_channels = 0;
 
@@ -61,7 +64,6 @@ class CeltEncoder
     int lfe = 0;
 
     /* Everything beyond this point gets cleared on a reset */
-
     int rng = 0;
     int spread_decision = 0;
     int delayedIntra = 0;
@@ -107,8 +109,7 @@ class CeltEncoder
     int[][] oldLogE = null;
     int[][] oldLogE2 = null;
 
-    private void Reset()
-    {
+    private void Reset() {
         mode = null;
         channels = 0;
         stream_channels = 0;
@@ -130,8 +131,7 @@ class CeltEncoder
         PartialReset();
     }
 
-    private void PartialReset()
-    {
+    private void PartialReset() {
         rng = 0;
         spread_decision = 0;
         delayedIntra = 0;
@@ -164,8 +164,7 @@ class CeltEncoder
         oldLogE2 = null;
     }
 
-    void ResetState()
-    {
+    void ResetState() {
         int i;
 
         this.PartialReset();
@@ -177,15 +176,12 @@ class CeltEncoder
         this.oldLogE = Arrays.InitTwoDimensionalArrayInt(this.channels, this.mode.nbEBands);
         this.oldLogE2 = Arrays.InitTwoDimensionalArrayInt(this.channels, this.mode.nbEBands);
 
-        for (i = 0; i < this.mode.nbEBands; i++)
-        {
-            this.oldLogE[0][i] = this.oldLogE2[0][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+        for (i = 0; i < this.mode.nbEBands; i++) {
+            this.oldLogE[0][i] = this.oldLogE2[0][i] = -((short) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
         }
-        if (this.channels == 2)
-        {
-            for (i = 0; i < this.mode.nbEBands; i++)
-            {
-                this.oldLogE[1][i] = this.oldLogE2[1][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+        if (this.channels == 2) {
+            for (i = 0; i < this.mode.nbEBands; i++) {
+                this.oldLogE[1][i] = this.oldLogE2[1][i] = -((short) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
             }
         }
         this.vbr_offset = 0;
@@ -197,13 +193,14 @@ class CeltEncoder
     }
 
     int opus_custom_encoder_init_arch(CeltMode mode,
-                                             int channels)
-    {
-        if (channels < 0 || channels > 2)
+            int channels) {
+        if (channels < 0 || channels > 2) {
             return OpusError.OPUS_BAD_ARG;
+        }
 
-        if (this == null || mode == null)
+        if (this == null || mode == null) {
             return OpusError.OPUS_ALLOC_FAIL;
+        }
 
         this.Reset();
 
@@ -229,25 +226,23 @@ class CeltEncoder
         //this.oldBandE = new int[channels * mode.nbEBands);
         //this.oldLogE = new int[channels * mode.nbEBands);
         //this.oldLogE2 = new int[channels * mode.nbEBands);
-
         this.ResetState();
 
         return OpusError.OPUS_OK;
     }
 
-    int celt_encoder_init(int sampling_rate, int channels)
-    {
+    int celt_encoder_init(int sampling_rate, int channels) {
         int ret;
         ret = this.opus_custom_encoder_init_arch(CeltMode.mode48000_960_120, channels);
-        if (ret != OpusError.OPUS_OK)
+        if (ret != OpusError.OPUS_OK) {
             return ret;
+        }
         this.upsample = CeltCommon.resampling_factor(sampling_rate);
         return OpusError.OPUS_OK;
     }
 
     int run_prefilter(int[][] input, int[][] prefilter_mem, int CC, int N,
-          int prefilter_tapset, BoxedValueInt pitch, BoxedValueInt gain, BoxedValueInt qgain, int enabled, int nbAvailableBytes)
-    {
+            int prefilter_tapset, BoxedValueInt pitch, BoxedValueInt gain, BoxedValueInt qgain, int enabled, int nbAvailableBytes) {
         int c;
         int[][] pre = new int[CC][];
         CeltMode mode; // [porting note] pointer
@@ -260,113 +255,110 @@ class CeltEncoder
 
         mode = this.mode;
         overlap = mode.overlap;
-        for (int z = 0; z < CC; z++)
-        {
+        for (int z = 0; z < CC; z++) {
             pre[z] = new int[N + CeltConstants.COMBFILTER_MAXPERIOD];
         }
 
         c = 0;
-        do
-        {
+        do {
             System.arraycopy(prefilter_mem[c], 0, pre[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
             System.arraycopy(input[c], overlap, pre[c], CeltConstants.COMBFILTER_MAXPERIOD, N);
         } while (++c < CC);
 
-        if (enabled != 0)
-        {
+        if (enabled != 0) {
             int[] pitch_buf = new int[(CeltConstants.COMBFILTER_MAXPERIOD + N) >> 1];
 
             Pitch.pitch_downsample(pre, pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD + N, CC);
             /* Don't search for the fir last 1.5 octave of the range because
                there's too many false-positives due to short-term correlation */
             Pitch.pitch_search(pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD >> 1, pitch_buf, N,
-                  CeltConstants.COMBFILTER_MAXPERIOD - 3 * CeltConstants.COMBFILTER_MINPERIOD, pitch_index);
+                    CeltConstants.COMBFILTER_MAXPERIOD - 3 * CeltConstants.COMBFILTER_MINPERIOD, pitch_index);
             pitch_index.Val = CeltConstants.COMBFILTER_MAXPERIOD - pitch_index.Val;
             gain1 = Pitch.remove_doubling(pitch_buf, CeltConstants.COMBFILTER_MAXPERIOD, CeltConstants.COMBFILTER_MINPERIOD,
-                  N, pitch_index, this.prefilter_period, this.prefilter_gain);
-            if (pitch_index.Val > CeltConstants.COMBFILTER_MAXPERIOD - 2)
+                    N, pitch_index, this.prefilter_period, this.prefilter_gain);
+            if (pitch_index.Val > CeltConstants.COMBFILTER_MAXPERIOD - 2) {
                 pitch_index.Val = CeltConstants.COMBFILTER_MAXPERIOD - 2;
-            gain1 = Inlines.MULT16_16_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, gain1);
+            }
+            gain1 = Inlines.MULT16_16_Q15(((short) (0.5 + (.7f) * (((int) 1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, gain1);
             /*printf("%d %d %f %f\n", pitch_change, pitch_index, gain1, st.analysis.tonality);*/
-            if (this.loss_rate > 2)
+            if (this.loss_rate > 2) {
                 gain1 = Inlines.HALF32(gain1);
-            if (this.loss_rate > 4)
+            }
+            if (this.loss_rate > 4) {
                 gain1 = Inlines.HALF32(gain1);
-            if (this.loss_rate > 8)
+            }
+            if (this.loss_rate > 8) {
                 gain1 = 0;
-        }
-        else {
+            }
+        } else {
             gain1 = 0;
             pitch_index.Val = CeltConstants.COMBFILTER_MINPERIOD;
         }
 
         /* Gain threshold for enabling the prefilter/postfilter */
-        pf_threshold = ((short)(0.5 + (.2f) * (((int)1) << (15))))/*Inlines.QCONST16(.2f, 15)*/;
+        pf_threshold = ((short) (0.5 + (.2f) * (((int) 1) << (15))))/*Inlines.QCONST16(.2f, 15)*/;
 
         /* Adjusting the threshold based on rate and continuity */
-        if (Inlines.abs(pitch_index.Val - this.prefilter_period) * 10 > pitch_index.Val)
-            pf_threshold += ((short)(0.5 + (.2f) * (((int)1) << (15))))/*Inlines.QCONST16(.2f, 15)*/;
-        if (nbAvailableBytes < 25)
-            pf_threshold += ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
-        if (nbAvailableBytes < 35)
-            pf_threshold += ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
-        if (this.prefilter_gain > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/)
-            pf_threshold -= ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
-        if (this.prefilter_gain > ((short)(0.5 + (.55f) * (((int)1) << (15))))/*Inlines.QCONST16(.55f, 15)*/)
-            pf_threshold -= ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
+        if (Inlines.abs(pitch_index.Val - this.prefilter_period) * 10 > pitch_index.Val) {
+            pf_threshold += ((short) (0.5 + (.2f) * (((int) 1) << (15))))/*Inlines.QCONST16(.2f, 15)*/;
+        }
+        if (nbAvailableBytes < 25) {
+            pf_threshold += ((short) (0.5 + (.1f) * (((int) 1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
+        }
+        if (nbAvailableBytes < 35) {
+            pf_threshold += ((short) (0.5 + (.1f) * (((int) 1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
+        }
+        if (this.prefilter_gain > ((short) (0.5 + (.4f) * (((int) 1) << (15))))/*Inlines.QCONST16(.4f, 15)*/) {
+            pf_threshold -= ((short) (0.5 + (.1f) * (((int) 1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
+        }
+        if (this.prefilter_gain > ((short) (0.5 + (.55f) * (((int) 1) << (15))))/*Inlines.QCONST16(.55f, 15)*/) {
+            pf_threshold -= ((short) (0.5 + (.1f) * (((int) 1) << (15))))/*Inlines.QCONST16(.1f, 15)*/;
+        }
 
         /* Hard threshold at 0.2 */
-        pf_threshold = Inlines.MAX16(pf_threshold, ((short)(0.5 + (.2f) * (((int)1) << (15))))/*Inlines.QCONST16(.2f, 15)*/);
+        pf_threshold = Inlines.MAX16(pf_threshold, ((short) (0.5 + (.2f) * (((int) 1) << (15))))/*Inlines.QCONST16(.2f, 15)*/);
 
-        if (gain1 < pf_threshold)
-        {
+        if (gain1 < pf_threshold) {
             gain1 = 0;
             pf_on = 0;
             qg = 0;
-        }
-        else
-        {
+        } else {
             /*This block is not gated by a total bits check only because
               of the nbAvailableBytes check above.*/
-            if (Inlines.ABS32(gain1 - this.prefilter_gain) < ((short)(0.5 + (.1f) * (((int)1) << (15))))/*Inlines.QCONST16(.1f, 15)*/)
+            if (Inlines.ABS32(gain1 - this.prefilter_gain) < ((short) (0.5 + (.1f) * (((int) 1) << (15))))/*Inlines.QCONST16(.1f, 15)*/) {
                 gain1 = this.prefilter_gain;
+            }
 
             qg = ((gain1 + 1536) >> 10) / 3 - 1;
             qg = Inlines.IMAX(0, Inlines.IMIN(7, qg));
-            gain1 = ((short)(0.5 + (0.09375f) * (((int)1) << (15))))/*Inlines.QCONST16(0.09375f, 15)*/ * (qg + 1);
+            gain1 = ((short) (0.5 + (0.09375f) * (((int) 1) << (15))))/*Inlines.QCONST16(0.09375f, 15)*/ * (qg + 1);
             pf_on = 1;
         }
         /*printf("%d %f\n", pitch_index, gain1);*/
 
         c = 0;
-        do
-        {
+        do {
             int offset = mode.shortMdctSize - overlap;
             this.prefilter_period = Inlines.IMAX(this.prefilter_period, CeltConstants.COMBFILTER_MINPERIOD);
             System.arraycopy(this.in_mem[c], 0, input[c], 0, overlap);
-            if (offset != 0)
-            {
+            if (offset != 0) {
                 CeltCommon.comb_filter(input[c], (overlap), pre[c], (CeltConstants.COMBFILTER_MAXPERIOD),
-                      this.prefilter_period, this.prefilter_period, offset, -this.prefilter_gain, -this.prefilter_gain,
-                      this.prefilter_tapset, this.prefilter_tapset, null, 0); // opt: lots of pointer allocations here
+                        this.prefilter_period, this.prefilter_period, offset, -this.prefilter_gain, -this.prefilter_gain,
+                        this.prefilter_tapset, this.prefilter_tapset, null, 0); // opt: lots of pointer allocations here
             }
 
             CeltCommon.comb_filter(input[c], (overlap + offset), pre[c], (CeltConstants.COMBFILTER_MAXPERIOD + offset),
-                  this.prefilter_period, pitch_index.Val, N - offset, -this.prefilter_gain, -gain1,
-                  this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
+                    this.prefilter_period, pitch_index.Val, N - offset, -this.prefilter_gain, -gain1,
+                    this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
             System.arraycopy(input[c], N, this.in_mem[c], 0, overlap);
 
-            if (N > CeltConstants.COMBFILTER_MAXPERIOD)
-            {
+            if (N > CeltConstants.COMBFILTER_MAXPERIOD) {
                 System.arraycopy(pre[c], N, prefilter_mem[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
-            }
-            else
-            {
+            } else {
                 Arrays.MemMove(prefilter_mem[c], N, 0, CeltConstants.COMBFILTER_MAXPERIOD - N);
                 System.arraycopy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem[c], CeltConstants.COMBFILTER_MAXPERIOD - N, N);
             }
         } while (++c < CC);
-
 
         gain.Val = gain1;
         pitch.Val = pitch_index.Val;
@@ -374,9 +366,7 @@ class CeltEncoder
         return pf_on;
     }
 
-
-    int celt_encode_with_ec(short[] pcm, int pcm_ptr, int frame_size, byte[] compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc)
-    {
+    int celt_encode_with_ec(short[] pcm, int pcm_ptr, int frame_size, byte[] compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc) {
         int i, c, N;
         int bits;
         int[][] input;
@@ -447,28 +437,26 @@ class CeltEncoder
         start = this.start;
         end = this.end;
         tf_estimate = 0;
-        if (nbCompressedBytes < 2 || pcm == null)
-        {
+        if (nbCompressedBytes < 2 || pcm == null) {
             return OpusError.OPUS_BAD_ARG;
         }
 
         frame_size *= this.upsample;
-        for (LM = 0; LM <= mode.maxLM; LM++)
-            if (mode.shortMdctSize << LM == frame_size)
+        for (LM = 0; LM <= mode.maxLM; LM++) {
+            if (mode.shortMdctSize << LM == frame_size) {
                 break;
-        if (LM > mode.maxLM)
-        {
+            }
+        }
+        if (LM > mode.maxLM) {
             return OpusError.OPUS_BAD_ARG;
         }
         M = 1 << LM;
         N = M * mode.shortMdctSize;
 
-        if (enc == null)
-        {
+        if (enc == null) {
             tell = 1;
             nbFilledBytes = 0;
-        }
-        else {
+        } else {
             tell = enc.tell();
             nbFilledBytes = (tell + 4) >> 3;
         }
@@ -479,40 +467,38 @@ class CeltEncoder
         nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, 1275);
         nbAvailableBytes = nbCompressedBytes - nbFilledBytes;
 
-        if (this.vbr != 0 && this.bitrate != OpusConstants.OPUS_BITRATE_MAX)
-        {
+        if (this.vbr != 0 && this.bitrate != OpusConstants.OPUS_BITRATE_MAX) {
             int den = mode.Fs >> EntropyCoder.BITRES;
             vbr_rate = (this.bitrate * frame_size + (den >> 1)) / den;
             effectiveBytes = vbr_rate >> (3 + EntropyCoder.BITRES);
-        }
-        else {
+        } else {
             int tmp;
             vbr_rate = 0;
             tmp = this.bitrate * frame_size;
-            if (tell > 1)
+            if (tell > 1) {
                 tmp += tell;
-            if (this.bitrate != OpusConstants.OPUS_BITRATE_MAX)
+            }
+            if (this.bitrate != OpusConstants.OPUS_BITRATE_MAX) {
                 nbCompressedBytes = Inlines.IMAX(2, Inlines.IMIN(nbCompressedBytes,
-                      (tmp + 4 * mode.Fs) / (8 * mode.Fs) - (this.signalling != 0 ? 1 : 0)));
+                        (tmp + 4 * mode.Fs) / (8 * mode.Fs) - (this.signalling != 0 ? 1 : 0)));
+            }
             effectiveBytes = nbCompressedBytes;
         }
-        if (this.bitrate != OpusConstants.OPUS_BITRATE_MAX)
+        if (this.bitrate != OpusConstants.OPUS_BITRATE_MAX) {
             equiv_rate = this.bitrate - (40 * C + 20) * ((400 >> LM) - 50);
+        }
 
-        if (enc == null)
-        {
+        if (enc == null) {
             enc = new EntropyCoder();
             enc.enc_init(compressed, compressed_ptr, nbCompressedBytes);
         }
 
-        if (vbr_rate > 0)
-        {
+        if (vbr_rate > 0) {
             /* Computes the max bit-rate allowed in VBR mode to avoid violating the
                 target rate and buffering.
                We must do this up front so that bust-prevention logic triggers
                 correctly if we don't have enough bits. */
-            if (this.constrained_vbr != 0)
-            {
+            if (this.constrained_vbr != 0) {
                 int vbr_bound;
                 int max_allowed;
                 /* We could use any multiple of vbr_rate as bound (depending on the
@@ -521,10 +507,9 @@ class CeltEncoder
                     was entirely empty, but to allow 0 in hybrid mode. */
                 vbr_bound = vbr_rate;
                 max_allowed = Inlines.IMIN(Inlines.IMAX(tell == 1 ? 2 : 0,
-                      (vbr_rate + vbr_bound - this.vbr_reservoir) >> (EntropyCoder.BITRES + 3)),
-                      nbAvailableBytes);
-                if (max_allowed < nbAvailableBytes)
-                {
+                        (vbr_rate + vbr_bound - this.vbr_reservoir) >> (EntropyCoder.BITRES + 3)),
+                        nbAvailableBytes);
+                if (max_allowed < nbAvailableBytes) {
                     nbCompressedBytes = nbFilledBytes + max_allowed;
                     nbAvailableBytes = max_allowed;
                     enc.enc_shrink(nbCompressedBytes);
@@ -534,8 +519,9 @@ class CeltEncoder
         total_bits = nbCompressedBytes * 8;
 
         effEnd = end;
-        if (effEnd > mode.effEBands)
+        if (effEnd > mode.effEBands) {
             effEnd = mode.effEBands;
+        }
 
         input = Arrays.InitTwoDimensionalArrayInt(CC, N + overlap);
 
@@ -543,15 +529,14 @@ class CeltEncoder
         this.overlap_max = Inlines.celt_maxabs32(pcm, pcm_ptr + (C * (N - overlap) / this.upsample), C * overlap / this.upsample);
         sample_max = Inlines.MAX32(sample_max, this.overlap_max);
         silence = (sample_max == 0) ? 1 : 0;
-        if (tell == 1)
+        if (tell == 1) {
             enc.enc_bit_logp(silence, 15);
-        else
+        } else {
             silence = 0;
-        if (silence != 0)
-        {
+        }
+        if (silence != 0) {
             /*In VBR mode there is no need to send more than the minimum. */
-            if (vbr_rate > 0)
-            {
+            if (vbr_rate > 0) {
                 effectiveBytes = nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, nbFilledBytes + 2);
                 total_bits = nbCompressedBytes * 8;
                 nbAvailableBytes = 2;
@@ -564,12 +549,11 @@ class CeltEncoder
         }
         c = 0;
         BoxedValueInt boxed_memE = new BoxedValueInt(0);
-        do
-        {
+        do {
             int need_clip = 0;
             boxed_memE.Val = this.preemph_memE[c];
             CeltCommon.celt_preemphasis(pcm, pcm_ptr + c, input[c], overlap, N, CC, this.upsample,
-                        mode.preemph, boxed_memE, need_clip);
+                    mode.preemph, boxed_memE, need_clip);
             this.preemph_memE[c] = boxed_memE.Val;
         } while (++c < CC);
 
@@ -578,7 +562,7 @@ class CeltEncoder
             int enabled;
             int qg;
             enabled = (((this.lfe != 0 && nbAvailableBytes > 3) || nbAvailableBytes > 12 * C) && start == 0 && silence == 0 && this.disable_pf == 0
-                  && this.complexity >= 5 && !(this.consec_transient != 0 && LM != 3 && this.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE)) ? 1 : 0;
+                    && this.complexity >= 5 && !(this.consec_transient != 0 && LM != 3 && this.variable_duration == OpusFramesize.OPUS_FRAMESIZE_VARIABLE)) ? 1 : 0;
 
             prefilter_tapset = this.tapset_decision;
             BoxedValueInt boxed_pitch_index = new BoxedValueInt(0);
@@ -589,15 +573,15 @@ class CeltEncoder
             gain1 = boxed_gain1.Val;
             qg = boxed_qg.Val;
 
-            if ((gain1 > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/ || this.prefilter_gain > ((short)(0.5 + (.4f) * (((int)1) << (15))))/*Inlines.QCONST16(.4f, 15)*/) && (this.analysis.valid == 0 || this.analysis.tonality > .3)
-                  && (pitch_index > 1.26 * this.prefilter_period || pitch_index < .79 * this.prefilter_period))
+            if ((gain1 > ((short) (0.5 + (.4f) * (((int) 1) << (15))))/*Inlines.QCONST16(.4f, 15)*/ || this.prefilter_gain > ((short) (0.5 + (.4f) * (((int) 1) << (15))))/*Inlines.QCONST16(.4f, 15)*/) && (this.analysis.valid == 0 || this.analysis.tonality > .3)
+                    && (pitch_index > 1.26 * this.prefilter_period || pitch_index < .79 * this.prefilter_period)) {
                 pitch_change = 1;
-            if (pf_on == 0)
-            {
-                if (start == 0 && tell + 16 <= total_bits)
-                    enc.enc_bit_logp(0, 1);
             }
-            else {
+            if (pf_on == 0) {
+                if (start == 0 && tell + 16 <= total_bits) {
+                    enc.enc_bit_logp(0, 1);
+                }
+            } else {
                 /*This block is not gated by a total bits check only because
                   of the nbAvailableBytes check above.*/
                 int octave;
@@ -614,61 +598,57 @@ class CeltEncoder
 
         isTransient = 0;
         shortBlocks = 0;
-        if (this.complexity >= 1 && this.lfe == 0)
-        {
+        if (this.complexity >= 1 && this.lfe == 0) {
             BoxedValueInt boxed_tf_estimate = new BoxedValueInt(0);
             BoxedValueInt boxed_tf_chan = new BoxedValueInt(0);
             isTransient = CeltCommon.transient_analysis(input, N + overlap, CC,
-                  boxed_tf_estimate, boxed_tf_chan);
+                    boxed_tf_estimate, boxed_tf_chan);
             tf_estimate = boxed_tf_estimate.Val;
             tf_chan = boxed_tf_chan.Val;
         }
 
-        if (LM > 0 && enc.tell() + 3 <= total_bits)
-        {
-            if (isTransient != 0)
+        if (LM > 0 && enc.tell() + 3 <= total_bits) {
+            if (isTransient != 0) {
                 shortBlocks = M;
-        }
-        else {
+            }
+        } else {
             isTransient = 0;
             transient_got_disabled = 1;
         }
 
-        freq = Arrays.InitTwoDimensionalArrayInt(CC, N); /**< Interleaved signal MDCTs */
+        freq = Arrays.InitTwoDimensionalArrayInt(CC, N);
+        /**
+         * < Interleaved signal MDCTs
+         */
         bandE = Arrays.InitTwoDimensionalArrayInt(CC, nbEBands);
         bandLogE = Arrays.InitTwoDimensionalArrayInt(CC, nbEBands);
 
         secondMdct = (shortBlocks != 0 && this.complexity >= 8) ? 1 : 0;
         bandLogE2 = Arrays.InitTwoDimensionalArrayInt(CC, nbEBands);
         //Arrays.MemSet(bandLogE2, 0, C * nbEBands); // not explicitly needed
-        if (secondMdct != 0)
-        {
+        if (secondMdct != 0) {
             CeltCommon.compute_mdcts(mode, 0, input, freq, C, CC, LM, this.upsample);
             Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
             QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE2, C);
-            for (i = 0; i < nbEBands; i++)
-            {
+            for (i = 0; i < nbEBands; i++) {
                 bandLogE2[0][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
             }
-            if (C == 2)
-            {
-                for (i = 0; i < nbEBands; i++)
-                {
+            if (C == 2) {
+                for (i = 0; i < nbEBands; i++) {
                     bandLogE2[1][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
                 }
             }
         }
 
         CeltCommon.compute_mdcts(mode, shortBlocks, input, freq, C, CC, LM, this.upsample);
-        if (CC == 2 && C == 1)
+        if (CC == 2 && C == 1) {
             tf_chan = 0;
+        }
         Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
 
-        if (this.lfe != 0)
-        {
-            for (i = 2; i < end; i++)
-            {
-                bandE[0][i] = Inlines.IMIN(bandE[0][i], Inlines.MULT16_32_Q15(((short)(0.5 + (1e-4f) * (((int)1) << (15))))/*Inlines.QCONST16(1e-4f, 15)*/, bandE[0][0]));
+        if (this.lfe != 0) {
+            for (i = 2; i < end; i++) {
+                bandE[0][i] = Inlines.IMIN(bandE[0][i], Inlines.MULT16_32_Q15(((short) (0.5 + (1e-4f) * (((int) 1) << (15))))/*Inlines.QCONST16(1e-4f, 15)*/, bandE[0][0]));
                 bandE[0][i] = Inlines.MAX32(bandE[0][i], CeltConstants.EPSILON);
             }
         }
@@ -678,8 +658,7 @@ class CeltEncoder
         surround_dynalloc = new int[C * nbEBands];
         //Arrays.MemSet(surround_dynalloc, 0, end); // not strictly needed
         /* This computes how much masking takes place between surround channels */
-        if (start == 0 && this.energy_mask != null && this.lfe == 0)
-        {
+        if (start == 0 && this.energy_mask != null && this.lfe == 0) {
             int mask_end;
             int midband;
             int count_dynalloc;
@@ -687,15 +666,14 @@ class CeltEncoder
             int diff = 0;
             int count = 0;
             mask_end = Inlines.IMAX(2, this.lastCodedBands);
-            for (c = 0; c < C; c++)
-            {
-                for (i = 0; i < mask_end; i++)
-                {
+            for (c = 0; c < C; c++) {
+                for (i = 0; i < mask_end; i++) {
                     int mask;
                     mask = Inlines.MAX16(Inlines.MIN16(this.energy_mask[nbEBands * c + i],
-                           ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/), -((short)(0.5 + (2.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)*/);
-                    if (mask > 0)
+                            ((short) (0.5 + (.25f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/), -((short) (0.5 + (2.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(2.0f, CeltConstants.DB_SHIFT)*/);
+                    if (mask > 0) {
                         mask = Inlines.HALF16(mask);
+                    }
                     mask_avg += Inlines.MULT16_16(mask, eBands[i + 1] - eBands[i]);
                     count += eBands[i + 1] - eBands[i];
                     diff += Inlines.MULT16_16(mask, 1 + 2 * i - mask_end);
@@ -703,181 +681,176 @@ class CeltEncoder
             }
             Inlines.OpusAssert(count > 0);
             mask_avg = Inlines.DIV32_16(mask_avg, count);
-            mask_avg += ((short)(0.5 + (.2f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT)*/;
+            mask_avg += ((short) (0.5 + (.2f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT)*/;
             diff = diff * 6 / (C * (mask_end - 1) * (mask_end + 1) * mask_end);
             /* Again, being conservative */
             diff = Inlines.HALF32(diff);
-            diff = Inlines.MAX32(Inlines.MIN32(diff, ((int)(0.5 + (.031f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST32(.031f, CeltConstants.DB_SHIFT)*/), 0 - ((int)(0.5 + (.031f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST32(.031f, CeltConstants.DB_SHIFT)*/);
+            diff = Inlines.MAX32(Inlines.MIN32(diff, ((int) (0.5 + (.031f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST32(.031f, CeltConstants.DB_SHIFT)*/), 0 - ((int) (0.5 + (.031f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST32(.031f, CeltConstants.DB_SHIFT)*/);
             /* Find the band that's in the middle of the coded spectrum */
             for (midband = 0; eBands[midband + 1] < eBands[mask_end] / 2; midband++) ;
             count_dynalloc = 0;
-            for (i = 0; i < mask_end; i++)
-            {
+            for (i = 0; i < mask_end; i++) {
                 int lin;
                 int unmask;
                 lin = mask_avg + diff * (i - midband);
-                if (C == 2)
+                if (C == 2) {
                     unmask = Inlines.MAX16(this.energy_mask[i], this.energy_mask[nbEBands + i]);
-                else
+                } else {
                     unmask = this.energy_mask[i];
-                unmask = Inlines.MIN16(unmask, ((short)(0.5 + (.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.0f, CeltConstants.DB_SHIFT)*/);
+                }
+                unmask = Inlines.MIN16(unmask, ((short) (0.5 + (.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.0f, CeltConstants.DB_SHIFT)*/);
                 unmask -= lin;
-                if (unmask > ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/)
-                {
-                    surround_dynalloc[i] = unmask - ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/;
+                if (unmask > ((short) (0.5 + (.25f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/) {
+                    surround_dynalloc[i] = unmask - ((short) (0.5 + (.25f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/;
                     count_dynalloc++;
                 }
             }
-            if (count_dynalloc >= 3)
-            {
+            if (count_dynalloc >= 3) {
                 /* If we need dynalloc in many bands, it's probably because our
                    initial masking rate was too low. */
-                mask_avg += ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/;
-                if (mask_avg > 0)
-                {
+                mask_avg += ((short) (0.5 + (.25f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/;
+                if (mask_avg > 0) {
                     /* Something went really wrong in the original calculations,
                        disabling masking. */
                     mask_avg = 0;
                     diff = 0;
                     Arrays.MemSet(surround_dynalloc, 0, mask_end);
-                }
-                else {
-                    for (i = 0; i < mask_end; i++)
-                        surround_dynalloc[i] = Inlines.MAX16(0, surround_dynalloc[i] - ((short)(0.5 + (.25f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/);
+                } else {
+                    for (i = 0; i < mask_end; i++) {
+                        surround_dynalloc[i] = Inlines.MAX16(0, surround_dynalloc[i] - ((short) (0.5 + (.25f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.25f, CeltConstants.DB_SHIFT)*/);
+                    }
                 }
             }
-            mask_avg += ((short)(0.5 + (.2f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT)*/;
+            mask_avg += ((short) (0.5 + (.2f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.2f, CeltConstants.DB_SHIFT)*/;
             /* Convert to 1/64th units used for the trim */
             surround_trim = 64 * diff;
             /*printf("%d %d ", mask_avg, surround_trim);*/
             surround_masking = mask_avg;
         }
         /* Temporal VBR (but not for LFE) */
-        if (this.lfe == 0)
-        {
-            int follow = -((short)(0.5 + (10.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(10.0f, CeltConstants.DB_SHIFT)*/;
+        if (this.lfe == 0) {
+            int follow = -((short) (0.5 + (10.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(10.0f, CeltConstants.DB_SHIFT)*/;
             int frame_avg = 0;
             int offset = shortBlocks != 0 ? Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT)) : 0;
-            for (i = start; i < end; i++)
-            {
-                follow = Inlines.MAX16(follow - ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/, bandLogE[0][i] - offset);
-                if (C == 2)
+            for (i = start; i < end; i++) {
+                follow = Inlines.MAX16(follow - ((short) (0.5 + (1.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/, bandLogE[0][i] - offset);
+                if (C == 2) {
                     follow = Inlines.MAX16(follow, bandLogE[1][i] - offset);
+                }
                 frame_avg += follow;
             }
             frame_avg /= (end - start);
             temporal_vbr = Inlines.SUB16(frame_avg, this.spec_avg);
-            temporal_vbr = Inlines.MIN16(((short)(0.5 + (3.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/, Inlines.MAX16(-((short)(0.5 + (1.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)*/, temporal_vbr));
-            this.spec_avg += (short)(Inlines.MULT16_16_Q15(((short)(0.5 + (.02f) * (((int)1) << (15))))/*Inlines.QCONST16(.02f, 15)*/, temporal_vbr));
+            temporal_vbr = Inlines.MIN16(((short) (0.5 + (3.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/, Inlines.MAX16(-((short) (0.5 + (1.5f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.5f, CeltConstants.DB_SHIFT)*/, temporal_vbr));
+            this.spec_avg += (short) (Inlines.MULT16_16_Q15(((short) (0.5 + (.02f) * (((int) 1) << (15))))/*Inlines.QCONST16(.02f, 15)*/, temporal_vbr));
         }
         /*for (i=0;i<21;i++)
            printf("%f ", bandLogE[i]);
         printf("\n");*/
 
-        if (secondMdct == 0)
-        {
+        if (secondMdct == 0) {
             System.arraycopy(bandLogE[0], 0, bandLogE2[0], 0, nbEBands);
-            if (C == 2)
-                System.arraycopy(bandLogE[1], 0, bandLogE2[1], 0 ,nbEBands);
+            if (C == 2) {
+                System.arraycopy(bandLogE[1], 0, bandLogE2[1], 0, nbEBands);
+            }
         }
 
         /* Last chance to catch any transient we might have missed in the
            time-domain analysis */
-        if (LM > 0 && enc.tell() + 3 <= total_bits && isTransient == 0 && this.complexity >= 5 && this.lfe == 0)
-        {
-            if (CeltCommon.patch_transient_decision(bandLogE, this.oldBandE, nbEBands, start, end, C) != 0)
-            {
+        if (LM > 0 && enc.tell() + 3 <= total_bits && isTransient == 0 && this.complexity >= 5 && this.lfe == 0) {
+            if (CeltCommon.patch_transient_decision(bandLogE, this.oldBandE, nbEBands, start, end, C) != 0) {
                 isTransient = 1;
                 shortBlocks = M;
                 CeltCommon.compute_mdcts(mode, shortBlocks, input, freq, C, CC, LM, this.upsample);
                 Bands.compute_band_energies(mode, freq, bandE, effEnd, C, LM);
                 QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
                 /* Compensate for the scaling of short vs long mdcts */
-                for (i = 0; i < nbEBands; i++)
+                for (i = 0; i < nbEBands; i++) {
                     bandLogE2[0][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
-                if (C == 2)
-                {
-                    for (i = 0; i < nbEBands; i++)
-                        bandLogE2[1][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
                 }
-                tf_estimate = ((short)(0.5 + (.2f) * (((int)1) << (14))))/*Inlines.QCONST16(.2f, 14)*/;
+                if (C == 2) {
+                    for (i = 0; i < nbEBands; i++) {
+                        bandLogE2[1][i] += Inlines.HALF16(Inlines.SHL16(LM, CeltConstants.DB_SHIFT));
+                    }
+                }
+                tf_estimate = ((short) (0.5 + (.2f) * (((int) 1) << (14))))/*Inlines.QCONST16(.2f, 14)*/;
             }
         }
 
-        if (LM > 0 && enc.tell() + 3 <= total_bits)
+        if (LM > 0 && enc.tell() + 3 <= total_bits) {
             enc.enc_bit_logp(isTransient, 3);
+        }
 
-        X = Arrays.InitTwoDimensionalArrayInt(C, N);         /**< Interleaved normalised MDCTs */
+        X = Arrays.InitTwoDimensionalArrayInt(C, N);
+        /**
+         * < Interleaved normalised MDCTs
+         */
 
         /* Band normalisation */
         Bands.normalise_bands(mode, freq, X, bandE, effEnd, C, M);
 
         tf_res = new int[nbEBands];
         /* Disable variable tf resolution for hybrid and at very low bitrate */
-        if (effectiveBytes >= 15 * C && start == 0 && this.complexity >= 2 && this.lfe == 0)
-        {
+        if (effectiveBytes >= 15 * C && start == 0 && this.complexity >= 2 && this.lfe == 0) {
             int lambda;
-            if (effectiveBytes < 40)
+            if (effectiveBytes < 40) {
                 lambda = 12;
-            else if (effectiveBytes < 60)
+            } else if (effectiveBytes < 60) {
                 lambda = 6;
-            else if (effectiveBytes < 100)
+            } else if (effectiveBytes < 100) {
                 lambda = 4;
-            else
+            } else {
                 lambda = 3;
+            }
             lambda *= 2;
             BoxedValueInt boxed_tf_sum = new BoxedValueInt(0);
             tf_select = CeltCommon.tf_analysis(mode, effEnd, isTransient, tf_res, lambda, X, N, LM, boxed_tf_sum, tf_estimate, tf_chan);
             tf_sum = boxed_tf_sum.Val;
 
-            for (i = effEnd; i < end; i++)
+            for (i = effEnd; i < end; i++) {
                 tf_res[i] = tf_res[effEnd - 1];
-        }
-        else {
+            }
+        } else {
             tf_sum = 0;
-            for (i = 0; i < end; i++)
+            for (i = 0; i < end; i++) {
                 tf_res[i] = isTransient;
+            }
             tf_select = 0;
         }
 
         error = Arrays.InitTwoDimensionalArrayInt(C, nbEBands);
         BoxedValueInt boxed_delayedintra = new BoxedValueInt(this.delayedIntra);
         QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE,
-              this.oldBandE, total_bits, error, enc,
-              C, LM, nbAvailableBytes, this.force_intra,
-              boxed_delayedintra, this.complexity >= 4 ? 1 : 0, this.loss_rate, this.lfe);
+                this.oldBandE, total_bits, error, enc,
+                C, LM, nbAvailableBytes, this.force_intra,
+                boxed_delayedintra, this.complexity >= 4 ? 1 : 0, this.loss_rate, this.lfe);
         this.delayedIntra = boxed_delayedintra.Val;
 
         CeltCommon.tf_encode(start, end, isTransient, tf_res, LM, tf_select, enc);
 
-        if (enc.tell() + 4 <= total_bits)
-        {
-            if (this.lfe != 0)
-            {
+        if (enc.tell() + 4 <= total_bits) {
+            if (this.lfe != 0) {
                 this.tapset_decision = 0;
                 this.spread_decision = Spread.SPREAD_NORMAL;
-            }
-            else if (shortBlocks != 0 || this.complexity < 3 || nbAvailableBytes < 10 * C || start != 0)
-            {
-                if (this.complexity == 0)
+            } else if (shortBlocks != 0 || this.complexity < 3 || nbAvailableBytes < 10 * C || start != 0) {
+                if (this.complexity == 0) {
                     this.spread_decision = Spread.SPREAD_NONE;
-                else
+                } else {
                     this.spread_decision = Spread.SPREAD_NORMAL;
-            }
-            else
-            {
+                }
+            } else {
                 BoxedValueInt boxed_tonal_average = new BoxedValueInt(this.tonal_average);
                 BoxedValueInt boxed_tapset_decision = new BoxedValueInt(this.tapset_decision);
                 BoxedValueInt boxed_hf_average = new BoxedValueInt(this.hf_average);
                 this.spread_decision = Bands.spreading_decision(mode, X,
-                    boxed_tonal_average, this.spread_decision, boxed_hf_average,
-                    boxed_tapset_decision, (pf_on != 0 && shortBlocks == 0) ? 1 : 0, effEnd, C, M);
+                        boxed_tonal_average, this.spread_decision, boxed_hf_average,
+                        boxed_tapset_decision, (pf_on != 0 && shortBlocks == 0) ? 1 : 0, effEnd, C, M);
                 this.tonal_average = boxed_tonal_average.Val;
                 this.tapset_decision = boxed_tapset_decision.Val;
                 this.hf_average = boxed_hf_average.Val;
 
                 /*printf("%d %d\n", st.tapset_decision, st.spread_decision);*/
-                /*printf("%f %d %f %d\n\n", st.analysis.tonality, st.spread_decision, st.analysis.tonality_slope, st.tapset_decision);*/
+ /*printf("%f %d %f %d\n\n", st.analysis.tonality, st.spread_decision, st.analysis.tonality_slope, st.tapset_decision);*/
             }
             enc.enc_icdf(this.spread_decision, CeltTables.spread_icdf, 5);
         }
@@ -886,22 +859,22 @@ class CeltEncoder
 
         BoxedValueInt boxed_tot_boost = new BoxedValueInt(0);
         maxDepth = CeltCommon.dynalloc_analysis(bandLogE, bandLogE2, nbEBands, start, end, C, offsets,
-              this.lsb_depth, mode.logN, isTransient, this.vbr, this.constrained_vbr,
-              eBands, LM, effectiveBytes, boxed_tot_boost, this.lfe, surround_dynalloc);
+                this.lsb_depth, mode.logN, isTransient, this.vbr, this.constrained_vbr,
+                eBands, LM, effectiveBytes, boxed_tot_boost, this.lfe, surround_dynalloc);
         tot_boost = boxed_tot_boost.Val;
 
         /* For LFE, everything interesting is in the first band */
-        if (this.lfe != 0)
+        if (this.lfe != 0) {
             offsets[0] = Inlines.IMIN(8, effectiveBytes / 3);
+        }
         cap = new int[nbEBands];
         CeltCommon.init_caps(mode, cap, LM, C);
 
         dynalloc_logp = 6;
         total_bits <<= EntropyCoder.BITRES;
         total_boost = 0;
-        tell = (int)enc.tell_frac();
-        for (i = start; i < end; i++)
-        {
+        tell = (int) enc.tell_frac();
+        for (i = start; i < end; i++) {
             int width, quanta;
             int dynalloc_loop_logp;
             int boost;
@@ -913,57 +886,53 @@ class CeltEncoder
             dynalloc_loop_logp = dynalloc_logp;
             boost = 0;
             for (j = 0; tell + (dynalloc_loop_logp << EntropyCoder.BITRES) < total_bits - total_boost
-                  && boost < cap[i]; j++)
-            {
+                    && boost < cap[i]; j++) {
                 int flag;
                 flag = j < offsets[i] ? 1 : 0;
                 enc.enc_bit_logp(flag, dynalloc_loop_logp);
-                tell = (int)enc.tell_frac();
-                if (flag == 0)
+                tell = (int) enc.tell_frac();
+                if (flag == 0) {
                     break;
+                }
                 boost += quanta;
                 total_boost += quanta;
                 dynalloc_loop_logp = 1;
             }
             /* Making dynalloc more likely */
-            if (j != 0)
+            if (j != 0) {
                 dynalloc_logp = Inlines.IMAX(2, dynalloc_logp - 1);
+            }
             offsets[i] = boost;
         }
 
-        if (C == 2)
-        {
+        if (C == 2) {
             /* Always use MS for 2.5 ms frames until we can do a better analysis */
-            if (LM != 0)
+            if (LM != 0) {
                 dual_stereo = CeltCommon.stereo_analysis(mode, X, LM);
+            }
 
-            this.intensity = Bands.hysteresis_decision((int)(equiv_rate / 1000),
-                  CeltTables.intensity_thresholds, CeltTables.intensity_histeresis, 21, this.intensity);
+            this.intensity = Bands.hysteresis_decision((int) (equiv_rate / 1000),
+                    CeltTables.intensity_thresholds, CeltTables.intensity_histeresis, 21, this.intensity);
             this.intensity = Inlines.IMIN(end, Inlines.IMAX(start, this.intensity));
         }
 
         alloc_trim = 5;
-        if (tell + (6 << EntropyCoder.BITRES) <= total_bits - total_boost)
-        {
-            if (this.lfe != 0)
-            {
+        if (tell + (6 << EntropyCoder.BITRES) <= total_bits - total_boost) {
+            if (this.lfe != 0) {
                 alloc_trim = 5;
-            }
-            else
-            {
+            } else {
                 BoxedValueInt boxed_stereo_saving = new BoxedValueInt(this.stereo_saving);
                 alloc_trim = CeltCommon.alloc_trim_analysis(mode, X, bandLogE,
-                   end, LM, C, this.analysis, boxed_stereo_saving, tf_estimate,
-                   this.intensity, surround_trim);
+                        end, LM, C, this.analysis, boxed_stereo_saving, tf_estimate,
+                        this.intensity, surround_trim);
                 this.stereo_saving = boxed_stereo_saving.Val;
             }
             enc.enc_icdf(alloc_trim, CeltTables.trim_icdf, 7);
-            tell = (int)enc.tell_frac();
+            tell = (int) enc.tell_frac();
         }
 
         /* Variable bitrate */
-        if (vbr_rate > 0)
-        {
+        if (vbr_rate > 0) {
             int alpha;
             int delta;
             /* The target rate in 8th bits per frame */
@@ -976,14 +945,15 @@ class CeltEncoder
             nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, 1275 >> (3 - LM));
             base_target = vbr_rate - ((40 * C + 20) << EntropyCoder.BITRES);
 
-            if (this.constrained_vbr != 0)
+            if (this.constrained_vbr != 0) {
                 base_target += (this.vbr_offset >> lm_diff);
+            }
 
             target = CeltCommon.compute_vbr(mode, this.analysis, base_target, LM, equiv_rate,
-                  this.lastCodedBands, C, this.intensity, this.constrained_vbr,
-                  this.stereo_saving, tot_boost, tf_estimate, pitch_change, maxDepth,
-                  this.variable_duration, this.lfe, this.energy_mask != null ? 1 : 0, surround_masking,
-                  temporal_vbr);
+                    this.lastCodedBands, C, this.intensity, this.constrained_vbr,
+                    this.stereo_saving, tot_boost, tf_estimate, pitch_change, maxDepth,
+                    this.variable_duration, this.lfe, this.energy_mask != null ? 1 : 0, surround_masking,
+                    temporal_vbr);
 
             /* The current offset is removed from the target and the space used
                so far is added*/
@@ -1008,35 +978,32 @@ class CeltEncoder
               span of silence, but we do allow the EntropyCoder.BITRES to refill.
               This means that we'll undershoot our target in CVBR/VBR modes
               on files with lots of silence. */
-            if (silence != 0)
-            {
+            if (silence != 0) {
                 nbAvailableBytes = 2;
                 target = 2 * 8 << EntropyCoder.BITRES;
                 delta = 0;
             }
 
-            if (this.vbr_count < 970)
-            {
+            if (this.vbr_count < 970) {
                 this.vbr_count++;
                 alpha = Inlines.celt_rcp(Inlines.SHL32((this.vbr_count + 20), 16));
+            } else {
+                alpha = ((short) (0.5 + (.001f) * (((int) 1) << (15))))/*Inlines.QCONST16(.001f, 15)*/;
             }
-            else
-                alpha = ((short)(0.5 + (.001f) * (((int)1) << (15))))/*Inlines.QCONST16(.001f, 15)*/;
             /* How many bits have we used in excess of what we're allowed */
-            if (this.constrained_vbr != 0)
+            if (this.constrained_vbr != 0) {
                 this.vbr_reservoir += target - vbr_rate;
+            }
             /*printf ("%d\n", st.vbr_reservoir);*/
 
-            /* Compute the offset we need to apply in order to reach the target */
-            if (this.constrained_vbr != 0)
-            {
-                this.vbr_drift += (int)Inlines.MULT16_32_Q15(alpha, (delta * (1 << lm_diff)) - this.vbr_offset - this.vbr_drift);
+ /* Compute the offset we need to apply in order to reach the target */
+            if (this.constrained_vbr != 0) {
+                this.vbr_drift += (int) Inlines.MULT16_32_Q15(alpha, (delta * (1 << lm_diff)) - this.vbr_offset - this.vbr_drift);
                 this.vbr_offset = -this.vbr_drift;
             }
             /*printf ("%d\n", st.vbr_drift);*/
 
-            if (this.constrained_vbr != 0 && this.vbr_reservoir < 0)
-            {
+            if (this.constrained_vbr != 0 && this.vbr_reservoir < 0) {
                 /* We're under the min value -- increase rate */
                 int adjust = (-this.vbr_reservoir) / (8 << EntropyCoder.BITRES);
                 /* Unless we're just coding silence */
@@ -1046,7 +1013,7 @@ class CeltEncoder
             }
             nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, nbAvailableBytes + nbFilledBytes);
             /*printf("%d\n", nbCompressedBytes*50*8);*/
-            /* This moves the raw bits to take into account the new compressed size */
+ /* This moves the raw bits to take into account the new compressed size */
             enc.enc_shrink(nbCompressedBytes);
         }
 
@@ -1056,29 +1023,28 @@ class CeltEncoder
         fine_priority = new int[nbEBands];
 
         /* bits =    packet size                                     - where we are                        - safety*/
-        bits = (((int)nbCompressedBytes * 8) << EntropyCoder.BITRES) - (int)enc.tell_frac() - 1;
+        bits = (((int) nbCompressedBytes * 8) << EntropyCoder.BITRES) - (int) enc.tell_frac() - 1;
         anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;
         bits -= anti_collapse_rsv;
         signalBandwidth = end - 1;
 
-        if (this.analysis.enabled && this.analysis.valid != 0)
-        {
+        if (this.analysis.enabled && this.analysis.valid != 0) {
             int min_bandwidth;
-            if (equiv_rate < (int)32000 * C)
+            if (equiv_rate < (int) 32000 * C) {
                 min_bandwidth = 13;
-            else if (equiv_rate < (int)48000 * C)
+            } else if (equiv_rate < (int) 48000 * C) {
                 min_bandwidth = 16;
-            else if (equiv_rate < (int)60000 * C)
+            } else if (equiv_rate < (int) 60000 * C) {
                 min_bandwidth = 18;
-            else if (equiv_rate < (int)80000 * C)
+            } else if (equiv_rate < (int) 80000 * C) {
                 min_bandwidth = 19;
-            else
+            } else {
                 min_bandwidth = 20;
+            }
             signalBandwidth = Inlines.IMAX(this.analysis.bandwidth, min_bandwidth);
         }
 
-        if (this.lfe != 0)
-        {
+        if (this.lfe != 0) {
             signalBandwidth = 1;
         }
 
@@ -1086,16 +1052,17 @@ class CeltEncoder
         BoxedValueInt boxed_balance = new BoxedValueInt(0);
         BoxedValueInt boxed_dual_stereo = new BoxedValueInt(dual_stereo);
         codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
-              alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
-              fine_quant, fine_priority, C, LM, enc, 1, this.lastCodedBands, signalBandwidth);
+                alloc_trim, boxed_intensity, boxed_dual_stereo, bits, boxed_balance, pulses,
+                fine_quant, fine_priority, C, LM, enc, 1, this.lastCodedBands, signalBandwidth);
         this.intensity = boxed_intensity.Val;
         balance = boxed_balance.Val;
         dual_stereo = boxed_dual_stereo.Val;
 
-        if (this.lastCodedBands != 0)
+        if (this.lastCodedBands != 0) {
             this.lastCodedBands = Inlines.IMIN(this.lastCodedBands + 1, Inlines.IMAX(this.lastCodedBands - 1, codedBands));
-        else
+        } else {
             this.lastCodedBands = codedBands;
+        }
 
         QuantizeBands.quant_fine_energy(mode, start, end, this.oldBandE, error, fine_quant, enc, C);
 
@@ -1103,30 +1070,25 @@ class CeltEncoder
         collapse_masks = new short[C * nbEBands];
         BoxedValueInt boxed_rng = new BoxedValueInt(this.rng);
         Bands.quant_all_bands(1, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
-              bandE, pulses, shortBlocks, this.spread_decision,
-              dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
-              balance, enc, LM, codedBands, boxed_rng);
+                bandE, pulses, shortBlocks, this.spread_decision,
+                dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
+                balance, enc, LM, codedBands, boxed_rng);
         this.rng = boxed_rng.Val;
 
-        if (anti_collapse_rsv > 0)
-        {
+        if (anti_collapse_rsv > 0) {
             anti_collapse_on = (this.consec_transient < 2) ? 1 : 0;
             enc.enc_bits(anti_collapse_on, 1);
         }
 
-        QuantizeBands.quant_energy_finalise(mode, start, end, this.oldBandE, error, fine_quant, fine_priority, nbCompressedBytes * 8 - (int)enc.tell(), enc, C);
+        QuantizeBands.quant_energy_finalise(mode, start, end, this.oldBandE, error, fine_quant, fine_priority, nbCompressedBytes * 8 - (int) enc.tell(), enc, C);
 
-        if (silence != 0)
-        {
-            for (i = 0; i < nbEBands; i++)
-            {
-                this.oldBandE[0][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+        if (silence != 0) {
+            for (i = 0; i < nbEBands; i++) {
+                this.oldBandE[0][i] = -((short) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
             }
-            if (C == 2)
-            {
-                for (i = 0; i < nbEBands; i++)
-                {
-                    this.oldBandE[1][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+            if (C == 2) {
+                for (i = 0; i < nbEBands; i++) {
+                    this.oldBandE[1][i] = -((short) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
                 }
             }
         }
@@ -1135,31 +1097,23 @@ class CeltEncoder
         this.prefilter_gain = gain1;
         this.prefilter_tapset = prefilter_tapset;
 
-        if (CC == 2 && C == 1)
-        {
+        if (CC == 2 && C == 1) {
             System.arraycopy(oldBandE[0], 0, oldBandE[1], 0, nbEBands);
         }
 
-        if (isTransient == 0)
-        {
+        if (isTransient == 0) {
             System.arraycopy(oldLogE[0], 0, oldLogE2[0], 0, nbEBands);
             System.arraycopy(oldBandE[0], 0, oldLogE[0], 0, nbEBands);
-            if (CC == 2)
-            {
+            if (CC == 2) {
                 System.arraycopy(oldLogE[1], 0, oldLogE2[1], 0, nbEBands);
                 System.arraycopy(oldBandE[1], 0, oldLogE[1], 0, nbEBands);
             }
-        }
-        else
-        {
-            for (i = 0; i < nbEBands; i++)
-            {
+        } else {
+            for (i = 0; i < nbEBands; i++) {
                 oldLogE[0][i] = Inlines.MIN16(oldLogE[0][i], oldBandE[0][i]);
             }
-            if (CC == 2)
-            {
-                for (i = 0; i < nbEBands; i++)
-                {
+            if (CC == 2) {
+                for (i = 0; i < nbEBands; i++) {
                     oldLogE[1][i] = Inlines.MIN16(oldLogE[1][i], oldBandE[1][i]);
                 }
             }
@@ -1167,144 +1121,133 @@ class CeltEncoder
 
         /* In case start or end were to change */
         c = 0;
-        do
-        {
-            for (i = 0; i < start; i++)
-            {
+        do {
+            for (i = 0; i < start; i++) {
                 oldBandE[c][i] = 0;
-                oldLogE[c][i] = oldLogE2[c][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+                oldLogE[c][i] = oldLogE2[c][i] = -((short) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
             }
-            for (i = end; i < nbEBands; i++)
-            {
+            for (i = end; i < nbEBands; i++) {
                 oldBandE[c][i] = 0;
-                oldLogE[c][i] = oldLogE2[c][i] = -((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
+                oldLogE[c][i] = oldLogE2[c][i] = -((short) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/;
             }
         } while (++c < CC);
 
-        if (isTransient != 0 || transient_got_disabled != 0)
+        if (isTransient != 0 || transient_got_disabled != 0) {
             this.consec_transient++;
-        else
+        } else {
             this.consec_transient = 0;
-        this.rng = (int)enc.rng;
+        }
+        this.rng = (int) enc.rng;
 
         /* If there's any room left (can only happen for very high rates),
            it's already filled with zeros */
         enc.enc_done();
 
-
-        if (enc.get_error() != 0)
+        if (enc.get_error() != 0) {
             return OpusError.OPUS_INTERNAL_ERROR;
-        else
+        } else {
             return nbCompressedBytes;
+        }
     }
 
-    void SetComplexity(int value)
-    {
-        if (value < 0 || value > 10)
+    void SetComplexity(int value) {
+        if (value < 0 || value > 10) {
             throw new IllegalArgumentException("Complexity must be between 0 and 10 inclusive");
+        }
         this.complexity = value;
     }
 
-    void SetStartBand(int value)
-    {
-        if (value < 0 || value >= this.mode.nbEBands)
+    void SetStartBand(int value) {
+        if (value < 0 || value >= this.mode.nbEBands) {
             throw new IllegalArgumentException("Start band above max number of ebands (or negative)");
+        }
         this.start = value;
     }
 
-    void SetEndBand(int value)
-    {
-        if (value < 1 || value > this.mode.nbEBands)
+    void SetEndBand(int value) {
+        if (value < 1 || value > this.mode.nbEBands) {
             throw new IllegalArgumentException("End band above max number of ebands (or less than 1)");
+        }
         this.end = value;
     }
 
-    void SetPacketLossPercent(int value)
-    {
-        if (value < 0 || value > 100)
+    void SetPacketLossPercent(int value) {
+        if (value < 0 || value > 100) {
             throw new IllegalArgumentException("Packet loss must be between 0 and 100");
+        }
         this.loss_rate = value;
     }
 
-    void SetPrediction(int value)
-    {
-        if (value < 0 || value > 2)
+    void SetPrediction(int value) {
+        if (value < 0 || value > 2) {
             throw new IllegalArgumentException("CELT prediction mode must be 0, 1, or 2");
+        }
         this.disable_pf = (value <= 1) ? 1 : 0;
         this.force_intra = (value == 0) ? 1 : 0;
     }
 
-    void SetVBRConstraint(boolean value)
-    {
+    void SetVBRConstraint(boolean value) {
         this.constrained_vbr = value ? 1 : 0;
     }
 
-    void SetVBR(boolean value)
-    {
+    void SetVBR(boolean value) {
         this.vbr = value ? 1 : 0;
     }
 
-    void SetBitrate(int value)
-    {
-        if (value <= 500 && value != OpusConstants.OPUS_BITRATE_MAX)
+    void SetBitrate(int value) {
+        if (value <= 500 && value != OpusConstants.OPUS_BITRATE_MAX) {
             throw new IllegalArgumentException("Bitrate out of range");
+        }
         value = Inlines.IMIN(value, 260000 * this.channels);
         this.bitrate = value;
     }
 
-    void SetChannels(int value)
-    {
-        if (value < 1 || value > 2)
+    void SetChannels(int value) {
+        if (value < 1 || value > 2) {
             throw new IllegalArgumentException("Channel count must be 1 or 2");
+        }
         this.stream_channels = value;
     }
 
-    void SetLSBDepth(int value)
-    {
-        if (value < 8 || value > 24)
+    void SetLSBDepth(int value) {
+        if (value < 8 || value > 24) {
             throw new IllegalArgumentException("Bit depth must be between 8 and 24");
+        }
         this.lsb_depth = value;
     }
 
-    int GetLSBDepth()
-    {
+    int GetLSBDepth() {
         return this.lsb_depth;
     }
 
-    void SetExpertFrameDuration(OpusFramesize value)
-    {
+    void SetExpertFrameDuration(OpusFramesize value) {
         this.variable_duration = value;
     }
 
-    void SetSignalling(int value)
-    {
+    void SetSignalling(int value) {
         this.signalling = value;
     }
 
-    void SetAnalysis(AnalysisInfo value)
-    {
-        if (value == null)
+    void SetAnalysis(AnalysisInfo value) {
+        if (value == null) {
             throw new IllegalArgumentException("AnalysisInfo");
+        }
         this.analysis.Assign(value);
     }
 
-    CeltMode GetMode()
-    {
+    CeltMode GetMode() {
         return this.mode;
     }
 
-    int GetFinalRange()
-    {
+    int GetFinalRange() {
         return this.rng;
     }
 
-    void SetLFE(int value)
-    {
+    void SetLFE(int value) {
         this.lfe = value;
     }
 
-    void SetEnergyMask(int[] value)
-    {
+    void SetEnergyMask(int[] value) {
         this.energy_mask = value;
     }
 

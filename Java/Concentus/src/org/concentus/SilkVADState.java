@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// VAD state
 /// </summary>
-class SilkVADState
-{
+class SilkVADState {
+
     /// <summary>
     /// Analysis filterbank state: 0-8 kHz
     /// </summary>
@@ -87,8 +86,7 @@ class SilkVADState
     /// </summary>
     int counter = 0;
 
-    void Reset()
-    {
+    void Reset() {
         Arrays.MemSet(AnaState, 0, 2);
         Arrays.MemSet(AnaState1, 0, 2);
         Arrays.MemSet(AnaState2, 0, 2);

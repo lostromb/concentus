@@ -28,71 +28,80 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Routines for managing packet loss concealment
 /// </summary>
-class PLC
-{
+class PLC {
+
     private static final int NB_ATT = 2;
-    private static final short[] HARM_ATT_Q15 = { 32440, 31130 }; /* 0.99, 0.95 */
-    private static final short[] PLC_RAND_ATTENUATE_V_Q15 = { 31130, 26214 }; /* 0.95, 0.8 */
-    private static final short[] PLC_RAND_ATTENUATE_UV_Q15 = { 32440, 29491 }; /* 0.99, 0.9 */
+    private static final short[] HARM_ATT_Q15 = {32440, 31130};
+    /* 0.99, 0.95 */
+    private static final short[] PLC_RAND_ATTENUATE_V_Q15 = {31130, 26214};
+    /* 0.95, 0.8 */
+    private static final short[] PLC_RAND_ATTENUATE_UV_Q15 = {32440, 29491};
+
+    /* 0.99, 0.9 */
 
     static void silk_PLC_Reset(
-        SilkChannelDecoder psDec              /* I/O Decoder state        */
-    )
-    {
+            SilkChannelDecoder psDec /* I/O Decoder state        */
+    ) {
         psDec.sPLC.pitchL_Q8 = Inlines.silk_LSHIFT(psDec.frame_length, 8 - 1);
-        psDec.sPLC.prevGain_Q16[0] = ((int)((1) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/;
-        psDec.sPLC.prevGain_Q16[1] = ((int)((1) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/;
+        psDec.sPLC.prevGain_Q16[0] = ((int) ((1) * ((long) 1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/;
+        psDec.sPLC.prevGain_Q16[1] = ((int) ((1) * ((long) 1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/;
         psDec.sPLC.subfr_length = 20;
         psDec.sPLC.nb_subfr = 2;
     }
 
     static void silk_PLC(
-        SilkChannelDecoder psDec,             /* I/O Decoder state        */
-        SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
-        short[] frame,            /* I/O  signal              */
-        int frame_ptr,
-        int lost               /* I Loss flag              */
-    )
-    {
+            SilkChannelDecoder psDec, /* I/O Decoder state        */
+            SilkDecoderControl psDecCtrl, /* I/O Decoder control      */
+            short[] frame, /* I/O  signal              */
+            int frame_ptr,
+            int lost /* I Loss flag              */
+    ) {
         /* PLC control function */
-        if (psDec.fs_kHz != psDec.sPLC.fs_kHz)
-        {
+        if (psDec.fs_kHz != psDec.sPLC.fs_kHz) {
             silk_PLC_Reset(psDec);
             psDec.sPLC.fs_kHz = psDec.fs_kHz;
         }
 
-        if (lost != 0)
-        {
-            /****************************/
+        if (lost != 0) {
+            /**
+             * *************************
+             */
             /* Generate Signal          */
-            /****************************/
+            /**
+             * *************************
+             */
             silk_PLC_conceal(psDec, psDecCtrl, frame, frame_ptr);
 
             psDec.lossCnt++;
-        }
-        else {
-            /****************************/
+        } else {
+            /**
+             * *************************
+             */
             /* Update state             */
-            /****************************/
+            /**
+             * *************************
+             */
             silk_PLC_update(psDec, psDecCtrl);
         }
     }
 
-    /**************************************************/
+    /**
+     * ***********************************************
+     */
     /* Update state of PLC                            */
-    /**************************************************/
+    /**
+     * ***********************************************
+     */
     static void silk_PLC_update(
-        SilkChannelDecoder psDec,             /* I/O Decoder state        */
-        SilkDecoderControl psDecCtrl          /* I/O Decoder control      */
-    )
-    {
+            SilkChannelDecoder psDec, /* I/O Decoder state        */
+            SilkDecoderControl psDecCtrl /* I/O Decoder control      */
+    ) {
         int LTP_Gain_Q14, temp_LTP_Gain_Q14;
         int i, j;
         PLCStruct psPLC = psDec.sPLC; // [porting note] pointer on the stack
@@ -100,22 +109,17 @@ class PLC
         /* Update parameters used in case of packet loss */
         psDec.prevSignalType = psDec.indices.signalType;
         LTP_Gain_Q14 = 0;
-        if (psDec.indices.signalType == SilkConstants.TYPE_VOICED)
-        {
+        if (psDec.indices.signalType == SilkConstants.TYPE_VOICED) {
             /* Find the parameters for the last subframe which contains a pitch pulse */
-            for (j = 0; j * psDec.subfr_length < psDecCtrl.pitchL[psDec.nb_subfr - 1]; j++)
-            {
-                if (j == psDec.nb_subfr)
-                {
+            for (j = 0; j * psDec.subfr_length < psDecCtrl.pitchL[psDec.nb_subfr - 1]; j++) {
+                if (j == psDec.nb_subfr) {
                     break;
                 }
                 temp_LTP_Gain_Q14 = 0;
-                for (i = 0; i < SilkConstants.LTP_ORDER; i++)
-                {
+                for (i = 0; i < SilkConstants.LTP_ORDER; i++) {
                     temp_LTP_Gain_Q14 += psDecCtrl.LTPCoef_Q14[(psDec.nb_subfr - 1 - j) * SilkConstants.LTP_ORDER + i];
                 }
-                if (temp_LTP_Gain_Q14 > LTP_Gain_Q14)
-                {
+                if (temp_LTP_Gain_Q14 > LTP_Gain_Q14) {
                     LTP_Gain_Q14 = temp_LTP_Gain_Q14;
 
                     System.arraycopy(psDecCtrl.LTPCoef_Q14, Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER), psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
@@ -124,43 +128,37 @@ class PLC
                 }
             }
 
-            Arrays.MemSet(psPLC.LTPCoef_Q14, (short)0, SilkConstants.LTP_ORDER);
-            psPLC.LTPCoef_Q14[SilkConstants.LTP_ORDER / 2] = (short)(LTP_Gain_Q14);
+            Arrays.MemSet(psPLC.LTPCoef_Q14, (short) 0, SilkConstants.LTP_ORDER);
+            psPLC.LTPCoef_Q14[SilkConstants.LTP_ORDER / 2] = (short) (LTP_Gain_Q14);
 
             /* Limit LT coefs */
-            if (LTP_Gain_Q14 < SilkConstants.V_PITCH_GAIN_START_MIN_Q14)
-            {
+            if (LTP_Gain_Q14 < SilkConstants.V_PITCH_GAIN_START_MIN_Q14) {
                 int scale_Q10;
                 int tmp;
 
                 tmp = Inlines.silk_LSHIFT(SilkConstants.V_PITCH_GAIN_START_MIN_Q14, 10);
                 scale_Q10 = Inlines.silk_DIV32(tmp, Inlines.silk_max(LTP_Gain_Q14, 1));
-                for (i = 0; i < SilkConstants.LTP_ORDER; i++)
-                {
-                    psPLC.LTPCoef_Q14[i] = (short)(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(psPLC.LTPCoef_Q14[i], scale_Q10), 10));
+                for (i = 0; i < SilkConstants.LTP_ORDER; i++) {
+                    psPLC.LTPCoef_Q14[i] = (short) (Inlines.silk_RSHIFT(Inlines.silk_SMULBB(psPLC.LTPCoef_Q14[i], scale_Q10), 10));
                 }
-            }
-            else if (LTP_Gain_Q14 > SilkConstants.V_PITCH_GAIN_START_MAX_Q14)
-            {
+            } else if (LTP_Gain_Q14 > SilkConstants.V_PITCH_GAIN_START_MAX_Q14) {
                 int scale_Q14;
                 int tmp;
 
                 tmp = Inlines.silk_LSHIFT(SilkConstants.V_PITCH_GAIN_START_MAX_Q14, 14);
                 scale_Q14 = Inlines.silk_DIV32(tmp, Inlines.silk_max(LTP_Gain_Q14, 1));
-                for (i = 0; i < SilkConstants.LTP_ORDER; i++)
-                {
-                    psPLC.LTPCoef_Q14[i] = (short)(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(psPLC.LTPCoef_Q14[i], scale_Q14), 14));
+                for (i = 0; i < SilkConstants.LTP_ORDER; i++) {
+                    psPLC.LTPCoef_Q14[i] = (short) (Inlines.silk_RSHIFT(Inlines.silk_SMULBB(psPLC.LTPCoef_Q14[i], scale_Q14), 14));
                 }
             }
-        }
-        else {
+        } else {
             psPLC.pitchL_Q8 = Inlines.silk_LSHIFT(Inlines.silk_SMULBB(psDec.fs_kHz, 18), 8);
-            Arrays.MemSet(psPLC.LTPCoef_Q14, (short)0, SilkConstants.LTP_ORDER);
+            Arrays.MemSet(psPLC.LTPCoef_Q14, (short) 0, SilkConstants.LTP_ORDER);
         }
 
         /* Save LPC coeficients */
         System.arraycopy(psDecCtrl.PredCoef_Q12[1], 0, psPLC.prevLPC_Q12, 0, psDec.LPC_order);
-        psPLC.prevLTP_scale_Q14 = (short)(psDecCtrl.LTP_scale_Q14);
+        psPLC.prevLTP_scale_Q14 = (short) (psDecCtrl.LTP_scale_Q14);
 
         /* Save last two gains */
         System.arraycopy(psDecCtrl.Gains_Q16, psDec.nb_subfr - 2, psPLC.prevGain_Q16, 0, 2);
@@ -181,27 +179,24 @@ class PLC
     /// <param name="subfr_length">I</param>
     /// <param name="nb_subfr">I</param>
     static void silk_PLC_energy(
-        BoxedValueInt energy1,
-        BoxedValueInt shift1,
-        BoxedValueInt energy2,
-        BoxedValueInt shift2,
-        int[] exc_Q14,
-        int[] prevGain_Q10,
-        int subfr_length,
-        int nb_subfr)
-    {
+            BoxedValueInt energy1,
+            BoxedValueInt shift1,
+            BoxedValueInt energy2,
+            BoxedValueInt shift2,
+            int[] exc_Q14,
+            int[] prevGain_Q10,
+            int subfr_length,
+            int nb_subfr) {
         int i, k;
         int exc_buf_ptr = 0;
         short[] exc_buf = new short[2 * subfr_length];
 
         /* Find random noise component */
-        /* Scale previous excitation signal */
-        for (k = 0; k < 2; k++)
-        {
-            for (i = 0; i < subfr_length; i++)
-            {
-                exc_buf[exc_buf_ptr + i] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(
-                    Inlines.silk_SMULWW(exc_Q14[i + (k + nb_subfr - 2) * subfr_length], prevGain_Q10[k]), 8));
+ /* Scale previous excitation signal */
+        for (k = 0; k < 2; k++) {
+            for (i = 0; i < subfr_length; i++) {
+                exc_buf[exc_buf_ptr + i] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT(
+                        Inlines.silk_SMULWW(exc_Q14[i + (k + nb_subfr - 2) * subfr_length], prevGain_Q10[k]), 8));
             }
             exc_buf_ptr += subfr_length;
         }
@@ -212,12 +207,11 @@ class PLC
     }
 
     static void silk_PLC_conceal(
-        SilkChannelDecoder psDec,             /* I/O Decoder state        */
-        SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
-        short[] frame,            /* O LPC residual signal    */
-        int frame_ptr
-    )
-    {
+            SilkChannelDecoder psDec, /* I/O Decoder state        */
+            SilkDecoderControl psDecCtrl, /* I/O Decoder control      */
+            short[] frame, /* O LPC residual signal    */
+            int frame_ptr
+    ) {
         int i, j, k;
         int lag, idx, sLTP_buf_idx;
         int rand_seed, harm_Gain_Q15, rand_Gain_Q15, inv_gain_Q30;
@@ -239,19 +233,16 @@ class PLC
         prevGain_Q10[0] = Inlines.silk_RSHIFT(psPLC.prevGain_Q16[0], 6);
         prevGain_Q10[1] = Inlines.silk_RSHIFT(psPLC.prevGain_Q16[1], 6);
 
-        if (psDec.first_frame_after_reset != 0)
-        {
-            Arrays.MemSet(psPLC.prevLPC_Q12, (short)0, SilkConstants.MAX_LPC_ORDER);
+        if (psDec.first_frame_after_reset != 0) {
+            Arrays.MemSet(psPLC.prevLPC_Q12, (short) 0, SilkConstants.MAX_LPC_ORDER);
         }
 
         silk_PLC_energy(energy1, shift1, energy2, shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);
 
-        if (Inlines.silk_RSHIFT(energy1.Val, shift2.Val) < Inlines.silk_RSHIFT(energy2.Val, shift1.Val))
-        {
+        if (Inlines.silk_RSHIFT(energy1.Val, shift2.Val) < Inlines.silk_RSHIFT(energy2.Val, shift1.Val)) {
             /* First sub-frame has lowest energy */
             rand_ptr = Inlines.silk_max_int(0, (psPLC.nb_subfr - 1) * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE);
-        }
-        else {
+        } else {
             /* Second sub-frame has lowest energy */
             rand_ptr = Inlines.silk_max_int(0, psPLC.nb_subfr * psPLC.subfr_length - SilkConstants.RAND_BUF_SIZE);
         }
@@ -262,41 +253,35 @@ class PLC
 
         /* Set up attenuation gains */
         harm_Gain_Q15 = HARM_ATT_Q15[Inlines.silk_min_int(NB_ATT - 1, psDec.lossCnt)];
-        if (psDec.prevSignalType == SilkConstants.TYPE_VOICED)
-        {
+        if (psDec.prevSignalType == SilkConstants.TYPE_VOICED) {
             rand_Gain_Q15 = PLC_RAND_ATTENUATE_V_Q15[Inlines.silk_min_int(NB_ATT - 1, psDec.lossCnt)];
-        }
-        else {
+        } else {
             rand_Gain_Q15 = PLC_RAND_ATTENUATE_UV_Q15[Inlines.silk_min_int(NB_ATT - 1, psDec.lossCnt)];
         }
 
         /* LPC concealment. Apply BWE to previous LPC */
-        BWExpander.silk_bwexpander(psPLC.prevLPC_Q12, psDec.LPC_order, ((int)((SilkConstants.BWE_COEF) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16)*/);
+        BWExpander.silk_bwexpander(psPLC.prevLPC_Q12, psDec.LPC_order, ((int) ((SilkConstants.BWE_COEF) * ((long) 1 << (16)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.BWE_COEF, 16)*/);
 
         /* First Lost frame */
-        if (psDec.lossCnt == 0)
-        {
+        if (psDec.lossCnt == 0) {
             rand_scale_Q14 = 1 << 14;
 
             /* Reduce random noise Gain for voiced frames */
-            if (psDec.prevSignalType == SilkConstants.TYPE_VOICED)
-            {
-                for (i = 0; i < SilkConstants.LTP_ORDER; i++)
-                {
+            if (psDec.prevSignalType == SilkConstants.TYPE_VOICED) {
+                for (i = 0; i < SilkConstants.LTP_ORDER; i++) {
                     rand_scale_Q14 -= B_Q14[i];
                 }
-                rand_scale_Q14 = Inlines.silk_max_16((short)3277, rand_scale_Q14); /* 0.2 */
-                rand_scale_Q14 = (short)Inlines.silk_RSHIFT(Inlines.silk_SMULBB(rand_scale_Q14, psPLC.prevLTP_scale_Q14), 14);
-            }
-            else
-            {
+                rand_scale_Q14 = Inlines.silk_max_16((short) 3277, rand_scale_Q14);
+                /* 0.2 */
+                rand_scale_Q14 = (short) Inlines.silk_RSHIFT(Inlines.silk_SMULBB(rand_scale_Q14, psPLC.prevLTP_scale_Q14), 14);
+            } else {
                 /* Reduce random noise for unvoiced frames with high LPC gain */
                 int invGain_Q30, down_scale_Q30;
 
                 invGain_Q30 = LPCInversePredGain.silk_LPC_inverse_pred_gain(psPLC.prevLPC_Q12, psDec.LPC_order);
 
-                down_scale_Q30 = Inlines.silk_min_32(Inlines.silk_RSHIFT((int)1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_HIGH_THRES), invGain_Q30);
-                down_scale_Q30 = Inlines.silk_max_32(Inlines.silk_RSHIFT((int)1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_LOW_THRES), down_scale_Q30);
+                down_scale_Q30 = Inlines.silk_min_32(Inlines.silk_RSHIFT((int) 1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_HIGH_THRES), invGain_Q30);
+                down_scale_Q30 = Inlines.silk_max_32(Inlines.silk_RSHIFT((int) 1 << 30, SilkConstants.LOG2_INV_LPC_GAIN_LOW_THRES), down_scale_Q30);
                 down_scale_Q30 = Inlines.silk_LSHIFT(down_scale_Q30, SilkConstants.LOG2_INV_LPC_GAIN_HIGH_THRES);
 
                 rand_Gain_Q15 = Inlines.silk_RSHIFT(Inlines.silk_SMULWB(down_scale_Q30, rand_Gain_Q15), 14);
@@ -314,22 +299,23 @@ class PLC
         /* Scale LTP state */
         inv_gain_Q30 = Inlines.silk_INVERSE32_varQ(psPLC.prevGain_Q16[1], 46);
         inv_gain_Q30 = Inlines.silk_min(inv_gain_Q30, Integer.MAX_VALUE >> 1);
-        for (i = idx + psDec.LPC_order; i < psDec.ltp_mem_length; i++)
-        {
+        for (i = idx + psDec.LPC_order; i < psDec.ltp_mem_length; i++) {
             sLTP_Q14[i] = Inlines.silk_SMULWB(inv_gain_Q30, sLTP[i]);
         }
 
-        /***************************/
+        /**
+         * ************************
+         */
         /* LTP synthesis filtering */
-        /***************************/
-        for (k = 0; k < psDec.nb_subfr; k++)
-        {
+        /**
+         * ************************
+         */
+        for (k = 0; k < psDec.nb_subfr; k++) {
             /* Set up pointer */
             pred_lag_ptr = sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2;
-            for (i = 0; i < psDec.subfr_length; i++)
-            {
+            for (i = 0; i < psDec.subfr_length; i++) {
                 /* Unrolled loop */
-                /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
+ /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
                 LTP_pred_Q12 = 2;
                 LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, sLTP_Q14[pred_lag_ptr], B_Q14[0]);
                 LTP_pred_Q12 = Inlines.silk_SMLAWB(LTP_pred_Q12, sLTP_Q14[pred_lag_ptr - 1], B_Q14[1]);
@@ -346,12 +332,11 @@ class PLC
             }
 
             /* Gradually reduce LTP gain */
-            for (j = 0; j < SilkConstants.LTP_ORDER; j++)
-            {
-                B_Q14[j] = (short)(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(harm_Gain_Q15, B_Q14[j]), 15));
+            for (j = 0; j < SilkConstants.LTP_ORDER; j++) {
+                B_Q14[j] = (short) (Inlines.silk_RSHIFT(Inlines.silk_SMULBB(harm_Gain_Q15, B_Q14[j]), 15));
             }
             /* Gradually reduce excitation gain */
-            rand_scale_Q14 = (short)(Inlines.silk_RSHIFT(Inlines.silk_SMULBB(rand_scale_Q14, rand_Gain_Q15), 15));
+            rand_scale_Q14 = (short) (Inlines.silk_RSHIFT(Inlines.silk_SMULBB(rand_scale_Q14, rand_Gain_Q15), 15));
 
             /* Slowly increase pitch lag */
             psPLC.pitchL_Q8 = Inlines.silk_SMLAWB(psPLC.pitchL_Q8, psPLC.pitchL_Q8, SilkConstants.PITCH_DRIFT_FAC_Q16);
@@ -359,17 +344,21 @@ class PLC
             lag = Inlines.silk_RSHIFT_ROUND(psPLC.pitchL_Q8, 8);
         }
 
-        /***************************/
+        /**
+         * ************************
+         */
         /* LPC synthesis filtering */
-        /***************************/
+        /**
+         * ************************
+         */
         sLPC_Q14_ptr = psDec.ltp_mem_length - SilkConstants.MAX_LPC_ORDER;
 
         /* Copy LPC state */
         System.arraycopy(psDec.sLPC_Q14_buf, 0, sLTP_Q14, sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
 
-        Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
-        for (i = 0; i < psDec.frame_length; i++)
-        {
+        Inlines.OpusAssert(psDec.LPC_order >= 10);
+        /* check that unrolling works */
+        for (i = 0; i < psDec.frame_length; i++) {
             /* partly unrolled */
             int sLPCmaxi = sLPC_Q14_ptr + SilkConstants.MAX_LPC_ORDER + i;
             /* Avoids introducing a bias because Inlines.silk_SMLAWB() always rounds to -inf */
@@ -384,8 +373,7 @@ class PLC
             LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 8], psPLC.prevLPC_Q12[7]);
             LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 9], psPLC.prevLPC_Q12[8]);
             LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - 10], psPLC.prevLPC_Q12[9]);
-            for (j = 10; j < psDec.LPC_order; j++)
-            {
+            for (j = 10; j < psDec.LPC_order; j++) {
                 LPC_pred_Q10 = Inlines.silk_SMLAWB(LPC_pred_Q10, sLTP_Q14[sLPCmaxi - j - 1], psPLC.prevLPC_Q12[j]);
             }
 
@@ -393,67 +381,61 @@ class PLC
             sLTP_Q14[sLPCmaxi] = Inlines.silk_ADD_LSHIFT32(sLTP_Q14[sLPCmaxi], LPC_pred_Q10, 4);
 
             /* Scale with Gain */
-            frame[frame_ptr + i] = (short)Inlines.silk_SAT16(Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(sLTP_Q14[sLPCmaxi], prevGain_Q10[1]), 8)));
+            frame[frame_ptr + i] = (short) Inlines.silk_SAT16(Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWW(sLTP_Q14[sLPCmaxi], prevGain_Q10[1]), 8)));
         }
 
         /* Save LPC state */
         System.arraycopy(sLTP_Q14, sLPC_Q14_ptr + psDec.frame_length, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
 
-        /**************************************/
+        /**
+         * ***********************************
+         */
         /* Update states                      */
-        /**************************************/
+        /**
+         * ***********************************
+         */
         psPLC.rand_seed = rand_seed;
         psPLC.randScale_Q14 = rand_scale_Q14;
-        for (i = 0; i < SilkConstants.MAX_NB_SUBFR; i++)
-        {
+        for (i = 0; i < SilkConstants.MAX_NB_SUBFR; i++) {
             psDecCtrl.pitchL[i] = lag;
         }
     }
 
     /* Glues concealed frames with new good received frames */
     static void silk_PLC_glue_frames(
-        SilkChannelDecoder psDec,             /* I/O decoder state        */
-        short[] frame,            /* I/O signal               */
-        int frame_ptr,
-        int length              /* I length of signal       */
-    )
-    {
+            SilkChannelDecoder psDec, /* I/O decoder state        */
+            short[] frame, /* I/O signal               */
+            int frame_ptr,
+            int length /* I length of signal       */
+    ) {
         int i;
         BoxedValueInt energy_shift = new BoxedValueInt(0);
         BoxedValueInt energy = new BoxedValueInt(0);
         PLCStruct psPLC = psDec.sPLC;
 
-        if (psDec.lossCnt != 0)
-        {
+        if (psDec.lossCnt != 0) {
             /* Calculate energy in concealed residual */
             BoxedValueInt boxed_conc_e = new BoxedValueInt(0);
             BoxedValueInt boxed_conc_shift = new BoxedValueInt(0);
             SumSqrShift.silk_sum_sqr_shift(boxed_conc_e, boxed_conc_shift, frame, frame_ptr, length);
             psPLC.conc_energy = boxed_conc_e.Val;
-            psPLC.conc_energy_shift= boxed_conc_shift.Val;
+            psPLC.conc_energy_shift = boxed_conc_shift.Val;
 
             psPLC.last_frame_lost = 1;
-        }
-        else
-        {
-            if (psDec.sPLC.last_frame_lost != 0)
-            {
+        } else {
+            if (psDec.sPLC.last_frame_lost != 0) {
                 /* Calculate residual in decoded signal if last frame was lost */
                 SumSqrShift.silk_sum_sqr_shift(energy, energy_shift, frame, frame_ptr, length);
 
                 /* Normalize energies */
-                if (energy_shift.Val > psPLC.conc_energy_shift)
-                {
+                if (energy_shift.Val > psPLC.conc_energy_shift) {
                     psPLC.conc_energy = Inlines.silk_RSHIFT(psPLC.conc_energy, energy_shift.Val - psPLC.conc_energy_shift);
-                }
-                else if (energy_shift.Val < psPLC.conc_energy_shift)
-                {
+                } else if (energy_shift.Val < psPLC.conc_energy_shift) {
                     energy.Val = Inlines.silk_RSHIFT(energy.Val, psPLC.conc_energy_shift - energy_shift.Val);
                 }
 
                 /* Fade in the energy difference */
-                if (energy.Val > psPLC.conc_energy)
-                {
+                if (energy.Val > psPLC.conc_energy) {
                     int frac_Q24, LZ;
                     int gain_Q16, slope_Q16;
 
@@ -465,16 +447,14 @@ class PLC
                     frac_Q24 = Inlines.silk_DIV32(psPLC.conc_energy, Inlines.silk_max(energy.Val, 1));
 
                     gain_Q16 = Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(frac_Q24), 4);
-                    slope_Q16 = Inlines.silk_DIV32_16(((int)1 << 16) - gain_Q16, length);
+                    slope_Q16 = Inlines.silk_DIV32_16(((int) 1 << 16) - gain_Q16, length);
                     /* Make slope 4x steeper to avoid missing onsets after DTX */
                     slope_Q16 = Inlines.silk_LSHIFT(slope_Q16, 2);
 
-                    for (i = frame_ptr; i < frame_ptr + length; i++)
-                    {
-                        frame[i] = (short)(Inlines.silk_SMULWB(gain_Q16, frame[i]));
+                    for (i = frame_ptr; i < frame_ptr + length; i++) {
+                        frame[i] = (short) (Inlines.silk_SMULWB(gain_Q16, frame[i]));
                         gain_Q16 += slope_Q16;
-                        if (gain_Q16 > (int)1 << 16)
-                        {
+                        if (gain_Q16 > (int) 1 << 16) {
                             break;
                         }
                     }

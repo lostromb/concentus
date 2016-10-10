@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Struct for TOC (Table of Contents)
 /// </summary>
-class TOCStruct
-{
+class TOCStruct {
+
     /// <summary>
     /// Voice activity for packet
     /// </summary>
@@ -52,8 +51,7 @@ class TOCStruct
     /// </summary>
     int inbandFECFlag = 0;
 
-    void Reset()
-    {
+    void Reset() {
         VADFlag = 0;
         Arrays.MemSet(VADFlags, 0, SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
         inbandFECFlag = 0;

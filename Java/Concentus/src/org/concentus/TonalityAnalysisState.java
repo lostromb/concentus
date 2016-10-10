@@ -31,18 +31,18 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class TonalityAnalysisState
-{
+class TonalityAnalysisState {
+
     boolean enabled = false;
     final float[] angle = new float[240];
     final float[] d_angle = new float[240];
     final float[] d2_angle = new float[240];
     final int[] inmem = new int[OpusConstants.ANALYSIS_BUF_SIZE];
-    int mem_fill;                      /* number of usable samples in the buffer */
+    int mem_fill;
+    /* number of usable samples in the buffer */
     final float[] prev_band_tonality = new float[OpusConstants.NB_TBANDS];
     float prev_tonality;
     final float[][] E = Arrays.InitTwoDimensionalArrayFloat(OpusConstants.NB_FRAMES, OpusConstants.NB_TBANDS);
@@ -61,11 +61,17 @@ class TonalityAnalysisState
     int count;
     final float[] subframe_mem = new float[3];
     int analysis_offset;
-    /** Probability of having speech for time i to DETECT_SIZE-1 (and music before).
-        pspeech[0] is the probability that all frames in the window are speech. */
+    /**
+     * Probability of having speech for time i to DETECT_SIZE-1 (and music
+     * before). pspeech[0] is the probability that all frames in the window are
+     * speech.
+     */
     final float[] pspeech = new float[OpusConstants.DETECT_SIZE];
-    /** Probability of having music for time i to DETECT_SIZE-1 (and speech before).
-        pmusic[0] is the probability that all frames in the window are music. */
+    /**
+     * Probability of having music for time i to DETECT_SIZE-1 (and speech
+     * before). pmusic[0] is the probability that all frames in the window are
+     * music.
+     */
     final float[] pmusic = new float[OpusConstants.DETECT_SIZE];
     float speech_confidence;
     float music_confidence;
@@ -76,33 +82,29 @@ class TonalityAnalysisState
     int read_subframe;
     final AnalysisInfo[] info = new AnalysisInfo[OpusConstants.DETECT_SIZE];
 
-    TonalityAnalysisState()
-    {
-        for (int c = 0; c < OpusConstants.DETECT_SIZE; c++)
-        {
+    TonalityAnalysisState() {
+        for (int c = 0; c < OpusConstants.DETECT_SIZE; c++) {
             info[c] = new AnalysisInfo();
         }
     }
 
-    void Reset()
-    {
+    void Reset() {
         Arrays.MemSet(angle, 0f, 240);
-        Arrays.MemSet(d_angle,0f, 240);
-        Arrays.MemSet(d2_angle,0f, 240);
+        Arrays.MemSet(d_angle, 0f, 240);
+        Arrays.MemSet(d2_angle, 0f, 240);
         Arrays.MemSet(inmem, 0, OpusConstants.ANALYSIS_BUF_SIZE);
         mem_fill = 0;
-        Arrays.MemSet(prev_band_tonality,0f, OpusConstants.NB_TBANDS);
+        Arrays.MemSet(prev_band_tonality, 0f, OpusConstants.NB_TBANDS);
         prev_tonality = 0;
-        for (int c = 0; c < OpusConstants.NB_FRAMES; c++)
-        {
+        for (int c = 0; c < OpusConstants.NB_FRAMES; c++) {
             Arrays.MemSet(E[c], 0f, OpusConstants.NB_TBANDS);
         }
-        Arrays.MemSet(lowE,0f, OpusConstants.NB_TBANDS);
-        Arrays.MemSet(highE,0f, OpusConstants.NB_TBANDS);
-        Arrays.MemSet(meanE,0f, OpusConstants.NB_TOT_BANDS);
-        Arrays.MemSet(mem,0f, 32);
-        Arrays.MemSet(cmean,0f, 8);
-        Arrays.MemSet(std,0f, 9);
+        Arrays.MemSet(lowE, 0f, OpusConstants.NB_TBANDS);
+        Arrays.MemSet(highE, 0f, OpusConstants.NB_TBANDS);
+        Arrays.MemSet(meanE, 0f, OpusConstants.NB_TOT_BANDS);
+        Arrays.MemSet(mem, 0f, 32);
+        Arrays.MemSet(cmean, 0f, 8);
+        Arrays.MemSet(std, 0f, 9);
         music_prob = 0;
         Etracker = 0;
         lowECount = 0;
@@ -121,8 +123,7 @@ class TonalityAnalysisState
         write_pos = 0;
         read_pos = 0;
         read_subframe = 0;
-        for (int c = 0; c < OpusConstants.DETECT_SIZE; c++)
-        {
+        for (int c = 0; c < OpusConstants.DETECT_SIZE; c++) {
             info[c].Reset();
         }
     }

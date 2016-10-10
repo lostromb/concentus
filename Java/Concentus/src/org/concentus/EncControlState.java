@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Structure for controlling encoder operation
 /// </summary>
-class EncControlState
-{
+class EncControlState {
+
     /* I:   Number of channels; 1/2                                                         */
     int nChannelsAPI = 0;
 
@@ -103,8 +102,7 @@ class EncControlState
     /* O:   Tells the Opus encoder we're ready to switch                                    */
     int switchReady = 0;
 
-    void Reset()
-    {
+    void Reset() {
         nChannelsAPI = 0;
         nChannelsInternal = 0;
         API_sampleRate = 0;
@@ -133,76 +131,65 @@ class EncControlState
     /// Checks this encoder control struct and returns error code, if any
     /// </summary>
     /// <returns></returns>
-    int check_control_input()
-    {
-        if (((API_sampleRate != 8000) &&
-              (API_sampleRate != 12000) &&
-              (API_sampleRate != 16000) &&
-              (API_sampleRate != 24000) &&
-              (API_sampleRate != 32000) &&
-              (API_sampleRate != 44100) &&
-              (API_sampleRate != 48000)) ||
-            ((desiredInternalSampleRate != 8000) &&
-              (desiredInternalSampleRate != 12000) &&
-              (desiredInternalSampleRate != 16000)) ||
-            ((maxInternalSampleRate != 8000) &&
-              (maxInternalSampleRate != 12000) &&
-              (maxInternalSampleRate != 16000)) ||
-            ((minInternalSampleRate != 8000) &&
-              (minInternalSampleRate != 12000) &&
-              (minInternalSampleRate != 16000)) ||
-              (minInternalSampleRate > desiredInternalSampleRate) ||
-              (maxInternalSampleRate < desiredInternalSampleRate) ||
-              (minInternalSampleRate > maxInternalSampleRate))
-        {
+    int check_control_input() {
+        if (((API_sampleRate != 8000)
+                && (API_sampleRate != 12000)
+                && (API_sampleRate != 16000)
+                && (API_sampleRate != 24000)
+                && (API_sampleRate != 32000)
+                && (API_sampleRate != 44100)
+                && (API_sampleRate != 48000))
+                || ((desiredInternalSampleRate != 8000)
+                && (desiredInternalSampleRate != 12000)
+                && (desiredInternalSampleRate != 16000))
+                || ((maxInternalSampleRate != 8000)
+                && (maxInternalSampleRate != 12000)
+                && (maxInternalSampleRate != 16000))
+                || ((minInternalSampleRate != 8000)
+                && (minInternalSampleRate != 12000)
+                && (minInternalSampleRate != 16000))
+                || (minInternalSampleRate > desiredInternalSampleRate)
+                || (maxInternalSampleRate < desiredInternalSampleRate)
+                || (minInternalSampleRate > maxInternalSampleRate)) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_FS_NOT_SUPPORTED;
         }
-        if (payloadSize_ms != 10 &&
-            payloadSize_ms != 20 &&
-            payloadSize_ms != 40 &&
-            payloadSize_ms != 60)
-        {
+        if (payloadSize_ms != 10
+                && payloadSize_ms != 20
+                && payloadSize_ms != 40
+                && payloadSize_ms != 60) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_PACKET_SIZE_NOT_SUPPORTED;
         }
-        if (packetLossPercentage < 0 || packetLossPercentage > 100)
-        {
+        if (packetLossPercentage < 0 || packetLossPercentage > 100) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_INVALID_LOSS_RATE;
         }
-        if (useDTX < 0 || useDTX > 1)
-        {
+        if (useDTX < 0 || useDTX > 1) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_INVALID_DTX_SETTING;
         }
-        if (useCBR < 0 || useCBR > 1)
-        {
+        if (useCBR < 0 || useCBR > 1) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_INVALID_CBR_SETTING;
         }
-        if (useInBandFEC < 0 || useInBandFEC > 1)
-        {
+        if (useInBandFEC < 0 || useInBandFEC > 1) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_INVALID_INBAND_FEC_SETTING;
         }
-        if (nChannelsAPI < 1 || nChannelsAPI > SilkConstants.ENCODER_NUM_CHANNELS)
-        {
+        if (nChannelsAPI < 1 || nChannelsAPI > SilkConstants.ENCODER_NUM_CHANNELS) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
         }
-        if (nChannelsInternal < 1 || nChannelsInternal > SilkConstants.ENCODER_NUM_CHANNELS)
-        {
+        if (nChannelsInternal < 1 || nChannelsInternal > SilkConstants.ENCODER_NUM_CHANNELS) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
         }
-        if (nChannelsInternal > nChannelsAPI)
-        {
+        if (nChannelsInternal > nChannelsAPI) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_INVALID_NUMBER_OF_CHANNELS_ERROR;
         }
-        if (complexity < 0 || complexity > 10)
-        {
+        if (complexity < 0 || complexity > 10) {
             Inlines.OpusAssert(false);
             return SilkError.SILK_ENC_INVALID_COMPLEXITY_SETTING;
         }

@@ -31,19 +31,17 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class CeltPitchXCorr
-{
+class CeltPitchXCorr {
+
     static int pitch_xcorr(
-        int[] _x,
-        int[] _y,
-        int[] xcorr,
-        int len,
-        int max_pitch)
-    {
+            int[] _x,
+            int[] _y,
+            int[] xcorr,
+            int len,
+            int max_pitch) {
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
@@ -51,8 +49,7 @@ class CeltPitchXCorr
         BoxedValueInt sum1 = new BoxedValueInt(0);
         BoxedValueInt sum2 = new BoxedValueInt(0);
         BoxedValueInt sum3 = new BoxedValueInt(0);
-        for (i = 0; i < max_pitch - 3; i += 4)
-        {
+        for (i = 0; i < max_pitch - 3; i += 4) {
             sum0.Val = 0;
             sum1.Val = 0;
             sum2.Val = 0;
@@ -68,8 +65,7 @@ class CeltPitchXCorr
             maxcorr = Inlines.MAX32(maxcorr, sum0.Val);
         }
         /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
-        for (; i < max_pitch; i++)
-        {
+        for (; i < max_pitch; i++) {
             int inner_sum = Kernels.celt_inner_prod(_x, 0, _y, i, len);
             xcorr[i] = inner_sum;
             maxcorr = Inlines.MAX32(maxcorr, inner_sum);
@@ -78,14 +74,13 @@ class CeltPitchXCorr
     }
 
     static int pitch_xcorr(
-        short[] _x,
-        int _x_ptr,
-        short[] _y,
-        int _y_ptr,
-        int[] xcorr,
-        int len,
-        int max_pitch)
-    {
+            short[] _x,
+            int _x_ptr,
+            short[] _y,
+            int _y_ptr,
+            int[] xcorr,
+            int len,
+            int max_pitch) {
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
@@ -93,8 +88,7 @@ class CeltPitchXCorr
         BoxedValueInt sum1 = new BoxedValueInt(0);
         BoxedValueInt sum2 = new BoxedValueInt(0);
         BoxedValueInt sum3 = new BoxedValueInt(0);
-        for (i = 0; i < max_pitch - 3; i += 4)
-        {
+        for (i = 0; i < max_pitch - 3; i += 4) {
             sum0.Val = 0;
             sum1.Val = 0;
             sum2.Val = 0;
@@ -111,8 +105,7 @@ class CeltPitchXCorr
             maxcorr = Inlines.MAX32(maxcorr, sum0.Val);
         }
         /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
-        for (; i < max_pitch; i++)
-        {
+        for (; i < max_pitch; i++) {
             int inner_sum = Kernels.celt_inner_prod(_x, _x_ptr, _y, _y_ptr + i, len);
             xcorr[i] = inner_sum;
             maxcorr = Inlines.MAX32(maxcorr, inner_sum);
@@ -121,12 +114,11 @@ class CeltPitchXCorr
     }
 
     static int pitch_xcorr(
-        short[] _x,
-        short[] _y,
-        int[] xcorr,
-        int len,
-        int max_pitch)
-    {
+            short[] _x,
+            short[] _y,
+            int[] xcorr,
+            int len,
+            int max_pitch) {
         int i;
         int maxcorr = 1;
         Inlines.OpusAssert(max_pitch > 0);
@@ -134,8 +126,7 @@ class CeltPitchXCorr
         BoxedValueInt sum1 = new BoxedValueInt(0);
         BoxedValueInt sum2 = new BoxedValueInt(0);
         BoxedValueInt sum3 = new BoxedValueInt(0);
-        for (i = 0; i < max_pitch - 3; i += 4)
-        {
+        for (i = 0; i < max_pitch - 3; i += 4) {
             sum0.Val = 0;
             sum1.Val = 0;
             sum2.Val = 0;
@@ -152,8 +143,7 @@ class CeltPitchXCorr
             maxcorr = Inlines.MAX32(maxcorr, sum0.Val);
         }
         /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
-        for (; i < max_pitch; i++)
-        {
+        for (; i < max_pitch; i++) {
             int inner_sum = Kernels.celt_inner_prod(_x, _y, i, len);
             xcorr[i] = inner_sum;
             maxcorr = Inlines.MAX32(maxcorr, inner_sum);

@@ -31,27 +31,23 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class QuantizeBands
-{
-    /* prediction coefficients: 0.9, 0.8, 0.65, 0.5 */
-    private static final int[] pred_coef = new int[]{ 29440, 26112, 21248, 16384 };
-    private static final int[] beta_coef = new int[] { 30147, 22282, 12124, 6554 };
-    private static final int beta_intra = 4915;
-    private static short[] small_energy_icdf = { 2, 1, 0 };
+class QuantizeBands {
 
-    static int loss_distortion(int[][] eBands, int[][] oldEBands, int start, int end, int len, int C)
-    {
+    /* prediction coefficients: 0.9, 0.8, 0.65, 0.5 */
+    private static final int[] pred_coef = new int[]{29440, 26112, 21248, 16384};
+    private static final int[] beta_coef = new int[]{30147, 22282, 12124, 6554};
+    private static final int beta_intra = 4915;
+    private static short[] small_energy_icdf = {2, 1, 0};
+
+    static int loss_distortion(int[][] eBands, int[][] oldEBands, int start, int end, int len, int C) {
         int c, i;
         int dist = 0;
         c = 0;
-        do
-        {
-            for (i = start; i < end; i++)
-            {
+        do {
+            for (i = start; i < end; i++) {
                 int d = Inlines.SUB16(Inlines.SHR16(eBands[c][i], 3), Inlines.SHR16(oldEBands[c][i], 3));
                 dist = Inlines.MAC16_16(dist, d, d);
             }
@@ -61,38 +57,32 @@ class QuantizeBands
     }
 
     static int quant_coarse_energy_impl(CeltMode m, int start, int end,
-          int[][] eBands, int[][] oldEBands,
-          int budget, int tell,
-          short[] prob_model, int[][] error, EntropyCoder enc,
-          int C, int LM, int intra, int max_decay, int lfe)
-    {
+            int[][] eBands, int[][] oldEBands,
+            int budget, int tell,
+            short[] prob_model, int[][] error, EntropyCoder enc,
+            int C, int LM, int intra, int max_decay, int lfe) {
         int i, c;
         int badness = 0;
-        int[] prev = { 0, 0 };
+        int[] prev = {0, 0};
         int coef;
         int beta;
 
-        if (tell + 3 <= budget)
-        {
+        if (tell + 3 <= budget) {
             enc.enc_bit_logp(intra, 3);
         }
 
-        if (intra != 0)
-        {
+        if (intra != 0) {
             coef = 0;
             beta = beta_intra;
-        }
-        else {
+        } else {
             beta = beta_coef[LM];
             coef = pred_coef[LM];
         }
 
         /* Encode at a fixed coarse resolution */
-        for (i = start; i < end; i++)
-        {
+        for (i = start; i < end; i++) {
             c = 0;
-            do
-            {
+            do {
                 int bits_left;
                 int qi, qi0;
                 int q;
@@ -101,60 +91,57 @@ class QuantizeBands
                 int oldE;
                 int decay_bound;
                 x = eBands[c][i];
-                oldE = Inlines.MAX16(-((short)(0.5 + (9.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT)*/, oldEBands[c][i]);
+                oldE = Inlines.MAX16(-((short) (0.5 + (9.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT)*/, oldEBands[c][i]);
                 f = Inlines.SHL32(Inlines.EXTEND32(x), 7) - Inlines.PSHR32(Inlines.MULT16_16(coef, oldE), 8) - prev[c];
                 /* Rounding to nearest integer here is really important! */
-                qi = (f + ((int)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(.5f, CeltConstants.DB_SHIFT + 7)*/) >> (CeltConstants.DB_SHIFT + 7);
-                decay_bound = Inlines.EXTRACT16(Inlines.MAX32(-((short)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/,
-                      Inlines.SUB32((int)oldEBands[c][i], max_decay)));
+                qi = (f + ((int) (0.5 + (.5f) * (((int) 1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(.5f, CeltConstants.DB_SHIFT + 7)*/) >> (CeltConstants.DB_SHIFT + 7);
+                decay_bound = Inlines.EXTRACT16(Inlines.MAX32(-((short) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(28.0f, CeltConstants.DB_SHIFT)*/,
+                        Inlines.SUB32((int) oldEBands[c][i], max_decay)));
                 /* Prevent the energy from going down too quickly (e.g. for bands
                    that have just one bin) */
-                if (qi < 0 && x < decay_bound)
-                {
-                    qi += (int)Inlines.SHR16(Inlines.SUB16(decay_bound, x), CeltConstants.DB_SHIFT);
-                    if (qi > 0)
+                if (qi < 0 && x < decay_bound) {
+                    qi += (int) Inlines.SHR16(Inlines.SUB16(decay_bound, x), CeltConstants.DB_SHIFT);
+                    if (qi > 0) {
                         qi = 0;
+                    }
                 }
                 qi0 = qi;
                 /* If we don't have enough bits to encode all the energy, just assume
                     something safe. */
                 tell = enc.tell();
                 bits_left = budget - tell - 3 * C * (end - i);
-                if (i != start && bits_left < 30)
-                {
-                    if (bits_left < 24)
+                if (i != start && bits_left < 30) {
+                    if (bits_left < 24) {
                         qi = Inlines.IMIN(1, qi);
-                    if (bits_left < 16)
+                    }
+                    if (bits_left < 16) {
                         qi = Inlines.IMAX(-1, qi);
+                    }
                 }
-                if (lfe != 0 && i >= 2)
+                if (lfe != 0 && i >= 2) {
                     qi = Inlines.IMIN(qi, 0);
-                if (budget - tell >= 15)
-                {
+                }
+                if (budget - tell >= 15) {
                     int pi;
                     pi = 2 * Inlines.IMIN(i, 20);
                     BoxedValueInt boxed_qi = new BoxedValueInt(qi);
-                    Laplace.ec_laplace_encode(enc, boxed_qi, ((prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
+                    Laplace.ec_laplace_encode(enc, boxed_qi, ((prob_model[pi]) << 7), ((int) prob_model[pi + 1]) << 6);
                     qi = boxed_qi.Val;
-                }
-                else if (budget - tell >= 2)
-                {
+                } else if (budget - tell >= 2) {
                     qi = Inlines.IMAX(-1, Inlines.IMIN(qi, 1));
                     enc.enc_icdf(2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf, 2);
-                }
-                else if (budget - tell >= 1)
-                {
+                } else if (budget - tell >= 1) {
                     qi = Inlines.IMIN(0, qi);
                     enc.enc_bit_logp(-qi, 1);
-                }
-                else
+                } else {
                     qi = -1;
+                }
                 error[c][i] = (Inlines.PSHR32(f, 7) - Inlines.SHL16((qi), CeltConstants.DB_SHIFT));
                 badness += Inlines.abs(qi0 - qi);
-                q = (int)Inlines.SHL32(qi, CeltConstants.DB_SHIFT);
+                q = (int) Inlines.SHL32(qi, CeltConstants.DB_SHIFT);
 
                 tmp = Inlines.PSHR32(Inlines.MULT16_16(coef, oldE), 8) + prev[c] + Inlines.SHL32(q, 7);
-                tmp = Inlines.MAX32(-((int)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7)*/, tmp);
+                tmp = Inlines.MAX32(-((int) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7)*/, tmp);
                 oldEBands[c][i] = (Inlines.PSHR32(tmp, 7));
                 prev[c] = prev[c] + Inlines.SHL32(q, 7) - Inlines.MULT16_16(beta, Inlines.PSHR32(q, 8));
             } while (++c < C);
@@ -163,10 +150,9 @@ class QuantizeBands
     }
 
     static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
-          int[][] eBands, int[][] oldEBands, int budget,
-          int[][] error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
-          int force_intra, BoxedValueInt delayedIntra, int two_pass, int loss_rate, int lfe)
-    {
+            int[][] eBands, int[][] oldEBands, int budget,
+            int[][] error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
+            int force_intra, BoxedValueInt delayedIntra, int two_pass, int loss_rate, int lfe) {
         int intra;
         int max_decay;
         int[][] oldEBands_intra;
@@ -177,40 +163,37 @@ class QuantizeBands
         int intra_bias;
         int new_distortion;
 
-
         intra = (force_intra != 0 || (two_pass == 0 && delayedIntra.Val > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
         intra_bias = ((budget * delayedIntra.Val * loss_rate) / (C * 512));
         new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
 
         tell = enc.tell();
-        if (tell + 3 > budget)
+        if (tell + 3 > budget) {
             two_pass = intra = 0;
+        }
 
-        max_decay = ((short)(0.5 + (16.0f) * (1 << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(16.0f, CeltConstants.DB_SHIFT)*/;
-        if (end - start > 10)
-        {
+        max_decay = ((short) (0.5 + (16.0f) * (1 << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(16.0f, CeltConstants.DB_SHIFT)*/;
+        if (end - start > 10) {
             max_decay = (Inlines.MIN32(max_decay, Inlines.SHL32(nbAvailableBytes, CeltConstants.DB_SHIFT - 3))); // opus bug: useless extend32
         }
-        if (lfe != 0)
-        {
-            max_decay = ((short)(0.5 + (3.0f) * (1 << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/;
+        if (lfe != 0) {
+            max_decay = ((short) (0.5 + (3.0f) * (1 << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(3.0f, CeltConstants.DB_SHIFT)*/;
         }
         enc_start_state.Assign(enc);
 
         oldEBands_intra = Arrays.InitTwoDimensionalArrayInt(C, m.nbEBands);
         error_intra = Arrays.InitTwoDimensionalArrayInt(C, m.nbEBands);
         System.arraycopy(oldEBands[0], 0, oldEBands_intra[0], 0, m.nbEBands);
-        if (C == 2)
+        if (C == 2) {
             System.arraycopy(oldEBands[1], 0, oldEBands_intra[1], 0, m.nbEBands);
-
-        if (two_pass != 0 || intra != 0)
-        {
-            badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget,
-                  tell, CeltTables.e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
         }
 
-        if (intra == 0)
-        {
+        if (two_pass != 0 || intra != 0) {
+            badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, budget,
+                    tell, CeltTables.e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
+        }
+
+        if (intra == 0) {
             int intra_buf;
             EntropyCoder enc_intra_state = new EntropyCoder(); // [porting note] stack variable
             int tell_intra;
@@ -220,7 +203,7 @@ class QuantizeBands
             int badness2;
             byte[] intra_bits = null;
 
-            tell_intra = (int)enc.tell_frac();
+            tell_intra = (int) enc.tell_frac();
 
             enc_intra_state.Assign(enc);
 
@@ -229,8 +212,7 @@ class QuantizeBands
             intra_buf = nstart_bytes;
             save_bytes = nintra_bytes - nstart_bytes;
 
-            if (save_bytes != 0)
-            {
+            if (save_bytes != 0) {
                 intra_bits = new byte[save_bytes];
                 /* Copy bits from intra bit-stream */
                 System.arraycopy(enc_intra_state.get_buffer(), intra_buf, intra_bits, 0, save_bytes);
@@ -239,103 +221,89 @@ class QuantizeBands
             enc.Assign(enc_start_state);
 
             badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, budget,
-                  tell, CeltTables.e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
+                    tell, CeltTables.e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
 
-            if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && (enc.tell_frac()) + intra_bias > tell_intra)))
-            {
+            if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && (enc.tell_frac()) + intra_bias > tell_intra))) {
                 enc.Assign(enc_intra_state);
                 /* Copy intra bits to bit-stream */
-                if (intra_bits != null)
-                {
+                if (intra_bits != null) {
                     enc_intra_state.write_buffer(intra_bits, 0, intra_buf, (nintra_bytes - nstart_bytes));
                 }
                 System.arraycopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
                 System.arraycopy(error_intra[0], 0, error[0], 0, m.nbEBands);
-                if (C == 2)
-                {
+                if (C == 2) {
                     System.arraycopy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
                     System.arraycopy(error_intra[1], 0, error[1], 0, m.nbEBands);
                 }
                 intra = 1;
             }
-        }
-        else
-        {
+        } else {
             System.arraycopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
             System.arraycopy(error_intra[0], 0, error[0], 0, m.nbEBands);
-            if (C == 2)
-            {
+            if (C == 2) {
                 System.arraycopy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
                 System.arraycopy(error_intra[1], 0, error[1], 0, m.nbEBands);
             }
         }
 
-        if (intra != 0)
-        {
+        if (intra != 0) {
             delayedIntra.Val = new_distortion;
-        }
-        else
-        {
+        } else {
             delayedIntra.Val = Inlines.ADD32(Inlines.MULT16_32_Q15(Inlines.MULT16_16_Q15(pred_coef[LM], pred_coef[LM]), delayedIntra.Val),
-                new_distortion);
+                    new_distortion);
         }
     }
 
-    static void quant_fine_energy(CeltMode m, int start, int end, int[][] oldEBands, int[][] error, int[] fine_quant, EntropyCoder enc, int C)
-    {
+    static void quant_fine_energy(CeltMode m, int start, int end, int[][] oldEBands, int[][] error, int[] fine_quant, EntropyCoder enc, int C) {
         int i, c;
 
         /* Encode finer resolution */
-        for (i = start; i < end; i++)
-        {
+        for (i = start; i < end; i++) {
             int frac = (1 << fine_quant[i]);
-            if (fine_quant[i] <= 0)
+            if (fine_quant[i] <= 0) {
                 continue;
+            }
             c = 0;
-            do
-            {
+            do {
                 int q2;
                 int offset;
                 /* Has to be without rounding */
-                q2 = (error[c][i] + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/) >> (CeltConstants.DB_SHIFT - fine_quant[i]);
-                if (q2 > frac - 1)
+                q2 = (error[c][i] + ((short) (0.5 + (.5f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/) >> (CeltConstants.DB_SHIFT - fine_quant[i]);
+                if (q2 > frac - 1) {
                     q2 = frac - 1;
-                if (q2 < 0)
+                }
+                if (q2 < 0) {
                     q2 = 0;
+                }
                 enc.enc_bits(q2, fine_quant[i]);
                 offset = Inlines.SUB16(
-                    (Inlines.SHR32(
-                        Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/,
-                        fine_quant[i])),
-                    ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
+                        (Inlines.SHR32(
+                                Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + ((short) (0.5 + (.5f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/,
+                                fine_quant[i])),
+                        ((short) (0.5 + (.5f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
                 oldEBands[c][i] += offset;
                 error[c][i] -= offset;
             } while (++c < C);
         }
     }
 
-    static void quant_energy_finalise(CeltMode m, int start, int end, int[][] oldEBands, int[][] error, int[] fine_quant, int[] fine_priority, int bits_left, EntropyCoder enc, int C)
-    {
+    static void quant_energy_finalise(CeltMode m, int start, int end, int[][] oldEBands, int[][] error, int[] fine_quant, int[] fine_priority, int bits_left, EntropyCoder enc, int C) {
         int i, prio, c;
 
         /* Use up the remaining bits */
-        for (prio = 0; prio < 2; prio++)
-        {
-            for (i = start; i < end && bits_left >= C; i++)
-            {
-                if (fine_quant[i] >= CeltConstants.MAX_FINE_BITS || fine_priority[i] != prio)
-                {
+        for (prio = 0; prio < 2; prio++) {
+            for (i = start; i < end && bits_left >= C; i++) {
+                if (fine_quant[i] >= CeltConstants.MAX_FINE_BITS || fine_priority[i] != prio) {
                     continue;
                 }
 
                 c = 0;
-                do
-                {
+                do {
                     int q2;
                     int offset;
                     q2 = error[c][i] < 0 ? 0 : 1;
                     enc.enc_bits(q2, 1);
-                    offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
+                    offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short) (0.5 + (.5f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
                     oldEBands[c][i] += offset;
                     bits_left--;
                 } while (++c < C);
@@ -343,34 +311,29 @@ class QuantizeBands
         }
     }
 
-    static void unquant_coarse_energy(CeltMode m, int start, int end, int[] oldEBands, int intra, EntropyCoder dec, int C, int LM)
-    {
+    static void unquant_coarse_energy(CeltMode m, int start, int end, int[] oldEBands, int intra, EntropyCoder dec, int C, int LM) {
         short[] prob_model = CeltTables.e_prob_model[LM][intra];
         int i, c;
-        int[] prev = { 0, 0 };
+        int[] prev = {0, 0};
         int coef;
         int beta;
         int budget;
         int tell;
 
-        if (intra != 0)
-        {
+        if (intra != 0) {
             coef = 0;
             beta = beta_intra;
-        }
-        else {
+        } else {
             beta = beta_coef[LM];
             coef = pred_coef[LM];
         }
 
-        budget = (int)dec.storage * 8;
+        budget = (int) dec.storage * 8;
 
         /* Decode at a fixed coarse resolution */
-        for (i = start; i < end; i++)
-        {
+        for (i = start; i < end; i++) {
             c = 0;
-            do
-            {
+            do {
                 int qi;
                 int q;
                 int tmp;
@@ -379,78 +342,66 @@ class QuantizeBands
                    to make the static analyzer happy. */
                 Inlines.OpusAssert(c < 2);
                 tell = dec.tell();
-                if (budget - tell >= 15)
-                {
+                if (budget - tell >= 15) {
                     int pi;
                     pi = 2 * Inlines.IMIN(i, 20);
                     qi = Laplace.ec_laplace_decode(dec,
-                          prob_model[pi] << 7, prob_model[pi + 1] << 6);
-                }
-                else if (budget - tell >= 2)
-                {
+                            prob_model[pi] << 7, prob_model[pi + 1] << 6);
+                } else if (budget - tell >= 2) {
                     qi = dec.dec_icdf(small_energy_icdf, 2);
                     qi = (qi >> 1) ^ -(qi & 1);
-                }
-                else if (budget - tell >= 1)
-                {
+                } else if (budget - tell >= 1) {
                     qi = 0 - dec.dec_bit_logp(1);
-                }
-                else
-                {
+                } else {
                     qi = -1;
                 }
-                q = (int)Inlines.SHL32(qi, CeltConstants.DB_SHIFT); // opus bug: useless extend32
+                q = (int) Inlines.SHL32(qi, CeltConstants.DB_SHIFT); // opus bug: useless extend32
 
-                oldEBands[i + c * m.nbEBands] = Inlines.MAX16((0 - ((short)(0.5 + (9.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT)*/), oldEBands[i + c * m.nbEBands]);
+                oldEBands[i + c * m.nbEBands] = Inlines.MAX16((0 - ((short) (0.5 + (9.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(9.0f, CeltConstants.DB_SHIFT)*/), oldEBands[i + c * m.nbEBands]);
                 tmp = Inlines.PSHR32(Inlines.MULT16_16(coef, oldEBands[i + c * m.nbEBands]), 8) + prev[c] + Inlines.SHL32(q, 7);
-                tmp = Inlines.MAX32(-((int)(0.5 + (28.0f) * (((int)1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7)*/, tmp);
+                tmp = Inlines.MAX32(-((int) (0.5 + (28.0f) * (((int) 1) << (CeltConstants.DB_SHIFT + 7))))/*Inlines.QCONST32(28.0f, CeltConstants.DB_SHIFT + 7)*/, tmp);
                 oldEBands[i + c * m.nbEBands] = (Inlines.PSHR32(tmp, 7));
                 prev[c] = prev[c] + Inlines.SHL32(q, 7) - Inlines.MULT16_16(beta, Inlines.PSHR32(q, 8));
             } while (++c < C);
         }
     }
 
-    static void unquant_fine_energy(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, EntropyCoder dec, int C)
-    {
+    static void unquant_fine_energy(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, EntropyCoder dec, int C) {
         int i, c;
         /* Decode finer resolution */
-        for (i = start; i < end; i++)
-        {
-            if (fine_quant[i] <= 0)
+        for (i = start; i < end; i++) {
+            if (fine_quant[i] <= 0) {
                 continue;
+            }
             c = 0;
-            do
-            {
+            do {
                 int q2;
                 int offset;
                 q2 = dec.dec_bits(fine_quant[i]);
                 offset = Inlines.SUB16((Inlines.SHR32(
-                    Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + 
-                    ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/, fine_quant[i])),
-                    ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/); // opus bug: unnecessary extend32
+                        Inlines.SHL32(q2, CeltConstants.DB_SHIFT)
+                        + ((short) (0.5 + (.5f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/, fine_quant[i])),
+                        ((short) (0.5 + (.5f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/); // opus bug: unnecessary extend32
                 oldEBands[i + c * m.nbEBands] += offset;
             } while (++c < C);
         }
     }
 
-    static void unquant_energy_finalise(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, int[] fine_priority, int bits_left, EntropyCoder dec, int C)
-    {
+    static void unquant_energy_finalise(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, int[] fine_priority, int bits_left, EntropyCoder dec, int C) {
         int i, prio, c;
 
         /* Use up the remaining bits */
-        for (prio = 0; prio < 2; prio++)
-        {
-            for (i = start; i < end && bits_left >= C; i++)
-            {
-                if (fine_quant[i] >= CeltConstants.MAX_FINE_BITS || fine_priority[i] != prio)
+        for (prio = 0; prio < 2; prio++) {
+            for (i = start; i < end && bits_left >= C; i++) {
+                if (fine_quant[i] >= CeltConstants.MAX_FINE_BITS || fine_priority[i] != prio) {
                     continue;
+                }
                 c = 0;
-                do
-                {
+                do {
                     int q2;
                     int offset;
                     q2 = dec.dec_bits(1);
-                    offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
+                    offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short) (0.5 + (.5f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
                     oldEBands[i + c * m.nbEBands] += offset;
                     bits_left--;
                 } while (++c < C);
@@ -468,21 +419,17 @@ class QuantizeBands
     /// <param name="bandLogE"></param>
     /// <param name="C"></param>
     static void amp2Log2(CeltMode m, int effEnd, int end,
-          int[][] bandE, int[][] bandLogE, int C)
-    {
+            int[][] bandE, int[][] bandLogE, int C) {
         int c, i;
         c = 0;
-        do
-        {
-            for (i = 0; i < effEnd; i++)
-            {
-                bandLogE[c][i] =
-                   (Inlines.celt_log2(Inlines.SHL32(bandE[c][i], 2))
-                   - Inlines.SHL16((int)CeltTables.eMeans[i], 6));
+        do {
+            for (i = 0; i < effEnd; i++) {
+                bandLogE[c][i]
+                        = (Inlines.celt_log2(Inlines.SHL32(bandE[c][i], 2))
+                        - Inlines.SHL16((int) CeltTables.eMeans[i], 6));
             }
-            for (i = effEnd; i < end; i++)
-            {
-                bandLogE[c][i] = (0 - ((short)(0.5 + (14.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT)*/);
+            for (i = effEnd; i < end; i++) {
+                bandLogE[c][i] = (0 - ((short) (0.5 + (14.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT)*/);
             }
         } while (++c < C);
     }
@@ -497,21 +444,17 @@ class QuantizeBands
     /// <param name="bandLogE"></param>
     /// <param name="C"></param>
     static void amp2Log2(CeltMode m, int effEnd, int end,
-          int[] bandE, int[] bandLogE, int bandLogE_ptr, int C)
-    {
+            int[] bandE, int[] bandLogE, int bandLogE_ptr, int C) {
         int c, i;
         c = 0;
-        do
-        {
-            for (i = 0; i < effEnd; i++)
-            {
-                bandLogE[bandLogE_ptr + (c * m.nbEBands) + i] =
-                   (Inlines.celt_log2(Inlines.SHL32(bandE[i + c * m.nbEBands], 2))
-                   - Inlines.SHL16((int)CeltTables.eMeans[i], 6));
+        do {
+            for (i = 0; i < effEnd; i++) {
+                bandLogE[bandLogE_ptr + (c * m.nbEBands) + i]
+                        = (Inlines.celt_log2(Inlines.SHL32(bandE[i + c * m.nbEBands], 2))
+                        - Inlines.SHL16((int) CeltTables.eMeans[i], 6));
             }
-            for (i = effEnd; i < end; i++)
-            {
-                bandLogE[bandLogE_ptr + (c * m.nbEBands) + i] = (0 - ((short)(0.5 + (14.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT)*/);
+            for (i = effEnd; i < end; i++) {
+                bandLogE[bandLogE_ptr + (c * m.nbEBands) + i] = (0 - ((short) (0.5 + (14.0f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(14.0f, CeltConstants.DB_SHIFT)*/);
             }
         } while (++c < C);
     }

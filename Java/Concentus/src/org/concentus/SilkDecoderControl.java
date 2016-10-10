@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Decoder control
 /// </summary>
-class SilkDecoderControl
-{
+class SilkDecoderControl {
+
     /* Prediction and coding parameters */
     final int[] pitchL = new int[SilkConstants.MAX_NB_SUBFR];
     final int[] Gains_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
@@ -46,13 +45,12 @@ class SilkDecoderControl
     final short[] LTPCoef_Q14 = new short[SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR];
     int LTP_scale_Q14 = 0;
 
-    void Reset()
-    {
+    void Reset() {
         Arrays.MemSet(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
         Arrays.MemSet(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
-        Arrays.MemSet(PredCoef_Q12[0], (short)0, SilkConstants.MAX_LPC_ORDER);
-        Arrays.MemSet(PredCoef_Q12[1], (short)0, SilkConstants.MAX_LPC_ORDER);
-        Arrays.MemSet(LTPCoef_Q14, (short)0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
+        Arrays.MemSet(PredCoef_Q12[0], (short) 0, SilkConstants.MAX_LPC_ORDER);
+        Arrays.MemSet(PredCoef_Q12[1], (short) 0, SilkConstants.MAX_LPC_ORDER);
+        Arrays.MemSet(LTPCoef_Q14, (short) 0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
         LTP_scale_Q14 = 0;
     }
 }

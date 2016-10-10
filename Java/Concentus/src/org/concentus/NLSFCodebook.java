@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Structure containing NLSF codebook
 /// </summary>
-class NLSFCodebook
-{
+class NLSFCodebook {
+
     short nVectors = 0;
 
     short order = 0;
@@ -86,8 +85,7 @@ class NLSFCodebook
     /// </summary>
     short[] deltaMin_Q15 = null;
 
-    void Reset()
-    {
+    void Reset() {
         nVectors = 0;
         order = 0;
         quantStepSize_Q16 = 0;

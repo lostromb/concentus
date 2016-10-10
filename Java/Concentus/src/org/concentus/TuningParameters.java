@@ -28,18 +28,21 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class TuningParameters
-{
+class TuningParameters {
+
     /* Decay time for EntropyCoder.BITREServoir */
     static final int BITRESERVOIR_DECAY_TIME_MS = 500;
 
-    /*******************/
+    /**
+     * ****************
+     */
     /* Pitch estimator */
-    /*******************/
+    /**
+     * ****************
+     */
 
     /* Level of noise floor for whitening filter LPC analysis in pitch analysis */
     static final float FIND_PITCH_WHITE_NOISE_FRACTION = 1e-3f;
@@ -47,9 +50,13 @@ class TuningParameters
     /* Bandwidth expansion for whitening filter in pitch analysis */
     static final float FIND_PITCH_BANDWIDTH_EXPANSION = 0.99f;
 
-    /*********************/
+    /**
+     * ******************
+     */
     /* Linear prediction */
-    /*********************/
+    /**
+     * ******************
+     */
 
     /* LPC analysis regularization */
     static final float FIND_LPC_COND_FAC = 1e-5f;
@@ -67,9 +74,13 @@ class TuningParameters
     /* Max cumulative LTP gain */
     static final float MAX_SUM_LOG_GAIN_DB = 250.0f;
 
-    /***********************/
+    /**
+     * ********************
+     */
     /* High pass filtering */
-    /***********************/
+    /**
+     * ********************
+     */
 
     /* Smoothing parameters for low end of pitch frequency range estimation */
     static final float VARIABLE_HP_SMTH_COEF1 = 0.1f;
@@ -80,9 +91,13 @@ class TuningParameters
     static final int VARIABLE_HP_MIN_CUTOFF_HZ = 60;
     static final int VARIABLE_HP_MAX_CUTOFF_HZ = 100;
 
-    /***********/
+    /**
+     * ********
+     */
     /* Various */
-    /***********/
+    /**
+     * ********
+     */
 
     /* VAD threshold */
     static final float SPEECH_ACTIVITY_DTX_THRES = 0.05f;
@@ -90,9 +105,13 @@ class TuningParameters
     /* Speech Activity LBRR enable threshold */
     static final float LBRR_SPEECH_ACTIVITY_THRES = 0.3f;
 
-    /*************************/
+    /**
+     * **********************
+     */
     /* Perceptual parameters */
-    /*************************/
+    /**
+     * **********************
+     */
 
     /* reduction in coding SNR during low speech activity */
     static final float BG_SNR_DECR_dB = 2.0f;

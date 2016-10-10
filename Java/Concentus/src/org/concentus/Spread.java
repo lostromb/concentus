@@ -31,15 +31,13 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class Spread
-{
+class Spread {
+
     public static final int SPREAD_NONE = 0;
     public static final int SPREAD_LIGHT = 1;
     public static final int SPREAD_NORMAL = 2;
     public static final int SPREAD_AGGRESSIVE = 3;
 }
-

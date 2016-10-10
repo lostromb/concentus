@@ -31,12 +31,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class MDCTLookup
-{
+class MDCTLookup {
+
     int n = 0;
 
     int maxshift = 0;
@@ -46,7 +45,6 @@ class MDCTLookup
 
     short[] trig = null;
 
-    MDCTLookup()
-    {
+    MDCTLookup() {
     }
 }

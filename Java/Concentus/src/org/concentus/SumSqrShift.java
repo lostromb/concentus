@@ -28,12 +28,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class SumSqrShift
-{
+class SumSqrShift {
+
     /// <summary>
     /// Compute number of bits to right shift the sum of squares of a vector
     /// of int16s to make it fit in an int32
@@ -43,12 +42,11 @@ class SumSqrShift
     /// <param name="x">I   Input vector</param>
     /// <param name="len">I   Length of input vector</param>
     static void silk_sum_sqr_shift(
-        BoxedValueInt energy,
-        BoxedValueInt shift,
-        short[] x,
-        int x_ptr,
-        int len)
-    {
+            BoxedValueInt energy,
+            BoxedValueInt shift,
+            short[] x,
+            int x_ptr,
+            int len) {
         int i, shft;
         int nrg_tmp, nrg;
 
@@ -56,44 +54,38 @@ class SumSqrShift
         shft = 0;
         len--;
 
-        for (i = 0; i < len; i += 2)
-        {
+        for (i = 0; i < len; i += 2) {
             nrg = Inlines.silk_SMLABB_ovflw(nrg, x[x_ptr + i], x[x_ptr + i]);
             nrg = Inlines.silk_SMLABB_ovflw(nrg, x[x_ptr + i + 1], x[x_ptr + i + 1]);
-            if (nrg < 0)
-            {
+            if (nrg < 0) {
                 /* Scale down */
-                nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                nrg = ((int) Inlines.silk_RSHIFT_uint(nrg, 2));
                 shft = 2;
                 i += 2;
                 break;
             }
         }
 
-        for (; i < len; i += 2)
-        {
+        for (; i < len; i += 2) {
             nrg_tmp = Inlines.silk_SMULBB(x[x_ptr + i], x[x_ptr + i]);
             nrg_tmp = Inlines.silk_SMLABB_ovflw(nrg_tmp, x[x_ptr + i + 1], x[x_ptr + i + 1]);
-            nrg = ((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
-            if (nrg < 0)
-            {
+            nrg = ((int) Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
+            if (nrg < 0) {
                 /* Scale down */
-                nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                nrg = ((int) Inlines.silk_RSHIFT_uint(nrg, 2));
                 shft += 2;
             }
         }
 
-        if (i == len)
-        {
+        if (i == len) {
             /* One sample left to process */
             nrg_tmp = Inlines.silk_SMULBB(x[x_ptr + i], x[x_ptr + i]);
-            nrg = ((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
+            nrg = ((int) Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
         }
 
         /* Make sure to have at least one extra leading zero (two leading zeros in total) */
-        if ((nrg & 0xC0000000) != 0)
-        {
-            nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+        if ((nrg & 0xC0000000) != 0) {
+            nrg = ((int) Inlines.silk_RSHIFT_uint(nrg, 2));
             shft += 2;
         }
 
@@ -112,11 +104,10 @@ class SumSqrShift
     /// <param name="x">I   Input vector</param>
     /// <param name="len">I   Length of input vector</param>
     static void silk_sum_sqr_shift(
-        BoxedValueInt energy,
-        BoxedValueInt shift,
-        short[] x,
-        int len)
-    {
+            BoxedValueInt energy,
+            BoxedValueInt shift,
+            short[] x,
+            int len) {
         int i, shft;
         int nrg_tmp, nrg;
 
@@ -124,44 +115,38 @@ class SumSqrShift
         shft = 0;
         len--;
 
-        for (i = 0; i < len; i += 2)
-        {
+        for (i = 0; i < len; i += 2) {
             nrg = Inlines.silk_SMLABB_ovflw(nrg, x[i], x[i]);
             nrg = Inlines.silk_SMLABB_ovflw(nrg, x[i + 1], x[i + 1]);
-            if (nrg < 0)
-            {
+            if (nrg < 0) {
                 /* Scale down */
-                nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                nrg = ((int) Inlines.silk_RSHIFT_uint(nrg, 2));
                 shft = 2;
                 i += 2;
                 break;
             }
         }
 
-        for (; i < len; i += 2)
-        {
+        for (; i < len; i += 2) {
             nrg_tmp = Inlines.silk_SMULBB(x[i], x[i]);
             nrg_tmp = Inlines.silk_SMLABB_ovflw(nrg_tmp, x[i + 1], x[i + 1]);
-            nrg = ((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
-            if (nrg < 0)
-            {
+            nrg = ((int) Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
+            if (nrg < 0) {
                 /* Scale down */
-                nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+                nrg = ((int) Inlines.silk_RSHIFT_uint(nrg, 2));
                 shft += 2;
             }
         }
 
-        if (i == len)
-        {
+        if (i == len) {
             /* One sample left to process */
             nrg_tmp = Inlines.silk_SMULBB(x[i], x[i]);
-            nrg = ((int)Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
+            nrg = ((int) Inlines.silk_ADD_RSHIFT_uint(nrg, nrg_tmp, shft));
         }
 
         /* Make sure to have at least one extra leading zero (two leading zeros in total) */
-        if ((nrg & 0xC0000000) != 0)
-        {
-            nrg = ((int)Inlines.silk_RSHIFT_uint(nrg, 2));
+        if ((nrg & 0xC0000000) != 0) {
+            nrg = ((int) Inlines.silk_RSHIFT_uint(nrg, 2));
             shft += 2;
         }
 

@@ -31,14 +31,12 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-public enum OpusBandwidth
-{
+public enum OpusBandwidth {
     OPUS_BANDWIDTH_UNKNOWN,
-    OPUS_BANDWIDTH_AUTO, 
+    OPUS_BANDWIDTH_AUTO,
     OPUS_BANDWIDTH_NARROWBAND,
     OPUS_BANDWIDTH_MEDIUMBAND,
     OPUS_BANDWIDTH_WIDEBAND,
@@ -47,12 +45,10 @@ public enum OpusBandwidth
 }
 
 // Helpers to port over uses of OpusBandwidth as an integer
-class OpusBandwidthHelpers
-{
-    static int GetOrdinal(OpusBandwidth bw)
-    {
-        switch (bw)
-        {
+class OpusBandwidthHelpers {
+
+    static int GetOrdinal(OpusBandwidth bw) {
+        switch (bw) {
             case OPUS_BANDWIDTH_NARROWBAND:
                 return 1;
             case OPUS_BANDWIDTH_MEDIUMBAND:
@@ -68,10 +64,8 @@ class OpusBandwidthHelpers
         return -1;
     }
 
-    static OpusBandwidth GetBandwidth(int ordinal)
-    {
-        switch (ordinal)
-        {
+    static OpusBandwidth GetBandwidth(int ordinal) {
+        switch (ordinal) {
             case 1:
                 return OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
             case 2:
@@ -87,22 +81,21 @@ class OpusBandwidthHelpers
         return OpusBandwidth.OPUS_BANDWIDTH_AUTO;
     }
 
-    static OpusBandwidth MIN(OpusBandwidth a, OpusBandwidth b)
-    {
-        if (GetOrdinal(a) < GetOrdinal(b))
+    static OpusBandwidth MIN(OpusBandwidth a, OpusBandwidth b) {
+        if (GetOrdinal(a) < GetOrdinal(b)) {
             return a;
+        }
         return b;
     }
 
-    static OpusBandwidth MAX(OpusBandwidth a, OpusBandwidth b)
-    {
-        if (GetOrdinal(a) > GetOrdinal(b))
+    static OpusBandwidth MAX(OpusBandwidth a, OpusBandwidth b) {
+        if (GetOrdinal(a) > GetOrdinal(b)) {
             return a;
+        }
         return b;
     }
 
-    static OpusBandwidth SUBTRACT(OpusBandwidth a, int b)
-    {
+    static OpusBandwidth SUBTRACT(OpusBandwidth a, int b) {
         return GetBandwidth(GetOrdinal(a) - b);
     }
 }

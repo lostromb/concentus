@@ -28,8 +28,7 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /*
@@ -49,9 +48,8 @@ package org.concentus;
  * UF  . Allpass-based 2x upsampling followed by FIR interpolation
  * AF  . AR2 filter followed by FIR interpolation
  */
+class Resampler {
 
-class Resampler
-{
     private static final int USE_silk_resampler_copy = 0;
     private static final int USE_silk_resampler_private_up2_HQ_wrapper = 1;
     private static final int USE_silk_resampler_private_IIR_FIR = 2;
@@ -64,8 +62,7 @@ class Resampler
     /// </summary>
     /// <param name="R"></param>
     /// <returns></returns>
-    private static int rateID(int R)
-    {
+    private static int rateID(int R) {
         return (((((R) >> 12) - ((R > 16000) ? 1 : 0)) >> ((R > 24000) ? 1 : 0)) - 1);
     }
 
@@ -78,31 +75,26 @@ class Resampler
     /// <param name="forEnc">I    If 1: encoder; if 0: decoder</param>
     /// <returns></returns>
     static int silk_resampler_init(
-        SilkResamplerState S,
-        int Fs_Hz_in,
-        int Fs_Hz_out,
-        int forEnc)
-    {
+            SilkResamplerState S,
+            int Fs_Hz_in,
+            int Fs_Hz_out,
+            int forEnc) {
         int up2x;
 
         /* Clear state */
         S.Reset();
 
         /* Input checking */
-        if (forEnc != 0)
-        {
-            if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000 && Fs_Hz_in != 24000 && Fs_Hz_in != 48000) ||
-                (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000))
-            {
+        if (forEnc != 0) {
+            if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000 && Fs_Hz_in != 24000 && Fs_Hz_in != 48000)
+                    || (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000)) {
                 Inlines.OpusAssert(false);
                 return -1;
             }
             S.inputDelay = SilkTables.delay_matrix_enc[rateID(Fs_Hz_in)][rateID(Fs_Hz_out)];
-        }
-        else {
-            if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000) ||
-                (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 && Fs_Hz_out != 24000 && Fs_Hz_out != 48000))
-            {
+        } else {
+            if ((Fs_Hz_in != 8000 && Fs_Hz_in != 12000 && Fs_Hz_in != 16000)
+                    || (Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 && Fs_Hz_out != 24000 && Fs_Hz_out != 48000)) {
                 Inlines.OpusAssert(false);
                 return -1;
             }
@@ -117,69 +109,56 @@ class Resampler
 
         /* Find resampler with the right sampling ratio */
         up2x = 0;
-        if (Fs_Hz_out > Fs_Hz_in)
-        {
+        if (Fs_Hz_out > Fs_Hz_in) {
             /* Upsample */
-            if (Fs_Hz_out == Inlines.silk_MUL(Fs_Hz_in, 2))
-            {                            /* Fs_out : Fs_in = 2 : 1 */
-                                         /* Special case: directly use 2x upsampler */
+            if (Fs_Hz_out == Inlines.silk_MUL(Fs_Hz_in, 2)) {
+                /* Fs_out : Fs_in = 2 : 1 */
+ /* Special case: directly use 2x upsampler */
                 S.resampler_function = USE_silk_resampler_private_up2_HQ_wrapper;
-            }
-            else {
+            } else {
                 /* Default resampler */
                 S.resampler_function = USE_silk_resampler_private_IIR_FIR;
                 up2x = 1;
             }
-        }
-        else if (Fs_Hz_out < Fs_Hz_in)
-        {
+        } else if (Fs_Hz_out < Fs_Hz_in) {
             /* Downsample */
             S.resampler_function = USE_silk_resampler_private_down_FIR;
-            if (Inlines.silk_MUL(Fs_Hz_out, 4) == Inlines.silk_MUL(Fs_Hz_in, 3))
-            {             /* Fs_out : Fs_in = 3 : 4 */
+            if (Inlines.silk_MUL(Fs_Hz_out, 4) == Inlines.silk_MUL(Fs_Hz_in, 3)) {
+                /* Fs_out : Fs_in = 3 : 4 */
                 S.FIR_Fracs = 3;
                 S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR0;
                 S.Coefs = SilkTables.silk_Resampler_3_4_COEFS;
-            }
-            else if (Inlines.silk_MUL(Fs_Hz_out, 3) == Inlines.silk_MUL(Fs_Hz_in, 2))
-            {      /* Fs_out : Fs_in = 2 : 3 */
+            } else if (Inlines.silk_MUL(Fs_Hz_out, 3) == Inlines.silk_MUL(Fs_Hz_in, 2)) {
+                /* Fs_out : Fs_in = 2 : 3 */
                 S.FIR_Fracs = 2;
                 S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR0;
                 S.Coefs = SilkTables.silk_Resampler_2_3_COEFS;
-            }
-            else if (Inlines.silk_MUL(Fs_Hz_out, 2) == Fs_Hz_in)
-            {                     /* Fs_out : Fs_in = 1 : 2 */
+            } else if (Inlines.silk_MUL(Fs_Hz_out, 2) == Fs_Hz_in) {
+                /* Fs_out : Fs_in = 1 : 2 */
                 S.FIR_Fracs = 1;
                 S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR1;
                 S.Coefs = SilkTables.silk_Resampler_1_2_COEFS;
-            }
-            else if (Inlines.silk_MUL(Fs_Hz_out, 3) == Fs_Hz_in)
-            {                     /* Fs_out : Fs_in = 1 : 3 */
+            } else if (Inlines.silk_MUL(Fs_Hz_out, 3) == Fs_Hz_in) {
+                /* Fs_out : Fs_in = 1 : 3 */
                 S.FIR_Fracs = 1;
                 S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR2;
                 S.Coefs = SilkTables.silk_Resampler_1_3_COEFS;
-            }
-            else if (Inlines.silk_MUL(Fs_Hz_out, 4) == Fs_Hz_in)
-            {                     /* Fs_out : Fs_in = 1 : 4 */
+            } else if (Inlines.silk_MUL(Fs_Hz_out, 4) == Fs_Hz_in) {
+                /* Fs_out : Fs_in = 1 : 4 */
                 S.FIR_Fracs = 1;
                 S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR2;
                 S.Coefs = SilkTables.silk_Resampler_1_4_COEFS;
-            }
-            else if (Inlines.silk_MUL(Fs_Hz_out, 6) == Fs_Hz_in)
-            {                     /* Fs_out : Fs_in = 1 : 6 */
+            } else if (Inlines.silk_MUL(Fs_Hz_out, 6) == Fs_Hz_in) {
+                /* Fs_out : Fs_in = 1 : 6 */
                 S.FIR_Fracs = 1;
                 S.FIR_Order = SilkConstants.RESAMPLER_DOWN_ORDER_FIR2;
                 S.Coefs = SilkTables.silk_Resampler_1_6_COEFS;
-            }
-            else
-            {
+            } else {
                 /* None available */
                 Inlines.OpusAssert(false);
                 return -1;
             }
-        }
-        else
-        {
+        } else {
             /* Input and output sampling rates are equal: copy */
             S.resampler_function = USE_silk_resampler_copy;
         }
@@ -188,8 +167,7 @@ class Resampler
         S.invRatio_Q16 = Inlines.silk_LSHIFT32(Inlines.silk_DIV32(Inlines.silk_LSHIFT32(Fs_Hz_in, 14 + up2x), Fs_Hz_out), 2);
 
         /* Make sure the ratio is rounded up */
-        while (Inlines.silk_SMULWW(S.invRatio_Q16, Fs_Hz_out) < Inlines.silk_LSHIFT32(Fs_Hz_in, up2x))
-        {
+        while (Inlines.silk_SMULWW(S.invRatio_Q16, Fs_Hz_out) < Inlines.silk_LSHIFT32(Fs_Hz_in, up2x)) {
             S.invRatio_Q16++;
         }
 
@@ -206,13 +184,12 @@ class Resampler
     /// <param name="inLen">I    Number of input samples</param>
     /// <returns></returns>
     static int silk_resampler(
-        SilkResamplerState S,
-        short[] output,
-        int output_ptr,
-        short[] input,
-        int input_ptr,
-        int inLen)
-    {
+            SilkResamplerState S,
+            short[] output,
+            int output_ptr,
+            short[] input,
+            int input_ptr,
+            int inLen) {
         int nSamples;
 
         /* Need at least 1 ms of input data */
@@ -227,8 +204,7 @@ class Resampler
         /* Copy to delay buffer */
         System.arraycopy(input, input_ptr, delayBufPtr, S.inputDelay, nSamples);
 
-        switch (S.resampler_function)
-        {
+        switch (S.resampler_function) {
             case USE_silk_resampler_private_up2_HQ_wrapper:
                 silk_resampler_private_up2_HQ(S.sIIR, output, output_ptr, delayBufPtr, 0, S.Fs_in_kHz);
                 silk_resampler_private_up2_HQ(S.sIIR, output, output_ptr + S.Fs_out_kHz, input, input_ptr + nSamples, inLen - S.Fs_in_kHz);
@@ -261,11 +237,10 @@ class Resampler
     /// <param name="input">I    Input signal [ len ]</param>
     /// <param name="inLen">I    Number of input samples</param>
     static void silk_resampler_down2(
-        int[] S,
-        short[] output,
-        short[] input,
-        int inLen)
-    {
+            int[] S,
+            short[] output,
+            short[] input,
+            int inLen) {
         int k, len2 = Inlines.silk_RSHIFT32(inLen, 1);
         int in32, out32, Y, X;
 
@@ -273,10 +248,9 @@ class Resampler
         Inlines.OpusAssert(SilkTables.silk_resampler_down2_1 < 0);
 
         /* Internal variables and state are in Q10 format */
-        for (k = 0; k < len2; k++)
-        {
+        for (k = 0; k < len2; k++) {
             /* Convert to Q10 */
-            in32 = Inlines.silk_LSHIFT((int)input[2 * k], 10);
+            in32 = Inlines.silk_LSHIFT((int) input[2 * k], 10);
 
             /* All-pass section for even input sample */
             Y = Inlines.silk_SUB32(in32, S[0]);
@@ -285,7 +259,7 @@ class Resampler
             S[0] = Inlines.silk_ADD32(in32, X);
 
             /* Convert to Q10 */
-            in32 = Inlines.silk_LSHIFT((int)input[2 * k + 1], 10);
+            in32 = Inlines.silk_LSHIFT((int) input[2 * k + 1], 10);
 
             /* All-pass section for odd input sample, and add to output of previous section */
             Y = Inlines.silk_SUB32(in32, S[1]);
@@ -295,7 +269,7 @@ class Resampler
             S[1] = Inlines.silk_ADD32(in32, X);
 
             /* Add, convert back to int16 and store to output */
-            output[k] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32, 11));
+            output[k] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32, 11));
         }
     }
 
@@ -307,11 +281,10 @@ class Resampler
     /// <param name="input">I    Input signal [ inLen ]</param>
     /// <param name="inLen">I    Number of input samples</param>
     static void silk_resampler_down2_3(
-        int[] S,
-        short[] output,
-        short[] input,
-        int inLen)
-    {
+            int[] S,
+            short[] output,
+            short[] input,
+            int inLen) {
         int nSamplesIn, counter, res_Q6;
         int[] buf = new int[SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR];
         int buf_ptr;
@@ -322,19 +295,17 @@ class Resampler
         System.arraycopy(S, 0, buf, 0, ORDER_FIR);
 
         /* Iterate over blocks of frameSizeIn input samples */
-        while (true)
-        {
+        while (true) {
             nSamplesIn = Inlines.silk_min(inLen, SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN);
 
             /* Second-order AR filter (output in Q8) */
             silk_resampler_private_AR2(S, ORDER_FIR, buf, ORDER_FIR, input, input_ptr,
-                SilkTables.silk_Resampler_2_3_COEFS_LQ, nSamplesIn);
+                    SilkTables.silk_Resampler_2_3_COEFS_LQ, nSamplesIn);
 
             /* Interpolate filtered signal */
             buf_ptr = 0;
             counter = nSamplesIn;
-            while (counter > 2)
-            {
+            while (counter > 2) {
                 /* Inner product */
                 res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr], SilkTables.silk_Resampler_2_3_COEFS_LQ[2]);
                 res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 1], SilkTables.silk_Resampler_2_3_COEFS_LQ[3]);
@@ -342,7 +313,7 @@ class Resampler
                 res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 3], SilkTables.silk_Resampler_2_3_COEFS_LQ[4]);
 
                 /* Scale down, saturate and store in output array */
-                output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
+                output[output_ptr++] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
 
                 res_Q6 = Inlines.silk_SMULWB(buf[buf_ptr + 1], SilkTables.silk_Resampler_2_3_COEFS_LQ[4]);
                 res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 2], SilkTables.silk_Resampler_2_3_COEFS_LQ[5]);
@@ -350,7 +321,7 @@ class Resampler
                 res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 4], SilkTables.silk_Resampler_2_3_COEFS_LQ[2]);
 
                 /* Scale down, saturate and store in output array */
-                output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
+                output[output_ptr++] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
 
                 buf_ptr += 3;
                 counter -= 3;
@@ -359,13 +330,10 @@ class Resampler
             input_ptr += nSamplesIn;
             inLen -= nSamplesIn;
 
-            if (inLen > 0)
-            {
+            if (inLen > 0) {
                 /* More iterations to do; copy last part of filtered signal to beginning of buffer */
                 System.arraycopy(buf, nSamplesIn, buf, 0, ORDER_FIR);
-            }
-            else
-            {
+            } else {
                 break;
             }
         }
@@ -383,20 +351,18 @@ class Resampler
     /// <param name="A_Q14">I    AR coefficients, Q14</param>
     /// <param name="len">I    Signal length</param>
     static void silk_resampler_private_AR2(
-        int[] S,
-        int S_ptr,
-        int[] out_Q8,
-        int out_Q8_ptr,
-        short[] input,
-        int input_ptr,
-        short[] A_Q14,
-        int len)
-    {
+            int[] S,
+            int S_ptr,
+            int[] out_Q8,
+            int out_Q8_ptr,
+            short[] input,
+            int input_ptr,
+            short[] A_Q14,
+            int len) {
         int k, out32;
 
-        for (k = 0; k < len; k++)
-        {
-            out32 = Inlines.silk_ADD_LSHIFT32(S[S_ptr], (int)input[input_ptr + k], 8);
+        for (k = 0; k < len; k++) {
+            out32 = Inlines.silk_ADD_LSHIFT32(S[S_ptr], (int) input[input_ptr + k], 8);
             out_Q8[out_Q8_ptr + k] = out32;
             out32 = Inlines.silk_LSHIFT(out32, 2);
             S[S_ptr] = Inlines.silk_SMLAWB(S[S_ptr + 1], out32, A_Q14[0]);
@@ -405,26 +371,23 @@ class Resampler
     }
 
     static int silk_resampler_private_down_FIR_INTERPOL(
-        short[] output,
-        int output_ptr,
-        int[] buf,
-        short[] FIR_Coefs,
-        int FIR_Coefs_ptr,
-        int FIR_Order,
-        int FIR_Fracs,
-        int max_index_Q16,
-        int index_increment_Q16)
-    {
+            short[] output,
+            int output_ptr,
+            int[] buf,
+            short[] FIR_Coefs,
+            int FIR_Coefs_ptr,
+            int FIR_Order,
+            int FIR_Fracs,
+            int max_index_Q16,
+            int index_increment_Q16) {
         int index_Q16, res_Q6;
         int buf_ptr;
         int interpol_ind;
         int interpol_ptr;
 
-        switch (FIR_Order)
-        {
+        switch (FIR_Order) {
             case SilkConstants.RESAMPLER_DOWN_ORDER_FIR0:
-                for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16)
-                {
+                for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16) {
                     /* Integer part gives pointer to buffered input */
                     buf_ptr = Inlines.silk_RSHIFT(index_Q16, 16);
 
@@ -454,12 +417,11 @@ class Resampler
                     res_Q6 = Inlines.silk_SMLAWB(res_Q6, buf[buf_ptr + 9], FIR_Coefs[interpol_ptr + 8]);
 
                     /* Scale down, saturate and store in output array */
-                    output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
+                    output[output_ptr++] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
                 }
                 break;
             case SilkConstants.RESAMPLER_DOWN_ORDER_FIR1:
-                for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16)
-                {
+                for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16) {
                     /* Integer part gives pointer to buffered input */
                     buf_ptr = Inlines.silk_RSHIFT(index_Q16, 16);
 
@@ -478,12 +440,11 @@ class Resampler
                     res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 11], buf[buf_ptr + 12]), FIR_Coefs[FIR_Coefs_ptr + 11]);
 
                     /* Scale down, saturate and store in output array */
-                    output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
+                    output[output_ptr++] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
                 }
                 break;
             case SilkConstants.RESAMPLER_DOWN_ORDER_FIR2:
-                for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16)
-                {
+                for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16) {
                     /* Integer part gives pointer to buffered input */
                     buf_ptr = Inlines.silk_RSHIFT(index_Q16, 16);
 
@@ -508,7 +469,7 @@ class Resampler
                     res_Q6 = Inlines.silk_SMLAWB(res_Q6, Inlines.silk_ADD32(buf[buf_ptr + 17], buf[buf_ptr + 18]), FIR_Coefs[FIR_Coefs_ptr + 17]);
 
                     /* Scale down, saturate and store in output array */
-                    output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
+                    output[output_ptr++] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q6, 6));
                 }
                 break;
             default:
@@ -527,13 +488,12 @@ class Resampler
     /// <param name="input">I    Input signal</param>
     /// <param name="inLen">I    Number of input samples</param>
     static void silk_resampler_private_down_FIR(
-        SilkResamplerState S,
-        short[] output,
-        int output_ptr,
-        short[] input,
-        int input_ptr,
-        int inLen)
-    {
+            SilkResamplerState S,
+            short[] output,
+            int output_ptr,
+            short[] input,
+            int input_ptr,
+            int inLen) {
         int nSamplesIn;
         int max_index_Q16, index_increment_Q16;
         int[] buf = new int[S.batchSize + S.FIR_Order];
@@ -543,8 +503,7 @@ class Resampler
 
         /* Iterate over blocks of frameSizeIn input samples */
         index_increment_Q16 = S.invRatio_Q16;
-        while (true)
-        {
+        while (true) {
             nSamplesIn = Inlines.silk_min(inLen, S.batchSize);
 
             /* Second-order AR filter (output in Q8) */
@@ -554,18 +513,15 @@ class Resampler
 
             /* Interpolate filtered signal */
             output_ptr = silk_resampler_private_down_FIR_INTERPOL(output, output_ptr, buf, S.Coefs, 2, S.FIR_Order,
-                S.FIR_Fracs, max_index_Q16, index_increment_Q16);
+                    S.FIR_Fracs, max_index_Q16, index_increment_Q16);
 
             input_ptr += nSamplesIn;
             inLen -= nSamplesIn;
 
-            if (inLen > 1)
-            {
+            if (inLen > 1) {
                 /* More iterations to do; copy last part of filtered signal to beginning of buffer */
                 System.arraycopy(buf, nSamplesIn, buf, 0, S.FIR_Order);
-            }
-            else
-            {
+            } else {
                 break;
             }
         }
@@ -575,19 +531,17 @@ class Resampler
     }
 
     static int silk_resampler_private_IIR_FIR_INTERPOL(
-        short[] output,
-        int output_ptr,
-        short[] buf,
-        int max_index_Q16,
-        int index_increment_Q16)
-    {
+            short[] output,
+            int output_ptr,
+            short[] buf,
+            int max_index_Q16,
+            int index_increment_Q16) {
         int index_Q16, res_Q15;
         int buf_ptr;
         int table_index;
 
         /* Interpolate upsampled signal and store in output array */
-        for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16)
-        {
+        for (index_Q16 = 0; index_Q16 < max_index_Q16; index_Q16 += index_increment_Q16) {
             table_index = Inlines.silk_SMULWB(index_Q16 & 0xFFFF, 12);
             buf_ptr = index_Q16 >> 16;
 
@@ -599,7 +553,7 @@ class Resampler
             res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 5], SilkTables.silk_resampler_frac_FIR_12[11 - table_index][2]);
             res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 6], SilkTables.silk_resampler_frac_FIR_12[11 - table_index][1]);
             res_Q15 = Inlines.silk_SMLABB(res_Q15, buf[buf_ptr + 7], SilkTables.silk_resampler_frac_FIR_12[11 - table_index][0]);
-            output[output_ptr++] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q15, 15));
+            output[output_ptr++] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(res_Q15, 15));
         }
         return output_ptr;
     }
@@ -612,13 +566,12 @@ class Resampler
     /// <param name="input">I    Input signal</param>
     /// <param name="inLen">I    Number of input samples</param>
     static void silk_resampler_private_IIR_FIR(
-        SilkResamplerState S,
-        short[] output,
-        int output_ptr,
-        short[] input,
-        int input_ptr,
-        int inLen)
-    {
+            SilkResamplerState S,
+            short[] output,
+            int output_ptr,
+            short[] input,
+            int input_ptr,
+            int inLen) {
         int nSamplesIn;
         int max_index_Q16, index_increment_Q16;
 
@@ -629,25 +582,22 @@ class Resampler
 
         /* Iterate over blocks of frameSizeIn input samples */
         index_increment_Q16 = S.invRatio_Q16;
-        while (true)
-        {
+        while (true) {
             nSamplesIn = Inlines.silk_min(inLen, S.batchSize);
 
             /* Upsample 2x */
             silk_resampler_private_up2_HQ(S.sIIR, buf, SilkConstants.RESAMPLER_ORDER_FIR_12, input, input_ptr, nSamplesIn);
 
-            max_index_Q16 = Inlines.silk_LSHIFT32(nSamplesIn, 16 + 1);         /* + 1 because 2x upsampling */
+            max_index_Q16 = Inlines.silk_LSHIFT32(nSamplesIn, 16 + 1);
+            /* + 1 because 2x upsampling */
             output_ptr = silk_resampler_private_IIR_FIR_INTERPOL(output, output_ptr, buf, max_index_Q16, index_increment_Q16);
             input_ptr += nSamplesIn;
             inLen -= nSamplesIn;
 
-            if (inLen > 0)
-            {
+            if (inLen > 0) {
                 /* More iterations to do; copy last part of filtered signal to beginning of buffer */
                 System.arraycopy(buf, nSamplesIn << 1, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
-            }
-            else
-            {
+            } else {
                 break;
             }
         }
@@ -666,13 +616,12 @@ class Resampler
     /// <param name="input">I    Input signal [ len ]</param>
     /// <param name="len">I    Number of input samples</param>
     static void silk_resampler_private_up2_HQ(
-        int[] S,
-        short[] output,
-        int output_ptr,
-        short[] input,
-        int input_ptr,
-        int len)
-    {
+            int[] S,
+            short[] output,
+            int output_ptr,
+            short[] input,
+            int input_ptr,
+            int len) {
         int k;
         int in32, out32_1, out32_2, Y, X;
 
@@ -684,10 +633,9 @@ class Resampler
         Inlines.OpusAssert(SilkTables.silk_resampler_up2_hq_1[2] < 0);
 
         /* Internal variables and state are in Q10 format */
-        for (k = 0; k < len; k++)
-        {
+        for (k = 0; k < len; k++) {
             /* Convert to Q10 */
-            in32 = Inlines.silk_LSHIFT((int)input[input_ptr + k], 10);
+            in32 = Inlines.silk_LSHIFT((int) input[input_ptr + k], 10);
 
             /* First all-pass section for even output sample */
             Y = Inlines.silk_SUB32(in32, S[0]);
@@ -708,7 +656,7 @@ class Resampler
             S[2] = Inlines.silk_ADD32(out32_2, X);
 
             /* Apply gain in Q15, convert back to int16 and store to output */
-            output[output_ptr + (2 * k)] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32_1, 10));
+            output[output_ptr + (2 * k)] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32_1, 10));
 
             /* First all-pass section for odd output sample */
             Y = Inlines.silk_SUB32(in32, S[3]);
@@ -729,7 +677,7 @@ class Resampler
             S[5] = Inlines.silk_ADD32(out32_2, X);
 
             /* Apply gain in Q15, convert back to int16 and store to output */
-            output[output_ptr + (2 * k) + 1] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32_1, 10));
+            output[output_ptr + (2 * k) + 1] = (short) Inlines.silk_SAT16(Inlines.silk_RSHIFT_ROUND(out32_1, 10));
         }
     }
 }

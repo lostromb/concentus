@@ -31,20 +31,18 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class StereoWidthState
-{
+class StereoWidthState {
+
     int XX;
     int XY;
     int YY;
     int smoothed_width;
     int max_follower;
 
-    void Reset()
-    {
+    void Reset() {
         XX = 0;
         XY = 0;
         YY = 0;

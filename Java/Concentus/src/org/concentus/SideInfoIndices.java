@@ -28,12 +28,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class SideInfoIndices
-{
+class SideInfoIndices {
+
     final byte[] GainsIndices = new byte[SilkConstants.MAX_NB_SUBFR];
     final byte[] LTPIndex = new byte[SilkConstants.MAX_NB_SUBFR];
     final byte[] NLSFIndices = new byte[SilkConstants.MAX_LPC_ORDER + 1];
@@ -46,11 +45,10 @@ class SideInfoIndices
     byte LTP_scaleIndex = 0;
     byte Seed = 0;
 
-    void Reset()
-    {
-        Arrays.MemSet(GainsIndices, (byte)0, SilkConstants.MAX_NB_SUBFR);
-        Arrays.MemSet(LTPIndex, (byte)0, SilkConstants.MAX_NB_SUBFR);
-        Arrays.MemSet(NLSFIndices, (byte)0, SilkConstants.MAX_LPC_ORDER + 1);
+    void Reset() {
+        Arrays.MemSet(GainsIndices, (byte) 0, SilkConstants.MAX_NB_SUBFR);
+        Arrays.MemSet(LTPIndex, (byte) 0, SilkConstants.MAX_NB_SUBFR);
+        Arrays.MemSet(NLSFIndices, (byte) 0, SilkConstants.MAX_LPC_ORDER + 1);
         lagIndex = 0;
         contourIndex = 0;
         signalType = 0;
@@ -65,8 +63,7 @@ class SideInfoIndices
     /// Overwrites this struct with values from another one. Equivalent to C struct assignment this = other
     /// </summary>
     /// <param name="other"></param>
-    void Assign(SideInfoIndices other)
-    {
+    void Assign(SideInfoIndices other) {
         System.arraycopy(other.GainsIndices, 0, this.GainsIndices, 0, SilkConstants.MAX_NB_SUBFR);
         System.arraycopy(other.LTPIndex, 0, this.LTPIndex, 0, SilkConstants.MAX_NB_SUBFR);
         System.arraycopy(other.NLSFIndices, 0, this.NLSFIndices, 0, SilkConstants.MAX_LPC_ORDER + 1);

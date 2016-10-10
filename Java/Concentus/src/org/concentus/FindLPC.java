@@ -28,20 +28,18 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class FindLPC
-{
+class FindLPC {
+
     /* Finds LPC vector from correlations, and converts to NLSF */
     static void silk_find_LPC(
-        SilkChannelEncoder psEncC,                                /* I/O  Encoder state                                                               */
-        short[] NLSF_Q15,                             /* O    NLSFs                                                                       */
-        short[] x,                                    /* I    Input signal                                                                */
-        int minInvGain_Q30                          /* I    Inverse of max prediction gain                                              */
-    )
-    {
+            SilkChannelEncoder psEncC, /* I/O  Encoder state                                                               */
+            short[] NLSF_Q15, /* O    NLSFs                                                                       */
+            short[] x, /* I    Input signal                                                                */
+            int minInvGain_Q30 /* I    Inverse of max prediction gain                                              */
+    ) {
         int k, subfr_length;
         int[] a_Q16 = new int[SilkConstants.MAX_LPC_ORDER];
         int isInterpLower, shift;
@@ -69,8 +67,7 @@ class FindLPC
         res_nrg = scratch_box1.Val;
         res_nrg_Q = scratch_box2.Val;
 
-        if (psEncC.useInterpolatedNLSFs != 0 && psEncC.first_frame_after_reset == 0 && psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR)
-        {
+        if (psEncC.useInterpolatedNLSFs != 0 && psEncC.first_frame_after_reset == 0 && psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR) {
             short[] LPC_res;
 
             /* Optimal solution for last 10 ms */
@@ -79,16 +76,13 @@ class FindLPC
             res_tmp_nrg_Q = scratch_box2.Val;
 
             /* subtract residual energy here, as that's easier than adding it to the    */
-            /* residual energy of the first 10 ms in each iteration of the search below */
+ /* residual energy of the first 10 ms in each iteration of the search below */
             shift = res_tmp_nrg_Q - res_nrg_Q;
-            if (shift >= 0)
-            {
-                if (shift < 32)
-                {
+            if (shift >= 0) {
+                if (shift < 32) {
                     res_nrg = res_nrg - Inlines.silk_RSHIFT(res_tmp_nrg, shift);
                 }
-            }
-            else {
+            } else {
                 Inlines.OpusAssert(shift > -32);
                 res_nrg = Inlines.silk_RSHIFT(res_nrg, -shift) - res_tmp_nrg;
                 res_nrg_Q = res_tmp_nrg_Q;
@@ -97,11 +91,10 @@ class FindLPC
             /* Convert to NLSFs */
             NLSF.silk_A2NLSF(NLSF_Q15, a_tmp_Q16, psEncC.predictLPCOrder);
 
-           LPC_res = new short[2 * subfr_length];
-           
+            LPC_res = new short[2 * subfr_length];
+
             /* Search over interpolation indices to find the one with lowest residual energy */
-            for (k = 3; k >= 0; k--)
-            {
+            for (k = 3; k >= 0; k--) {
                 /* Interpolate NLSFs for first half */
                 Inlines.silk_interpolate(NLSF0_Q15, psEncC.prev_NLSFq_Q15, NLSF_Q15, k, psEncC.predictLPCOrder);
 
@@ -117,12 +110,10 @@ class FindLPC
 
                 /* Add subframe energies from first half frame */
                 shift = rshift0.Val - rshift1.Val;
-                if (shift >= 0)
-                {
+                if (shift >= 0) {
                     res_nrg1.Val = Inlines.silk_RSHIFT(res_nrg1.Val, shift);
                     res_nrg_interp_Q = 0 - rshift0.Val;
-                }
-                else {
+                } else {
                     res_nrg0.Val = Inlines.silk_RSHIFT(res_nrg0.Val, 0 - shift);
                     res_nrg_interp_Q = 0 - rshift1.Val;
                 }
@@ -130,45 +121,33 @@ class FindLPC
 
                 /* Compare with first half energy without NLSF interpolation, or best interpolated value so far */
                 shift = res_nrg_interp_Q - res_nrg_Q;
-                if (shift >= 0)
-                {
-                    if (Inlines.silk_RSHIFT(res_nrg_interp, shift) < res_nrg)
-                    {
+                if (shift >= 0) {
+                    if (Inlines.silk_RSHIFT(res_nrg_interp, shift) < res_nrg) {
                         isInterpLower = (true ? 1 : 0);
-                    }
-                    else {
+                    } else {
                         isInterpLower = (false ? 1 : 0);
                     }
-                }
-                else {
-                    if (-shift < 32)
-                    {
-                        if (res_nrg_interp < Inlines.silk_RSHIFT(res_nrg, -shift))
-                        {
-                            isInterpLower = (true ? 1 : 0);
-                        }
-                        else {
-                            isInterpLower = (false ? 1 : 0);
-                        }
-                    }
-                    else {
+                } else if (-shift < 32) {
+                    if (res_nrg_interp < Inlines.silk_RSHIFT(res_nrg, -shift)) {
+                        isInterpLower = (true ? 1 : 0);
+                    } else {
                         isInterpLower = (false ? 1 : 0);
                     }
+                } else {
+                    isInterpLower = (false ? 1 : 0);
                 }
 
                 /* Determine whether current interpolated NLSFs are best so far */
-                if (isInterpLower == (true ? 1 : 0))
-                {
+                if (isInterpLower == (true ? 1 : 0)) {
                     /* Interpolation has lower residual energy */
                     res_nrg = res_nrg_interp;
                     res_nrg_Q = res_nrg_interp_Q;
-                    psEncC.indices.NLSFInterpCoef_Q2 = (byte)k;
+                    psEncC.indices.NLSFInterpCoef_Q2 = (byte) k;
                 }
             }
         }
 
-        if (psEncC.indices.NLSFInterpCoef_Q2 == 4)
-        {
+        if (psEncC.indices.NLSFInterpCoef_Q2 == 4) {
             /* NLSF interpolation is currently inactive, calculate NLSFs from full frame AR coefficients */
             NLSF.silk_A2NLSF(NLSF_Q15, a_Q16, psEncC.predictLPCOrder);
         }

@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Prefilter state
 /// </summary>
-class SilkPrefilterState
-{
+class SilkPrefilterState {
+
     final short[] sLTP_shp = new short[SilkConstants.LTP_BUF_LENGTH];
     final int[] sAR_shp = new int[SilkConstants.MAX_SHAPE_LPC_ORDER + 1];
     int sLTP_shp_buf_idx = 0;
@@ -46,14 +45,12 @@ class SilkPrefilterState
     int rand_seed = 0;
     int lagPrev = 0;
 
-    SilkPrefilterState()
-    {
+    SilkPrefilterState() {
 
     }
 
-    void Reset()
-    {
-        Arrays.MemSet(sLTP_shp, (short)0, SilkConstants.LTP_BUF_LENGTH);
+    void Reset() {
+        Arrays.MemSet(sLTP_shp, (short) 0, SilkConstants.LTP_BUF_LENGTH);
         Arrays.MemSet(sAR_shp, 0, SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
         sLTP_shp_buf_idx = 0;
         sLF_AR_shp_Q12 = 0;

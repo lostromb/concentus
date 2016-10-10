@@ -349,10 +349,10 @@ namespace TestOpusEncode
             MSenc = OpusMSEncoder.Create(8000, 2, 2, 0, mapping, OpusApplication.OPUS_APPLICATION_AUDIO);
             if (err.Val != OpusError.OPUS_OK || MSenc == null) test_failed();
 
-            MSdec = OpusMSDecoder.Create(48000, 2, 2, 0, mapping);
+            MSdec = new OpusMSDecoder(48000, 2, 2, 0, mapping);
             if (err.Val != OpusError.OPUS_OK || MSdec == null) test_failed();
 
-            MSdec_err = OpusMSDecoder.Create(48000, 3, 2, 0, mapping);
+            MSdec_err = new OpusMSDecoder(48000, 3, 2, 0, mapping);
             if (err.Val != OpusError.OPUS_OK || MSdec_err == null) test_failed();
 
             /*Some multistream encoder API tests*/

@@ -31,18 +31,17 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class CeltMode
-{
+class CeltMode {
+
     int Fs = 0;
     int overlap = 0;
 
     int nbEBands = 0;
     int effEBands = 0;
-    int[] preemph = { 0, 0, 0, 0 };
+    int[] preemph = {0, 0, 0, 0};
 
     /// <summary>
     /// Definition for each "pseudo-critical band"
@@ -68,19 +67,17 @@ class CeltMode
     MDCTLookup mdct = new MDCTLookup();
     PulseCache cache = new PulseCache();
 
-    private CeltMode()
-    {
+    private CeltMode() {
     }
 
     static final CeltMode mode48000_960_120 = new CeltMode();
-    
-    static
-    {
+
+    static {
         mode48000_960_120.Fs = 48000;
         mode48000_960_120.overlap = 120;
         mode48000_960_120.nbEBands = 21;
         mode48000_960_120.effEBands = 21;
-        mode48000_960_120.preemph = new int[] { 27853, 0, 4096, 8192 };
+        mode48000_960_120.preemph = new int[]{27853, 0, 4096, 8192};
         mode48000_960_120.eBands = CeltTables.eband5ms;
         mode48000_960_120.maxLM = 3;
         mode48000_960_120.nbShortMdcts = 8;
@@ -90,22 +87,21 @@ class CeltMode
         mode48000_960_120.logN = CeltTables.logN400;
         mode48000_960_120.window = CeltTables.window120;
         mode48000_960_120.mdct = new MDCTLookup();
-        
+
         mode48000_960_120.mdct.n = 1920;
         mode48000_960_120.mdct.maxshift = 3;
-        mode48000_960_120.mdct.kfft = new FFTState[]
-        {
+        mode48000_960_120.mdct.kfft = new FFTState[]{
             CeltTables.fft_state48000_960_0,
             CeltTables.fft_state48000_960_1,
             CeltTables.fft_state48000_960_2,
-            CeltTables.fft_state48000_960_3,
-        };
-        
+            CeltTables.fft_state48000_960_3,};
+
         mode48000_960_120.mdct.trig = CeltTables.mdct_twiddles960;
         mode48000_960_120.cache = new PulseCache();
         mode48000_960_120.cache.size = 392;
         mode48000_960_120.cache.index = CeltTables.cache_index50;
         mode48000_960_120.cache.bits = CeltTables.cache_bits50;
         mode48000_960_120.cache.caps = CeltTables.cache_caps50;
-    };
+    }
+;
 }

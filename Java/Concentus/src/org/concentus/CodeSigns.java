@@ -28,19 +28,16 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class CodeSigns
-{
-    private static int silk_enc_map(int a)
-    {
+class CodeSigns {
+
+    private static int silk_enc_map(int a) {
         return (Inlines.silk_RSHIFT((a), 15) + 1);
     }
 
-    private static int silk_dec_map(int a)
-    {
+    private static int silk_dec_map(int a) {
         return (Inlines.silk_LSHIFT((a), 1) - 1);
     }
 
@@ -54,13 +51,12 @@ class CodeSigns
     /// <param name="quantOffsetType">I    Quantization offset type</param>
     /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
     static void silk_encode_signs(
-        EntropyCoder psRangeEnc,
-        byte[] pulses,
-        int length,
-        int signalType,
-        int quantOffsetType,
-        int[] sum_pulses)
-    {
+            EntropyCoder psRangeEnc,
+            byte[] pulses,
+            int length,
+            int signalType,
+            int quantOffsetType,
+            int[] sum_pulses) {
         int i, j, p;
         short[] icdf = new short[2];
         int q_ptr;
@@ -72,17 +68,13 @@ class CodeSigns
         i = Inlines.silk_SMULBB(7, Inlines.silk_ADD_LSHIFT(quantOffsetType, signalType, 1));
         icdf_ptr = i;
         length = Inlines.silk_RSHIFT(length + (SilkConstants.SHELL_CODEC_FRAME_LENGTH / 2), SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH);
-        for (i = 0; i < length; i++)
-        {
+        for (i = 0; i < length; i++) {
             p = sum_pulses[i];
-            if (p > 0)
-            {
+            if (p > 0) {
                 icdf[0] = sign_icdf[icdf_ptr + Inlines.silk_min(p & 0x1F, 6)];
-                for (j = q_ptr; j < q_ptr + SilkConstants.SHELL_CODEC_FRAME_LENGTH; j++)
-                {
-                    if (pulses[j] != 0)
-                    {
-                        psRangeEnc.enc_icdf( silk_enc_map(pulses[j]), icdf, 8);
+                for (j = q_ptr; j < q_ptr + SilkConstants.SHELL_CODEC_FRAME_LENGTH; j++) {
+                    if (pulses[j] != 0) {
+                        psRangeEnc.enc_icdf(silk_enc_map(pulses[j]), icdf, 8);
                     }
                 }
             }
@@ -101,13 +93,12 @@ class CodeSigns
     /// <param name="quantOffsetType">I    Quantization offset type</param>
     /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
     static void silk_decode_signs(
-        EntropyCoder psRangeDec,
-        short[] pulses,
-        int length,
-        int signalType,
-        int quantOffsetType,
-        int[] sum_pulses)
-    {
+            EntropyCoder psRangeDec,
+            short[] pulses,
+            int length,
+            int signalType,
+            int quantOffsetType,
+            int[] sum_pulses) {
         int i, j, p;
         short[] icdf = new short[2];
         int q_ptr;
@@ -120,19 +111,15 @@ class CodeSigns
         icdf_ptr = i;
         length = Inlines.silk_RSHIFT(length + SilkConstants.SHELL_CODEC_FRAME_LENGTH / 2, SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH);
 
-        for (i = 0; i < length; i++)
-        {
+        for (i = 0; i < length; i++) {
             p = sum_pulses[i];
 
-            if (p > 0)
-            {
+            if (p > 0) {
                 icdf[0] = icdf_table[icdf_ptr + Inlines.silk_min(p & 0x1F, 6)];
-                for (j = 0; j < SilkConstants.SHELL_CODEC_FRAME_LENGTH; j++)
-                {
-                    if (pulses[q_ptr + j] > 0)
-                    {
+                for (j = 0; j < SilkConstants.SHELL_CODEC_FRAME_LENGTH; j++) {
+                    if (pulses[q_ptr + j] > 0) {
                         /* attach sign */
-                        pulses[q_ptr + j] *= (short)(silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
+                        pulses[q_ptr + j] *= (short) (silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
                     }
                 }
             }

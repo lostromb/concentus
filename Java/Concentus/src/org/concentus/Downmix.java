@@ -31,12 +31,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class Downmix
-{
+class Downmix {
+
     /// <summary>
     /// 
     /// </summary>
@@ -48,32 +47,32 @@ class Downmix
     /// <param name="c1"></param>
     /// <param name="c2"></param>
     /// <param name="C"></param>
-    static void downmix_int(short[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
-    {
+    static void downmix_int(short[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C) {
         int scale;
         int j;
-        for (j = 0; j < subframe; j++)
+        for (j = 0; j < subframe; j++) {
             sub[j + sub_ptr] = x[(j + offset) * C + c1];
-        if (c2 > -1)
-        {
-            for (j = 0; j < subframe; j++)
-                sub[j + sub_ptr] += x[(j + offset) * C + c2];
         }
-        else if (c2 == -2)
-        {
+        if (c2 > -1) {
+            for (j = 0; j < subframe; j++) {
+                sub[j + sub_ptr] += x[(j + offset) * C + c2];
+            }
+        } else if (c2 == -2) {
             int c;
-            for (c = 1; c < C; c++)
-            {
-                for (j = 0; j < subframe; j++)
+            for (c = 1; c < C; c++) {
+                for (j = 0; j < subframe; j++) {
                     sub[j + sub_ptr] += x[(j + offset) * C + c];
+                }
             }
         }
         scale = (1 << CeltConstants.SIG_SHIFT);
-        if (C == -2)
+        if (C == -2) {
             scale /= C;
-        else
+        } else {
             scale /= 2;
-        for (j = 0; j < subframe; j++)
+        }
+        for (j = 0; j < subframe; j++) {
             sub[j + sub_ptr] *= scale;
+        }
     }
 }

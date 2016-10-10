@@ -28,15 +28,14 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Variable cut-off low-pass filter state
 /// </summary>
-class SilkLPState
-{
+class SilkLPState {
+
     /// <summary>
     /// Low pass filter state
     /// </summary>
@@ -52,8 +51,7 @@ class SilkLPState
     /// </summary>
     int mode = 0;
 
-    void Reset()
-    {
+    void Reset() {
         In_LP_State[0] = 0;
         In_LP_State[1] = 0;
         transition_frame_no = 0;
@@ -61,15 +59,14 @@ class SilkLPState
     }
 
     /* Low-pass filter with variable cutoff frequency based on  */
-    /* piece-wise linear interpolation between elliptic filters */
-    /* Start by setting psEncC.mode <> 0;                      */
-    /* Deactivate by setting psEncC.mode = 0;                  */
+ /* piece-wise linear interpolation between elliptic filters */
+ /* Start by setting psEncC.mode <> 0;                      */
+ /* Deactivate by setting psEncC.mode = 0;                  */
     void silk_LP_variable_cutoff(
-        short[] frame,                         /* I/O  Low-pass filtered output signal             */
-        int frame_ptr,
-        int frame_length                    /* I    Frame length                                */
-        )
-    {
+            short[] frame, /* I/O  Low-pass filtered output signal             */
+            int frame_ptr,
+            int frame_length /* I    Frame length                                */
+    ) {
         int[] B_Q28 = new int[SilkConstants.TRANSITION_NB];
         int[] A_Q28 = new int[SilkConstants.TRANSITION_NA];
         int fac_Q16 = 0;
@@ -78,8 +75,7 @@ class SilkLPState
         Inlines.OpusAssert(this.transition_frame_no >= 0 && this.transition_frame_no <= SilkConstants.TRANSITION_FRAMES);
 
         /* Run filter if needed */
-        if (this.mode != 0)
-        {
+        if (this.mode != 0) {
             /* Calculate index and interpolation factor for interpolation */
             fac_Q16 = Inlines.silk_LSHIFT(SilkConstants.TRANSITION_FRAMES - this.transition_frame_no, 16 - 6);
 

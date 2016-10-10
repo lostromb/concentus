@@ -31,39 +31,34 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class CeltLPC
-{
+class CeltLPC {
+
     static void celt_lpc(
-        int[] _lpc, /* out: [0...p-1] LPC coefficients      */
-        int[] ac,  /* in:  [0...p] autocorrelation values  */
-        int p)
-    {
+            int[] _lpc, /* out: [0...p-1] LPC coefficients      */
+            int[] ac, /* in:  [0...p] autocorrelation values  */
+            int p) {
         int i, j;
         int r;
         int error = ac[0];
         int[] lpc = new int[p];
 
         //Arrays.MemSet(lpc, 0, p); strictly, this is not necessary since the runtime zeroes memory for us
-
-        if (ac[0] != 0)
-        {
-            for (i = 0; i < p; i++)
-            {
+        if (ac[0] != 0) {
+            for (i = 0; i < p; i++) {
                 /* Sum up this iteration's reflection coefficient */
                 int rr = 0;
-                for (j = 0; j < i; j++)
+                for (j = 0; j < i; j++) {
                     rr += Inlines.MULT32_32_Q31(lpc[j], ac[i - j]);
+                }
                 rr += Inlines.SHR32(ac[i + 1], 3);
                 r = 0 - Inlines.frac_div32(Inlines.SHL32(rr, 3), error);
                 /*  Update LPC coefficients and total error */
                 lpc[i] = Inlines.SHR32(r, 3);
 
-                for (j = 0; j < (i + 1) >> 1; j++)
-                {
+                for (j = 0; j < (i + 1) >> 1; j++) {
                     int tmp1, tmp2;
                     tmp1 = lpc[j];
                     tmp2 = lpc[i - 1 - j];
@@ -74,29 +69,26 @@ class CeltLPC
                 error = error - Inlines.MULT32_32_Q31(Inlines.MULT32_32_Q31(r, r), error);
 
                 /* Bail out once we get 30 dB gain */
-                if (error < Inlines.SHR32(ac[0], 10))
-                {
+                if (error < Inlines.SHR32(ac[0], 10)) {
                     break;
                 }
             }
         }
 
-        for (i = 0; i < p; i++)
-        {
+        for (i = 0; i < p; i++) {
             _lpc[i] = Inlines.ROUND16((lpc[i]), 16);
         }
     }
 
     static void celt_iir(
-        int[] _x,
-        int _x_ptr,
-             int[] den,
-             int[] _y,
-             int _y_ptr,
-             int N,
-             int ord,
-             int[] mem)
-    {
+            int[] _x,
+            int _x_ptr,
+            int[] den,
+            int[] _y,
+            int _y_ptr,
+            int N,
+            int ord,
+            int[] mem) {
         int i, j;
         int[] rden = new int[ord];
         int[] y = new int[N + ord];
@@ -107,15 +99,17 @@ class CeltLPC
         BoxedValueInt _sum2 = new BoxedValueInt(0);
         BoxedValueInt _sum3 = new BoxedValueInt(0);
         int sum0, sum1, sum2, sum3;
-        
-        for (i = 0; i < ord; i++)
+
+        for (i = 0; i < ord; i++) {
             rden[i] = den[ord - i - 1];
-        for (i = 0; i < ord; i++)
+        }
+        for (i = 0; i < ord; i++) {
             y[i] = (0 - mem[ord - i - 1]);
-        for (; i < N + ord; i++)
+        }
+        for (; i < N + ord; i++) {
             y[i] = 0;
-        for (i = 0; i < N - 3; i += 4)
-        {
+        }
+        for (i = 0; i < N - 3; i += 4) {
             /* Unroll by 4 as if it were an FIR filter */
             _sum0.Val = _x[_x_ptr + i];
             _sum1.Val = _x[_x_ptr + i + 1];
@@ -144,15 +138,16 @@ class CeltLPC
             y[i + ord + 3] = (0 - Inlines.ROUND16((sum3), CeltConstants.SIG_SHIFT));
             _y[_y_ptr + i + 3] = sum3;
         }
-        for (; i < N; i++)
-        {
+        for (; i < N; i++) {
             int sum = _x[_x_ptr + i];
-            for (j = 0; j < ord; j++)
+            for (j = 0; j < ord; j++) {
                 sum -= Inlines.MULT16_16(rden[j], y[i + j]);
+            }
             y[i + ord] = Inlines.ROUND16((sum), CeltConstants.SIG_SHIFT);
             _y[_y_ptr + i] = sum;
         }
-        for (i = 0; i < ord; i++)
+        for (i = 0; i < ord; i++) {
             mem[i] = (_y[_y_ptr + N - i - 1]);
+        }
     }
 }

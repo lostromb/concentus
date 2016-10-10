@@ -28,33 +28,28 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
 /// <summary>
 /// Decoder super struct
 /// </summary>
-class SilkDecoder
-{
+class SilkDecoder {
+
     final SilkChannelDecoder[] channel_state = new SilkChannelDecoder[SilkConstants.DECODER_NUM_CHANNELS];
     final StereoDecodeState sStereo = new StereoDecodeState();
     int nChannelsAPI = 0;
     int nChannelsInternal = 0;
     int prev_decode_only_middle = 0;
 
-    SilkDecoder()
-    {
-        for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)
-        {
+    SilkDecoder() {
+        for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++) {
             channel_state[c] = new SilkChannelDecoder();
         }
     }
 
-    void Reset()
-    {
-        for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)
-        {
+    void Reset() {
+        for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++) {
             channel_state[c].Reset();
         }
         sStereo.Reset();

@@ -27,36 +27,32 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class BoxedValueByte
-{
+class BoxedValueByte {
+
     public byte Val;
-    
-    public BoxedValueByte(byte v)
-    {
+
+    public BoxedValueByte(byte v) {
         Val = v;
     }
 }
 
-class BoxedValueShort
-{
+class BoxedValueShort {
+
     public short Val;
-    
-    public BoxedValueShort(short v)
-    {
+
+    public BoxedValueShort(short v) {
         Val = v;
     }
 }
 
-class BoxedValueInt
-{
+class BoxedValueInt {
+
     public int Val;
-    
-    public BoxedValueInt(int v)
-    {
+
+    public BoxedValueInt(int v) {
         Val = v;
     }
 }

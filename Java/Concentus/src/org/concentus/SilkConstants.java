@@ -28,12 +28,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class SilkConstants
-{
+class SilkConstants {
+
     /* Max number of encoder channels (1/2) */
     public static final int ENCODER_NUM_CHANNELS = 2;
     /* Number of decoder channels (1/2) */
@@ -52,10 +51,12 @@ class SilkConstants
     public static final int LBRR_WB_MIN_RATE_BPS = 16000;
 
     /* DTX settings */
-    public static final int NB_SPEECH_FRAMES_BEFORE_DTX = 10;      /* eq 200 ms */
-    public static final int MAX_CONSECUTIVE_DTX = 20;      /* eq 400 ms */
+    public static final int NB_SPEECH_FRAMES_BEFORE_DTX = 10;
+    /* eq 200 ms */
+    public static final int MAX_CONSECUTIVE_DTX = 20;
+    /* eq 400 ms */
 
-    /* Maximum sampling frequency */
+ /* Maximum sampling frequency */
     public static final int MAX_FS_KHZ = 16;
     public static final int MAX_API_FS_KHZ = 48;
 
@@ -73,14 +74,18 @@ class SilkConstants
     /* Settings for stereo processing */
     public static final int STEREO_QUANT_TAB_SIZE = 16;
     public static final int STEREO_QUANT_SUB_STEPS = 5;
-    public static final int STEREO_INTERP_LEN_MS = 8;       /* must be even */
-    public static final float STEREO_RATIO_SMOOTH_COEF = 0.01f;    /* smoothing coef for signal norms and stereo width */
+    public static final int STEREO_INTERP_LEN_MS = 8;
+    /* must be even */
+    public static final float STEREO_RATIO_SMOOTH_COEF = 0.01f;
+    /* smoothing coef for signal norms and stereo width */
 
-    /* Range of pitch lag estimates */
-    public static final int PITCH_EST_MIN_LAG_MS = 2;       /* 2 ms . 500 Hz */
-    public static final int PITCH_EST_MAX_LAG_MS = 18;      /* 18 ms . 56 Hz */
+ /* Range of pitch lag estimates */
+    public static final int PITCH_EST_MIN_LAG_MS = 2;
+    /* 2 ms . 500 Hz */
+    public static final int PITCH_EST_MAX_LAG_MS = 18;
+    /* 18 ms . 56 Hz */
 
-    /* Maximum number of subframes */
+ /* Maximum number of subframes */
     public static final int MAX_NB_SUBFR = 4;
 
     /* Number of samples per frame */
@@ -171,23 +176,30 @@ class SilkConstants
     /* Maximum sum of pulses per shell coding frame */
     public static final int SILK_MAX_PULSES = 16;
 
-    public static final int MAX_MATRIX_SIZE = MAX_LPC_ORDER; /* Max of LPC Order and LTP order */
+    public static final int MAX_MATRIX_SIZE = MAX_LPC_ORDER;
+    /* Max of LPC Order and LTP order */
 
     static final int NSQ_LPC_BUF_LENGTH = Math.max(MAX_LPC_ORDER, DECISION_DELAY);
 
-    /***************************/
+    /**
+     * ************************
+     */
     /* Voice activity detector */
-    /***************************/
+    /**
+     * ************************
+     */
     public static final int VAD_N_BANDS = 4;
 
     public static final int VAD_INTERNAL_SUBFRAMES_LOG2 = 2;
     public static final int VAD_INTERNAL_SUBFRAMES = (1 << VAD_INTERNAL_SUBFRAMES_LOG2);
 
-    public static final int VAD_NOISE_LEVEL_SMOOTH_COEF_Q16 = 1024;    /* Must be <  4096 */
+    public static final int VAD_NOISE_LEVEL_SMOOTH_COEF_Q16 = 1024;
+    /* Must be <  4096 */
     public static final int VAD_NOISE_LEVELS_BIAS = 50;
 
     /* Sigmoid settings */
-    public static final int VAD_NEGATIVE_OFFSET_Q5 = 128;     /* sigmoid is 0 at -128 */
+    public static final int VAD_NEGATIVE_OFFSET_Q5 = 128;
+    /* sigmoid is 0 at -128 */
     public static final int VAD_SNR_FACTOR_Q16 = 45000;
 
     /* smoothing for SNR measurement */
@@ -196,9 +208,13 @@ class SilkConstants
     /* Size of the piecewise linear cosine approximation table for the LSFs */
     public static final int LSF_COS_TAB_SZ = 128;
 
-    /******************/
+    /**
+     * ***************
+     */
     /* NLSF quantizer */
-    /******************/
+    /**
+     * ***************
+     */
     public static final int NLSF_W_Q = 2;
     public static final int NLSF_VQ_MAX_VECTORS = 32;
     public static final int NLSF_VQ_MAX_SURVIVORS = 32;
@@ -209,10 +225,14 @@ class SilkConstants
     public static final int NLSF_QUANT_DEL_DEC_STATES = (1 << NLSF_QUANT_DEL_DEC_STATES_LOG2);
 
     /* Transition filtering for mode switching */
-    public static final int TRANSITION_TIME_MS = 5120;    /* 5120 = 64 * FRAME_LENGTH_MS * ( TRANSITION_INT_NUM - 1 ) = 64*(20*4)*/
-    public static final int TRANSITION_NB = 3;       /* Hardcoded in tables */
-    public static final int TRANSITION_NA = 2;       /* Hardcoded in tables */
-    public static final int TRANSITION_INT_NUM = 5;       /* Hardcoded in tables */
+    public static final int TRANSITION_TIME_MS = 5120;
+    /* 5120 = 64 * FRAME_LENGTH_MS * ( TRANSITION_INT_NUM - 1 ) = 64*(20*4)*/
+    public static final int TRANSITION_NB = 3;
+    /* Hardcoded in tables */
+    public static final int TRANSITION_NA = 2;
+    /* Hardcoded in tables */
+    public static final int TRANSITION_INT_NUM = 5;
+    /* Hardcoded in tables */
     public static final int TRANSITION_FRAMES = (TRANSITION_TIME_MS / MAX_FRAME_LENGTH_MS);
     public static final int TRANSITION_INT_STEPS = (TRANSITION_FRAMES / (TRANSITION_INT_NUM - 1));
 
@@ -220,28 +240,39 @@ class SilkConstants
     public static final int BWE_AFTER_LOSS_Q16 = 63570;
 
     /* Defines for CN generation */
-    public static final int CNG_BUF_MASK_MAX = 255;     /* 2^floor(log2(MAX_FRAME_LENGTH))-1    */
-    public static final int CNG_GAIN_SMTH_Q16 = 4634;    /* 0.25^(1/4)                           */
-    public static final int CNG_NLSF_SMTH_Q16 = 16348;   /* 0.25                                 */
+    public static final int CNG_BUF_MASK_MAX = 255;
+    /* 2^floor(log2(MAX_FRAME_LENGTH))-1    */
+    public static final int CNG_GAIN_SMTH_Q16 = 4634;
+    /* 0.25^(1/4)                           */
+    public static final int CNG_NLSF_SMTH_Q16 = 16348;
+    /* 0.25                                 */
 
-    /********************************************************/
+    /**
+     * *****************************************************
+     */
     /* Definitions for pitch estimator (from pitch_est_defines.h) */
-    /********************************************************/
+    /**
+     * *****************************************************
+     */
 
-    public static final int PE_MAX_FS_KHZ = 16; /* Maximum sampling frequency used */
+    public static final int PE_MAX_FS_KHZ = 16;
+    /* Maximum sampling frequency used */
 
     public static final int PE_MAX_NB_SUBFR = 4;
-    public static final int PE_SUBFR_LENGTH_MS = 5;   /* 5 ms */
+    public static final int PE_SUBFR_LENGTH_MS = 5;
+    /* 5 ms */
 
     public static final int PE_LTP_MEM_LENGTH_MS = (4 * PE_SUBFR_LENGTH_MS);
 
     public static final int PE_MAX_FRAME_LENGTH_MS = (PE_LTP_MEM_LENGTH_MS + PE_MAX_NB_SUBFR * PE_SUBFR_LENGTH_MS);
-    public static final int PE_MAX_FRAME_LENGTH = (PE_MAX_FRAME_LENGTH_MS * PE_MAX_FS_KHZ );
+    public static final int PE_MAX_FRAME_LENGTH = (PE_MAX_FRAME_LENGTH_MS * PE_MAX_FS_KHZ);
     public static final int PE_MAX_FRAME_LENGTH_ST_1 = (PE_MAX_FRAME_LENGTH >> 2);
     public static final int PE_MAX_FRAME_LENGTH_ST_2 = (PE_MAX_FRAME_LENGTH >> 1);
 
-    public static final int PE_MAX_LAG_MS = 18;           /* 18 ms . 56 Hz */
-    public static final int PE_MIN_LAG_MS = 2;            /* 2 ms . 500 Hz */
+    public static final int PE_MAX_LAG_MS = 18;
+    /* 18 ms . 56 Hz */
+    public static final int PE_MIN_LAG_MS = 2;
+    /* 2 ms . 500 Hz */
     public static final int PE_MAX_LAG = (PE_MAX_LAG_MS * PE_MAX_FS_KHZ);
     public static final int PE_MIN_LAG = (PE_MIN_LAG_MS * PE_MAX_FS_KHZ);
 
@@ -259,8 +290,10 @@ class SilkConstants
     public static final int PE_NB_CBKS_STAGE3_10MS = 12;
     public static final int PE_NB_CBKS_STAGE2_10MS = 3;
 
-    public static final float PE_SHORTLAG_BIAS = 0.2f;    /* for logarithmic weighting    */
-    public static final float PE_PREVLAG_BIAS = 0.2f;    /* for logarithmic weighting    */
+    public static final float PE_SHORTLAG_BIAS = 0.2f;
+    /* for logarithmic weighting    */
+    public static final float PE_PREVLAG_BIAS = 0.2f;
+    /* for logarithmic weighting    */
     public static final float PE_FLATCONTOUR_BIAS = 0.05f;
 
     public static final int SILK_PE_MIN_COMPLEX = 0;
@@ -268,16 +301,20 @@ class SilkConstants
     public static final int SILK_PE_MAX_COMPLEX = 2;
 
     // Definitions for PLC (from plc.h)
-
     public static final float BWE_COEF = 0.99f;
-    public static final int V_PITCH_GAIN_START_MIN_Q14 = 11469;               /* 0.7 in Q14               */
-    public static final int V_PITCH_GAIN_START_MAX_Q14 = 15565;               /* 0.95 in Q14              */
+    public static final int V_PITCH_GAIN_START_MIN_Q14 = 11469;
+    /* 0.7 in Q14               */
+    public static final int V_PITCH_GAIN_START_MAX_Q14 = 15565;
+    /* 0.95 in Q14              */
     public static final int MAX_PITCH_LAG_MS = 18;
     public static final int RAND_BUF_SIZE = 128;
     public static final int RAND_BUF_MASK = (RAND_BUF_SIZE - 1);
-    public static final int LOG2_INV_LPC_GAIN_HIGH_THRES = 3;                   /* 2^3 = 8 dB LPC gain      */
-    public static final int LOG2_INV_LPC_GAIN_LOW_THRES = 8;                   /* 2^8 = 24 dB LPC gain     */
-    public static final int PITCH_DRIFT_FAC_Q16 = 655;                 /* 0.01 in Q16              */
+    public static final int LOG2_INV_LPC_GAIN_HIGH_THRES = 3;
+    /* 2^3 = 8 dB LPC gain      */
+    public static final int LOG2_INV_LPC_GAIN_LOW_THRES = 8;
+    /* 2^8 = 24 dB LPC gain     */
+    public static final int PITCH_DRIFT_FAC_Q16 = 655;
+    /* 0.01 in Q16              */
 
     // Definitions for resampler (from resampler_structs.h)
 
@@ -298,6 +335,5 @@ class SilkConstants
     public static final int RESAMPLER_MAX_BATCH_SIZE_IN = (RESAMPLER_MAX_BATCH_SIZE_MS * RESAMPLER_MAX_FS_KHZ);
 
     // from api.h
-
     public static final int SILK_MAX_FRAMES_PER_PACKET = 3;
 }

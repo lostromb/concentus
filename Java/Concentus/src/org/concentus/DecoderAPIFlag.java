@@ -28,12 +28,11 @@
    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.concentus;
 
-class DecoderAPIFlag
-{
+class DecoderAPIFlag {
+
     public static final int FLAG_DECODE_NORMAL = 0;
     public static final int FLAG_PACKET_LOST = 1;
     public static final int FLAG_DECODE_LBRR = 2;
