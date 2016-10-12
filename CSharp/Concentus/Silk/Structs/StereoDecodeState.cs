@@ -44,9 +44,9 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<short>(pred_prev_Q13, 0, 2);
-            Arrays.MemSet<short>(sMid, 0, 2);
-            Arrays.MemSet<short>(sSide, 0, 2);
+            Arrays.MemSetShort(pred_prev_Q13, 0, 2);
+            Arrays.MemSetShort(sMid, 0, 2);
+            Arrays.MemSetShort(sSide, 0, 2);
         }
     }
 }

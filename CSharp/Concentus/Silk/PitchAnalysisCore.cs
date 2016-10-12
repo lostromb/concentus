@@ -68,9 +68,9 @@ namespace Concentus.Silk
         internal static int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
             short[] frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
             int[] pitch_out,         /* O    4 pitch lag values                                          */
-            BoxedValue<short> lagIndex,          /* O    Lag Index                                                   */
-            BoxedValue<sbyte> contourIndex,      /* O    Pitch contour Index                                         */
-            BoxedValue<int> LTPCorr_Q15,       /* I/O  Normalized correlation; input: value from previous frame    */
+            BoxedValueShort lagIndex,          /* O    Lag Index                                                   */
+            BoxedValueSbyte contourIndex,      /* O    Pitch contour Index                                         */
+            BoxedValueInt LTPCorr_Q15,       /* I/O  Normalized correlation; input: value from previous frame    */
             int prevLag,            /* I    Last lag of previous frame; set to zero is unvoiced         */
             int search_thres1_Q16,  /* I    First stage threshold for lag candidates 0 - 1              */
             int search_thres2_Q13,  /* I    Final threshold for lag candidates 0 - 1                    */
@@ -131,12 +131,12 @@ namespace Concentus.Silk
             frame_8kHz = new short[frame_length_8kHz];
             if (Fs_kHz == 16)
             {
-                Arrays.MemSet<int>(filt_state, 0, 2);
+                Arrays.MemSetInt(filt_state, 0, 2);
                 Resampler.silk_resampler_down2(filt_state, frame_8kHz, frame, frame_length);
             }
             else if (Fs_kHz == 12)
             {
-                Arrays.MemSet<int>(filt_state, 0, 6);
+                Arrays.MemSetInt(filt_state, 0, 6);
                 Resampler.silk_resampler_down2_3(filt_state, frame_8kHz, frame, frame_length);
             }
             else {
@@ -145,7 +145,7 @@ namespace Concentus.Silk
             }
 
             /* Decimate again to 4 kHz */
-            Arrays.MemSet<int>(filt_state, 0, 2); /* Set state to zero */
+            Arrays.MemSetInt(filt_state, 0, 2); /* Set state to zero */
             frame_4kHz = new short[frame_length_4kHz];
             Resampler.silk_resampler_down2(filt_state, frame_4kHz, frame_8kHz, frame_length_8kHz);
 
@@ -176,7 +176,7 @@ namespace Concentus.Silk
             ******************************************************************************/
             C = new short[nb_subfr * CSTRIDE_8KHZ];
             xcorr32 = new int[MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1];
-            Arrays.MemSet<short>(C, 0, (nb_subfr >> 1) * CSTRIDE_4KHZ);
+            Arrays.MemSetShort(C, 0, (nb_subfr >> 1) * CSTRIDE_4KHZ);
             target = frame_4kHz;
             target_ptr = Inlines.silk_LSHIFT(SF_LENGTH_4KHZ, 2);
             for (k = 0; k < nb_subfr >> 1; k++)
@@ -244,7 +244,7 @@ namespace Concentus.Silk
             Cmax = (int)C[0];                                                    /* Q14 */
             if (Cmax < ((int)((0.2f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(0.2f, 14)*/)
             {
-                Arrays.MemSet<int>(pitch_out, 0, nb_subfr);
+                Arrays.MemSetInt(pitch_out, 0, nb_subfr);
                 LTPCorr_Q15.Val = 0;
                 lagIndex.Val = 0;
                 contourIndex.Val = 0;
@@ -330,7 +330,7 @@ namespace Concentus.Silk
             /*********************************************************************************
             * Find energy of each subframe projected onto its history, for a range of delays
             *********************************************************************************/
-            Arrays.MemSet<short>(C, 0, nb_subfr * CSTRIDE_8KHZ );
+            Arrays.MemSetShort(C, 0, nb_subfr * CSTRIDE_8KHZ );
 
             target = frame_8kHz;
             target_ptr = SilkConstants.PE_LTP_MEM_LENGTH_MS * 8;
@@ -466,7 +466,7 @@ namespace Concentus.Silk
             if (lag == -1)
             {
                 /* No suitable candidate found */
-                Arrays.MemSet<int>(pitch_out, 0, nb_subfr);
+                Arrays.MemSetInt(pitch_out, 0, nb_subfr);
                 LTPCorr_Q15.Val = 0;
                 lagIndex.Val = 0;
                 contourIndex.Val = 0;

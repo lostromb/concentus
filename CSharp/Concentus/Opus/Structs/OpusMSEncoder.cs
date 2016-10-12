@@ -75,8 +75,8 @@ namespace Concentus.Structs
             subframe_mem[0] = subframe_mem[1] = subframe_mem[2] = 0;
             if (surround != 0)
             {
-                Arrays.MemSet(preemph_mem, 0, layout.nb_channels);
-                Arrays.MemSet(window_mem, 0, layout.nb_channels * 120);
+                Arrays.MemSetInt(preemph_mem, 0, layout.nb_channels);
+                Arrays.MemSetInt(window_mem, 0, layout.nb_channels * 120);
             }
             int encoder_ptr = 0;
             for (s = 0; s < layout.nb_streams; s++)
@@ -228,7 +228,7 @@ namespace Concentus.Structs
             {
                 Array.Copy(mem, c * overlap, input, 0, overlap);
                 copy_channel_in(x, 0 , 1, pcm, pcm_ptr, channels, c, len);
-                BoxedValue<int> boxed_preemph = new BoxedValue<int>(preemph_mem[c]);
+                BoxedValueInt boxed_preemph = new BoxedValueInt(preemph_mem[c]);
                 CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0);
                 preemph_mem[c] = boxed_preemph.Val;
 
@@ -352,8 +352,8 @@ namespace Concentus.Structs
             }
             if (surround != 0)
             {
-                Arrays.MemSet(this.preemph_mem, 0, channels);
-                Arrays.MemSet(this.window_mem, 0, channels * 120);
+                Arrays.MemSetInt(this.preemph_mem, 0, channels);
+                Arrays.MemSetInt(this.window_mem, 0, channels * 120);
             }
             this.surround = surround;
             return OpusError.OPUS_OK;
@@ -451,7 +451,7 @@ namespace Concentus.Structs
             return st;
         }
 
-        internal static void GetStreamCount(int channels, int mapping_family, BoxedValue<int> nb_streams, BoxedValue<int> nb_coupled_streams)
+        internal static void GetStreamCount(int channels, int mapping_family, BoxedValueInt nb_streams, BoxedValueInt nb_coupled_streams)
         {
             if (mapping_family == 0)
             {
@@ -508,8 +508,8 @@ namespace Concentus.Structs
             {
                 throw new ArgumentException("Invalid channel count or application");
             }
-            BoxedValue<int> nb_streams = new BoxedValue<int>();
-            BoxedValue<int> nb_coupled_streams = new BoxedValue<int>();
+            BoxedValueInt nb_streams = new BoxedValueInt();
+            BoxedValueInt nb_coupled_streams = new BoxedValueInt();
             GetStreamCount(channels, mapping_family, nb_streams, nb_coupled_streams);
 
             st = new OpusMSEncoder(nb_streams.Val, nb_coupled_streams.Val);

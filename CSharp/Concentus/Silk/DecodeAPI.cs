@@ -81,7 +81,7 @@ namespace Concentus.Silk
         {
             int i, n, decode_only_middle = 0, ret = SilkError.SILK_NO_ERROR;
             int LBRR_symbol;
-            BoxedValue<int> nSamplesOutDec = new BoxedValue<int>();
+            BoxedValueInt nSamplesOutDec = new BoxedValueInt();
             short[] samplesOut_tmp;
             int[] samplesOut_tmp_ptrs = new int[2];
             short[] samplesOut1_tmp_storage1;
@@ -165,8 +165,8 @@ namespace Concentus.Silk
 
             if (decControl.nChannelsAPI == 2 && decControl.nChannelsInternal == 2 && (psDec.nChannelsAPI == 1 || psDec.nChannelsInternal == 1))
             {
-                Arrays.MemSet<short>(psDec.sStereo.pred_prev_Q13, 0, 2);
-                Arrays.MemSet<short>(psDec.sStereo.sSide, 0, 2);
+                Arrays.MemSetShort(psDec.sStereo.pred_prev_Q13, 0, 2);
+                Arrays.MemSetShort(psDec.sStereo.sSide, 0, 2);
                 channel_state[1].resampler_state.Assign(channel_state[0].resampler_state);
             }
             psDec.nChannelsAPI = decControl.nChannelsAPI;
@@ -193,7 +193,7 @@ namespace Concentus.Silk
                 /* Decode LBRR flags */
                 for (n = 0; n < decControl.nChannelsInternal; n++)
                 {
-                    Arrays.MemSet<int>(channel_state[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+                    Arrays.MemSetInt(channel_state[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
                     if (channel_state[n].LBRR_flag != 0)
                     {
                         if (channel_state[n].nFramesPerPacket == 1)
@@ -227,7 +227,7 @@ namespace Concentus.Silk
                                     Stereo.silk_stereo_decode_pred(psRangeDec, MS_pred_Q13);
                                     if (channel_state[1].LBRR_flags[i] == 0)
                                     {
-                                        BoxedValue<int> decodeOnlyMiddleBoxed = new BoxedValue<int>(decode_only_middle);
+                                        BoxedValueInt decodeOnlyMiddleBoxed = new BoxedValueInt(decode_only_middle);
                                         Stereo.silk_stereo_decode_mid_only(psRangeDec, decodeOnlyMiddleBoxed);
                                         decode_only_middle = decodeOnlyMiddleBoxed.Val;
                                     }
@@ -261,7 +261,7 @@ namespace Concentus.Silk
                     if ((lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL && channel_state[1].VAD_flags[channel_state[0].nFramesDecoded] == 0) ||
                         (lostFlag == DecoderAPIFlag.FLAG_DECODE_LBRR && channel_state[1].LBRR_flags[channel_state[0].nFramesDecoded] == 0))
                     {
-                        BoxedValue<int> decodeOnlyMiddleBoxed = new BoxedValue<int>(decode_only_middle);
+                        BoxedValueInt decodeOnlyMiddleBoxed = new BoxedValueInt(decode_only_middle);
                         Stereo.silk_stereo_decode_mid_only(psRangeDec, decodeOnlyMiddleBoxed);
                         decode_only_middle = decodeOnlyMiddleBoxed.Val;
                     }
@@ -282,8 +282,8 @@ namespace Concentus.Silk
             /* Reset side channel decoder prediction memory for first frame with side coding */
             if (decControl.nChannelsInternal == 2 && decode_only_middle == 0 && psDec.prev_decode_only_middle == 1)
             {
-                Arrays.MemSet<short>(psDec.channel_state[1].outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
-                Arrays.MemSet<int>(psDec.channel_state[1].sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemSetShort(psDec.channel_state[1].outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+                Arrays.MemSetInt(psDec.channel_state[1].sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
                 psDec.channel_state[1].lagPrev = 100;
                 psDec.channel_state[1].LastGainIndex = 10;
                 psDec.channel_state[1].prevSignalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;

@@ -59,10 +59,10 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(sIIR, 0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
-            Arrays.MemSet<int>(sFIR_i32, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            Arrays.MemSet<short>(sFIR_i16, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            Arrays.MemSet<short>(delayBuf, 0, 48);
+            Arrays.MemSetInt(sIIR, 0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
+            Arrays.MemSetInt(sFIR_i32, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Arrays.MemSetShort(sFIR_i16, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Arrays.MemSetShort(delayBuf, 0, 48);
             resampler_function = 0;
             batchSize = 0;
             invRatio_Q16 = 0;

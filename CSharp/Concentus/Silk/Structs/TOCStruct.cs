@@ -59,7 +59,7 @@ namespace Concentus.Silk.Structs
         internal void Reset()
         {
             VADFlag = 0;
-            Arrays.MemSet<int>(VADFlags, 0, SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
+            Arrays.MemSetInt(VADFlags, 0, SilkConstants.SILK_MAX_FRAMES_PER_PACKET);
             inbandFECFlag = 0;
         }
     }

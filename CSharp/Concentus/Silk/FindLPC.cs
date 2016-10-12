@@ -53,8 +53,8 @@ namespace Concentus.Silk
             int isInterpLower, shift;
             int res_nrg0, res_nrg1;
             int rshift0, rshift1;
-            BoxedValue<int> scratch_box1 = new BoxedValue<int>();
-            BoxedValue<int> scratch_box2 = new BoxedValue<int>();
+            BoxedValueInt scratch_box1 = new BoxedValueInt();
+            BoxedValueInt scratch_box2 = new BoxedValueInt();
 
             /* Used only for LSF interpolation */
             int[] a_tmp_Q16 = new int[SilkConstants.MAX_LPC_ORDER];

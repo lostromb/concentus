@@ -69,62 +69,9 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        //internal static Pointer<Pointer<Pointer<T>>> InitThreeDimensionalArrayPointer<T>(int x, int y, int z)
-        //{
-        //    Pointer<Pointer<Pointer<T>>> returnVal = Pointer.Malloc<Pointer<Pointer<T>>>(x);
-        //    for (int c = 0; c < x; c++)
-        //    {
-        //        returnVal[c] = Pointer.Malloc<Pointer<T>>(y);
-        //        for (int a = 0; a < y; a++)
-        //        {
-        //            returnVal[c][a] = Pointer.Malloc<T>(z);
-        //        }
-        //    }
-        //    return returnVal;
-        //}
-
-        //internal static T[] CloneArray<T>(T[] inArray)
-        //{
-        //    T[] returnVal = new T[inArray.Length];
-        //    Array.Copy(inArray, returnVal, inArray.Length);
-        //    return returnVal;
-        //}
-
-        //internal static T[][] CloneArray<T>(T[][] inArray)
-        //{
-        //    T[][] returnVal = new T[inArray.Length][];
-        //    for (int c = 0; c < inArray.Length; c++)
-        //    {
-        //        returnVal[c] = new T[inArray[c].Length];
-        //        Array.Copy(inArray[c], returnVal[c], inArray[c].Length);
-        //    }
-        //    return returnVal;
-        //}
-
-        //internal static T[][][] CloneArray<T>(T[][][] inArray)
-        //{
-        //    T[][][] returnVal = new T[inArray.Length][][];
-        //    for (int c = 0; c < inArray.Length; c++)
-        //    {
-        //        returnVal[c] = new T[inArray[c].Length][];
-        //        for (int a = 0; a < inArray[c].Length; a++)
-        //        {
-        //            returnVal[c][a] = new T[inArray[c][a].Length];
-        //            Array.Copy(inArray[c][a], returnVal[c][a], inArray[c][a].Length);
-        //        }
-        //    }
-        //    return returnVal;
-        //}
-
-        //internal static Pointer<T> CloneArray<T>(Pointer<T> inArray, int arrayLength)
-        //{
-        //    Pointer<T> returnVal = Pointer.Malloc<T>(arrayLength);
-        //    inArray.MemCopyTo(returnVal, arrayLength);
-        //    return returnVal;
-        //}
-
         //FIXME: For the most part this method is used to zero-out arrays, which is usually already done by the runtime.
-        internal static void MemSet<T>(T[] array, T value)
+
+        internal static void MemSetByte(byte[] array, byte value)
         {
             for (int c = 0; c < array.Length; c++)
             {
@@ -132,7 +79,31 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
-        internal static void MemSet<T>(T[] array, T value, int length)
+        internal static void MemSetInt(int[] array, int value, int length)
+        {
+            for (int c = 0; c < length; c++)
+            {
+                array[c] = value;
+            }
+        }
+
+        internal static void MemSetShort(short[] array, short value, int length)
+        {
+            for (int c = 0; c < length; c++)
+            {
+                array[c] = value;
+            }
+        }
+
+        internal static void MemSetFloat(float[] array, float value, int length)
+        {
+            for (int c = 0; c < length; c++)
+            {
+                array[c] = value;
+            }
+        }
+
+        internal static void MemSetSbyte(sbyte[] array, sbyte value, int length)
         {
             for (int c = 0; c < length; c++)
             {
@@ -149,6 +120,72 @@ namespace Concentus.Common.CPlusPlus
         }
 
         internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)
+        {
+            if (src_idx == dst_idx || length == 0)
+                return;
+
+            // Do regions overlap?
+            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+            {
+                // Take extra precautions
+                if (dst_idx < src_idx)
+                {
+                    // Copy forwards
+                    for (int c = 0; c < length; c++)
+                    {
+                        array[c + dst_idx] = array[c + src_idx];
+                    }
+                }
+                else
+                {
+                    // Copy backwards
+                    for (int c = length - 1; c >= 0; c--)
+                    {
+                        array[c + dst_idx] = array[c + src_idx];
+                    }
+                }
+            }
+            else
+            {
+                // Memory regions cannot overlap; just do a fast copy
+                Array.Copy(array, src_idx, array, dst_idx, length);
+            }
+        }
+
+        internal static void MemMoveInt(int[] array, int src_idx, int dst_idx, int length)
+        {
+            if (src_idx == dst_idx || length == 0)
+                return;
+
+            // Do regions overlap?
+            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+            {
+                // Take extra precautions
+                if (dst_idx < src_idx)
+                {
+                    // Copy forwards
+                    for (int c = 0; c < length; c++)
+                    {
+                        array[c + dst_idx] = array[c + src_idx];
+                    }
+                }
+                else
+                {
+                    // Copy backwards
+                    for (int c = length - 1; c >= 0; c--)
+                    {
+                        array[c + dst_idx] = array[c + src_idx];
+                    }
+                }
+            }
+            else
+            {
+                // Memory regions cannot overlap; just do a fast copy
+                Array.Copy(array, src_idx, array, dst_idx, length);
+            }
+        }
+
+        internal static void MemMoveShort(short[] array, int src_idx, int dst_idx, int length)
         {
             if (src_idx == dst_idx || length == 0)
                 return;

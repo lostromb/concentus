@@ -99,15 +99,15 @@ namespace Concentus.Silk
                 WLTP = new int[psEnc.nb_subfr * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER];
 
                 /* LTP analysis */
-                BoxedValue<int> boxed_codgain = new BoxedValue<int>(psEncCtrl.LTPredCodGain_Q7);
+                BoxedValueInt boxed_codgain = new BoxedValueInt(psEncCtrl.LTPredCodGain_Q7);
                 FindLTP.silk_find_LTP(psEncCtrl.LTPCoef_Q14, WLTP, boxed_codgain,
                     res_pitch, psEncCtrl.pitchL, Wght_Q15, psEnc.subfr_length,
                     psEnc.nb_subfr, psEnc.ltp_mem_length, LTP_corrs_rshift);
                 psEncCtrl.LTPredCodGain_Q7 = boxed_codgain.Val;
 
                 /* Quantize LTP gain parameters */
-                BoxedValue<sbyte> boxed_periodicity = new BoxedValue<sbyte>(psEnc.indices.PERIndex);
-                BoxedValue<int> boxed_gain = new BoxedValue<int>(psEnc.sum_log_gain_Q7);
+                BoxedValueSbyte boxed_periodicity = new BoxedValueSbyte(psEnc.indices.PERIndex);
+                BoxedValueInt boxed_gain = new BoxedValueInt(psEnc.sum_log_gain_Q7);
                 QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex, boxed_periodicity,
                     boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr
                     );
@@ -137,7 +137,7 @@ namespace Concentus.Silk
                     x_ptr2 += psEnc.subfr_length;
                 }
 
-               Arrays.MemSet<short>(psEncCtrl.LTPCoef_Q14, 0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);
+               Arrays.MemSetShort(psEncCtrl.LTPCoef_Q14, 0, psEnc.nb_subfr * SilkConstants.LTP_ORDER);
                 psEncCtrl.LTPredCodGain_Q7 = 0;
                 psEnc.sum_log_gain_Q7 = 0;
             }

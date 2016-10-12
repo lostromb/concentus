@@ -48,9 +48,9 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(CNG_exc_buf_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
-            Arrays.MemSet<short>(CNG_smth_NLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
-            Arrays.MemSet<int>(CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSetInt(CNG_exc_buf_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSetShort(CNG_smth_NLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSetInt(CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
             CNG_smth_Gain_Q16 = 0;
             rand_seed = 0;
             fs_kHz = 0;

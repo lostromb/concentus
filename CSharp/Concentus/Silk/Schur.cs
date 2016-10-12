@@ -144,7 +144,7 @@ namespace Concentus.Silk
             /* Check for invalid input */
             if (c[0] <= 0)
             {
-                Arrays.MemSet<int>(rc_Q16, 0, order);
+                Arrays.MemSetInt(rc_Q16, 0, order);
                 return 0;
             }
 

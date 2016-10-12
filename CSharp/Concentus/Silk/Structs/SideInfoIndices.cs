@@ -53,9 +53,9 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<sbyte>(GainsIndices, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<sbyte>(LTPIndex, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<sbyte>(NLSFIndices, 0, SilkConstants.MAX_LPC_ORDER + 1);
+            Arrays.MemSetSbyte(GainsIndices, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSetSbyte(LTPIndex, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSetSbyte(NLSFIndices, 0, SilkConstants.MAX_LPC_ORDER + 1);
             lagIndex = 0;
             contourIndex = 0;
             signalType = 0;

@@ -51,8 +51,8 @@ namespace Concentus.Silk
 
         /* Compute reflection coefficients from input signal */
         internal static void silk_burg_modified(
-            BoxedValue<int> res_nrg,           /* O    Residual energy                                             */
-            BoxedValue<int> res_nrg_Q,         /* O    Residual energy Q value                                     */
+            BoxedValueInt res_nrg,           /* O    Residual energy                                             */
+            BoxedValueInt res_nrg_Q,         /* O    Residual energy Q value                                     */
             int[] A_Q16,            /* O    Prediction coefficients (length order)                      */
             short[] x,                /* I    Input signal, length: nb_subfr * ( D + subfr_length )       */
             int x_ptr,
@@ -91,7 +91,7 @@ namespace Concentus.Silk
             }
 
             CAb[0] = CAf[0] = C0 + Inlines.silk_SMMUL(((int)((TuningParameters.FIND_LPC_COND_FAC) * ((long)1 << (32)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32)*/, C0) + 1;                                /* Q(-rshifts) */
-            Arrays.MemSet<int>(C_first_row, 0, SilkConstants.SILK_MAX_ORDER_LPC);
+            Arrays.MemSetInt(C_first_row, 0, SilkConstants.SILK_MAX_ORDER_LPC);
             if (rshifts > 0)
             {
                 for (s = 0; s < nb_subfr; s++)

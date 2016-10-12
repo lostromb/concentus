@@ -266,7 +266,7 @@ namespace Concentus.Structs
             }
         }
 
-        internal static int parse_size(byte[] data, int data_ptr, int len, BoxedValue<short> size)
+        internal static int parse_size(byte[] data, int data_ptr, int len, BoxedValueShort size)
         {
             if (len < 1)
             {
@@ -339,7 +339,7 @@ namespace Concentus.Structs
                 /* Two VBR frames */
                 case 2:
                     count = 2;
-                    BoxedValue<short> boxed_size = new BoxedValue<short>(sizes[sizes_ptr]);
+                    BoxedValueShort boxed_size = new BoxedValueShort(sizes[sizes_ptr]);
                     bytes = parse_size(data, data_ptr, len, boxed_size);
                     sizes[sizes_ptr] = boxed_size.Val;
                     len -= bytes;
@@ -384,7 +384,7 @@ namespace Concentus.Structs
                         last_size = len;
                         for (i = 0; i < count - 1; i++)
                         {
-                            boxed_size = new BoxedValue<short>(sizes[sizes_ptr + i]);
+                            boxed_size = new BoxedValueShort(sizes[sizes_ptr + i]);
                             bytes = parse_size(data, data_ptr, len, boxed_size);
                             sizes[sizes_ptr + i] = boxed_size.Val;
                             len -= bytes;
@@ -411,7 +411,7 @@ namespace Concentus.Structs
             /* Self-delimited framing has an extra size for the last frame. */
             if (self_delimited != 0)
             {
-                BoxedValue<short> boxed_size = new BoxedValue<short>(sizes[sizes_ptr + count - 1]);
+                BoxedValueShort boxed_size = new BoxedValueShort(sizes[sizes_ptr + count - 1]);
                 bytes = parse_size(data, data_ptr, len, boxed_size);
                 sizes[sizes_ptr + count - 1] = boxed_size.Val;
                 len -= bytes;

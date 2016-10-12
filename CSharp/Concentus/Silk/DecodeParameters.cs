@@ -54,7 +54,7 @@ namespace Concentus.Silk
             sbyte[][] cbk_ptr_Q7;
 
             /* Dequant Gains */
-            BoxedValue<sbyte> boxedLastGainIndex = new BoxedValue<sbyte>(psDec.LastGainIndex);
+            BoxedValueSbyte boxedLastGainIndex = new BoxedValueSbyte(psDec.LastGainIndex);
             GainQuantization.silk_gains_dequant(psDecCtrl.Gains_Q16, psDec.indices.GainsIndices,
                 boxedLastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psDec.nb_subfr);
             psDec.LastGainIndex = boxedLastGainIndex.Val;
@@ -131,8 +131,8 @@ namespace Concentus.Silk
             }
             else
             {
-                Arrays.MemSet<int>(psDecCtrl.pitchL, 0, psDec.nb_subfr);
-                Arrays.MemSet<short>(psDecCtrl.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * psDec.nb_subfr);
+                Arrays.MemSetInt(psDecCtrl.pitchL, 0, psDec.nb_subfr);
+                Arrays.MemSetShort(psDecCtrl.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * psDec.nb_subfr);
                 psDec.indices.PERIndex = 0;
                 psDecCtrl.LTP_scale_Q14 = 0;
             }

@@ -52,11 +52,11 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<int>(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
-            Arrays.MemSet<short>(PredCoef_Q12[0], 0, SilkConstants.MAX_LPC_ORDER);
-            Arrays.MemSet<short>(PredCoef_Q12[1], 0, SilkConstants.MAX_LPC_ORDER);
-            Arrays.MemSet<short>(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSetInt(pitchL, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSetInt(Gains_Q16, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemSetShort(PredCoef_Q12[0], 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSetShort(PredCoef_Q12[1], 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSetShort(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR);
             LTP_scale_Q14 = 0;
         }
     }

@@ -96,7 +96,7 @@ namespace Concentus.Silk
             int head_room,                              /* I    Desired headroom                                                            */
             int[] XX,                                    /* O    Pointer to X'*X correlation matrix [ order x order ]                        */
             int XX_ptr,
-            BoxedValue<int> rshifts                               /* I/O  Right shifts of correlations                                                */
+            BoxedValueInt rshifts                               /* I/O  Right shifts of correlations                                                */
         )
         {
             int i, j, lag, head_room_rshifts;
