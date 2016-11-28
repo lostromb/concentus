@@ -123,7 +123,7 @@ namespace Concentus.Silk
             short[] samplesIn,
             int nSamplesIn,
             EntropyCoder psRangeEnc,
-            BoxedValue<int> nBytesOut,
+            BoxedValueInt nBytesOut,
             int prefillFlag)
         {
             int ret = SilkError.SILK_NO_ERROR;
@@ -159,8 +159,8 @@ namespace Concentus.Silk
                 /* Mono . Stereo transition: init state of second channel and stereo state */
                 ret += SilkEncoder.silk_init_encoder(psEnc.state_Fxx[1]);
 
-                Arrays.MemSet<short>(psEnc.sStereo.pred_prev_Q13, 0, 2);
-                Arrays.MemSet<short>(psEnc.sStereo.sSide, 0, 2);
+                Arrays.MemSetShort(psEnc.sStereo.pred_prev_Q13, 0, 2);
+                Arrays.MemSetShort(psEnc.sStereo.sSide, 0, 2);
                 psEnc.sStereo.mid_side_amp_Q0[0] = 0;
                 psEnc.sStereo.mid_side_amp_Q0[1] = 1;
                 psEnc.sStereo.mid_side_amp_Q0[2] = 0;
@@ -437,7 +437,7 @@ namespace Concentus.Silk
                         /* Reset LBRR flags */
                         for (n = 0; n < encControl.nChannelsInternal; n++)
                         {
-                            Arrays.MemSet<int>(psEnc.state_Fxx[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+                            Arrays.MemSetInt(psEnc.state_Fxx[n].LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
                         }
 
                         psEnc.nBitsUsedLBRR = psRangeEnc.tell();
@@ -483,7 +483,7 @@ namespace Concentus.Silk
                     /* Convert Left/Right to Mid/Side */
                     if (encControl.nChannelsInternal == 2)
                     {
-                        BoxedValue<sbyte> midOnlyFlagBoxed = new BoxedValue<sbyte>(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
+                        BoxedValueSbyte midOnlyFlagBoxed = new BoxedValueSbyte(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                         Stereo.silk_stereo_LR_to_MS(psEnc.sStereo,
                             psEnc.state_Fxx[0].inputBuf,
                             2,
@@ -508,8 +508,8 @@ namespace Concentus.Silk
                                 psEnc.state_Fxx[1].sShape.Reset();
                                 psEnc.state_Fxx[1].sPrefilt.Reset();
                                 psEnc.state_Fxx[1].sNSQ.Reset();
-                                Arrays.MemSet<short>(psEnc.state_Fxx[1].prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
-                                Arrays.MemSet(psEnc.state_Fxx[1].sLP.In_LP_State, 0, 2);
+                                Arrays.MemSetShort(psEnc.state_Fxx[1].prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+                                Arrays.MemSetInt(psEnc.state_Fxx[1].sLP.In_LP_State, 0, 2);
 
                                 psEnc.state_Fxx[1].prevLag = 100;
                                 psEnc.state_Fxx[1].sNSQ.lagPrev = 100;

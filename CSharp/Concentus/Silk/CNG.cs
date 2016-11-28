@@ -152,7 +152,7 @@ namespace Concentus.Silk
                 }
 
                 /* Update CNG excitation buffer with excitation from this subframe */
-                Arrays.MemMove<int>(psCNG.CNG_exc_buf_Q14, 0, psDec.subfr_length, (psDec.nb_subfr - 1) * psDec.subfr_length);
+                Arrays.MemMoveInt(psCNG.CNG_exc_buf_Q14, 0, psDec.subfr_length, (psDec.nb_subfr - 1) * psDec.subfr_length);
 
                 /* Smooth gains */
                 for (i = 0; i < psDec.nb_subfr; i++)
@@ -225,7 +225,7 @@ namespace Concentus.Silk
             }
             else
             {
-                Arrays.MemSet<int>(psCNG.CNG_synth_state, 0, psDec.LPC_order);
+                Arrays.MemSetInt(psCNG.CNG_synth_state, 0, psDec.LPC_order);
             }
         }
     }

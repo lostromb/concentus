@@ -118,7 +118,7 @@ namespace TestOpusEncode
             byte[] db62 = new byte[36];
             int i;
             int rc, j;
-            BoxedValue<int> err = new BoxedValue<int>();
+            BoxedValueInt err = new BoxedValueInt();
             OpusEncoder enc;
             OpusDecoder dec;
             OpusDecoder[] dec_err = new OpusDecoder[10];
@@ -294,7 +294,7 @@ namespace TestOpusEncode
             byte[] db62 = new byte[36];
             int i;
             int rc, j;
-            BoxedValue<int> err = new BoxedValue<int>(0);
+            BoxedValueInt err = new BoxedValueInt(0);
             OpusMSEncoder MSenc;
             OpusMSDecoder MSdec;
             OpusMSDecoder MSdec_err;

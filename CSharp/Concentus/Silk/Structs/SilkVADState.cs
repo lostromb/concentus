@@ -93,15 +93,15 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(AnaState, 0, 2);
-            Arrays.MemSet<int>(AnaState1, 0, 2);
-            Arrays.MemSet<int>(AnaState2, 0, 2);
-            Arrays.MemSet<int>(XnrgSubfr, 0, SilkConstants.VAD_N_BANDS);
-            Arrays.MemSet<int>(NrgRatioSmth_Q8, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSetInt(AnaState, 0, 2);
+            Arrays.MemSetInt(AnaState1, 0, 2);
+            Arrays.MemSetInt(AnaState2, 0, 2);
+            Arrays.MemSetInt(XnrgSubfr, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSetInt(NrgRatioSmth_Q8, 0, SilkConstants.VAD_N_BANDS);
             HPstate = 0;
-            Arrays.MemSet<int>(NL, 0, SilkConstants.VAD_N_BANDS);
-            Arrays.MemSet<int>(inv_NL, 0, SilkConstants.VAD_N_BANDS);
-            Arrays.MemSet<int>(NoiseLevelBias, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSetInt(NL, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSetInt(inv_NL, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSetInt(NoiseLevelBias, 0, SilkConstants.VAD_N_BANDS);
             counter = 0;
         }
     }

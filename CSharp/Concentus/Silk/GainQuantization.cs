@@ -55,7 +55,7 @@ namespace Concentus.Silk
         internal static void silk_gains_quant(
             sbyte[] ind,
             int[] gain_Q16,
-            BoxedValue<sbyte> prev_ind,
+            BoxedValueSbyte prev_ind,
             int conditional,
             int nb_subfr)
         {
@@ -127,7 +127,7 @@ namespace Concentus.Silk
         internal static void silk_gains_dequant(
             int[] gain_Q16,
             sbyte[] ind,
-            BoxedValue<sbyte> prev_ind,
+            BoxedValueSbyte prev_ind,
             int conditional,
             int nb_subfr)
         {

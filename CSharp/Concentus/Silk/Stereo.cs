@@ -85,7 +85,7 @@ namespace Concentus.Silk
         /// <param name="decode_only_mid">O    Flag that only mid channel has been coded</param>
         internal static void silk_stereo_decode_mid_only(
             EntropyCoder psRangeDec,
-            BoxedValue<int> decode_only_mid
+            BoxedValueInt decode_only_mid
         )
         {
             /* Decode flag that only mid channel is coded */
@@ -136,7 +136,7 @@ namespace Concentus.Silk
         /// <param name="smooth_coef_Q16">I    Smoothing coefficient</param>
         /// <returns>O    Returns predictor in Q13</returns>
         internal static int silk_stereo_find_predictor(
-            BoxedValue<int> ratio_Q14,
+            BoxedValueInt ratio_Q14,
             short[] x,
             short[] y,
             int[] mid_res_amp_Q0,
@@ -203,7 +203,7 @@ namespace Concentus.Silk
             short[] x2,
             int x2_ptr,
             sbyte[][] ix,
-            BoxedValue<sbyte> mid_only_flag,
+            BoxedValueSbyte mid_only_flag,
             int[] mid_side_rates_bps,
             int total_rate_bps,
             int prev_speech_act_Q8,
@@ -215,8 +215,8 @@ namespace Concentus.Silk
             int sum, diff, smooth_coef_Q16, pred0_Q13, pred1_Q13;
             int[] pred_Q13 = new int[2];
             int frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
-            BoxedValue<int> LP_ratio_Q14 = new BoxedValue<int>();
-            BoxedValue<int> HP_ratio_Q14 = new BoxedValue<int>();
+            BoxedValueInt LP_ratio_Q14 = new BoxedValueInt();
+            BoxedValueInt HP_ratio_Q14 = new BoxedValueInt();
             short[] side;
             short[] LP_mid;
             short[] HP_mid;
@@ -496,8 +496,8 @@ namespace Concentus.Silk
             // FIXME: ix was formerly an out parameter that was newly allocated here
             // but now it relies on the caller to initialize it
             // clear ix
-            Arrays.MemSet<sbyte>(ix[0], 0, 3);
-            Arrays.MemSet<sbyte>(ix[1], 0, 3);
+            Arrays.MemSetSbyte(ix[0], 0, 3);
+            Arrays.MemSetSbyte(ix[1], 0, 3);
 
             /* Quantize */
             for (n = 0; n < 2; n++)

@@ -95,7 +95,7 @@ namespace Concentus.Silk
             ApplySineWindow.silk_apply_sine_window(Wsig, Wsig_ptr, x, x_buf_ptr, 2, psEnc.la_pitch);
 
             /* Calculate autocorrelation sequence */
-            BoxedValue<int> boxed_scale = new BoxedValue<int>();
+            BoxedValueInt boxed_scale = new BoxedValueInt();
             Autocorrelation.silk_autocorr(auto_corr, boxed_scale, Wsig, psEnc.pitch_LPC_win_length, psEnc.pitchEstimationLPCOrder + 1);
             scale = boxed_scale.Val;
 
@@ -138,9 +138,9 @@ namespace Concentus.Silk
                 /*****************************************/
                 /* Call pitch estimator                  */
                 /*****************************************/
-                BoxedValue<short> boxed_lagIndex = new BoxedValue<short>(psEnc.indices.lagIndex);
-                BoxedValue<sbyte> boxed_contourIndex = new BoxedValue<sbyte>(psEnc.indices.contourIndex);
-                BoxedValue<int> boxed_LTPcorr = new BoxedValue<int>(psEnc.LTPCorr_Q15);
+                BoxedValueShort boxed_lagIndex = new BoxedValueShort(psEnc.indices.lagIndex);
+                BoxedValueSbyte boxed_contourIndex = new BoxedValueSbyte(psEnc.indices.contourIndex);
+                BoxedValueInt boxed_LTPcorr = new BoxedValueInt(psEnc.LTPCorr_Q15);
                 if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL, boxed_lagIndex, boxed_contourIndex,
                         boxed_LTPcorr, psEnc.prevLag, psEnc.pitchEstimationThreshold_Q16,
                         (int)thrhld_Q13, psEnc.fs_kHz, psEnc.pitchEstimationComplexity, psEnc.nb_subfr) == 0)
@@ -156,7 +156,7 @@ namespace Concentus.Silk
                 psEnc.LTPCorr_Q15 = boxed_LTPcorr.Val;
             }
             else {
-                Arrays.MemSet<int>(psEncCtrl.pitchL, 0, SilkConstants.MAX_NB_SUBFR);
+                Arrays.MemSetInt(psEncCtrl.pitchL, 0, SilkConstants.MAX_NB_SUBFR);
                 psEnc.indices.lagIndex = 0;
                 psEnc.indices.contourIndex = 0;
                 psEnc.LTPCorr_Q15 = 0;

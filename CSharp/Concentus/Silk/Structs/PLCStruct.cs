@@ -58,15 +58,15 @@ namespace Concentus.Silk.Structs
         internal void Reset()
         {
             pitchL_Q8 = 0;
-            Arrays.MemSet<short>(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
-            Arrays.MemSet<short>(prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSetShort(LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
+            Arrays.MemSetShort(prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             last_frame_lost = 0;
             rand_seed = 0;
             randScale_Q14 = 0;
             conc_energy = 0;
             conc_energy_shift = 0;
             prevLTP_scale_Q14 = 0;
-            Arrays.MemSet<int>(prevGain_Q16, 0, 2);
+            Arrays.MemSetInt(prevGain_Q16, 0, 2);
             fs_kHz = 0;
             nb_subfr = 0;
             subfr_length = 0;

@@ -57,8 +57,8 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<short>(sLTP_shp, 0, SilkConstants.LTP_BUF_LENGTH);
-            Arrays.MemSet<int>(sAR_shp, 0, SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
+            Arrays.MemSetShort(sLTP_shp, 0, SilkConstants.LTP_BUF_LENGTH);
+            Arrays.MemSetInt(sAR_shp, 0, SilkConstants.MAX_SHAPE_LPC_ORDER + 1);
             sLTP_shp_buf_idx = 0;
             sLF_AR_shp_Q12 = 0;
             sLF_MA_shp_Q12 = 0;

@@ -96,23 +96,23 @@ namespace Concentus.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<float>(angle,0, 240);
-            Arrays.MemSet<float>(d_angle,0, 240);
-            Arrays.MemSet<float>(d2_angle,0, 240);
-            Arrays.MemSet<int>(inmem, 0, OpusConstants.ANALYSIS_BUF_SIZE);
+            Arrays.MemSetFloat(angle,0, 240);
+            Arrays.MemSetFloat(d_angle,0, 240);
+            Arrays.MemSetFloat(d2_angle,0, 240);
+            Arrays.MemSetInt(inmem, 0, OpusConstants.ANALYSIS_BUF_SIZE);
             mem_fill = 0;
-            Arrays.MemSet<float>(prev_band_tonality,0, OpusConstants.NB_TBANDS);
+            Arrays.MemSetFloat(prev_band_tonality,0, OpusConstants.NB_TBANDS);
             prev_tonality = 0;
             for (int c = 0; c < OpusConstants.NB_FRAMES; c++)
             {
-                Arrays.MemSet<float>(E[c], 0, OpusConstants.NB_TBANDS);
+                Arrays.MemSetFloat(E[c], 0, OpusConstants.NB_TBANDS);
             }
-            Arrays.MemSet<float>(lowE,0, OpusConstants.NB_TBANDS);
-            Arrays.MemSet<float>(highE,0, OpusConstants.NB_TBANDS);
-            Arrays.MemSet<float>(meanE,0, OpusConstants.NB_TOT_BANDS);
-            Arrays.MemSet<float>(mem,0, 32);
-            Arrays.MemSet<float>(cmean,0, 8);
-            Arrays.MemSet<float>(std,0, 9);
+            Arrays.MemSetFloat(lowE,0, OpusConstants.NB_TBANDS);
+            Arrays.MemSetFloat(highE,0, OpusConstants.NB_TBANDS);
+            Arrays.MemSetFloat(meanE,0, OpusConstants.NB_TOT_BANDS);
+            Arrays.MemSetFloat(mem,0, 32);
+            Arrays.MemSetFloat(cmean,0, 8);
+            Arrays.MemSetFloat(std,0, 9);
             music_prob = 0;
             Etracker = 0;
             lowECount = 0;
@@ -120,10 +120,10 @@ namespace Concentus.Structs
             last_music = 0;
             last_transition = 0;
             count = 0;
-            Arrays.MemSet<float>(subframe_mem,0, 3);
+            Arrays.MemSetFloat(subframe_mem,0, 3);
             analysis_offset = 0;
-            Arrays.MemSet<float>(pspeech,0, OpusConstants.DETECT_SIZE);
-            Arrays.MemSet<float>(pmusic,0, OpusConstants.DETECT_SIZE);
+            Arrays.MemSetFloat(pspeech,0, OpusConstants.DETECT_SIZE);
+            Arrays.MemSetFloat(pmusic,0, OpusConstants.DETECT_SIZE);
             speech_confidence = 0;
             music_confidence = 0;
             speech_confidence_count = 0;

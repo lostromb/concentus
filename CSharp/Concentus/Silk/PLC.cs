@@ -131,7 +131,7 @@ namespace Concentus.Silk
                     }
                 }
 
-                Arrays.MemSet<short>(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
+                Arrays.MemSetShort(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
                 psPLC.LTPCoef_Q14[SilkConstants.LTP_ORDER / 2] = (short)(LTP_Gain_Q14);
 
                 /* Limit LT coefs */
@@ -162,7 +162,7 @@ namespace Concentus.Silk
             }
             else {
                 psPLC.pitchL_Q8 = Inlines.silk_LSHIFT(Inlines.silk_SMULBB(psDec.fs_kHz, 18), 8);
-                Arrays.MemSet<short>(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
+                Arrays.MemSetShort(psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
             }
 
             /* Save LPC coeficients */
@@ -245,7 +245,7 @@ namespace Concentus.Silk
 
             if (psDec.first_frame_after_reset != 0)
             {
-                Arrays.MemSet<short>(psPLC.prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemSetShort(psPLC.prevLPC_Q12, 0, SilkConstants.MAX_LPC_ORDER);
             }
 
             silk_PLC_energy(out energy1, out shift1, out energy2, out shift2, psDec.exc_Q14, prevGain_Q10, psDec.subfr_length, psDec.nb_subfr);

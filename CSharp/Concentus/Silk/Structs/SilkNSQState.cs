@@ -58,10 +58,10 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<short>(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            Arrays.MemSet<int>(sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            Arrays.MemSet<int>(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-            Arrays.MemSet<int>(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
+            Arrays.MemSetShort(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSetInt(sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSetInt(sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Arrays.MemSetInt(sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
             sLF_AR_shp_Q14 = 0;
             lagPrev = 0;
             sLTP_buf_idx = 0;
@@ -267,8 +267,8 @@ namespace Concentus.Silk.Structs
             this.lagPrev = pitchL[psEncC.nb_subfr - 1];
 
             /* Save quantized speech and noise shaping signals */
-            Arrays.MemMove(this.xq, psEncC.frame_length, 0, psEncC.ltp_mem_length);
-            Arrays.MemMove(this.sLTP_shp_Q14, psEncC.frame_length, 0, psEncC.ltp_mem_length);
+            Arrays.MemMoveShort(this.xq, psEncC.frame_length, 0, psEncC.ltp_mem_length);
+            Arrays.MemMoveInt(this.sLTP_shp_Q14, psEncC.frame_length, 0, psEncC.ltp_mem_length);
         }
 
         /***********************************/
@@ -759,7 +759,7 @@ namespace Concentus.Silk.Structs
                     psIndices.signalType,
                     decisionDelay);
 
-                BoxedValue<int> smpl_buf_idx_boxed = new BoxedValue<int>(smpl_buf_idx);
+                BoxedValueInt smpl_buf_idx_boxed = new BoxedValueInt(smpl_buf_idx);
                 silk_noise_shape_quantizer_del_dec(
                     psDelDec,
                     psIndices.signalType,
@@ -830,8 +830,8 @@ namespace Concentus.Silk.Structs
             this.lagPrev = pitchL[psEncC.nb_subfr - 1];
 
             /* Save quantized speech signal */
-            Arrays.MemMove(this.xq, psEncC.frame_length, 0, psEncC.ltp_mem_length);
-            Arrays.MemMove(this.sLTP_shp_Q14, psEncC.frame_length, 0, psEncC.ltp_mem_length);
+            Arrays.MemMoveShort(this.xq, psEncC.frame_length, 0, psEncC.ltp_mem_length);
+            Arrays.MemMoveInt(this.sLTP_shp_Q14, psEncC.frame_length, 0, psEncC.ltp_mem_length);
         }
 
         /******************************************/
@@ -865,7 +865,7 @@ namespace Concentus.Silk.Structs
             int predictLPCOrder,        /* I    Prediction filter order             */
             int warping_Q16,            /* I                                        */
             int nStatesDelayedDecision, /* I    Number of states in decision tree   */
-            BoxedValue<int> smpl_buf_idx,          /* I    Index to newest samples in buffers  */
+            BoxedValueInt smpl_buf_idx,          /* I    Index to newest samples in buffers  */
             int decisionDelay           /* I                                        */
         )
         {

@@ -156,13 +156,13 @@ namespace Concentus.Silk.Structs
 
         internal void Reset()
         {
-            Arrays.MemSet<int>(In_HP_State, 0, 2);
+            Arrays.MemSetInt(In_HP_State, 0, 2);
             variable_HP_smth1_Q15 = 0;
             variable_HP_smth2_Q15 = 0;
             sLP.Reset();
             sVAD.Reset();
             sNSQ.Reset();
-            Arrays.MemSet<short>(prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSetShort(prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
             speech_activity_Q8 = 0;
             allow_bandwidth_switch = 0;
             LBRRprevLastGainIndex = 0;
@@ -207,15 +207,15 @@ namespace Concentus.Silk.Structs
             pitch_lag_low_bits_iCDF = null;
             pitch_contour_iCDF = null;
             psNLSF_CB = null;
-            Arrays.MemSet<int>(input_quality_bands_Q15, 0, SilkConstants.VAD_N_BANDS);
+            Arrays.MemSetInt(input_quality_bands_Q15, 0, SilkConstants.VAD_N_BANDS);
             input_tilt_Q15 = 0;
             SNR_dB_Q7 = 0;
-            Arrays.MemSet<sbyte>(VAD_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSetSbyte(VAD_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             LBRR_flag = 0;
-            Arrays.MemSet<int>(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSetInt(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             indices.Reset();
-            Arrays.MemSet<sbyte>(pulses, 0, SilkConstants.MAX_FRAME_LENGTH);
-            Arrays.MemSet<short>(inputBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2);
+            Arrays.MemSetSbyte(pulses, 0, SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSetShort(inputBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2);
             inputBufIx = 0;
             nFramesPerPacket = 0;
             nFramesEncoded = 0;
@@ -235,11 +235,11 @@ namespace Concentus.Silk.Structs
             for (int c = 0; c < SilkConstants.MAX_FRAMES_PER_PACKET; c++)
             {
                 indices_LBRR[c].Reset();
-                Arrays.MemSet<sbyte>(pulses_LBRR[c], 0, SilkConstants.MAX_FRAME_LENGTH);
+                Arrays.MemSetSbyte(pulses_LBRR[c], 0, SilkConstants.MAX_FRAME_LENGTH);
             }
             sShape.Reset();
             sPrefilt.Reset();
-            Arrays.MemSet<short>(x_buf, 0, 2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
+            Arrays.MemSetShort(x_buf, 0, 2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX);
             LTPCorr_Q15 = 0;
         }
 
@@ -441,8 +441,8 @@ namespace Concentus.Silk.Structs
                 this.sShape.Reset();
                 this.sPrefilt.Reset();
                 this.sNSQ.Reset();
-                Arrays.MemSet<short>(this.prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
-                Arrays.MemSet(this.sLP.In_LP_State, 0, 2);
+                Arrays.MemSetShort(this.prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemSetInt(this.sLP.In_LP_State, 0, 2);
                 this.inputBufIx = 0;
                 this.nFramesEncoded = 0;
                 this.TargetRate_bps = 0;     /* trigger new SNR computation */
@@ -719,7 +719,7 @@ namespace Concentus.Silk.Structs
                             this.sLP.transition_frame_no = SilkConstants.TRANSITION_FRAMES;
 
                             /* Reset transition filter state */
-                            Arrays.MemSet(this.sLP.In_LP_State, 0, 2);
+                            Arrays.MemSetInt(this.sLP.In_LP_State, 0, 2);
                         }
 
                         if (encControl.opusCanSwitch != 0)
@@ -760,7 +760,7 @@ namespace Concentus.Silk.Structs
                                 this.sLP.transition_frame_no = 0;
 
                                 /* Reset transition filter state */
-                                Arrays.MemSet(this.sLP.In_LP_State, 0, 2);
+                                Arrays.MemSetInt(this.sLP.In_LP_State, 0, 2);
 
                                 /* Direction: up */
                                 this.sLP.mode = 1;
@@ -881,7 +881,7 @@ namespace Concentus.Silk.Structs
         /* Encode frame */
         /****************/
         internal int silk_encode_frame(
-            BoxedValue<int> pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
+            BoxedValueInt pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
             EntropyCoder psRangeEnc,                            /* I/O  compressor data structure                                                   */
             int condCoding,                             /* I    The type of conditional coding to use                                       */
             int maxBits,                                /* I    If > 0: maximum number of output bits                                       */
@@ -1147,7 +1147,7 @@ namespace Concentus.Silk.Structs
 
                     /* Quantize gains */
                     this.sShape.LastGainIndex = sEncCtrl.lastGainIndexPrev;
-                    BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(this.sShape.LastGainIndex);
+                    BoxedValueSbyte boxed_gainIndex = new BoxedValueSbyte(this.sShape.LastGainIndex);
                     GainQuantization.silk_gains_quant(this.indices.GainsIndices, sEncCtrl.Gains_Q16,
                           boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                     this.sShape.LastGainIndex = boxed_gainIndex.Val;
@@ -1220,7 +1220,7 @@ namespace Concentus.Silk.Structs
 
                 /* Decode to get gains in sync with decoder         */
                 /* Overwrite unquantized gains with quantized gains */
-                BoxedValue<sbyte> boxed_gainIndex = new BoxedValue<sbyte>(this.LBRRprevLastGainIndex);
+                BoxedValueSbyte boxed_gainIndex = new BoxedValueSbyte(this.LBRRprevLastGainIndex);
                 GainQuantization.silk_gains_dequant(thisCtrl.Gains_Q16, psIndices_LBRR.GainsIndices,
                     boxed_gainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, this.nb_subfr);
                 this.LBRRprevLastGainIndex = boxed_gainIndex.Val;

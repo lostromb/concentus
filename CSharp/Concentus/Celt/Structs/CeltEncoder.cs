@@ -642,7 +642,7 @@ namespace Concentus.Celt.Structs
 
             secondMdct = (shortBlocks != 0 && this.complexity >= 8) ? 1 : 0;
             bandLogE2 = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
-            //Arrays.MemSet<int>(bandLogE2, 0, C * nbEBands); // not explicitly needed
+            //Arrays.MemSetInt(bandLogE2, 0, C * nbEBands); // not explicitly needed
             if (secondMdct != 0)
             {
                 CeltCommon.compute_mdcts(mode, 0, input, freq, C, CC, LM, this.upsample);
@@ -678,7 +678,7 @@ namespace Concentus.Celt.Structs
             QuantizeBands.amp2Log2(mode, effEnd, end, bandE, bandLogE, C);
 
             surround_dynalloc = new int[C * nbEBands];
-            //Arrays.MemSet<int>(surround_dynalloc, 0, end); // not strictly needed
+            //Arrays.MemSetInt(surround_dynalloc, 0, end); // not strictly needed
             /* This computes how much masking takes place between surround channels */
             if (start == 0 && this.energy_mask != null && this.lfe == 0)
             {
@@ -741,7 +741,7 @@ namespace Concentus.Celt.Structs
                            disabling masking. */
                         mask_avg = 0;
                         diff = 0;
-                        Arrays.MemSet<int>(surround_dynalloc, 0, mask_end);
+                        Arrays.MemSetInt(surround_dynalloc, 0, mask_end);
                     }
                     else {
                         for (i = 0; i < mask_end; i++)

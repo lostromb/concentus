@@ -144,7 +144,7 @@ namespace Concentus.Structs
             hybrid_stereo_width_Q14 = 0;
             variable_HP_smth2_Q15 = 0;
             prev_HB_gain = 0;
-            Arrays.MemSet<int>(hp_mem, 0, 4);
+            Arrays.MemSetInt(hp_mem, 0, 4);
             mode = 0;
             prev_mode = 0;
             prev_channels = 0;
@@ -154,7 +154,7 @@ namespace Concentus.Structs
             first = 0;
             energy_masking = null;
             width_mem.Reset();
-            Arrays.MemSet<short>(delay_buffer, 0, OpusConstants.MAX_ENCODER_BUFFER * 2);
+            Arrays.MemSetShort(delay_buffer, 0, OpusConstants.MAX_ENCODER_BUFFER * 2);
             detected_bandwidth = 0;
             rangeFinal = 0;
             //SilkEncoder.Reset();
@@ -1050,7 +1050,7 @@ namespace Concentus.Structs
 
                 if (prefill != 0)
                 {
-                    BoxedValue<int> zero = new BoxedValue<int>(0);
+                    BoxedValueInt zero = new BoxedValueInt(0);
                     int prefill_offset;
 
                     /* Use a smooth onset for the SILK prefill to avoid the encoder trying to encode
@@ -1062,7 +1062,7 @@ namespace Concentus.Structs
                     prefill_offset = this.channels * (this.encoder_buffer - this.delay_compensation - this.Fs / 400);
                     CodecHelpers.gain_fade(this.delay_buffer, prefill_offset,
                           0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
-                    Arrays.MemSet<short>(this.delay_buffer, 0, prefill_offset);
+                    Arrays.MemSetShort(this.delay_buffer, 0, prefill_offset);
                     Array.Copy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
                     EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, zero, 1);
@@ -1070,7 +1070,7 @@ namespace Concentus.Structs
 
                 Array.Copy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
 
-                BoxedValue<int> boxed_silkBytes = new BoxedValue<int>(nBytes);
+                BoxedValueInt boxed_silkBytes = new BoxedValueInt(nBytes);
                 ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
                 nBytes = boxed_silkBytes.Val;
 
@@ -1201,7 +1201,7 @@ namespace Concentus.Structs
 
             if (this.channels * (this.encoder_buffer - (frame_size + total_buffer)) > 0)
             {
-                Arrays.MemMove<short>(this.delay_buffer, this.channels * frame_size, 0, this.channels * (this.encoder_buffer - frame_size - total_buffer));
+                Arrays.MemMoveShort(this.delay_buffer, this.channels * frame_size, 0, this.channels * (this.encoder_buffer - frame_size - total_buffer));
                 Array.Copy(pcm_buf, 0, this.delay_buffer, (this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
             }
             else

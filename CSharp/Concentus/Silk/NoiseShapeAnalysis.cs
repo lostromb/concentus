@@ -310,7 +310,7 @@ namespace Concentus.Silk
                 
                 /* Update pointer: next LPC analysis block */
                 x_ptr2 += psEnc.subfr_length;
-                BoxedValue<int> scale_boxed = new BoxedValue<int>(scale);
+                BoxedValueInt scale_boxed = new BoxedValueInt(scale);
                 if (psEnc.warping_Q16 > 0)
                 {
                     /* Calculate warped auto correlation */

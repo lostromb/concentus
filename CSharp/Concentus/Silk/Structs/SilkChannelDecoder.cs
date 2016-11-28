@@ -90,9 +90,9 @@ namespace Concentus.Silk.Structs
         internal void Reset()
         {
             prev_gain_Q16 = 0;
-            Arrays.MemSet<int>(exc_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
-            Arrays.MemSet<int>(sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
-            Arrays.MemSet<short>(outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+            Arrays.MemSetInt(exc_Q14, 0, SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemSetInt(sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSetShort(outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
             lagPrev = 0;
             LastGainIndex = 0;
             fs_kHz = 0;
@@ -102,7 +102,7 @@ namespace Concentus.Silk.Structs
             subfr_length = 0;
             ltp_mem_length = 0;
             LPC_order = 0;
-            Arrays.MemSet<short>(prevNLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemSetShort(prevNLSF_Q15, 0, SilkConstants.MAX_LPC_ORDER);
             first_frame_after_reset = 0;
             pitch_lag_low_bits_iCDF = null;
             pitch_contour_iCDF = null;
@@ -110,9 +110,9 @@ namespace Concentus.Silk.Structs
             nFramesPerPacket = 0;
             ec_prevSignalType = 0;
             ec_prevLagIndex = 0;
-            Arrays.MemSet<int>(VAD_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSetInt(VAD_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             LBRR_flag = 0;
-            Arrays.MemSet<int>(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
+            Arrays.MemSetInt(LBRR_flags, 0, SilkConstants.MAX_FRAMES_PER_PACKET);
             resampler_state.Reset();
             psNLSF_CB = null;
             indices.Reset();
@@ -254,8 +254,8 @@ namespace Concentus.Silk.Structs
                     this.lagPrev = 100;
                     this.LastGainIndex = 10;
                     this.prevSignalType = SilkConstants.TYPE_NO_VOICE_ACTIVITY;
-                    Arrays.MemSet<short>(this.outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
-                    Arrays.MemSet<int>(this.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+                    Arrays.MemSetShort(this.outBuf, 0, SilkConstants.MAX_FRAME_LENGTH + 2 * SilkConstants.MAX_SUB_FRAME_LENGTH);
+                    Arrays.MemSetInt(this.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
                 }
 
                 this.fs_kHz = fs_kHz;
@@ -275,7 +275,7 @@ namespace Concentus.Silk.Structs
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
             short[] pOut,                         /* O    Pointer to output speech frame              */
             int pOut_ptr,
-            BoxedValue<int> pN,                            /* O    Pointer to size of output frame             */
+            BoxedValueInt pN,                            /* O    Pointer to size of output frame             */
             int lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
             int condCoding                     /* I    The type of conditional coding to use       */
         )
@@ -337,7 +337,7 @@ namespace Concentus.Silk.Structs
             /*************************/
             Inlines.OpusAssert(this.ltp_mem_length >= this.frame_length);
             mv_len = this.ltp_mem_length - this.frame_length;
-            Arrays.MemMove<short>(this.outBuf, this.frame_length, 0, mv_len);
+            Arrays.MemMoveShort(this.outBuf, this.frame_length, 0, mv_len);
             Array.Copy(pOut, pOut_ptr, this.outBuf, mv_len, this.frame_length);
 
             /************************************************/

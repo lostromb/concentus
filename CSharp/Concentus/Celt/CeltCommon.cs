@@ -198,7 +198,7 @@ namespace Concentus.Celt
                 }
                 /*printf("\n");*/
                 /* First few samples are bad because we don't propagate the memory */
-                Arrays.MemSet<int>(tmp, 0, 12);
+                Arrays.MemSetInt(tmp, 0, 12);
 
                 /* Normalize tmp to max range */
                 {
@@ -424,7 +424,7 @@ namespace Concentus.Celt
         }
 
         internal static void celt_preemphasis(short[] pcmp, int[] inp, int inp_ptr,
-                                int N, int CC, int upsample, int[] coef, BoxedValue<int> mem, int clip)
+                                int N, int CC, int upsample, int[] coef, BoxedValueInt mem, int clip)
         {
             int i;
             int coef0;
@@ -880,7 +880,7 @@ namespace Concentus.Celt
             int[][] follower = Arrays.InitTwoDimensionalArray<int>(2, nbEBands);
             int[] noise_floor = new int[C * nbEBands]; // opt: partitioned array
 
-            Arrays.MemSet<int>(offsets, 0, nbEBands);
+            Arrays.MemSetInt(offsets, 0, nbEBands);
             /* Dynamic allocation code */
             maxDepth = (0 - ((short)(0.5 + (31.9f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(31.9f, CeltConstants.DB_SHIFT)*/);
             for (i = 0; i < end; i++)

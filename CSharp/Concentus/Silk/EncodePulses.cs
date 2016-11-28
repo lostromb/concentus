@@ -120,7 +120,7 @@ namespace Concentus.Silk
             int pulses_ptr;
             byte[] nBits_ptr;
 
-            Arrays.MemSet<int>(pulses_comb, 0, 8);
+            Arrays.MemSetInt(pulses_comb, 0, 8);
 
             /****************************/
             /* Prepare for shell coding */
