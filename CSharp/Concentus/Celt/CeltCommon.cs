@@ -81,7 +81,7 @@ namespace Concentus.Celt
                 coded_bins += eBands[Inlines.IMIN(intensity, coded_bands)] << LM;
 
             target = base_target;
-            if (analysis.enabled && analysis.valid != 0 && analysis.activity < .4)
+            if (analysis.valid != 0 && analysis.activity < .4)
                 target -= (int)((coded_bins << EntropyCoder.BITRES) * (.4f - analysis.activity));
 
             /* Stereo savings */
@@ -107,7 +107,7 @@ namespace Concentus.Celt
             target += (int)Inlines.SHL32(Inlines.MULT16_32_Q15(tf_estimate - tf_calibration, target), 1);
             
             /* Apply tonality boost */
-            if (analysis.enabled && analysis.valid != 0 && lfe == 0)
+            if (analysis.valid != 0 && lfe == 0)
             {
                 int tonal_target;
                 float tonal;
@@ -755,7 +755,7 @@ namespace Concentus.Celt
             trim -= Inlines.MAX16(Inlines.NEG16(((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/), Inlines.MIN16(((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/, (Inlines.SHR16((diff + ((short)(0.5 + (1.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(1.0f, CeltConstants.DB_SHIFT)*/), CeltConstants.DB_SHIFT - 8) / 6)));
             trim -= Inlines.SHR16(surround_trim, CeltConstants.DB_SHIFT - 8);
             trim = (trim - 2 * Inlines.SHR16(tf_estimate, 14 - 8));
-            if (analysis.enabled && analysis.valid != 0)
+            if (analysis.valid != 0)
             {
                 trim -= Inlines.MAX16(-((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/, Inlines.MIN16(((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/,
                       (int)(((short)(0.5 + (2.0f) * (((int)1) << (8))))/*Inlines.QCONST16(2.0f, 8)*/ * (analysis.tonality_slope + .05f))));
