@@ -1328,7 +1328,7 @@ public class OpusEncoder {
 
     /**
      * Encodes an Opus frame, putting the output into a specified data buffer
-     * @param in_pcm 16-bit input signal (Interleaved if stereo), in a byte array. Length should be at least frame_size * channels * 2
+     * @param in_pcm 16-bit input signal (Interleaved if stereo), in a little endian byte array. Length should be at least frame_size * channels * 2
      * @param pcm_offset Offset to use when reading the in_pcm buffer
      * @param frame_size The number of samples _per channel_ in the inpus signal. The frame size must be a valid Opus framesize for the given sample rate.
      * For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
@@ -1343,13 +1343,13 @@ public class OpusEncoder {
     public int encode(byte[] in_pcm, int pcm_offset, int frame_size,
             byte[] out_data, int out_data_offset, int max_data_bytes) throws OpusException {
     	//Convert byte array to short array
-    	short[] spcm = new short[in_pcm.length / 2];
-		for (int c = 0; c < spcm.length; c++) {
+    	short[] spcm = new short[(in_pcm.length - pcm_offset) / 2];
+		for (int c = pcm_offset; c < spcm.length; c++) {
 			short x = (short) ((in_pcm[(c * 2)]) & 0xff);
 			short y = (short) ((in_pcm[(c * 2) + 1]) << 8);
 			spcm[c] = (short) (x | y);
 		}
-		return encode(spcm, pcm_offset, frame_size, out_data, out_data_offset, max_data_bytes);
+		return encode(spcm, 0, frame_size, out_data, out_data_offset, max_data_bytes);
     }
 
     /// <summary>
