@@ -1344,10 +1344,9 @@ public class OpusEncoder {
             byte[] out_data, int out_data_offset, int max_data_bytes) throws OpusException {
     	//Convert byte array to short array
     	short[] spcm = new short[(in_pcm.length - pcm_offset) / 2];
-		for (int c = pcm_offset; c < spcm.length; c++) {
-			short x = (short) ((in_pcm[(c * 2)]) & 0xff);
-			short y = (short) ((in_pcm[(c * 2) + 1]) << 8);
-			spcm[c] = (short) (x | y);
+    	int pcm_idx = pcm_offset;
+		for (int c = 0; c < spcm.length; c++) {
+			spcm[c] = (short) (((in_pcm[pcm_idx++] & 0xff) | (in_pcm[pcm_idx++] << 8)) & 0xffff);
 		}
 		return encode(spcm, 0, frame_size, out_data, out_data_offset, max_data_bytes);
     }

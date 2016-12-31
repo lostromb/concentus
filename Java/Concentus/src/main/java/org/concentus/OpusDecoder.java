@@ -726,14 +726,15 @@ public class OpusDecoder {
      * @return The number of decoded samples (per channel)
      * @throws OpusException 
      */
-    public int decode(byte[] in_data, int in_data_offset,
-            int len, byte[] out_pcm, int out_pcm_offset, int frame_size, boolean decode_fec) throws OpusException {
+    public int decode(byte[] in_data, int in_data_offset, int len, byte[] out_pcm,
+    		int out_pcm_offset, int frame_size, boolean decode_fec) throws OpusException {
     	short[] spcm = new short[out_pcm.length / 2];
     	int decSamples = decode(in_data, in_data_offset, len, spcm, 0, frame_size, decode_fec);
     	//Convert short array to byte array
-    	for (int c = out_pcm_offset; c < spcm.length; c++) {
-    		out_pcm[c * 2] = (byte) (spcm[c] & 0xff);
-    		out_pcm[c * 2 + 1] = (byte) ((spcm[c] >> 8) & 0xff);
+    	int pcm_idx = out_pcm_offset;
+    	for (int c = 0; c < spcm.length; c++) {
+    		out_pcm[pcm_idx++] = (byte) (spcm[c] & 0xff);
+    		out_pcm[pcm_idx++] = (byte) ((spcm[c] >> 8) & 0xff);
     	}
     	return decSamples;
     }
