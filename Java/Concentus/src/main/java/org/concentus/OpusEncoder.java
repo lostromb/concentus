@@ -1343,10 +1343,9 @@ public class OpusEncoder {
     public int encode(byte[] in_pcm, int pcm_offset, int frame_size,
             byte[] out_data, int out_data_offset, int max_data_bytes) throws OpusException {
     	//Convert byte array to short array
-    	short[] spcm = new short[(in_pcm.length - pcm_offset) / 2];
-    	int pcm_idx = pcm_offset;
-		for (int c = 0; c < spcm.length; c++) {
-			spcm[c] = (short) (((in_pcm[pcm_idx++] & 0xff) | (in_pcm[pcm_idx++] << 8)) & 0xffff);
+    	short[] spcm = new short[frame_size * channels];
+		for (int c = 0, idx = pcm_offset; c < spcm.length; idx += 2, c++) {
+			spcm[c] = (short) (((in_pcm[idx] & 0xff) | (in_pcm[idx + 1] << 8)) & 0xffff);
 		}
 		return encode(spcm, 0, frame_size, out_data, out_data_offset, max_data_bytes);
     }
@@ -1364,7 +1363,6 @@ public class OpusEncoder {
         if (first == 0 && application != value) {
             throw new IllegalArgumentException("Application cannot be changed after encoding has started");
         }
-
         application = value;
     }
 
