@@ -121,7 +121,7 @@ public class OpusEncoder {
         hybrid_stereo_width_Q14 = 0;
         variable_HP_smth2_Q15 = 0;
         prev_HB_gain = 0;
-        Arrays.MemSet(hp_mem, (int) 0, 4);
+        Arrays.MemSet(hp_mem, 0, 4);
         mode = OpusMode.MODE_UNKNOWN;
         prev_mode = OpusMode.MODE_UNKNOWN;
         prev_channels = 0;
@@ -187,7 +187,6 @@ public class OpusEncoder {
      */
     public OpusEncoder(int Fs, int channels, OpusApplication application) throws OpusException {
         int ret;
-        OpusEncoder st;
         if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000)) {
             throw new IllegalArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
         }
@@ -437,7 +436,7 @@ public class OpusEncoder {
             int frame_rate3 = 3 * this.Fs / frame_size;
             /* We need to make sure that "int" values always fit in 16 bits. */
             cbrBytes = Inlines.IMIN((3 * this.bitrate_bps / 8 + frame_rate3 / 2) / frame_rate3, max_data_bytes);
-            this.bitrate_bps = cbrBytes * (int) frame_rate3 * 8 / 3;
+            this.bitrate_bps = cbrBytes * frame_rate3 * 8 / 3;
             max_data_bytes = cbrBytes;
         }
         if (max_data_bytes < 3 || this.bitrate_bps < 3 * frame_rate * 8
@@ -516,10 +515,10 @@ public class OpusEncoder {
             int threshold;
 
             /* Interpolate based on stereo width */
-            mode_voice = (int) (Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, OpusTables.mode_thresholds[0][0])
-                    + Inlines.MULT16_32_Q15(stereo_width, OpusTables.mode_thresholds[1][0]));
-            mode_music = (int) (Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, OpusTables.mode_thresholds[1][1])
-                    + Inlines.MULT16_32_Q15(stereo_width, OpusTables.mode_thresholds[1][1]));
+            mode_voice = Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, OpusTables.mode_thresholds[0][0])
+                    + Inlines.MULT16_32_Q15(stereo_width, OpusTables.mode_thresholds[1][0]);
+            mode_music = Inlines.MULT16_32_Q15(CeltConstants.Q15ONE - stereo_width, OpusTables.mode_thresholds[1][1])
+                    + Inlines.MULT16_32_Q15(stereo_width, OpusTables.mode_thresholds[1][1]);
             /* Interpolate based on speech/music probability */
             threshold = mode_music + ((voice_est * voice_est * (mode_voice - mode_music)) >> 14);
             /* Bias towards SILK for VoIP because of some useful features */
@@ -595,7 +594,7 @@ public class OpusEncoder {
 
         if (redundancy != 0) {
             /* Fair share of the max size allowed */
-            redundancy_bytes = Inlines.IMIN(257, max_data_bytes * (int) (this.Fs / 200) / (frame_size + this.Fs / 200));
+            redundancy_bytes = Inlines.IMIN(257, max_data_bytes * (this.Fs / 200) / (frame_size + this.Fs / 200));
             /* For VBR, target the actual bitrate (subject to the limit above) */
             if (this.use_vbr != 0) {
                 redundancy_bytes = Inlines.IMIN(redundancy_bytes, this.bitrate_bps / 1600);
@@ -863,7 +862,7 @@ public class OpusEncoder {
                     /* Increasingly attenuate high band when it gets allocated fewer bits */
                     celt_rate = total_bitRate - this.silk_mode.bitRate;
                     HB_gain_ref = (curr_bandwidth == OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND) ? 3000 : 3600;
-                    HB_gain = Inlines.SHL32((int) celt_rate, 9) / Inlines.SHR32((int) celt_rate + this.stream_channels * HB_gain_ref, 6);
+                    HB_gain = Inlines.SHL32(celt_rate, 9) / Inlines.SHR32(celt_rate + this.stream_channels * HB_gain_ref, 6);
                     HB_gain = HB_gain < CeltConstants.Q15ONE * 6 / 7 ? HB_gain + CeltConstants.Q15ONE / 7 : CeltConstants.Q15ONE;
                 }
             } else {
@@ -890,7 +889,7 @@ public class OpusEncoder {
                     for (i = 0; i < end; i++) {
                         int mask;
                         mask = Inlines.MAX16(Inlines.MIN16(this.energy_masking[21 * c + i],
-                                ((short) (0.5 + (.5f) * (((int) 1) << (10))))/*Inlines.QCONST16(.5f, 10)*/), -((short) (0.5 + (2.0f) * (((int) 1) << (10))))/*Inlines.QCONST16(2.0f, 10)*/);
+                                ((short) (0.5 + (.5f) * ((1) << (10))))/*Inlines.QCONST16(.5f, 10)*/), -((short) (0.5 + (2.0f) * ((1) << (10))))/*Inlines.QCONST16(2.0f, 10)*/);
                         if (mask > 0) {
                             mask = Inlines.HALF16(mask);
                         }
@@ -899,8 +898,8 @@ public class OpusEncoder {
                 }
                 /* Conservative rate reduction, we cut the masking in half */
                 masking_depth = mask_sum / end * this.channels;
-                masking_depth += ((short) (0.5 + (.2f) * (((int) 1) << (10))))/*Inlines.QCONST16(.2f, 10)*/;
-                rate_offset = (int) Inlines.PSHR32(Inlines.MULT16_16(srate, masking_depth), 10);
+                masking_depth += ((short) (0.5 + (.2f) * ((1) << (10))))/*Inlines.QCONST16(.2f, 10)*/;
+                rate_offset = Inlines.PSHR32(Inlines.MULT16_16(srate, masking_depth), 10);
                 rate_offset = Inlines.MAX32(rate_offset, -2 * this.silk_mode.bitRate / 3);
                 /* Split the rate change between the SILK and CELT part for hybrid. */
                 if (this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND || this.bandwidth == OpusBandwidth.OPUS_BANDWIDTH_FULLBAND) {
@@ -955,7 +954,7 @@ public class OpusEncoder {
             this.silk_mode.maxBits = nBytes * 8;
             /* Only allow up to 90% of the bits for hybrid mode*/
             if (this.mode == OpusMode.MODE_HYBRID) {
-                this.silk_mode.maxBits = (int) this.silk_mode.maxBits * 9 / 10;
+                this.silk_mode.maxBits = this.silk_mode.maxBits * 9 / 10;
             }
             if (this.silk_mode.useCBR != 0) {
                 this.silk_mode.maxBits = (this.silk_mode.bitRate * frame_size / (this.Fs * 8)) * 8;
@@ -1114,7 +1113,7 @@ public class OpusEncoder {
             if (this.hybrid_stereo_width_Q14 < (1 << 14) || this.silk_mode.stereoWidth_Q14 < (1 << 14)) {
                 int g1, g2;
                 g1 = this.hybrid_stereo_width_Q14;
-                g2 = (int) (this.silk_mode.stereoWidth_Q14);
+                g2 = (this.silk_mode.stereoWidth_Q14);
                 g1 = g1 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g1, 1);
                 g2 = g2 == 16384 ? CeltConstants.Q15ONE : Inlines.SHL16(g2, 1);
                 CodecHelpers.stereo_fade(pcm_buf, g1, g2, celt_mode.overlap,
@@ -1274,7 +1273,7 @@ public class OpusEncoder {
 
     /**
      * Encodes an Opus frame, putting the output into a specified data buffer
-     * @param in_pcm 16-bit input signal (Interleaved if stereo). Length should be at least frame_size * channels
+     * @param in_pcm 16-bit input signal (Interleaved if stereo), in a short array. Length should be at least frame_size * channels
      * @param pcm_offset Offset to use when reading the in_pcm buffer
      * @param frame_size The number of samples _per channel_ in the inpus signal. The frame size must be a valid Opus framesize for the given sample rate.
      * For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
@@ -1327,6 +1326,30 @@ public class OpusEncoder {
         }
     }
 
+    /**
+     * Encodes an Opus frame, putting the output into a specified data buffer
+     * @param in_pcm 16-bit input signal (Interleaved if stereo), in a little endian byte array. Length should be at least frame_size * channels * 2
+     * @param pcm_offset Offset to use when reading the in_pcm buffer
+     * @param frame_size The number of samples _per channel_ in the inpus signal. The frame size must be a valid Opus framesize for the given sample rate.
+     * For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
+     * (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.
+     * @param out_data Destination buffer for the output payload. This must contain at least max_data_bytes
+     * @param out_data_offset The offset to use when writing to the output data buffer
+     * @param max_data_bytes The maximum amount of space allocated for the output payload. This may be used to impose
+     * an upper limit on the instant bitrate, but should not be used as the only bitrate control (use setBitrate for that)
+     * @return The length of the encoded packet, in bytes
+     * @throws OpusException 
+     */
+    public int encode(byte[] in_pcm, int pcm_offset, int frame_size,
+            byte[] out_data, int out_data_offset, int max_data_bytes) throws OpusException {
+    	//Convert byte array to short array
+    	short[] spcm = new short[frame_size * channels];
+		for (int c = 0, idx = pcm_offset; c < spcm.length; idx += 2, c++) {
+			spcm[c] = (short) (((in_pcm[idx] & 0xff) | (in_pcm[idx + 1] << 8)) & 0xffff);
+		}
+		return encode(spcm, 0, frame_size, out_data, out_data_offset, max_data_bytes);
+    }
+
     /// <summary>
     /// Gets or sets the application (or signal type) of the input signal. This hints
     /// to the encoder what type of details we want to preserve in the encoding.
@@ -1340,7 +1363,6 @@ public class OpusEncoder {
         if (first == 0 && application != value) {
             throw new IllegalArgumentException("Application cannot be changed after encoding has started");
         }
-
         application = value;
     }
 
@@ -1357,8 +1379,8 @@ public class OpusEncoder {
                 throw new IllegalArgumentException("Bitrate must be positive");
             } else if (value <= 500) {
                 value = 500;
-            } else if (value > (int) 300000 * channels) {
-                value = (int) 300000 * channels;
+            } else if (value > 300000 * channels) {
+                value = 300000 * channels;
             }
         }
 
