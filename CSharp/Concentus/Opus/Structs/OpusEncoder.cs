@@ -1996,7 +1996,7 @@ namespace Concentus.Structs
         }
 
         /// <summary>
-        /// EXPERIMENTAL. Gets or sets the constant quality encoding parameter. This is a new feature intended to approximate
+        /// EXPERIMENTAL!!! Gets or sets the constant quality encoding parameter. This is a new feature intended to approximate
         /// "Constant Quality VBR" that other codecs such as MP3Lame provide, to let you encode mixed speech and music
         /// (such as a podcast) in the same Opus stream without changing encoder params.
         /// The quality is range from 0 (lowest) to 10 (highest). A setting of "null" means to use the regular Opus bitrate modes.
