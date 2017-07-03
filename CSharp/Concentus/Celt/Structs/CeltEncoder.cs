@@ -1049,7 +1049,7 @@ namespace Concentus.Celt.Structs
             bits -= anti_collapse_rsv;
             signalBandwidth = end - 1;
             
-            if (this.analysis.enabled && this.analysis.valid != 0)
+            if (this.analysis.valid != 0)
             {
                 int min_bandwidth;
                 if (equiv_rate < (int)32000 * C)

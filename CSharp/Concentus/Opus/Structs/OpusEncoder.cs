@@ -98,12 +98,15 @@ namespace Concentus.Structs
         internal OpusBandwidth detected_bandwidth;
         internal uint rangeFinal;
 
+        // Constant quality encoding parameter (new feature not in the main libopus)
+        private int? _vqLevel;
+
         // [Porting Note] There were originally "cabooses" that were tacked onto the end
         // of the struct without being explicitly included (since they have a variable size).
         // Here they are just included as an intrinsic variable.
         internal readonly SilkEncoder SilkEncoder = new SilkEncoder();
         internal readonly CeltEncoder Celt_Encoder = new CeltEncoder();
-
+        
         // used by multichannel structs
         internal OpusEncoder() { }
 
@@ -318,18 +321,18 @@ namespace Concentus.Structs
         }
 
 
-        internal int user_bitrate_to_bitrate(int frame_size, int max_data_bytes)
+        internal int user_bitrate_to_bitrate(int user_bitrate, int frame_size, int max_data_bytes)
         {
             if (frame_size == 0)
             {
                 frame_size = this.Fs / 400;
             }
-            if (this.user_bitrate_bps == OpusConstants.OPUS_AUTO)
+            if (user_bitrate == OpusConstants.OPUS_AUTO)
                 return 60 * this.Fs / frame_size + this.Fs * this.channels;
-            else if (this.user_bitrate_bps == OpusConstants.OPUS_BITRATE_MAX)
+            else if (user_bitrate == OpusConstants.OPUS_BITRATE_MAX)
                 return max_data_bytes * 8 * this.Fs / frame_size;
             else
-                return this.user_bitrate_bps;
+                return user_bitrate;
         }
 
         /// <summary>
@@ -414,7 +417,7 @@ namespace Concentus.Structs
             if (this.analysis.enabled)
             {
                 analysis_info.valid = 0;
-                if (this.silk_mode.complexity >= 7 && this.Fs == 48000)
+                if ((_vqLevel.HasValue || this.silk_mode.complexity >= 7) && this.Fs == 48000)
                 {
                     analysis_read_pos_bak = this.analysis.read_pos;
                     analysis_read_subframe_bak = this.analysis.read_subframe;
@@ -451,6 +454,12 @@ namespace Concentus.Structs
                         this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
                     else
                         this.detected_bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
+
+                    // If we are in constant-quality encode mode, use the analysis results to set the variable bitrate
+                    if (_vqLevel.HasValue)
+                    {
+                        this.user_bitrate_bps = GetVariableQualityBitrate(_vqLevel.Value, analysis.music_prob);
+                    }
                 }
             }
 
@@ -459,7 +468,7 @@ namespace Concentus.Structs
             else
                 stereo_width = 0;
             total_buffer = delay_compensation;
-            this.bitrate_bps = user_bitrate_to_bitrate(frame_size, max_data_bytes);
+            this.bitrate_bps = user_bitrate_to_bitrate(this.user_bitrate_bps, frame_size, max_data_bytes);
 
             frame_rate = this.Fs / frame_size;
             if (this.use_vbr == 0)
@@ -1272,7 +1281,6 @@ namespace Concentus.Structs
 
             if (this.analysis.enabled && redundancy != 0 || this.mode != OpusMode.MODE_SILK_ONLY)
             {
-                analysis_info.enabled = this.analysis.enabled;
                 celt_enc.SetAnalysis(analysis_info);
             }
             /* 5 ms redundant frame for CELT->SILK */
@@ -1387,6 +1395,32 @@ namespace Concentus.Structs
             }
 
             return ret;
+        }
+
+        // Bitrate table used for constant quality encoding
+        // Column 1 is bitrate for 100% speech, column 2 is 100% music
+        private static readonly int[][] vqTable = new int[][]
+        {
+            new int[] { 7000, 16000 }, // VQ 0
+            new int[] { 10000, 24000 }, // VQ 1
+            new int[] { 13000, 32000 }, // VQ 2
+            new int[] { 17000, 48000 }, // VQ 3
+            new int[] { 20000, 64000 }, // VQ 4
+            new int[] { 24000, 80000 }, // VQ 5
+            new int[] { 28000, 96000 }, // VQ 6
+            new int[] { 32000, 112000 }, // VQ 7
+            new int[] { 38000, 128000 }, // VQ 8
+            new int[] { 48000, 192000 }, // VQ 9
+            new int[] { 64000, 256000 }, // VQ 10
+        };
+
+        private static int GetVariableQualityBitrate(int vqLevel, float music_prob)
+        {
+            float low = vqTable[vqLevel][0];
+            float high = vqTable[vqLevel][1];
+            // Use a simple square root curve to cause the VQ to favor higher bitrates unless speech is very confident
+            float curvedQual = (float)Math.Sqrt(music_prob);
+            return (int)((high * curvedQual) + (low * (1 - curvedQual)));
         }
 
         /// <summary>
@@ -1560,10 +1594,15 @@ namespace Concentus.Structs
         {
             get
             {
-                return user_bitrate_to_bitrate(prev_framesize, 1276);
+                return user_bitrate_to_bitrate(this.user_bitrate_bps, prev_framesize, 1276);
             }
             set
             {
+                if (ConstantQuality.HasValue)
+                {
+                    throw new ArgumentException("Bitrate is read-only while the ConstantQuality parameter is set");
+                }
+
                 if (value != OpusConstants.OPUS_AUTO && value != OpusConstants.OPUS_BITRATE_MAX)
                 {
                     if (value <= 0)
@@ -1745,9 +1784,9 @@ namespace Concentus.Structs
             }
         }
 
-        /// <summary>
-        /// Gets or sets the "voice ratio". This is not implemented, but the idea is to hint the amount of voice vs. music in the input signal
-        /// </summary>
+        // <summary>
+        // Gets or sets the "voice ratio". This is not implemented, but the idea is to hint the amount of voice vs. music in the input signal
+        // </summary>
         //public int VoiceRatio
         //{
         //    get
@@ -1832,6 +1871,9 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Returns the final range of the entropy coder
+        /// </summary>
         public uint FinalRange
         {
             get
@@ -1940,7 +1982,57 @@ namespace Concentus.Structs
             }
             set
             {
+                if (!value && _vqLevel.HasValue)
+                {
+                    throw new ArgumentException("You cannot disable analysis while also specifying a ConstantQuality parameter");
+                }
+                if (value && this.Fs != 48000)
+                {
+                    throw new ArgumentException("EnableAnalysis only works if the encoder is in 48000Khz mode");
+                }
+                
                 analysis.enabled = value;
+            }
+        }
+
+        /// <summary>
+        /// EXPERIMENTAL!!! Gets or sets the constant quality encoding parameter. This is a new feature intended to approximate
+        /// "Constant Quality VBR" that other codecs such as MP3Lame provide, to let you encode mixed speech and music
+        /// (such as a podcast) in the same Opus stream without changing encoder params.
+        /// The quality is range from 0 (lowest) to 10 (highest). A setting of "null" means to use the regular Opus bitrate modes.
+        /// </summary>
+        public int? ConstantQuality
+        {
+            get
+            {
+                return _vqLevel;
+            }
+
+            set
+            {
+                if (value.HasValue && (value.Value < 0 || value.Value > 10))
+                {
+                    throw new ArgumentException("Constant quality VBR level must be either null (disabled) or between 0 and 10, inclusive.");
+                }
+                if (value.HasValue && this.Fs != 48000)
+                {
+                    throw new ArgumentException("ConstantQuality only works if the encoder is in 48000Khz mode");
+                }
+
+                EnableAnalysis = true;
+                _vqLevel = value;
+            }
+        }
+
+        /// <summary>
+        /// EXPERIMENTAL. Returns the probability that the current signal is music, according to the built-in analysis.
+        /// Only meaningful if EnableAnalysis is true and quality is above 7 or so
+        /// </summary>
+        public float MusicProbability
+        {
+            get
+            {
+                return analysis.music_prob;
             }
         }
         

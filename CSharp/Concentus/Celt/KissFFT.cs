@@ -358,15 +358,12 @@ namespace Concentus.Celt
             }
         }
 
-        // Since we can't use stack arrays, cache the strides array per-thread and store them on static heap
-        private static ThreadLocal<int[]> fstrides = new ThreadLocal<int[]>(() => new int[MAXFACTORS]);
-
         internal static void opus_fft_impl(FFTState st, int[] fout, int fout_ptr)
         {
             int m2, m;
             int p;
             int L;
-            int[] fstride = fstrides.Value;
+            int[] fstride = new int[MAXFACTORS];
             int i;
             int shift;
 

@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import org.concentus.*;
+import org.gagravarr.ogg.*;
+import org.gagravarr.opus.*;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -21,6 +23,50 @@ public class Program {
      */
     public static void main(String[] args) {
 
+        try {
+            FileInputStream fileIn = new FileInputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\48Khz Stereo.raw");
+            OpusEncoder encoder = new OpusEncoder(48000, 2, OpusApplication.OPUS_APPLICATION_AUDIO);
+            encoder.setBitrate(96000);
+            encoder.setSignalType(OpusSignal.OPUS_SIGNAL_MUSIC);
+            encoder.setComplexity(10);
+            
+            FileOutputStream fileOut = new FileOutputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\out.opus");
+            OpusInfo info = new OpusInfo();
+            info.setNumChannels(2);
+            info.setSampleRate(48000);
+            OpusTags tags = new OpusTags();
+            //tags.setVendor("Concentus");
+            //tags.addComment("title", "A test!");
+            OpusFile file = new OpusFile(fileOut, info, tags);
+            int packetSamples = 960;
+            byte[] inBuf = new byte[packetSamples * 2 * 2];
+            byte[] data_packet = new byte[1275];
+            long start = System.currentTimeMillis();
+            while (fileIn.available() >= inBuf.length) {
+                int bytesRead = fileIn.read(inBuf, 0, inBuf.length);
+                short[] pcm = BytesToShorts(inBuf, 0, inBuf.length);
+                int bytesEncoded = encoder.encode(pcm, 0, packetSamples, data_packet, 0, 1275);
+                byte[] packet = new byte[bytesEncoded];
+                System.arraycopy(data_packet, 0, packet, 0, bytesEncoded);
+                OpusAudioData data = new OpusAudioData(packet);
+                file.writeAudioData(data);
+            }
+            file.close();
+            
+            long end = System.currentTimeMillis();
+            System.out.println("Time was " + (end - start) + "ms");
+            fileIn.close();
+            //fileOut.close();
+            System.out.println("Done!");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } catch (OpusException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    public static void test()
+    {
         try {
             FileInputStream fileIn = new FileInputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\48Khz Stereo.raw");
             OpusEncoder encoder = new OpusEncoder(48000, 2, OpusApplication.OPUS_APPLICATION_AUDIO);
