@@ -695,7 +695,7 @@ namespace Concentus
         /// <returns></returns>
         public static string GetVersionString()
         {
-            return "concentus 1.1.4-fixed"
+            return "concentus 1.1.4"
 #if DEBUG
           + "-debug"
 #endif
