@@ -17,18 +17,15 @@
 		<releaseNotes>1.1.4 Fixing version number-related stuff and recompiling as .Net Standard 1.0</releaseNotes>
 		<dependencies>
 			<group targetFramework="netstandard1.0">
-				<dependency id="NETStandard.Library" version="1.6.0" target="lib\netstandard1.0" />
-			</group>
-			<group>
+				<dependency id="NETStandard.Library" version="1.6.0" />
 			</group>
 		</dependencies>
     </metadata>
     <files>
+		<file src="readme.txt" target="" />
 		<file src=".\netstandard1.0\Concentus.dll" target="lib\netstandard1.0" />
-		<file src=".\netstandard1.0\Concentus.pdb" target="lib\netstandard1.0" />
 		<file src=".\netstandard1.0\Concentus.xml" target="lib\netstandard1.0" />
 		<file src=".\portable-net45+win+wpa81+wp80\Concentus.dll" target="lib\portable-net45+win+wpa81+wp80" />
-		<file src=".\portable-net45+win+wpa81+wp80\Concentus.pdb" target="lib\portable-net45+win+wpa81+wp80" />
 		<file src=".\portable-net45+win+wpa81+wp80\Concentus.xml" target="lib\portable-net45+win+wpa81+wp80" />
 	</files>
 </package>
