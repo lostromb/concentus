@@ -237,155 +237,6 @@
             <param name="this"></param>
             <returns></returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Concentus.Common.SpeexResampler.resampler_basic_func" -->
-        <member name="M:Concentus.Common.SpeexResampler.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Create a new resampler with integer input and output rates (in hertz).
-            </summary>
-            <param name="nb_channels">The number of channels to be processed</param>
-            <param name="in_rate">Input sampling rate, in hertz</param>
-            <param name="out_rate">Output sampling rate, in hertz</param>
-            <param name="quality">Resampling quality, from 0 to 10</param>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Create a new resampler with fractional input/output rates. The sampling 
-            rate ratio is an arbitrary rational number with both the numerator and
-            denominator being 32-bit integers.
-            </summary>
-            <param name="nb_channels">The number of channels to be processed</param>
-            <param name="ratio_num">Numerator of sampling rate ratio</param>
-            <param name="ratio_den">Denominator of sampling rate ratio</param>
-            <param name="in_rate">Input sample rate rounded to the nearest integer (in hz)</param>
-            <param name="out_rate">Output sample rate rounded to the nearest integer (in hz)</param>
-            <param name="quality">Resampling quality, from 0 to 10</param>
-            <returns>A newly created restampler</returns>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.Process(System.Int32,System.Int16[],System.Int32,System.Int32@,System.Int16[],System.Int32,System.Int32@)">
-            <summary>
-            Resample an int array. The input and output buffers must *not* overlap
-            </summary>
-            <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
-            <param name="input">Input buffer</param>
-            <param name="input_ptr">Offset to start from when reading input</param>
-            <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
-            will be set to the number of input samples actually processed</param>
-            <param name="output">Output buffer</param>
-            <param name="output_ptr">Offset to start from when writing output</param>
-            <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
-            of output samples actually produced</param>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.Process(System.Int32,System.Single[],System.Int32,System.Int32@,System.Single[],System.Int32,System.Int32@)">
-            <summary>
-            Resample a float array array. The input and output buffers must *not* overlap
-            </summary>
-            <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
-            <param name="input">Input buffer</param>
-            <param name="input_ptr">Offset to start from when reading input</param>
-            <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
-            will be set to the number of input samples actually processed</param>
-            <param name="output">Output buffer</param>
-            <param name="output_ptr">Offset to start from when writing output</param>
-            <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
-            of output samples actually produced</param>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.ProcessInterleaved(System.Single[],System.Int32,System.Int32@,System.Single[],System.Int32,System.Int32@)">
-            <summary>
-            Resamples an interleaved int array. The stride is automatically determined by the number of channels of the resampler.
-            </summary>
-            <param name="input">Input buffer</param>
-            <param name="input_ptr">Offset to start from when reading input</param>
-            <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
-            value will be set to the number of input samples actually processed</param>
-            <param name="output">Output buffer</param>
-            <param name="output_ptr">Offset to start from when writing output</param>
-            <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
-            will be set to the number of samples per channel actually produced</param>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.ProcessInterleaved(System.Int16[],System.Int32,System.Int32@,System.Int16[],System.Int32,System.Int32@)">
-            <summary>
-            Resamples an interleaved float array. The stride is automatically determined by the number of channels of the resampler.
-            </summary>
-            <param name="input">Input buffer</param>
-            <param name="input_ptr">Offset to start from when reading input</param>
-            <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
-            value will be set to the number of input samples actually processed</param>
-            <param name="output">Output buffer</param>
-            <param name="output_ptr">Offset to start from when writing output</param>
-            <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
-            will be set to the number of samples per channel actually produced</param>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.SkipZeroes">
-            <summary>
-            Make sure that the first samples to go out of the resamplers don't have 
-            leading zeros. This is only useful before starting to use a newly created
-            resampler. It is recommended to use that when resampling an audio file, as
-            it will generate a file with the same length.For real-time processing,
-            it is probably easier not to use this call (so that the output duration
-            is the same for the first frame).
-            </summary>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.ResetMem">
-            <summary>
-            Clears the resampler buffers so a new (unrelated) stream can be processed.
-            </summary>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.SetRates(System.Int32,System.Int32)">
-            <summary>
-            Sets the input and output rates
-            </summary>
-            <param name="in_rate">Input sampling rate, in hertz</param>
-            <param name="out_rate">Output sampling rate, in hertz</param>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.GetRates(System.Int32@,System.Int32@)">
-            <summary>
-            Get the current input/output sampling rates (integer value).
-            </summary>
-            <param name="in_rate">(Output) Sampling rate of input</param>
-            <param name="out_rate">(Output) Sampling rate of output</param>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.SetRateFraction(System.Int32,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Sets the input/output sampling rates and resampling ration (fractional values in Hz supported)
-            </summary>
-            <param name="ratio_num">Numerator of the sampling rate ratio</param>
-            <param name="ratio_den">Denominator of the sampling rate ratio</param>
-            <param name="in_rate">Input sampling rate rounded to the nearest integer (in Hz)</param>
-            <param name="out_rate">Output sampling rate rounded to the nearest integer (in Hz)</param>
-        </member>
-        <member name="M:Concentus.Common.SpeexResampler.GetRateFraction(System.Int32@,System.Int32@)">
-            <summary>
-            Gets the current resampling ratio. This will be reduced to the least common denominator
-            </summary>
-            <param name="ratio_num">(Output) numerator of the sampling rate ratio</param>
-            <param name="ratio_den">(Output) denominator of the sampling rate ratio</param>
-        </member>
-        <member name="P:Concentus.Common.SpeexResampler.Quality">
-            <summary>
-            Gets or sets the resampling quality between 0 and 10, where 0 has poor 
-            quality and 10 has very high quality.
-            </summary>
-        </member>
-        <member name="P:Concentus.Common.SpeexResampler.InputStride">
-            <summary>
-            Gets or sets the input stride
-            </summary>
-        </member>
-        <member name="P:Concentus.Common.SpeexResampler.OutputStride">
-            <summary>
-            Gets or sets the output stride
-            </summary>
-        </member>
-        <member name="P:Concentus.Common.SpeexResampler.InputLatency">
-            <summary>
-            Get the latency introduced by the resampler measured in input samples.
-            </summary>
-        </member>
-        <member name="P:Concentus.Common.SpeexResampler.OutputLatency">
-            <summary>
-            Gets the latency introduced by the resampler measured in output samples.
-            </summary>
-        </member>
         <member name="M:Concentus.Common.Inlines.celt_ilog2(System.Int32)">
             Integer log in base2. Undefined for zero and negative numbers 
         </member>
@@ -658,11 +509,199 @@
             <param name="_x"></param>
             <returns></returns>
         </member>
+        <member name="T:Concentus.Common.SpeexResampler">
+            <summary>
+            Arbitrary-rate audio resampler originally implemented for the Speex codec.
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "T:Concentus.Common.SpeexResampler.resampler_basic_func" -->
+        <member name="M:Concentus.Common.SpeexResampler.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Create a new resampler with integer input and output rates (in hertz).
+            </summary>
+            <param name="nb_channels">The number of channels to be processed</param>
+            <param name="in_rate">Input sampling rate, in hertz</param>
+            <param name="out_rate">Output sampling rate, in hertz</param>
+            <param name="quality">Resampling quality, from 0 to 10</param>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Create a new resampler with fractional input/output rates. The sampling 
+            rate ratio is an arbitrary rational number with both the numerator and
+            denominator being 32-bit integers.
+            </summary>
+            <param name="nb_channels">The number of channels to be processed</param>
+            <param name="ratio_num">Numerator of sampling rate ratio</param>
+            <param name="ratio_den">Denominator of sampling rate ratio</param>
+            <param name="in_rate">Input sample rate rounded to the nearest integer (in hz)</param>
+            <param name="out_rate">Output sample rate rounded to the nearest integer (in hz)</param>
+            <param name="quality">Resampling quality, from 0 to 10</param>
+            <returns>A newly created restampler</returns>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.Create(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            DEPRECATED. Use the regular constructor instead.
+            </summary>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.Process(System.Int32,System.Int16[],System.Int32,System.Int32@,System.Int16[],System.Int32,System.Int32@)">
+            <summary>
+            Resample an int array. The input and output buffers must *not* overlap
+            </summary>
+            <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
+            <param name="input">Input buffer</param>
+            <param name="input_ptr">Offset to start from when reading input</param>
+            <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
+            will be set to the number of input samples actually processed</param>
+            <param name="output">Output buffer</param>
+            <param name="output_ptr">Offset to start from when writing output</param>
+            <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
+            of output samples actually produced</param>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.Process(System.Int32,System.Single[],System.Int32,System.Int32@,System.Single[],System.Int32,System.Int32@)">
+            <summary>
+            Resample a float array array. The input and output buffers must *not* overlap
+            </summary>
+            <param name="channel_index">The index of the channel to process (for multichannel input, 0 otherwise)</param>
+            <param name="input">Input buffer</param>
+            <param name="input_ptr">Offset to start from when reading input</param>
+            <param name="in_len">Number of input samples in the input buffer. After this function returns, this value
+            will be set to the number of input samples actually processed</param>
+            <param name="output">Output buffer</param>
+            <param name="output_ptr">Offset to start from when writing output</param>
+            <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
+            of output samples actually produced</param>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.ProcessInterleaved(System.Single[],System.Int32,System.Int32@,System.Single[],System.Int32,System.Int32@)">
+            <summary>
+            Resamples an interleaved int array. The stride is automatically determined by the number of channels of the resampler.
+            </summary>
+            <param name="input">Input buffer</param>
+            <param name="input_ptr">Offset to start from when reading input</param>
+            <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
+            value will be set to the number of input samples actually processed</param>
+            <param name="output">Output buffer</param>
+            <param name="output_ptr">Offset to start from when writing output</param>
+            <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
+            will be set to the number of samples per channel actually produced</param>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.ProcessInterleaved(System.Int16[],System.Int32,System.Int32@,System.Int16[],System.Int32,System.Int32@)">
+            <summary>
+            Resamples an interleaved float array. The stride is automatically determined by the number of channels of the resampler.
+            </summary>
+            <param name="input">Input buffer</param>
+            <param name="input_ptr">Offset to start from when reading input</param>
+            <param name="in_len">The number of samples *PER-CHANNEL* in the input buffer. After this function returns, this
+            value will be set to the number of input samples actually processed</param>
+            <param name="output">Output buffer</param>
+            <param name="output_ptr">Offset to start from when writing output</param>
+            <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
+            will be set to the number of samples per channel actually produced</param>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.SkipZeroes">
+            <summary>
+            Make sure that the first samples to go out of the resamplers don't have 
+            leading zeros. This is only useful before starting to use a newly created
+            resampler. It is recommended to use that when resampling an audio file, as
+            it will generate a file with the same length.For real-time processing,
+            it is probably easier not to use this call (so that the output duration
+            is the same for the first frame).
+            </summary>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.ResetMem">
+            <summary>
+            Clears the resampler buffers so a new (unrelated) stream can be processed.
+            </summary>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.SetRates(System.Int32,System.Int32)">
+            <summary>
+            Sets the input and output rates
+            </summary>
+            <param name="in_rate">Input sampling rate, in hertz</param>
+            <param name="out_rate">Output sampling rate, in hertz</param>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.GetRates(System.Int32@,System.Int32@)">
+            <summary>
+            Get the current input/output sampling rates (integer value).
+            </summary>
+            <param name="in_rate">(Output) Sampling rate of input</param>
+            <param name="out_rate">(Output) Sampling rate of output</param>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.SetRateFraction(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Sets the input/output sampling rates and resampling ration (fractional values in Hz supported)
+            </summary>
+            <param name="ratio_num">Numerator of the sampling rate ratio</param>
+            <param name="ratio_den">Denominator of the sampling rate ratio</param>
+            <param name="in_rate">Input sampling rate rounded to the nearest integer (in Hz)</param>
+            <param name="out_rate">Output sampling rate rounded to the nearest integer (in Hz)</param>
+        </member>
+        <member name="M:Concentus.Common.SpeexResampler.GetRateFraction(System.Int32@,System.Int32@)">
+            <summary>
+            Gets the current resampling ratio. This will be reduced to the least common denominator
+            </summary>
+            <param name="ratio_num">(Output) numerator of the sampling rate ratio</param>
+            <param name="ratio_den">(Output) denominator of the sampling rate ratio</param>
+        </member>
+        <member name="P:Concentus.Common.SpeexResampler.Quality">
+            <summary>
+            Gets or sets the resampling quality between 0 and 10, where 0 has poor 
+            quality and 10 has very high quality.
+            </summary>
+        </member>
+        <member name="P:Concentus.Common.SpeexResampler.InputStride">
+            <summary>
+            Gets or sets the input stride
+            </summary>
+        </member>
+        <member name="P:Concentus.Common.SpeexResampler.OutputStride">
+            <summary>
+            Gets or sets the output stride
+            </summary>
+        </member>
+        <member name="P:Concentus.Common.SpeexResampler.InputLatency">
+            <summary>
+            Get the latency introduced by the resampler measured in input samples.
+            </summary>
+        </member>
+        <member name="P:Concentus.Common.SpeexResampler.OutputLatency">
+            <summary>
+            Gets the latency introduced by the resampler measured in output samples.
+            </summary>
+        </member>
+        <member name="M:Concentus.Analysis.tonality_analysis``1(Concentus.Structs.TonalityAnalysisState,Concentus.Celt.Structs.CeltMode,``0[],System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Concentus.Downmix.downmix_func{``0})">
+            <summary>
+            
+            </summary>
+            <typeparam name="T">The type of signal being handled (either short or float) - changes based on which API is used</typeparam>
+            <param name="tonal"></param>
+            <param name="celt_mode"></param>
+            <param name="x"></param>
+            <param name="len"></param>
+            <param name="offset"></param>
+            <param name="c1"></param>
+            <param name="c2"></param>
+            <param name="C"></param>
+            <param name="lsb_depth"></param>
+            <param name="downmix"></param>
+        </member>
         <member name="M:Concentus.CodecHelpers.GetVersionString">
             <summary>
             Returns the version number of this library
             </summary>
             <returns></returns>
+        </member>
+        <member name="T:Concentus.Downmix.downmix_func`1">
+            <summary>
+            
+            </summary>
+            <typeparam name="T">The type of signal being handled (either short or float)</typeparam>
+            <param name="_x"></param>
+            <param name="sub"></param>
+            <param name="subframe"></param>
+            <param name="offset"></param>
+            <param name="c1"></param>
+            <param name="c2"></param>
+            <param name="C"></param>
         </member>
         <member name="F:Concentus.Enums.OpusApplication.OPUS_APPLICATION_VOIP">
             <summary>
@@ -772,6 +811,11 @@
             Signal being encoded is music
             </summary>
         </member>
+        <member name="T:Concentus.mlp">
+            <summary>
+            multi-layer perceptron processor
+            </summary>
+        </member>
         <member name="F:Concentus.OpusConstants.OPUS_AUTO">
             <summary>
             Auto/default setting
@@ -780,40 +824,6 @@
         <member name="F:Concentus.OpusConstants.OPUS_BITRATE_MAX">
             <summary>
             Maximum bitrate
-            </summary>
-        </member>
-        <member name="M:Concentus.Analysis.tonality_analysis``1(Concentus.Structs.TonalityAnalysisState,Concentus.Celt.Structs.CeltMode,``0[],System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Concentus.Downmix.downmix_func{``0})">
-            <summary>
-            
-            </summary>
-            <typeparam name="T">The type of signal being handled (either short or float) - changes based on which API is used</typeparam>
-            <param name="tonal"></param>
-            <param name="celt_mode"></param>
-            <param name="x"></param>
-            <param name="len"></param>
-            <param name="offset"></param>
-            <param name="c1"></param>
-            <param name="c2"></param>
-            <param name="C"></param>
-            <param name="lsb_depth"></param>
-            <param name="downmix"></param>
-        </member>
-        <member name="T:Concentus.Downmix.downmix_func`1">
-            <summary>
-            
-            </summary>
-            <typeparam name="T">The type of signal being handled (either short or float)</typeparam>
-            <param name="_x"></param>
-            <param name="sub"></param>
-            <param name="subframe"></param>
-            <param name="offset"></param>
-            <param name="c1"></param>
-            <param name="c2"></param>
-            <param name="C"></param>
-        </member>
-        <member name="T:Concentus.mlp">
-            <summary>
-            multi-layer perceptron processor
             </summary>
         </member>
         <member name="T:Concentus.Structs.MLP">
@@ -1143,6 +1153,11 @@
             Gets the number of channels that this encoder expects in its input. Always constant for the lifetime of the decoder.
             </summary>
         </member>
+        <member name="P:Concentus.Structs.OpusEncoder.FinalRange">
+            <summary>
+            Returns the final range of the entropy coder
+            </summary>
+        </member>
         <member name="P:Concentus.Structs.OpusEncoder.LSBDepth">
             <summary>
             Gets or sets the bit resolution of the input audio signal. Though the encoder always uses 16-bit internally, this can help
@@ -1177,6 +1192,20 @@
             <summary>
             Gets or sets a value indicating whether neural net analysis functions should be enabled, increasing encode quality
             at the expense of speed.
+            </summary>
+        </member>
+        <member name="P:Concentus.Structs.OpusEncoder.ConstantQuality">
+            <summary>
+            EXPERIMENTAL!!! Gets or sets the constant quality encoding parameter. This is a new feature intended to approximate
+            "Constant Quality VBR" that other codecs such as MP3Lame provide, to let you encode mixed speech and music
+            (such as a podcast) in the same Opus stream without changing encoder params.
+            The quality is range from 0 (lowest) to 10 (highest). A setting of "null" means to use the regular Opus bitrate modes.
+            </summary>
+        </member>
+        <member name="P:Concentus.Structs.OpusEncoder.MusicProbability">
+            <summary>
+            EXPERIMENTAL. Returns the probability that the current signal is music, according to the built-in analysis.
+            Only meaningful if EnableAnalysis is true and quality is above 7 or so
             </summary>
         </member>
         <member name="M:Concentus.Structs.OpusMSDecoder.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Byte[])">
@@ -1544,6 +1573,38 @@
             <param name="decState">I/O  Stat</param>
             <returns>Returns error code</returns>
         </member>
+        <member name="M:Concentus.Silk.EncodeAPI.silk_InitEncoder(Concentus.Silk.Structs.SilkEncoder,Concentus.Silk.Structs.EncControlState)">
+            <summary>
+            Init or Reset encoder
+            </summary>
+            <param name="encState">I/O  State</param>
+            <param name="arch">I    Run-time architecture</param>
+            <param name="encStatus">O    Encoder Status</param>
+            <returns>O    Returns error code</returns>
+        </member>
+        <member name="M:Concentus.Silk.EncodeAPI.silk_QueryEncoder(Concentus.Silk.Structs.SilkEncoder,Concentus.Silk.Structs.EncControlState)">
+            <summary>
+            Read control structure from encode
+            </summary>
+            <param name="encState">I    State</param>
+            <param name="encStatus">O    Encoder Status</param>
+            <returns>Returns error code</returns>
+        </member>
+        <member name="M:Concentus.Silk.EncodeAPI.silk_Encode(Concentus.Silk.Structs.SilkEncoder,Concentus.Silk.Structs.EncControlState,System.Int16[],System.Int32,Concentus.Common.EntropyCoder,Concentus.Common.CPlusPlus.BoxedValueInt,System.Int32)">
+            <summary>
+            Encode frame with Silk
+            Note: if prefillFlag is set, the input must contain 10 ms of audio, irrespective of what
+            encControl.payloadSize_ms is set to  
+            </summary>
+            <param name="psEnc">I/O  State</param>
+            <param name="encControl">I    Control status</param>
+            <param name="samplesIn">I    Speech sample input vector</param>
+            <param name="nSamplesIn">I    Number of samples in input vector</param>
+            <param name="psRangeEnc">I/O  Compressor data structure</param>
+            <param name="nBytesOut">I/O  Number of bytes in payload (input: Max bytes)</param>
+            <param name="prefillFlag">I    Flag to indicate prefilling buffers no coding</param>
+            <returns>error code</returns>
+        </member>
         <member name="M:Concentus.Silk.EncodeIndices.silk_encode_indices(Concentus.Silk.Structs.SilkChannelEncoder,Concentus.Common.EntropyCoder,System.Int32,System.Int32,System.Int32)">
             <summary>
             Encode side-information parameters to payload
@@ -1583,38 +1644,6 @@
             <param name="quantOffsetType">I    quantOffsetType</param>
             <param name="pulses">I    quantization indices</param>
             <param name="frame_length">I    Frame length</param>
-        </member>
-        <member name="M:Concentus.Silk.EncodeAPI.silk_InitEncoder(Concentus.Silk.Structs.SilkEncoder,Concentus.Silk.Structs.EncControlState)">
-            <summary>
-            Init or Reset encoder
-            </summary>
-            <param name="encState">I/O  State</param>
-            <param name="arch">I    Run-time architecture</param>
-            <param name="encStatus">O    Encoder Status</param>
-            <returns>O    Returns error code</returns>
-        </member>
-        <member name="M:Concentus.Silk.EncodeAPI.silk_QueryEncoder(Concentus.Silk.Structs.SilkEncoder,Concentus.Silk.Structs.EncControlState)">
-            <summary>
-            Read control structure from encode
-            </summary>
-            <param name="encState">I    State</param>
-            <param name="encStatus">O    Encoder Status</param>
-            <returns>Returns error code</returns>
-        </member>
-        <member name="M:Concentus.Silk.EncodeAPI.silk_Encode(Concentus.Silk.Structs.SilkEncoder,Concentus.Silk.Structs.EncControlState,System.Int16[],System.Int32,Concentus.Common.EntropyCoder,Concentus.Common.CPlusPlus.BoxedValueInt,System.Int32)">
-            <summary>
-            Encode frame with Silk
-            Note: if prefillFlag is set, the input must contain 10 ms of audio, irrespective of what
-            encControl.payloadSize_ms is set to  
-            </summary>
-            <param name="psEnc">I/O  State</param>
-            <param name="encControl">I    Control status</param>
-            <param name="samplesIn">I    Speech sample input vector</param>
-            <param name="nSamplesIn">I    Number of samples in input vector</param>
-            <param name="psRangeEnc">I/O  Compressor data structure</param>
-            <param name="nBytesOut">I/O  Number of bytes in payload (input: Max bytes)</param>
-            <param name="prefillFlag">I    Flag to indicate prefilling buffers no coding</param>
-            <returns>error code</returns>
         </member>
         <member name="T:Concentus.Silk.Enums.SilkError">
             <summary>
@@ -2124,12 +2153,6 @@
             <param name="pred_Q13">I/O  Predictors (out: quantized)</param>
             <param name="ix">O    Quantization indices [ 2 ][ 3 ]</param>
         </member>
-        <member name="M:Concentus.Silk.Structs.SideInfoIndices.Assign(Concentus.Silk.Structs.SideInfoIndices)">
-            <summary>
-            Overwrites this struct with values from another one. Equivalent to C struct assignment this = other
-            </summary>
-            <param name="other"></param>
-        </member>
         <member name="T:Concentus.Silk.Structs.CNGState">
             <summary>
             Struct for CNG
@@ -2140,15 +2163,77 @@
             Structure for controlling decoder operation and reading decoder status
             </summary>
         </member>
-        <member name="T:Concentus.Silk.Structs.SilkDecoder">
+        <member name="T:Concentus.Silk.Structs.EncControlState">
             <summary>
-            Decoder super struct
+            Structure for controlling encoder operation
             </summary>
         </member>
-        <member name="T:Concentus.Silk.Structs.SilkDecoderControl">
+        <member name="M:Concentus.Silk.Structs.EncControlState.check_control_input">
             <summary>
-            Decoder control
+            Checks this encoder control struct and returns error code, if any
             </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Concentus.Silk.Structs.NLSFCodebook">
+            <summary>
+            Structure containing NLSF codebook
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.quantStepSize_Q16">
+            <summary>
+            Quantization step size
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.invQuantStepSize_Q6">
+            <summary>
+            Inverse quantization step size
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.CB1_NLSF_Q8">
+            <summary>
+            POINTER
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.CB1_iCDF">
+            <summary>
+            POINTER
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.pred_Q8">
+            <summary>
+            POINTER to Backward predictor coefs [ order ]
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.ec_sel">
+            <summary>
+            POINTER to Indices to entropy coding tables [ order ]
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.ec_iCDF">
+            <summary>
+            POINTER
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.ec_Rates_Q5">
+            <summary>
+            POINTER
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.NLSFCodebook.deltaMin_Q15">
+            <summary>
+            POINTER
+            </summary>
+        </member>
+        <member name="T:Concentus.Silk.Structs.PLCStruct">
+            <summary>
+            Struct for Packet Loss Concealment
+            </summary>
+        </member>
+        <member name="M:Concentus.Silk.Structs.SideInfoIndices.Assign(Concentus.Silk.Structs.SideInfoIndices)">
+            <summary>
+            Overwrites this struct with values from another one. Equivalent to C struct assignment this = other
+            </summary>
+            <param name="other"></param>
         </member>
         <member name="T:Concentus.Silk.Structs.SilkChannelDecoder">
             <summary>
@@ -2173,30 +2258,6 @@
             Resets PLC state
             </summary>
             <param name="this">I/O Decoder state</param>
-        </member>
-        <member name="T:Concentus.Silk.Structs.EncControlState">
-            <summary>
-            Structure for controlling encoder operation
-            </summary>
-        </member>
-        <member name="M:Concentus.Silk.Structs.EncControlState.check_control_input">
-            <summary>
-            Checks this encoder control struct and returns error code, if any
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:Concentus.Silk.Structs.SilkEncoder">
-            <summary>
-            Encoder Super Struct
-            </summary>
-        </member>
-        <member name="M:Concentus.Silk.Structs.SilkEncoder.silk_init_encoder(Concentus.Silk.Structs.SilkChannelEncoder)">
-            <summary>
-            Initialize Silk Encoder state
-            </summary>
-            <param name="psEnc">I/O  Pointer to Silk FIX encoder state</param>
-            <param name="arch">I    Run-time architecture</param>
-            <returns></returns>
         </member>
         <member name="T:Concentus.Silk.Structs.SilkChannelEncoder">
             <summary>
@@ -2256,6 +2317,29 @@
             <param name="encControl">I    Control structure</param>
             <returns></returns>
         </member>
+        <member name="T:Concentus.Silk.Structs.SilkDecoder">
+            <summary>
+            Decoder super struct
+            </summary>
+        </member>
+        <member name="T:Concentus.Silk.Structs.SilkDecoderControl">
+            <summary>
+            Decoder control
+            </summary>
+        </member>
+        <member name="T:Concentus.Silk.Structs.SilkEncoder">
+            <summary>
+            Encoder Super Struct
+            </summary>
+        </member>
+        <member name="M:Concentus.Silk.Structs.SilkEncoder.silk_init_encoder(Concentus.Silk.Structs.SilkChannelEncoder)">
+            <summary>
+            Initialize Silk Encoder state
+            </summary>
+            <param name="psEnc">I/O  Pointer to Silk FIX encoder state</param>
+            <param name="arch">I    Run-time architecture</param>
+            <returns></returns>
+        </member>
         <member name="T:Concentus.Silk.Structs.SilkLPState">
             <summary>
             Variable cut-off low-pass filter state
@@ -2272,56 +2356,6 @@
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "F:Concentus.Silk.Structs.SilkLPState.mode" -->
-        <member name="T:Concentus.Silk.Structs.NLSFCodebook">
-            <summary>
-            Structure containing NLSF codebook
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.quantStepSize_Q16">
-            <summary>
-            Quantization step size
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.invQuantStepSize_Q6">
-            <summary>
-            Inverse quantization step size
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.CB1_NLSF_Q8">
-            <summary>
-            POINTER
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.CB1_iCDF">
-            <summary>
-            POINTER
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.pred_Q8">
-            <summary>
-            POINTER to Backward predictor coefs [ order ]
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.ec_sel">
-            <summary>
-            POINTER to Indices to entropy coding tables [ order ]
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.ec_iCDF">
-            <summary>
-            POINTER
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.ec_Rates_Q5">
-            <summary>
-            POINTER
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.NLSFCodebook.deltaMin_Q15">
-            <summary>
-            POINTER
-            </summary>
-        </member>
         <member name="T:Concentus.Silk.Structs.SilkNSQState">
             <summary>
             Noise shaping quantization state
@@ -2330,11 +2364,6 @@
         <member name="F:Concentus.Silk.Structs.SilkNSQState.xq">
             <summary>
             Buffer for quantized output signal
-            </summary>
-        </member>
-        <member name="T:Concentus.Silk.Structs.PLCStruct">
-            <summary>
-            Struct for Packet Loss Concealment
             </summary>
         </member>
         <member name="T:Concentus.Silk.Structs.SilkPrefilterState">
@@ -2350,26 +2379,6 @@
         <member name="T:Concentus.Silk.Structs.SilkShapeState">
             <summary>
             Noise shaping analysis state
-            </summary>
-        </member>
-        <member name="T:Concentus.Silk.Structs.TOCStruct">
-            <summary>
-            Struct for TOC (Table of Contents)
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.TOCStruct.VADFlag">
-            <summary>
-            Voice activity for packet
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.TOCStruct.VADFlags">
-            <summary>
-            Voice activity for each frame in packet
-            </summary>
-        </member>
-        <member name="F:Concentus.Silk.Structs.TOCStruct.inbandFECFlag">
-            <summary>
-            Flag indicating if packet contains in-band FEC
             </summary>
         </member>
         <member name="T:Concentus.Silk.Structs.SilkVADState">
@@ -2425,6 +2434,26 @@
         <member name="F:Concentus.Silk.Structs.SilkVADState.counter">
             <summary>
             Frame counter used in the initial phase
+            </summary>
+        </member>
+        <member name="T:Concentus.Silk.Structs.TOCStruct">
+            <summary>
+            Struct for TOC (Table of Contents)
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.TOCStruct.VADFlag">
+            <summary>
+            Voice activity for packet
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.TOCStruct.VADFlags">
+            <summary>
+            Voice activity for each frame in packet
+            </summary>
+        </member>
+        <member name="F:Concentus.Silk.Structs.TOCStruct.inbandFECFlag">
+            <summary>
+            Flag indicating if packet contains in-band FEC
             </summary>
         </member>
         <member name="M:Concentus.Silk.SumSqrShift.silk_sum_sqr_shift(System.Int32@,System.Int32@,System.Int16[],System.Int32,System.Int32)">

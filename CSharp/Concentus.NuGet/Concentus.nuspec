@@ -3,7 +3,7 @@
     <metadata>
 		<id>Concentus</id>
 		<title>Concentus</title>
-		<version>1.1.4</version>
+		<version>1.1.6</version>
 		<description>This package is a pure portable C# implementation of the Opus audio compression codec (see https://opus-codec.org/ for more details). This package contains the Opus encoder, decoder, multistream codecs, repacketizer, as well as a port of the libspeexdsp resampler. It does NOT contain code to parse .ogg or .opus container files or to manage RTP packet streams</description>
 		<summary>A pure portable C# implementation of the Opus audio codec</summary>
 		<tags>Concentus Opus Codec Audio Compression Encoder Decoder</tags>
@@ -14,7 +14,7 @@
 		<iconUrl>http://durandal.dnsalias.net/imgur/concentus.png</iconUrl>
 		<licenseUrl>https://opus-codec.org/license/</licenseUrl>
 		<copyright>Copyright © Xiph.Org Foundation, Skype Limited, CSIRO, Microsoft Corp.</copyright>
-		<releaseNotes>1.1.4 Fixing version number-related stuff and recompiling as .Net Standard 1.0</releaseNotes>
+		<releaseNotes>1.1.6 Adding .Net 3.5 export for users who are limited to very old runtimes (like some versions of Unity)</releaseNotes>
 		<dependencies>
 			<group targetFramework="netstandard1.0">
 				<dependency id="NETStandard.Library" version="1.6.0" />
@@ -24,8 +24,13 @@
     <files>
 		<file src="readme.txt" target="" />
 		<file src=".\netstandard1.0\Concentus.dll" target="lib\netstandard1.0" />
+		<file src=".\netstandard1.0\Concentus.pdb" target="lib\netstandard1.0" />
 		<file src=".\netstandard1.0\Concentus.xml" target="lib\netstandard1.0" />
 		<file src=".\portable-net45+win+wpa81+wp80\Concentus.dll" target="lib\portable-net45+win+wpa81+wp80" />
+		<file src=".\portable-net45+win+wpa81+wp80\Concentus.pdb" target="lib\portable-net45+win+wpa81+wp80" />
 		<file src=".\portable-net45+win+wpa81+wp80\Concentus.xml" target="lib\portable-net45+win+wpa81+wp80" />
+		<file src=".\net35\Concentus.dll" target="lib\net35" />
+		<file src=".\net35\Concentus.pdb" target="lib\net35" />
+		<file src=".\net35\Concentus.xml" target="lib\net35" />
 	</files>
 </package>

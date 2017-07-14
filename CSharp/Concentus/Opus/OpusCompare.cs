@@ -39,7 +39,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Concentus
 {
@@ -327,11 +327,11 @@ namespace Concentus
             if (Q < 0)
             {
                 Debug.WriteLine("Test vector FAILS");
-                Debug.WriteLine("Internal weighted error is {0}", err);
+                Debug.WriteLine(string.Format("Internal weighted error is {0}", err));
             }
             else {
                 Debug.WriteLine("Test vector PASSES");
-                Debug.WriteLine("Opus quality metric: {0} (internal weighted error is {1})", Q, err);
+                Debug.WriteLine(string.Format("Opus quality metric: {0} (internal weighted error is {1})", Q, err));
             }
 
             return Q;

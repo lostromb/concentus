@@ -278,7 +278,7 @@ namespace Concentus.Common.CPlusPlus
         {
             if (typeof(E) == typeof(int) || typeof(E) == typeof(uint))
             {
-                Debug.WriteLine("memcpy of {0} bytes", length * 4);
+                Debug.WriteLine(string.Format("memcpy of {0} bytes", length * 4));
                 string buf = string.Empty;
                 for (int c = 0; c < length; c++)
                 {
@@ -288,7 +288,7 @@ namespace Concentus.Common.CPlusPlus
             }
             else if (typeof(E) == typeof(short) || typeof(E) == typeof(ushort))
             {
-                Debug.WriteLine("memcpy of {0} bytes", length * 2);
+                Debug.WriteLine(string.Format("memcpy of {0} bytes", length * 2));
                 string buf = string.Empty;
                 for (int c = 0; c < length; c++)
                 {
@@ -298,7 +298,7 @@ namespace Concentus.Common.CPlusPlus
             }
             else if (typeof(E) == typeof(byte) || typeof(E) == typeof(sbyte))
             {
-                Debug.WriteLine("memcpy of {0} bytes", length);
+                Debug.WriteLine(string.Format("memcpy of {0} bytes", length));
                 string buf = string.Empty;
                 for (int c = 0; c < length; c++)
                 {

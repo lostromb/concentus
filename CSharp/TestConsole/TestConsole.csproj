@@ -72,18 +72,18 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Concentus\Concentus.csproj">
-      <Project>{1313f7f9-7276-46e4-9b22-bf56dc95800c}</Project>
-      <Name>Concentus</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="opus64-fix.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="opus64-float-avx.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Concentus.NetStandard\Concentus.NetStandard.csproj">
+      <Project>{1313f7f9-7276-46e4-9b22-bf56dc95800c}</Project>
+      <Name>Concentus.NetStandard</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -64,6 +64,9 @@ using System;
 
 namespace Concentus.Common
 {
+    /// <summary>
+    /// Arbitrary-rate audio resampler originally implemented for the Speex codec.
+    /// </summary>
     public class SpeexResampler
     {
         private const int FIXED_STACK_ALLOC = 8192;
@@ -627,6 +630,19 @@ namespace Concentus.Common
             this.update_filter();
 
             this.initialised = 1;
+        }
+
+        public static SpeexResampler Create(int nb_channels, int in_rate, int out_rate, int quality)
+        {
+            return new SpeexResampler(nb_channels, in_rate, out_rate, in_rate, out_rate, quality);
+        }
+
+        /// <summary>
+        /// DEPRECATED. Use the regular constructor instead.
+        /// </summary>
+        public static SpeexResampler Create(int nb_channels, int ratio_num, int ratio_den, int in_rate, int out_rate, int quality)
+        {
+            return new SpeexResampler(nb_channels, ratio_num, ratio_den, in_rate, out_rate, quality);
         }
 
         /// <summary>
