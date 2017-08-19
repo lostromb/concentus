@@ -54,9 +54,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Concentus.NetStandard\Concentus.NetStandard.csproj">
-      <Project>{1313f7f9-7276-46e4-9b22-bf56dc95800c}</Project>
-      <Name>Concentus.NetStandard</Name>
+    <ProjectReference Include="..\Concentus.Unsafe\Concentus.Unsafe.csproj">
+      <Project>{be388d8e-c850-4893-aba5-309b0211b4ac}</Project>
+      <Name>Concentus.Unsafe</Name>
     </ProjectReference>
     <ProjectReference Include="..\ParityTest\ParityTest.csproj">
       <Project>{640b302e-4417-446c-a7d6-f0759aacef31}</Project>

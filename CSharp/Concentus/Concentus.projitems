@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Enums\Spread.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Kernels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\KissFFT.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\KissFFTUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Laplace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\MDCT.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Pitch.cs" />

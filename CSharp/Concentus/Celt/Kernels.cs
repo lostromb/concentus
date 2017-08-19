@@ -160,6 +160,165 @@ namespace Concentus.Celt
             }
         }
 
+#if UNSAFE
+
+        /// <summary>
+        /// OPT: This is the kernel you really want to optimize. It gets used a lot by the prefilter and by the PLC.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="sum"></param>
+        /// <param name="len"></param>
+        internal unsafe static void xcorr_kernel(short[] x, int x_ptr, short[] y, int y_ptr, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        {
+            int j;
+            short y_0, y_1, y_2, y_3;
+            Inlines.OpusAssert(len >= 3);
+            fixed (short* _x_fixed = x, _y_fixed = y)
+            {
+                short* px = _x_fixed + x_ptr;
+                short* py = _y_fixed + y_ptr;
+                y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
+                y_0 = *py++;
+                y_1 = *py++;
+                y_2 = *py++;
+                for (j = 0; j < len - 3; j += 4)
+                {
+                    short tmp;
+                    tmp = *px++;
+                    y_3 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_0);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_1);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_2);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_3);
+                    tmp = *px++;
+                    y_0 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_1);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_2);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_3);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_0);
+                    tmp = *px++;
+                    y_1 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_2);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
+                    tmp = *px++;
+                    y_2 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_3);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_0);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_1);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_2);
+                }
+                if (j++ < len)
+                {
+                    short tmp;
+                    tmp = *px++;
+                    y_3 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_0);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_1);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_2);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_3);
+                }
+                if (j++ < len)
+                {
+                    short tmp;
+                    tmp = *px++;
+                    y_0 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_1);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_2);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_3);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_0);
+                }
+                if (j < len)
+                {
+                    short tmp;
+                    tmp = *px++;
+                    y_1 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_2);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
+                }
+            }
+        }
+
+        internal unsafe static void xcorr_kernel(int[] x, int[] y, int y_ptr, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        {
+            int j;
+            int y_0, y_1, y_2, y_3;
+            int x_ptr = 0;
+            Inlines.OpusAssert(len >= 3);
+            fixed (int* _x_fixed = x, _y_fixed = y)
+            {
+                int* px = _x_fixed + x_ptr;
+                int* py = _y_fixed + y_ptr;
+                y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
+                y_0 = *py++;
+                y_1 = *py++;
+                y_2 = *py++;
+                for (j = 0; j < len - 3; j += 4)
+                {
+                    int tmp;
+                    tmp = *px++;
+                    y_3 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_0);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_1);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_2);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_3);
+                    tmp = *px++;
+                    y_0 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_1);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_2);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_3);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_0);
+                    tmp = *px++;
+                    y_1 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_2);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
+                    tmp = *px++;
+                    y_2 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_3);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_0);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_1);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_2);
+                }
+                if (j++ < len)
+                {
+                    int tmp;
+                    tmp = *px++;
+                    y_3 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_0);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_1);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_2);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_3);
+                }
+                if (j++ < len)
+                {
+                    int tmp;
+                    tmp = *px++;
+                    y_0 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_1);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_2);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_3);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_0);
+                }
+                if (j < len)
+                {
+                    int tmp;
+                    tmp = *px++;
+                    y_1 = *py++;
+                    sum0 = Inlines.MAC16_16(sum0, tmp, y_2);
+                    sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
+                    sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
+                    sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
+                }
+            }
+        }
+
+#else
         /// <summary>
         /// OPT: This is the kernel you really want to optimize. It gets used a lot by the prefilter and by the PLC.
         /// </summary>
@@ -305,6 +464,8 @@ namespace Concentus.Celt
                 sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
             }
         }
+
+#endif
 
         internal static int celt_inner_prod(short[] x, int x_ptr, short[] y, int y_ptr, int N)
         {
