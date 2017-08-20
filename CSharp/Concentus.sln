@@ -24,6 +24,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concentus.Unsafe", "Concentus.Unsafe\Concentus.Unsafe.csproj", "{BE388D8E-C850-4893-ABA5-309B0211B4AC}"
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Concentus\Concentus.projitems*{1313f7f9-7276-46e4-9b22-bf56dc95800c}*SharedItemsImports = 4
 		Concentus\Concentus.projitems*{23dc2465-d72d-4e3c-83bb-299f2d601ff2}*SharedItemsImports = 13
