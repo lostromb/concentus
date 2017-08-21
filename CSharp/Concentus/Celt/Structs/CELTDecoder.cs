@@ -337,8 +337,19 @@ namespace Concentus.Celt.Structs
                         }
 
                         /* Compute the excitation for exc_length samples before the loss. */
+#if UNSAFE
+                        unsafe
+                        {
+                            fixed (int* pexc_base = exc, lpc = this.lpc[c])
+                            {
+                                int* pexc = pexc_base + (CeltConstants.MAX_PERIOD - exc_length);
+                                Kernels.celt_fir(pexc, lpc, pexc, exc_length, CeltConstants.LPC_ORDER, lpc_mem);
+                            }
+                        }
+#else
                         Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), this.lpc[c], 0,
                               exc, (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
+#endif
                     }
 
                     /* Check if the waveform is decaying, and if so how fast.
@@ -800,9 +811,9 @@ namespace Concentus.Celt.Structs
             return frame_size / this.downsample;
         }
 
-        #endregion
+#endregion
 
-        #region Getters and Setters
+#region Getters and Setters
 
         internal void SetStartBand(int value)
         {
@@ -857,6 +868,6 @@ namespace Concentus.Celt.Structs
             return this.rng;
         }
 
-        #endregion
+#endregion
     }
 }

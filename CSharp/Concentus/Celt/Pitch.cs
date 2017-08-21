@@ -324,7 +324,21 @@ namespace Concentus.Celt
 
             T = T0 = T0_;
             int[] yy_lookup = new int[maxperiod + 1];
+
+#if UNSAFE
+            unsafe
+            {
+                fixed (int* px_base = x)
+                {
+                    int* px = px_base + x_ptr;
+                    int* px2 = px_base + x_ptr - T0;
+                    Kernels.dual_inner_prod(px, px, px2, N, out xx, out xy);
+                }
+            }
+#else
             Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, out xx, out xy);
+#endif
+
             yy_lookup[0] = xx;
             yy = xx;
             for (i = 1; i <= maxperiod; i++)
@@ -372,9 +386,22 @@ namespace Concentus.Celt
                 {
                     T1b = Inlines.celt_udiv(2 * second_check[k] * T0 + k, 2 * k);
                 }
-                
-                Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, out xy, out xy2);
 
+#if UNSAFE
+                unsafe
+                {
+                    fixed (int* px_base = x)
+                    {
+                        int* px = px_base + x_ptr;
+                        int* px2 = px_base + x_ptr - T1;
+                        int* px3 = px_base + x_ptr - T1b;
+                        Kernels.dual_inner_prod(px, px2, px3, N, out xy, out xy2);
+                    }
+                }
+#else
+                Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, out xy, out xy2);
+#endif
+                
                 xy += xy2;
                 yy = yy_lookup[T1] + yy_lookup[T1b];
 

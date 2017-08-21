@@ -163,7 +163,8 @@ namespace Concentus.Celt
                     /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
                     for (; i < max_pitch; i++)
                     {
-                        int inner_sum = Kernels.celt_inner_prod(_x, _y, i, len);
+                        short* py = py_base + i;
+                        int inner_sum = Kernels.celt_inner_prod(px, py, len);
                         xcorr[i] = inner_sum;
                         maxcorr = Inlines.MAX32(maxcorr, inner_sum);
                     }
