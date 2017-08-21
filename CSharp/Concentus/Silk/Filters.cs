@@ -502,7 +502,19 @@ namespace Concentus.Silk
             {
                 mem[j] = input[input_ptr + d - j - 1];
             }
+#if UNSAFE
+            unsafe
+            {
+                fixed (short* pinput_base = input, poutput_base = output)
+                {
+                    short* pinput = pinput_base + input_ptr + d;
+                    short* poutput = poutput_base + output_ptr + d;
+                    Kernels.celt_fir(pinput, num, poutput, len - d, d, mem);
+                }
+            }
+#else
             Kernels.celt_fir(input, input_ptr + d, num, output, output_ptr + d, len - d, d, mem);
+#endif
             for (j = output_ptr; j < output_ptr + d; j++)
             {
                 output[j] = 0;

@@ -13,10 +13,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltLPC.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltLPCUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltPitchXCorr.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltPitchXCorrUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CWRS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Enums\Spread.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Kernels.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\KernelsUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\KissFFT.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\KissFFTUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Laplace.cs" />
