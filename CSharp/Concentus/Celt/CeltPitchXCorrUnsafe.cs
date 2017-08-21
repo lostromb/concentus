@@ -95,31 +95,38 @@ namespace Concentus.Celt
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
-            fixed (short* px_base = _x)
+            fixed (int* pxcorr = xcorr)
             {
-                short* px = px_base + _x_ptr;
-                for (i = 0; i < max_pitch - 3; i += 4)
+                fixed (short* px_base = _x, py_base = _y)
                 {
-                    int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                    Kernels.xcorr_kernel(px, _y, _y_ptr + i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                    short* px = px_base + _x_ptr;
+                    for (i = 0; i < max_pitch - 3; i += 4)
+                    {
+                        int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                        short* py = py_base + _y_ptr + i;
+                        Kernels.xcorr_kernel(px, py, ref sum0, ref sum1, ref sum2, ref sum3, len);
 
-                    xcorr[i] = sum0;
-                    xcorr[i + 1] = sum1;
-                    xcorr[i + 2] = sum2;
-                    xcorr[i + 3] = sum3;
-                    sum0 = Inlines.MAX32(sum0, sum1);
-                    sum2 = Inlines.MAX32(sum2, sum3);
-                    sum0 = Inlines.MAX32(sum0, sum2);
-                    maxcorr = Inlines.MAX32(maxcorr, sum0);
-                }
-                /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
-                for (; i < max_pitch; i++)
-                {
-                    int inner_sum = Kernels.celt_inner_prod(_x, _x_ptr, _y, _y_ptr + i, len);
-                    xcorr[i] = inner_sum;
-                    maxcorr = Inlines.MAX32(maxcorr, inner_sum);
+                        int* pxcorr2 = pxcorr + i;
+                        pxcorr2[0] = sum0;
+                        pxcorr2[1] = sum1;
+                        pxcorr2[2] = sum2;
+                        pxcorr2[3] = sum3;
+                        sum0 = Inlines.MAX32(sum0, sum1);
+                        sum2 = Inlines.MAX32(sum2, sum3);
+                        sum0 = Inlines.MAX32(sum0, sum2);
+                        maxcorr = Inlines.MAX32(maxcorr, sum0);
+                    }
+                    /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
+                    for (; i < max_pitch; i++)
+                    {
+                        short* py = py_base + _y_ptr + i;
+                        int inner_sum = Kernels.celt_inner_prod(px, py, len);
+                        xcorr[i] = inner_sum;
+                        maxcorr = Inlines.MAX32(maxcorr, inner_sum);
+                    }
                 }
             }
+
             return maxcorr;
         }
 
@@ -133,30 +140,35 @@ namespace Concentus.Celt
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
-            fixed (short* px = _x)
+            fixed (int* pxcorr_base = xcorr)
             {
-                for (i = 0; i < max_pitch - 3; i += 4)
+                fixed (short* px = _x, py_base = _y)
                 {
-                    int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                    Kernels.xcorr_kernel(px, _y, i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                    for (i = 0; i < max_pitch - 3; i += 4)
+                    {
+                        int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                        short* py = py_base + i;
+                        Kernels.xcorr_kernel(px, py, ref sum0, ref sum1, ref sum2, ref sum3, len);
 
-                    xcorr[i] = sum0;
-                    xcorr[i + 1] = sum1;
-                    xcorr[i + 2] = sum2;
-                    xcorr[i + 3] = sum3;
-                    sum0 = Inlines.MAX32(sum0, sum1);
-                    sum2 = Inlines.MAX32(sum2, sum3);
-                    sum0 = Inlines.MAX32(sum0, sum2);
-                    maxcorr = Inlines.MAX32(maxcorr, sum0);
+                        int* pxcorr = pxcorr_base + i;
+                        pxcorr[0] = sum0;
+                        pxcorr[1] = sum1;
+                        pxcorr[2] = sum2;
+                        pxcorr[3] = sum3;
+                        sum0 = Inlines.MAX32(sum0, sum1);
+                        sum2 = Inlines.MAX32(sum2, sum3);
+                        sum0 = Inlines.MAX32(sum0, sum2);
+                        maxcorr = Inlines.MAX32(maxcorr, sum0);
+                    }
+                    /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
+                    for (; i < max_pitch; i++)
+                    {
+                        int inner_sum = Kernels.celt_inner_prod(_x, _y, i, len);
+                        xcorr[i] = inner_sum;
+                        maxcorr = Inlines.MAX32(maxcorr, inner_sum);
+                    }
+                    return maxcorr;
                 }
-                /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
-                for (; i < max_pitch; i++)
-                {
-                    int inner_sum = Kernels.celt_inner_prod(_x, _y, i, len);
-                    xcorr[i] = inner_sum;
-                    maxcorr = Inlines.MAX32(maxcorr, inner_sum);
-                }
-                return maxcorr;
             }
         }
     }

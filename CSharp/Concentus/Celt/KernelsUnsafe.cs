@@ -83,7 +83,8 @@ namespace Concentus.Celt
                 for (i = 0; i < N - 3; i += 4)
                 {
                     int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                    xcorr_kernel(prnum, local_x, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
+                    short* local_x2 = plocal_x + i;
+                    xcorr_kernel(prnum, local_x2, ref sum0, ref sum1, ref sum2, ref sum3, ord);
                     py[0] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i]), Inlines.PSHR32(sum0, CeltConstants.SIG_SHIFT))));
                     py[1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i + 1]), Inlines.PSHR32(sum1, CeltConstants.SIG_SHIFT))));
                     py[2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i + 2]), Inlines.PSHR32(sum2, CeltConstants.SIG_SHIFT))));
@@ -175,76 +176,72 @@ namespace Concentus.Celt
         /// <param name="y"></param>
         /// <param name="sum"></param>
         /// <param name="len"></param>
-        internal unsafe static void xcorr_kernel(short* x, short[] y, int y_ptr, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        internal unsafe static void xcorr_kernel(short* x, short* py, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
         {
             int j;
             short y_0, y_1, y_2, y_3;
             Inlines.OpusAssert(len >= 3);
-            fixed (short* _y_fixed = y)
+            y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
+            y_0 = *py++;
+            y_1 = *py++;
+            y_2 = *py++;
+            for (j = 0; j < len - 3; j += 4)
             {
-                short* py = _y_fixed + y_ptr;
-                y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
+                short tmp;
+                tmp = *x++;
+                y_3 = *py++;
+                sum0 = Inlines.MAC16_16(sum0, tmp, y_0);
+                sum1 = Inlines.MAC16_16(sum1, tmp, y_1);
+                sum2 = Inlines.MAC16_16(sum2, tmp, y_2);
+                sum3 = Inlines.MAC16_16(sum3, tmp, y_3);
+                tmp = *x++;
                 y_0 = *py++;
+                sum0 = Inlines.MAC16_16(sum0, tmp, y_1);
+                sum1 = Inlines.MAC16_16(sum1, tmp, y_2);
+                sum2 = Inlines.MAC16_16(sum2, tmp, y_3);
+                sum3 = Inlines.MAC16_16(sum3, tmp, y_0);
+                tmp = *x++;
                 y_1 = *py++;
+                sum0 = Inlines.MAC16_16(sum0, tmp, y_2);
+                sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
+                sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
+                sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
+                tmp = *x++;
                 y_2 = *py++;
-                for (j = 0; j < len - 3; j += 4)
-                {
-                    short tmp;
-                    tmp = *x++;
-                    y_3 = *py++;
-                    sum0 = Inlines.MAC16_16(sum0, tmp, y_0);
-                    sum1 = Inlines.MAC16_16(sum1, tmp, y_1);
-                    sum2 = Inlines.MAC16_16(sum2, tmp, y_2);
-                    sum3 = Inlines.MAC16_16(sum3, tmp, y_3);
-                    tmp = *x++;
-                    y_0 = *py++;
-                    sum0 = Inlines.MAC16_16(sum0, tmp, y_1);
-                    sum1 = Inlines.MAC16_16(sum1, tmp, y_2);
-                    sum2 = Inlines.MAC16_16(sum2, tmp, y_3);
-                    sum3 = Inlines.MAC16_16(sum3, tmp, y_0);
-                    tmp = *x++;
-                    y_1 = *py++;
-                    sum0 = Inlines.MAC16_16(sum0, tmp, y_2);
-                    sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
-                    sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
-                    sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
-                    tmp = *x++;
-                    y_2 = *py++;
-                    sum0 = Inlines.MAC16_16(sum0, tmp, y_3);
-                    sum1 = Inlines.MAC16_16(sum1, tmp, y_0);
-                    sum2 = Inlines.MAC16_16(sum2, tmp, y_1);
-                    sum3 = Inlines.MAC16_16(sum3, tmp, y_2);
-                }
-                if (j++ < len)
-                {
-                    short tmp;
-                    tmp = *x++;
-                    y_3 = *py++;
-                    sum0 = Inlines.MAC16_16(sum0, tmp, y_0);
-                    sum1 = Inlines.MAC16_16(sum1, tmp, y_1);
-                    sum2 = Inlines.MAC16_16(sum2, tmp, y_2);
-                    sum3 = Inlines.MAC16_16(sum3, tmp, y_3);
-                }
-                if (j++ < len)
-                {
-                    short tmp;
-                    tmp = *x++;
-                    y_0 = *py++;
-                    sum0 = Inlines.MAC16_16(sum0, tmp, y_1);
-                    sum1 = Inlines.MAC16_16(sum1, tmp, y_2);
-                    sum2 = Inlines.MAC16_16(sum2, tmp, y_3);
-                    sum3 = Inlines.MAC16_16(sum3, tmp, y_0);
-                }
-                if (j < len)
-                {
-                    short tmp;
-                    tmp = *x++;
-                    y_1 = *py++;
-                    sum0 = Inlines.MAC16_16(sum0, tmp, y_2);
-                    sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
-                    sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
-                    sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
-                }
+                sum0 = Inlines.MAC16_16(sum0, tmp, y_3);
+                sum1 = Inlines.MAC16_16(sum1, tmp, y_0);
+                sum2 = Inlines.MAC16_16(sum2, tmp, y_1);
+                sum3 = Inlines.MAC16_16(sum3, tmp, y_2);
+            }
+            if (j++ < len)
+            {
+                short tmp;
+                tmp = *x++;
+                y_3 = *py++;
+                sum0 = Inlines.MAC16_16(sum0, tmp, y_0);
+                sum1 = Inlines.MAC16_16(sum1, tmp, y_1);
+                sum2 = Inlines.MAC16_16(sum2, tmp, y_2);
+                sum3 = Inlines.MAC16_16(sum3, tmp, y_3);
+            }
+            if (j++ < len)
+            {
+                short tmp;
+                tmp = *x++;
+                y_0 = *py++;
+                sum0 = Inlines.MAC16_16(sum0, tmp, y_1);
+                sum1 = Inlines.MAC16_16(sum1, tmp, y_2);
+                sum2 = Inlines.MAC16_16(sum2, tmp, y_3);
+                sum3 = Inlines.MAC16_16(sum3, tmp, y_0);
+            }
+            if (j < len)
+            {
+                short tmp;
+                tmp = *x++;
+                y_1 = *py++;
+                sum0 = Inlines.MAC16_16(sum0, tmp, y_2);
+                sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
+                sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
+                sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
             }
         }
 
@@ -317,12 +314,12 @@ namespace Concentus.Celt
             }
         }
 
-        internal static int celt_inner_prod(short[] x, int x_ptr, short[] y, int y_ptr, int N)
+        internal static unsafe int celt_inner_prod(short* x, short* y, int N)
         {
             int i;
             int xy = 0;
             for (i = 0; i < N; i++)
-                xy = Inlines.MAC16_16(xy, x[x_ptr + i], y[y_ptr + i]);
+                xy = Inlines.MAC16_16(xy, x[i], y[i]);
             return xy;
         }
 
