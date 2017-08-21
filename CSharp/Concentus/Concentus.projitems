@@ -72,6 +72,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Opus\Tables.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\ApplySineWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\BurgModified.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Silk\BurgModifiedUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\BWExpander.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\CNG.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\CodeSigns.cs" />
