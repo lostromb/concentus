@@ -455,10 +455,24 @@ namespace Concentus.Celt
                 pg = (Inlines.SHR32(Inlines.frac_div32(best_xy, best_yy + 1), 16));
             }
 
+#if UNSAFE
+            unsafe
+            {
+                fixed (int* px_base = x)
+                {
+                    int* px = px_base + x_ptr;
+                    for (k = 0; k < 3; k++)
+                    {
+                        xcorr[k] = Kernels.celt_inner_prod(px, px - (T + k - 1), N);
+                    }
+                }
+            }
+#else
             for (k = 0; k < 3; k++)
             {
                 xcorr[k] = Kernels.celt_inner_prod(x, x_ptr, x, x_ptr - (T + k - 1), N);
             }
+#endif
 
             if ((xcorr[2] - xcorr[0]) > Inlines.MULT16_32_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, xcorr[1] - xcorr[0]))
             {

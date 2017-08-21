@@ -324,12 +324,12 @@ namespace Concentus.Celt
             return xy;
         }
 
-        internal static int celt_inner_prod(int[] x, int x_ptr, int[] y, int y_ptr, int N)
+        internal static unsafe int celt_inner_prod(int* x, int* y, int N)
         {
             int i;
             int xy = 0;
             for (i = 0; i < N; i++)
-                xy = Inlines.MAC16_16(xy, x[x_ptr + i], y[y_ptr + i]);
+                xy = Inlines.MAC16_16(xy, x[i], y[i]);
             return xy;
         }
 

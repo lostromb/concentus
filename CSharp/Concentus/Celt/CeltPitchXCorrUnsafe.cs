@@ -56,7 +56,7 @@ namespace Concentus.Celt
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
-            fixed (int* py_base = _y, px = _x)
+            fixed (int* py_base = _y, px = _x, px_base = _x)
             {
                 for (i = 0; i < max_pitch - 3; i += 4)
                 {
@@ -75,7 +75,8 @@ namespace Concentus.Celt
                 /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
                 for (; i < max_pitch; i++)
                 {
-                    int inner_sum = Kernels.celt_inner_prod(_x, 0, _y, i, len);
+                    int* py = py_base + i;
+                    int inner_sum = Kernels.celt_inner_prod(px_base, py, len);
                     xcorr[i] = inner_sum;
                     maxcorr = Inlines.MAX32(maxcorr, inner_sum);
                 }
