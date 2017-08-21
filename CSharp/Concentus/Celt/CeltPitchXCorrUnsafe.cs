@@ -173,6 +173,45 @@ namespace Concentus.Celt
                 }
             }
         }
+
+        internal static unsafe int pitch_xcorr(
+            short* px,
+            short* py,
+            int[] xcorr,
+            int len,
+            int max_pitch)
+        {
+            int i;
+            int maxcorr = 1;
+            Inlines.OpusAssert(max_pitch > 0);
+            fixed (int* pxcorr_base = xcorr)
+            {
+                for (i = 0; i < max_pitch - 3; i += 4)
+                {
+                    int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                    short* py2 = py + i;
+                    Kernels.xcorr_kernel(px, py2, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                    int* pxcorr = pxcorr_base + i;
+                    pxcorr[0] = sum0;
+                    pxcorr[1] = sum1;
+                    pxcorr[2] = sum2;
+                    pxcorr[3] = sum3;
+                    sum0 = Inlines.MAX32(sum0, sum1);
+                    sum2 = Inlines.MAX32(sum2, sum3);
+                    sum0 = Inlines.MAX32(sum0, sum2);
+                    maxcorr = Inlines.MAX32(maxcorr, sum0);
+                }
+                /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
+                for (; i < max_pitch; i++)
+                {
+                    short* py2 = py + i;
+                    int inner_sum = Kernels.celt_inner_prod(px, py2, len);
+                    xcorr[i] = inner_sum;
+                    maxcorr = Inlines.MAX32(maxcorr, inner_sum);
+                }
+                return maxcorr;
+            }
+        }
     }
 }
 

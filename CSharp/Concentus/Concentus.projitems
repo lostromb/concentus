@@ -9,6 +9,7 @@
     <Import_RootNamespace>Concentus</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\AutocorrelationUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Bands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltConstants.cs" />
