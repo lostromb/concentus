@@ -2679,20 +2679,20 @@ namespace Concentus.Common
             // branches, and a 256-entry LUT version.
             int ret;
             int m;
-            ret = _x == 0 ? 0 : 1;
-            m = ((_x & 0xFFFF0000U) == 0 ? 0 : 1) << 4;
-            _x >>= m;
+            ret = x == 0 ? 0 : 1;
+            m = ((x & 0xFFFF0000U) == 0 ? 0 : 1) << 4;
+            x >>= m;
             ret |= m;
-            m = ((_x & 0xFF00U) == 0 ? 0 : 1) << 3;
-            _x >>= m;
+            m = ((x & 0xFF00U) == 0 ? 0 : 1) << 3;
+            x >>= m;
             ret |= m;
-            m = ((_x & 0xF0U) == 0 ? 0 : 1) << 2;
-            _x >>= m;
+            m = ((x & 0xF0U) == 0 ? 0 : 1) << 2;
+            x >>= m;
             ret |= m;
-            m = ((_x & 0xCU) == 0 ? 0 : 1) << 1;
-            _x >>= m;
+            m = ((x & 0xCU) == 0 ? 0 : 1) << 1;
+            x >>= m;
             ret |= m;
-            ret += (_x & 0x2U) == 0 ? 0 : 1;
+            ret += (x & 0x2U) == 0 ? 0 : 1;
             return ret;
 #endif
         }
