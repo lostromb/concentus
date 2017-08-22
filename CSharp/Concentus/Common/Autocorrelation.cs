@@ -30,6 +30,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#if !UNSAFE
+
 namespace Concentus.Common
 {
     using Concentus.Celt;
@@ -230,8 +232,8 @@ namespace Concentus.Common
         {
             int n, i, lsh;
             int tmp1_QS, tmp2_QS;
-            int[] state_QS = new int[Concentus.Silk.SilkConstants.MAX_SHAPE_LPC_ORDER + 1];// = { 0 };
-            long[] corr_QC = new long[Concentus.Silk.SilkConstants.MAX_SHAPE_LPC_ORDER + 1];// = { 0 };
+            int[] state_QS = new int[order + 1];// = { 0 };
+            long[] corr_QC = new long[order + 1];// = { 0 };
 
             /* Order must be even */
             Inlines.OpusAssert((order & 1) == 0);
@@ -278,3 +280,5 @@ namespace Concentus.Common
         }
     }
 }
+
+#endif

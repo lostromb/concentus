@@ -33,6 +33,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#if !UNSAFE
+
 namespace Concentus.Celt
 {
     using Concentus.Celt.Enums;
@@ -159,7 +161,7 @@ namespace Concentus.Celt
                 y[y_ptr + i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[x_ptr + i]), Inlines.PSHR32(sum, CeltConstants.SIG_SHIFT))));
             }
         }
-
+        
         /// <summary>
         /// OPT: This is the kernel you really want to optimize. It gets used a lot by the prefilter and by the PLC.
         /// </summary>
@@ -348,3 +350,5 @@ namespace Concentus.Celt
         }
     }
 }
+
+#endif

@@ -9,15 +9,20 @@
     <Import_RootNamespace>Concentus</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\AutocorrelationUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Bands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltLPC.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltLPCUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltPitchXCorr.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\CeltPitchXCorrUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\CWRS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Enums\Spread.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Kernels.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\KernelsUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\KissFFT.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Celt\KissFFTUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Laplace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\MDCT.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Celt\Pitch.cs" />
@@ -68,6 +73,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Opus\Tables.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\ApplySineWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\BurgModified.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Silk\BurgModifiedUnsafe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\BWExpander.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\CNG.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Silk\CodeSigns.cs" />

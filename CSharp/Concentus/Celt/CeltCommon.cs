@@ -711,6 +711,31 @@ namespace Concentus.Celt
                 int sum = 0; /* Q10 */
                 int minXC; /* Q10 */
                            /* Compute inter-channel correlation for low frequencies */
+#if UNSAFE
+                unsafe
+                {
+                    fixed (int* px0_base = X[0], px1_base = X[1])
+                    {
+                        for (i = 0; i < 8; i++)
+                        {
+                            int* px0 = px0_base + (m.eBands[i] << LM);
+                            int* px1 = px1_base + (m.eBands[i] << LM);
+                            int partial = Kernels.celt_inner_prod(px0, px1, (m.eBands[i + 1] - m.eBands[i]) << LM);
+                            sum = Inlines.ADD16(sum, Inlines.EXTRACT16(Inlines.SHR32(partial, 18)));
+                        }
+                        sum = Inlines.MULT16_16_Q15(((short)(0.5 + (1.0f / 8) * (((int)1) << (15))))/*Inlines.QCONST16(1.0f / 8, 15)*/, sum);
+                        sum = Inlines.MIN16(((short)(0.5 + (1.0f) * (((int)1) << (10))))/*Inlines.QCONST16(1.0f, 10)*/, Inlines.ABS32(sum));
+                        minXC = sum;
+                        for (i = 8; i < intensity; i++)
+                        {
+                            int* px0 = px0_base + (m.eBands[i] << LM);
+                            int* px1 = px1_base + (m.eBands[i] << LM);
+                            int partial = Kernels.celt_inner_prod(px0, px1, (m.eBands[i + 1] - m.eBands[i]) << LM);
+                            minXC = Inlines.MIN16(minXC, Inlines.ABS16(Inlines.EXTRACT16(Inlines.SHR32(partial, 18))));
+                        }
+                    }
+                }
+#else
                 for (i = 0; i < 8; i++)
                 {
                     int partial;
@@ -728,6 +753,7 @@ namespace Concentus.Celt
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     minXC = Inlines.MIN16(minXC, Inlines.ABS16(Inlines.EXTRACT16(Inlines.SHR32(partial, 18))));
                 }
+#endif
                 minXC = Inlines.MIN16(((short)(0.5 + (1.0f) * (((int)1) << (10))))/*Inlines.QCONST16(1.0f, 10)*/, Inlines.ABS32(minXC));
                 /*printf ("%f\n", sum);*/
                 /* mid-side savings estimations based on the LF average*/

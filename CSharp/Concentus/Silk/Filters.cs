@@ -216,6 +216,8 @@ namespace Concentus.Silk
             P.sLTP_shp_buf_idx = LTP_shp_buf_idx;
         }
 
+#if !UNSAFE
+
         /// <summary>
         /// Second order ARMA filter, alternative implementation
         /// </summary>
@@ -308,7 +310,83 @@ namespace Concentus.Silk
             }
         }
 
-        /* Coefficients for 2-band filter bank based on first-order allpass filters */
+#else
+        /// <summary>
+        /// Second order ARMA filter, alternative implementation
+        /// </summary>
+        /// <param name="input">I     input signal</param>
+        /// <param name="B_Q28">I     MA coefficients [3]</param>
+        /// <param name="A_Q28">I     AR coefficients [2]</param>
+        /// <param name="S">I/O   State vector [2]</param>
+        /// <param name="output">O     output signal</param>
+        /// <param name="len">I     signal length (must be even)</param>
+        /// <param name="stride">I     Operate on interleaved signal if > 1</param>
+        internal static unsafe void silk_biquad_alt(
+            short[] input,
+            int input_ptr,
+            int[] B_Q28,
+            int[] A_Q28,
+            int[] S,
+            int S_ptr,
+            short[] output,
+            int output_ptr,
+            int len,
+            int stride)
+        {
+            /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
+            int k;
+            int inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
+
+            /* Negate A_Q28 values and split in two parts */
+            A0_L_Q28 = (-A_Q28[0]) & 0x00003FFF;        /* lower part */
+            A0_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[0], 14);      /* upper part */
+            A1_L_Q28 = (-A_Q28[1]) & 0x00003FFF;        /* lower part */
+            A1_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[1], 14);      /* upper part */
+            
+            fixed (short* pinput_base = input, poutput_base = output)
+            {
+                fixed (int* pS_base = S, pBQ28 = B_Q28)
+                {
+                    int* pS = pS_base + S_ptr;
+                    short* pinput = pinput_base + input_ptr;
+                    short* poutput = poutput_base + output_ptr;
+                    for (k = 0; k < len; k++)
+                    {
+                        /* S[ 0 ], S[ 1 ]: Q12 */
+                        inval = pinput[k * stride];
+                        out32_Q14 = Inlines.silk_LSHIFT(Inlines.silk_SMLAWB(pS[0], pBQ28[0], inval), 2);
+
+                        pS[0] = pS[1] + Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A0_L_Q28), 14);
+                        pS[0] = Inlines.silk_SMLAWB(pS[0], out32_Q14, A0_U_Q28);
+                        pS[0] = Inlines.silk_SMLAWB(pS[0], pBQ28[1], inval);
+
+                        pS[1] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A1_L_Q28), 14);
+                        pS[1] = Inlines.silk_SMLAWB(pS[1], out32_Q14, A1_U_Q28);
+                        pS[1] = Inlines.silk_SMLAWB(pS[1], pBQ28[2], inval);
+
+                        /* Scale back to Q0 and saturate */
+                        poutput[k * stride] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
+                    }
+                }
+            }
+        }
+
+        internal static unsafe void silk_biquad_alt(
+            short[] input,
+            int input_ptr,
+            int[] B_Q28,
+            int[] A_Q28,
+            int[] S,
+            short[] output,
+            int output_ptr,
+            int len,
+            int stride)
+        {
+            silk_biquad_alt(input, input_ptr, B_Q28, A_Q28, S, 0, output, output_ptr, len, stride);
+        }
+#endif
+
+            /* Coefficients for 2-band filter bank based on first-order allpass filters */
         private readonly static short A_fb1_20 = 5394 << 1;
         private readonly static short A_fb1_21 = -24290; /* (opus_int16)(20623 << 1) */
 
@@ -502,7 +580,19 @@ namespace Concentus.Silk
             {
                 mem[j] = input[input_ptr + d - j - 1];
             }
+#if UNSAFE
+            unsafe
+            {
+                fixed (short* pinput_base = input, poutput_base = output)
+                {
+                    short* pinput = pinput_base + input_ptr + d;
+                    short* poutput = poutput_base + output_ptr + d;
+                    Kernels.celt_fir(pinput, num, poutput, len - d, d, mem);
+                }
+            }
+#else
             Kernels.celt_fir(input, input_ptr + d, num, output, output_ptr + d, len - d, d, mem);
+#endif
             for (j = output_ptr; j < output_ptr + d; j++)
             {
                 output[j] = 0;
