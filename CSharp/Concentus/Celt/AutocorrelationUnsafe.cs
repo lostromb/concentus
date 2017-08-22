@@ -129,7 +129,7 @@ namespace Concentus.Common
             return shift;
         }
 
-        internal static int _celt_autocorr(
+        internal static unsafe int _celt_autocorr(
                            int[] x,   /*  in: [0...n-1] samples x   */
                            int[] ac,  /* out: [0...lag-1] ac values */
                            int[] window,
@@ -141,78 +141,82 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            int[] xptr;
             int[] xx = new int[n];
 
             Inlines.OpusAssert(n > 0);
             Inlines.OpusAssert(overlap >= 0);
 
-            if (overlap == 0)
+            fixed (int* xptr_base = x, pxx = xx)
             {
-                xptr = x;
-            }
-            else
-            {
-                for (i = 0; i < n; i++)
-                    xx[i] = x[i];
-                for (i = 0; i < overlap; i++)
+                int* xptr = xptr_base;
+
+                if (overlap == 0)
                 {
-                    xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
-                    xx[n - i - 1] = Inlines.MULT16_16_Q15(x[n - i - 1], window[i]);
+                    xptr = xptr_base;
                 }
-                xptr = xx;
-            }
+                else
+                {
+                    for (i = 0; i < n; i++)
+                        xx[i] = x[i];
+                    for (i = 0; i < overlap; i++)
+                    {
+                        xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
+                        xx[n - i - 1] = Inlines.MULT16_16_Q15(x[n - i - 1], window[i]);
+                    }
+                    xptr = pxx;
+                }
 
-            shift = 0;
-
-            int ac0;
-            ac0 = 1 + (n << 7);
-            if ((n & 1) != 0)
-                ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[0], xptr[0]), 9);
-
-            for (i = (n & 1); i < n; i += 2)
-            {
-                ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[i], xptr[i]), 9);
-                ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[i + 1], xptr[i + 1]), 9);
-            }
-
-            shift = Inlines.celt_ilog2(ac0) - 30 + 10;
-            shift = (shift) / 2;
-            if (shift > 0)
-            {
-                for (i = 0; i < n; i++)
-                    xx[i] = (Inlines.PSHR32(xptr[i], shift));
-                xptr = xx;
-            }
-            else
                 shift = 0;
 
-            CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
-            for (k = 0; k <= lag; k++)
-            {
-                for (i = k + fastN, d = 0; i < n; i++)
-                    d = Inlines.MAC16_16(d, xptr[i], xptr[i - k]);
-                ac[k] += d;
-            }
+                int ac0;
+                ac0 = 1 + (n << 7);
+                if ((n & 1) != 0)
+                    ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[0], xptr[0]), 9);
 
-            shift = 2 * shift;
-            if (shift <= 0)
-                ac[0] += Inlines.SHL32((int)1, -shift);
-            if (ac[0] < 268435456)
-            {
-                int shift2 = 29 - Inlines.EC_ILOG((uint)ac[0]);
-                for (i = 0; i <= lag; i++)
-                    ac[i] = Inlines.SHL32(ac[i], shift2);
-                shift -= shift2;
-            }
-            else if (ac[0] >= 536870912)
-            {
-                int shift2 = 1;
-                if (ac[0] >= 1073741824)
-                    shift2++;
-                for (i = 0; i <= lag; i++)
-                    ac[i] = Inlines.SHR32(ac[i], shift2);
-                shift += shift2;
+                for (i = (n & 1); i < n; i += 2)
+                {
+                    ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[i], xptr[i]), 9);
+                    ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[i + 1], xptr[i + 1]), 9);
+                }
+
+                shift = Inlines.celt_ilog2(ac0) - 30 + 10;
+                shift = (shift) / 2;
+                if (shift > 0)
+                {
+                    for (i = 0; i < n; i++)
+                        xx[i] = (Inlines.PSHR32(xptr[i], shift));
+                    xptr = pxx;
+                }
+                else
+                    shift = 0;
+
+                CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
+                for (k = 0; k <= lag; k++)
+                {
+                    for (i = k + fastN, d = 0; i < n; i++)
+                        d = Inlines.MAC16_16(d, xptr[i], xptr[i - k]);
+                    ac[k] += d;
+                }
+
+                shift = 2 * shift;
+                if (shift <= 0)
+                    ac[0] += Inlines.SHL32((int)1, -shift);
+                if (ac[0] < 268435456)
+                {
+                    int shift2 = 29 - Inlines.EC_ILOG((uint)ac[0]);
+                    for (i = 0; i <= lag; i++)
+                        ac[i] = Inlines.SHL32(ac[i], shift2);
+                    shift -= shift2;
+                }
+                else if (ac[0] >= 536870912)
+                {
+                    int shift2 = 1;
+                    if (ac[0] >= 1073741824)
+                        shift2++;
+                    for (i = 0; i <= lag; i++)
+                        ac[i] = Inlines.SHR32(ac[i], shift2);
+                    shift += shift2;
+                }
             }
 
             return shift;
@@ -254,12 +258,13 @@ namespace Concentus.Common
                             for (i = 0; i < order; i += 2)
                             {
                                 /* Output of allpass section */
-                                tmp2_QS = Inlines.silk_SMLAWB(pstate_QS[i], pstate_QS[i + 1] - tmp1_QS, warping_Q16);
-                                pstate_QS[i] = tmp1_QS;
+                                int* pstate_QSi = pstate_QS + i;
+                                tmp2_QS = Inlines.silk_SMLAWB(pstate_QSi[0], pstate_QSi[1] - tmp1_QS, warping_Q16);
+                                pstate_QSi[0] = tmp1_QS;
                                 pcorr_QC[i] += Inlines.silk_RSHIFT64(Inlines.silk_SMULL(tmp1_QS, *pstate_QS), 2 * QS - QC);
                                 /* Output of allpass section */
-                                tmp1_QS = Inlines.silk_SMLAWB(pstate_QS[i + 1], pstate_QS[i + 2] - tmp2_QS, warping_Q16);
-                                pstate_QS[i + 1] = tmp2_QS;
+                                tmp1_QS = Inlines.silk_SMLAWB(pstate_QSi[1], pstate_QSi[2] - tmp2_QS, warping_Q16);
+                                pstate_QSi[1] = tmp2_QS;
                                 pcorr_QC[i + 1] += Inlines.silk_RSHIFT64(Inlines.silk_SMULL(tmp2_QS, *pstate_QS), 2 * QS - QC);
                             }
                             pstate_QS[order] = tmp1_QS;

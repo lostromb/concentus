@@ -84,6 +84,43 @@ namespace Concentus.Celt
 
             return maxcorr;
         }
+
+        internal static unsafe int pitch_xcorr(
+            int* _x,
+            int* _y,
+            int[] xcorr,
+            int len,
+            int max_pitch)
+        {
+            int i;
+            int maxcorr = 1;
+            Inlines.OpusAssert(max_pitch > 0);
+            for (i = 0; i < max_pitch - 3; i += 4)
+            {
+                int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                int* py = _y + i;
+                Kernels.xcorr_kernel(_x, py, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                xcorr[i] = sum0;
+                xcorr[i + 1] = sum1;
+                xcorr[i + 2] = sum2;
+                xcorr[i + 3] = sum3;
+                sum0 = Inlines.MAX32(sum0, sum1);
+                sum2 = Inlines.MAX32(sum2, sum3);
+                sum0 = Inlines.MAX32(sum0, sum2);
+                maxcorr = Inlines.MAX32(maxcorr, sum0);
+            }
+            /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
+            for (; i < max_pitch; i++)
+            {
+                int* py = _y + i;
+                int inner_sum = Kernels.celt_inner_prod(_x, py, len);
+                xcorr[i] = inner_sum;
+                maxcorr = Inlines.MAX32(maxcorr, inner_sum);
+            }
+
+            return maxcorr;
+        }
+
         internal static unsafe int pitch_xcorr(
             short[] _x,
             int _x_ptr,
