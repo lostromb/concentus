@@ -1407,12 +1407,13 @@ namespace Concentus.Silk.Structs
                             for (j = 2; j < shapingLPCOrder; j += 2)
                             {
                                 /* Output of allpass section */
-                                tmp2 = Inlines.silk_SMLAWB(psDD_sAR2[j - 1], psDD_sAR2[j + 0] - tmp1, warping_Q16);
-                                psDD_sAR2[j - 1] = tmp1;
+                                int* psDD_sAR2j = psDD_sAR2 + j;
+                                tmp2 = Inlines.silk_SMLAWB(psDD_sAR2j[0 - 1], psDD_sAR2j[0] - tmp1, warping_Q16);
+                                psDD_sAR2j[0 - 1] = tmp1;
                                 n_AR_Q14 = Inlines.silk_SMLAWB(n_AR_Q14, tmp1, AR_shp_Q13[AR_shp_Q13_ptr + j - 1]);
                                 /* Output of allpass section */
-                                tmp1 = Inlines.silk_SMLAWB(psDD_sAR2[j + 0], psDD_sAR2[j + 1] - tmp2, warping_Q16);
-                                psDD_sAR2[j + 0] = tmp2;
+                                tmp1 = Inlines.silk_SMLAWB(psDD_sAR2j[0], psDD_sAR2j[1] - tmp2, warping_Q16);
+                                psDD_sAR2j[0] = tmp2;
                                 n_AR_Q14 = Inlines.silk_SMLAWB(n_AR_Q14, tmp2, AR_shp_Q13[AR_shp_Q13_ptr + j]);
                             }
                             psDD_sAR2[shapingLPCOrder - 1] = tmp1;

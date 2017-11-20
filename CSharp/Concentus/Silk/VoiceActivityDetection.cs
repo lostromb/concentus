@@ -283,7 +283,7 @@ namespace Concentus.Silk
                 /* Accumulate signal-without-noise energies, higher frequency bands have more weight */
                 speech_nrg += (b + 1) * Inlines.silk_RSHIFT(Xnrg[b] - psSilk_VAD.NL[b], 4);
             }
-
+            
             /* Power scaling */
             if (speech_nrg <= 0)
             {

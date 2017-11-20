@@ -47,7 +47,7 @@ namespace Concentus.Silk
         /* subfr_length * nb_subfr = ( 0.005 * 16000 + 16 ) * 4 = 384 */
         private const int MAX_FRAME_SIZE = 384;
         private const int QA = 25;
-        private const int N_BITS_HEAD_ROOM = 2;
+        private const int N_BITS_HEAD_ROOM = 3;
         private const int MIN_RSHIFTS = -16;
         private const int MAX_RSHIFTS = (32 - QA);
 
@@ -177,8 +177,11 @@ namespace Concentus.Silk
                             C_first_row[k] = Inlines.silk_MLA(C_first_row[k], x1, x[x_offset + n - k - 1]); /* Q( -rshifts ) */
                             C_last_row[k] = Inlines.silk_MLA(C_last_row[k], x2, x[x_offset + subfr_length - n + k]); /* Q( -rshifts ) */
                             Atmp1 = Inlines.silk_RSHIFT_ROUND(Af_QA[k], QA - 17);                                   /* Q17 */
-                            tmp1 = Inlines.silk_MLA(tmp1, x[x_offset + n - k - 1], Atmp1);                      /* Q17 */
-                            tmp2 = Inlines.silk_MLA(tmp2, x[x_offset + subfr_length - n + k], Atmp1);                      /* Q17 */
+                            /* We sometimes have get overflows in the multiplications (even beyond +/- 2^32),
+                               but they cancel each other and the real result seems to always fit in a 32-bit
+                               signed integer. This was determined experimentally, not theoretically (unfortunately). */
+                            tmp1 = Inlines.silk_MLA_ovflw(tmp1, x[x_offset + n - k - 1], Atmp1);                      /* Q17 */
+                            tmp2 = Inlines.silk_MLA_ovflw(tmp2, x[x_offset + subfr_length - n + k], Atmp1);                      /* Q17 */
                         }
                         tmp1 = -tmp1;                                                                           /* Q17 */
                         tmp2 = -tmp2;                                                                           /* Q17 */

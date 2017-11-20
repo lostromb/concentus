@@ -7,8 +7,8 @@
     <ProjectGuid>{BE388D8E-C850-4893-ABA5-309B0211B4AC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Concentus.Unsafe</RootNamespace>
-    <AssemblyName>Concentus.Unsafe</AssemblyName>
+    <RootNamespace>Concentus</RootNamespace>
+    <AssemblyName>Concentus</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

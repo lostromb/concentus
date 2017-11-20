@@ -265,7 +265,9 @@ namespace Concentus.Celt
                 }
                 sum = 0;
                 for (j = 0; j < len >> 1; j++)
+                {
                     sum += Inlines.SHR32(Inlines.MULT16_16(x_lp[x_lp_ptr + j], y[i + j]), shift);
+                }
                 
                 xcorr[i] = Inlines.MAX32(-1, sum);
                 maxcorr = Inlines.MAX32(maxcorr, sum);
