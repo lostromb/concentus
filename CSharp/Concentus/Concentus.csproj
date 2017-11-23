@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.0;net35;net45</TargetFrameworks>
+    <DefineConstants>PARITY</DefineConstants>
+    <NoWarn>$(NoWarn);1591;1570;1573;1587;1572;1711;1712</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <VersionPrefix>1.1.6.0</VersionPrefix>
+    <Description>Opus Audio Codec</Description>
+    <Copyright>Copyright © 2016 Xiph.Org Foundation, Microsoft Corp. CSIRO, Skype Limited</Copyright>
+  </PropertyGroup>
+
+  <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1333 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net35'">
+    <FrameworkPathOverride>$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
+  </PropertyGroup>
+
+</Project>
