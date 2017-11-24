@@ -167,7 +167,7 @@ namespace Concentus.Celt
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        /// <param name="sum"></param>
+        /// <param name="sum0"></param>
         /// <param name="len"></param>
         internal static void xcorr_kernel(short[] x, int x_ptr, short[] y, int y_ptr, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
         {

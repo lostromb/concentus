@@ -44,7 +44,7 @@ namespace Concentus.Celt.Structs
     internal class CeltEncoder
     {
         #region Encoder state
-        internal CeltMode mode = null;     /**< Mode used by the encoder. Without custom modes, this always refers to the same predefined struct */
+        internal CeltMode mode = null;     /*< Mode used by the encoder. Without custom modes, this always refers to the same predefined struct */
         internal int channels = 0;
         internal int stream_channels = 0;
 
@@ -636,7 +636,7 @@ namespace Concentus.Celt.Structs
                 transient_got_disabled = 1;
             }
 
-            freq = Arrays.InitTwoDimensionalArray<int>(CC, N); /**< Interleaved signal MDCTs */
+            freq = Arrays.InitTwoDimensionalArray<int>(CC, N); /*< Interleaved signal MDCTs */
             bandE = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
             bandLogE = Arrays.InitTwoDimensionalArray<int>(CC, nbEBands);
 
@@ -809,7 +809,7 @@ namespace Concentus.Celt.Structs
             if (LM > 0 && enc.tell() + 3 <= total_bits)
                 enc.enc_bit_logp(isTransient, 3);
 
-            X = Arrays.InitTwoDimensionalArray<int>(C, N);         /**< Interleaved normalised MDCTs */
+            X = Arrays.InitTwoDimensionalArray<int>(C, N);         /*< Interleaved normalised MDCTs */
 
             /* Band normalisation */
             Bands.normalise_bands(mode, freq, X, bandE, effEnd, C, M);

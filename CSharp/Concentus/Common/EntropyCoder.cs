@@ -236,7 +236,6 @@ namespace Concentus.Common
         /// <summary>
         /// Normalizes the contents of val and rng so that rng lies entirely in the high-order symbol.
         /// </summary>
-        /// <param name="this"></param>
         internal void dec_normalize()
         {
             /*If the range is too small, rescale it and input some bits.*/
@@ -308,9 +307,8 @@ namespace Concentus.Common
         }
 
         /// <summary>
-        /// The probability of having a "one" is 1/(1<<_logp).
+        /// The probability of having a "one" is 1/(1&lt;&lt;_logp).
         /// </summary>
-        /// <param name="this"></param>
         /// <param name="_logp"></param>
         /// <returns></returns>
         internal int dec_bit_logp(uint _logp)
@@ -441,7 +439,6 @@ namespace Concentus.Common
         /// The alternative is to truncate the range in order to force a carry, but
         /// requires similar carry tracking in the decoder, needlessly slowing it down.
         /// </summary>
-        /// <param name="this"></param>
         /// <param name="_c"></param>
         internal void enc_carry_out(int _c)
         {
@@ -688,7 +685,6 @@ namespace Concentus.Common
         /// This will always be slightly larger than the exact value (e.g., all
         /// rounding error is in the positive direction).
         /// </summary>
-        /// <param name="this"></param>
         /// <returns>The number of bits.</returns>
         internal int tell()
         {
@@ -703,7 +699,6 @@ namespace Concentus.Common
         /// of the low(1/8 bit) resolution to use just a linear function
         /// followed by a lookup to determine the exact transition thresholds.
         /// </summary>
-        /// <param name="this"></param>
         /// <returns></returns>
         internal uint tell_frac()
         {

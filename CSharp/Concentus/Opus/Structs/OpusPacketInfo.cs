@@ -105,11 +105,11 @@ namespace Concentus.Structs
 
             return new OpusPacketInfo(out_toc, copiedFrames, payload_offset);
         }
-        
+
         /// <summary>
         /// Gets the number of samples per frame from an Opus packet.
         /// </summary>
-        /// <param name="data">Opus packet. This must contain at least one byte of data</param>
+        /// <param name="packet">Opus packet. This must contain at least one byte of data</param>
         /// <param name="Fs">Sampling rate in Hz. This must be a multiple of 400, or inaccurate results will be returned.</param>
         /// <returns>Number of samples per frame</returns>
         public static int GetNumSamplesPerFrame(byte[] packet, int packet_offset, int Fs)
@@ -138,7 +138,7 @@ namespace Concentus.Structs
         /// <summary>
         /// Gets the encoded bandwidth of an Opus packet. Note that you are not forced to decode at this bandwidth
         /// </summary>
-        /// <param name="data">An Opus packet (must be at least 1 byte)</param>
+        /// <param name="packet">An Opus packet (must be at least 1 byte)</param>.
         /// <returns>An OpusBandwidth value</returns>
         public static OpusBandwidth GetBandwidth(byte[] packet, int packet_offset)
         {
@@ -163,7 +163,7 @@ namespace Concentus.Structs
         /// <summary>
         /// Gets the number of encoded channels of an Opus packet. Note that you are not forced to decode with this channel count.
         /// </summary>
-        /// <param name="data">An opus packet (must be at least 1 byte)</param>
+        /// <param name="packet">An opus packet (must be at least 1 byte)</param>
         /// <returns>The number of channels</returns>
         public static int GetNumEncodedChannels(byte[] packet, int packet_offset)
         {
@@ -233,7 +233,7 @@ namespace Concentus.Structs
         /// Gets the mode that was used to encode this packet.
         /// Normally there is nothing you can really do with this, other than debugging.
         /// </summary>
-        /// <param name="data">An Opus packet</param>
+        /// <param name="packet">An Opus packet</param>
         /// <returns>The OpusMode used by the encoder</returns>
         public static OpusMode GetEncoderMode(byte[] packet, int packet_offset)
         {

@@ -362,7 +362,7 @@ namespace Concentus.Structs
   * @returns The total size of the output packet on success, or an error code
   *          on failure.
   * @retval #OPUS_BAD_ARG <code>[begin,end)</code> was an invalid range of
-  *                       frames (begin < 0, begin >= end, or end >
+  *                       frames (begin &lt; 0, begin &gt;= end, or end &gt;
   *                       opus_repacketizer_get_nb_frames()).
   * @retval #OPUS_BUFFER_TOO_SMALL \a maxlen was insufficient to contain the
   *                                complete output packet.

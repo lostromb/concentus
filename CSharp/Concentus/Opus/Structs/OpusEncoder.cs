@@ -338,7 +338,6 @@ namespace Concentus.Structs
         /// 
         /// </summary>
         /// <typeparam name="T">The storage type of analysis_pcm, either short or float</typeparam>
-        /// <param name="this"></param>
         /// <param name="pcm"></param>
         /// <param name="frame_size"></param>
         /// <param name="data"></param>

@@ -82,7 +82,6 @@ namespace Concentus.Silk.Structs
         /// Initialize Silk Encoder state
         /// </summary>
         /// <param name="psEnc">I/O  Pointer to Silk FIX encoder state</param>
-        /// <param name="arch">I    Run-time architecture</param>
         /// <returns></returns>
         internal static int silk_init_encoder(SilkChannelEncoder psEnc)
         {

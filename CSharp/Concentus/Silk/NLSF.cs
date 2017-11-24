@@ -102,7 +102,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="pNLSFW_Q_OUT">(O) Pointer to input vector weights [D]</param>
         /// <param name="pNLSF_Q15">(I) Pointer to input vector [D]</param>
-        /// <param param name="D">(I) Input vector dimension (even)</param>
+        /// <param name="D">(I) Input vector dimension (even)</param>
         internal static void silk_NLSF_VQ_weights_laroia(short[] pNLSFW_Q_OUT, short[] pNLSF_Q15, int D)
         {
             int k;

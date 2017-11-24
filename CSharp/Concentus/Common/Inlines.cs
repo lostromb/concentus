@@ -1505,7 +1505,7 @@ namespace Concentus.Common
             return res;
         }
 
-        ///* Saturation for positive input values */
+        //* Saturation for positive input values */
         //#define silk_POS_SAT32(a)                   ((a) > int_MAX ? int_MAX : (a))
 
         /// <summary>
@@ -2067,7 +2067,7 @@ namespace Concentus.Common
         /// <param name="a32">I    numerator (Q0)</param>
         /// <param name="b32">I    denominator (Q0)</param>
         /// <param name="Qres">I    Q-domain of result (>= 0)</param>
-        /// <returns>O    returns a good approximation of "(a32 << Qres) / b32"</returns>
+        /// <returns>O    returns a good approximation of "(a32 &lt;&lt; Qres) / b32"</returns>
         [MethodImpl(INLINE_ATTR)]
         public static int silk_DIV32_varQ(int a32, int b32, int Qres)
         {
@@ -2121,7 +2121,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="b32">I    denominator (Q0)</param>
         /// <param name="Qres">I    Q-domain of result (> 0)</param>
-        /// <returns>a good approximation of "(1 << Qres) / b32"</returns>
+        /// <returns>a good approximation of "(1 &lt;&lt; Qres) / b32"</returns>
         [MethodImpl(INLINE_ATTR)]
         public static int silk_INVERSE32_varQ(int b32, int Qres)
         {
@@ -2613,7 +2613,7 @@ namespace Concentus.Common
         /// <summary>
         /// Counts leading zeroes
         /// </summary>
-        /// <param name="_x"></param>
+        /// <param name="x"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
         public static int EC_CLZ(uint x)
@@ -2653,7 +2653,7 @@ namespace Concentus.Common
         /// <summary>
         /// returns inverse base-2 log of a value
         /// </summary>
-        /// <param name="_x"></param>
+        /// <param name="x"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
         public static int EC_ILOG(uint x)

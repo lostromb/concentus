@@ -87,7 +87,7 @@ namespace Concentus.Structs
         internal void Reset()
         {
             channels = 0;
-            Fs = 0;          /** Sampling rate (at the API level) */
+            Fs = 0;          /* Sampling rate (at the API level) */
             DecControl.Reset();
             decode_gain = 0;
             PartialReset();

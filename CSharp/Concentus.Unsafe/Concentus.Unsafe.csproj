@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard1.0;net45;net35</TargetFrameworks>
     <DefineConstants>PARITY;UNSAFE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);1591;1570;1573;1587;1572;1711;1712</NoWarn>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <Product>Concentus</Product>

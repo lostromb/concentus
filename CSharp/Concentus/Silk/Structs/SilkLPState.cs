@@ -52,7 +52,7 @@ namespace Concentus.Silk.Structs
         internal int transition_frame_no = 0;
 
         /// <summary>
-        /// Operating mode, <0: switch down, >0: switch up; 0: do nothing
+        /// Operating mode, &lt;0: switch down, &gt;0: switch up; 0: do nothing
         /// </summary>
         internal int mode = 0;
 

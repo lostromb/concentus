@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard1.0;net35;net45</TargetFrameworks>
     <DefineConstants>PARITY</DefineConstants>
-    <NoWarn>$(NoWarn);1591;1570;1573;1587;1572;1711;1712</NoWarn>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <Title>Concentus</Title>

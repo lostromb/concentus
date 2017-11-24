@@ -375,7 +375,6 @@ namespace Concentus.Common.CPlusPlus
         /// <summary>
         /// Loads N values from a source array into this pointer's space
         /// </summary>
-        /// <param name="destination"></param>
         /// <param name="length"></param>
 #if DEBUG && !NET35
         public void MemCopyFrom(T[] source, int sourceOffset, int length)
@@ -494,18 +493,18 @@ namespace Concentus.Common.CPlusPlus
         }
 #endif
 
-        /// <summary>
-        /// Simulates pointer zooming: newPtr = &ptr[offset].
+        /*/// <summary>
+        /// Simulates pointer zooming: newPtr = &amp;ptr[offset].
         /// Returns a pointer that is offset from this one within the same buffer.
         /// </summary>
         /// <param name="arg"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        /*internal static Pointer<T> operator +(Pointer<T> arg, int offset)
+        internal static Pointer<T> operator +(Pointer<T> arg, int offset)
         {
             return new Pointer<T>(arg._array, arg._offset + offset);
         }*/
-        
+
         public override bool Equals(object obj)
         {
             if (obj == null || GetType() != obj.GetType())
@@ -531,7 +530,7 @@ namespace Concentus.Common.CPlusPlus
         /// <summary>
         /// Allocates a new array and returns a pointer to it
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="E"></typeparam>
         /// <param name="capacity"></param>
         /// <returns></returns>
         public static Pointer<E> Malloc<E>(int capacity)
