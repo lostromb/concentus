@@ -222,7 +222,6 @@ namespace Concentus.Structs
         public OpusEncoder(int Fs, int channels, OpusApplication application)
         {
             int ret;
-            OpusEncoder st;
             if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000))
             {
                 throw new ArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");

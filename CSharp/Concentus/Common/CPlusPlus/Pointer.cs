@@ -193,7 +193,9 @@ namespace Concentus.Common.CPlusPlus
             get
             {
 #if DEBUG && !NET35
+#pragma warning disable 162
                 if (CHECK_UNINIT_MEM) Inlines.OpusAssert(_initialized[index + _offset], "Attempted to read from uninitialized memory!");
+#pragma warning restore 162
                 // Inlines.OpusAssert(index < _length, "Attempted to read past the end of an array!");
                 _statistics.maxReadIndex = Math.Max(_statistics.maxReadIndex, index + _offset);
                 _statistics.minReadIndex = Math.Min(_statistics.minReadIndex, index + _offset);
