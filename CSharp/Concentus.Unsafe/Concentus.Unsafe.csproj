@@ -1,25 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.0;net45;net35</TargetFrameworks>
-    <DefineConstants>PARITY;UNSAFE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);1591;1573</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-
-    <Product>Concentus</Product>
-    <VersionPrefix>1.1.6.0</VersionPrefix>
-    <Description>Opus Audio Codec</Description>
-    <Copyright>Copyright © 2016 Xiph.Org Foundation, Microsoft Corp. CSIRO, Skype Limited</Copyright>
+    <UnsafeBuild>true</UnsafeBuild>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\Concentus\**\*.cs" Exclude="..\Concentus\obj\**\*.cs" />
-  </ItemGroup>
-
-  <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1333 -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net35'">
-    <FrameworkPathOverride>$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
-  </PropertyGroup>
+  <Import Project="..\Concentus.props" />
 
 </Project>

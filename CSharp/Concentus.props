@@ -1,0 +1,55 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.0;net35;net45</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MSBuildRuntimeType)' != 'Core'">$(TargetFrameworks);portable-net45+win8+wpa81+wp8</TargetFrameworks>
+    <DefineConstants>PARITY</DefineConstants>
+    <NoWarn>$(NoWarn);1591;1573</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <AssemblyName>Concentus</AssemblyName>
+    <VersionPrefix>1.1.6.0</VersionPrefix>
+    <Description>This package is a pure portable C# implementation of the Opus audio compression codec (see https://opus-codec.org/ for more details). This package contains the Opus encoder, decoder, multistream codecs, repacketizer, as well as a port of the libspeexdsp resampler. It does NOT contain code to parse .ogg or .opus container files or to manage RTP packet streams</Description>
+    <Summary>A pure portable C# implementation of the Opus audio codec</Summary>
+    <PackageTags>Concentus Opus Codec Audio Compression Encoder Decoder</PackageTags>
+    <Authors>Logan Stromberg</Authors>
+    <PackageProjectUrl>https://github.com/lostromb/concentus</PackageProjectUrl>
+    <PackageIconUrl>http://durandal.dnsalias.net/imgur/concentus.png</PackageIconUrl>
+    <PackageLicenseUrl>https://opus-codec.org/license/</PackageLicenseUrl>
+    <Copyright>Copyright © Xiph.Org Foundation, Skype Limited, CSIRO, Microsoft Corp.</Copyright>
+    <PackageReleaseNotes>1.1.7 Including .Net 3.5 was a mistake as it becomes the default for everyone</PackageReleaseNotes>
+    <IncludeSymbols>true</IncludeSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <SourceDir>$(MSBuildThisFileDirectory)\Concentus</SourceDir>
+
+    <!-- Remove once https://github.com/NuGet/Home/issues/4587 is resolved -->
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SourceDir)\**\*.cs" Exclude="$(SourceDir)\bin\**;$(SourceDir)\obj\**" />
+    <Content Include="$(SourceDir)\Readme.txt" PackagePath="" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(UnsafeBuild)' == 'true'">
+    <DefineConstants>$(DefineConstants);UNSAFE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'portable-net45+win8+wpa81+wp8'">
+    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
+    <NugetTargetMoniker>.NETPortable,Version=v0.0,Profile=Profile259</NugetTargetMoniker>
+    <LanguageTargets>$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets</LanguageTargets>
+  </PropertyGroup>
+
+  <!-- Workaround for https://github.com/Microsoft/msbuild/issues/1333 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net35'">
+    <FrameworkPathOverride>$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
+  </PropertyGroup>
+
+</Project>
