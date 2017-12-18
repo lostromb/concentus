@@ -246,7 +246,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Control encoder
         /// </summary>
-        /// <param name="this">I/O  Pointer to Silk encoder state</param>
         /// <param name="encControl">I    Control structure</param>
         /// <param name="TargetRate_bps">I    Target max bitrate (bps)</param>
         /// <param name="allow_bw_switch">I    Flag to allow switching audio bandwidth</param>
@@ -328,7 +327,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="this">I/O</param>
         /// <param name="fs_kHz">I</param>
         /// <returns></returns>
         private int silk_setup_resamplers(int fs_kHz)
@@ -381,7 +379,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="this">I/O</param>
         /// <param name="fs_kHz">I</param>
         /// <param name="PacketSize_ms">I</param>
         /// <returns></returns>
@@ -530,7 +527,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="this">I/O</param>
         /// <param name="Complexity">O</param>
         /// <returns></returns>
         private int silk_setup_complexity(int Complexity)
@@ -623,7 +619,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="this">I/O</param>
         /// <param name="TargetRate_bps">I</param>
         /// <returns></returns>
         private int silk_setup_LBRR(int TargetRate_bps)
@@ -673,7 +668,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Control internal sampling rate
         /// </summary>
-        /// <param name="this">I/O  Pointer to Silk encoder state</param>
         /// <param name="encControl">I    Control structure</param>
         /// <returns></returns>
         internal int silk_control_audio_bandwidth(EncControlState encControl)

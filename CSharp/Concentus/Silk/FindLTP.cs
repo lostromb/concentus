@@ -56,7 +56,6 @@ namespace Concentus.Silk
         /// <param name="nb_subfr"></param>
         /// <param name="mem_offset"></param>
         /// <param name="corr_rshifts"></param>
-        /// <param name="arch"></param>
         internal static void silk_find_LTP(
              short[] b_Q14,      /* O    LTP coefs [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER]                                                                  */
              int[] WLTP, /* O    Weight for LTP quantization [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER]                                          */
@@ -279,7 +278,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="LTP_coefs_Q16">[SilkConstants.LTP_ORDER]</param>
         /// <param name="LTP_coefs_Q14">[SilkConstants.LTP_ORDER]</param>
-        /// <param name=""></param>
+        /// <param name="LTP_coefs_Q14_ptr"></param>
         internal static void silk_fit_LTP(
             int[] LTP_coefs_Q16,
             short[] LTP_coefs_Q14,

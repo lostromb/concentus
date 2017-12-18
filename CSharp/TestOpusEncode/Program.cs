@@ -125,12 +125,12 @@ namespace TestOpusEncode
             Pointer<short> inbuf;
             Pointer<short> outbuf;
             Pointer<short> out2buf;
-            int bitrate_bps;
+            //int bitrate_bps;
             Pointer<byte> packet = Pointer.Malloc<byte>(MAX_PACKET + 257);
             uint enc_final_range;
             uint dec_final_range;
-            int fswitch;
-            int fsize;
+            //int fswitch;
+            //int fsize;
             int count;
             /*FIXME: encoder api tests, fs!=48k, mono, VBR*/
 
@@ -371,7 +371,7 @@ namespace TestOpusEncode
                     MSenc.GetMultistreamEncoderState(2);
                     test_failed();
                 }
-                catch (ArgumentException e) { }
+                catch (ArgumentException) { }
             }
 
             OpusMode[] modes = { OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_SILK_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY, OpusMode.MODE_CELT_ONLY };

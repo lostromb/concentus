@@ -174,8 +174,8 @@ namespace Concentus.Celt
         /// OPT: This is the kernel you really want to optimize. It gets used a lot by the prefilter and by the PLC.
         /// </summary>
         /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="sum"></param>
+        /// <param name="py"></param>
+        /// <param name="sum0"></param>
         /// <param name="len"></param>
         internal unsafe static void xcorr_kernel(short* x, short* py, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
         {

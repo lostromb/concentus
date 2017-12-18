@@ -1154,7 +1154,7 @@ namespace Concentus.Celt
             overlap = mode.overlap;
             nbEBands = mode.nbEBands;
             N = mode.shortMdctSize << LM;
-            freq = new int[N]; /**< Interleaved signal MDCTs */
+            freq = new int[N]; /*< Interleaved signal MDCTs */
             M = 1 << LM;
 
             if (isTransient != 0)

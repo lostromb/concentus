@@ -125,7 +125,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Init Decoder State
         /// </summary>
-        /// <param name="this">I/O  Decoder state pointer</param>
         /// <returns></returns>
         internal int silk_init_decoder()
         {
@@ -148,7 +147,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Resets CNG state
         /// </summary>
-        /// <param name="this">I/O  Decoder state</param>
         private void silk_CNG_Reset()
         {
             int i, NLSF_step_Q15, NLSF_acc_Q15;
@@ -167,7 +165,6 @@ namespace Concentus.Silk.Structs
         /// <summary>
         /// Resets PLC state
         /// </summary>
-        /// <param name="this">I/O Decoder state</param>
         private void silk_PLC_Reset()
         {
             this.sPLC.pitchL_Q8 = Inlines.silk_LSHIFT(this.frame_length, 8 - 1);

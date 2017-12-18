@@ -45,7 +45,6 @@ namespace Concentus.Silk
         /// Init or Reset encoder
         /// </summary>
         /// <param name="encState">I/O  State</param>
-        /// <param name="arch">I    Run-time architecture</param>
         /// <param name="encStatus">O    Encoder Status</param>
         /// <returns>O    Returns error code</returns>
         internal static int silk_InitEncoder(SilkEncoder encState, EncControlState encStatus)

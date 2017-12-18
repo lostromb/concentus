@@ -211,7 +211,7 @@ namespace Concentus.Common
         #region Private code
 
         /// <summary>
-        /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer<short>, int *, Pointer<short>, Pointer<int>);
+        /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer&lt;short&gt;, int *, Pointer&lt;short&gt;, Pointer&lt;int&gt;);
         /// </summary>
         private delegate int resampler_basic_func(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len);
 

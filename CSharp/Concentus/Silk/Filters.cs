@@ -551,7 +551,6 @@ namespace Concentus.Silk
         /// <param name="B">I    MA prediction coefficients, Q12 [order]</param>
         /// <param name="len">I    Signal length</param>
         /// <param name="d">I    Filter order</param>
-        /// <param name="arch">I    Run-time architecture</param>
         internal static void silk_LPC_analysis_filter(
                     short[] output,
                     int output_ptr,

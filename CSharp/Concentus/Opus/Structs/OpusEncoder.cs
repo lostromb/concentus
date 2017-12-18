@@ -222,7 +222,6 @@ namespace Concentus.Structs
         public OpusEncoder(int Fs, int channels, OpusApplication application)
         {
             int ret;
-            OpusEncoder st;
             if ((Fs != 48000 && Fs != 24000 && Fs != 16000 && Fs != 12000 && Fs != 8000))
             {
                 throw new ArgumentException("Sample rate is invalid (must be 8/12/16/24/48 Khz)");
@@ -339,7 +338,6 @@ namespace Concentus.Structs
         /// 
         /// </summary>
         /// <typeparam name="T">The storage type of analysis_pcm, either short or float</typeparam>
-        /// <param name="this"></param>
         /// <param name="pcm"></param>
         /// <param name="frame_size"></param>
         /// <param name="data"></param>
