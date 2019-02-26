@@ -22,24 +22,24 @@ public class Program {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
+        //-in=zzz_received.bin -packet-length=60 -input-sample-rate=8000
         try {
-            FileInputStream fileIn = new FileInputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\48Khz Stereo.raw");
-            OpusEncoder encoder = new OpusEncoder(48000, 2, OpusApplication.OPUS_APPLICATION_AUDIO);
+            FileInputStream fileIn = new FileInputStream("/Users/philipp/Downloads/zzz_received.bin");
+            OpusEncoder encoder = new OpusEncoder(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
             encoder.setBitrate(96000);
             encoder.setSignalType(OpusSignal.OPUS_SIGNAL_MUSIC);
-            encoder.setComplexity(10);
+            encoder.setComplexity(0);
             
-            FileOutputStream fileOut = new FileOutputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\out.opus");
+            FileOutputStream fileOut = new FileOutputStream("/Users/philipp/Downloads/zzz_received_out2.opus");
             OpusInfo info = new OpusInfo();
-            info.setNumChannels(2);
+            info.setNumChannels(1);
             info.setSampleRate(48000);
             OpusTags tags = new OpusTags();
             //tags.setVendor("Concentus");
             //tags.addComment("title", "A test!");
             OpusFile file = new OpusFile(fileOut, info, tags);
             int packetSamples = 960;
-            byte[] inBuf = new byte[packetSamples * 2 * 2];
+            byte[] inBuf = new byte[packetSamples * 2 ];
             byte[] data_packet = new byte[1275];
             long start = System.currentTimeMillis();
             while (fileIn.available() >= inBuf.length) {
