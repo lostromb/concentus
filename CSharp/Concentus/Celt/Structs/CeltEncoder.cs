@@ -373,7 +373,7 @@ namespace Concentus.Celt.Structs
                 }
                 else
                 {
-                    Arrays.MemMove(prefilter_mem[c], N, 0, CeltConstants.COMBFILTER_MAXPERIOD - N);
+                    Arrays.MemMoveInt(prefilter_mem[c], N, 0, CeltConstants.COMBFILTER_MAXPERIOD - N);
                     Array.Copy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem[c], CeltConstants.COMBFILTER_MAXPERIOD - N, N);
                 }
             } while (++c < CC);

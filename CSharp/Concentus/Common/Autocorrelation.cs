@@ -43,14 +43,14 @@ namespace Concentus.Common
         /* Compute autocorrelation */
         internal static void silk_autocorr(
             int[] results,           /* O    Result (length correlationCount)                            */
-            BoxedValueInt scale,             /* O    Scaling of the correlation vector                           */
+            out int scale,             /* O    Scaling of the correlation vector                           */
             short[] inputData,         /* I    Input data to correlate                                     */
             int inputDataSize,      /* I    Length of input                                             */
             int correlationCount   /* I    Number of correlation taps to compute                       */
         )
         {
             int corrCount = Inlines.silk_min_int(inputDataSize, correlationCount);
-            scale.Val = Autocorrelation._celt_autocorr(inputData, results, corrCount - 1, inputDataSize);
+            scale = Autocorrelation._celt_autocorr(inputData, results, corrCount - 1, inputDataSize);
         }
 
         internal static int _celt_autocorr(
@@ -224,7 +224,7 @@ namespace Concentus.Common
         /* Autocorrelations for a warped frequency axis */
         internal static void silk_warped_autocorrelation(
                   int[] corr,                                  /* O    Result [order + 1]                                                          */
-                  BoxedValueInt scale,                                 /* O    Scaling of the correlation vector                                           */
+                  out int scale,                                 /* O    Scaling of the correlation vector                                           */
                     short[] input,                                 /* I    Input data to correlate                                                     */
                     int warping_Q16,                            /* I    Warping coefficient                                                         */
                     int length,                                 /* I    Length of input                                                             */
@@ -262,8 +262,8 @@ namespace Concentus.Common
 
             lsh = Inlines.silk_CLZ64(corr_QC[0]) - 35;
             lsh = Inlines.silk_LIMIT(lsh, -12 - QC, 30 - QC);
-            scale.Val = -(QC + lsh);
-            Inlines.OpusAssert(scale.Val >= -30 && scale.Val <= 12);
+            scale = -(QC + lsh);
+            Inlines.OpusAssert(scale >= -30 && scale <= 12);
             if (lsh >= 0)
             {
                 for (i = 0; i < order + 1; i++)

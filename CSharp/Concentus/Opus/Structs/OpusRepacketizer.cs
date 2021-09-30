@@ -313,7 +313,7 @@ namespace Concentus.Structs
                 {
                     /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
                        padding from opus_packet_pad or opus_packet_unpad(). */
-                       Arrays.MemMove<byte>(data, frames_ptrs[i], ptr, this.len[i]);
+                       Arrays.MemMoveByte(data, frames_ptrs[i], ptr, this.len[i]);
                 }
                 else
                 {
@@ -430,7 +430,7 @@ namespace Concentus.Structs
                 return OpusError.OPUS_BAD_ARG;
             rp.Reset();
             /* Moving payload to the end of the packet so we can do in-place padding */
-            Arrays.MemMove<byte>(data, data_offset, data_offset + new_len - len, len);
+            Arrays.MemMoveByte(data, data_offset, data_offset + new_len - len, len);
             //data.MemMoveTo(data.Point(new_len - len), len);
             rp.AddPacket(data, data_offset + new_len - len, len);
             ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, data_offset, new_len, 0, 1);

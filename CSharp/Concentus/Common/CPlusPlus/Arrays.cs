@@ -119,6 +119,14 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
+        internal static void MemMoveByte(byte[] array, int src_idx, int dst_idx, int length)
+        {
+            if (src_idx == dst_idx || length == 0)
+                return;
+
+            Buffer.BlockCopy(array, src_idx, array, dst_idx, length);
+        }
+
         internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)
         {
             if (src_idx == dst_idx || length == 0)
@@ -157,32 +165,33 @@ namespace Concentus.Common.CPlusPlus
             if (src_idx == dst_idx || length == 0)
                 return;
 
-            // Do regions overlap?
-            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
-            {
-                // Take extra precautions
-                if (dst_idx < src_idx)
-                {
-                    // Copy forwards
-                    for (int c = 0; c < length; c++)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-                else
-                {
-                    // Copy backwards
-                    for (int c = length - 1; c >= 0; c--)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-            }
-            else
-            {
-                // Memory regions cannot overlap; just do a fast copy
-                Array.Copy(array, src_idx, array, dst_idx, length);
-            }
+            Buffer.BlockCopy(array, src_idx * sizeof(int), array, dst_idx * sizeof(int), length * sizeof(int));
+            //// Do regions overlap?
+            //if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+            //{
+            //    // Take extra precautions
+            //    if (dst_idx < src_idx)
+            //    {
+            //        // Copy forwards
+            //        for (int c = 0; c < length; c++)
+            //        {
+            //            array[c + dst_idx] = array[c + src_idx];
+            //        }
+            //    }
+            //    else
+            //    {
+            //        // Copy backwards
+            //        for (int c = length - 1; c >= 0; c--)
+            //        {
+            //            array[c + dst_idx] = array[c + src_idx];
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    // Memory regions cannot overlap; just do a fast copy
+            //    Array.Copy(array, src_idx, array, dst_idx, length);
+            //}
         }
 
         internal static void MemMoveShort(short[] array, int src_idx, int dst_idx, int length)
@@ -190,32 +199,33 @@ namespace Concentus.Common.CPlusPlus
             if (src_idx == dst_idx || length == 0)
                 return;
 
-            // Do regions overlap?
-            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
-            {
-                // Take extra precautions
-                if (dst_idx < src_idx)
-                {
-                    // Copy forwards
-                    for (int c = 0; c < length; c++)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-                else
-                {
-                    // Copy backwards
-                    for (int c = length - 1; c >= 0; c--)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-            }
-            else
-            {
-                // Memory regions cannot overlap; just do a fast copy
-                Array.Copy(array, src_idx, array, dst_idx, length);
-            }
+            Buffer.BlockCopy(array, src_idx * sizeof(short), array, dst_idx * sizeof(short), length * sizeof(short));
+            //// Do regions overlap?
+            //if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+            //{
+            //    // Take extra precautions
+            //    if (dst_idx < src_idx)
+            //    {
+            //        // Copy forwards
+            //        for (int c = 0; c < length; c++)
+            //        {
+            //            array[c + dst_idx] = array[c + src_idx];
+            //        }
+            //    }
+            //    else
+            //    {
+            //        // Copy backwards
+            //        for (int c = length - 1; c >= 0; c--)
+            //        {
+            //            array[c + dst_idx] = array[c + src_idx];
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    // Memory regions cannot overlap; just do a fast copy
+            //    Array.Copy(array, src_idx, array, dst_idx, length);
+            //}
         }
     }
 }

@@ -664,7 +664,7 @@ namespace Concentus.Common
         {
             Inlines.OpusAssert(this.offs + this.end_offs <= _size);
             //(memmove(this.buf + _size - this.end_offs, this.buf + this.storage - this.end_offs, this.end_offs * sizeof(*(dst))))
-            Arrays.MemMove<byte>(this.buf, buf_ptr + (int)_size - (int)this.end_offs, buf_ptr + (int)this.storage - (int)this.end_offs, (int)this.end_offs);
+            Arrays.MemMoveByte(this.buf, buf_ptr + (int)_size - (int)this.end_offs, buf_ptr + (int)this.storage - (int)this.end_offs, (int)this.end_offs);
             this.storage = _size;
         }
 

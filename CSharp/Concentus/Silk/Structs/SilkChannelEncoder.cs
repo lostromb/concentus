@@ -1152,7 +1152,7 @@ namespace Concentus.Silk.Structs
             }
 
             /* Update input buffer */
-            Arrays.MemMove(this.x_buf, this.frame_length, 0, this.ltp_mem_length + SilkConstants.LA_SHAPE_MS * this.fs_kHz);
+            Arrays.MemMoveShort(this.x_buf, this.frame_length, 0, this.ltp_mem_length + SilkConstants.LA_SHAPE_MS * this.fs_kHz);
 
             /* Exit without entropy coding */
             if (this.prefillFlag != 0)

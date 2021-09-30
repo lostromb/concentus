@@ -60,7 +60,7 @@ namespace Concentus.Celt
             for (i = 0; i < max_pitch - 3; i += 4)
             {
                 int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                Kernels.xcorr_kernel(_x, _y, i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                Kernels.xcorr_kernel(_x.AsSpan(), _y.AsSpan().Slice(i), ref sum0, ref sum1, ref sum2, ref sum3, len);
                 xcorr[i] = sum0;
                 xcorr[i + 1] = sum1;
                 xcorr[i + 2] = sum2;

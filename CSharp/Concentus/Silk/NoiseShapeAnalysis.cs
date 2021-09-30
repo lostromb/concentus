@@ -310,17 +310,15 @@ namespace Concentus.Silk
                 
                 /* Update pointer: next LPC analysis block */
                 x_ptr2 += psEnc.subfr_length;
-                BoxedValueInt scale_boxed = new BoxedValueInt(scale);
                 if (psEnc.warping_Q16 > 0)
                 {
                     /* Calculate warped auto correlation */
-                    Autocorrelation.silk_warped_autocorrelation(auto_corr, scale_boxed, x_windowed, warping_Q16, psEnc.shapeWinLength, psEnc.shapingLPCOrder);
+                    Autocorrelation.silk_warped_autocorrelation(auto_corr, out scale, x_windowed, warping_Q16, psEnc.shapeWinLength, psEnc.shapingLPCOrder);
                 }
                 else {
                     /* Calculate regular auto correlation */
-                    Autocorrelation.silk_autocorr(auto_corr, scale_boxed, x_windowed, psEnc.shapeWinLength, psEnc.shapingLPCOrder + 1);
+                    Autocorrelation.silk_autocorr(auto_corr, out scale, x_windowed, psEnc.shapeWinLength, psEnc.shapingLPCOrder + 1);
                 }
-                scale = scale_boxed.Val;
 
                 /* Add white noise, as a fraction of energy */
                 auto_corr[0] = Inlines.silk_ADD32(auto_corr[0], Inlines.silk_max_32(Inlines.silk_SMULWB(Inlines.silk_RSHIFT(auto_corr[0], 4),
