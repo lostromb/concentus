@@ -329,7 +329,7 @@ namespace Concentus.Celt
                     /* We just added some energy, so we need to renormalise */
                     if (renormalize != 0)
                     {
-                        VQ.renormalise_vector(X_[c], X, N0 << LM, CeltConstants.Q15ONE);
+                        VQ.renormalise_vector(X_[c].AsSpan().Slice(X), N0 << LM, CeltConstants.Q15ONE);
                     }
                 } while (++c < C);
             }
@@ -371,7 +371,7 @@ namespace Concentus.Celt
             }
         }
 
-        static void stereo_merge(int[] X, int X_ptr, int[] Y, int Y_ptr, int mid, int N)
+        static void stereo_merge(Span<int> X, Span<int> Y, int mid, int N)
         {
             int j;
             int xp, side;
@@ -392,7 +392,7 @@ namespace Concentus.Celt
                 }
             }
 #else
-            Kernels.dual_inner_prod(Y, Y_ptr, X, X_ptr, Y, Y_ptr, N, out xp, out side);
+            Kernels.dual_inner_prod(Y, X, Y, N, out xp, out side);
 #endif
             /* Compensating for the mid normalization */
             xp = Inlines.MULT16_32_Q15(mid, xp);
@@ -402,7 +402,7 @@ namespace Concentus.Celt
             Er = Inlines.MULT16_16(mid2, mid2) + side + (2 * xp);
             if (Er < ((int)(0.5 + (6e-4f) * (((int)1) << (28))))/*Inlines.QCONST32(6e-4f, 28)*/ || El < ((int)(0.5 + (6e-4f) * (((int)1) << (28))))/*Inlines.QCONST32(6e-4f, 28)*/)
             {
-                Array.Copy(X, X_ptr, Y, Y_ptr, N);
+                X.Slice(0, N).CopyTo(Y);
                 return;
             }
 
@@ -422,10 +422,10 @@ namespace Concentus.Celt
             {
                 int r, l;
                 /* Apply mid scaling (side is already scaled) */
-                l = Inlines.MULT16_16_P15(mid, X[X_ptr + j]);
-                r = Y[Y_ptr + j];
-                X[X_ptr + j] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(lgain, Inlines.SUB16(l, r)), kl + 1));
-                Y[Y_ptr + j] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(rgain, Inlines.ADD16(l, r)), kr + 1));
+                l = Inlines.MULT16_16_P15(mid, X[j]);
+                r = Y[j];
+                X[j] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(lgain, Inlines.SUB16(l, r)), kl + 1));
+                Y[j] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(rgain, Inlines.ADD16(l, r)), kr + 1));
             }
         }
 
@@ -751,7 +751,7 @@ namespace Concentus.Celt
                    side and mid. With just that parameter, we can re-scale both
                    mid and side because we know that 1) they have unit norm and
                    2) they are orthogonal. */
-                itheta = VQ.stereo_itheta(X, X_ptr, Y, Y_ptr, stereo, N);
+                itheta = VQ.stereo_itheta(X.AsSpan().Slice(X_ptr), Y.AsSpan().Slice(Y_ptr), stereo, N);
             }
 
             tell = (int)ec.tell_frac();
@@ -982,9 +982,9 @@ namespace Concentus.Celt
            the two half-bands. It can be called recursively so bands can end up being
            split in 8 parts. */
         internal static uint quant_partition(band_ctx ctx, int[] X, int X_ptr,
-      int N, int b, int B, int[] lowband, int lowband_ptr,
-      int LM,
-      int gain, int fill)
+            int N, int b, int B, int[] lowband, int lowband_ptr,
+            int LM,
+            int gain, int fill)
         {
             int cache_ptr;
             int q;
@@ -1154,7 +1154,7 @@ namespace Concentus.Celt
                                 cm = (uint)fill;
                             }
 
-                            VQ.renormalise_vector(X, X_ptr, N, gain);
+                            VQ.renormalise_vector(X.AsSpan().Slice(X_ptr), N, gain);
                         }
                     }
                 }
@@ -1453,7 +1453,7 @@ namespace Concentus.Celt
             {
                 if (N != 2)
                 {
-                    stereo_merge(X, X_ptr, Y, Y_ptr, mid, N);
+                    stereo_merge(X.AsSpan().Slice(X_ptr), Y.AsSpan().Slice(Y_ptr), mid, N);
                 }
                 if (inv != 0)
                 {

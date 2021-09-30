@@ -64,8 +64,8 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            short[] xptr;
-            short[] xx = new short[n];
+            Span<short> xptr;
+            Span<short> xx = new short[n];
             Inlines.OpusAssert(n > 0);
             xptr = x;
 
@@ -95,7 +95,7 @@ namespace Concentus.Common
                 else
                     shift = 0;
             }
-            CeltPitchXCorr.pitch_xcorr(xptr.AsSpan(), xptr.AsSpan(), ac, fastN, lag + 1);
+            CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
             for (k = 0; k <= lag; k++)
             {
                 for (i = k + fastN, d = 0; i < n; i++)
@@ -141,8 +141,8 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            int[] xptr;
-            int[] xx = new int[n];
+            Span<int> xptr;
+            Span<int> xx = new int[n];
 
             Inlines.OpusAssert(n > 0);
             Inlines.OpusAssert(overlap >= 0);
@@ -233,8 +233,8 @@ namespace Concentus.Common
         {
             int n, i, lsh;
             int tmp1_QS, tmp2_QS;
-            int[] state_QS = new int[order + 1];// = { 0 };
-            long[] corr_QC = new long[order + 1];// = { 0 };
+            Span<int> state_QS = new int[order + 1];// = { 0 };
+            Span<long> corr_QC = new long[order + 1];// = { 0 };
 
             /* Order must be even */
             Inlines.OpusAssert((order & 1) == 0);

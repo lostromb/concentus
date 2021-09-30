@@ -154,8 +154,7 @@ namespace Concentus.Silk
         /// <param name="order">(I) Number of input values</param>
         internal static void silk_NLSF_residual_dequant(
                 Span<short> x_Q10,
-                sbyte[] indices,
-                int indices_ptr,
+                Span<sbyte> indices,
                 Span<byte> pred_coef_Q8,
                 int quant_step_size_Q16,
                 short order)
@@ -167,7 +166,7 @@ namespace Concentus.Silk
             for (i = order - 1; i >= 0; i--)
             {
                 pred_Q10 = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(out_Q10, (short)pred_coef_Q8[i]), 8);
-                out_Q10 = Inlines.silk_LSHIFT16((short)indices[indices_ptr + i], 10);
+                out_Q10 = Inlines.silk_LSHIFT16((short)indices[i], 10);
                 if (out_Q10 > 0)
                 {
                     out_Q10 = Inlines.silk_SUB16(out_Q10, (short)(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
@@ -349,8 +348,7 @@ namespace Concentus.Silk
 
             // Predictive residual dequantizer
             silk_NLSF_residual_dequant(res_Q10,
-                NLSFIndices,
-                1,
+                NLSFIndices.AsSpan().Slice(1),
                 pred_Q8,
                 psNLSF_CB.quantStepSize_Q16,
                 psNLSF_CB.order);

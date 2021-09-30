@@ -39,6 +39,7 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
 
     internal static class VQ
@@ -350,7 +351,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        internal static void renormalise_vector(int[] X, int X_ptr, int N, int gain)
+        internal static void renormalise_vector(Span<int> X, int N, int gain)
         {
             int i;
             int k;
@@ -368,13 +369,13 @@ namespace Concentus.Celt
                 }
             }
 #else
-            E = CeltConstants.EPSILON + Kernels.celt_inner_prod(X, X_ptr, X, X_ptr, N);
+            E = CeltConstants.EPSILON + Kernels.celt_inner_prod(X, X, N);
 #endif
             k = Inlines.celt_ilog2(E) >> 1;
             t = Inlines.VSHR32(E, 2 * (k - 7));
             g = Inlines.MULT16_16_P15(Inlines.celt_rsqrt_norm(t), gain);
 
-            xptr = X_ptr;
+            xptr = 0;
             for (i = 0; i < N; i++)
             {
                 X[xptr] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(g, X[xptr]), k + 1));
@@ -383,7 +384,7 @@ namespace Concentus.Celt
             /*return celt_sqrt(E);*/
         }
 
-        internal static int stereo_itheta(int[] X, int X_ptr, int[] Y, int Y_ptr, int stereo, int N)
+        internal static int stereo_itheta(Span<int> X, Span<int> Y, int stereo, int N)
         {
             int i;
             int itheta;
@@ -396,8 +397,8 @@ namespace Concentus.Celt
                 for (i = 0; i < N; i++)
                 {
                     int m, s;
-                    m = Inlines.ADD16(Inlines.SHR16(X[X_ptr + i], 1), Inlines.SHR16(Y[Y_ptr + i], 1));
-                    s = Inlines.SUB16(Inlines.SHR16(X[X_ptr + i], 1), Inlines.SHR16(Y[Y_ptr + i], 1));
+                    m = Inlines.ADD16(Inlines.SHR16(X[i], 1), Inlines.SHR16(Y[i], 1));
+                    s = Inlines.SUB16(Inlines.SHR16(X[i], 1), Inlines.SHR16(Y[i], 1));
                     Emid = Inlines.MAC16_16(Emid, m, m);
                     Eside = Inlines.MAC16_16(Eside, s, s);
                 }
@@ -415,8 +416,8 @@ namespace Concentus.Celt
                     }
                 }
 #else
-                Emid += Kernels.celt_inner_prod(X, X_ptr, X, X_ptr, N);
-                Eside += Kernels.celt_inner_prod(Y, Y_ptr, Y, Y_ptr, N);
+                Emid += Kernels.celt_inner_prod(X, X, N);
+                Eside += Kernels.celt_inner_prod(Y, Y, N);
 #endif
             }
             mid = (Inlines.celt_sqrt(Emid));

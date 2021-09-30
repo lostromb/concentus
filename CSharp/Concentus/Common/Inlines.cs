@@ -784,6 +784,20 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
+        public static int celt_maxabs32(Span<int> x, int len)
+        {
+            int i;
+            int maxval = 0;
+            int minval = 0;
+            for (i = 0; i < len; i++)
+            {
+                maxval = MAX32(maxval, x[i]);
+                minval = MIN32(minval, x[i]);
+            }
+            return MAX32(maxval, 0 - minval);
+        }
+
+        [MethodImpl(INLINE_ATTR)]
         public static int celt_maxabs32(int[] x, int x_ptr, int len)
         {
             int i;

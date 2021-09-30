@@ -39,11 +39,12 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
 
     internal static class Pitch
     {
-        internal static void find_best_pitch(int[] xcorr, int[] y, int len,
+        internal static void find_best_pitch(Span<int> xcorr, Span<int> y, int len,
                                     int max_pitch, int[]best_pitch,
                                     int yshift, int maxcorr
                                     )
@@ -222,9 +223,9 @@ namespace Concentus.Celt
             Inlines.OpusAssert(max_pitch > 0);
             lag = len + max_pitch;
 
-            int[] x_lp4 = new int[len >> 2];
-            int[] y_lp4 = new int[lag >> 2];
-            int[] xcorr = new int[max_pitch >> 1];
+            Span<int> x_lp4 = new int[len >> 2];
+            Span<int> y_lp4 = new int[lag >> 2];
+            Span<int> xcorr = new int[max_pitch >> 1];
 
             /* Downsample by 2 again */
             for (j = 0; j < len >> 2; j++)
@@ -232,8 +233,8 @@ namespace Concentus.Celt
             for (j = 0; j < lag >> 2; j++)
                 y_lp4[j] = y[2 * j];
 
-            xmax = Inlines.celt_maxabs32(x_lp4, 0, len >> 2);
-            ymax = Inlines.celt_maxabs32(y_lp4, 0, lag >> 2);
+            xmax = Inlines.celt_maxabs32(x_lp4, len >> 2);
+            ymax = Inlines.celt_maxabs32(y_lp4, lag >> 2);
             shift = Inlines.celt_ilog2(Inlines.MAX32(1, Inlines.MAX32(xmax, ymax))) - 11;
             if (shift > 0)
             {
@@ -309,7 +310,7 @@ namespace Concentus.Celt
             int g, g0;
             int pg;
             int yy, xx, xy, xy2;
-            int[] xcorr = new int[3];
+            Span<int> xcorr = new int[3];
             int best_xy, best_yy;
             int offset;
             int minperiod0 = minperiod;
@@ -323,7 +324,7 @@ namespace Concentus.Celt
                 T0_ = maxperiod - 1;
 
             T = T0 = T0_;
-            int[] yy_lookup = new int[maxperiod + 1];
+            Span<int> yy_lookup = new int[maxperiod + 1];
 
 #if UNSAFE
             unsafe
@@ -336,7 +337,7 @@ namespace Concentus.Celt
                 }
             }
 #else
-            Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, out xx, out xy);
+            Kernels.dual_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - T0), N, out xx, out xy);
 #endif
 
             yy_lookup[0] = xx;
@@ -399,7 +400,7 @@ namespace Concentus.Celt
                     }
                 }
 #else
-                Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, out xy, out xy2);
+                Kernels.dual_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - T1), x.AsSpan().Slice(x_ptr - T1b), N, out xy, out xy2);
 #endif
                 
                 xy += xy2;
@@ -470,7 +471,7 @@ namespace Concentus.Celt
 #else
             for (k = 0; k < 3; k++)
             {
-                xcorr[k] = Kernels.celt_inner_prod(x, x_ptr, x, x_ptr - (T + k - 1), N);
+                xcorr[k] = Kernels.celt_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - (T + k - 1)), N);
             }
 #endif
 
