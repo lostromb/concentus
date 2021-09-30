@@ -329,7 +329,7 @@ namespace Concentus.Celt.Structs
                     /* Initialize the LPC history with the samples just before the start
                        of the region for which we're computing the excitation. */
                     {
-                        int[] lpc_mem = new int[CeltConstants.LPC_ORDER];
+                        Span<int> lpc_mem = stackalloc int[CeltConstants.LPC_ORDER];
                         for (i = 0; i < CeltConstants.LPC_ORDER; i++)
                         {
                             lpc_mem[i] =
@@ -347,8 +347,13 @@ namespace Concentus.Celt.Structs
                             }
                         }
 #else
-                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), this.lpc[c], 0,
-                              exc, (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
+                        Kernels.celt_fir(
+                            exc.AsSpan().Slice(CeltConstants.MAX_PERIOD - exc_length),
+                            this.lpc[c].AsSpan(),
+                            exc.AsSpan().Slice(CeltConstants.MAX_PERIOD - exc_length),
+                            exc_length,
+                            CeltConstants.LPC_ORDER,
+                            lpc_mem);
 #endif
                     }
 
@@ -406,15 +411,15 @@ namespace Concentus.Celt.Structs
                     }
 
                     {
-                        int[] lpc_mem = new int[CeltConstants.LPC_ORDER];
+                        Span<int> lpc_mem = stackalloc int[CeltConstants.LPC_ORDER];
                         /* Copy the last decoded samples (prior to the overlap region) to
                            synthesis filter memory so we can have a continuous signal. */
                         for (i = 0; i < CeltConstants.LPC_ORDER; i++)
                             lpc_mem[i] = Inlines.ROUND16(buf[CeltConstants.DECODE_BUFFER_SIZE - N - 1 - i], CeltConstants.SIG_SHIFT);
                         /* Apply the synthesis filter to convert the excitation back into
                            the signal domain. */
-                        CeltLPC.celt_iir(buf, CeltConstants.DECODE_BUFFER_SIZE - N, this.lpc[c],
-                              buf, CeltConstants.DECODE_BUFFER_SIZE - N, extrapolation_len, CeltConstants.LPC_ORDER,
+                        CeltLPC.celt_iir(buf.AsSpan().Slice(CeltConstants.DECODE_BUFFER_SIZE - N), this.lpc[c],
+                              buf.AsSpan().Slice(CeltConstants.DECODE_BUFFER_SIZE - N), extrapolation_len, CeltConstants.LPC_ORDER,
                               lpc_mem);
                     }
 

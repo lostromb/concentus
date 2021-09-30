@@ -125,7 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Concentus\Concentus.csproj">
-      <Project>{225c90a4-3d99-457b-99d4-38eb158ce047}</Project>
+      <Project>{0C166826-ACF0-4232-AC42-0899B06908C3}</Project>
       <Name>Concentus</Name>
     </ProjectReference>
     <PackageReference Include="NAudio" Version="1.7.3" />

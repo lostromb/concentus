@@ -36,6 +36,7 @@ namespace Concentus.Common
 {
     using Concentus.Celt;
     using Concentus.Common.CPlusPlus;
+    using System;
 
     internal static class Autocorrelation
     {
@@ -94,7 +95,7 @@ namespace Concentus.Common
                 else
                     shift = 0;
             }
-            CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
+            CeltPitchXCorr.pitch_xcorr(xptr.AsSpan(), xptr.AsSpan(), ac, fastN, lag + 1);
             for (k = 0; k <= lag; k++)
             {
                 for (i = k + fastN, d = 0; i < n; i++)

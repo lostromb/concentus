@@ -106,7 +106,7 @@ namespace Concentus.Silk
             int HarmShapeFIRPacked_Q12, LF_shp_Q14;
             int[] x_filt_Q12;
             int[] st_res_Q2;
-            short[] B_Q10 = new short[2];
+            Span<short> B_Q10 = stackalloc short[2];
 
             /* Set up pointers */
             px = x_ptr;
@@ -563,8 +563,8 @@ namespace Concentus.Silk
         {
             int j;
 
-            short[] mem = new short[SilkConstants.SILK_MAX_ORDER_LPC];
-            short[] num = new short[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<short> mem = stackalloc short[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<short> num = stackalloc short[SilkConstants.SILK_MAX_ORDER_LPC];
 
             Inlines.OpusAssert(d >= 6);
             Inlines.OpusAssert((d & 1) == 0);
@@ -590,7 +590,7 @@ namespace Concentus.Silk
                 }
             }
 #else
-            Kernels.celt_fir(input, input_ptr + d, num, output, output_ptr + d, len - d, d, mem);
+            Kernels.celt_fir(input.AsSpan().Slice(input_ptr + d), num, output.AsSpan().Slice(output_ptr + d), len - d, d, mem);
 #endif
             for (j = output_ptr; j < output_ptr + d; j++)
             {
