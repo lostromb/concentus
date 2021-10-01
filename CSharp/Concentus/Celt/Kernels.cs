@@ -33,8 +33,6 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#if !UNSAFE
-
 namespace Concentus.Celt
 {
     using Concentus.Celt.Enums;
@@ -339,5 +337,3 @@ namespace Concentus.Celt
         }
     }
 }
-
-#endif

@@ -30,8 +30,6 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#if !UNSAFE
-
 namespace Concentus.Common
 {
     using Concentus.Celt;
@@ -281,5 +279,3 @@ namespace Concentus.Common
         }
     }
 }
-
-#endif

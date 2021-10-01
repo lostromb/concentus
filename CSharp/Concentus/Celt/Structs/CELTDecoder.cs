@@ -337,16 +337,6 @@ namespace Concentus.Celt.Structs
                         }
 
                         /* Compute the excitation for exc_length samples before the loss. */
-#if UNSAFE
-                        unsafe
-                        {
-                            fixed (int* pexc_base = exc, lpc = this.lpc[c])
-                            {
-                                int* pexc = pexc_base + (CeltConstants.MAX_PERIOD - exc_length);
-                                Kernels.celt_fir(pexc, lpc, pexc, exc_length, CeltConstants.LPC_ORDER, lpc_mem);
-                            }
-                        }
-#else
                         Kernels.celt_fir(
                             exc.AsSpan().Slice(CeltConstants.MAX_PERIOD - exc_length),
                             this.lpc[c].AsSpan(),
@@ -354,7 +344,6 @@ namespace Concentus.Celt.Structs
                             exc_length,
                             CeltConstants.LPC_ORDER,
                             lpc_mem);
-#endif
                     }
 
                     /* Check if the waveform is decaying, and if so how fast.

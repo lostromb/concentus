@@ -2589,25 +2589,6 @@ namespace Concentus.Common
             return sum;
         }
 
-#if UNSAFE
-        [MethodImpl(INLINE_ATTR)]
-        public static unsafe long silk_inner_prod16_aligned_64(
-            short* inVec1,             /*    I input vector 1                                              */
-            short* inVec2,             /*    I input vector 2                                              */
-            int len                 /*    I vector lengths                                              */
-        )
-        {
-            int i;
-            long sum = 0;
-            for (i = 0; i < len; i++)
-            {
-                sum = silk_SMLALBB(sum, inVec1[i], inVec2[i]);
-            }
-            return sum;
-        }
-#endif
-
-
         #endregion
 
         #region EntropyCoder helper functions, common to both projects

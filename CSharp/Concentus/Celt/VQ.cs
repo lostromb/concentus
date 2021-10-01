@@ -359,18 +359,7 @@ namespace Concentus.Celt
             int g;
             int t;
             int xptr;
-#if UNSAFE
-            unsafe
-            {
-                fixed (int* px_base = X)
-                {
-                    int* px = px_base + X_ptr;
-                    E = CeltConstants.EPSILON + Kernels.celt_inner_prod(px, px, N);
-                }
-            }
-#else
             E = CeltConstants.EPSILON + Kernels.celt_inner_prod(X, X, N);
-#endif
             k = Inlines.celt_ilog2(E) >> 1;
             t = Inlines.VSHR32(E, 2 * (k - 7));
             g = Inlines.MULT16_16_P15(Inlines.celt_rsqrt_norm(t), gain);
@@ -404,21 +393,8 @@ namespace Concentus.Celt
                 }
             }
             else {
-#if UNSAFE
-                unsafe
-                {
-                    fixed (int* px_base = X, py_base = Y)
-                    {
-                        int* px = px_base + X_ptr;
-                        int* py = py_base + Y_ptr;
-                        Emid += Kernels.celt_inner_prod(px, px, N);
-                        Eside += Kernels.celt_inner_prod(py, py, N);
-                    }
-                }
-#else
                 Emid += Kernels.celt_inner_prod(X, X, N);
                 Eside += Kernels.celt_inner_prod(Y, Y, N);
-#endif
             }
             mid = (Inlines.celt_sqrt(Emid));
             side = (Inlines.celt_sqrt(Eside));
