@@ -46,7 +46,7 @@ namespace Concentus.Celt
     {
 
         /* Forward MDCT trashes the input array */
-        internal static void clt_mdct_forward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
+        internal static void clt_mdct_forward(MDCTLookup l, Span<int> input, int input_ptr, Span<int> output, int output_ptr,
             int[] window, int overlap, int shift, int stride)
         {
             int i;
@@ -157,7 +157,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void clt_mdct_backward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
+        internal static void clt_mdct_backward(MDCTLookup l, Span<int> input, int input_ptr, Span<int> output, int output_ptr,
               int[] window, int overlap, int shift, int stride)
         {
             int i;

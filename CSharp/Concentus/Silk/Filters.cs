@@ -227,12 +227,12 @@ namespace Concentus.Silk
         /// <param name="len">I     signal length (must be even)</param>
         /// <param name="stride">I     Operate on interleaved signal if > 1</param>
         internal static void silk_biquad_alt(
-            short[] input,
+            Span<short> input,
             int input_ptr,
             int[] B_Q28,
             int[] A_Q28,
             int[] S,
-            short[] output,
+            Span<short> output,
             int output_ptr,
             int len,
             int stride)
@@ -267,13 +267,13 @@ namespace Concentus.Silk
         }
 
         internal static void silk_biquad_alt(
-            short[] input,
+            Span<short> input,
             int input_ptr,
             int[] B_Q28,
             int[] A_Q28,
-            int[] S,
+            Span<int> S,
             int S_ptr,
-            short[] output,
+            Span<short> output,
             int output_ptr,
             int len,
             int stride)
@@ -321,11 +321,11 @@ namespace Concentus.Silk
         /// <param name="outH">O    High band [N/2]</param>
         /// <param name="N">I    Number of input samples</param>
         internal static void silk_ana_filt_bank_1(
-            short[] input,
+            Span<short> input,
             int input_ptr,
             int[] S,
             short[] outL,
-            short[] outH,
+            Span<short> outH,
             int outH_ptr,
             int N)
         {
@@ -474,11 +474,11 @@ namespace Concentus.Silk
         /// <param name="len">I    Signal length</param>
         /// <param name="d">I    Filter order</param>
         internal static void silk_LPC_analysis_filter(
-                    short[] output,
+                    Span<short> output,
                     int output_ptr,
-                    short[] input,
+                    Span<short> input,
                     int input_ptr,
-                    short[] B,
+                    Span<short> B,
                     int B_ptr,
                     int len,
                     int d)
@@ -502,7 +502,7 @@ namespace Concentus.Silk
                 mem[j] = input[input_ptr + d - j - 1];
             }
 
-            Kernels.celt_fir(input.AsSpan().Slice(input_ptr + d), num, output.AsSpan().Slice(output_ptr + d), len - d, d, mem);
+            Kernels.celt_fir(input.Slice(input_ptr + d), num, output.Slice(output_ptr + d), len - d, d, mem);
             for (j = output_ptr; j < output_ptr + d; j++)
             {
                 output[j] = 0;

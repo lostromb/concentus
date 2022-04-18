@@ -377,7 +377,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void celt_preemphasis(short[] pcmp, int pcmp_ptr, int[] inp, int inp_ptr,
+        internal static void celt_preemphasis(Span<short> pcmp, int pcmp_ptr, Span<int> inp, int inp_ptr,
                                 int N, int CC, int upsample, int[] coef, ref int mem, int clip)
         {
             int i;
@@ -423,7 +423,7 @@ namespace Concentus.Celt
             mem = m;
         }
 
-        internal static void celt_preemphasis(short[] pcmp, int[] inp, int inp_ptr,
+        internal static void celt_preemphasis(short[] pcmp, Span<int> inp, int inp_ptr,
                                 int N, int CC, int upsample, int[] coef, BoxedValueInt mem, int clip)
         {
             int i;
@@ -802,7 +802,7 @@ namespace Concentus.Celt
                   > Inlines.MULT16_32_Q15((m.eBands[13] << (LM + 1)), sumLR)) ? 1 : 0;
         }
 
-        internal static int median_of_5(int[] x, int x_ptr)
+        internal static int median_of_5(Span<int> x, int x_ptr)
         {
             int t0, t1, t2, t3, t4;
             t2 = x[x_ptr + 2];
@@ -849,7 +849,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static int median_of_3(int[] x, int x_ptr)
+        internal static int median_of_3(Span<int> x, int x_ptr)
         {
             int t0, t1, t2;
             if (x[x_ptr] > x[x_ptr + 1])
@@ -1007,7 +1007,7 @@ namespace Concentus.Celt
             return maxDepth;
         }
 
-        internal static void deemphasis(int[][] input, int[] input_ptrs, short[] pcm, int pcm_ptr, int N, int C, int downsample, int[] coef,
+        internal static void deemphasis(int[][] input, int[] input_ptrs, Span<short> pcm, int pcm_ptr, int N, int C, int downsample, int[] coef,
               int[] mem, int accum)
         {
             int c;
@@ -1090,7 +1090,7 @@ namespace Concentus.Celt
         /* Special case for stereo with no downsampling and no accumulation. This is
            quite common and we can make it faster by processing both channels in the
            same loop, reducing overhead due to the dependency loop in the IIR filter */
-        internal static void deemphasis_stereo_simple(int[][] input, int[] input_ptrs, short[] pcm, int pcm_ptr, int N, int coef0, int[] mem)
+        internal static void deemphasis_stereo_simple(int[][] input, int[] input_ptrs, Span<short> pcm, int pcm_ptr, int N, int coef0, int[] mem)
         {
             int[] x0 = input[0];
             int[] x1 = input[1];
@@ -1266,7 +1266,7 @@ namespace Concentus.Celt
             return ret;
         }
 
-        internal static void comb_filter_const(int[] y, int y_ptr, int[] x, int x_ptr, int T, int N,
+        internal static void comb_filter_const(Span<int> y, int y_ptr, Span<int> x, int x_ptr, int T, int N,
               int g10, int g11, int g12)
         {
             int x0, x1, x2, x3, x4;
@@ -1296,7 +1296,7 @@ namespace Concentus.Celt
                 new short[]{ ((short)(0.5 + (0.7998046875f) * (((int)1) << (15))))/*Inlines.QCONST16(0.7998046875f, 15)*/, ((short)(0.5 + (0.1000976562f) * (((int)1) << (15))))/*Inlines.QCONST16(0.1000976562f, 15)*/, ((short)(0.5 + (0.0f) * (((int)1) << (15))))/*Inlines.QCONST16(0.0f, 15)*/}
             };
 
-        internal static void comb_filter(int[] y, int y_ptr, int[] x, int x_ptr, int T0, int T1, int N,
+        internal static void comb_filter(Span<int> y, int y_ptr, Span<int> x, int x_ptr, int T0, int T1, int N,
               int g0, int g1, int tapset0, int tapset1,
             int[] window, int overlap)
         {

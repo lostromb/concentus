@@ -386,7 +386,7 @@ namespace Concentus.Celt.Structs
         }
 
         
-        internal int celt_encode_with_ec(short[] pcm, int pcm_ptr, int frame_size, byte[] compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc)
+        internal int celt_encode_with_ec(Span<short> pcm, int pcm_ptr, int frame_size, Memory<byte> compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc)
         {
             int i, c, N;
             int bits;

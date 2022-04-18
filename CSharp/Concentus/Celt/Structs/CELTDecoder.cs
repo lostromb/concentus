@@ -468,8 +468,8 @@ namespace Concentus.Celt.Structs
             this.loss_count = loss_count + 1;
         }
 
-        internal int celt_decode_with_ec(byte[] data, int data_ptr,
-              int len, short[] pcm, int pcm_ptr, int frame_size, EntropyCoder dec, int accum)
+        internal int celt_decode_with_ec(Memory<byte> data, int data_ptr,
+              int len, Span<short> pcm, int pcm_ptr, int frame_size, EntropyCoder dec, int accum)
         {
             int c, i, N;
             int spread_decision;
@@ -550,7 +550,7 @@ namespace Concentus.Celt.Structs
             if (effEnd > mode.effEBands)
                 effEnd = mode.effEBands;
 
-            if (data == null || len <= 1)
+            if (data.IsEmpty || len <= 1)
             {
                 this.celt_decode_lost(N, LM);
                 CeltCommon.deemphasis(out_syn, out_syn_ptrs, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);

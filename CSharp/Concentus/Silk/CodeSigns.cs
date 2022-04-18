@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class CodeSigns
@@ -61,7 +62,7 @@ namespace Concentus.Silk
         /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
         internal static void silk_encode_signs(
             EntropyCoder psRangeEnc,
-            sbyte[] pulses,
+            Span<sbyte> pulses,
             int length,
             int signalType,
             int quantOffsetType,

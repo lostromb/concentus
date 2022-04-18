@@ -119,12 +119,28 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
+        internal static void MemSetWithOffset<T>(Span<T> array, T value, int offset, int length)
+        {
+            for (int c = offset; c < offset + length; c++)
+            {
+                array[c] = value;
+            }
+        }
+
         internal static void MemMoveByte(byte[] array, int src_idx, int dst_idx, int length)
         {
             if (src_idx == dst_idx || length == 0)
                 return;
 
             Buffer.BlockCopy(array, src_idx, array, dst_idx, length);
+        }
+
+        internal static void MemMoveByte(Span<byte> array, int src_idx, int dst_idx, int length)
+        {
+            if (src_idx == dst_idx || length == 0)
+                return;
+
+            array.Slice(src_idx, length).CopyTo(array.Slice(dst_idx, length));
         }
 
         internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)

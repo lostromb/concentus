@@ -174,7 +174,7 @@ namespace Concentus.Celt
 
         /* De-normalise the energy to produce the synthesis from the unit-energy bands */
         internal static void denormalise_bands(CeltMode m, int[] X,
-              int[] freq, int freq_ptr, int[] bandLogE, int bandLogE_ptr, int start,
+              Span<int> freq, int freq_ptr, Span<int> bandLogE, int bandLogE_ptr, int start,
               int end, int M, int downsample, int silence)
         {
             int i, N;
@@ -335,7 +335,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void intensity_stereo(CeltMode m, int[] X, int X_ptr, int[] Y, int Y_ptr, int[][] bandE, int bandID, int N)
+        internal static void intensity_stereo(CeltMode m, Span<int> X, int X_ptr, Span<int> Y, int Y_ptr, int[][] bandE, int bandID, int N)
         {
             int i = bandID;
             int j;
@@ -358,7 +358,7 @@ namespace Concentus.Celt
             }
         }
 
-        static void stereo_split(int[] X, int X_ptr, int[] Y, int Y_ptr, int N)
+        static void stereo_split(Span<int> X, int X_ptr, Span<int> Y, int Y_ptr, int N)
         {
             int j;
             for (j = 0; j < N; j++)
@@ -539,7 +539,7 @@ namespace Concentus.Celt
             return decision;
         }
 
-        internal static void deinterleave_hadamard(int[] X, int X_ptr, int N0, int stride, int hadamard)
+        internal static void deinterleave_hadamard(Span<int> X, int X_ptr, int N0, int stride, int hadamard)
         {
             int i, j;
             int N;
@@ -570,10 +570,10 @@ namespace Concentus.Celt
                 }
             }
 
-            Array.Copy(tmp, 0, X, X_ptr, N);
+            tmp.AsSpan(0, N).CopyTo(X.Slice(X_ptr));
         }
 
-        internal static void interleave_hadamard(int[] X, int X_ptr, int N0, int stride, int hadamard)
+        internal static void interleave_hadamard(Span<int> X, int X_ptr, int N0, int stride, int hadamard)
         {
             int i, j;
             int N;
@@ -602,10 +602,10 @@ namespace Concentus.Celt
                 }
             }
 
-            Array.Copy(tmp, 0, X, X_ptr, N);
+            tmp.AsSpan(0, N).CopyTo(X.Slice(X_ptr));
         }
 
-        internal static void haar1(int[] X, int X_ptr, int N0, int stride)
+        internal static void haar1(Span<int> X, int X_ptr, int N0, int stride)
         {
             int i, j;
             N0 >>= 1;
@@ -698,7 +698,7 @@ namespace Concentus.Celt
         };
 
         internal static void compute_theta(band_ctx ctx, split_ctx sctx,
-               int[] X, int X_ptr, int[] Y, int Y_ptr, int N, ref int b, int B, int B0,
+               Span<int> X, int X_ptr, Span<int> Y, int Y_ptr, int N, ref int b, int B, int B0,
               int LM,
               int stereo, ref int fill)
         {
@@ -740,7 +740,7 @@ namespace Concentus.Celt
                    side and mid. With just that parameter, we can re-scale both
                    mid and side because we know that 1) they have unit norm and
                    2) they are orthogonal. */
-                itheta = VQ.stereo_itheta(X.AsSpan().Slice(X_ptr), Y.AsSpan().Slice(Y_ptr), stereo, N);
+                itheta = VQ.stereo_itheta(X.Slice(X_ptr), Y.Slice(Y_ptr), stereo, N);
             }
 
             tell = (int)ec.tell_frac();
@@ -920,13 +920,13 @@ namespace Concentus.Celt
             sctx.qalloc = qalloc;
         }
 
-        internal static uint quant_band_n1(band_ctx ctx, int[] X, int X_ptr, int[] Y, int Y_ptr, int b,
-                 int[] lowband_out, int lowband_out_ptr)
+        internal static uint quant_band_n1(band_ctx ctx, Span<int> X, int X_ptr, Span<int> Y, int Y_ptr, int b,
+                 Span<int> lowband_out, int lowband_out_ptr)
         {
             int resynth = ctx.encode == 0 ? 1 : 0;
             int c;
             int stereo;
-            int[] x = X;
+            Span<int> x = X;
             int x_ptr = X_ptr;
             int encode;
             EntropyCoder ec; // porting note: pointer
@@ -970,8 +970,8 @@ namespace Concentus.Celt
            It can split the band in two and transmit the energy difference with
            the two half-bands. It can be called recursively so bands can end up being
            split in 8 parts. */
-        internal static uint quant_partition(band_ctx ctx, int[] X, int X_ptr,
-            int N, int b, int B, int[] lowband, int lowband_ptr,
+        internal static uint quant_partition(band_ctx ctx, Span<int> X, int X_ptr,
+            int N, int b, int B, Span<int> lowband, int lowband_ptr,
             int LM,
             int gain, int fill)
         {
@@ -1143,7 +1143,7 @@ namespace Concentus.Celt
                                 cm = (uint)fill;
                             }
 
-                            VQ.renormalise_vector(X.AsSpan().Slice(X_ptr), N, gain);
+                            VQ.renormalise_vector(X.Slice(X_ptr), N, gain);
                         }
                     }
                 }
@@ -1160,10 +1160,10 @@ namespace Concentus.Celt
                      };
 
         /* This function is responsible for encoding and decoding a band for the mono case. */
-        internal static uint quant_band(band_ctx ctx, int[] X, int X_ptr,
-              int N, int b, int B, int[] lowband, int lowband_ptr,
-              int LM, int[] lowband_out, int lowband_out_ptr,
-              int gain, int[] lowband_scratch, int lowband_scratch_ptr, int fill)
+        internal static uint quant_band(band_ctx ctx, Span<int> X, int X_ptr,
+              int N, int b, int B, Span<int> lowband, int lowband_ptr,
+              int LM, Span<int> lowband_out, int lowband_out_ptr,
+              int gain, Span<int> lowband_scratch, int lowband_scratch_ptr, int fill)
         {
             int N0 = N;
             int N_B = N;
@@ -1197,7 +1197,7 @@ namespace Concentus.Celt
 
             if (lowband_scratch != null && lowband != null && (recombine != 0 || ((N_B & 1) == 0 && tf_change < 0) || B0 > 1))
             {
-                Array.Copy(lowband, lowband_ptr, lowband_scratch, lowband_scratch_ptr, N);
+                lowband.Slice(lowband_ptr, N).CopyTo(lowband_scratch.Slice(lowband_scratch_ptr, N));
                 lowband = lowband_scratch;
                 lowband_ptr = lowband_scratch_ptr;
             }
@@ -1281,10 +1281,10 @@ namespace Concentus.Celt
         }
 
         /* This function is responsible for encoding and decoding a band for the stereo case. */
-        internal static uint quant_band_stereo(band_ctx ctx, int[] X, int X_ptr, int[] Y, int Y_ptr,
-              int N, int b, int B, int[] lowband, int lowband_ptr,
-              int LM, int[] lowband_out, int lowband_out_ptr,
-              int[] lowband_scratch, int lowband_scratch_ptr, int fill)
+        internal static uint quant_band_stereo(band_ctx ctx, Span<int> X, int X_ptr, Span<int> Y, int Y_ptr,
+              int N, int b, int B, Span<int> lowband, int lowband_ptr,
+              int LM, Span<int> lowband_out, int lowband_out_ptr,
+              Span<int> lowband_scratch, int lowband_scratch_ptr, int fill)
         {
             int imid = 0, iside = 0;
             int inv = 0;
@@ -1328,7 +1328,7 @@ namespace Concentus.Celt
             {
                 int c;
                 int sign = 0;
-                int[] x2, y2;
+                Span<int> x2, y2;
                 int x2_ptr, y2_ptr;
                 mbits = b;
                 sbits = 0;
@@ -1442,7 +1442,7 @@ namespace Concentus.Celt
             {
                 if (N != 2)
                 {
-                    stereo_merge(X.AsSpan().Slice(X_ptr), Y.AsSpan().Slice(Y_ptr), mid, N);
+                    stereo_merge(X.Slice(X_ptr), Y.Slice(Y_ptr), mid, N);
                 }
                 if (inv != 0)
                 {

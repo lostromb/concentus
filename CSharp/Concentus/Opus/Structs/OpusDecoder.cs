@@ -202,8 +202,8 @@ namespace Concentus.Structs
         
         private static readonly byte[] SILENCE = { 0xFF, 0xFF };
 
-        internal int opus_decode_frame(byte[] data, int data_ptr,
-      int len, short[] pcm, int pcm_ptr, int frame_size, int decode_fec)
+        internal int opus_decode_frame(Memory<byte> data, int data_ptr,
+      int len, Span<short> pcm, int pcm_ptr, int frame_size, int decode_fec)
         {
             SilkDecoder silk_dec;
             CeltDecoder celt_dec;
@@ -253,7 +253,7 @@ namespace Concentus.Structs
                 /* In that case, don't conceal more than what the ToC says */
                 frame_size = Inlines.IMIN(frame_size, this.frame_size);
             }
-            if (data != null)
+            if (!data.IsEmpty)
             {
                 audiosize = this.frame_size;
                 mode = this.mode;
@@ -305,7 +305,7 @@ namespace Concentus.Structs
 
             pcm_transition_silk_size = 0;
             pcm_transition_celt_size = 0;
-            if (data != null && this.prev_mode > 0 && (
+            if (!data.IsEmpty && this.prev_mode > 0 && (
                 (mode == OpusMode.MODE_CELT_ONLY && this.prev_mode != OpusMode.MODE_CELT_ONLY && (this.prev_redundancy == 0))
              || (mode != OpusMode.MODE_CELT_ONLY && this.prev_mode == OpusMode.MODE_CELT_ONLY))
                )
@@ -341,7 +341,7 @@ namespace Concentus.Structs
             if (mode != OpusMode.MODE_CELT_ONLY)
             {
                 int lost_flag, decoded_samples;
-                short[] pcm_ptr2;
+                Span<short> pcm_ptr2;
                 int pcm_ptr2_ptr = 0;
 
                 if (celt_accum != 0)
@@ -361,7 +361,7 @@ namespace Concentus.Structs
                 /* The SILK PLC cannot produce frames of less than 10 ms */
                 this.DecControl.payloadSize_ms = Inlines.IMAX(10, 1000 * audiosize / this.Fs);
 
-                if (data != null)
+                if (!data.IsEmpty)
                 {
                     this.DecControl.nChannelsInternal = this.stream_channels;
                     if (mode == OpusMode.MODE_SILK_ONLY)
@@ -389,7 +389,7 @@ namespace Concentus.Structs
                     }
                 }
 
-                lost_flag = data == null ? 1 : 2 * decode_fec;
+                lost_flag = data.IsEmpty ? 1 : 2 * decode_fec;
                 decoded_samples = 0;
                 do
                 {
@@ -416,7 +416,7 @@ namespace Concentus.Structs
             }
 
             start_band = 0;
-            if (decode_fec == 0 && mode != OpusMode.MODE_CELT_ONLY && data != null
+            if (decode_fec == 0 && mode != OpusMode.MODE_CELT_ONLY && !data.IsEmpty
              && dec.tell() + 17 + 20 * (this.mode == OpusMode.MODE_HYBRID ? 1 : 0) <= 8 * len)
             {
                 /* Check if we have a redundant 0-8 kHz band */
@@ -601,8 +601,8 @@ namespace Concentus.Structs
             return celt_ret < 0 ? celt_ret : audiosize;
         }
 
-        internal int opus_decode_native(byte[] data, int data_ptr,
-          int len, short[] pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
+        internal int opus_decode_native(Memory<byte> data, int data_ptr,
+          int len, Span<short> pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
           int self_delimited, out int packet_offset, int soft_clip)
         {
             int i, nb_samples;
@@ -618,9 +618,9 @@ namespace Concentus.Structs
             if (decode_fec < 0 || decode_fec > 1)
                 return OpusError.OPUS_BAD_ARG;
             /* For FEC/PLC, frame_size has to be to have a multiple of 2.5 ms */
-            if ((decode_fec != 0 || len == 0 || data == null) && frame_size % (this.Fs / 400) != 0)
+            if ((decode_fec != 0 || len == 0 || data.IsEmpty) && frame_size % (this.Fs / 400) != 0)
                 return OpusError.OPUS_BAD_ARG;
-            if (len == 0 || data == null)
+            if (len == 0 || data.IsEmpty)
             {
                 int pcm_count = 0;
                 do
@@ -638,12 +638,12 @@ namespace Concentus.Structs
             else if (len < 0)
                 return OpusError.OPUS_BAD_ARG;
 
-            packet_mode = OpusPacketInfo.GetEncoderMode(data, data_ptr);
-            packet_bandwidth = OpusPacketInfo.GetBandwidth(data, data_ptr);
-            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, this.Fs);
-            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data, data_ptr);
+            packet_mode = OpusPacketInfo.GetEncoderMode(data.Span, data_ptr);
+            packet_bandwidth = OpusPacketInfo.GetBandwidth(data.Span, data_ptr);
+            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data.Span, data_ptr, this.Fs);
+            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data.Span, data_ptr);
             
-            count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out toc, null, null, 0,
+            count = OpusPacketInfo.opus_packet_parse_impl(data.Span, data_ptr, len, self_delimited, out toc, null, null, 0,
                                            size, 0, out offset, out packet_offset);
 
             if (count < 0)

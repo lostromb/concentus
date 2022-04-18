@@ -238,7 +238,7 @@ namespace Concentus.Celt
                 {
                     intra_bits = new byte[(int)save_bytes];
                     /* Copy bits from intra bit-stream */
-                    Array.Copy(enc_intra_state.buf, intra_buf, intra_bits, 0, (int)save_bytes);
+                    enc_intra_state.buf.Span.Slice(intra_buf, (int)save_bytes).CopyTo(intra_bits);
                 }
 
                 enc.Assign(enc_start_state);
@@ -252,7 +252,7 @@ namespace Concentus.Celt
                     /* Copy intra bits to bit-stream */
                     if (intra_bits != null)
                     {
-                        Array.Copy(intra_bits, 0, enc_intra_state.buf, intra_buf, (int)(nintra_bytes - nstart_bytes));
+                        intra_bits.AsSpan(0, (int)(nintra_bytes - nstart_bytes)).CopyTo(enc_intra_state.buf.Span.Slice(intra_buf));
                     }
                     Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
                     Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);
@@ -502,7 +502,7 @@ namespace Concentus.Celt
         /// <param name="bandLogE"></param>
         /// <param name="C"></param>
         internal static void amp2Log2(CeltMode m, int effEnd, int end,
-              int[] bandE, int[] bandLogE, int bandLogE_ptr, int C)
+              int[] bandE, Span<int> bandLogE, int bandLogE_ptr, int C)
         {
             int c, i;
             c = 0;

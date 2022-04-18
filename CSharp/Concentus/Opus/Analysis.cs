@@ -153,7 +153,7 @@ namespace Concentus
         /// <param name="C"></param>
         /// <param name="lsb_depth"></param>
         /// <param name="downmix"></param>
-        internal static void tonality_analysis<T>(TonalityAnalysisState tonal, CeltMode celt_mode, T[] x, int x_ptr, int len, int offset, int c1, int c2, int C, int lsb_depth, Downmix.downmix_func<T> downmix)
+        internal static void tonality_analysis<T>(TonalityAnalysisState tonal, CeltMode celt_mode, Span<T> x, int x_ptr, int len, int offset, int c1, int c2, int C, int lsb_depth, Downmix.downmix_func<T> downmix)
         {
             int i, b;
             FFTState kfft;
@@ -558,7 +558,7 @@ namespace Concentus
             info.valid = 1;
         }
 
-        internal static void run_analysis<T>(TonalityAnalysisState analysis, CeltMode celt_mode, T[] analysis_pcm, int analysis_pcm_ptr,
+        internal static void run_analysis<T>(TonalityAnalysisState analysis, CeltMode celt_mode, Span<T> analysis_pcm, int analysis_pcm_ptr,
                          int analysis_frame_size, int frame_size, int c1, int c2, int C, int Fs,
                          int lsb_depth, Downmix.downmix_func<T> downmix, AnalysisInfo analysis_info)
         {

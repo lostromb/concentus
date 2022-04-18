@@ -74,7 +74,7 @@ namespace Concentus.Silk
             int lostFlag,           /* I    0: no loss, 1 loss, 2 decode fec                */
             int newPacketFlag,      /* I    Indicates first decoder call for this packet    */
             EntropyCoder psRangeDec,        /* I/O  Compressor data structure                       */
-            short[] samplesOut,        /* O    Decoded output speech vector                    */
+            Span<short> samplesOut,        /* O    Decoded output speech vector                    */
             int samplesOut_ptr,
             out int nSamplesOut       /* O    Number of samples decoded                       */
         )
@@ -82,13 +82,13 @@ namespace Concentus.Silk
             int i, n, decode_only_middle = 0, ret = SilkError.SILK_NO_ERROR;
             int LBRR_symbol;
             BoxedValueInt nSamplesOutDec = new BoxedValueInt();
-            short[] samplesOut_tmp;
+            Span<short> samplesOut_tmp;
             int[] samplesOut_tmp_ptrs = new int[2];
             short[] samplesOut1_tmp_storage1;
             short[] samplesOut1_tmp_storage2;
             short[] samplesOut2_tmp;
             int[] MS_pred_Q13 = new int[] { 0, 0 };
-            short[] resample_out;
+            Span<short> resample_out;
             int resample_out_ptr;
             SilkChannelDecoder[] channel_state = psDec.channel_state;
             int has_side;
@@ -349,6 +349,7 @@ namespace Concentus.Silk
                     {
                         condCoding = SilkConstants.CODE_CONDITIONALLY;
                     }
+
                     ret += channel_state[n].silk_decode_frame(psRangeDec, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec, lostFlag, condCoding);
                 }
                 else

@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     /// <summary>
@@ -95,7 +96,7 @@ namespace Concentus.Silk
         /// <returns>0 if success</returns>
         internal static int silk_VAD_GetSA_Q8(
             SilkChannelEncoder psEncC,
-            short[] pIn,
+            Span<short> pIn,
             int pIn_ptr)
         {
             int SA_Q15, pSNR_dB_Q7, input_tilt;

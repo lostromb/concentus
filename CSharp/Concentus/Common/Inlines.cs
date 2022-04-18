@@ -770,7 +770,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_maxabs16(int[] x, int x_ptr, int len)
+        public static int celt_maxabs16(Span<int> x, int x_ptr, int len)
         {
             int i;
             int maxval = 0;
@@ -798,7 +798,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_maxabs32(int[] x, int x_ptr, int len)
+        public static int celt_maxabs32(Span<int> x, int x_ptr, int len)
         {
             int i;
             int maxval = 0;
@@ -812,7 +812,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short celt_maxabs32(short[] x, int x_ptr, int len)
+        public static short celt_maxabs32(Span<short> x, int x_ptr, int len)
         {
             int i;
             short maxval = 0;
@@ -2511,9 +2511,9 @@ namespace Concentus.Common
         /* Copy and multiply a vector by a constant */
         [MethodImpl(INLINE_ATTR)]
         public static void silk_scale_copy_vector16(
-            short[] data_out,
+            Span<short> data_out,
             int data_out_ptr,
-        short[] data_in,
+        Span<short> data_in,
         int data_in_ptr,
         int gain_Q16,           /* I    Gain in Q16                                                 */
         int dataSize            /* I    Length                                                      */

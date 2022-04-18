@@ -139,7 +139,7 @@ namespace Concentus.Silk
             BoxedValueInt ratio_Q14,
             short[] x,
             short[] y,
-            int[] mid_res_amp_Q0,
+            Span<int> mid_res_amp_Q0,
             int mid_res_amp_Q0_ptr,
             int length,
             int smooth_coef_Q16)
@@ -198,9 +198,9 @@ namespace Concentus.Silk
         /// <param name="frame_length">I    Number of samples</param>
         internal static void silk_stereo_LR_to_MS(
             StereoEncodeState state,
-            short[] x1,
+            Span<short> x1,
             int x1_ptr,
-            short[] x2,
+            Span<short> x2,
             int x2_ptr,
             sbyte[][] ix,
             BoxedValueSbyte mid_only_flag,
@@ -236,9 +236,9 @@ namespace Concentus.Silk
             }
 
             /* Buffering */
-            Array.Copy(state.sMid, 0, x1, mid, 2);
+            state.sMid.AsSpan(0, 2).CopyTo(x1.Slice(mid));
             Array.Copy(state.sSide, side, 2);
-            Array.Copy(x1, mid + frame_length, state.sMid, 0, 2);
+            x1.Slice(mid + frame_length, 2).CopyTo(state.sMid);
             Array.Copy(side, frame_length, state.sSide, 0, 2);
 
             /* LP and HP filter mid signal */
@@ -426,9 +426,9 @@ namespace Concentus.Silk
         /// <param name="frame_length">I    Number of samples</param>
         internal static void silk_stereo_MS_to_LR(
             StereoDecodeState state,
-            short[] x1,
+            Span<short> x1,
             int x1_ptr,
-            short[] x2,
+            Span<short> x2,
             int x2_ptr,
             int[] pred_Q13,
             int fs_kHz,

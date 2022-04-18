@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     /// <summary>
@@ -50,7 +51,7 @@ namespace Concentus.Silk
         /// <param name="len">I    number of OUTPUT samples</param>
         internal static void combine_pulses(
             int[] output,
-            int[] input,
+            Span<int> input,
             int input_ptr,
             int len)
         {
@@ -102,7 +103,7 @@ namespace Concentus.Silk
         internal static void decode_split(
             short[] p_child1,
             int child1_ptr,
-            short[] p_child2,
+            Span<short> p_child2,
             int p_child2_ptr,
             EntropyCoder psRangeDec,
             int p,
@@ -125,7 +126,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  compressor data structure</param>
         /// <param name="pulses0">I    data: nonnegative pulse amplitudes</param>
-        internal static void silk_shell_encoder(EntropyCoder psRangeEnc, int[] pulses0, int pulses0_ptr)
+        internal static void silk_shell_encoder(EntropyCoder psRangeEnc, Span<int> pulses0, int pulses0_ptr)
         {
             int[] pulses1 = new int[8];
             int[] pulses2 = new int[4];

@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class EncodePulses
@@ -49,9 +50,9 @@ namespace Concentus.Silk
         /// <param name="len">I    number of output values</param>
         /// <returns>return ok</returns>
         internal static int combine_and_check(
-            int[] pulses_comb,
+            Span<int> pulses_comb,
             int pulses_comb_ptr,
-            int[] pulses_in,
+            Span<int> pulses_in,
             int pulses_in_ptr,
             int max_pulses,
             int len)
@@ -107,7 +108,7 @@ namespace Concentus.Silk
             EntropyCoder psRangeEnc,
             int signalType,
             int quantOffsetType,
-            sbyte[] pulses,
+            Span<sbyte> pulses,
             int frame_length)
         {
             int i, k, j, iter, bit, nLS, scale_down, RateLevelIndex = 0;

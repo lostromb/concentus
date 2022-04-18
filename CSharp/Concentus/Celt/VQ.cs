@@ -44,7 +44,7 @@ namespace Concentus.Celt
 
     internal static class VQ
     {
-        internal static void exp_rotation1(int[] X, int X_ptr, int len, int stride, int c, int s)
+        internal static void exp_rotation1(Span<int> X, int X_ptr, int len, int stride, int c, int s)
         {
             int i;
             int ms;
@@ -74,7 +74,7 @@ namespace Concentus.Celt
 
         private static int[] SPREAD_FACTOR = { 15, 10, 5 };
         
-        internal static void exp_rotation(int[] X, int X_ptr, int len, int dir, int stride, int K, int spread)
+        internal static void exp_rotation(Span<int> X, int X_ptr, int len, int dir, int stride, int K, int spread)
         {
             int i;
             int c, s;
@@ -134,7 +134,7 @@ namespace Concentus.Celt
 
         /** Takes the pitch vector and the decoded residual vector, computes the gain
             that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-        internal static void normalise_residual(int[] iy, int[] X, int X_ptr,
+        internal static void normalise_residual(int[] iy, Span<int> X, int X_ptr,
               int N, int Ryy, int gain)
         {
             int i;
@@ -180,7 +180,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        internal static uint alg_quant(int[] X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc
+        internal static uint alg_quant(Span<int> X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc
            )
         {
             int[] y = new int[N];
@@ -335,7 +335,7 @@ namespace Concentus.Celt
 
         /** Decode pulse vector and combine the result with the pitch vector to produce
             the final normalised signal in the current band. */
-        internal static uint alg_unquant(int[] X, int X_ptr, int N, int K, int spread, int B,
+        internal static uint alg_unquant(Span<int> X, int X_ptr, int N, int K, int spread, int B,
               EntropyCoder dec, int gain)
         {
             int Ryy;

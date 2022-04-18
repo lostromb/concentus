@@ -82,7 +82,7 @@ namespace Concentus
             return toc;
         }
 
-        internal static void hp_cutoff(short[] input, int input_ptr, int cutoff_Hz, short[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
+        internal static void hp_cutoff(Span<short> input, int input_ptr, int cutoff_Hz, Span<short> output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
         {
             int[] B_Q28 = new int[3];
             int[] A_Q28 = new int[2];
@@ -112,7 +112,7 @@ namespace Concentus
             }
         }
 
-        internal static void dc_reject(short[] input, int input_ptr, int cutoff_Hz, short[] output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
+        internal static void dc_reject(Span<short> input, int input_ptr, int cutoff_Hz, Span<short> output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
         {
             int c, i;
             int shift;
@@ -220,7 +220,7 @@ namespace Concentus
         private const int MAX_DYNAMIC_FRAMESIZE = 24;
 
         /* Estimates how much the bitrate will be boosted based on the sub-frame energy */
-        internal static float transient_boost(float[] E, int E_ptr, float[] E_1, int LM, int maxM)
+        internal static float transient_boost(Span<float> E, int E_ptr, float[] E_1, int LM, int maxM)
         {
             int i;
             int M;
@@ -350,7 +350,7 @@ namespace Concentus
             return best_state;
         }
 
-        internal static int optimize_framesize<T>(T[] x, int x_ptr, int len, int C, int Fs,
+        internal static int optimize_framesize<T>(Span<T> x, int x_ptr, int len, int C, int Fs,
                         int bitrate, int tonality, float[] mem, int buffering,
                         Downmix.downmix_func<T> downmix)
         {
@@ -445,7 +445,7 @@ namespace Concentus
             return new_size;
         }
 
-        internal static int compute_frame_size<T>(T[] analysis_pcm, int analysis_pcm_ptr, int frame_size,
+        internal static int compute_frame_size<T>(Span<T> analysis_pcm, int analysis_pcm_ptr, int frame_size,
               OpusFramesize variable_duration, int C, int Fs, int bitrate_bps,
               int delay_compensation, Downmix.downmix_func<T> downmix, float[] subframe_mem, bool analysis_enabled
               )
@@ -470,7 +470,7 @@ namespace Concentus
             return frame_size;
         }
 
-        internal static int compute_stereo_width(short[] pcm, int pcm_ptr, int frame_size, int Fs, StereoWidthState mem)
+        internal static int compute_stereo_width(Span<short> pcm, int pcm_ptr, int frame_size, int Fs, StereoWidthState mem)
         {
             int corr;
             int ldiff;
@@ -550,8 +550,8 @@ namespace Concentus
             return Inlines.EXTRACT16(Inlines.MIN32(CeltConstants.Q15ONE, 20 * mem.max_follower));
         }
 
-        internal static void smooth_fade(short[] in1, int in1_ptr, short[] in2, int in2_ptr,
-              short[] output, int output_ptr, int overlap, int channels,
+        internal static void smooth_fade(Span<short> in1, int in1_ptr, Span<short> in2, int in2_ptr,
+              Span<short> output, int output_ptr, int overlap, int channels,
                 int[] window, int Fs)
         {
             int i, c;

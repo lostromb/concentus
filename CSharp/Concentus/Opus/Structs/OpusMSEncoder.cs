@@ -89,7 +89,7 @@ namespace Concentus.Structs
         #region Encoder API functions
 
         internal delegate void opus_copy_channel_in_func<T>(
-            short[] dst, int dst_ptr, int dst_stride, T[] src, int src_ptr, int src_stride, int src_channel, int frame_size);
+            Span<short> dst, int dst_ptr, int dst_stride, Span<T> src, int src_ptr, int src_stride, int src_channel, int frame_size);
 
         internal static int validate_encoder_layout(ChannelLayout layout)
         {
@@ -601,7 +601,7 @@ namespace Concentus.Structs
             T[] pcm,
             int pcm_ptr,
             int analysis_frame_size,
-            byte[] data,
+            Span<byte> data,
             int data_ptr,
             int max_data_bytes,
             int lsb_depth,
@@ -801,10 +801,10 @@ namespace Concentus.Structs
         }
 
         internal static void opus_copy_channel_in_float(
-          short[] dst,
+          Span<short> dst,
           int dst_ptr,
           int dst_stride,
-          float[] src,
+          Span<float> src,
           int src_ptr,
           int src_stride,
           int src_channel,
@@ -817,10 +817,10 @@ namespace Concentus.Structs
         }
 
         internal static void opus_copy_channel_in_short(
-          short[] dst,
+          Span<short> dst,
           int dst_ptr,
           int dst_stride,
-          short[] src,
+          Span<short> src,
           int src_ptr,
           int src_stride,
           int src_channel,

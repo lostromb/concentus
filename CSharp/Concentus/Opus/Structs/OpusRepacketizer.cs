@@ -82,7 +82,7 @@ namespace Concentus.Structs
             this.Reset();
         }
 
-        internal int opus_repacketizer_cat_impl(byte[] data, int data_ptr, int len, int self_delimited)
+        internal int opus_repacketizer_cat_impl(Span<byte> data, int data_ptr, int len, int self_delimited)
         {
             byte dummy_toc;
             int dummy_offset;
@@ -167,7 +167,7 @@ namespace Concentus.Structs
   *                              audio stored in the repacketizer state to more
   *                              than 120 ms.
   */
-        public int AddPacket(byte[] data, int data_offset, int len)
+        public int AddPacket(Span<byte> data, int data_offset, int len)
         {
             return opus_repacketizer_cat_impl(data, data_offset, len, 0);
         }
@@ -188,7 +188,7 @@ namespace Concentus.Structs
         }
 
         internal int opus_repacketizer_out_range_impl(int begin, int end,
-              byte[] data, int data_ptr, int maxlen, int self_delimited, int pad)
+              Span<byte> data, int data_ptr, int maxlen, int self_delimited, int pad)
         {
             int i, count;
             int tot_size;
@@ -317,7 +317,7 @@ namespace Concentus.Structs
                 }
                 else
                 {
-                    Array.Copy(this.frames[i], frames_ptrs[i], data, ptr, this.len[i]);
+                    this.frames[i].AsSpan(frames_ptrs[i], this.len[i]).CopyTo(data.Slice(ptr));
                 }
                 ptr += this.len[i];
             }
@@ -418,7 +418,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadPacket(byte[] data, int data_offset, int len, int new_len)
+        public static int PadPacket(Span<byte> data, int data_offset, int len, int new_len)
         {
             OpusRepacketizer rp = new OpusRepacketizer();
             int ret;

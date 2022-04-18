@@ -57,9 +57,9 @@ namespace Concentus
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <param name="C"></param>
-        public delegate void downmix_func<T>(T[] _x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C);
+        public delegate void downmix_func<T>(Span<T> _x, int x_ptr, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C);
 
-        internal static void downmix_float(float[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
+        internal static void downmix_float(Span<float> x, int x_ptr, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
         {
             int scale;
             int j;
@@ -92,7 +92,7 @@ namespace Concentus
                 sub[sub_ptr + j] *= scale;
         }
 
-        internal static void downmix_int(short[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
+        internal static void downmix_int(Span<short> x, int x_ptr, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
         {
             int scale;
             int j;

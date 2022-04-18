@@ -53,7 +53,7 @@ namespace Concentus.Silk
         /// <param name="length">I    Length</param>
         /// <param name="rand_seed">I/O  Seed to random index generator</param>
         internal static void silk_CNG_exc(
-            int[] exc_Q10,
+            Span<int> exc_Q10,
             int exc_Q10_ptr,
             int[] exc_buf_Q14,
             int Gain_Q16,
@@ -112,7 +112,7 @@ namespace Concentus.Silk
         internal static void silk_CNG(
             SilkChannelDecoder psDec,
             SilkDecoderControl psDecCtrl,
-            short[] frame,
+            Span<short> frame,
             int frame_ptr,
             int length)
         {

@@ -208,7 +208,7 @@ namespace Concentus.Celt
         }
 
         // Fixme: remove pointers and optimize
-        internal static void pitch_search(int[] x_lp, int x_lp_ptr, int[] y,
+        internal static void pitch_search(Span<int> x_lp, int x_lp_ptr, int[] y,
                   int len, int max_pitch, out int pitch)
         {
             int i, j;

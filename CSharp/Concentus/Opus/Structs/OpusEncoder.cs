@@ -185,6 +185,7 @@ namespace Concentus.Structs
         /// <summary>
         /// Deprecated. Just use the regular constructor
         /// </summary>
+        [Obsolete("Just use new OpusEncoder()")]
         public static OpusEncoder Create(int Fs, int channels, OpusApplication application)
         {
             return new OpusEncoder(Fs, channels, application);
@@ -201,23 +202,26 @@ namespace Concentus.Structs
         /// <param name="Fs">Sampling rate of input signal (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
         /// <param name="channels">Number of channels (1 or 2) in input signal</param>
         /// <param name="application">There are three coding modes:
-        /// 
+        /// <para>
         /// OPUS_APPLICATION_VOIP gives best quality at a given bitrate for voice
-        /// signals.It enhances the  input signal by high-pass filtering and
-        /// emphasizing formants and harmonics.Optionally it includes in-band
-        /// forward error correction to protect against packet loss.Use this
+        /// signals. It enhances the input signal by high-pass filtering and
+        /// emphasizing formants and harmonics. Optionally it includes in-band
+        /// forward error correction to protect against packet loss. Use this
         /// mode for typical VoIP applications.Because of the enhancement,
         /// even at high bitrates the output may sound different from the input.
-        ///
+        /// </para>
+        /// <para>
         /// OPUS_APPLICATION_AUDIO gives best quality at a given bitrate for most
         /// non-voice signals like music. Use this mode for music and mixed
-        ///    (music/voice) content, broadcast, and applications requiring less
-        ///    than 15 ms of coding delay.
-        ///
+        /// (music/voice) content, broadcast, and applications requiring less
+        /// than 15 ms of coding delay.
+        /// </para>
+        /// <para>
         /// OPUS_APPLICATION_RESTRICTED_LOWDELAY configures low-delay mode that
         /// disables the speech-optimized mode in exchange for slightly reduced delay.
         /// This mode can only be set on an newly initialized or freshly reset encoder
-        /// because it changes the codec delay.</param>
+        /// because it changes the codec delay.
+        /// </para></param>
         /// <returns>The created encoder</returns>
         public OpusEncoder(int Fs, int channels, OpusApplication application)
         {
@@ -351,9 +355,9 @@ namespace Concentus.Structs
         /// <param name="downmix"></param>
         /// <param name="float_api"></param>
         /// <returns></returns>
-        internal int opus_encode_native<T>(short[] pcm, int pcm_ptr, int frame_size,
-                        byte[] data, int data_ptr, int out_data_bytes, int lsb_depth,
-                        T[] analysis_pcm, int analysis_pcm_ptr, int analysis_size, int c1, int c2,
+        internal int opus_encode_native<T>(Span<short> pcm, int pcm_ptr, int frame_size,
+                        Memory<byte> data, int data_ptr, int out_data_bytes, int lsb_depth,
+                        Span<T> analysis_pcm, int analysis_pcm_ptr, int analysis_size, int c1, int c2,
                         int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
         {
             SilkEncoder silk_enc;
@@ -421,7 +425,7 @@ namespace Concentus.Structs
                     analysis_read_subframe_bak = this.analysis.read_subframe;
                     Analysis.run_analysis<T>(this.analysis,
                         celt_mode,
-                        analysis_pcm != null ? analysis_pcm : null,
+                        analysis_pcm,
                         analysis_pcm_ptr,
                         analysis_size,
                         frame_size,
@@ -497,11 +501,11 @@ namespace Concentus.Structs
                     bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
                 else if (tocmode == OpusMode.MODE_HYBRID && bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-                data[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
+                data.Span[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
-                    ret = OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes);
+                    ret = OpusRepacketizer.PadPacket(data.Span, data_ptr, ret, max_data_bytes);
                     if (ret == OpusError.OPUS_OK)
                         ret = max_data_bytes;
                 }
@@ -849,7 +853,7 @@ namespace Concentus.Structs
                     repacketize_len = out_data_bytes;
                 else
                     repacketize_len = Inlines.IMIN(3 * this.bitrate_bps / (3 * 8 * 50 / nb_frames), out_data_bytes);
-                ret = rp.opus_repacketizer_out_range_impl(0, nb_frames, data, data_ptr, repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
+                ret = rp.opus_repacketizer_out_range_impl(0, nb_frames, data.Span, data_ptr, repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
                 if (ret < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -1082,7 +1086,7 @@ namespace Concentus.Structs
                 if (nBytes == 0)
                 {
                     this.rangeFinal = 0;
-                    data[data_ptr - 1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+                    data.Span[data_ptr - 1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
                     return 1;
                 }
@@ -1346,7 +1350,7 @@ namespace Concentus.Structs
 
             /* Signalling the mode in the first byte */
             data_ptr -= 1;
-            data[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+            data.Span[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
             this.rangeFinal = enc.rng ^ redundant_rng;
 
@@ -1367,7 +1371,7 @@ namespace Concentus.Structs
                 {
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
                 }
-                data[data_ptr + 1] = 0;
+                data.Span[data_ptr + 1] = 0;
                 ret = 1;
                 this.rangeFinal = 0;
             }
@@ -1379,13 +1383,13 @@ namespace Concentus.Structs
                   fill these in. This can't be done when the MDCT
                   modes are used because the decoder needs to know
                   the actual length for allocation purposes.*/
-                while (ret > 2 && data[data_ptr + ret] == 0) ret--;
+                while (ret > 2 && data.Span[data_ptr + ret] == 0) ret--;
             }
             /* Count ToC and redundancy */
             ret += 1 + redundancy_bytes;
             if (this.use_vbr == 0)
             {
-                if (OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK)
+                if (OpusRepacketizer.PadPacket(data.Span, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
@@ -1438,12 +1442,17 @@ namespace Concentus.Structs
         public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
+            return Encode(in_pcm.AsSpan(pcm_offset), frame_size, out_data.AsMemory(out_data_offset), max_data_bytes);
+        }
+
+        public int Encode(Span<short> in_pcm, int frame_size, Memory<byte> out_data, int max_data_bytes)
+        {
             // Check that the caller is telling the truth about its input buffers
-            if (out_data_offset + max_data_bytes > out_data.Length)
+            if (max_data_bytes > out_data.Length)
             {
                 throw new ArgumentException(string.Format(
                     "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
-                    max_data_bytes, out_data.Length - out_data_offset));
+                    max_data_bytes, out_data.Length));
             }
             
             int delay_compensation;
@@ -1452,22 +1461,22 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, pcm_offset, frame_size,
+            int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, 0, frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_int, this.analysis.subframe_mem, this.analysis.enabled);
 
             // Check that input pcm length is >= frame_size
-            if (pcm_offset + internal_frame_size > in_pcm.Length)
+            if (internal_frame_size > in_pcm.Length)
             {
                 throw new ArgumentException(string.Format(
                     "Not enough samples provided in input signal: Expected {0} samples, found {1}",
-                    internal_frame_size, in_pcm.Length - pcm_offset));
+                    internal_frame_size, in_pcm.Length));
             }
 
             try
             {
-                int ret = opus_encode_native<short>(in_pcm, pcm_offset, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
-                                         in_pcm, pcm_offset, frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
+                int ret = opus_encode_native<short>(in_pcm, 0, internal_frame_size, out_data, 0, max_data_bytes, 16,
+                                         in_pcm, 0, frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
 
                 if (ret < 0)
                 {
@@ -1485,30 +1494,32 @@ namespace Concentus.Structs
             }
         }
 
+        public int Encode(float[] in_pcm, int in_pcm_offset, int frame_size, byte[] out_data, int out_data_offset, int max_data_bytes)
+        {
+            return Encode(in_pcm.AsSpan(in_pcm_offset), frame_size, out_data.AsMemory(out_data_offset), max_data_bytes);
+        }
+
         /// <summary>
         /// Encodes an Opus frame using floating point input.
         /// </summary>
         /// <param name="in_pcm">Input signal in float format (Interleaved if stereo). Length should be at least frame_size * channels.
         /// Value should be normalized to the +/- 1.0 range. Samples with a range beyond +/-1.0 will be clipped.</param>
-        /// <param name="pcm_offset">Offset to use when reading the in_pcm buffer</param>
         /// <param name="frame_size">The number of samples per channel in the inpus signal.
         /// The frame size must be a valid Opus framesize for the given sample rate.
         /// For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
         /// (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.</param>
         /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
-        /// <param name="out_data_offset">The offset to use when writing to the output data buffer</param>
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
-        public int Encode(float[] in_pcm, int pcm_offset, int frame_size,
-                              byte[] out_data, int out_data_offset, int max_data_bytes)
+        public int Encode(Span<float> in_pcm, int frame_size, Memory<byte> out_data, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
-            if (out_data_offset + max_data_bytes > out_data.Length)
+            if (max_data_bytes > out_data.Length)
             {
                 throw new ArgumentException(string.Format(
                     "Output buffer is too small: Stated size is {0} bytes, actual size is {1} bytes",
-                    max_data_bytes, out_data.Length - out_data_offset));
+                    max_data_bytes, out_data.Length));
             }
 
             int i, ret;
@@ -1521,27 +1532,27 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, pcm_offset, frame_size,
+            internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, 0, frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_float, this.analysis.subframe_mem, this.analysis.enabled);
                   
             // Check that input pcm length is >= frame_size
-            if (pcm_offset + internal_frame_size > in_pcm.Length)
+            if (internal_frame_size > in_pcm.Length)
             {
                 throw new ArgumentException(string.Format(
                     "Not enough samples provided in input signal: Expected {0} samples, found {1}",
-                    internal_frame_size, in_pcm.Length - pcm_offset));
+                    internal_frame_size, in_pcm.Length));
             }
 
             input = new short[internal_frame_size * this.channels];
 
             for (i = 0; i < internal_frame_size * this.channels; i++)
-                input[i] = Inlines.FLOAT2INT16(in_pcm[pcm_offset + i]);
+                input[i] = Inlines.FLOAT2INT16(in_pcm[i]);
 
             try
             {
-                ret = opus_encode_native(input, 0, internal_frame_size, out_data, out_data_offset, max_data_bytes, 16,
-                                     in_pcm, pcm_offset, frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
+                ret = opus_encode_native(input, 0, internal_frame_size, out_data, 0, max_data_bytes, 16,
+                                     in_pcm, 0, frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
 
                 if (ret < 0)
                 {
