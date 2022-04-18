@@ -141,7 +141,7 @@ namespace Concentus.Structs
           int frame_size
         );
 
-        internal static int opus_multistream_packet_validate(Span<byte> data, int data_ptr,
+        internal static int opus_multistream_packet_validate(Memory<byte> data, int data_ptr,
             int len, int nb_streams, int Fs)
         {
             int s;
@@ -163,7 +163,7 @@ namespace Concentus.Structs
                 if (count < 0)
                     return count;
 
-                tmp_samples = OpusPacketInfo.GetNumSamples(data, data_ptr, packet_offset, Fs);
+                tmp_samples = OpusPacketInfo.GetNumSamples(data.Span, data_ptr, packet_offset, Fs);
                 if (s != 0 && samples != tmp_samples)
                     return OpusError.OPUS_INVALID_PACKET;
                 samples = tmp_samples;
@@ -210,7 +210,7 @@ namespace Concentus.Structs
             }
             if (do_plc == 0)
             {
-                int ret = opus_multistream_packet_validate(data.Span, data_ptr, len, this.layout.nb_streams, Fs);
+                int ret = opus_multistream_packet_validate(data, data_ptr, len, this.layout.nb_streams, Fs);
                 if (ret < 0)
                 {
                     return ret;

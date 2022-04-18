@@ -643,7 +643,7 @@ namespace Concentus.Structs
             packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data.Span, data_ptr, this.Fs);
             packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data.Span, data_ptr);
             
-            count = OpusPacketInfo.opus_packet_parse_impl(data.Span, data_ptr, len, self_delimited, out toc, null, null, 0,
+            count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out toc, null, null, 0,
                                            size, 0, out offset, out packet_offset);
 
             if (count < 0)

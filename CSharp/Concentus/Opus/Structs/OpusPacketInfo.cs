@@ -84,7 +84,7 @@ namespace Concentus.Structs
 
             int payload_offset;
             byte out_toc;
-            byte[][] frames = new byte[numFrames][];
+            Memory<byte>[] frames = new Memory<byte>[numFrames];
             int[] frames_ptrs = new int[numFrames];
             short[] size = new short[numFrames];
             int packetOffset;
@@ -99,7 +99,7 @@ namespace Concentus.Structs
             for (int c = 0; c < numFrames; c++)
             {
                 byte[] nextFrame = new byte[size[c]];
-                Array.Copy(frames[c], frames_ptrs[c], nextFrame, 0, nextFrame.Length);
+                frames[c].Span.Slice(frames_ptrs[c], nextFrame.Length).CopyTo(nextFrame);
                 copiedFrames.Add(nextFrame);
             }
 
@@ -289,9 +289,9 @@ namespace Concentus.Structs
             }
         }
 
-        internal static int opus_packet_parse_impl(Span<byte> data, int data_ptr, int len,
+        internal static int opus_packet_parse_impl(Memory<byte> data, int data_ptr, int len,
               int self_delimited, out byte out_toc,
-              byte[][] frames, int[] frames_ptrs, int frames_ptr, Span<short> sizes, int sizes_ptr,
+              Memory<byte>[] frames, Span<int> frames_ptrs, int frames_ptr, Span<short> sizes, int sizes_ptr,
               out int payload_offset, out int packet_offset)
         {
             int i, bytes;
@@ -311,10 +311,10 @@ namespace Concentus.Structs
             if (len == 0)
                 return OpusError.OPUS_INVALID_PACKET;
 
-            framesize = GetNumSamplesPerFrame(data, data_ptr, 48000);
+            framesize = GetNumSamplesPerFrame(data.Span, data_ptr, 48000);
 
             cbr = 0;
-            toc = data[data_ptr++];
+            toc = data.Span[data_ptr++];
             len--;
             last_size = len;
             switch (toc & 0x3)
@@ -340,7 +340,7 @@ namespace Concentus.Structs
                 case 2:
                     count = 2;
                     BoxedValueShort boxed_size = new BoxedValueShort(sizes[sizes_ptr]);
-                    bytes = parse_size(data, data_ptr, len, boxed_size);
+                    bytes = parse_size(data.Span, data_ptr, len, boxed_size);
                     sizes[sizes_ptr] = boxed_size.Val;
                     len -= bytes;
                     if (sizes[sizes_ptr] < 0 || sizes[sizes_ptr] > len)
@@ -353,7 +353,7 @@ namespace Concentus.Structs
                     if (len < 1)
                         return OpusError.OPUS_INVALID_PACKET;
                     /* Number of frames encoded in bits 0 to 5 */
-                    ch = data[data_ptr++];
+                    ch = data.Span[data_ptr++];
                     count = ch & 0x3F;
                     if (count <= 0 || framesize * count > 5760)
                         return OpusError.OPUS_INVALID_PACKET;
@@ -367,7 +367,7 @@ namespace Concentus.Structs
                             int tmp;
                             if (len <= 0)
                                 return OpusError.OPUS_INVALID_PACKET;
-                            p = data[data_ptr++];
+                            p = data.Span[data_ptr++];
                             len--;
                             tmp = p == 255 ? 254 : p;
                             len -= tmp;
@@ -385,7 +385,7 @@ namespace Concentus.Structs
                         for (i = 0; i < count - 1; i++)
                         {
                             boxed_size = new BoxedValueShort(sizes[sizes_ptr + i]);
-                            bytes = parse_size(data, data_ptr, len, boxed_size);
+                            bytes = parse_size(data.Span, data_ptr, len, boxed_size);
                             sizes[sizes_ptr + i] = boxed_size.Val;
                             len -= bytes;
                             if (sizes[sizes_ptr + i] < 0 || sizes[sizes_ptr + i] > len)
@@ -412,7 +412,7 @@ namespace Concentus.Structs
             if (self_delimited != 0)
             {
                 BoxedValueShort boxed_size = new BoxedValueShort(sizes[sizes_ptr + count - 1]);
-                bytes = parse_size(data, data_ptr, len, boxed_size);
+                bytes = parse_size(data.Span, data_ptr, len, boxed_size);
                 sizes[sizes_ptr + count - 1] = boxed_size.Val;
                 len -= bytes;
                 if (sizes[sizes_ptr + count - 1] < 0 || sizes[sizes_ptr + count - 1] > len)

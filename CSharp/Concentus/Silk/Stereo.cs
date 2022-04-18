@@ -438,10 +438,10 @@ namespace Concentus.Silk
             int sum, diff, pred0_Q13, pred1_Q13;
 
             /* Buffering */
-            Array.Copy(state.sMid, 0, x1, x1_ptr, 2);
-            Array.Copy(state.sSide, 0, x2, x2_ptr, 2);
-            Array.Copy(x1, x1_ptr + frame_length, state.sMid, 0, 2);
-            Array.Copy(x2, x2_ptr + frame_length, state.sSide, 0, 2);
+            state.sMid.AsSpan(0, 2).CopyTo(x1.Slice(x1_ptr));
+            state.sSide.AsSpan(0, 2).CopyTo(x2.Slice(x2_ptr));
+            x1.Slice(x1_ptr + frame_length, 2).CopyTo(state.sMid);
+            x2.Slice(x2_ptr + frame_length, 2).CopyTo(state.sSide);
 
             /* Interpolate predictors and add prediction to side channel */
             pred0_Q13 = state.pred_prev_Q13[0];

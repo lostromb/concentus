@@ -367,8 +367,8 @@ namespace Concentus.Silk
             else
             {
                 /* Buffering */
-                Array.Copy(psDec.sStereo.sMid, 0, samplesOut_tmp, samplesOut_tmp_ptrs[0], 2);
-                Array.Copy(samplesOut_tmp, samplesOut_tmp_ptrs[0] + nSamplesOutDec.Val, psDec.sStereo.sMid, 0, 2);
+                psDec.sStereo.sMid.AsSpan(0, 2).CopyTo(samplesOut_tmp.Slice(samplesOut_tmp_ptrs[0]));
+                samplesOut_tmp.Slice(samplesOut_tmp_ptrs[0] + nSamplesOutDec.Val, 2).CopyTo(psDec.sStereo.sMid);
             }
 
             /* Number of output samples */
@@ -389,7 +389,7 @@ namespace Concentus.Silk
             if (delay_stack_alloc != 0)
             {
                 samplesOut1_tmp_storage2 = new short[decControl.nChannelsInternal * (channel_state[0].frame_length + 2)];
-                Array.Copy(samplesOut, samplesOut_ptr, samplesOut1_tmp_storage2, 0, decControl.nChannelsInternal * (channel_state[0].frame_length + 2));
+                samplesOut.Slice(samplesOut_ptr, decControl.nChannelsInternal * (channel_state[0].frame_length + 2)).CopyTo(samplesOut1_tmp_storage2);
                 samplesOut_tmp = samplesOut1_tmp_storage2;
                 samplesOut_tmp_ptrs[0] = 0;
                 samplesOut_tmp_ptrs[1] = channel_state[0].frame_length + 2;

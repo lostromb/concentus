@@ -48,7 +48,7 @@ namespace Concentus.Structs
     {
         internal byte toc = 0;
         internal int nb_frames = 0;
-        internal readonly byte[][] frames = new byte[48][];
+        internal readonly Memory<byte>[] frames = new Memory<byte>[48];
         internal readonly int[] frames_ptrs = new int[48];
         internal readonly short[] len = new short[48];
         internal int framesize = 0;
@@ -82,7 +82,7 @@ namespace Concentus.Structs
             this.Reset();
         }
 
-        internal int opus_repacketizer_cat_impl(Span<byte> data, int data_ptr, int len, int self_delimited)
+        internal int opus_repacketizer_cat_impl(Memory<byte> data, int data_ptr, int len, int self_delimited)
         {
             byte dummy_toc;
             int dummy_offset;
@@ -95,15 +95,15 @@ namespace Concentus.Structs
 
             if (this.nb_frames == 0)
             {
-                this.toc = data[data_ptr];
-                this.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, 8000);
+                this.toc = data.Span[data_ptr];
+                this.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data.Span, data_ptr, 8000);
             }
-            else if ((this.toc & 0xFC) != (data[data_ptr] & 0xFC))
+            else if ((this.toc & 0xFC) != (data.Span[data_ptr] & 0xFC))
             {
                 /*fprintf(stderr, "toc mismatch: 0x%x vs 0x%x\n", rp.toc, data[0]);*/
                 return OpusError.OPUS_INVALID_PACKET;
             }
-            curr_nb_frames = OpusPacketInfo.GetNumFrames(data, data_ptr, len);
+            curr_nb_frames = OpusPacketInfo.GetNumFrames(data.Span, data_ptr, len);
             if (curr_nb_frames < 1)
                 return OpusError.OPUS_INVALID_PACKET;
 
@@ -167,7 +167,7 @@ namespace Concentus.Structs
   *                              audio stored in the repacketizer state to more
   *                              than 120 ms.
   */
-        public int AddPacket(Span<byte> data, int data_offset, int len)
+        public int AddPacket(Memory<byte> data, int data_offset, int len)
         {
             return opus_repacketizer_cat_impl(data, data_offset, len, 0);
         }
@@ -309,16 +309,7 @@ namespace Concentus.Structs
             for (i = begin; i < count + begin; i++)
             {
                 
-                if (this.frames[i] == data)
-                {
-                    /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
-                       padding from opus_packet_pad or opus_packet_unpad(). */
-                       Arrays.MemMoveByte(data, frames_ptrs[i], ptr, this.len[i]);
-                }
-                else
-                {
-                    this.frames[i].AsSpan(frames_ptrs[i], this.len[i]).CopyTo(data.Slice(ptr));
-                }
+                this.frames[i].Span.Slice(frames_ptrs[i], this.len[i]).CopyTo(data.Slice(ptr));
                 ptr += this.len[i];
             }
 
@@ -418,7 +409,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadPacket(Span<byte> data, int data_offset, int len, int new_len)
+        public static int PadPacket(Memory<byte> data, int data_offset, int len, int new_len)
         {
             OpusRepacketizer rp = new OpusRepacketizer();
             int ret;
@@ -430,10 +421,10 @@ namespace Concentus.Structs
                 return OpusError.OPUS_BAD_ARG;
             rp.Reset();
             /* Moving payload to the end of the packet so we can do in-place padding */
-            Arrays.MemMoveByte(data, data_offset, data_offset + new_len - len, len);
+            Arrays.MemMoveByte(data.Span, data_offset, data_offset + new_len - len, len);
             //data.MemMoveTo(data.Point(new_len - len), len);
             rp.AddPacket(data, data_offset + new_len - len, len);
-            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, data_offset, new_len, 0, 1);
+            ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data.Span, data_offset, new_len, 0, 1);
             if (ret > 0)
                 return OpusError.OPUS_OK;
             else

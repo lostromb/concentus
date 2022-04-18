@@ -505,7 +505,7 @@ namespace Concentus.Structs
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
-                    ret = OpusRepacketizer.PadPacket(data.Span, data_ptr, ret, max_data_bytes);
+                    ret = OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes);
                     if (ret == OpusError.OPUS_OK)
                         ret = max_data_bytes;
                 }
@@ -1389,7 +1389,7 @@ namespace Concentus.Structs
             ret += 1 + redundancy_bytes;
             if (this.use_vbr == 0)
             {
-                if (OpusRepacketizer.PadPacket(data.Span, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK)
+                if (OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
