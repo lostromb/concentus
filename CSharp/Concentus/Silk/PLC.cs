@@ -63,7 +63,7 @@ namespace Concentus.Silk
         internal static void silk_PLC(
             SilkChannelDecoder psDec,             /* I/O Decoder state        */
             SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
-            short[] frame,            /* I/O  signal              */
+            Span<short> frame,            /* I/O  signal              */
             int frame_ptr,
             int lost               /* I Loss flag              */
         )
@@ -221,7 +221,7 @@ namespace Concentus.Silk
         internal static void silk_PLC_conceal(
             SilkChannelDecoder psDec,             /* I/O Decoder state        */
             SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
-            short[] frame,            /* O LPC residual signal    */
+            Span<short> frame,            /* O LPC residual signal    */
             int frame_ptr
         )
         {
@@ -417,7 +417,7 @@ namespace Concentus.Silk
         /* Glues concealed frames with new good received frames */
         internal static void silk_PLC_glue_frames(
             SilkChannelDecoder psDec,             /* I/O decoder state        */
-            short[] frame,            /* I/O signal               */
+            Span<short> frame,            /* I/O signal               */
             int frame_ptr,
             int length              /* I length of signal       */
         )

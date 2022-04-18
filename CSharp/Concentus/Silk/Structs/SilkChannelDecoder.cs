@@ -270,7 +270,7 @@ namespace Concentus.Silk.Structs
         /****************/
         internal int silk_decode_frame(
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
-            short[] pOut,                         /* O    Pointer to output speech frame              */
+            Span<short> pOut,                         /* O    Pointer to output speech frame              */
             int pOut_ptr,
             BoxedValueInt pN,                            /* O    Pointer to size of output frame             */
             int lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
@@ -335,7 +335,7 @@ namespace Concentus.Silk.Structs
             Inlines.OpusAssert(this.ltp_mem_length >= this.frame_length);
             mv_len = this.ltp_mem_length - this.frame_length;
             Arrays.MemMoveShort(this.outBuf, this.frame_length, 0, mv_len);
-            Array.Copy(pOut, pOut_ptr, this.outBuf, mv_len, this.frame_length);
+            pOut.Slice(pOut_ptr, this.frame_length).CopyTo(this.outBuf.AsSpan(mv_len));
 
             /************************************************/
             /* Comfort noise generation / estimation        */
