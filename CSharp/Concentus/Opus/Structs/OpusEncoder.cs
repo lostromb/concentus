@@ -355,9 +355,9 @@ namespace Concentus.Structs
         /// <param name="downmix"></param>
         /// <param name="float_api"></param>
         /// <returns></returns>
-        internal int opus_encode_native<T>(Span<short> pcm, int pcm_ptr, int frame_size,
+        internal int opus_encode_native<T>(ReadOnlySpan<short> pcm, int pcm_ptr, int frame_size,
                         Memory<byte> data, int data_ptr, int out_data_bytes, int lsb_depth,
-                        Span<T> analysis_pcm, int analysis_pcm_ptr, int analysis_size, int c1, int c2,
+                        ReadOnlySpan<T> analysis_pcm, int analysis_size, int c1, int c2,
                         int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
         {
             SilkEncoder silk_enc;
@@ -426,7 +426,6 @@ namespace Concentus.Structs
                     Analysis.run_analysis<T>(this.analysis,
                         celt_mode,
                         analysis_pcm,
-                        analysis_pcm_ptr,
                         analysis_size,
                         frame_size,
                         c1,
@@ -836,7 +835,7 @@ namespace Concentus.Structs
                         this.user_forced_mode = OpusMode.MODE_CELT_ONLY;
                     tmp_len = opus_encode_native(pcm, pcm_ptr + (i * (this.channels * this.Fs / 50)), this.Fs / 50,
                           tmp_data, i * bytes_per_frame, bytes_per_frame, lsb_depth,
-                          null, 0, 0, c1, c2, analysis_channels, downmix, float_api);
+                          null, 0, c1, c2, analysis_channels, downmix, float_api);
                     if (tmp_len < 0)
                     {
 
@@ -879,7 +878,7 @@ namespace Concentus.Structs
 
             data_ptr += 1;
 
-            enc.enc_init(data, data_ptr, (uint)(max_data_bytes - 1));
+            enc.enc_init(data.Slice(data_ptr), (uint)(max_data_bytes - 1));
 
             pcm_buf = new short[(total_buffer + frame_size) * this.channels];
             Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
@@ -1445,7 +1444,7 @@ namespace Concentus.Structs
             return Encode(in_pcm.AsSpan(pcm_offset), frame_size, out_data.AsMemory(out_data_offset), max_data_bytes);
         }
 
-        public int Encode(Span<short> in_pcm, int frame_size, Memory<byte> out_data, int max_data_bytes)
+        public int Encode(ReadOnlySpan<short> in_pcm, int frame_size, Memory<byte> out_data, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
             if (max_data_bytes > out_data.Length)
@@ -1461,7 +1460,7 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, 0, frame_size,
+            int internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_int, this.analysis.subframe_mem, this.analysis.enabled);
 
@@ -1476,7 +1475,7 @@ namespace Concentus.Structs
             try
             {
                 int ret = opus_encode_native<short>(in_pcm, 0, internal_frame_size, out_data, 0, max_data_bytes, 16,
-                                         in_pcm, 0, frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
+                                         in_pcm, frame_size, 0, -2, this.channels, Downmix.downmix_int, 0);
 
                 if (ret < 0)
                 {
@@ -1512,7 +1511,7 @@ namespace Concentus.Structs
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
-        public int Encode(Span<float> in_pcm, int frame_size, Memory<byte> out_data, int max_data_bytes)
+        public int Encode(ReadOnlySpan<float> in_pcm, int frame_size, Memory<byte> out_data, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
             if (max_data_bytes > out_data.Length)
@@ -1532,7 +1531,7 @@ namespace Concentus.Structs
             else
                 delay_compensation = this.delay_compensation;
 
-            internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, 0, frame_size,
+            internal_frame_size = CodecHelpers.compute_frame_size(in_pcm, frame_size,
                   this.variable_duration, this.channels, this.Fs, this.bitrate_bps,
                   delay_compensation, Downmix.downmix_float, this.analysis.subframe_mem, this.analysis.enabled);
                   
@@ -1552,7 +1551,7 @@ namespace Concentus.Structs
             try
             {
                 ret = opus_encode_native(input, 0, internal_frame_size, out_data, 0, max_data_bytes, 16,
-                                     in_pcm, 0, frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
+                                     in_pcm, frame_size, 0, -2, this.channels, Downmix.downmix_float, 1);
 
                 if (ret < 0)
                 {

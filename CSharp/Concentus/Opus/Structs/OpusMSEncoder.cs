@@ -645,7 +645,7 @@ namespace Concentus.Structs
                 channels = this.layout.nb_streams + this.layout.nb_coupled_streams;
                 delay_compensation = this.encoders[encoder_ptr].Lookahead;
                 delay_compensation -= Fs / 400;
-                frame_size = CodecHelpers.compute_frame_size(pcm, pcm_ptr, analysis_frame_size,
+                frame_size = CodecHelpers.compute_frame_size(pcm.AsSpan(pcm_ptr), analysis_frame_size,
                       this.variable_duration, channels, Fs, this.bitrate_bps,
                       delay_compensation, downmix, this.subframe_mem, this.encoders[encoder_ptr].analysis.enabled);
             }
@@ -782,7 +782,7 @@ namespace Concentus.Structs
                 if (vbr == 0 && s == this.layout.nb_streams - 1)
                     enc.Bitrate = (curr_max * (8 * Fs / frame_size));
                 len = enc.opus_encode_native(buf, 0, frame_size, tmp_data, 0, curr_max, lsb_depth,
-                      pcm, pcm_ptr, analysis_frame_size, c1, c2, this.layout.nb_channels, downmix, float_api);
+                      pcm.AsSpan(pcm_ptr), analysis_frame_size, c1, c2, this.layout.nb_channels, downmix, float_api);
                 if (len < 0)
                 {
                     return len;

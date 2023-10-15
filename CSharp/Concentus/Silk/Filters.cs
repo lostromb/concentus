@@ -227,7 +227,7 @@ namespace Concentus.Silk
         /// <param name="len">I     signal length (must be even)</param>
         /// <param name="stride">I     Operate on interleaved signal if > 1</param>
         internal static void silk_biquad_alt(
-            Span<short> input,
+            ReadOnlySpan<short> input,
             int input_ptr,
             int[] B_Q28,
             int[] A_Q28,
@@ -267,7 +267,7 @@ namespace Concentus.Silk
         }
 
         internal static void silk_biquad_alt(
-            Span<short> input,
+            ReadOnlySpan<short> input,
             int input_ptr,
             int[] B_Q28,
             int[] A_Q28,
