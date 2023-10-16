@@ -41,6 +41,7 @@ namespace Concentus.Celt
     using Concentus.Common.CPlusPlus;
     using System;
     using System.Diagnostics;
+    using System.Numerics;
 
     internal static class Kernels
     {
@@ -54,8 +55,8 @@ namespace Concentus.Celt
              )
         {
             int i, j;
-            Span<short> rnum = new short[ord];
-            Span<short> local_x = new short[N + ord];
+            short[] rnum = new short[ord];
+            short[] local_x = new short[N + ord];
 
             for (i = 0; i < ord; i++)
             {
@@ -76,11 +77,12 @@ namespace Concentus.Celt
             {
                 mem[i] = x[N - i - 1];
             }
-            
+
+            // not worth trying to do vectorized xcorr kernel because the FIR order is usually very small (10 or so)
             for (i = 0; i < N - 3; i += 4)
             {
                 int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                xcorr_kernel(rnum, local_x.Slice(i), ref sum0, ref sum1, ref sum2, ref sum3, ord);
+                xcorr_kernel(rnum, 0, local_x, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
                 y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i]), Inlines.PSHR32(sum0, CeltConstants.SIG_SHIFT))));
                 y[i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i + 1]), Inlines.PSHR32(sum1, CeltConstants.SIG_SHIFT))));
                 y[i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i + 2]), Inlines.PSHR32(sum2, CeltConstants.SIG_SHIFT))));
@@ -109,8 +111,8 @@ namespace Concentus.Celt
              Span<int> mem)
         {
             int i, j;
-            Span<int> rnum = new int[ord];
-            Span<int> local_x = new int[N + ord];
+            int[] rnum = new int[ord];
+            int[] local_x = new int[N + ord];
 
             for (i = 0; i < ord; i++)
             {
@@ -131,11 +133,11 @@ namespace Concentus.Celt
             {
                 mem[i] = x[N - i - 1];
             }
-            
+
             for (i = 0; i < N - 3; i += 4)
             {
                 int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                xcorr_kernel(rnum, local_x.Slice(i), ref sum0, ref sum1, ref sum2, ref sum3, ord);
+                xcorr_kernel(rnum, 0, local_x, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
                 y[i] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i]), Inlines.PSHR32(sum0, CeltConstants.SIG_SHIFT))));
                 y[i + 1] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i + 1]), Inlines.PSHR32(sum1, CeltConstants.SIG_SHIFT))));
                 y[i + 2] = Inlines.SATURATE16((Inlines.ADD32(Inlines.EXTEND32(x[i + 2]), Inlines.PSHR32(sum2, CeltConstants.SIG_SHIFT))));
@@ -162,12 +164,14 @@ namespace Concentus.Celt
         /// <param name="y"></param>
         /// <param name="sum0"></param>
         /// <param name="len"></param>
-        internal static void xcorr_kernel(Span<short> x, Span<short> y, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        internal static void xcorr_kernel(short[] x, int x_idx, short[] y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
         {
+            // I tried vectorizing this but the intermediate int16 * int16 multiply would overflow, so
+            // I would have to widen each vector to int32 beforehand and that costs any potential speed benefit.
             int j;
             short y_0, y_1, y_2, y_3;
-            int y_ptr = 0;
-            int x_ptr = 0;
+            int x_ptr = x_idx;
+            int y_ptr = y_idx;
             Inlines.OpusAssert(len >= 3);
             y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
             y_0 = y[y_ptr++];
@@ -233,12 +237,12 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void xcorr_kernel(Span<int> x, Span<int> y, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        internal static void xcorr_kernel(int[] x, int x_idx, int[] y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
         {
             int j;
             int y_0, y_1, y_2, y_3;
-            int x_ptr = 0;
-            int y_ptr = 0;
+            int x_ptr = x_idx;
+            int y_ptr = y_idx;
             Inlines.OpusAssert(len >= 3);
             y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
             y_0 = y[y_ptr++];
@@ -301,6 +305,34 @@ namespace Concentus.Celt
                 sum1 = Inlines.MAC16_16(sum1, tmp, y_3);
                 sum2 = Inlines.MAC16_16(sum2, tmp, y_0);
                 sum3 = Inlines.MAC16_16(sum3, tmp, y_1);
+            }
+        }
+
+        internal static void xcorr_kernel_vector(int[] x, int x_idx, int[] y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        {
+            int idx = 0;
+            int vectorEnd = len - 4 - ((len - 4) % Vector<int>.Count);
+
+            while (idx < vectorEnd)
+            {
+                Vector<int> xVec = new Vector<int>(x, x_idx + idx);
+                sum0 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, new Vector<int>(y, y_idx + idx)));
+                sum1 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, new Vector<int>(y, y_idx + idx + 1)));
+                sum2 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, new Vector<int>(y, y_idx + idx + 2)));
+                sum3 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, new Vector<int>(y, y_idx + idx + 3)));
+                idx += Vector<int>.Count;
+            }
+
+            // FIXME this doesn't account for offset between the 4-block sum and the width of the vector
+            // If the vector<int> width isn't divisible by 4 (for some reason...) the sums will be off
+            while (idx < len)
+            {
+                int tmp = x[x_idx + idx];
+                sum0 = Inlines.MAC16_16(sum0, tmp, y[y_idx + idx]);
+                sum1 = Inlines.MAC16_16(sum1, tmp, y[y_idx + idx + 1]);
+                sum2 = Inlines.MAC16_16(sum2, tmp, y[y_idx + idx + 2]);
+                sum3 = Inlines.MAC16_16(sum3, tmp, y[y_idx + idx + 3]);
+                idx++;
             }
         }
 

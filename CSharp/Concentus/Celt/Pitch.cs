@@ -223,9 +223,9 @@ namespace Concentus.Celt
             Inlines.OpusAssert(max_pitch > 0);
             lag = len + max_pitch;
 
-            Span<int> x_lp4 = new int[len >> 2];
-            Span<int> y_lp4 = new int[lag >> 2];
-            Span<int> xcorr = new int[max_pitch >> 1];
+            int[] x_lp4 = new int[len >> 2];
+            int[] y_lp4 = new int[lag >> 2];
+            int[] xcorr = new int[max_pitch >> 1];
 
             /* Downsample by 2 again */
             for (j = 0; j < len >> 2; j++)
@@ -250,7 +250,7 @@ namespace Concentus.Celt
             }
 
             /* Coarse search with 4x decimation */
-            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4, y_lp4, xcorr, len >> 2, max_pitch >> 2);
+            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4, 0, y_lp4, 0, xcorr, len >> 2, max_pitch >> 2);
 
             find_best_pitch(xcorr, y_lp4, len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
 

@@ -62,8 +62,8 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            Span<short> xptr;
-            Span<short> xx = new short[n];
+            short[] xptr;
+            short[] xx = new short[n];
             Inlines.OpusAssert(n > 0);
             xptr = x;
 
@@ -93,7 +93,7 @@ namespace Concentus.Common
                 else
                     shift = 0;
             }
-            CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
+            CeltPitchXCorr.pitch_xcorr(xptr, 0, xptr, 0, ac, fastN, lag + 1);
             for (k = 0; k <= lag; k++)
             {
                 for (i = k + fastN, d = 0; i < n; i++)
@@ -139,15 +139,15 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            Span<int> xptr;
-            Span<int> xx = new int[n];
+            int[] actualX;
+            int[] xx = new int[n];
 
             Inlines.OpusAssert(n > 0);
             Inlines.OpusAssert(overlap >= 0);
 
             if (overlap == 0)
             {
-                xptr = x;
+                actualX = x;
             }
             else
             {
@@ -158,7 +158,8 @@ namespace Concentus.Common
                     xx[i] = Inlines.MULT16_16_Q15(x[i], window[i]);
                     xx[n - i - 1] = Inlines.MULT16_16_Q15(x[n - i - 1], window[i]);
                 }
-                xptr = xx;
+
+                actualX = xx;
             }
 
             shift = 0;
@@ -166,12 +167,12 @@ namespace Concentus.Common
             int ac0;
             ac0 = 1 + (n << 7);
             if ((n & 1) != 0)
-                ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[0], xptr[0]), 9);
+                ac0 += Inlines.SHR32(Inlines.MULT16_16(actualX[0], actualX[0]), 9);
 
             for (i = (n & 1); i < n; i += 2)
             {
-                ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[i], xptr[i]), 9);
-                ac0 += Inlines.SHR32(Inlines.MULT16_16(xptr[i + 1], xptr[i + 1]), 9);
+                ac0 += Inlines.SHR32(Inlines.MULT16_16(actualX[i], actualX[i]), 9);
+                ac0 += Inlines.SHR32(Inlines.MULT16_16(actualX[i + 1], actualX[i + 1]), 9);
             }
 
             shift = Inlines.celt_ilog2(ac0) - 30 + 10;
@@ -179,17 +180,17 @@ namespace Concentus.Common
             if (shift > 0)
             {
                 for (i = 0; i < n; i++)
-                    xx[i] = (Inlines.PSHR32(xptr[i], shift));
-                xptr = xx;
+                    xx[i] = (Inlines.PSHR32(actualX[i], shift));
+                actualX = xx;
             }
             else
                 shift = 0;
 
-            CeltPitchXCorr.pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
+            CeltPitchXCorr.pitch_xcorr(actualX, 0, actualX, 0, ac, fastN, lag + 1);
             for (k = 0; k <= lag; k++)
             {
                 for (i = k + fastN, d = 0; i < n; i++)
-                    d = Inlines.MAC16_16(d, xptr[i], xptr[i - k]);
+                    d = Inlines.MAC16_16(d, actualX[i], actualX[i - k]);
                 ac[k] += d;
             }
 
