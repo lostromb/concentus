@@ -270,6 +270,7 @@ namespace Concentus.Silk.Structs
         /****************/
         internal int silk_decode_frame(
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
+            ReadOnlySpan<byte> frameData,
             Span<short> pOut,                         /* O    Pointer to output speech frame              */
             int pOut_ptr,
             BoxedValueInt pN,                            /* O    Pointer to size of output frame             */
@@ -293,12 +294,12 @@ namespace Concentus.Silk.Structs
                 /*********************************************/
                 /* Decode quantization indices of side info  */
                 /*********************************************/
-                DecodeIndices.silk_decode_indices(this, psRangeDec, this.nFramesDecoded, lostFlag, condCoding);
+                DecodeIndices.silk_decode_indices(this, psRangeDec, frameData, this.nFramesDecoded, lostFlag, condCoding);
 
                 /*********************************************/
                 /* Decode quantization indices of excitation */
                 /*********************************************/
-                DecodePulses.silk_decode_pulses(psRangeDec, pulses, this.indices.signalType,
+                DecodePulses.silk_decode_pulses(psRangeDec, frameData, pulses, this.indices.signalType,
                         this.indices.quantOffsetType, this.frame_length);
 
                 /********************************************/

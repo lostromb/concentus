@@ -48,6 +48,7 @@ namespace Concentus.Silk
         /// <param name="pred_Q13">O Predictors</param>
         internal static void silk_stereo_decode_pred(
             EntropyCoder psRangeDec,
+            ReadOnlySpan<byte> encodedData,
             int[] pred_Q13)
         {
             int n;
@@ -55,13 +56,13 @@ namespace Concentus.Silk
             int low_Q13, step_Q13;
 
             // Entropy decoding
-            n = psRangeDec.dec_icdf(Tables.silk_stereo_pred_joint_iCDF, 8);
+            n = psRangeDec.dec_icdf(encodedData, Tables.silk_stereo_pred_joint_iCDF, 8);
             ix[0][2] = Inlines.silk_DIV32_16(n, 5);
             ix[1][2] = n - 5 * ix[0][2];
             for (n = 0; n < 2; n++)
             {
-                ix[n][0] = psRangeDec.dec_icdf(Tables.silk_uniform3_iCDF, 8);
-                ix[n][1] = psRangeDec.dec_icdf(Tables.silk_uniform5_iCDF, 8);
+                ix[n][0] = psRangeDec.dec_icdf(encodedData, Tables.silk_uniform3_iCDF, 8);
+                ix[n][1] = psRangeDec.dec_icdf(encodedData, Tables.silk_uniform5_iCDF, 8);
             }
 
             // Dequantize
@@ -85,11 +86,12 @@ namespace Concentus.Silk
         /// <param name="decode_only_mid">O    Flag that only mid channel has been coded</param>
         internal static void silk_stereo_decode_mid_only(
             EntropyCoder psRangeDec,
+            ReadOnlySpan<byte> encodedData,
             BoxedValueInt decode_only_mid
         )
         {
             /* Decode flag that only mid channel is coded */
-            decode_only_mid.Val = psRangeDec.dec_icdf(Tables.silk_stereo_only_code_mid_iCDF, 8);
+            decode_only_mid.Val = psRangeDec.dec_icdf(encodedData, Tables.silk_stereo_only_code_mid_iCDF, 8);
         }
 
         /// <summary>
@@ -97,20 +99,20 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="ix">I    Quantization indices [ 2 ][ 3 ]</param>
-        internal static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, sbyte[][] ix)
+        internal static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, Span<byte> encodedData, sbyte[][] ix)
         {
             int n;
 
             /* Entropy coding */
             n = 5 * ix[0][2] + ix[1][2];
             Inlines.OpusAssert(n < 25);
-            psRangeEnc.enc_icdf( n, Tables.silk_stereo_pred_joint_iCDF, 8);
+            psRangeEnc.enc_icdf(encodedData, n, Tables.silk_stereo_pred_joint_iCDF, 8);
             for (n = 0; n < 2; n++)
             {
                 Inlines.OpusAssert(ix[n][0] < 3);
                 Inlines.OpusAssert(ix[n][1] < SilkConstants.STEREO_QUANT_SUB_STEPS);
-                psRangeEnc.enc_icdf( ix[n][0], Tables.silk_uniform3_iCDF, 8);
-                psRangeEnc.enc_icdf( ix[n][1], Tables.silk_uniform5_iCDF, 8);
+                psRangeEnc.enc_icdf(encodedData, ix[n][0], Tables.silk_uniform3_iCDF, 8);
+                psRangeEnc.enc_icdf(encodedData, ix[n][1], Tables.silk_uniform5_iCDF, 8);
             }
         }
 
@@ -119,10 +121,10 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="mid_only_flag"></param>
-        internal static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, sbyte mid_only_flag)
+        internal static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, Span<byte> encodedData, sbyte mid_only_flag)
         {
             /* Encode flag that only mid channel is coded */
-            psRangeEnc.enc_icdf( mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF, 8);
+            psRangeEnc.enc_icdf(encodedData, mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF, 8);
         }
 
         /// <summary>

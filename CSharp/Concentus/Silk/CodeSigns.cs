@@ -62,6 +62,7 @@ namespace Concentus.Silk
         /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
         internal static void silk_encode_signs(
             EntropyCoder psRangeEnc,
+            Span<byte> encodedData,
             Span<sbyte> pulses,
             int length,
             int signalType,
@@ -89,7 +90,7 @@ namespace Concentus.Silk
                     {
                         if (pulses[j] != 0)
                         {
-                            psRangeEnc.enc_icdf( silk_enc_map(pulses[j]), icdf, 8);
+                            psRangeEnc.enc_icdf(encodedData, silk_enc_map(pulses[j]), icdf, 8);
                         }
                     }
                 }
@@ -109,6 +110,7 @@ namespace Concentus.Silk
         /// <param name="sum_pulses">I    Sum of absolute pulses per block [MAX_NB_SHELL_BLOCKS]</param>
         internal static void silk_decode_signs(
             EntropyCoder psRangeDec,
+            ReadOnlySpan<byte> encodedData,
             short[] pulses,
             int length,
             int signalType,
@@ -139,7 +141,7 @@ namespace Concentus.Silk
                         if (pulses[q_ptr + j] > 0)
                         {
                             /* attach sign */
-                            pulses[q_ptr + j] *= (short)(silk_dec_map(psRangeDec.dec_icdf(icdf, 8)));
+                            pulses[q_ptr + j] *= (short)(silk_dec_map(psRangeDec.dec_icdf(encodedData, icdf, 8)));
                         }
                     }
                 }

@@ -180,8 +180,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        internal static uint alg_quant(Span<int> X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc
-           )
+        internal static uint alg_quant(Span<int> X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc, Span<byte> encodedData)
         {
             int[] y = new int[N];
             int[] iy = new int[N];
@@ -326,7 +325,7 @@ namespace Concentus.Celt
                 iy[j] = signx[j] < 0 ? -iy[j] : iy[j];
             } while (++j < N);
 
-            CWRS.encode_pulses(iy, N, K, enc);
+            CWRS.encode_pulses(iy, N, K, enc, encodedData);
 
             collapse_mask = extract_collapse_mask(iy, N, B);
 
@@ -336,14 +335,14 @@ namespace Concentus.Celt
         /** Decode pulse vector and combine the result with the pitch vector to produce
             the final normalised signal in the current band. */
         internal static uint alg_unquant(Span<int> X, int X_ptr, int N, int K, int spread, int B,
-              EntropyCoder dec, int gain)
+              EntropyCoder dec, ReadOnlySpan<byte> encodedData, int gain)
         {
             int Ryy;
             uint collapse_mask;
             int[] iy = new int[N];
             Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
-            Ryy = CWRS.decode_pulses(iy, N, K, dec);
+            Ryy = CWRS.decode_pulses(iy, N, K, dec, encodedData);
             normalise_residual(iy, X, X_ptr, N, Ryy, gain);
             exp_rotation(X, X_ptr, N, -1, B, K, spread);
             collapse_mask = extract_collapse_mask(iy, N, B);

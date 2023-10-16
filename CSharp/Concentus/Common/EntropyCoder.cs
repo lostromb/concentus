@@ -123,9 +123,6 @@ namespace Concentus.Common
 
         //////////////// Coder State //////////////////// 
 
-        /*POINTER to Buffered input/output.*/
-        public Memory<byte> buf;
-
         /*The size of the buffer.*/
         public uint storage;
 
@@ -170,7 +167,6 @@ namespace Concentus.Common
 
         public void Reset()
         {
-            buf = null;
             storage = 0;
             end_offs = 0;
             end_window = 0;
@@ -185,7 +181,6 @@ namespace Concentus.Common
 
         public void Assign(EntropyCoder other)
         {
-            this.buf = other.buf;
             this.storage = other.storage;
             this.end_offs = other.end_offs;
             this.end_window = other.end_window;
@@ -199,42 +194,42 @@ namespace Concentus.Common
             this.error = other.error;
         }
 
-        internal int read_byte()
+        internal int read_byte(ReadOnlySpan<byte> buf)
         {
-            return this.offs < this.storage ? this.buf.Span[(int)(this.offs++)] : 0;
+            return this.offs < this.storage ? buf[(int)(this.offs++)] : 0;
         }
 
-        internal int read_byte_from_end()
+        internal int read_byte_from_end(ReadOnlySpan<byte> buf)
         {
             return this.end_offs < this.storage ?
-             this.buf.Span[(int)((this.storage - ++(this.end_offs)))] : 0;
+             buf[(int)((this.storage - ++(this.end_offs)))] : 0;
         }
 
-        internal int write_byte(uint _value)
+        internal int write_byte(Span<byte> buf, uint _value)
         {
             if (this.offs + this.end_offs >= this.storage)
             {
                 return -1;
             }
-            this.buf.Span[(int)(this.offs++)] = (byte)_value;
+            buf[(int)(this.offs++)] = (byte)_value;
             return 0;
         }
 
-        internal int write_byte_at_end(uint _value)
+        internal int write_byte_at_end(Span<byte> buf, uint _value)
         {
             if (this.offs + this.end_offs >= this.storage)
             {
                 return -1;
             }
 
-            this.buf.Span[(int)((this.storage - ++(this.end_offs)))] = (byte)_value;
+            buf[(int)((this.storage - ++(this.end_offs)))] = (byte)_value;
             return 0;
         }
 
         /// <summary>
         /// Normalizes the contents of val and rng so that rng lies entirely in the high-order symbol.
         /// </summary>
-        internal void dec_normalize()
+        internal void dec_normalize(ReadOnlySpan<byte> buf)
         {
             /*If the range is too small, rescale it and input some bits.*/
             while (this.rng <= EC_CODE_BOT)
@@ -247,7 +242,7 @@ namespace Concentus.Common
                 sym = this.rem;
 
                 /*Read the next value from the input.*/
-                this.rem = read_byte();
+                this.rem = read_byte(buf);
 
                 /*Take the rest of the bits we need from this new symbol.*/
                 sym = (sym << EC_SYM_BITS | this.rem) >> (EC_SYM_BITS - EC_CODE_EXTRA);
@@ -257,9 +252,8 @@ namespace Concentus.Common
             }
         }
 
-        internal void dec_init(Memory<byte> _buf, uint _storage)
+        internal void dec_init(ReadOnlySpan<byte> buf, uint _storage)
         {
-            this.buf = _buf;
             this.storage = _storage;
             this.end_offs = 0;
             this.end_window = 0;
@@ -271,11 +265,11 @@ namespace Concentus.Common
             - ((EC_CODE_BITS - EC_CODE_EXTRA) / EC_SYM_BITS) * EC_SYM_BITS;
             this.offs = 0;
             this.rng = 1U << EC_CODE_EXTRA;
-            this.rem = read_byte();
+            this.rem = read_byte(buf);
             this.val = this.rng - 1 - (uint)(this.rem >> (EC_SYM_BITS - EC_CODE_EXTRA));
             this.error = 0;
             /*Normalize the interval.*/
-            dec_normalize();
+            dec_normalize(buf);
         }
 
         internal uint decode(uint _ft)
@@ -294,13 +288,13 @@ namespace Concentus.Common
             return (1U << (int)_bits) - Inlines.EC_MINI(s + 1U, 1U << (int)_bits);
         }
 
-        internal void dec_update(uint _fl, uint _fh, uint _ft)
+        internal void dec_update(ReadOnlySpan<byte> buf, uint _fl, uint _fh, uint _ft)
         {
             uint s;
             s = this.ext * (_ft - _fh);
             this.val -= s;
             this.rng = _fl > 0 ? this.ext * (_fh - _fl) : this.rng - s;
-            dec_normalize();
+            dec_normalize(buf);
         }
 
         /// <summary>
@@ -308,7 +302,7 @@ namespace Concentus.Common
         /// </summary>
         /// <param name="_logp"></param>
         /// <returns></returns>
-        internal int dec_bit_logp(uint _logp)
+        internal int dec_bit_logp(ReadOnlySpan<byte> buf, uint _logp)
         {
             uint r;
             uint d;
@@ -320,11 +314,11 @@ namespace Concentus.Common
             ret = d < s ? 1 : 0;
             if (ret == 0) this.val = d - s;
             this.rng = ret != 0 ? s : r - s;
-            dec_normalize();
+            dec_normalize(buf);
             return ret;
         }
 
-        internal int dec_icdf(byte[] _icdf, uint _ftb)
+        internal int dec_icdf(ReadOnlySpan<byte> buf, byte[] _icdf, uint _ftb)
         {
             uint r;
             uint d;
@@ -343,11 +337,11 @@ namespace Concentus.Common
             while (d < s);
             this.val = d - s;
             this.rng = t - s;
-            dec_normalize();
+            dec_normalize(buf);
             return ret;
         }
 
-        internal int dec_icdf(byte[] _icdf, int _icdf_offset, uint _ftb)
+        internal int dec_icdf(ReadOnlySpan<byte> buf, byte[] _icdf, int _icdf_offset, uint _ftb)
         {
             uint r;
             uint d;
@@ -366,11 +360,11 @@ namespace Concentus.Common
             while (d < s);
             this.val = d - s;
             this.rng = t - s;
-            dec_normalize();
+            dec_normalize(buf);
             return ret - _icdf_offset;
         }
 
-        internal uint dec_uint(uint _ft)
+        internal uint dec_uint(ReadOnlySpan<byte> buf, uint _ft)
         {
             uint ft;
             uint s;
@@ -385,8 +379,8 @@ namespace Concentus.Common
                 ftb -= EC_UINT_BITS;
                 ft = (uint)(_ft >> ftb) + 1;
                 s = decode(ft);
-                dec_update(s, s + 1, ft);
-                t = (uint)s << ftb | dec_bits((uint)ftb);
+                dec_update(buf, s, s + 1, ft);
+                t = (uint)s << ftb | dec_bits(buf, (uint)ftb);
                 if (t <= _ft) return t;
                 this.error = 1;
                 return _ft;
@@ -394,12 +388,12 @@ namespace Concentus.Common
             else {
                 _ft++;
                 s = decode((uint)_ft);
-                dec_update(s, s + 1, (uint)_ft);
+                dec_update(buf, s, s + 1, (uint)_ft);
                 return s;
             }
         }
 
-        internal uint dec_bits(uint _bits)
+        internal uint dec_bits(ReadOnlySpan<byte> buf, uint _bits)
         {
             uint window;
             int available;
@@ -410,7 +404,7 @@ namespace Concentus.Common
             {
                 do
                 {
-                    window |= (uint)read_byte_from_end() << available;
+                    window |= (uint)read_byte_from_end(buf) << available;
                     available += EC_SYM_BITS;
                 }
                 while (available <= EC_WINDOW_SIZE - EC_SYM_BITS);
@@ -437,7 +431,7 @@ namespace Concentus.Common
         /// requires similar carry tracking in the decoder, needlessly slowing it down.
         /// </summary>
         /// <param name="_c"></param>
-        internal void enc_carry_out(int _c)
+        internal void enc_carry_out(Span<byte> buf, int _c)
         {
             if (_c != EC_SYM_MAX)
             {
@@ -449,14 +443,14 @@ namespace Concentus.Common
                   This compare should be taken care of by branch-prediction thereafter.*/
                 if (this.rem >= 0)
                 {
-                    this.error |= write_byte((uint)(this.rem + carry));
+                    this.error |= write_byte(buf, (uint)(this.rem + carry));
                 }
 
                 if (this.ext > 0)
                 {
                     uint sym;
                     sym = (EC_SYM_MAX + (uint)carry) & EC_SYM_MAX;
-                    do this.error |= write_byte(sym);
+                    do this.error |= write_byte(buf, sym);
                     while (--(this.ext) > 0);
                 }
 
@@ -468,12 +462,12 @@ namespace Concentus.Common
             }
         }
 
-        internal void enc_normalize()
+        internal void enc_normalize(Span<byte> buf)
         {
             /*If the range is too small, output some bits and rescale it.*/
             while (this.rng <= EC_CODE_BOT)
             {
-                enc_carry_out((int)(this.val >> (int)EC_CODE_SHIFT));
+                enc_carry_out(buf, (int)(this.val >> (int)EC_CODE_SHIFT));
                 /*Move the next-to-high-order symbol into the high-order position.*/
                 this.val = (this.val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
                 this.rng = this.rng << EC_SYM_BITS;
@@ -481,9 +475,8 @@ namespace Concentus.Common
             }
         }
 
-        internal void enc_init(Memory<byte> _buf, uint _size)
+        internal void enc_init(uint _size)
         {
-            this.buf = _buf;
             this.end_offs = 0;
             this.end_window = 0;
             this.nend_bits = 0;
@@ -498,7 +491,7 @@ namespace Concentus.Common
             this.error = 0;
         }
 
-        internal void encode(uint _fl, uint _fh, uint _ft)
+        internal void encode(Span<byte> buf, uint _fl, uint _fh, uint _ft)
         {
             uint r;
             r = this.rng / _ft;
@@ -512,10 +505,10 @@ namespace Concentus.Common
                 this.rng -= (r * (_ft - _fh));
             }
             
-            enc_normalize();
+            enc_normalize(buf);
         }
 
-        internal void encode_bin(uint _fl, uint _fh, uint _bits)
+        internal void encode_bin(Span<byte> buf, uint _fl, uint _fh, uint _bits)
         {
             uint r;
             r = this.rng >> (int)_bits;
@@ -525,11 +518,11 @@ namespace Concentus.Common
                 this.rng = (r * (_fh - _fl));
             }
             else this.rng -= (r * ((1U << (int)_bits) - _fh));
-            enc_normalize();
+            enc_normalize(buf);
         }
 
         /*The probability of having a "one" is 1/(1<<_logp).*/
-        internal void enc_bit_logp(int _val, uint _logp)
+        internal void enc_bit_logp(Span<byte> buf, int _val, uint _logp)
         {
             uint r;
             uint s;
@@ -544,10 +537,10 @@ namespace Concentus.Common
             }
 
             this.rng = _val != 0 ? s : r;
-            enc_normalize();
+            enc_normalize(buf);
         }
 
-        internal void enc_icdf(int _s, byte[] _icdf, uint _ftb)
+        internal void enc_icdf(Span<byte> buf, int _s, byte[] _icdf, uint _ftb)
         {
             uint r;
             r = this.rng >> (int)_ftb;
@@ -560,10 +553,10 @@ namespace Concentus.Common
             {
                 this.rng -= (r * _icdf[_s]);
             }
-            enc_normalize();
+            enc_normalize(buf);
         }
 
-        internal void enc_icdf(int _s, byte[] _icdf, int icdf_ptr, uint _ftb)
+        internal void enc_icdf(Span<byte> buf, int _s, byte[] _icdf, int icdf_ptr, uint _ftb)
         {
             uint r;
             r = this.rng >> (int)_ftb;
@@ -576,10 +569,10 @@ namespace Concentus.Common
             {
                 this.rng -= (r * _icdf[icdf_ptr + _s]);
             }
-            enc_normalize();
+            enc_normalize(buf);
         }
 
-        internal void enc_uint(uint _fl, uint _ft)
+        internal void enc_uint(Span<byte> buf, uint _fl, uint _ft)
         {
             uint ft;
             uint fl;
@@ -593,13 +586,13 @@ namespace Concentus.Common
                 ftb -= EC_UINT_BITS;
                 ft = (_ft >> ftb) + 1;
                 fl = (uint)(_fl >> ftb);
-                encode(fl, fl + 1, ft);
-                enc_bits(_fl & (((uint)1 << ftb) - 1U), (uint)ftb);
+                encode(buf, fl, fl + 1, ft);
+                enc_bits(buf, _fl & (((uint)1 << ftb) - 1U), (uint)ftb);
             }
-            else encode(_fl, _fl + 1, _ft + 1);
+            else encode(buf, _fl, _fl + 1, _ft + 1);
         }
 
-        internal void enc_bits(uint _fl, uint _bits)
+        internal void enc_bits(Span<byte> buf, uint _fl, uint _bits)
         {
             uint window;
             int used;
@@ -611,7 +604,7 @@ namespace Concentus.Common
             {
                 do
                 {
-                    this.error |= write_byte_at_end((uint)window & EC_SYM_MAX);
+                    this.error |= write_byte_at_end(buf, (uint)window & EC_SYM_MAX);
                     window >>= EC_SYM_BITS;
                     used -= EC_SYM_BITS;
                 }
@@ -625,7 +618,7 @@ namespace Concentus.Common
             this.nbits_total += (int)_bits;
         }
 
-        internal void enc_patch_initial_bits(uint _val, uint _nbits)
+        internal void enc_patch_initial_bits(Span<byte> buf, uint _val, uint _nbits)
         {
             int shift;
             uint mask;
@@ -636,7 +629,7 @@ namespace Concentus.Common
             if (this.offs > 0)
             {
                 /*The first byte has been finalized.*/
-                this.buf.Span[0] = (byte)((this.buf.Span[0] & ~mask) | _val << shift);
+                buf[0] = (byte)((buf[0] & ~mask) | _val << shift);
             }
             else if (this.rem >= 0)
             {
@@ -656,11 +649,11 @@ namespace Concentus.Common
             }
         }
 
-        internal void enc_shrink(uint _size)
+        internal void enc_shrink(Span<byte> buf, uint _size)
         {
             Inlines.OpusAssert(this.offs + this.end_offs <= _size);
-            //(memmove(this.buf + _size - this.end_offs, this.buf + this.storage - this.end_offs, this.end_offs * sizeof(*(dst))))
-            Arrays.MemMoveByte(this.buf.Span, (int)_size - (int)this.end_offs, (int)this.storage - (int)this.end_offs, (int)this.end_offs);
+            //(memmove(buf + _size - this.end_offs, buf + this.storage - this.end_offs, this.end_offs * sizeof(*(dst))))
+            Arrays.MemMoveByte(buf, (int)_size - (int)this.end_offs, (int)this.storage - (int)this.end_offs, (int)this.end_offs);
             this.storage = _size;
         }
 
@@ -711,7 +704,7 @@ namespace Concentus.Common
             return (uint)(nbits - l);
         }
 
-        internal void enc_done()
+        internal void enc_done(Span<byte> buf)
         {
             uint window;
             int used;
@@ -733,7 +726,7 @@ namespace Concentus.Common
 
             while (l > 0)
             {
-                enc_carry_out((int)(end >> (int)EC_CODE_SHIFT));
+                enc_carry_out(buf, (int)(end >> (int)EC_CODE_SHIFT));
                 end = (end << EC_SYM_BITS) & (EC_CODE_TOP - 1);
                 l -= EC_SYM_BITS;
             }
@@ -741,7 +734,7 @@ namespace Concentus.Common
             /*If we have a buffered byte flush it into the output buffer.*/
             if (this.rem >= 0 || this.ext > 0)
             {
-                enc_carry_out(0);
+                enc_carry_out(buf, 0);
             }
 
             /*If we have buffered extra bits, flush them as well.*/
@@ -750,7 +743,7 @@ namespace Concentus.Common
 
             while (used >= EC_SYM_BITS)
             {
-                this.error |= write_byte_at_end((uint)window & EC_SYM_MAX);
+                this.error |= write_byte_at_end(buf, (uint)window & EC_SYM_MAX);
                 window >>= EC_SYM_BITS;
                 used -= EC_SYM_BITS;
             }
@@ -758,7 +751,7 @@ namespace Concentus.Common
             /*Clear any excess space and add any remaining extra bits to the last byte.*/
             if (this.error == 0)
             {
-                Arrays.MemSetWithOffset<byte>(this.buf.Span, 0, (int)this.offs, (int)this.storage - (int)this.offs - (int)this.end_offs);
+                Arrays.MemSetWithOffset<byte>(buf, 0, (int)this.offs, (int)this.storage - (int)this.offs - (int)this.end_offs);
                 if (used > 0)
                 {
                     /*If there's no range coder data at all, give up.*/
@@ -777,7 +770,7 @@ namespace Concentus.Common
                             this.error = -1;
                         }
 
-                        this.buf.Span[(int)(this.storage - this.end_offs - 1)] |= (byte)window;
+                        buf[(int)(this.storage - this.end_offs - 1)] |= (byte)window;
                     }
                 }
             }

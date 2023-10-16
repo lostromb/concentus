@@ -386,7 +386,7 @@ namespace Concentus.Celt.Structs
         }
 
         
-        internal int celt_encode_with_ec(Span<short> pcm, int pcm_ptr, int frame_size, Memory<byte> compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc)
+        internal int celt_encode_with_ec(Span<short> pcm, int pcm_ptr, int frame_size, Span<byte> compressed, int compressed_ptr, int nbCompressedBytes, EntropyCoder enc)
         {
             int i, c, N;
             int bits;
@@ -513,7 +513,7 @@ namespace Concentus.Celt.Structs
             if (enc == null)
             {
                 enc = new EntropyCoder();
-                enc.enc_init(compressed.Slice(compressed_ptr), (uint)nbCompressedBytes);
+                enc.enc_init((uint)nbCompressedBytes);
             }
 
             if (vbr_rate > 0)
@@ -538,7 +538,7 @@ namespace Concentus.Celt.Structs
                     {
                         nbCompressedBytes = nbFilledBytes + max_allowed;
                         nbAvailableBytes = max_allowed;
-                        enc.enc_shrink((uint)nbCompressedBytes);
+                        enc.enc_shrink(compressed.Slice(compressed_ptr), (uint)nbCompressedBytes);
                     }
                 }
             }
@@ -559,7 +559,7 @@ namespace Concentus.Celt.Structs
                 silence = 1;
 #endif
             if (tell == 1)
-                enc.enc_bit_logp(silence, 15);
+                enc.enc_bit_logp(compressed.Slice(compressed_ptr), silence, 15);
             else
                 silence = 0;
             if (silence != 0)
@@ -570,7 +570,7 @@ namespace Concentus.Celt.Structs
                     effectiveBytes = nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, nbFilledBytes + 2);
                     total_bits = nbCompressedBytes * 8;
                     nbAvailableBytes = 2;
-                    enc.enc_shrink((uint)nbCompressedBytes);
+                    enc.enc_shrink(compressed.Slice(compressed_ptr), (uint)nbCompressedBytes);
                 }
                 /* Pretend we've filled all the remaining bits with zeros
                       (that's what the initialiser did anyway) */
@@ -601,20 +601,20 @@ namespace Concentus.Celt.Structs
                 if (pf_on == 0)
                 {
                     if (start == 0 && tell + 16 <= total_bits)
-                        enc.enc_bit_logp(0, 1);
+                        enc.enc_bit_logp(compressed.Slice(compressed_ptr), 0, 1);
                 }
                 else {
                     /*This block is not gated by a total bits check only because
                       of the nbAvailableBytes check above.*/
                     int octave;
-                    enc.enc_bit_logp(1, 1);
+                    enc.enc_bit_logp(compressed.Slice(compressed_ptr), 1, 1);
                     pitch_index += 1;
                     octave = Inlines.EC_ILOG((uint)pitch_index) - 5;
-                    enc.enc_uint((uint)octave, 6);
-                    enc.enc_bits((uint)(pitch_index - (16 << octave)), (uint)(4 + octave));
+                    enc.enc_uint(compressed.Slice(compressed_ptr), (uint)octave, 6);
+                    enc.enc_bits(compressed.Slice(compressed_ptr), (uint)(pitch_index - (16 << octave)), (uint)(4 + octave));
                     pitch_index -= 1;
-                    enc.enc_bits((uint)qg, 3);
-                    enc.enc_icdf(prefilter_tapset, Tables.tapset_icdf, 2);
+                    enc.enc_bits(compressed.Slice(compressed_ptr), (uint)qg, 3);
+                    enc.enc_icdf(compressed.Slice(compressed_ptr), prefilter_tapset, Tables.tapset_icdf, 2);
                 }
             }
 
@@ -807,7 +807,7 @@ namespace Concentus.Celt.Structs
             }
 
             if (LM > 0 && enc.tell() + 3 <= total_bits)
-                enc.enc_bit_logp(isTransient, 3);
+                enc.enc_bit_logp(compressed.Slice(compressed_ptr), isTransient, 3);
 
             X = Arrays.InitTwoDimensionalArray<int>(C, N);         /*< Interleaved normalised MDCTs */
 
@@ -842,11 +842,11 @@ namespace Concentus.Celt.Structs
 
             error = Arrays.InitTwoDimensionalArray<int>(C, nbEBands);
             QuantizeBands.quant_coarse_energy(mode, start, end, effEnd, bandLogE,
-                  this.oldBandE, (uint)total_bits, error, enc,
+                  this.oldBandE, (uint)total_bits, error, enc, compressed.Slice(compressed_ptr),
                   C, LM, nbAvailableBytes, this.force_intra,
                   ref this.delayedIntra, this.complexity >= 4 ? 1 : 0, this.loss_rate, this.lfe);
 
-            CeltCommon.tf_encode(start, end, isTransient, tf_res, LM, tf_select, enc);
+            CeltCommon.tf_encode(start, end, isTransient, tf_res, LM, tf_select, enc, compressed.Slice(compressed_ptr));
 
             if (enc.tell() + 4 <= total_bits)
             {
@@ -871,7 +871,7 @@ namespace Concentus.Celt.Structs
                     /*printf("%d %d\n", st.tapset_decision, st.spread_decision);*/
                     /*printf("%f %d %f %d\n\n", st.analysis.tonality, st.spread_decision, st.analysis.tonality_slope, st.tapset_decision);*/
                 }
-                enc.enc_icdf(this.spread_decision, Tables.spread_icdf, 5);
+                enc.enc_icdf(compressed.Slice(compressed_ptr), this.spread_decision, Tables.spread_icdf, 5);
             }
 
             offsets = new int[nbEBands];
@@ -907,7 +907,7 @@ namespace Concentus.Celt.Structs
                 {
                     int flag;
                     flag = j < offsets[i] ? 1 : 0;
-                    enc.enc_bit_logp(flag, (uint)dynalloc_loop_logp);
+                    enc.enc_bit_logp(compressed.Slice(compressed_ptr), flag, (uint)dynalloc_loop_logp);
                     tell = (int)enc.tell_frac();
                     if (flag == 0)
                         break;
@@ -945,7 +945,7 @@ namespace Concentus.Celt.Structs
                        end, LM, C, this.analysis, ref this.stereo_saving, tf_estimate,
                        this.intensity, surround_trim);
                 }
-                enc.enc_icdf(alloc_trim, Tables.trim_icdf, 7);
+                enc.enc_icdf(compressed.Slice(compressed_ptr), alloc_trim, Tables.trim_icdf, 7);
                 tell = (int)enc.tell_frac();
             }
 
@@ -1035,7 +1035,7 @@ namespace Concentus.Celt.Structs
                 nbCompressedBytes = Inlines.IMIN(nbCompressedBytes, nbAvailableBytes + nbFilledBytes);
                 /*printf("%d\n", nbCompressedBytes*50*8);*/
                 /* This moves the raw bits to take into account the new compressed size */
-                enc.enc_shrink((uint)nbCompressedBytes);
+                enc.enc_shrink(compressed.Slice(compressed_ptr), (uint)nbCompressedBytes);
             }
 
             /* Bit allocation */
@@ -1070,23 +1070,23 @@ namespace Concentus.Celt.Structs
                 signalBandwidth = 1;
             }
 
-            codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
+            codedBands = Rate.compute_allocation_encode(mode, start, end, offsets, cap,
                   alloc_trim, ref this.intensity, ref dual_stereo, bits, out balance, pulses,
-                  fine_quant, fine_priority, C, LM, enc, 1, this.lastCodedBands, signalBandwidth);
+                  fine_quant, fine_priority, C, LM, enc, compressed.Slice(compressed_ptr), this.lastCodedBands, signalBandwidth);
 
             if (this.lastCodedBands != 0)
                 this.lastCodedBands = Inlines.IMIN(this.lastCodedBands + 1, Inlines.IMAX(this.lastCodedBands - 1, codedBands));
             else
                 this.lastCodedBands = codedBands;
 
-            QuantizeBands.quant_fine_energy(mode, start, end, this.oldBandE, error, fine_quant, enc, C);
+            QuantizeBands.quant_fine_energy(mode, start, end, this.oldBandE, error, fine_quant, enc, compressed.Slice(compressed_ptr), C);
 
             /* Residual quantisation */
             collapse_masks = new byte[C * nbEBands];
-            Bands.quant_all_bands(1, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
+            Bands.quant_all_bands_encode(1, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   bandE, pulses, shortBlocks, this.spread_decision,
                   dual_stereo, this.intensity, tf_res, nbCompressedBytes * (8 << EntropyCoder.BITRES) - anti_collapse_rsv,
-                  balance, enc, LM, codedBands, ref this.rng);
+                  balance, enc, compressed.Slice(compressed_ptr), LM, codedBands, ref this.rng);
 
             if (anti_collapse_rsv > 0)
             {
@@ -1094,10 +1094,13 @@ namespace Concentus.Celt.Structs
 #if FUZZING
                 anti_collapse_on = new Random().Next() & 0x1;
 #endif
-                enc.enc_bits((uint)anti_collapse_on, 1);
+                enc.enc_bits(compressed.Slice(compressed_ptr), (uint)anti_collapse_on, 1);
             }
 
-            QuantizeBands.quant_energy_finalise(mode, start, end, this.oldBandE, error, fine_quant, fine_priority, nbCompressedBytes * 8 - (int)enc.tell(), enc, C);
+            QuantizeBands.quant_energy_finalise(
+                mode, start, end, this.oldBandE, error,
+                fine_quant, fine_priority, nbCompressedBytes * 8 - (int)enc.tell(),
+                enc, compressed.Slice(compressed_ptr), C);
 
             if (silence != 0)
             {
@@ -1172,7 +1175,7 @@ namespace Concentus.Celt.Structs
 
             /* If there's any room left (can only happen for very high rates),
                it's already filled with zeros */
-            enc.enc_done();
+            enc.enc_done(compressed.Slice(compressed_ptr));
 
 
             if (enc.get_error() != 0)

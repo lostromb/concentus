@@ -877,6 +877,7 @@ namespace Concentus.Silk.Structs
         internal int silk_encode_frame(
             BoxedValueInt pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
             EntropyCoder psRangeEnc,                            /* I/O  compressor data structure                                                   */
+            Span<byte> encodedDataOut,
             int condCoding,                             /* I    The type of conditional coding to use                                       */
             int maxBits,                                /* I    If > 0: maximum number of output bits                                       */
             int useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
@@ -1039,12 +1040,12 @@ namespace Concentus.Silk.Structs
                         /****************************************/
                         /* Encode Parameters                    */
                         /****************************************/
-                        EncodeIndices.silk_encode_indices(this, psRangeEnc, this.nFramesEncoded, 0, condCoding);
+                        EncodeIndices.silk_encode_indices(this, psRangeEnc, encodedDataOut, this.nFramesEncoded, 0, condCoding);
 
                         /****************************************/
                         /* Encode Excitation Signal             */
                         /****************************************/
-                        EncodePulses.silk_encode_pulses(psRangeEnc, this.indices.signalType, this.indices.quantOffsetType,
+                        EncodePulses.silk_encode_pulses(psRangeEnc, encodedDataOut, this.indices.signalType, this.indices.quantOffsetType,
                             this.pulses, this.frame_length);
 
                         nBits = psRangeEnc.tell();
@@ -1062,7 +1063,7 @@ namespace Concentus.Silk.Structs
                             /* Restore output state from earlier iteration that did meet the bitrate budget */
                             psRangeEnc.Assign(sRangeEnc_copy2);
                             Inlines.OpusAssert(sRangeEnc_copy2.offs <= 1275);
-                            ec_buf_copy.AsSpan(0, (int)sRangeEnc_copy2.offs).CopyTo(psRangeEnc.buf.Span);
+                            ec_buf_copy.AsSpan(0, (int)sRangeEnc_copy2.offs).CopyTo(encodedDataOut);
                             this.sNSQ.Assign(sNSQ_copy2);
                             this.sShape.LastGainIndex = LastGainIndex_copy2;
                         }
@@ -1096,7 +1097,7 @@ namespace Concentus.Silk.Structs
                             /* Copy part of the output state */
                             sRangeEnc_copy2.Assign(psRangeEnc);
                             Inlines.OpusAssert(psRangeEnc.offs <= 1275);
-                            psRangeEnc.buf.Span.Slice(0, (int)psRangeEnc.offs).CopyTo(ec_buf_copy);
+                            encodedDataOut.Slice(0, (int)psRangeEnc.offs).CopyTo(ec_buf_copy);
                             sNSQ_copy2.Assign(this.sNSQ);
                             LastGainIndex_copy2 = this.sShape.LastGainIndex;
                         }

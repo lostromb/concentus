@@ -71,6 +71,7 @@ namespace Concentus.Silk
         internal static int silk_Decode(                                   /* O    Returns error code                              */
             SilkDecoder psDec,           /* I/O  State                                           */
             DecControlState decControl,         /* I/O  Control Structure                               */
+            ReadOnlySpan<byte> frameData,
             int lostFlag,           /* I    0: no loss, 1 loss, 2 decode fec                */
             int newPacketFlag,      /* I    Indicates first decoder call for this packet    */
             EntropyCoder psRangeDec,        /* I/O  Compressor data structure                       */
@@ -186,9 +187,9 @@ namespace Concentus.Silk
                 {
                     for (i = 0; i < channel_state[n].nFramesPerPacket; i++)
                     {
-                        channel_state[n].VAD_flags[i] = psRangeDec.dec_bit_logp(1);
+                        channel_state[n].VAD_flags[i] = psRangeDec.dec_bit_logp(frameData, 1);
                     }
-                    channel_state[n].LBRR_flag = psRangeDec.dec_bit_logp(1);
+                    channel_state[n].LBRR_flag = psRangeDec.dec_bit_logp(frameData, 1);
                 }
                 /* Decode LBRR flags */
                 for (n = 0; n < decControl.nChannelsInternal; n++)
@@ -201,7 +202,7 @@ namespace Concentus.Silk
                             channel_state[n].LBRR_flags[0] = 1;
                         }
                         else {
-                            LBRR_symbol = psRangeDec.dec_icdf(Tables.silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2], 8) + 1;
+                            LBRR_symbol = psRangeDec.dec_icdf(frameData, Tables.silk_LBRR_flags_iCDF_ptr[channel_state[n].nFramesPerPacket - 2], 8) + 1;
                             for (i = 0; i < channel_state[n].nFramesPerPacket; i++)
                             {
                                 channel_state[n].LBRR_flags[i] = Inlines.silk_RSHIFT(LBRR_symbol, i) & 1;
@@ -224,11 +225,11 @@ namespace Concentus.Silk
 
                                 if (decControl.nChannelsInternal == 2 && n == 0)
                                 {
-                                    Stereo.silk_stereo_decode_pred(psRangeDec, MS_pred_Q13);
+                                    Stereo.silk_stereo_decode_pred(psRangeDec, frameData, MS_pred_Q13);
                                     if (channel_state[1].LBRR_flags[i] == 0)
                                     {
                                         BoxedValueInt decodeOnlyMiddleBoxed = new BoxedValueInt(decode_only_middle);
-                                        Stereo.silk_stereo_decode_mid_only(psRangeDec, decodeOnlyMiddleBoxed);
+                                        Stereo.silk_stereo_decode_mid_only(psRangeDec, frameData, decodeOnlyMiddleBoxed);
                                         decode_only_middle = decodeOnlyMiddleBoxed.Val;
                                     }
                                 }
@@ -241,8 +242,8 @@ namespace Concentus.Silk
                                 {
                                     condCoding = SilkConstants.CODE_INDEPENDENTLY;
                                 }
-                                DecodeIndices.silk_decode_indices(channel_state[n], psRangeDec, i, 1, condCoding);
-                                DecodePulses.silk_decode_pulses(psRangeDec, pulses, channel_state[n].indices.signalType,
+                                DecodeIndices.silk_decode_indices(channel_state[n], psRangeDec, frameData, i, 1, condCoding);
+                                DecodePulses.silk_decode_pulses(psRangeDec, frameData, pulses, channel_state[n].indices.signalType,
                                     channel_state[n].indices.quantOffsetType, channel_state[n].frame_length);
                             }
                         }
@@ -256,13 +257,13 @@ namespace Concentus.Silk
                 if (lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL ||
                     (lostFlag == DecoderAPIFlag.FLAG_DECODE_LBRR && channel_state[0].LBRR_flags[channel_state[0].nFramesDecoded] == 1))
                 {
-                    Stereo.silk_stereo_decode_pred(psRangeDec, MS_pred_Q13);
+                    Stereo.silk_stereo_decode_pred(psRangeDec, frameData, MS_pred_Q13);
                     /* For LBRR data, decode mid-only flag only if side-channel's LBRR flag is false */
                     if ((lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL && channel_state[1].VAD_flags[channel_state[0].nFramesDecoded] == 0) ||
                         (lostFlag == DecoderAPIFlag.FLAG_DECODE_LBRR && channel_state[1].LBRR_flags[channel_state[0].nFramesDecoded] == 0))
                     {
                         BoxedValueInt decodeOnlyMiddleBoxed = new BoxedValueInt(decode_only_middle);
-                        Stereo.silk_stereo_decode_mid_only(psRangeDec, decodeOnlyMiddleBoxed);
+                        Stereo.silk_stereo_decode_mid_only(psRangeDec, frameData, decodeOnlyMiddleBoxed);
                         decode_only_middle = decodeOnlyMiddleBoxed.Val;
                     }
                     else
@@ -350,7 +351,7 @@ namespace Concentus.Silk
                         condCoding = SilkConstants.CODE_CONDITIONALLY;
                     }
 
-                    ret += channel_state[n].silk_decode_frame(psRangeDec, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec, lostFlag, condCoding);
+                    ret += channel_state[n].silk_decode_frame(psRangeDec, frameData, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec, lostFlag, condCoding);
                 }
                 else
                 {

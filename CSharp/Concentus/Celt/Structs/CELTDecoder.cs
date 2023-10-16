@@ -468,7 +468,7 @@ namespace Concentus.Celt.Structs
             this.loss_count = loss_count + 1;
         }
 
-        internal int celt_decode_with_ec(Memory<byte> data, int data_ptr,
+        internal int celt_decode_with_ec(ReadOnlySpan<byte> data, int data_ptr,
               int len, Span<short> pcm, int pcm_ptr, int frame_size, EntropyCoder dec, int accum)
         {
             int c, i, N;
@@ -578,7 +578,7 @@ namespace Concentus.Celt.Structs
             if (tell >= total_bits)
                 silence = 1;
             else if (tell == 1)
-                silence = dec.dec_bit_logp(15);
+                silence = dec.dec_bit_logp(data.Slice(data_ptr), 15);
             else
                 silence = 0;
 
@@ -594,14 +594,14 @@ namespace Concentus.Celt.Structs
             postfilter_tapset = 0;
             if (start == 0 && tell + 16 <= total_bits)
             {
-                if (dec.dec_bit_logp(1) != 0)
+                if (dec.dec_bit_logp(data.Slice(data_ptr), 1) != 0)
                 {
                     int qg, octave;
-                    octave = (int)dec.dec_uint(6);
-                    postfilter_pitch = (16 << octave) + (int)dec.dec_bits(4 + (uint)octave) - 1;
-                    qg = (int)dec.dec_bits(3);
+                    octave = (int)dec.dec_uint(data.Slice(data_ptr), 6);
+                    postfilter_pitch = (16 << octave) + (int)dec.dec_bits(data.Slice(data_ptr), 4 + (uint)octave) - 1;
+                    qg = (int)dec.dec_bits(data.Slice(data_ptr), 3);
                     if (dec.tell() + 2 <= total_bits)
-                        postfilter_tapset = dec.dec_icdf(Tables.tapset_icdf, 2);
+                        postfilter_tapset = dec.dec_icdf(data.Slice(data_ptr), Tables.tapset_icdf, 2);
                     postfilter_gain = ((short)(0.5 + (.09375f) * (((int)1) << (15))))/*Inlines.QCONST16(.09375f, 15)*/ * (qg + 1);
                 }
                 tell = dec.tell();
@@ -609,7 +609,7 @@ namespace Concentus.Celt.Structs
 
             if (LM > 0 && tell + 3 <= total_bits)
             {
-                isTransient = dec.dec_bit_logp(3);
+                isTransient = dec.dec_bit_logp(data.Slice(data_ptr), 3);
                 tell = dec.tell();
             }
             else
@@ -621,18 +621,18 @@ namespace Concentus.Celt.Structs
                 shortBlocks = 0;
 
             /* Decode the global flags (first symbols in the stream) */
-            intra_ener = tell + 3 <= total_bits ? dec.dec_bit_logp(3) : 0;
+            intra_ener = tell + 3 <= total_bits ? dec.dec_bit_logp(data.Slice(data_ptr), 3) : 0;
             /* Get band energies */
             QuantizeBands.unquant_coarse_energy(mode, start, end, oldBandE,
-                  intra_ener, dec, C, LM);
+                  intra_ener, dec, data.Slice(data_ptr), C, LM);
 
             tf_res = new int[nbEBands];
-            CeltCommon.tf_decode(start, end, isTransient, tf_res, LM, dec);
+            CeltCommon.tf_decode(start, end, isTransient, tf_res, LM, dec, data.Slice(data_ptr));
 
             tell = dec.tell();
             spread_decision = Spread.SPREAD_NORMAL;
             if (tell + 4 <= total_bits)
-                spread_decision = dec.dec_icdf(Tables.spread_icdf, 5);
+                spread_decision = dec.dec_icdf(data.Slice(data_ptr), Tables.spread_icdf, 5);
 
             cap = new int[nbEBands];
 
@@ -657,7 +657,7 @@ namespace Concentus.Celt.Structs
                 while (tell + (dynalloc_loop_logp << EntropyCoder.BITRES) < total_bits && boost < cap[i])
                 {
                     int flag;
-                    flag = dec.dec_bit_logp((uint)dynalloc_loop_logp);
+                    flag = dec.dec_bit_logp(data.Slice(data_ptr), (uint)dynalloc_loop_logp);
                     tell = (int)dec.tell_frac();
                     if (flag == 0)
                         break;
@@ -673,7 +673,7 @@ namespace Concentus.Celt.Structs
 
             fine_quant = new int[nbEBands];
             alloc_trim = tell + (6 << EntropyCoder.BITRES) <= total_bits ?
-                  dec.dec_icdf(Tables.trim_icdf, 7) : 5;
+                  dec.dec_icdf(data.Slice(data_ptr), Tables.trim_icdf, 7) : 5;
 
             bits = (((int)len * 8) << EntropyCoder.BITRES) - (int)dec.tell_frac() - 1;
             anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;
@@ -682,11 +682,11 @@ namespace Concentus.Celt.Structs
             pulses = new int[nbEBands];
             fine_priority = new int[nbEBands];
             
-            codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
+            codedBands = Rate.compute_allocation_decode(mode, start, end, offsets, cap,
                   alloc_trim, ref intensity, ref dual_stereo, bits, out balance, pulses,
-                  fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
+                  fine_quant, fine_priority, C, LM, dec, data.Slice(data_ptr), 0, 0);
 
-            QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, C);
+            QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, data.Slice(data_ptr), C);
 
             c = 0;
             do
@@ -699,17 +699,17 @@ namespace Concentus.Celt.Structs
 
             X = Arrays.InitTwoDimensionalArray<int>(C, N);   /*< Interleaved normalised MDCTs */
             
-            Bands.quant_all_bands(0, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
+            Bands.quant_all_bands_decode(0, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
-                  len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, ref this.rng);
+                  len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, data.Slice(data_ptr), LM, codedBands, ref this.rng);
 
             if (anti_collapse_rsv > 0)
             {
-                anti_collapse_on = (int)dec.dec_bits(1);
+                anti_collapse_on = (int)dec.dec_bits(data.Slice(data_ptr), 1);
             }
 
             QuantizeBands.unquant_energy_finalise(mode, start, end, oldBandE,
-                  fine_quant, fine_priority, len * 8 - dec.tell(), dec, C);
+                  fine_quant, fine_priority, len * 8 - dec.tell(), dec, data.Slice(data_ptr), C);
 
             if (anti_collapse_on != 0)
                 Bands.anti_collapse(mode, X, collapse_masks, LM, C, N,

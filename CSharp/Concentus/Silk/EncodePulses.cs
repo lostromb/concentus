@@ -106,6 +106,7 @@ namespace Concentus.Silk
         /// <param name="frame_length">I    Frame length</param>
         internal static void silk_encode_pulses(
             EntropyCoder psRangeEnc,
+            Span<byte> encodedDataOut,
             int signalType,
             int quantOffsetType,
             Span<sbyte> pulses,
@@ -213,7 +214,7 @@ namespace Concentus.Silk
                 }
             }
 
-            psRangeEnc.enc_icdf( RateLevelIndex, Tables.silk_rate_levels_iCDF[signalType >> 1], 8);
+            psRangeEnc.enc_icdf(encodedDataOut, RateLevelIndex, Tables.silk_rate_levels_iCDF[signalType >> 1], 8);
 
             /***************************************************/
             /* Sum-Weighted-Pulses Encoding                    */
@@ -222,17 +223,17 @@ namespace Concentus.Silk
             {
                 if (nRshifts[i] == 0)
                 {
-                    psRangeEnc.enc_icdf( sum_pulses[i], Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
+                    psRangeEnc.enc_icdf(encodedDataOut, sum_pulses[i], Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
                 }
                 else
                 {
-                    psRangeEnc.enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
+                    psRangeEnc.enc_icdf(encodedDataOut, SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
                     for (k = 0; k < nRshifts[i] - 1; k++)
                     {
-                        psRangeEnc.enc_icdf( SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1], 8);
+                        psRangeEnc.enc_icdf(encodedDataOut, SilkConstants.SILK_MAX_PULSES + 1, Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1], 8);
                     }
 
-                    psRangeEnc.enc_icdf( sum_pulses[i], Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1], 8);
+                    psRangeEnc.enc_icdf(encodedDataOut, sum_pulses[i], Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1], 8);
                 }
             }
 
@@ -243,7 +244,7 @@ namespace Concentus.Silk
             {
                 if (sum_pulses[i] > 0)
                 {
-                    ShellCoder.silk_shell_encoder(psRangeEnc, abs_pulses, i * SilkConstants.SHELL_CODEC_FRAME_LENGTH);
+                    ShellCoder.silk_shell_encoder(psRangeEnc, encodedDataOut, abs_pulses, i * SilkConstants.SHELL_CODEC_FRAME_LENGTH);
                 }
             }
 
@@ -262,10 +263,10 @@ namespace Concentus.Silk
                         for (j = nLS; j > 0; j--)
                         {
                             bit = Inlines.silk_RSHIFT(abs_q, j) & 1;
-                            psRangeEnc.enc_icdf( bit, Tables.silk_lsb_iCDF, 8);
+                            psRangeEnc.enc_icdf(encodedDataOut, bit, Tables.silk_lsb_iCDF, 8);
                         }
                         bit = abs_q & 1;
-                        psRangeEnc.enc_icdf( bit, Tables.silk_lsb_iCDF, 8);
+                        psRangeEnc.enc_icdf(encodedDataOut, bit, Tables.silk_lsb_iCDF, 8);
                     }
                 }
             }
@@ -273,7 +274,7 @@ namespace Concentus.Silk
             /****************/
             /* Encode signs */
             /****************/
-            CodeSigns.silk_encode_signs(psRangeEnc, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
+            CodeSigns.silk_encode_signs(psRangeEnc, encodedDataOut, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
         }
     }
 }

@@ -356,7 +356,7 @@ namespace Concentus.Structs
         /// <param name="float_api"></param>
         /// <returns></returns>
         internal int opus_encode_native<T>(ReadOnlySpan<short> pcm, int pcm_ptr, int frame_size,
-                        Memory<byte> data, int data_ptr, int out_data_bytes, int lsb_depth,
+                        Span<byte> data, int data_ptr, int out_data_bytes, int lsb_depth,
                         ReadOnlySpan<T> analysis_pcm, int analysis_size, int c1, int c2,
                         int analysis_channels, Downmix.downmix_func<T> downmix, int float_api)
         {
@@ -500,7 +500,7 @@ namespace Concentus.Structs
                     bw = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
                 else if (tocmode == OpusMode.MODE_HYBRID && bw <= OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND)
                     bw = OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-                data.Span[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
+                data[data_ptr] = CodecHelpers.gen_toc(tocmode, frame_rate, bw, this.stream_channels);
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
@@ -852,7 +852,7 @@ namespace Concentus.Structs
                     repacketize_len = out_data_bytes;
                 else
                     repacketize_len = Inlines.IMIN(3 * this.bitrate_bps / (3 * 8 * 50 / nb_frames), out_data_bytes);
-                ret = rp.opus_repacketizer_out_range_impl(0, nb_frames, data.Span, data_ptr, repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
+                ret = rp.opus_repacketizer_out_range_impl(0, nb_frames, data, data_ptr, repacketize_len, 0, (this.use_vbr == 0) ? 1 : 0);
                 if (ret < 0)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
@@ -878,7 +878,7 @@ namespace Concentus.Structs
 
             data_ptr += 1;
 
-            enc.enc_init(data.Slice(data_ptr), (uint)(max_data_bytes - 1));
+            enc.enc_init((uint)(max_data_bytes - 1));
 
             pcm_buf = new short[(total_buffer + frame_size) * this.channels];
             Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
@@ -1066,13 +1066,13 @@ namespace Concentus.Structs
                     Arrays.MemSetShort(this.delay_buffer, 0, prefill_offset);
                     Array.Copy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
-                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, zero, 1);
+                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, data.Slice(data_ptr), zero, 1);
                 }
 
                 Array.Copy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
 
                 BoxedValueInt boxed_silkBytes = new BoxedValueInt(nBytes);
-                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, boxed_silkBytes, 0);
+                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, data.Slice(data_ptr), boxed_silkBytes, 0);
                 nBytes = boxed_silkBytes.Val;
 
                 if (ret != 0)
@@ -1085,7 +1085,7 @@ namespace Concentus.Structs
                 if (nBytes == 0)
                 {
                     this.rangeFinal = 0;
-                    data.Span[data_ptr - 1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+                    data[data_ptr - 1] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
                     return 1;
                 }
@@ -1241,11 +1241,11 @@ namespace Concentus.Structs
             {
                 /* For SILK mode, the redundancy is inferred from the length */
                 if (this.mode == OpusMode.MODE_HYBRID && (redundancy != 0 || enc.tell() + 37 <= 8 * nb_compr_bytes))
-                    enc.enc_bit_logp(redundancy, 12);
+                    enc.enc_bit_logp(data.Slice(data_ptr),redundancy, 12);
                 if (redundancy != 0)
                 {
                     int max_redundancy;
-                    enc.enc_bit_logp(celt_to_silk, 1);
+                    enc.enc_bit_logp(data.Slice(data_ptr), celt_to_silk, 1);
                     if (this.mode == OpusMode.MODE_HYBRID)
                         max_redundancy = (max_data_bytes - 1) - nb_compr_bytes;
                     else
@@ -1255,7 +1255,7 @@ namespace Concentus.Structs
                     redundancy_bytes = Inlines.IMIN(max_redundancy, this.bitrate_bps / 1600);
                     redundancy_bytes = Inlines.IMIN(257, Inlines.IMAX(2, redundancy_bytes));
                     if (this.mode == OpusMode.MODE_HYBRID)
-                        enc.enc_uint((uint)(redundancy_bytes - 2), 256);
+                        enc.enc_uint(data.Slice(data_ptr), (uint)(redundancy_bytes - 2), 256);
                 }
             }
             else {
@@ -1272,12 +1272,12 @@ namespace Concentus.Structs
             if (this.mode == OpusMode.MODE_SILK_ONLY)
             {
                 ret = (enc.tell() + 7) >> 3;
-                enc.enc_done();
+                enc.enc_done(data.Slice(data_ptr));
                 nb_compr_bytes = ret;
             }
             else {
                 nb_compr_bytes = Inlines.IMIN((max_data_bytes - 1) - redundancy_bytes, nb_compr_bytes);
-                enc.enc_shrink((uint)nb_compr_bytes);
+                enc.enc_shrink(data.Slice(data_ptr), (uint)nb_compr_bytes);
             }
 
             if (this.analysis.enabled && redundancy != 0 || this.mode != OpusMode.MODE_SILK_ONLY)
@@ -1305,7 +1305,7 @@ namespace Concentus.Structs
             {
                 if (this.mode != this.prev_mode && this.prev_mode > 0)
                 {
-                    byte[] dummy = new byte[2];
+                    Span<byte> dummy = stackalloc byte[2];
                     celt_enc.ResetState();
 
                     /* Prefilling */
@@ -1315,7 +1315,7 @@ namespace Concentus.Structs
                 /* If false, we already busted the budget and we'll end up with a "PLC packet" */
                 if (enc.tell() <= 8 * nb_compr_bytes)
                 {
-                    ret = celt_enc.celt_encode_with_ec(pcm_buf, 0, frame_size, null, 0, nb_compr_bytes, enc);
+                    ret = celt_enc.celt_encode_with_ec(pcm_buf, 0, frame_size, data.Slice(data_ptr), 0, nb_compr_bytes, enc);
                     if (ret < 0)
                     {
                         return OpusError.OPUS_INTERNAL_ERROR;
@@ -1327,7 +1327,7 @@ namespace Concentus.Structs
             if (redundancy != 0 && celt_to_silk == 0)
             {
                 int err;
-                byte[] dummy = new byte[2];
+                Span<byte> dummy = stackalloc byte[2];
                 int N2, N4;
                 N2 = this.Fs / 200;
                 N4 = this.Fs / 400;
@@ -1349,7 +1349,7 @@ namespace Concentus.Structs
 
             /* Signalling the mode in the first byte */
             data_ptr -= 1;
-            data.Span[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
+            data[data_ptr] = CodecHelpers.gen_toc(this.mode, this.Fs / frame_size, curr_bandwidth, this.stream_channels);
 
             this.rangeFinal = enc.rng ^ redundant_rng;
 
@@ -1370,7 +1370,7 @@ namespace Concentus.Structs
                 {
                     return OpusError.OPUS_BUFFER_TOO_SMALL;
                 }
-                data.Span[data_ptr + 1] = 0;
+                data[data_ptr + 1] = 0;
                 ret = 1;
                 this.rangeFinal = 0;
             }
@@ -1382,7 +1382,7 @@ namespace Concentus.Structs
                   fill these in. This can't be done when the MDCT
                   modes are used because the decoder needs to know
                   the actual length for allocation purposes.*/
-                while (ret > 2 && data.Span[data_ptr + ret] == 0) ret--;
+                while (ret > 2 && data[data_ptr + ret] == 0) ret--;
             }
             /* Count ToC and redundancy */
             ret += 1 + redundancy_bytes;
@@ -1438,13 +1438,26 @@ namespace Concentus.Structs
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
+        [Obsolete("Use Span<> overrides instead")]
         public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
-            return Encode(in_pcm.AsSpan(pcm_offset), frame_size, out_data.AsMemory(out_data_offset), max_data_bytes);
+            return Encode(in_pcm.AsSpan(pcm_offset), frame_size, out_data.AsSpan(out_data_offset), max_data_bytes);
         }
 
-        public int Encode(ReadOnlySpan<short> in_pcm, int frame_size, Memory<byte> out_data, int max_data_bytes)
+        /// <summary>
+        /// Encodes an Opus frame.
+        /// </summary>
+        /// <param name="in_pcm">Input signal (Interleaved if stereo). Length should be at least frame_size * channels</param>
+        /// <param name="frame_size">The number of samples per channel in the inpus signal.
+        /// The frame size must be a valid Opus framesize for the given sample rate.
+        /// For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
+        /// (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.</param>
+        /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
+        /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
+        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
+        /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
+        public int Encode(ReadOnlySpan<short> in_pcm, int frame_size, Span<byte> out_data, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
             if (max_data_bytes > out_data.Length)
@@ -1493,9 +1506,25 @@ namespace Concentus.Structs
             }
         }
 
+        /// <summary>
+        /// Encodes an Opus frame using floating point input.
+        /// </summary>
+        /// <param name="in_pcm">Input signal in float format (Interleaved if stereo). Length should be at least frame_size * channels.
+        /// Value should be normalized to the +/- 1.0 range. Samples with a range beyond +/-1.0 will be clipped.</param>
+        /// <param name="in_pcm_offset">Offset to use when reading from in_pcm buffer</param>
+        /// <param name="frame_size">The number of samples per channel in the inpus signal.
+        /// The frame size must be a valid Opus framesize for the given sample rate.
+        /// For example, at 48Khz the permitted values are 120, 240, 480, 960, 1920, and 2880. Passing in a duration of less than 10ms
+        /// (480 samples at 48Khz) will prevent the encoder from using FEC, DTX, or hybrid modes.</param>
+        /// <param name="out_data">Destination buffer for the output payload. This must contain at least max_data_bytes</param>
+        /// <param name="out_data_offset">Offset to use when writing into output data buffer</param>
+        /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
+        /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
+        /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
+        [Obsolete("Use Span<> overrides instead")]
         public int Encode(float[] in_pcm, int in_pcm_offset, int frame_size, byte[] out_data, int out_data_offset, int max_data_bytes)
         {
-            return Encode(in_pcm.AsSpan(in_pcm_offset), frame_size, out_data.AsMemory(out_data_offset), max_data_bytes);
+            return Encode(in_pcm.AsSpan(in_pcm_offset), frame_size, out_data.AsSpan(out_data_offset), max_data_bytes);
         }
 
         /// <summary>
@@ -1511,7 +1540,7 @@ namespace Concentus.Structs
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
-        public int Encode(ReadOnlySpan<float> in_pcm, int frame_size, Memory<byte> out_data, int max_data_bytes)
+        public int Encode(ReadOnlySpan<float> in_pcm, int frame_size, Span<byte> out_data, int max_data_bytes)
         {
             // Check that the caller is telling the truth about its input buffers
             if (max_data_bytes > out_data.Length)

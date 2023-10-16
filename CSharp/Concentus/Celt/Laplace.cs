@@ -62,7 +62,7 @@ namespace Concentus.Celt
             return (uint)((ft * (int)(16384 - decay)) >> 15);
         }
 
-        internal static void ec_laplace_encode(EntropyCoder enc, ref int value, uint fs, int decay)
+        internal static void ec_laplace_encode(EntropyCoder enc, Span<byte> encodedData, ref int value, uint fs, int decay)
         {
             uint fl;
             int val = value;
@@ -105,10 +105,10 @@ namespace Concentus.Celt
                 Inlines.OpusAssert(fs > 0);
             }
 
-            enc.encode_bin(fl, fl + fs, 15);
+            enc.encode_bin(encodedData, fl, fl + fs, 15);
         }
 
-        internal static int ec_laplace_decode(EntropyCoder dec, uint fs, int decay)
+        internal static int ec_laplace_decode(EntropyCoder dec, ReadOnlySpan<byte> encodedData, uint fs, int decay)
         {
             int val = 0;
             uint fl;
@@ -149,7 +149,7 @@ namespace Concentus.Celt
             Inlines.OpusAssert(fl <= fm);
             Inlines.OpusAssert(fm < Inlines.IMIN(fl + fs, 32768));
 
-            dec.dec_update(fl, Inlines.IMIN(fl + fs, 32768), 32768);
+            dec.dec_update(encodedData, fl, Inlines.IMIN(fl + fs, 32768), 32768);
             return val;
         }
 

@@ -654,7 +654,7 @@ namespace Concentus.Celt
             return tf_select;
         }
 
-        internal static void tf_encode(int start, int end, int isTransient, int[] tf_res, int LM, int tf_select, EntropyCoder enc)
+        internal static void tf_encode(int start, int end, int isTransient, int[] tf_res, int LM, int tf_select, EntropyCoder enc, Span<byte> encodedData)
         {
             int curr, i;
             int tf_select_rsv;
@@ -673,7 +673,7 @@ namespace Concentus.Celt
             {
                 if (tell + logp <= budget)
                 {
-                    enc.enc_bit_logp(tf_res[i] ^ curr, (uint)logp);
+                    enc.enc_bit_logp(encodedData, tf_res[i] ^ curr, (uint)logp);
                     tell = (uint)enc.tell();
                     curr = tf_res[i];
                     tf_changed |= curr;
@@ -686,7 +686,7 @@ namespace Concentus.Celt
             if (tf_select_rsv != 0 &&
                   Tables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
                   Tables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
-                enc.enc_bit_logp(tf_select, 1);
+                enc.enc_bit_logp(encodedData, tf_select, 1);
             else
                 tf_select = 0;
             for (i = start; i < end; i++)
@@ -1185,7 +1185,7 @@ namespace Concentus.Celt
 
         }
 
-        internal static void tf_decode(int start, int end, int isTransient, int[] tf_res, int LM, EntropyCoder dec)
+        internal static void tf_decode(int start, int end, int isTransient, int[] tf_res, int LM, EntropyCoder dec, ReadOnlySpan<byte> encodedData)
         {
             int i, curr, tf_select;
             int tf_select_rsv;
@@ -1204,7 +1204,7 @@ namespace Concentus.Celt
             {
                 if (tell + logp <= budget)
                 {
-                    curr ^= dec.dec_bit_logp((uint)logp);
+                    curr ^= dec.dec_bit_logp(encodedData, (uint)logp);
                     tell = (uint)dec.tell();
                     tf_changed |= curr;
                 }
@@ -1216,7 +1216,7 @@ namespace Concentus.Celt
               Tables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
               Tables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
             {
-                tf_select = dec.dec_bit_logp(1);
+                tf_select = dec.dec_bit_logp(encodedData, 1);
             }
             for (i = start; i < end; i++)
             {
