@@ -446,7 +446,7 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("OPUS_BAD_ARG when creating MS encoder");
-                throw new OpusException("Could not create MS encoder", ret);
+                throw new OpusException("Could not create MS encoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
             return st;
         }
@@ -518,7 +518,7 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("Bad argument passed to CreateSurround");
-                throw new OpusException("Could not create multistream encoder", ret);
+                throw new OpusException("Could not create multistream encoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
             return st;
         }

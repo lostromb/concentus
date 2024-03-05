@@ -240,7 +240,7 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("OPUS_BAD_ARG when creating encoder");
-                throw new OpusException("Error while initializing encoder", ret);
+                throw new OpusException("Error while initializing encoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
         }
 
@@ -1495,14 +1495,14 @@ namespace Concentus.Structs
                     // An error happened; report it
                     if (ret == OpusError.OPUS_BAD_ARG)
                         throw new ArgumentException("OPUS_BAD_ARG while encoding");
-                    throw new OpusException("An error occurred during encoding", ret);
+                    throw new OpusException("An error occurred during encoding: " + CodecHelpers.opus_strerror(ret), ret);
                 }
 
                 return ret;
             }
-            catch (OutOfMemoryException e)
+            catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during encoding: " + e.Message);
+                throw new OpusException("Internal error during encoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 
@@ -1587,14 +1587,14 @@ namespace Concentus.Structs
                     // An error happened; report it
                     if (ret == OpusError.OPUS_BAD_ARG)
                         throw new ArgumentException("OPUS_BAD_ARG while decoding");
-                    throw new OpusException("An error occurred during encoding", ret);
+                    throw new OpusException("An error occurred during encoding: " + CodecHelpers.opus_strerror(ret), ret);
                 }
 
                 return ret;
             }
-            catch (OutOfMemoryException e)
+            catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during encoding: " + e.Message);
+                throw new OpusException("Internal error during encoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 

@@ -126,7 +126,7 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("Bad argument while creating MS decoder");
-                throw new OpusException("Could not create MS decoder", ret);
+                throw new OpusException("Could not create MS decoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
         }
 

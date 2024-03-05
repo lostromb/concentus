@@ -149,7 +149,7 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("OPUS_BAD_ARG when creating decoder");
-                throw new OpusException("Error while initializing decoder", ret);
+                throw new OpusException("Error while initializing decoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
         }
 
@@ -779,14 +779,14 @@ namespace Concentus.Structs
                     // An error happened; report it
                     if (ret == OpusError.OPUS_BAD_ARG)
                         throw new ArgumentException("OPUS_BAD_ARG while decoding");
-                    throw new OpusException("An error occurred during decoding", ret);
+                    throw new OpusException("An error occurred during decoding: " + CodecHelpers.opus_strerror(ret), ret);
                 }
 
                 return ret;
             }
             catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during decoding: " + e.Message);
+                throw new OpusException("Internal error during decoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 
@@ -858,7 +858,7 @@ namespace Concentus.Structs
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else
-                    throw new OpusException("An invalid packet was provided (unable to parse # of samples)");
+                    throw new OpusException("An invalid packet was provided (unable to parse # of samples)", OpusError.OPUS_INVALID_PACKET);
             }
             output = new short[frame_size * this.channels];
 
@@ -872,7 +872,7 @@ namespace Concentus.Structs
                     // An error happened; report it
                     if (ret == OpusError.OPUS_BAD_ARG)
                         throw new ArgumentException("OPUS_BAD_ARG when decoding");
-                    throw new OpusException("An error occurred during decoding", ret);
+                    throw new OpusException("An error occurred during decoding: " + CodecHelpers.opus_strerror(ret), ret);
                 }
 
                 if (ret > 0)
@@ -885,7 +885,7 @@ namespace Concentus.Structs
             }
             catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during decoding: " + e.Message);
+                throw new OpusException("Internal error during decoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 
