@@ -15,7 +15,7 @@
     <Authors>Logan Stromberg</Authors>
     <PackageProjectUrl>https://github.com/lostromb/concentus</PackageProjectUrl>
     <PackageIconUrl>http://durandal.dnsalias.net/imgur/concentus.png</PackageIconUrl>
-    <PackageLicenseFile>LICENSE</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Copyright>Copyright © Xiph.Org Foundation, Skype Limited, CSIRO, Microsoft Corp.</Copyright>
     <PackageReleaseNotes>1.1.7 Including .Net 3.5 was a mistake as it becomes the default for everyone</PackageReleaseNotes>
     <IncludeSymbols>true</IncludeSymbols>
