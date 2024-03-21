@@ -39,11 +39,12 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
 
     internal static class Pitch
     {
-        internal static void find_best_pitch(int[] xcorr, int[] y, int len,
+        internal static void find_best_pitch(Span<int> xcorr, Span<int> y, int len,
                                     int max_pitch, int[]best_pitch,
                                     int yshift, int maxcorr
                                     )
@@ -207,7 +208,7 @@ namespace Concentus.Celt
         }
 
         // Fixme: remove pointers and optimize
-        internal static void pitch_search(int[] x_lp, int x_lp_ptr, int[] y,
+        internal static void pitch_search(Span<int> x_lp, int x_lp_ptr, int[] y,
                   int len, int max_pitch, out int pitch)
         {
             int i, j;
@@ -232,8 +233,8 @@ namespace Concentus.Celt
             for (j = 0; j < lag >> 2; j++)
                 y_lp4[j] = y[2 * j];
 
-            xmax = Inlines.celt_maxabs32(x_lp4, 0, len >> 2);
-            ymax = Inlines.celt_maxabs32(y_lp4, 0, lag >> 2);
+            xmax = Inlines.celt_maxabs32(x_lp4, len >> 2);
+            ymax = Inlines.celt_maxabs32(y_lp4, lag >> 2);
             shift = Inlines.celt_ilog2(Inlines.MAX32(1, Inlines.MAX32(xmax, ymax))) - 11;
             if (shift > 0)
             {
@@ -249,7 +250,7 @@ namespace Concentus.Celt
             }
 
             /* Coarse search with 4x decimation */
-            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4, y_lp4, xcorr, len >> 2, max_pitch >> 2);
+            maxcorr =  CeltPitchXCorr.pitch_xcorr(x_lp4, 0, y_lp4, 0, xcorr, len >> 2, max_pitch >> 2);
 
             find_best_pitch(xcorr, y_lp4, len >> 2, max_pitch >> 2, best_pitch, 0, maxcorr);
 
@@ -309,7 +310,7 @@ namespace Concentus.Celt
             int g, g0;
             int pg;
             int yy, xx, xy, xy2;
-            int[] xcorr = new int[3];
+            Span<int> xcorr = new int[3];
             int best_xy, best_yy;
             int offset;
             int minperiod0 = minperiod;
@@ -323,21 +324,8 @@ namespace Concentus.Celt
                 T0_ = maxperiod - 1;
 
             T = T0 = T0_;
-            int[] yy_lookup = new int[maxperiod + 1];
-
-#if UNSAFE
-            unsafe
-            {
-                fixed (int* px_base = x)
-                {
-                    int* px = px_base + x_ptr;
-                    int* px2 = px_base + x_ptr - T0;
-                    Kernels.dual_inner_prod(px, px, px2, N, out xx, out xy);
-                }
-            }
-#else
-            Kernels.dual_inner_prod(x, x_ptr, x, x_ptr, x, x_ptr - T0, N, out xx, out xy);
-#endif
+            Span<int> yy_lookup = new int[maxperiod + 1];
+            Kernels.dual_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - T0), N, out xx, out xy);
 
             yy_lookup[0] = xx;
             yy = xx;
@@ -387,20 +375,7 @@ namespace Concentus.Celt
                     T1b = Inlines.celt_udiv(2 * second_check[k] * T0 + k, 2 * k);
                 }
 
-#if UNSAFE
-                unsafe
-                {
-                    fixed (int* px_base = x)
-                    {
-                        int* px = px_base + x_ptr;
-                        int* px2 = px_base + x_ptr - T1;
-                        int* px3 = px_base + x_ptr - T1b;
-                        Kernels.dual_inner_prod(px, px2, px3, N, out xy, out xy2);
-                    }
-                }
-#else
-                Kernels.dual_inner_prod(x, x_ptr, x, x_ptr - T1, x, x_ptr - T1b, N, out xy, out xy2);
-#endif
+                Kernels.dual_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - T1), x.AsSpan().Slice(x_ptr - T1b), N, out xy, out xy2);
                 
                 xy += xy2;
                 yy = yy_lookup[T1] + yy_lookup[T1b];
@@ -455,24 +430,10 @@ namespace Concentus.Celt
                 pg = (Inlines.SHR32(Inlines.frac_div32(best_xy, best_yy + 1), 16));
             }
 
-#if UNSAFE
-            unsafe
-            {
-                fixed (int* px_base = x)
-                {
-                    int* px = px_base + x_ptr;
-                    for (k = 0; k < 3; k++)
-                    {
-                        xcorr[k] = Kernels.celt_inner_prod(px, px - (T + k - 1), N);
-                    }
-                }
-            }
-#else
             for (k = 0; k < 3; k++)
             {
-                xcorr[k] = Kernels.celt_inner_prod(x, x_ptr, x, x_ptr - (T + k - 1), N);
+                xcorr[k] = Kernels.celt_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - (T + k - 1)), N);
             }
-#endif
 
             if ((xcorr[2] - xcorr[0]) > Inlines.MULT16_32_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, xcorr[1] - xcorr[0]))
             {

@@ -215,9 +215,9 @@ namespace Concentus.Silk
         /// <returns></returns>
         internal static int silk_resampler(
             SilkResamplerState S,
-            short[] output,
+            Span<short> output,
             int output_ptr,
-            short[] input,
+            Span<short> input,
             int input_ptr,
             int inLen)
         {
@@ -233,7 +233,7 @@ namespace Concentus.Silk
             short[] delayBufPtr = S.delayBuf;
 
             /* Copy to delay buffer */
-            Array.Copy(input, input_ptr, delayBufPtr, S.inputDelay, nSamples);
+            input.Slice(input_ptr, nSamples).CopyTo(delayBufPtr.AsSpan(S.inputDelay));
 
             switch (S.resampler_function)
             {
@@ -250,13 +250,13 @@ namespace Concentus.Silk
                     silk_resampler_private_down_FIR(S, output, output_ptr + S.Fs_out_kHz, input, input_ptr + nSamples, inLen - S.Fs_in_kHz);
                     break;
                 default:
-                    Array.Copy(delayBufPtr, 0, output, output_ptr, S.Fs_in_kHz);
-                    Array.Copy(input, input_ptr + nSamples, output, output_ptr + S.Fs_out_kHz, inLen - S.Fs_in_kHz);
+                    delayBufPtr.AsSpan(0, S.Fs_in_kHz).CopyTo(output.Slice(output_ptr));
+                    input.Slice(input_ptr + nSamples, inLen - S.Fs_in_kHz).CopyTo(output.Slice(output_ptr + S.Fs_out_kHz));
                     break;
             }
 
             /* Copy to delay buffer */
-            Array.Copy(input, input_ptr + inLen - S.inputDelay, delayBufPtr, 0, S.inputDelay);
+            input.Slice(input_ptr + inLen - S.inputDelay, S.inputDelay).CopyTo(delayBufPtr);
 
             return SilkError.SILK_NO_ERROR;
         }
@@ -391,11 +391,11 @@ namespace Concentus.Silk
         /// <param name="A_Q14">I    AR coefficients, Q14</param>
         /// <param name="len">I    Signal length</param>
         internal static void silk_resampler_private_AR2(
-            int[] S,
+            Span<int> S,
             int S_ptr,
-            int[] out_Q8,
+            Span<int> out_Q8,
             int out_Q8_ptr,
-            short[] input,
+            Span<short> input,
             int input_ptr,
             short[] A_Q14,
             int len)
@@ -413,10 +413,10 @@ namespace Concentus.Silk
         }
 
         internal static int silk_resampler_private_down_FIR_INTERPOL(
-            short[] output,
+            Span<short> output,
             int output_ptr,
             int[] buf,
-            short[] FIR_Coefs,
+            Span<short> FIR_Coefs,
             int FIR_Coefs_ptr,
             int FIR_Order,
             int FIR_Fracs,
@@ -536,9 +536,9 @@ namespace Concentus.Silk
         /// <param name="inLen">I    Number of input samples</param>
         internal static void silk_resampler_private_down_FIR(
             SilkResamplerState S,
-            short[] output,
+            Span<short> output,
             int output_ptr,
-            short[] input,
+            Span<short> input,
             int input_ptr,
             int inLen)
         {
@@ -583,7 +583,7 @@ namespace Concentus.Silk
         }
 
         internal static int silk_resampler_private_IIR_FIR_INTERPOL(
-            short[] output,
+            Span<short> output,
             int output_ptr,
             short[] buf,
             int max_index_Q16,
@@ -621,9 +621,9 @@ namespace Concentus.Silk
         /// <param name="inLen">I    Number of input samples</param>
         internal static void silk_resampler_private_IIR_FIR(
             SilkResamplerState S,
-            short[] output,
+            Span<short> output,
             int output_ptr,
-            short[] input,
+            Span<short> input,
             int input_ptr,
             int inLen)
         {
@@ -675,9 +675,9 @@ namespace Concentus.Silk
         /// <param name="len">I    Number of input samples</param>
         internal static void silk_resampler_private_up2_HQ(
             int[] S,
-            short[] output,
+            Span<short> output,
             int output_ptr,
-            short[] input,
+            Span<short> input,
             int input_ptr,
             int len)
         {

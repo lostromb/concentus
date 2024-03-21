@@ -47,7 +47,7 @@ namespace Concentus.Silk
         internal static void silk_decode_core(
                 SilkChannelDecoder psDec,                         /* I/O  Decoder state                               */
                 SilkDecoderControl psDecCtrl,                     /* I    Decoder control                             */
-                short[] xq,                           /* O    Decoded speech                              */
+                Span<short> xq,                           /* O    Decoded speech                              */
                 int xq_ptr,
                 short[] pulses     /* I    Pulse signal [MAX_FRAME_LENGTH]                               */
             )
@@ -171,7 +171,7 @@ namespace Concentus.Silk
 
                         if (k == 2)
                         {
-                            Array.Copy(xq, xq_ptr, psDec.outBuf, psDec.ltp_mem_length, 2 * psDec.subfr_length);
+                            xq.Slice(xq_ptr, 2 * psDec.subfr_length).CopyTo(psDec.outBuf.AsSpan(psDec.ltp_mem_length));
                         }
 
                         Filters.silk_LPC_analysis_filter(sLTP, start_idx, psDec.outBuf, (start_idx + k * psDec.subfr_length),

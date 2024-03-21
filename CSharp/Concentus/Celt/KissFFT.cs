@@ -44,6 +44,7 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
     using System.Threading;
     internal static class KissFFT
@@ -70,7 +71,7 @@ namespace Concentus.Celt
             return x >> 1;
         }
 
-        internal static void kf_bfly2(int[] Fout, int fout_ptr, int m, int N)
+        internal static void kf_bfly2(Span<int> Fout, int fout_ptr, int m, int N)
         {
             int Fout2;
             int i;
@@ -117,7 +118,7 @@ namespace Concentus.Celt
         }
 
         internal static void kf_bfly4(
-                     int[] Fout,
+                     Span<int> Fout,
                      int fout_ptr,
                      int fstride,
                      FFTState st,
@@ -203,7 +204,7 @@ namespace Concentus.Celt
         }
 
         internal static void kf_bfly3(
-                     int[] Fout,
+                     Span<int> Fout,
                      int fout_ptr,
                      int fstride,
                      FFTState st,
@@ -263,7 +264,7 @@ namespace Concentus.Celt
         }
 
         internal static void kf_bfly5(
-                     int[] Fout,
+                     Span<int> Fout,
                      int fout_ptr,
                      int fstride,
                      FFTState st,
@@ -360,7 +361,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void opus_fft_impl(FFTState st, int[] fout, int fout_ptr)
+        internal static void opus_fft_impl(FFTState st, Span<int> fout, int fout_ptr)
         {
             int m2, m;
             int p;

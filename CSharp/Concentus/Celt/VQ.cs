@@ -39,11 +39,12 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
 
     internal static class VQ
     {
-        internal static void exp_rotation1(int[] X, int X_ptr, int len, int stride, int c, int s)
+        internal static void exp_rotation1(Span<int> X, int X_ptr, int len, int stride, int c, int s)
         {
             int i;
             int ms;
@@ -73,7 +74,7 @@ namespace Concentus.Celt
 
         private static int[] SPREAD_FACTOR = { 15, 10, 5 };
         
-        internal static void exp_rotation(int[] X, int X_ptr, int len, int dir, int stride, int K, int spread)
+        internal static void exp_rotation(Span<int> X, int X_ptr, int len, int dir, int stride, int K, int spread)
         {
             int i;
             int c, s;
@@ -133,7 +134,7 @@ namespace Concentus.Celt
 
         /** Takes the pitch vector and the decoded residual vector, computes the gain
             that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-        internal static void normalise_residual(int[] iy, int[] X, int X_ptr,
+        internal static void normalise_residual(int[] iy, Span<int> X, int X_ptr,
               int N, int Ryy, int gain)
         {
             int i;
@@ -179,8 +180,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        internal static uint alg_quant(int[] X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc
-           )
+        internal static uint alg_quant(Span<int> X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc, Span<byte> encodedData)
         {
             int[] y = new int[N];
             int[] iy = new int[N];
@@ -325,7 +325,7 @@ namespace Concentus.Celt
                 iy[j] = signx[j] < 0 ? -iy[j] : iy[j];
             } while (++j < N);
 
-            CWRS.encode_pulses(iy, N, K, enc);
+            CWRS.encode_pulses(iy, N, K, enc, encodedData);
 
             collapse_mask = extract_collapse_mask(iy, N, B);
 
@@ -334,15 +334,15 @@ namespace Concentus.Celt
 
         /** Decode pulse vector and combine the result with the pitch vector to produce
             the final normalised signal in the current band. */
-        internal static uint alg_unquant(int[] X, int X_ptr, int N, int K, int spread, int B,
-              EntropyCoder dec, int gain)
+        internal static uint alg_unquant(Span<int> X, int X_ptr, int N, int K, int spread, int B,
+              EntropyCoder dec, ReadOnlySpan<byte> encodedData, int gain)
         {
             int Ryy;
             uint collapse_mask;
             int[] iy = new int[N];
             Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
-            Ryy = CWRS.decode_pulses(iy, N, K, dec);
+            Ryy = CWRS.decode_pulses(iy, N, K, dec, encodedData);
             normalise_residual(iy, X, X_ptr, N, Ryy, gain);
             exp_rotation(X, X_ptr, N, -1, B, K, spread);
             collapse_mask = extract_collapse_mask(iy, N, B);
@@ -350,7 +350,7 @@ namespace Concentus.Celt
             return collapse_mask;
         }
 
-        internal static void renormalise_vector(int[] X, int X_ptr, int N, int gain)
+        internal static void renormalise_vector(Span<int> X, int N, int gain)
         {
             int i;
             int k;
@@ -358,23 +358,12 @@ namespace Concentus.Celt
             int g;
             int t;
             int xptr;
-#if UNSAFE
-            unsafe
-            {
-                fixed (int* px_base = X)
-                {
-                    int* px = px_base + X_ptr;
-                    E = CeltConstants.EPSILON + Kernels.celt_inner_prod(px, px, N);
-                }
-            }
-#else
-            E = CeltConstants.EPSILON + Kernels.celt_inner_prod(X, X_ptr, X, X_ptr, N);
-#endif
+            E = CeltConstants.EPSILON + Kernels.celt_inner_prod(X, X, N);
             k = Inlines.celt_ilog2(E) >> 1;
             t = Inlines.VSHR32(E, 2 * (k - 7));
             g = Inlines.MULT16_16_P15(Inlines.celt_rsqrt_norm(t), gain);
 
-            xptr = X_ptr;
+            xptr = 0;
             for (i = 0; i < N; i++)
             {
                 X[xptr] = Inlines.EXTRACT16(Inlines.PSHR32(Inlines.MULT16_16(g, X[xptr]), k + 1));
@@ -383,7 +372,7 @@ namespace Concentus.Celt
             /*return celt_sqrt(E);*/
         }
 
-        internal static int stereo_itheta(int[] X, int X_ptr, int[] Y, int Y_ptr, int stereo, int N)
+        internal static int stereo_itheta(Span<int> X, Span<int> Y, int stereo, int N)
         {
             int i;
             int itheta;
@@ -396,28 +385,15 @@ namespace Concentus.Celt
                 for (i = 0; i < N; i++)
                 {
                     int m, s;
-                    m = Inlines.ADD16(Inlines.SHR16(X[X_ptr + i], 1), Inlines.SHR16(Y[Y_ptr + i], 1));
-                    s = Inlines.SUB16(Inlines.SHR16(X[X_ptr + i], 1), Inlines.SHR16(Y[Y_ptr + i], 1));
+                    m = Inlines.ADD16(Inlines.SHR16(X[i], 1), Inlines.SHR16(Y[i], 1));
+                    s = Inlines.SUB16(Inlines.SHR16(X[i], 1), Inlines.SHR16(Y[i], 1));
                     Emid = Inlines.MAC16_16(Emid, m, m);
                     Eside = Inlines.MAC16_16(Eside, s, s);
                 }
             }
             else {
-#if UNSAFE
-                unsafe
-                {
-                    fixed (int* px_base = X, py_base = Y)
-                    {
-                        int* px = px_base + X_ptr;
-                        int* py = py_base + Y_ptr;
-                        Emid += Kernels.celt_inner_prod(px, px, N);
-                        Eside += Kernels.celt_inner_prod(py, py, N);
-                    }
-                }
-#else
-                Emid += Kernels.celt_inner_prod(X, X_ptr, X, X_ptr, N);
-                Eside += Kernels.celt_inner_prod(Y, Y_ptr, Y, Y_ptr, N);
-#endif
+                Emid += Kernels.celt_inner_prod(X, X, N);
+                Eside += Kernels.celt_inner_prod(Y, Y, N);
             }
             mid = (Inlines.celt_sqrt(Emid));
             side = (Inlines.celt_sqrt(Eside));

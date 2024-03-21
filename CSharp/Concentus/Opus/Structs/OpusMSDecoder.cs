@@ -126,22 +126,22 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("Bad argument while creating MS decoder");
-                throw new OpusException("Could not create MS decoder", ret);
+                throw new OpusException("Could not create MS decoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
         }
 
         internal delegate void opus_copy_channel_out_func<T>(
-          T[] dst,
+          Span<T> dst,
           int dst_ptr,
           int dst_stride,
           int dst_channel,
-          short[] src,
+          Span<short> src,
           int src_ptr,
           int src_stride,
           int frame_size
         );
 
-        internal static int opus_multistream_packet_validate(byte[] data, int data_ptr,
+        internal static int opus_multistream_packet_validate(ReadOnlySpan<byte> data, int data_ptr,
             int len, int nb_streams, int Fs)
         {
             int s;
@@ -175,7 +175,7 @@ namespace Concentus.Structs
         }
 
         internal int opus_multistream_decode_native<T>(
-      byte[] data,
+      ReadOnlySpan<byte> data,
       int data_ptr,
       int len,
       T[] pcm,
@@ -288,11 +288,11 @@ namespace Concentus.Structs
         }
 
         internal static void opus_copy_channel_out_float(
-          float[] dst,
+          Span<float> dst,
           int dst_ptr,
           int dst_stride,
           int dst_channel,
-          short[] src,
+          Span<short> src,
           int src_ptr,
           int src_stride,
           int frame_size
@@ -312,11 +312,11 @@ namespace Concentus.Structs
         }
 
         internal static void opus_copy_channel_out_short(
-          short[] dst,
+          Span<short> dst,
           int dst_ptr,
           int dst_stride,
           int dst_channel,
-          short[] src,
+          Span<short> src,
           int src_ptr,
           int src_stride,
           int frame_size

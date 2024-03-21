@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class FindLTP
@@ -281,7 +282,7 @@ namespace Concentus.Silk
         /// <param name="LTP_coefs_Q14_ptr"></param>
         internal static void silk_fit_LTP(
             int[] LTP_coefs_Q16,
-            short[] LTP_coefs_Q14,
+            Span<short> LTP_coefs_Q14,
             int LTP_coefs_Q14_ptr)
         {
             int i;

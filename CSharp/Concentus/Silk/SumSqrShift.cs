@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class SumSqrShift
@@ -51,7 +52,7 @@ namespace Concentus.Silk
         internal static void silk_sum_sqr_shift(
             out int energy,
             out int shift,
-            short[] x,
+            Span<short> x,
             int x_ptr,
             int len)
         {

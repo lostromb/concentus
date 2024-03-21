@@ -31,7 +31,7 @@ namespace ConcentusDemo
 
         public ConcentusCodec()
         {
-            _encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
+            _encoder = new OpusEncoder(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
 
             SetBitrate(_bitrate);
             SetComplexity(_complexity);

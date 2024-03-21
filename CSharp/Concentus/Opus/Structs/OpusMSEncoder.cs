@@ -89,7 +89,7 @@ namespace Concentus.Structs
         #region Encoder API functions
 
         internal delegate void opus_copy_channel_in_func<T>(
-            short[] dst, int dst_ptr, int dst_stride, T[] src, int src_ptr, int src_stride, int src_channel, int frame_size);
+            Span<short> dst, int dst_ptr, int dst_stride, Span<T> src, int src_ptr, int src_stride, int src_channel, int frame_size);
 
         internal static int validate_encoder_layout(ChannelLayout layout)
         {
@@ -446,7 +446,7 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("OPUS_BAD_ARG when creating MS encoder");
-                throw new OpusException("Could not create MS encoder", ret);
+                throw new OpusException("Could not create MS encoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
             return st;
         }
@@ -518,7 +518,7 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("Bad argument passed to CreateSurround");
-                throw new OpusException("Could not create multistream encoder", ret);
+                throw new OpusException("Could not create multistream encoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
             return st;
         }
@@ -601,7 +601,7 @@ namespace Concentus.Structs
             T[] pcm,
             int pcm_ptr,
             int analysis_frame_size,
-            byte[] data,
+            Span<byte> data,
             int data_ptr,
             int max_data_bytes,
             int lsb_depth,
@@ -645,7 +645,7 @@ namespace Concentus.Structs
                 channels = this.layout.nb_streams + this.layout.nb_coupled_streams;
                 delay_compensation = this.encoders[encoder_ptr].Lookahead;
                 delay_compensation -= Fs / 400;
-                frame_size = CodecHelpers.compute_frame_size(pcm, pcm_ptr, analysis_frame_size,
+                frame_size = CodecHelpers.compute_frame_size(pcm.AsSpan(pcm_ptr), analysis_frame_size,
                       this.variable_duration, channels, Fs, this.bitrate_bps,
                       delay_compensation, downmix, this.subframe_mem, this.encoders[encoder_ptr].analysis.enabled);
             }
@@ -782,7 +782,7 @@ namespace Concentus.Structs
                 if (vbr == 0 && s == this.layout.nb_streams - 1)
                     enc.Bitrate = (curr_max * (8 * Fs / frame_size));
                 len = enc.opus_encode_native(buf, 0, frame_size, tmp_data, 0, curr_max, lsb_depth,
-                      pcm, pcm_ptr, analysis_frame_size, c1, c2, this.layout.nb_channels, downmix, float_api);
+                      pcm.AsSpan(pcm_ptr), analysis_frame_size, c1, c2, this.layout.nb_channels, downmix, float_api);
                 if (len < 0)
                 {
                     return len;
@@ -801,10 +801,10 @@ namespace Concentus.Structs
         }
 
         internal static void opus_copy_channel_in_float(
-          short[] dst,
+          Span<short> dst,
           int dst_ptr,
           int dst_stride,
-          float[] src,
+          Span<float> src,
           int src_ptr,
           int src_stride,
           int src_channel,
@@ -817,10 +817,10 @@ namespace Concentus.Structs
         }
 
         internal static void opus_copy_channel_in_short(
-          short[] dst,
+          Span<short> dst,
           int dst_ptr,
           int dst_stride,
-          short[] src,
+          Span<short> src,
           int src_ptr,
           int src_stride,
           int src_channel,

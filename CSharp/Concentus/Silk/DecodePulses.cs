@@ -36,6 +36,7 @@ namespace Concentus.Silk
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
     using Concentus.Silk.Structs;
+    using System;
     using System.Diagnostics;
 
     internal static class DecodePulses
@@ -45,6 +46,7 @@ namespace Concentus.Silk
         /*********************************************/
         internal static void silk_decode_pulses(
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
+            ReadOnlySpan<byte> frameData,
             short[] pulses,                       /* O    Excitation signal                           */
             int signalType,                     /* I    Sigtype                                     */
             int quantOffsetType,                /* I    quantOffsetType                             */
@@ -59,7 +61,7 @@ namespace Concentus.Silk
             /*********************/
             /* Decode rate level */
             /*********************/
-            RateLevelIndex = psRangeDec.dec_icdf(Tables.silk_rate_levels_iCDF[signalType >> 1], 8);
+            RateLevelIndex = psRangeDec.dec_icdf(frameData, Tables.silk_rate_levels_iCDF[signalType >> 1], 8);
 
             /* Calculate number of shell blocks */
             Inlines.OpusAssert(1 << SilkConstants.LOG2_SHELL_CODEC_FRAME_LENGTH == SilkConstants.SHELL_CODEC_FRAME_LENGTH);
@@ -76,14 +78,14 @@ namespace Concentus.Silk
             for (i = 0; i < iter; i++)
             {
                 nLshifts[i] = 0;
-                sum_pulses[i] = psRangeDec.dec_icdf(Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
+                sum_pulses[i] = psRangeDec.dec_icdf(frameData, Tables.silk_pulses_per_block_iCDF[RateLevelIndex], 8);
 
                 /* LSB indication */
                 while (sum_pulses[i] == SilkConstants.SILK_MAX_PULSES + 1)
                 {
                     nLshifts[i]++;
                     /* When we've already got 10 LSBs, we shift the table to not allow (SILK_MAX_PULSES + 1) */
-                    sum_pulses[i] = psRangeDec.dec_icdf(
+                    sum_pulses[i] = psRangeDec.dec_icdf(frameData, 
                           Tables.silk_pulses_per_block_iCDF[SilkConstants.N_RATE_LEVELS - 1], (nLshifts[i] == 10 ? 1 : 0), 8);
                 }
             }
@@ -95,7 +97,7 @@ namespace Concentus.Silk
             {
                 if (sum_pulses[i] > 0)
                 {
-                    ShellCoder.silk_shell_decoder(pulses, Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH), psRangeDec, sum_pulses[i]);
+                    ShellCoder.silk_shell_decoder(pulses, Inlines.silk_SMULBB(i, SilkConstants.SHELL_CODEC_FRAME_LENGTH), psRangeDec, frameData, sum_pulses[i]);
                 }
                 else
                 {
@@ -118,7 +120,7 @@ namespace Concentus.Silk
                         for (j = 0; j < nLS; j++)
                         {
                             abs_q = Inlines.silk_LSHIFT(abs_q, 1);
-                            abs_q += psRangeDec.dec_icdf(Tables.silk_lsb_iCDF, 8);
+                            abs_q += psRangeDec.dec_icdf(frameData, Tables.silk_lsb_iCDF, 8);
                         }
                         pulses[pulses_ptr + k] = (short)(abs_q);
                     }
@@ -130,7 +132,7 @@ namespace Concentus.Silk
             /****************************************/
             /* Decode and add signs to pulse signal */
             /****************************************/
-            CodeSigns.silk_decode_signs(psRangeDec, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
+            CodeSigns.silk_decode_signs(psRangeDec, frameData, pulses, frame_length, signalType, quantOffsetType, sum_pulses);
         }
     }
 }

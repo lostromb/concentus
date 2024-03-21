@@ -213,7 +213,7 @@ namespace Concentus.Common
         /// <summary>
         /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer&lt;short&gt;, int *, Pointer&lt;short&gt;, Pointer&lt;int&gt;);
         /// </summary>
-        private delegate int resampler_basic_func(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len);
+        private delegate int resampler_basic_func(int channel_index, Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len);
 
         private static short WORD2INT(float x)
         {
@@ -270,7 +270,7 @@ namespace Concentus.Common
                 interp2 += 1;
         }
 
-        private int resampler_basic_direct_single(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        private int resampler_basic_direct_single(int channel_index, Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int N = this.filt_len;
             int out_sample = 0;
@@ -306,7 +306,7 @@ namespace Concentus.Common
             return out_sample;
         }
 
-        private int resampler_basic_interpolate_single(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        private int resampler_basic_interpolate_single(int channel_index, Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int N = this.filt_len;
             int out_sample = 0;
@@ -516,7 +516,7 @@ namespace Concentus.Common
             }
         }
 
-        private void speex_resampler_process_native(int channel_index, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        private void speex_resampler_process_native(int channel_index, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int j = 0;
             int N = this.filt_len;
@@ -540,7 +540,7 @@ namespace Concentus.Common
                 this.mem[j] = this.mem[j + ilen];
         }
 
-        private int speex_resampler_magic(int channel_index, short[] output, ref int output_ptr, int out_len)
+        private int speex_resampler_magic(int channel_index, Span<short> output, ref int output_ptr, int out_len)
         {
             int tmp_in_len = this.magic_samples[channel_index];
             int mem_ptr = channel_index * this.mem_alloc_size;
@@ -657,7 +657,7 @@ namespace Concentus.Common
         /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
         /// of output samples actually produced</param>
-        public void Process(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        public void Process(int channel_index, Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int j;
             int ilen = in_len;
@@ -715,7 +715,7 @@ namespace Concentus.Common
         /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
         /// of output samples actually produced</param>
-        public void Process(int channel_index, float[] input, int input_ptr, ref int in_len, float[] output, int output_ptr, ref int out_len)
+        public void Process(int channel_index, Span<float> input, int input_ptr, ref int in_len, Span<float> output, int output_ptr, ref int out_len)
         {
             int j;
             int istride_save = this.in_stride;
@@ -789,7 +789,7 @@ namespace Concentus.Common
         /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
         /// will be set to the number of samples per channel actually produced</param>
-        public void ProcessInterleaved(float[] input, int input_ptr, ref int in_len, float[] output, int output_ptr, ref int out_len)
+        public void ProcessInterleaved(Span<float> input, int input_ptr, ref int in_len, Span<float> output, int output_ptr, ref int out_len)
         {
             int i;
             int istride_save, ostride_save;
@@ -822,7 +822,7 @@ namespace Concentus.Common
         /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
         /// will be set to the number of samples per channel actually produced</param>
-        public void ProcessInterleaved(short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        public void ProcessInterleaved(Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int i;
             int istride_save, ostride_save;
