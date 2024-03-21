@@ -5,6 +5,8 @@ using System.IO;
 using ParityTest;
 using Concentus.Enums;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Concentus.Structs;
 
 namespace UnitTests
 {
@@ -496,6 +498,63 @@ namespace UnitTests
                 TestResults response = TestDriver.RunTest(p, GetTestSample(p));
                 Assert.IsTrue(response.Passed);
                 if (testsRun > 50) break;
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit, Pack = 2)]
+        public class NAudioStyleBuffer
+        {
+            [FieldOffset(0)]
+            public int numberOfBytes;
+            [FieldOffset(4)]
+            public byte[] byteBuffer;
+            [FieldOffset(4)]
+            public float[] floatBuffer;
+            [FieldOffset(4)]
+            public short[] shortBuffer;
+        }
+
+        [TestMethod]
+        public void TestInt16ArrayCastingFromNAudio()
+        {
+            TestParameters encodeParams = new TestParameters()
+            {
+                Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO,
+                Bitrate = 12,
+                Channels = 2,
+                Complexity = 10,
+                ConstrainedVBR = false,
+                ForceMode = Concentus.Enums.OpusMode.MODE_SILK_ONLY,
+                FrameSize = 20,
+                PacketLossPercent = 0,
+                SampleRate = 48000,
+                UseDTX = true,
+                UseVBR = true
+            };
+
+            short[] inputAudio = GetTestSample(encodeParams);
+            byte[] encodedScratch = new byte[1500];
+
+            OpusEncoder encoder = new OpusEncoder(encodeParams.SampleRate, encodeParams.Channels, encodeParams.Application);
+            OpusDecoder decoder = new OpusDecoder(encodeParams.DecoderSampleRate, encodeParams.DecoderChannels);
+
+            int samplesPerChannelPerInputPacket = (int)Math.Round(encodeParams.SampleRate * encodeParams.FrameSize / 1000);
+            int samplesPerInputPacket = samplesPerChannelPerInputPacket * encodeParams.Channels;
+            int samplesPerChannelPerOutputPacket = (int)Math.Round(encodeParams.DecoderSampleRate * encodeParams.FrameSize / 1000);
+            int samplesPerOutputPacket = samplesPerChannelPerOutputPacket * encodeParams.DecoderChannels;
+
+            NAudioStyleBuffer fakeBuffer = new NAudioStyleBuffer()
+            {
+                numberOfBytes = samplesPerChannelPerOutputPacket * sizeof(short) * encodeParams.Channels,
+                byteBuffer = new byte[samplesPerChannelPerOutputPacket * sizeof(short) * encodeParams.Channels],
+            };
+
+            for (int inIdx = 0; inIdx <= inputAudio.Length - samplesPerInputPacket; inIdx += samplesPerInputPacket)
+            {
+                int encodeResult = encoder.Encode(inputAudio, inIdx, 480, encodedScratch, 0, encodedScratch.Length);
+                Assert.IsTrue(encodeResult > 0);
+                int decodeResult = decoder.Decode(encodedScratch, 0, encodeResult, fakeBuffer.shortBuffer, 0, samplesPerChannelPerOutputPacket);
+                Assert.IsTrue(decodeResult > 0);
             }
         }
     }
