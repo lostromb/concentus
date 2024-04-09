@@ -69,62 +69,41 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        //FIXME: For the most part this method is used to zero-out arrays, which is usually already done by the runtime.
+        //OPT: For the most part this method is used to zero-out arrays, which is usually already done by the runtime.
 
         internal static void MemSetByte(byte[] array, byte value)
         {
-            for (int c = 0; c < array.Length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan().Fill(value);
         }
 
         internal static void MemSetInt(int[] array, int value, int length)
         {
-            for (int c = 0; c < length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(0, length).Fill(value);
         }
 
         internal static void MemSetShort(short[] array, short value, int length)
         {
-            for (int c = 0; c < length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(0, length).Fill(value);
         }
 
         internal static void MemSetFloat(float[] array, float value, int length)
         {
-            for (int c = 0; c < length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(0, length).Fill(value);
         }
 
         internal static void MemSetSbyte(sbyte[] array, sbyte value, int length)
         {
-            for (int c = 0; c < length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(0, length).Fill(value);
         }
 
         internal static void MemSetWithOffset<T>(T[] array, T value, int offset, int length)
         {
-            for (int c = offset; c < offset + length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(offset, length).Fill(value);
         }
 
         internal static void MemSetWithOffset<T>(Span<T> array, T value, int offset, int length)
         {
-            for (int c = offset; c < offset + length; c++)
-            {
-                array[c] = value;
-            }
+            array.Slice(offset, length).Fill(value);
         }
 
         internal static void MemMoveByte(byte[] array, int src_idx, int dst_idx, int length)
@@ -143,38 +122,38 @@ namespace Concentus.Common.CPlusPlus
             array.Slice(src_idx, length).CopyTo(array.Slice(dst_idx, length));
         }
 
-        internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)
-        {
-            if (src_idx == dst_idx || length == 0)
-                return;
+        //internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)
+        //{
+        //    if (src_idx == dst_idx || length == 0)
+        //        return;
 
-            // Do regions overlap?
-            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
-            {
-                // Take extra precautions
-                if (dst_idx < src_idx)
-                {
-                    // Copy forwards
-                    for (int c = 0; c < length; c++)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-                else
-                {
-                    // Copy backwards
-                    for (int c = length - 1; c >= 0; c--)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-            }
-            else
-            {
-                // Memory regions cannot overlap; just do a fast copy
-                Array.Copy(array, src_idx, array, dst_idx, length);
-            }
-        }
+        //    // Do regions overlap?
+        //    if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+        //    {
+        //        // Take extra precautions
+        //        if (dst_idx < src_idx)
+        //        {
+        //            // Copy forwards
+        //            for (int c = 0; c < length; c++)
+        //            {
+        //                array[c + dst_idx] = array[c + src_idx];
+        //            }
+        //        }
+        //        else
+        //        {
+        //            // Copy backwards
+        //            for (int c = length - 1; c >= 0; c--)
+        //            {
+        //                array[c + dst_idx] = array[c + src_idx];
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // Memory regions cannot overlap; just do a fast copy
+        //        Array.Copy(array, src_idx, array, dst_idx, length);
+        //    }
+        //}
 
         internal static void MemMoveInt(int[] array, int src_idx, int dst_idx, int length)
         {

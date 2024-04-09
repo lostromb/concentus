@@ -53,7 +53,7 @@ namespace Concentus.Structs
     /// <summary>
     /// The Opus encoder structure
     /// </summary>
-    public class OpusEncoder
+    public class OpusEncoder : IOpusEncoder
     {
         #region Encoder state
 
@@ -181,15 +181,6 @@ namespace Concentus.Structs
         #endregion
 
         #region Encoder API functions
-
-        /// <summary>
-        /// Deprecated. Just use the regular constructor
-        /// </summary>
-        [Obsolete("Just use new OpusEncoder()")]
-        public static OpusEncoder Create(int Fs, int channels, OpusApplication application)
-        {
-            return new OpusEncoder(Fs, channels, application);
-        }
 
         /// <summary>
         /// Allocates and initializes an encoder state.

@@ -62,7 +62,7 @@ namespace Concentus.Structs
     ///  streams must be decoded with separate decoder states and can be decoded
     ///  in parallel.
     /// </summary>
-    public class OpusDecoder
+    public class OpusDecoder : IOpusDecoder
     {
         internal int channels;
         internal int Fs;          /** Sampling rate (at the API level) */
@@ -109,14 +109,6 @@ namespace Concentus.Structs
             // fixme: do these get reset here? I don't think they do because init_celt and init_silk should both call RESET_STATE on their respective states
             //SilkDecoder.Reset();
             //CeltDecoder.Reset();
-        }
-
-        /// <summary>
-        /// Deprecated. Just use the regular constructor
-        /// </summary>
-        public static OpusDecoder Create(int Fs, int channels)
-        {
-            return new OpusDecoder(Fs, channels);
         }
 
         /// <summary>
@@ -199,7 +191,7 @@ namespace Concentus.Structs
             this.frame_size = Fs / 400;
             return OpusError.OPUS_OK;
         }
-        
+
         private static readonly byte[] SILENCE = { 0xFF, 0xFF };
 
         internal int opus_decode_frame(ReadOnlySpan<byte> data, int data_ptr,
@@ -259,7 +251,8 @@ namespace Concentus.Structs
                 mode = this.mode;
                 dec.dec_init(data.Slice(data_ptr), (uint)len);
             }
-            else {
+            else
+            {
                 audiosize = frame_size;
                 mode = this.prev_mode;
 
@@ -329,7 +322,8 @@ namespace Concentus.Structs
 
                 return OpusError.OPUS_BAD_ARG;
             }
-            else {
+            else
+            {
                 frame_size = audiosize;
             }
 
@@ -378,12 +372,14 @@ namespace Concentus.Structs
                         {
                             this.DecControl.internalSampleRate = 16000;
                         }
-                        else {
+                        else
+                        {
                             this.DecControl.internalSampleRate = 16000;
                             Inlines.OpusAssert(false);
                         }
                     }
-                    else {
+                    else
+                    {
                         /* Hybrid mode */
                         this.DecControl.internalSampleRate = 16000;
                     }
@@ -405,7 +401,8 @@ namespace Concentus.Structs
                             silk_frame_size = frame_size;
                             Arrays.MemSetWithOffset<short>(pcm_ptr2, 0, pcm_ptr2_ptr, frame_size * this.channels);
                         }
-                        else {
+                        else
+                        {
 
                             return OpusError.OPUS_INTERNAL_ERROR;
                         }
@@ -553,7 +550,7 @@ namespace Concentus.Structs
                     for (i = 0; i < F2_5; i++)
                         pcm[this.channels * i + c + pcm_ptr] = redundant_audio[this.channels * i + c];
                 }
-                CodecHelpers.smooth_fade(redundant_audio,(this.channels * F2_5), pcm,(pcm_ptr + (this.channels * F2_5)),
+                CodecHelpers.smooth_fade(redundant_audio, (this.channels * F2_5), pcm, (pcm_ptr + (this.channels * F2_5)),
                             pcm, (pcm_ptr + (this.channels * F2_5)), F2_5, this.channels, window, this.Fs);
             }
             if (transition != 0)
@@ -566,7 +563,8 @@ namespace Concentus.Structs
                                 pcm, (pcm_ptr + (this.channels * F2_5)), F2_5,
                                 this.channels, window, this.Fs);
                 }
-                else {
+                else
+                {
                     /* Not enough time to do a clean transition, but we do it anyway
                        This will not preserve amplitude perfectly and may introduce
                        a bit of temporal aliasing, but it shouldn't be too bad and
@@ -642,7 +640,7 @@ namespace Concentus.Structs
             packet_bandwidth = OpusPacketInfo.GetBandwidth(data, data_ptr);
             packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, this.Fs);
             packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data, data_ptr);
-            
+
             count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out toc, null, null, 0,
                                            size, 0, out offset, out packet_offset);
 
@@ -680,7 +678,8 @@ namespace Concentus.Structs
                       packet_frame_size, 1);
                 if (ret < 0)
                     return ret;
-                else {
+                else
+                {
                     this.last_packet_duration = frame_size;
                     return frame_size;
                 }
@@ -930,7 +929,7 @@ namespace Concentus.Structs
                 return channels;
             }
         }
-        
+
         /// <summary>
         /// Gets the last estimated pitch value of the decoded audio
         /// </summary>

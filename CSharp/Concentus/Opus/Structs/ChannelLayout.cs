@@ -54,7 +54,7 @@ namespace Concentus.Structs
             nb_channels = 0;
             nb_streams = 0;
             nb_coupled_streams = 0;
-            Arrays.MemSetByte(mapping, 0);
+            mapping.AsSpan().Clear();
         }
     }
 }

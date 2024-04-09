@@ -38,12 +38,11 @@ using Concentus.Celt.Structs;
 using Concentus.Common;
 using Concentus.Common.CPlusPlus;
 using Concentus.Enums;
-using Concentus.Structs;
 using System;
 
 namespace Concentus.Structs
 {
-    public class OpusMSEncoder
+    public class OpusMSEncoder : IOpusMultiStreamEncoder
     {
         internal readonly ChannelLayout layout = new ChannelLayout();
         internal int lfe_stream = 0;
@@ -103,7 +102,8 @@ namespace Concentus.Structs
                     if (OpusMultistream.get_right_channel(layout, s, -1) == -1)
                         return 0;
                 }
-                else {
+                else
+                {
                     if (OpusMultistream.get_mono_channel(layout, s, -1) == -1)
                         return 0;
                 }
@@ -172,7 +172,8 @@ namespace Concentus.Structs
                 max = a;
                 diff = Inlines.SUB32(Inlines.EXTEND32(a), Inlines.EXTEND32(b));
             }
-            else {
+            else
+            {
                 max = b;
                 diff = Inlines.SUB32(Inlines.EXTEND32(b), Inlines.EXTEND32(a));
             }
@@ -227,7 +228,7 @@ namespace Concentus.Structs
             for (c = 0; c < channels; c++)
             {
                 Array.Copy(mem, c * overlap, input, 0, overlap);
-                copy_channel_in(x, 0 , 1, pcm, pcm_ptr, channels, c, len);
+                copy_channel_in(x, 0, 1, pcm, pcm_ptr, channels, c, len);
                 BoxedValueInt boxed_preemph = new BoxedValueInt(preemph_mem[c]);
                 CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0);
                 preemph_mem[c] = boxed_preemph.Val;
@@ -250,7 +251,7 @@ namespace Concentus.Structs
                     for (; i < frame_size; i++)
                         freq[0][i] = 0;
                 }
-                
+
                 Bands.compute_band_energies(celt_mode, freq, bandE, 21, 1, LM);
                 QuantizeBands.amp2Log2(celt_mode, 21, 21, bandE[0], bandLogE, 21 * c, 1);
                 /* Apply spreading function with -6 dB/band going up and -12 dB/band going down. */
@@ -294,7 +295,8 @@ namespace Concentus.Structs
                     for (i = 0; i < 21; i++)
                         bandLogE[21 * c + i] = bandLogE[21 * c + i] - mask[i];
                 }
-                else {
+                else
+                {
                     for (i = 0; i < 21; i++)
                         bandLogE[21 * c + i] = 0;
                 }
@@ -564,7 +566,8 @@ namespace Concentus.Structs
             {
                 channel_rate = 300000;
             }
-            else {
+            else
+            {
                 int nb_lfe;
                 int nb_uncoupled;
                 int nb_coupled;
@@ -709,7 +712,7 @@ namespace Concentus.Structs
                     else if (equiv_rate > 7000 * this.layout.nb_channels)
                         enc.Bandwidth = (OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND);
                     else if (equiv_rate > 5000 * this.layout.nb_channels)
-                        enc.Bandwidth= (OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
+                        enc.Bandwidth = (OpusBandwidth.OPUS_BANDWIDTH_WIDEBAND);
                     else
                         enc.Bandwidth = (OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND);
                     if (s < this.layout.nb_coupled_streams)
@@ -755,7 +758,8 @@ namespace Concentus.Structs
                     c1 = left;
                     c2 = right;
                 }
-                else {
+                else
+                {
                     int i;
                     int chan = OpusMultistream.get_mono_channel(this.layout, s, -1);
                     copy_channel_in(buf, 0, 1,
@@ -887,7 +891,7 @@ namespace Concentus.Structs
                 bitrate_bps = value;
             }
         }
-        
+
         public OpusApplication Application
         {
             get
@@ -1007,7 +1011,7 @@ namespace Concentus.Structs
                 }
             }
         }
-        
+
         public int PacketLossPercent
         {
             get
@@ -1113,7 +1117,7 @@ namespace Concentus.Structs
                 return value;
             }
         }
-        
+
         public int LSBDepth
         {
             get

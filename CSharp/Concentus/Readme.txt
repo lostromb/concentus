@@ -30,7 +30,7 @@ If you're already using something like P/Opus then your code probably looks like
 Here is what you can replace it with:
 
 	// Initialize
-	OpusEncoder encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
+	OpusEncoder encoder = new OpusEncoder(48000, 2, OpusApplication.OPUS_APPLICATION_AUDIO);
 	encoder.Bitrate = 12000;
 
 	// Encoding loop
@@ -42,7 +42,7 @@ Here is what you can replace it with:
 
 And here is the decoder path:
 
-	OpusDecoder decoder = OpusDecoder.Create(48000, 1);
+	OpusDecoder decoder = new OpusDecoder(48000, 1);
 
 	// Decoding loop
 	byte[] compressedPacket;

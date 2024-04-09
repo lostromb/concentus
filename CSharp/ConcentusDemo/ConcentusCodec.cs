@@ -37,7 +37,7 @@ namespace ConcentusDemo
             SetComplexity(_complexity);
             SetVBRMode(_vbr, _cvbr);
             _encoder.EnableAnalysis = true;
-            _decoder = OpusDecoder.Create(48000, 1);
+            _decoder = new OpusDecoder(48000, 1);
         }
 
         public void SetBitrate(int bitrate)

@@ -45,7 +45,7 @@ using System.Text;
 
 namespace Concentus.Structs
 {
-    public class OpusMSDecoder
+    public class OpusMSDecoder : IOpusMultiStreamDecoder
     {
         internal ChannelLayout layout = new ChannelLayout();
         internal OpusDecoder[] decoders = null;
@@ -105,7 +105,7 @@ namespace Concentus.Structs
         /// <param name="channels"></param>
         /// <param name="streams"></param>
         /// <param name="coupled_streams"></param>
-        /// <param name="mapping">A mapping family (just use { 0, 1, 255 })</param>
+        /// <param name="mapping">A channel mapping (just use { 0, 1, 255 })</param>
         /// <returns></returns>
         public OpusMSDecoder(
               int Fs,
