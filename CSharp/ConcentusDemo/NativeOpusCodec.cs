@@ -37,14 +37,48 @@ namespace ConcentusDemo
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern int opus_decode(IntPtr st, byte[] data, int len, IntPtr pcm, int frame_size, int decode_fec);
-        
+
+        private const int OPUS_SET_APPLICATION_REQUEST = 4000;
+        private const int OPUS_GET_APPLICATION_REQUEST = 4001;
         private const int OPUS_SET_BITRATE_REQUEST = 4002;
-        private const int OPUS_SET_COMPLEXITY_REQUEST = 4010;
-        private const int OPUS_SET_PACKET_LOSS_PERC_REQUEST = 4014;
+        private const int OPUS_GET_BITRATE_REQUEST = 4003;
+        private const int OPUS_SET_MAX_BANDWIDTH_REQUEST = 4004;
+        private const int OPUS_GET_MAX_BANDWIDTH_REQUEST = 4005;
         private const int OPUS_SET_VBR_REQUEST = 4006;
-        private const int OPUS_SET_VBR_CONSTRAINT_REQUEST = 4020;
+        private const int OPUS_GET_VBR_REQUEST = 4007;
+        private const int OPUS_SET_BANDWIDTH_REQUEST = 4008;
+        private const int OPUS_GET_BANDWIDTH_REQUEST = 4009;
+        private const int OPUS_SET_COMPLEXITY_REQUEST = 4010;
+        private const int OPUS_GET_COMPLEXITY_REQUEST = 4011;
         private const int OPUS_SET_INBAND_FEC_REQUEST = 4012;
+        private const int OPUS_GET_INBAND_FEC_REQUEST = 4013;
+        private const int OPUS_SET_PACKET_LOSS_PERC_REQUEST = 4014;
+        private const int OPUS_GET_PACKET_LOSS_PERC_REQUEST = 4015;
         private const int OPUS_SET_DTX_REQUEST = 4016;
+        private const int OPUS_GET_DTX_REQUEST = 4017;
+        private const int OPUS_SET_VBR_CONSTRAINT_REQUEST = 4020;
+        private const int OPUS_GET_VBR_CONSTRAINT_REQUEST = 4021;
+        private const int OPUS_SET_FORCE_CHANNELS_REQUEST = 4022;
+        private const int OPUS_GET_FORCE_CHANNELS_REQUEST = 4023;
+        private const int OPUS_SET_SIGNAL_REQUEST = 4024;
+        private const int OPUS_GET_SIGNAL_REQUEST = 4025;
+        private const int OPUS_GET_LOOKAHEAD_REQUEST = 4027;
+        /* private const int OPUS_RESET_STATE 4028 */
+        private const int OPUS_GET_SAMPLE_RATE_REQUEST = 4029;
+        private const int OPUS_GET_FINAL_RANGE_REQUEST = 4031;
+        private const int OPUS_GET_PITCH_REQUEST = 4033;
+        private const int OPUS_SET_GAIN_REQUEST = 4034;
+        private const int OPUS_GET_GAIN_REQUEST = 4045;
+        private const int OPUS_SET_LSB_DEPTH_REQUEST = 4036;
+        private const int OPUS_GET_LSB_DEPTH_REQUEST = 4037;
+        private const int OPUS_GET_LAST_PACKET_DURATION_REQUEST = 4039;
+        private const int OPUS_SET_EXPERT_FRAME_DURATION_REQUEST = 4040;
+        private const int OPUS_GET_EXPERT_FRAME_DURATION_REQUEST = 4041;
+        private const int OPUS_SET_PREDICTION_DISABLED_REQUEST = 4042;
+        private const int OPUS_GET_PREDICTION_DISABLED_REQUEST = 4043;
+        private const int OPUS_RESET_STATE = 4028;
+        private const int OPUS_SET_VOICE_RATIO_REQUEST = 11018;
+        private const int OPUS_GET_VOICE_RATIO_REQUEST = 11019;
         private const int OPUS_SET_FORCE_MODE_REQUEST = 11002;
 
         private const int OPUS_MODE_SILK_ONLY = 1000;
@@ -111,28 +145,28 @@ namespace ConcentusDemo
             _packetLoss = loss;
             if (loss > 0)
             {
-                opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_PACKET_LOSS_PERC_REQUEST, _packetLoss);
-                opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_INBAND_FEC_REQUEST, 1);
+                opus_encoder_ctl(_encoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, _packetLoss);
+                opus_encoder_ctl(_encoder, OPUS_SET_INBAND_FEC_REQUEST, 1);
             }
             else
             {
-                opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_PACKET_LOSS_PERC_REQUEST, 0);
-                opus_encoder_ctl(_encoder, OpusControl.OPUS_SET_INBAND_FEC_REQUEST, 0);
+                opus_encoder_ctl(_encoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, 0);
+                opus_encoder_ctl(_encoder, OPUS_SET_INBAND_FEC_REQUEST, 0);
             }
         }
 
         public void SetApplication(OpusApplication application)
         {
             _application = (int)application;
-            opus_encoder_ctl(_encoder, (int)OpusControl.OPUS_SET_APPLICATION_REQUEST, _application);
+            opus_encoder_ctl(_encoder, OPUS_SET_APPLICATION_REQUEST, _application);
         }
 
         public void SetVBRMode(bool vbr, bool constrained)
         {
             _vbr = vbr;
             _cvbr = constrained;
-            opus_encoder_ctl(_encoder, (int)OpusControl.OPUS_SET_VBR_REQUEST, vbr ? 1 : 0);
-            opus_encoder_ctl(_encoder, (int)OpusControl.OPUS_SET_VBR_CONSTRAINT_REQUEST, constrained ? 1 : 0);
+            opus_encoder_ctl(_encoder, OPUS_SET_VBR_REQUEST, vbr ? 1 : 0);
+            opus_encoder_ctl(_encoder, OPUS_SET_VBR_CONSTRAINT_REQUEST, constrained ? 1 : 0);
         }
 
         private int GetFrameSize()
