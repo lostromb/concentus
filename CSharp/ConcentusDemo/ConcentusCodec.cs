@@ -166,7 +166,7 @@ namespace ConcentusDemo
 
             // Update statistics
             _statistics.Bitrate = inputPacket.Length * 8 * 48000 / 1024 / frameSize;
-            OpusMode curMode = OpusPacketInfo.GetEncoderMode(inputPacket, 0);
+            OpusMode curMode = OpusPacketInfo.GetEncoderMode(inputPacket.AsSpan());
             if (curMode == OpusMode.MODE_CELT_ONLY)
             {
                 _statistics.Mode = "CELT";
@@ -184,7 +184,7 @@ namespace ConcentusDemo
                 _statistics.Mode = "Unknown";
             }
             _statistics.DecodeSpeed = _frameSize / ((double)_timer.ElapsedTicks / Stopwatch.Frequency * 1000);
-            OpusBandwidth curBandwidth = OpusPacketInfo.GetBandwidth(inputPacket, 0);
+            OpusBandwidth curBandwidth = OpusPacketInfo.GetBandwidth(inputPacket.AsSpan());
             if (curBandwidth == OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND)
             {
                 _statistics.Bandwidth = 8000;

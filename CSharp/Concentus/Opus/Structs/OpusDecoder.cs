@@ -638,11 +638,11 @@ namespace Concentus.Structs
             else if (len < 0)
                 return OpusError.OPUS_BAD_ARG;
 
-            packet_mode = OpusPacketInfo.GetEncoderMode(data, data_ptr);
-            packet_bandwidth = OpusPacketInfo.GetBandwidth(data, data_ptr);
-            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, this.Fs);
-            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data, data_ptr);
-            
+            packet_mode = OpusPacketInfo.GetEncoderMode(data.Slice(data_ptr));
+            packet_bandwidth = OpusPacketInfo.GetBandwidth(data.Slice(data_ptr));
+            packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data.Slice(data_ptr), this.Fs);
+            packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data.Slice(data_ptr));
+
             count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out toc, null, null, 0,
                                            size, 0, out offset, out packet_offset);
 
@@ -794,7 +794,7 @@ namespace Concentus.Structs
             }
             if (in_data != null && len > 0 && !decode_fec)
             {
-                nb_samples = OpusPacketInfo.GetNumSamples(this, in_data, in_data_offset, len);
+                nb_samples = OpusPacketInfo.GetNumSamples(in_data, this.Fs);
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else

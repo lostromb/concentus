@@ -96,14 +96,14 @@ namespace Concentus.Structs
             if (this.nb_frames == 0)
             {
                 this.toc = data[data_ptr];
-                this.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, 8000);
+                this.framesize = OpusPacketInfo.GetNumSamplesPerFrame(data.Slice(data_ptr), 8000);
             }
             else if ((this.toc & 0xFC) != (data[data_ptr] & 0xFC))
             {
                 /*fprintf(stderr, "toc mismatch: 0x%x vs 0x%x\n", rp.toc, data[0]);*/
                 return OpusError.OPUS_INVALID_PACKET;
             }
-            curr_nb_frames = OpusPacketInfo.GetNumFrames(data, data_ptr, len);
+            curr_nb_frames = OpusPacketInfo.GetNumFrames(data.Slice(data_ptr, len));
             if (curr_nb_frames < 1)
                 return OpusError.OPUS_INVALID_PACKET;
 
