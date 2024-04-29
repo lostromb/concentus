@@ -757,15 +757,15 @@ namespace Concentus.Celt.Structs
 
             if (C == 1)
             {
-                Array.Copy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
+                Arrays.MemCopy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
             }
 
             /* In case start or end were to change */
             if (isTransient == 0)
             {
                 int max_background_increase;
-                Array.Copy(oldLogE, oldLogE2, 2 * nbEBands);
-                Array.Copy(oldBandE, oldLogE, 2 * nbEBands);
+                Arrays.MemCopy(oldLogE, 0, oldLogE2, 0, 2 * nbEBands);
+                Arrays.MemCopy(oldBandE, 0, oldLogE, 0, 2 * nbEBands);
                 /* In normal circumstances, we only allow the noise floor to increase by
                    up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB
                    increase for each update.*/

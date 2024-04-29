@@ -141,7 +141,7 @@ namespace Concentus.Silk
             }
             else {
                 Inlines.OpusAssert(Fs_kHz == 8);
-                Array.Copy(frame, frame_8kHz, frame_length_8kHz);
+                Arrays.MemCopy(frame, 0, frame_8kHz, 0, frame_length_8kHz);
             }
 
             /* Decimate again to 4 kHz */

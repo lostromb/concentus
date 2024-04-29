@@ -451,14 +451,14 @@ namespace Concentus.Silk
                 }
                 else
                 {
-                    Array.Copy(Tables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
-                    Array.Copy(Tables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
+                    Arrays.MemCopy(Tables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                    Arrays.MemCopy(Tables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
                 }
             }
             else
             {
-                Array.Copy(Tables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
-                Array.Copy(Tables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
+                Arrays.MemCopy(Tables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                Arrays.MemCopy(Tables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
             }
         }
         

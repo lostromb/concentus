@@ -239,9 +239,9 @@ namespace Concentus.Silk
 
             /* Buffering */
             state.sMid.AsSpan(0, 2).CopyTo(x1.Slice(mid));
-            Array.Copy(state.sSide, side, 2);
+            Arrays.MemCopy(state.sSide, 0, side, 0, 2);
             x1.Slice(mid + frame_length, 2).CopyTo(state.sMid);
-            Array.Copy(side, frame_length, state.sSide, 0, 2);
+            Arrays.MemCopy(side, frame_length, state.sSide, 0, 2);
 
             /* LP and HP filter mid signal */
             LP_mid = new short[frame_length];

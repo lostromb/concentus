@@ -205,9 +205,9 @@ namespace Concentus.Celt
 
             oldEBands_intra = Arrays.InitTwoDimensionalArray<int>(C, m.nbEBands);
             error_intra = Arrays.InitTwoDimensionalArray<int>(C, m.nbEBands);
-            Array.Copy(oldEBands[0], 0, oldEBands_intra[0], 0, m.nbEBands);
+            Arrays.MemCopy(oldEBands[0], 0, oldEBands_intra[0], 0, m.nbEBands);
             if (C == 2)
-                Array.Copy(oldEBands[1], 0, oldEBands_intra[1], 0, m.nbEBands);
+                Arrays.MemCopy(oldEBands[1], 0, oldEBands_intra[1], 0, m.nbEBands);
 
             if (two_pass != 0 || intra != 0)
             {
@@ -255,24 +255,24 @@ namespace Concentus.Celt
                     {
                         intra_bits.AsSpan(0, (int)(nintra_bytes - nstart_bytes)).CopyTo(encodedData.Slice(intra_buf));
                     }
-                    Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
-                    Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);
+                    Arrays.MemCopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
+                    Arrays.MemCopy(error_intra[0], 0, error[0], 0, m.nbEBands);
                     if (C == 2)
                     {
-                        Array.Copy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
-                        Array.Copy(error_intra[1], 0, error[1], 0, m.nbEBands);
+                        Arrays.MemCopy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
+                        Arrays.MemCopy(error_intra[1], 0, error[1], 0, m.nbEBands);
                     }
                     intra = 1;
                 }
             }
             else
             {
-                Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
-                Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);
+                Arrays.MemCopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
+                Arrays.MemCopy(error_intra[0], 0, error[0], 0, m.nbEBands);
                 if (C == 2)
                 {
-                    Array.Copy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
-                    Array.Copy(error_intra[1], 0, error[1], 0, m.nbEBands);
+                    Arrays.MemCopy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
+                    Arrays.MemCopy(error_intra[1], 0, error[1], 0, m.nbEBands);
                 }
             }
 

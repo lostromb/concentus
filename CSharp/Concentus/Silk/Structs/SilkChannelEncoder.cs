@@ -918,7 +918,7 @@ namespace Concentus.Silk.Structs
             /*******************************************/
             /* Copy new frame to front of input buffer */
             /*******************************************/
-            Array.Copy(this.inputBuf, 1, this.x_buf, x_frame + SilkConstants.LA_SHAPE_MS * this.fs_kHz, this.frame_length);
+            Arrays.MemCopy(this.inputBuf, 1, this.x_buf, x_frame + SilkConstants.LA_SHAPE_MS * this.fs_kHz, this.frame_length);
 
             if (this.prefillFlag == 0)
             {
@@ -1201,7 +1201,7 @@ namespace Concentus.Silk.Structs
                 psIndices_LBRR.Assign(this.indices);
 
                 /* Save original gains */
-                Array.Copy(thisCtrl.Gains_Q16, TempGains_Q16, this.nb_subfr);
+                Arrays.MemCopy(thisCtrl.Gains_Q16, 0, TempGains_Q16, 0, this.nb_subfr);
 
                 if (this.nFramesEncoded == 0 || this.LBRR_flags[this.nFramesEncoded - 1] == 0)
                 {
@@ -1258,7 +1258,7 @@ namespace Concentus.Silk.Structs
                 }
 
                 /* Restore original gains */
-                Array.Copy(TempGains_Q16, thisCtrl.Gains_Q16, this.nb_subfr);
+                Arrays.MemCopy(TempGains_Q16, 0, thisCtrl.Gains_Q16, 0, this.nb_subfr);
             }
         }
     }

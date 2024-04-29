@@ -155,6 +155,30 @@ namespace Concentus.Common.CPlusPlus
         //    }
         //}
 
+        internal static void MemCopy(int[] src, int src_idx, int[] dst, int dst_idx, int length)
+        {
+            if (length == 0)
+                return;
+
+            Buffer.BlockCopy(src, src_idx * sizeof(int), dst, dst_idx * sizeof(int), length * sizeof(int));
+        }
+
+        internal static void MemCopy(short[] src, int src_idx, short[] dst, int dst_idx, int length)
+        {
+            if (length == 0)
+                return;
+
+            Buffer.BlockCopy(src, src_idx * sizeof(short), dst, dst_idx * sizeof(short), length * sizeof(short));
+        }
+
+        internal static void MemCopy(sbyte[] src, int src_idx, sbyte[] dst, int dst_idx, int length)
+        {
+            if (length == 0)
+                return;
+
+            Buffer.BlockCopy(src, src_idx, dst, dst_idx, length);
+        }
+
         internal static void MemMoveInt(int[] array, int src_idx, int dst_idx, int length)
         {
             if (src_idx == dst_idx || length == 0)

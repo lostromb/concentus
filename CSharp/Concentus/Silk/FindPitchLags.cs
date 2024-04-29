@@ -87,7 +87,7 @@ namespace Concentus.Silk
             /* Middle un - windowed samples */
             Wsig_ptr += psEnc.la_pitch;
             x_buf_ptr += psEnc.la_pitch;
-            Array.Copy(x, x_buf_ptr, Wsig, Wsig_ptr, (psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1)));
+            Arrays.MemCopy(x, x_buf_ptr, Wsig, Wsig_ptr, (psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1)));
 
             /* Last LA_LTP samples */
             Wsig_ptr += psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1);

@@ -81,10 +81,10 @@ namespace Concentus.Silk.Structs
             this.rand_seed = other.rand_seed;
             this.prev_gain_Q16 = other.prev_gain_Q16;
             this.rewhite_flag = other.rewhite_flag;
-            Array.Copy(other.xq, this.xq, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            Array.Copy(other.sLTP_shp_Q14, this.sLTP_shp_Q14, 2 * SilkConstants.MAX_FRAME_LENGTH);
-            Array.Copy(other.sLPC_Q14, this.sLPC_Q14, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
-            Array.Copy(other.sAR2_Q14, this.sAR2_Q14, SilkConstants.MAX_SHAPE_LPC_ORDER);
+            Arrays.MemCopy(other.xq, 0, this.xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemCopy(other.sLTP_shp_Q14, 0, this.sLTP_shp_Q14, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
+            Arrays.MemCopy(other.sLPC_Q14, 0, this.sLPC_Q14, 0, SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Arrays.MemCopy(other.sAR2_Q14, 0, this.sAR2_Q14, 0, SilkConstants.MAX_SHAPE_LPC_ORDER);
         }
 
         private class NSQ_del_dec_struct
@@ -490,7 +490,7 @@ namespace Concentus.Silk.Structs
             }
 
             /* Update LPC synth buffer */
-            Array.Copy(this.sLPC_Q14, length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Arrays.MemCopy(this.sLPC_Q14, length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
         }
 
         private void silk_nsq_scale_states(
@@ -633,8 +633,8 @@ namespace Concentus.Silk.Structs
                 psDD.RD_Q10 = 0;
                 psDD.LF_AR_Q14 = this.sLF_AR_shp_Q14;
                 psDD.Shape_Q14[0] = this.sLTP_shp_Q14[psEncC.ltp_mem_length - 1];
-                Array.Copy(this.sLPC_Q14, psDD.sLPC_Q14, SilkConstants.NSQ_LPC_BUF_LENGTH);
-                Array.Copy(this.sAR2_Q14, psDD.sAR2_Q14, psEncC.shapingLPCOrder);
+                Arrays.MemCopy(this.sLPC_Q14, 0, psDD.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
+                Arrays.MemCopy(this.sAR2_Q14, 0, psDD.sAR2_Q14, 0, psEncC.shapingLPCOrder);
             }
 
             offset_Q10 = Tables.silk_Quantization_Offsets_Q10[psIndices.signalType >> 1][psIndices.quantOffsetType];
@@ -823,8 +823,9 @@ namespace Concentus.Silk.Structs
                             Inlines.silk_SMULWW(psDD.Xq_Q14[last_smple_idx], Gain_Q10), 8));
                 this.sLTP_shp_Q14[this.sLTP_shp_buf_idx - decisionDelay + i] = psDD.Shape_Q14[last_smple_idx];
             }
-            Array.Copy(psDD.sLPC_Q14, psEncC.subfr_length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
-            Array.Copy(psDD.sAR2_Q14, 0, this.sAR2_Q14, 0, psEncC.shapingLPCOrder);
+
+            Arrays.MemCopy(psDD.sLPC_Q14, psEncC.subfr_length, this.sLPC_Q14, 0, SilkConstants.NSQ_LPC_BUF_LENGTH);
+            Arrays.MemCopy(psDD.sAR2_Q14, 0, this.sAR2_Q14, 0, psEncC.shapingLPCOrder);
 
             /* Update states */
             this.sLF_AR_shp_Q14 = psDD.LF_AR_Q14;

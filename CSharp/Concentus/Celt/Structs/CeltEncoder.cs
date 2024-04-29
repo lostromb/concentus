@@ -279,8 +279,8 @@ namespace Concentus.Celt.Structs
             c = 0;
             do
             {
-                Array.Copy(prefilter_mem[c], 0, pre[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
-                Array.Copy(input[c], overlap, pre[c], CeltConstants.COMBFILTER_MAXPERIOD, N);
+                Arrays.MemCopy(prefilter_mem[c], 0, pre[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
+                Arrays.MemCopy(input[c], overlap, pre[c], CeltConstants.COMBFILTER_MAXPERIOD, N);
             } while (++c < CC);
 
             if (enabled != 0)
@@ -354,7 +354,7 @@ namespace Concentus.Celt.Structs
             {
                 int offset = mode.shortMdctSize - overlap;
                 this.prefilter_period = Inlines.IMAX(this.prefilter_period, CeltConstants.COMBFILTER_MINPERIOD);
-                Array.Copy(this.in_mem[c], 0, input[c], 0, overlap);
+                Arrays.MemCopy(this.in_mem[c], 0, input[c], 0, overlap);
                 if (offset != 0)
                 {
                     CeltCommon.comb_filter(input[c], (overlap), pre[c], (CeltConstants.COMBFILTER_MAXPERIOD),
@@ -365,16 +365,16 @@ namespace Concentus.Celt.Structs
                 CeltCommon.comb_filter(input[c], (overlap + offset), pre[c], (CeltConstants.COMBFILTER_MAXPERIOD + offset),
                       this.prefilter_period, pitch_index, N - offset, -this.prefilter_gain, -gain1,
                       this.prefilter_tapset, prefilter_tapset, mode.window, overlap);
-                Array.Copy(input[c], N, this.in_mem[c], 0, overlap);
+                Arrays.MemCopy(input[c], N, this.in_mem[c], 0, overlap);
 
                 if (N > CeltConstants.COMBFILTER_MAXPERIOD)
                 {
-                    Array.Copy(pre[c], N, prefilter_mem[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
+                    Arrays.MemCopy(pre[c], N, prefilter_mem[c], 0, CeltConstants.COMBFILTER_MAXPERIOD);
                 }
                 else
                 {
                     Arrays.MemMoveInt(prefilter_mem[c], N, 0, CeltConstants.COMBFILTER_MAXPERIOD - N);
-                    Array.Copy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem[c], CeltConstants.COMBFILTER_MAXPERIOD - N, N);
+                    Arrays.MemCopy(pre[c], CeltConstants.COMBFILTER_MAXPERIOD, prefilter_mem[c], CeltConstants.COMBFILTER_MAXPERIOD - N, N);
                 }
             } while (++c < CC);
 
@@ -778,9 +778,9 @@ namespace Concentus.Celt.Structs
 
             if (secondMdct == 0)
             {
-                Array.Copy(bandLogE[0], bandLogE2[0], nbEBands);
+                Arrays.MemCopy(bandLogE[0], 0, bandLogE2[0], 0, nbEBands);
                 if (C == 2)
-                    Array.Copy(bandLogE[1], bandLogE2[1], nbEBands);
+                    Arrays.MemCopy(bandLogE[1], 0, bandLogE2[1], 0, nbEBands);
             }
 
             /* Last chance to catch any transient we might have missed in the
@@ -1123,17 +1123,17 @@ namespace Concentus.Celt.Structs
 
             if (CC == 2 && C == 1)
             {
-                Array.Copy(oldBandE[0], 0, oldBandE[1], 0, nbEBands);
+                Arrays.MemCopy(oldBandE[0], 0, oldBandE[1], 0, nbEBands);
             }
 
             if (isTransient == 0)
             {
-                Array.Copy(oldLogE[0], 0, oldLogE2[0], 0, nbEBands);
-                Array.Copy(oldBandE[0], 0, oldLogE[0], 0, nbEBands);
+                Arrays.MemCopy(oldLogE[0], 0, oldLogE2[0], 0, nbEBands);
+                Arrays.MemCopy(oldBandE[0], 0, oldLogE[0], 0, nbEBands);
                 if (CC == 2)
                 {
-                    Array.Copy(oldLogE[1], 0, oldLogE2[1], 0, nbEBands);
-                    Array.Copy(oldBandE[1], 0, oldLogE[1], 0, nbEBands);
+                    Arrays.MemCopy(oldLogE[1], 0, oldLogE2[1], 0, nbEBands);
+                    Arrays.MemCopy(oldBandE[1], 0, oldLogE[1], 0, nbEBands);
                 }
             }
             else

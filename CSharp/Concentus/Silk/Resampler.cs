@@ -327,7 +327,7 @@ namespace Concentus.Silk
             int output_ptr = 0;
 
             /* Copy buffered samples to start of buffer */
-            Array.Copy(S, 0, buf, 0, ORDER_FIR);
+            Arrays.MemCopy(S, 0, buf, 0, ORDER_FIR);
 
             /* Iterate over blocks of frameSizeIn input samples */
             while (true)
@@ -370,7 +370,7 @@ namespace Concentus.Silk
                 if (inLen > 0)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    Array.Copy(buf, nSamplesIn, buf, 0, ORDER_FIR);
+                    Arrays.MemCopy(buf, nSamplesIn, buf, 0, ORDER_FIR);
                 }
                 else
                 {
@@ -379,7 +379,7 @@ namespace Concentus.Silk
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            Array.Copy(buf, nSamplesIn, S, 0, ORDER_FIR);
+            Arrays.MemCopy(buf, nSamplesIn, S, 0, ORDER_FIR);
         }
 
         /// <summary>
@@ -547,7 +547,7 @@ namespace Concentus.Silk
             int[] buf = new int[S.batchSize + S.FIR_Order];
 
             /* Copy buffered samples to start of buffer */
-            Array.Copy(S.sFIR_i32, buf, S.FIR_Order);
+            Arrays.MemCopy(S.sFIR_i32, 0, buf, 0, S.FIR_Order);
 
             /* Iterate over blocks of frameSizeIn input samples */
             index_increment_Q16 = S.invRatio_Q16;
@@ -570,7 +570,7 @@ namespace Concentus.Silk
                 if (inLen > 1)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    Array.Copy(buf, nSamplesIn, buf, 0, S.FIR_Order);
+                    Arrays.MemCopy(buf, nSamplesIn, buf, 0, S.FIR_Order);
                 }
                 else
                 {
@@ -579,7 +579,7 @@ namespace Concentus.Silk
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            Array.Copy(buf, nSamplesIn, S.sFIR_i32, 0, S.FIR_Order);
+            Arrays.MemCopy(buf, nSamplesIn, S.sFIR_i32, 0, S.FIR_Order);
         }
 
         internal static int silk_resampler_private_IIR_FIR_INTERPOL(
@@ -633,7 +633,7 @@ namespace Concentus.Silk
             short[] buf = new short[2 * S.batchSize + SilkConstants.RESAMPLER_ORDER_FIR_12];
 
             /* Copy buffered samples to start of buffer */
-            Array.Copy(S.sFIR_i16, 0, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
+            Arrays.MemCopy(S.sFIR_i16, 0, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
 
             /* Iterate over blocks of frameSizeIn input samples */
             index_increment_Q16 = S.invRatio_Q16;
@@ -652,7 +652,7 @@ namespace Concentus.Silk
                 if (inLen > 0)
                 {
                     /* More iterations to do; copy last part of filtered signal to beginning of buffer */
-                    Array.Copy(buf, nSamplesIn << 1, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
+                    Arrays.MemCopy(buf, nSamplesIn << 1, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
                 }
                 else
                 {
@@ -661,7 +661,7 @@ namespace Concentus.Silk
             }
 
             /* Copy last part of filtered signal to the state for the next call */
-            Array.Copy(buf, nSamplesIn << 1, S.sFIR_i16, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
+            Arrays.MemCopy(buf, nSamplesIn << 1, S.sFIR_i16, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);
         }
 
         /// <summary>

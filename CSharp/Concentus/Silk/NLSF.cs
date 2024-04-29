@@ -750,7 +750,7 @@ namespace Concentus.Silk
             Sort.silk_insertion_sort_increasing(RD_Q25, bestIndex, nSurvivors, 1);
 
             NLSFIndices[0] = (sbyte)tempIndices1[bestIndex[0]];
-            Array.Copy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
+            Arrays.MemCopy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
 
             // Decode
             silk_NLSF_decode(pNLSF_Q15, NLSFIndices, psNLSF_CB);
@@ -1263,7 +1263,7 @@ namespace Concentus.Silk
             else
             {
                 /* Copy LPC coefficients for first half from second half */
-                Array.Copy(PredCoef_Q12[1], 0, PredCoef_Q12[0], 0, psEncC.predictLPCOrder);
+                Arrays.MemCopy(PredCoef_Q12[1], 0, PredCoef_Q12[0], 0, psEncC.predictLPCOrder);
             }
         }
     }

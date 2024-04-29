@@ -228,7 +228,7 @@ namespace Concentus.Structs
 
             for (c = 0; c < channels; c++)
             {
-                Array.Copy(mem, c * overlap, input, 0, overlap);
+                Arrays.MemCopy(mem, c * overlap, input, 0, overlap);
                 copy_channel_in(x, 0, 1, pcm, channels, c, len);
                 BoxedValueInt boxed_preemph = new BoxedValueInt(preemph_mem[c]);
                 CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0);
@@ -278,7 +278,8 @@ namespace Concentus.Structs
                         maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21 * c + i] - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/);
                     }
                 }
-                Array.Copy(input, frame_size, mem, c * overlap, overlap);
+
+                Arrays.MemCopy(input, frame_size, mem, c * overlap, overlap);
             }
             for (i = 0; i < 21; i++)
                 maskLogE[1][i] = Inlines.MIN32(maskLogE[0][i], maskLogE[2][i]);

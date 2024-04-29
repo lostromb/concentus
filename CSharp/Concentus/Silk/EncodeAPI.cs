@@ -170,7 +170,7 @@ namespace Concentus.Silk
                 if (psEnc.nChannelsAPI == 2)
                 {
                     psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
-                    Array.Copy(psEnc.state_Fxx[0].In_HP_State, psEnc.state_Fxx[1].In_HP_State, 2);
+                    Arrays.MemCopy(psEnc.state_Fxx[0].In_HP_State, 0, psEnc.state_Fxx[1].In_HP_State, 0, 2);
                 }
             }
 
@@ -348,7 +348,7 @@ namespace Concentus.Silk
                 else
                 {
                     Inlines.OpusAssert(encControl.nChannelsAPI == 1 && encControl.nChannelsInternal == 1);
-                    Array.Copy(samplesIn, samplesIn_ptr, buf, 0, nSamplesFromInput);
+                    Arrays.MemCopy(samplesIn, samplesIn_ptr, buf, 0, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf,
@@ -538,8 +538,8 @@ namespace Concentus.Silk
                     else
                     {
                         /* Buffering */
-                        Array.Copy(psEnc.sStereo.sMid, psEnc.state_Fxx[0].inputBuf, 2);
-                        Array.Copy(psEnc.state_Fxx[0].inputBuf, psEnc.state_Fxx[0].frame_length, psEnc.sStereo.sMid, 0, 2);
+                        Arrays.MemCopy(psEnc.sStereo.sMid, 0, psEnc.state_Fxx[0].inputBuf, 0, 2);
+                        Arrays.MemCopy(psEnc.state_Fxx[0].inputBuf, psEnc.state_Fxx[0].frame_length, psEnc.sStereo.sMid, 0, 2);
                     }
 
                     psEnc.state_Fxx[0].silk_encode_do_VAD();

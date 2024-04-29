@@ -304,7 +304,7 @@ namespace Concentus.Silk
                 
                 ApplySineWindow.silk_apply_sine_window(x_windowed, 0, x, x_ptr2, 1, slope_part);
                 shift = slope_part;
-                Array.Copy(x, x_ptr2 + shift, x_windowed, shift, flat_part);
+                Arrays.MemCopy(x, x_ptr2 + shift, x_windowed, shift, flat_part);
                 shift += flat_part;
                 ApplySineWindow.silk_apply_sine_window(x_windowed, shift, x, x_ptr2 + shift, 2, slope_part);
                 
@@ -363,9 +363,9 @@ namespace Concentus.Silk
 
                 /* Bandwidth expansion for synthesis filter shaping */
                 BWExpander.silk_bwexpander_32(AR2_Q24, psEnc.shapingLPCOrder, BWExp2_Q16);
-                
+
                 /* Compute noise shaping filter coefficients */
-                Array.Copy(AR2_Q24, AR1_Q24, psEnc.shapingLPCOrder);
+                Arrays.MemCopy(AR2_Q24, 0, AR1_Q24, 0, psEnc.shapingLPCOrder);
 
                 /* Bandwidth expansion for analysis filter shaping */
                 Inlines.OpusAssert(BWExp1_Q16 <= ((int)((1.0f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1.0f, 16)*/);

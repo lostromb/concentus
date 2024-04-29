@@ -872,7 +872,7 @@ namespace Concentus.Structs
             enc.enc_init((uint)(max_data_bytes - 1));
 
             pcm_buf = new short[(total_buffer + frame_size) * this.channels];
-            Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
+            Arrays.MemCopy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
 
             if (this.mode == OpusMode.MODE_CELT_ONLY)
                 hp_freq_smth1 = Inlines.silk_LSHIFT(Inlines.silk_lin2log(TuningParameters.VARIABLE_HP_MIN_CUTOFF_HZ), 8);
@@ -1055,12 +1055,12 @@ namespace Concentus.Structs
                     CodecHelpers.gain_fade(this.delay_buffer, prefill_offset,
                           0, CeltConstants.Q15ONE, celt_mode.overlap, this.Fs / 400, this.channels, celt_mode.window, this.Fs);
                     Arrays.MemSetShort(this.delay_buffer, 0, prefill_offset);
-                    Array.Copy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
+                    Arrays.MemCopy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
                     EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, data.Slice(data_ptr), zero, 1);
                 }
 
-                Array.Copy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
+                Arrays.MemCopy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
 
                 BoxedValueInt boxed_silkBytes = new BoxedValueInt(nBytes);
                 ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, data.Slice(data_ptr), boxed_silkBytes, 0);
@@ -1188,17 +1188,17 @@ namespace Concentus.Structs
             tmp_prefill = new short[this.channels * this.Fs / 400];
             if (this.mode != OpusMode.MODE_SILK_ONLY && this.mode != this.prev_mode && this.prev_mode > 0)
             {
-                Array.Copy(this.delay_buffer, ((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels), tmp_prefill, 0, this.channels * this.Fs / 400);
+                Arrays.MemCopy(this.delay_buffer, ((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels), tmp_prefill, 0, this.channels * this.Fs / 400);
             }
 
             if (this.channels * (this.encoder_buffer - (frame_size + total_buffer)) > 0)
             {
                 Arrays.MemMoveShort(this.delay_buffer, this.channels * frame_size, 0, this.channels * (this.encoder_buffer - frame_size - total_buffer));
-                Array.Copy(pcm_buf, 0, this.delay_buffer, (this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
+                Arrays.MemCopy(pcm_buf, 0, this.delay_buffer, (this.channels * (this.encoder_buffer - frame_size - total_buffer)), (frame_size + total_buffer) * this.channels);
             }
             else
             {
-                Array.Copy(pcm_buf, (frame_size + total_buffer - this.encoder_buffer) * this.channels, this.delay_buffer, 0, this.encoder_buffer * this.channels);
+                Arrays.MemCopy(pcm_buf, (frame_size + total_buffer - this.encoder_buffer) * this.channels, this.delay_buffer, 0, this.encoder_buffer * this.channels);
             }
 
             /* gain_fade() and stereo_fade() need to be after the buffer copying

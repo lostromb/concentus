@@ -523,7 +523,7 @@ namespace Concentus.Celt
                 N = (m.eBands[i + 1] - m.eBands[i]) << LM;
                 /* band is too narrow to be split down to LM=-1 */
                 narrow = ((m.eBands[i + 1] - m.eBands[i]) == 1) ? 1 : 0;
-                Array.Copy(X[tf_chan], (m.eBands[i] << LM), tmp, 0, N);
+                Arrays.MemCopy(X[tf_chan], (m.eBands[i] << LM), tmp, 0, N);
                 /* Just add the right channel if we're in stereo */
                 /*if (C==2)
                    for (j=0;j<N;j++)
@@ -533,7 +533,7 @@ namespace Concentus.Celt
                 /* Check the -1 case for transients */
                 if (isTransient != 0 && narrow == 0)
                 {
-                    Array.Copy(tmp, 0, tmp_1, 0, N);
+                    Arrays.MemCopy(tmp, 0, tmp_1, 0, N);
                     Bands.haar1ZeroOffset(tmp_1, N >> LM, 1 << LM);
                     L1 = l1_metric(tmp_1, N, LM + 1, bias);
                     if (L1 < best_L1)
@@ -1152,7 +1152,7 @@ namespace Concentus.Celt
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
                 freq2 = out_syn_ptrs[1] + (overlap / 2);
-                Array.Copy(freq, 0, out_syn[1], freq2, N);
+                Arrays.MemCopy(freq, 0, out_syn[1], freq2, N);
                 for (b = 0; b < B; b++)
                     MDCT.clt_mdct_backward(mode.mdct, out_syn[1], freq2 + b, out_syn[0], out_syn_ptrs[0] + (NB * b), mode.window, overlap, shift, B);
                 for (b = 0; b < B; b++)
