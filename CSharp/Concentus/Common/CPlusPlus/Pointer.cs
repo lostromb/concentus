@@ -43,25 +43,25 @@ namespace Concentus.Common.CPlusPlus
     /// tracks uninitialized values, and also records all statistics of accesses to its base array.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Pointer<T>
+    internal class Pointer<T>
     {
         private const bool CHECK_UNINIT_MEM = false;
 
 #if DEBUG && !NET35
         private class Statistics
         {
-            public Statistics(int baseOffset)
+            internal Statistics(int baseOffset)
             {
                 this.baseOffset = baseOffset;
             }
 
-            public int baseOffset;
-            public int minReadIndex = int.MaxValue;
-            public int maxReadIndex = int.MinValue;
-            public int minWriteIndex = int.MaxValue;
-            public int maxWriteIndex = int.MinValue;
+            internal int baseOffset;
+            internal int minReadIndex = int.MaxValue;
+            internal int maxReadIndex = int.MinValue;
+            internal int minWriteIndex = int.MaxValue;
+            internal int maxWriteIndex = int.MinValue;
 
-            public Tuple<int, int> ReadRange
+            internal Tuple<int, int> ReadRange
             {
                 get
                 {
@@ -71,7 +71,7 @@ namespace Concentus.Common.CPlusPlus
                 }
             }
 
-            public Tuple<int, int> WriteRange
+            internal Tuple<int, int> WriteRange
             {
                 get
                 {
@@ -89,7 +89,7 @@ namespace Concentus.Common.CPlusPlus
         private T[] _array;
         private int _offset;
 
-        public Pointer(int capacity)
+        internal Pointer(int capacity)
         {
             _array = new T[capacity];
             _offset = 0;
@@ -104,7 +104,7 @@ namespace Concentus.Common.CPlusPlus
 #endif
         }
 
-        public Pointer(T[] buffer)
+        internal Pointer(T[] buffer)
         {
             _array = buffer;
             _offset = 0;
@@ -119,7 +119,7 @@ namespace Concentus.Common.CPlusPlus
 #endif
         }
 
-        public Pointer(T[] buffer, int absoluteOffset)
+        internal Pointer(T[] buffer, int absoluteOffset)
         {
             _array = buffer;
             _offset = absoluteOffset;
@@ -146,7 +146,7 @@ namespace Concentus.Common.CPlusPlus
             _initialized = initializedStatus;
         }
 
-        public Tuple<int, int> ReadRange
+        internal Tuple<int, int> ReadRange
         {
             get
             {
@@ -154,7 +154,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
-        public Tuple<int, int> WriteRange
+        internal Tuple<int, int> WriteRange
         {
             get
             {
@@ -162,7 +162,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
-        public int Length
+        internal int Length
         {
             get
             {
@@ -171,7 +171,7 @@ namespace Concentus.Common.CPlusPlus
         }
 #endif
 
-        public int Offset
+        internal int Offset
         {
             get
             {
@@ -180,7 +180,7 @@ namespace Concentus.Common.CPlusPlus
         }
 
         // This should only be temporary while I migrate from pointers to arrays
-        public T[] Data
+        internal T[] Data
         {
             get
             {
@@ -188,7 +188,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
-        public T this[int index]
+        internal T this[int index]
         {
             get
             {
@@ -215,7 +215,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
-        public T this[uint index]
+        internal T this[uint index]
         {
             get
             {
@@ -234,32 +234,32 @@ namespace Concentus.Common.CPlusPlus
         /// the pass-by-value nature of C++ pointers when they are used as arguments to functions
         /// </summary>
         /// <returns></returns>
-        public Pointer<T> Iterate(out T returnVal)
+        internal Pointer<T> Iterate(out T returnVal)
         {
             returnVal = _array[_offset];
             return Point(1);
         }
 
 #if DEBUG && !NET35
-        public Pointer<T> Point(int relativeOffset)
+        internal Pointer<T> Point(int relativeOffset)
         {
             if (relativeOffset == 0) return this;
             return new Pointer<T>(_array, _offset + relativeOffset, _statistics, _initialized);
         }
 
-        public Pointer<T> Point(uint relativeOffset)
+        internal Pointer<T> Point(uint relativeOffset)
         {
             if (relativeOffset == 0) return this;
             return new Pointer<T>(_array, _offset + (int)relativeOffset, _statistics, _initialized);
         }
 #else
-        public Pointer<T> Point(int relativeOffset)
+        internal Pointer<T> Point(int relativeOffset)
         {
             if (relativeOffset == 0) return this;
             return new Pointer<T>(_array, _offset + relativeOffset);
         }
 
-        public Pointer<T> Point(uint relativeOffset)
+        internal Pointer<T> Point(uint relativeOffset)
         {
             if (relativeOffset == 0) return this;
             return new Pointer<T>(_array, _offset + (int)relativeOffset);
@@ -318,7 +318,7 @@ namespace Concentus.Common.CPlusPlus
         /// <param name="destination"></param>
         /// <param name="length"></param>
 #if DEBUG
-        public void MemCopyTo(Pointer<T> destination, int length, bool debug = false)
+        internal void MemCopyTo(Pointer<T> destination, int length, bool debug = false)
         {
             Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
             if (debug)
@@ -330,7 +330,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 #else
-        public void MemCopyTo(Pointer<T> destination, int length)
+        internal void MemCopyTo(Pointer<T> destination, int length)
         {
             if (destination is Pointer<T>)
             {
@@ -355,7 +355,7 @@ namespace Concentus.Common.CPlusPlus
         /// <param name="destination"></param>
         /// <param name="length"></param>
 #if DEBUG
-        public void MemCopyTo(T[] destination, int destOffset, int length)
+        internal void MemCopyTo(T[] destination, int destOffset, int length)
         {
             Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
             //PrintMemCopy(_array, _offset, length);
@@ -365,7 +365,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 #else
-        public void MemCopyTo(T[] destination, int offset, int length)
+        internal void MemCopyTo(T[] destination, int offset, int length)
         {
             // Use the fast way if we have access to the base array
             Array.Copy(_array, _offset, destination, offset, length);
@@ -377,7 +377,7 @@ namespace Concentus.Common.CPlusPlus
         /// </summary>
         /// <param name="length"></param>
 #if DEBUG && !NET35
-        public void MemCopyFrom(T[] source, int sourceOffset, int length)
+        internal void MemCopyFrom(T[] source, int sourceOffset, int length)
         {
             Inlines.OpusAssert(length >= 0, "Cannot memcopy() with a negative length!");
             //PrintMemCopy(source, sourceOffset, length);
@@ -388,7 +388,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 #else
-        public void MemCopyFrom(T[] source, int sourceOffset, int length)
+        internal void MemCopyFrom(T[] source, int sourceOffset, int length)
         {
             Array.Copy(source, sourceOffset, _array, _offset, length);
         }
@@ -399,7 +399,7 @@ namespace Concentus.Common.CPlusPlus
         /// </summary>
         /// <param name="value">The value to set</param>
         /// <param name="length">The number of values to write</param>
-        public void MemSet(T value, int length)
+        internal void MemSet(T value, int length)
         {
 #if DEBUG
             Inlines.OpusAssert(length >= 0, "Cannot memset() with a negative length!");
@@ -412,7 +412,7 @@ namespace Concentus.Common.CPlusPlus
         /// </summary>
         /// <param name="value">The value to set</param>
         /// <param name="length">The number of values to write</param>
-        public void MemSet(T value, uint length)
+        internal void MemSet(T value, uint length)
         {
             for (int c = _offset; c < _offset + length; c++)
             {
@@ -423,7 +423,7 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 
-        public void MemMoveTo(Pointer<T> other, int length)
+        internal void MemMoveTo(Pointer<T> other, int length)
         {
             if (_array == other._array)
             {
@@ -448,7 +448,7 @@ namespace Concentus.Common.CPlusPlus
         /// <param name="move_dist">The offset to send this pointer's data to</param>
         /// <param name="length">The number of values to copy</param>
 #if DEBUG && !NET35
-        public void MemMove(int move_dist, int length)
+        internal void MemMove(int move_dist, int length)
         {
             Inlines.OpusAssert(length >= 0, "Cannot memmove() with a negative length!");
             if (move_dist == 0 || length == 0)
@@ -487,9 +487,9 @@ namespace Concentus.Common.CPlusPlus
             }
         }
 #else
-        public void MemMove(int move_dist, int length)
+        internal void MemMove(int move_dist, int length)
         {
-            Arrays.MemMove(_array, _offset, _offset + move_dist, length);
+            _array.AsSpan(_offset, length).CopyTo(_array.AsSpan(_offset + move_dist, length));
         }
 #endif
 
@@ -515,7 +515,7 @@ namespace Concentus.Common.CPlusPlus
             return other._offset == _offset &&
                 other._array == _array;
         }
-        
+
         public override int GetHashCode()
         {
             return _array.GetHashCode() + _offset.GetHashCode();
@@ -525,7 +525,7 @@ namespace Concentus.Common.CPlusPlus
     /// <summary>
     /// This is a helper class which contains static methods that involve pointers
     /// </summary>
-    public static class Pointer
+    internal static class Pointer
     {
         /// <summary>
         /// Allocates a new array and returns a pointer to it
@@ -533,7 +533,7 @@ namespace Concentus.Common.CPlusPlus
         /// <typeparam name="E"></typeparam>
         /// <param name="capacity"></param>
         /// <returns></returns>
-        public static Pointer<E> Malloc<E>(int capacity)
+        internal static Pointer<E> Malloc<E>(int capacity)
         {
             //this returns a pointer inside of a random field, to make sure offset indexing works properly
             //E[] field = new E[capacity * 2];
@@ -548,7 +548,7 @@ namespace Concentus.Common.CPlusPlus
         /// <param name="memory"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        public static Pointer<E> GetPointer<E>(this E[] memory, int offset = 0)
+        internal static Pointer<E> GetPointer<E>(this E[] memory, int offset = 0)
         {
             if (memory == null)
                 return null;

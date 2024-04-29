@@ -49,7 +49,7 @@ namespace Concentus.Common
 #endif
 
         [Conditional("DEBUG")]
-        public static void OpusAssert(bool condition, string message = "Unknown error")
+        internal static void OpusAssert(bool condition, string message = "Unknown error")
         {
 #if DEBUG_MACROS
             if (!condition) throw new ArithmeticException("Debug macro failed validation");
@@ -64,19 +64,19 @@ namespace Concentus.Common
         //        /** Multiply a 16-bit signed value by a 16-bit unsigned value. The result is a 32-bit signed value */
         //#define MULT16_16SU(a,b) ((opus_val32)(opus_val16)(a)*(opus_val32)(opus_uint16)(b))
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16SU(int a, int b)
+        internal static int MULT16_16SU(int a, int b)
         {
             return ((int)(short)(a) * (int)(ushort)(b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16SU(short a, ushort b)
+        internal static int MULT16_16SU(short a, ushort b)
         {
             return ((int)(short)(a) * (int)(ushort)(b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16SU(int a, uint b)
+        internal static int MULT16_16SU(int a, uint b)
         {
             return ((a) * (int)(b));
         }
@@ -84,13 +84,13 @@ namespace Concentus.Common
         //        /** 16x32 multiplication, followed by a 16-bit shift right. Results fits in 32 bits */
         //#define MULT16_32_Q16(a,b) ADD32(MULT16_16((a),SHR((b),16)), SHR(MULT16_16SU((a),((b)&0x0000ffff)),16))
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_32_Q16(short a, int b)
+        internal static int MULT16_32_Q16(short a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_32_Q16(int a, int b)
+        internal static int MULT16_32_Q16(int a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
@@ -98,27 +98,27 @@ namespace Concentus.Common
         //        /** 16x32 multiplication, followed by a 16-bit shift right (round-to-nearest). Results fits in 32 bits */
         //#define MULT16_32_P16(a,b) ADD32(MULT16_16((a),SHR((b),16)), PSHR(MULT16_16SU((a),((b)&0x0000ffff)),16))
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_32_P16(short a, int b)
+        internal static int MULT16_32_P16(short a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), PSHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_32_P16(int a, int b)
+        internal static int MULT16_32_P16(int a, int b)
         {
             return ADD32(MULT16_16((a), SHR((b), 16)), PSHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16));
         }
 
         //        /** 16x32 multiplication, followed by a 15-bit shift right. Results fits in 32 bits */
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_32_Q15(short a, int b)
+        internal static int MULT16_32_Q15(short a, int b)
         {
             return ((a * (b >> 16)) << 1) + ((a * (b & 0xFFFF)) >> 15);
             //return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (ushort)((b) & 0x0000ffff)), 15));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_32_Q15(int a, int b)
+        internal static int MULT16_32_Q15(int a, int b)
         {
             return ((a * (b >> 16)) << 1) + ((a * (b & 0xFFFF)) >> 15);
             //return ADD32(SHL(MULT16_16((a), SHR((b), 16)), 1), SHR(MULT16_16SU((a), (uint)((b) & 0x0000ffff)), 15));
@@ -127,127 +127,127 @@ namespace Concentus.Common
         //        /** 32x32 multiplication, followed by a 31-bit shift right. Results fits in 32 bits */
         //#define MULT32_32_Q31(a,b) ADD32(ADD32(SHL(MULT16_16(SHR((a),16),SHR((b),16)),1), SHR(MULT16_16SU(SHR((a),16),((b)&0x0000ffff)),15)), SHR(MULT16_16SU(SHR((b),16),((a)&0x0000ffff)),15))
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT32_32_Q31(int a, int b)
+        internal static int MULT32_32_Q31(int a, int b)
         {
             return ADD32(ADD32(SHL(MULT16_16(SHR((a), 16), SHR((b), 16)), 1), SHR(MULT16_16SU(SHR((a), 16), ((b) & 0x0000ffff)), 15)), SHR(MULT16_16SU(SHR((b), 16), ((a) & 0x0000ffff)), 15));
         }
 
         // "Compile-time" (not really) conversion of float constant to 16-bit value
         [MethodImpl(INLINE_ATTR)]
-        public static short QCONST16(float x, int bits)
+        internal static short QCONST16(float x, int bits)
         {
             return ((short)(0.5 + (x) * (((int)1) << (bits))));
         }
 
         // "Compile-time" (not really) conversion of float constant to 32-bit value
         [MethodImpl(INLINE_ATTR)]
-        public static int QCONST32(float x, int bits)
+        internal static int QCONST32(float x, int bits)
         {
             return ((int)(0.5 + (x) * (((int)1) << (bits))));
         }
 
         //        /** Negate a 16-bit value */
         [MethodImpl(INLINE_ATTR)]
-        public static short NEG16(short x)
+        internal static short NEG16(short x)
         {
             return (short)(0 - x);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int NEG16(int x)
+        internal static int NEG16(int x)
         {
             return 0 - x;
         }
 
         //        /** Negate a 32-bit value */
         [MethodImpl(INLINE_ATTR)]
-        public static int NEG32(int x)
+        internal static int NEG32(int x)
         {
             return 0 - x;
         }
 
         //        /** Change a 32-bit value into a 16-bit value. The value is assumed to fit in 16-bit, otherwise the result is undefined */
         [MethodImpl(INLINE_ATTR)]
-        public static short EXTRACT16(int x)
+        internal static short EXTRACT16(int x)
         {
             return unchecked((short)x);
         }
 
         //        /** Change a 16-bit value into a 32-bit value */
         [MethodImpl(INLINE_ATTR)]
-        public static int EXTEND32(short x)
+        internal static int EXTEND32(short x)
         {
             return (int)x;
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int EXTEND32(int x)
+        internal static int EXTEND32(int x)
         {
             return x;
         }
 
         //        /** Arithmetic shift-right of a 16-bit value */
         [MethodImpl(INLINE_ATTR)]
-        public static short SHR16(short a, int shift)
+        internal static short SHR16(short a, int shift)
         {
             return (short)((a) >> (shift));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int SHR16(int a, int shift)
+        internal static int SHR16(int a, int shift)
         {
             return ((a) >> (shift));
         }
 
         //        /** Arithmetic shift-left of a 16-bit value */
         [MethodImpl(INLINE_ATTR)]
-        public static short SHL16(short a, int shift)
+        internal static short SHL16(short a, int shift)
         {
             return unchecked((short)(unchecked((ushort)a) << shift));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int SHL16(int a, int shift)
+        internal static int SHL16(int a, int shift)
         {
             return unchecked(((int)(unchecked((unchecked((uint)(a)) << (shift))))));
         }
 
         //        /** Arithmetic shift-right of a 32-bit value */
         [MethodImpl(INLINE_ATTR)]
-        public static int SHR32(int a, int shift)
+        internal static int SHR32(int a, int shift)
         {
             return a >> shift;
         }
 
         //        /** Arithmetic shift-left of a 32-bit value */
         [MethodImpl(INLINE_ATTR)]
-        public static int SHL32(int a, int shift)
+        internal static int SHL32(int a, int shift)
         {
             return unchecked(((int)(unchecked((unchecked((uint)(a)) << (shift))))));
         }
 
         //        /** 32-bit arithmetic shift right with rounding-to-nearest instead of rounding down */
         [MethodImpl(INLINE_ATTR)]
-        public static int PSHR32(int a, int shift)
+        internal static int PSHR32(int a, int shift)
         {
             return (SHR32((a) + ((EXTEND32(1) << ((shift)) >> 1)), shift));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short PSHR16(short a, int shift)
+        internal static short PSHR16(short a, int shift)
         {
             return SHR16((short)(a + (1 << (shift) >> 1)), shift);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int PSHR16(int a, int shift)
+        internal static int PSHR16(int a, int shift)
         {
             return SHR32((a + (1 << (shift) >> 1)), shift);
         }
 
         //        /** 32-bit arithmetic shift right where the argument can be negative */
         [MethodImpl(INLINE_ATTR)]
-        public static int VSHR32(int a, int shift)
+        internal static int VSHR32(int a, int shift)
         {
             return (((shift) > 0) ? SHR32(a, shift) : SHL32(a, -(shift)));
         }
@@ -284,32 +284,32 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int SATURATE(int x, int a)
+        internal static int SATURATE(int x, int a)
         {
             return (((x) > (a) ? (a) : (x) < -(a) ? -(a) : (x)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short SATURATE16(int x)
+        internal static short SATURATE16(int x)
         {
             return (EXTRACT16((x) > 32767 ? 32767 : (x) < -32768 ? -32768 : (x)));
         }
 
         //        /** Shift by a and round-to-neareast 32-bit value. Result is a 16-bit value */
         [MethodImpl(INLINE_ATTR)]
-        public static short ROUND16(short x, short a)
+        internal static short ROUND16(short x, short a)
         {
             return (EXTRACT16(PSHR32((x), (a))));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int ROUND16(int x, int a)
+        internal static int ROUND16(int x, int a)
         {
             return PSHR32((x), (a));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int PDIV32(int a, int b)
+        internal static int PDIV32(int a, int b)
         {
             return a / b;
         }
@@ -317,59 +317,59 @@ namespace Concentus.Common
         //        /** Divide by two */
         // fixme: can this be optimized?
         [MethodImpl(INLINE_ATTR)]
-        public static short HALF16(short x)
+        internal static short HALF16(short x)
         {
             return (SHR16(x, 1));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int HALF16(int x)
+        internal static int HALF16(int x)
         {
             return (SHR32(x, 1));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int HALF32(int x)
+        internal static int HALF32(int x)
         {
             return (SHR32(x, 1));
         }
 
         //        /** Add two 16-bit values */
         [MethodImpl(INLINE_ATTR)]
-        public static short ADD16(short a, short b)
+        internal static short ADD16(short a, short b)
         {
             return ((short)((short)(a) + (short)(b)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int ADD16(int a, int b)
+        internal static int ADD16(int a, int b)
         {
             return (a + b);
         }
 
         //        /** Subtract two 16-bit values */
         [MethodImpl(INLINE_ATTR)]
-        public static short SUB16(short a, short b)
+        internal static short SUB16(short a, short b)
         {
             return ((short)((short)(a) - (short)(b)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int SUB16(int a, int b)
+        internal static int SUB16(int a, int b)
         {
             return (a - b);
         }
 
         //        /** Add two 32-bit values */
         [MethodImpl(INLINE_ATTR)]
-        public static int ADD32(int a, int b)
+        internal static int ADD32(int a, int b)
         {
             return ((int)(a) + (int)(b));
         }
 
         //        /** Subtract two 32-bit values */
         [MethodImpl(INLINE_ATTR)]
-        public static int SUB32(int a, int b)
+        internal static int SUB32(int a, int b)
         {
             return ((int)(a) - (int)(b));
         }
@@ -377,13 +377,13 @@ namespace Concentus.Common
         //        /** 16x16 multiplication where the result fits in 16 bits */
         //#define MULT16_16_16(a,b)     ((((opus_val16)(a))*((opus_val16)(b))))
         [MethodImpl(INLINE_ATTR)]
-        public static short MULT16_16_16(short a, short b)
+        internal static short MULT16_16_16(short a, short b)
         {
             return (short)(((((short)(a)) * ((short)(b)))));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_16(int a, int b)
+        internal static int MULT16_16_16(int a, int b)
         {
             return (a * b);
         }
@@ -392,13 +392,13 @@ namespace Concentus.Common
         //        /** 16x16 multiplication where the result fits in 32 bits */
         //#define MULT16_16(a,b)     (((opus_val32)(opus_val16)(a))*((opus_val32)(opus_val16)(b)))
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16(int a, int b)
+        internal static int MULT16_16(int a, int b)
         {
             return a * b;
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16(short a, short b)
+        internal static int MULT16_16(short a, short b)
         {
             return a * b;
         }
@@ -406,19 +406,19 @@ namespace Concentus.Common
         //        /** 16x16 multiply-add where the result fits in 32 bits */
         //#define MAC16_16(c,a,b) (ADD32((c),MULT16_16((a),(b))))
         [MethodImpl(INLINE_ATTR)]
-        public static int MAC16_16(short c, short a, short b)
+        internal static int MAC16_16(short c, short a, short b)
         {
             return c + (a * b);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MAC16_16(int c, short a, short b)
+        internal static int MAC16_16(int c, short a, short b)
         {
             return c + (a * b);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MAC16_16(int c, int a, int b)
+        internal static int MAC16_16(int c, int a, int b)
         {
             return c + (a * b);
         }
@@ -428,13 +428,13 @@ namespace Concentus.Common
         //            Result fits in 32 bits. */
         //#define MAC16_32_Q15(c,a,b) ADD32((c),ADD32(MULT16_16((a),SHR((b),15)), SHR(MULT16_16((a),((b)&0x00007fff)),15)))
         [MethodImpl(INLINE_ATTR)]
-        public static int MAC16_32_Q15(int c, short a, short b)
+        internal static int MAC16_32_Q15(int c, short a, short b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 15)), SHR(MULT16_16((a), ((b) & 0x00007fff)), 15)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MAC16_32_Q15(int c, int a, int b)
+        internal static int MAC16_32_Q15(int c, int a, int b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 15)), SHR(MULT16_16((a), ((b) & 0x00007fff)), 15)));
         }
@@ -443,117 +443,117 @@ namespace Concentus.Common
         //            Results fits in 32 bits */
         //#define MAC16_32_Q16(c,a,b) ADD32((c),ADD32(MULT16_16((a),SHR((b),16)), SHR(MULT16_16SU((a),((b)&0x0000ffff)),16)))
         [MethodImpl(INLINE_ATTR)]
-        public static int MAC16_32_Q16(int c, short a, short b)
+        internal static int MAC16_32_Q16(int c, short a, short b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MAC16_32_Q16(int c, int a, int b)
+        internal static int MAC16_32_Q16(int c, int a, int b)
         {
             return ADD32((c), ADD32(MULT16_16((a), SHR((b), 16)), SHR(MULT16_16SU((a), ((b) & 0x0000ffff)), 16)));
         }
 
         //#define MULT16_16_Q11_32(a,b) (SHR(MULT16_16((a),(b)),11))
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_Q11_32(short a, short b)
+        internal static int MULT16_16_Q11_32(short a, short b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_Q11_32(int a, int b)
+        internal static int MULT16_16_Q11_32(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
         //#define MULT16_16_Q11(a,b) (SHR(MULT16_16((a),(b)),11))
         [MethodImpl(INLINE_ATTR)]
-        public static short MULT16_16_Q11(short a, short b)
+        internal static short MULT16_16_Q11(short a, short b)
         {
             return (short)((SHR(MULT16_16((a), (b)), 11)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_Q11(int a, int b)
+        internal static int MULT16_16_Q11(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 11));
         }
 
         //#define MULT16_16_Q13(a,b) (SHR(MULT16_16((a),(b)),13))
         [MethodImpl(INLINE_ATTR)]
-        public static short MULT16_16_Q13(short a, short b)
+        internal static short MULT16_16_Q13(short a, short b)
         {
             return (short)((SHR(MULT16_16((a), (b)), 13)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_Q13(int a, int b)
+        internal static int MULT16_16_Q13(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 13));
         }
 
         //#define MULT16_16_Q14(a,b) (SHR(MULT16_16((a),(b)),14))
         [MethodImpl(INLINE_ATTR)]
-        public static short MULT16_16_Q14(short a, short b)
+        internal static short MULT16_16_Q14(short a, short b)
         {
             return (short)((SHR(MULT16_16((a), (b)), 14)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_Q14(int a, int b)
+        internal static int MULT16_16_Q14(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 14));
         }
 
         //#define MULT16_16_Q15(a,b) (SHR(MULT16_16((a),(b)),15))
         [MethodImpl(INLINE_ATTR)]
-        public static short MULT16_16_Q15(short a, short b)
+        internal static short MULT16_16_Q15(short a, short b)
         {
             return (short)((SHR(MULT16_16((a), (b)), 15)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_Q15(int a, int b)
+        internal static int MULT16_16_Q15(int a, int b)
         {
             return (SHR(MULT16_16((a), (b)), 15));
         }
 
         //#define MULT16_16_P13(a,b) (SHR(ADD32(4096,MULT16_16((a),(b))),13))
         [MethodImpl(INLINE_ATTR)]
-        public static short MULT16_16_P13(short a, short b)
+        internal static short MULT16_16_P13(short a, short b)
         {
             return (short)((SHR(ADD32(4096, MULT16_16((a), (b))), 13)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_P13(int a, int b)
+        internal static int MULT16_16_P13(int a, int b)
         {
             return (SHR(ADD32(4096, MULT16_16((a), (b))), 13));
         }
 
         //#define MULT16_16_P14(a,b) (SHR(ADD32(8192,MULT16_16((a),(b))),14))
         [MethodImpl(INLINE_ATTR)]
-        public static short MULT16_16_P14(short a, short b)
+        internal static short MULT16_16_P14(short a, short b)
         {
             return (short)((SHR(ADD32(8192, MULT16_16((a), (b))), 14)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_P14(int a, int b)
+        internal static int MULT16_16_P14(int a, int b)
         {
             return (SHR(ADD32(8192, MULT16_16((a), (b))), 14));
         }
 
         //#define MULT16_16_P15(a,b) (SHR(ADD32(16384,MULT16_16((a),(b))),15))
         [MethodImpl(INLINE_ATTR)]
-        public static short MULT16_16_P15(short a, short b)
+        internal static short MULT16_16_P15(short a, short b)
         {
             return (short)((SHR(ADD32(16384, MULT16_16((a), (b))), 15)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MULT16_16_P15(int a, int b)
+        internal static int MULT16_16_P15(int a, int b)
         {
             return (SHR(ADD32(16384, MULT16_16((a), (b))), 15));
         }
@@ -561,13 +561,13 @@ namespace Concentus.Common
         //        /** Divide a 32-bit value by a 16-bit value. Result fits in 16 bits */
         //#define DIV32_16(a,b) ((opus_val16)(((opus_val32)(a))/((opus_val16)(b))))
         [MethodImpl(INLINE_ATTR)]
-        public static short DIV32_16(int a, short b)
+        internal static short DIV32_16(int a, short b)
         {
             return (short)(((short)(((int)(a)) / ((short)(b)))));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int DIV32_16(int a, int b)
+        internal static int DIV32_16(int a, int b)
         {
             return a / b;
         }
@@ -575,20 +575,20 @@ namespace Concentus.Common
         //        /** Divide a 32-bit value by a 32-bit value. Result fits in 32 bits */
         //#define DIV32(a,b) (((opus_val32)(a))/((opus_val32)(b)))
         [MethodImpl(INLINE_ATTR)]
-        public static int DIV32(int a, int b)
+        internal static int DIV32(int a, int b)
         {
             return a / b;
         }
 
         // identical to silk_SAT16 - saturate operation
         [MethodImpl(INLINE_ATTR)]
-        public static short SAT16(int x)
+        internal static short SAT16(int x)
         {
             return (short)(x > 32767 ? 32767 : x < -32768 ? -32768 : (short)x);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short SIG2WORD16(int x)
+        internal static short SIG2WORD16(int x)
         {
             x = PSHR32(x, 12);
             x = MAX32(x, -32768);
@@ -597,147 +597,147 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short MIN(short a, short b)
+        internal static short MIN(short a, short b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short MAX(short a, short b)
+        internal static short MAX(short a, short b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short MIN16(short a, short b)
+        internal static short MIN16(short a, short b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short MAX16(short a, short b)
+        internal static short MAX16(short a, short b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MIN16(int a, int b)
+        internal static int MIN16(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MAX16(int a, int b)
+        internal static int MAX16(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static float MIN16(float a, float b)
+        internal static float MIN16(float a, float b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static float MAX16(float a, float b)
+        internal static float MAX16(float a, float b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MIN(int a, int b)
+        internal static int MIN(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MAX(int a, int b)
+        internal static int MAX(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int IMIN(int a, int b)
+        internal static int IMIN(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static uint IMIN(uint a, uint b)
+        internal static uint IMIN(uint a, uint b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int IMAX(int a, int b)
+        internal static int IMAX(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MIN32(int a, int b)
+        internal static int MIN32(int a, int b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MAX32(int a, int b)
+        internal static int MAX32(int a, int b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static float MIN32(float a, float b)
+        internal static float MIN32(float a, float b)
         {
             return ((a) < (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static float MAX32(float a, float b)
+        internal static float MAX32(float a, float b)
         {
             return ((a) > (b) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int ABS16(int x)
+        internal static int ABS16(int x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static float ABS16(float x)
+        internal static float ABS16(float x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short ABS16(short x)
+        internal static short ABS16(short x)
         {
             return (short)(((x) < 0 ? (-(x)) : (x)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int ABS32(int x)
+        internal static int ABS32(int x)
         {
             return ((x) < 0 ? (-(x)) : (x));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static uint celt_udiv(uint n, uint d)
+        internal static uint celt_udiv(uint n, uint d)
         {
             Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_udiv(int n, int d)
+        internal static int celt_udiv(int n, int d)
         {
             Inlines.OpusAssert(d > 0);
             return n / d;
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_sudiv(int n, int d)
+        internal static int celt_sudiv(int n, int d)
         {
             Inlines.OpusAssert(d > 0);
             return n / d;
@@ -745,14 +745,14 @@ namespace Concentus.Common
 
         //#define celt_div(a,b) MULT32_32_Q31((opus_val32)(a),celt_rcp(b))
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_div(int a, int b)
+        internal static int celt_div(int a, int b)
         {
             return MULT32_32_Q31((int)(a), celt_rcp(b));
         }
 
         /** Integer log in base2. Undefined for zero and negative numbers */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_ilog2(int x)
+        internal static int celt_ilog2(int x)
         {
             Inlines.OpusAssert(x > 0, "celt_ilog2() only defined for strictly positive numbers");
 #if DEBUG_MACROS
@@ -764,13 +764,13 @@ namespace Concentus.Common
 
         /** Integer log in base2. Defined for zero, but not for negative numbers */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_zlog2(int x)
+        internal static int celt_zlog2(int x)
         {
             return x <= 0 ? 0 : celt_ilog2(x);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_maxabs16(int[] x, int x_ptr, int len)
+        internal static int celt_maxabs16(Span<int> x, int x_ptr, int len)
         {
             int i;
             int maxval = 0;
@@ -784,7 +784,21 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_maxabs32(int[] x, int x_ptr, int len)
+        internal static int celt_maxabs32(Span<int> x, int len)
+        {
+            int i;
+            int maxval = 0;
+            int minval = 0;
+            for (i = 0; i < len; i++)
+            {
+                maxval = MAX32(maxval, x[i]);
+                minval = MIN32(minval, x[i]);
+            }
+            return MAX32(maxval, 0 - minval);
+        }
+
+        [MethodImpl(INLINE_ATTR)]
+        internal static int celt_maxabs32(Span<int> x, int x_ptr, int len)
         {
             int i;
             int maxval = 0;
@@ -798,7 +812,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short celt_maxabs32(short[] x, int x_ptr, int len)
+        internal static short celt_maxabs32(Span<short> x, int x_ptr, int len)
         {
             int i;
             short maxval = 0;
@@ -818,7 +832,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int FRAC_MUL16(int a, int b)
+        internal static int FRAC_MUL16(int a, int b)
         {
             return ((16384 + ((int)((short)a * (short)b))) >> 15);
         }
@@ -830,7 +844,7 @@ namespace Concentus.Common
         /// <param name="_val"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static uint isqrt32(uint _val)
+        internal static uint isqrt32(uint _val)
         {
 #if PARITY
             uint b;
@@ -867,7 +881,7 @@ namespace Concentus.Common
 
         /** Sqrt approximation (QX input, QX/2 output) */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_sqrt(int x)
+        internal static int celt_sqrt(int x)
         {
 #if PARITY
             int k;
@@ -893,7 +907,7 @@ namespace Concentus.Common
 
         /** Reciprocal approximation (Q15 input, Q16 output) */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_rcp(int x)
+        internal static int celt_rcp(int x)
         {
 #if PARITY
             int i;
@@ -928,7 +942,7 @@ namespace Concentus.Common
 
         /** Reciprocal sqrt approximation in the range [0.25,1) (Q16 in, Q14 out) */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_rsqrt_norm(int x)
+        internal static int celt_rsqrt_norm(int x)
         {
             int n;
             int r;
@@ -956,7 +970,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int frac_div32(int a, int b)
+        internal static int frac_div32(int a, int b)
         {
             int rcp;
             int result, rem;
@@ -980,7 +994,7 @@ namespace Concentus.Common
 
         /** Base-2 logarithm approximation (log2(x)). (Q14 input, Q10 output) */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_log2(int x)
+        internal static int celt_log2(int x)
         {
 #if PARITY
             int i;
@@ -999,7 +1013,7 @@ namespace Concentus.Common
         }
         
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_exp2_frac(int x)
+        internal static int celt_exp2_frac(int x)
         {
             int frac;
             frac = SHL16(x, 4);
@@ -1008,7 +1022,7 @@ namespace Concentus.Common
 
         /** Base-2 exponential approximation (2^x). (Q10 input, Q16 output) */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_exp2(int x)
+        internal static int celt_exp2(int x)
         {
             int integer;
             int frac;
@@ -1024,14 +1038,14 @@ namespace Concentus.Common
         /* Atan approximation using a 4th order polynomial. Input is in Q15 format
            and normalized by pi/4. Output is in Q15 format */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_atan01(int x)
+        internal static int celt_atan01(int x)
         {
             return MULT16_16_P15(x, ADD32(32767, MULT16_16_P15(x, ADD32(-21, MULT16_16_P15(x, ADD32(-11943, MULT16_16_P15(4936, x)))))));
         }
 
         /* atan2() approximation valid for positive input values */
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_atan2p(int y, int x)
+        internal static int celt_atan2p(int y, int x)
         {
             if (y < x)
             {
@@ -1051,7 +1065,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int celt_cos_norm(int x)
+        internal static int celt_cos_norm(int x)
         {
             x = x & 0x0001ffff;
             if (x > SHL32(EXTEND32(1), 16))
@@ -1077,7 +1091,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int _celt_cos_pi_2(int x)
+        internal static int _celt_cos_pi_2(int x)
         {
             int x2;
 
@@ -1086,7 +1100,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short FLOAT2INT16(float x)
+        internal static short FLOAT2INT16(float x)
         {
             x = x * CeltConstants.CELT_SIG_SCALE;
             if (x < short.MinValue)
@@ -1110,7 +1124,7 @@ namespace Concentus.Common
         /// <param name="rot"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ROR32(int a32, int rot)
+        internal static int silk_ROR32(int a32, int rot)
         {
             return unchecked((int)silk_ROR32(unchecked((uint)a32), rot));
         }
@@ -1123,7 +1137,7 @@ namespace Concentus.Common
         /// <param name="rot"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static uint silk_ROR32(uint a32, int rot)
+        internal static uint silk_ROR32(uint a32, int rot)
         {
             int m = (0 - rot);
             if (rot == 0)
@@ -1140,7 +1154,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_MUL(int a32, int b32)
+        internal static int silk_MUL(int a32, int b32)
         {
             int ret = a32 * b32;
 #if DEBUG_MACROS
@@ -1151,7 +1165,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static uint silk_MUL_uint(uint a32, uint b32)
+        internal static uint silk_MUL_uint(uint a32, uint b32)
         {
             uint ret = a32 * b32;
             Inlines.OpusAssert((ulong)ret == (ulong)a32 * (ulong)b32);
@@ -1159,7 +1173,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_MLA(int a32, int b32, int c32)
+        internal static int silk_MLA(int a32, int b32, int c32)
         {
             int ret = silk_ADD32((a32), ((b32) * (c32)));
             Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
@@ -1168,7 +1182,7 @@ namespace Concentus.Common
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_MLA_uint(uint a32, uint b32, uint c32)
+        internal static int silk_MLA_uint(uint a32, uint b32, uint c32)
         {
             uint ret = silk_ADD32((a32), ((b32) * (c32)));
             Inlines.OpusAssert((long)ret == (long)a32 + (long)b32 * (long)c32);
@@ -1183,28 +1197,28 @@ namespace Concentus.Common
         /// <returns></returns>
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMULTT(int a32, int b32)
+        internal static int silk_SMULTT(int a32, int b32)
         {
             return ((a32 >> 16) * (b32 >> 16));
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMLATT(int a32, int b32, int c32)
+        internal static int silk_SMLATT(int a32, int b32, int c32)
         {
             return silk_ADD32((a32), ((b32) >> 16) * ((c32) >> 16));
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_SMLALBB(long a64, short b16, short c16)
+        internal static long silk_SMLALBB(long a64, short b16, short c16)
         {
             return silk_ADD64((a64), (long)((int)(b16) * (int)(c16)));
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_SMULL(int a32, int b32)
+        internal static long silk_SMULL(int a32, int b32)
         {
             return (long)a32 * (long)b32;
         }
@@ -1217,13 +1231,13 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD32_ovflw(int a, int b)
+        internal static int silk_ADD32_ovflw(int a, int b)
         {
             return unchecked((int)((uint)a + (uint)b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD32_ovflw(uint a, uint b)
+        internal static int silk_ADD32_ovflw(uint a, uint b)
         {
             return unchecked((int)(a + b));
         }
@@ -1236,7 +1250,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SUB32_ovflw(int a, int b)
+        internal static int silk_SUB32_ovflw(int a, int b)
         {
             return unchecked((int)((uint)a - (uint)b));
         }
@@ -1249,21 +1263,21 @@ namespace Concentus.Common
         /// <param name="c32"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_MLA_ovflw(int a32, int b32, int c32)
+        internal static int silk_MLA_ovflw(int a32, int b32, int c32)
         {
             return unchecked(silk_ADD32_ovflw((uint)(a32), (uint)(b32) * (uint)(c32)));
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMLABB_ovflw(int a32, int b32, int c32)
+        internal static int silk_SMLABB_ovflw(int a32, int b32, int c32)
         {
             return unchecked((silk_ADD32_ovflw((a32), ((int)((short)(b32))) * (int)((short)(c32)))));
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMULBB(int a32, int b32)
+        internal static int silk_SMULBB(int a32, int b32)
         {
             return ((int)unchecked((short)a32) * (int)unchecked((short)b32));
         }
@@ -1276,7 +1290,7 @@ namespace Concentus.Common
         /// <returns></returns>
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMULWB(int a32, int b32)
+        internal static int silk_SMULWB(int a32, int b32)
         {
 #if DEBUG_MACROS
             int ret;
@@ -1293,13 +1307,13 @@ namespace Concentus.Common
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMLABB(int a32, int b32, int c32)
+        internal static int silk_SMLABB(int a32, int b32, int c32)
         {
             return ((a32) + ((int)unchecked((short)b32)) * (int)unchecked((short)c32));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_DIV32_16(int a32, int b32)
+        internal static int silk_DIV32_16(int a32, int b32)
         {
 #if DEBUG_MACROS
             bool fail = false;
@@ -1312,14 +1326,14 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_DIV32(int a32, int b32)
+        internal static int silk_DIV32(int a32, int b32)
         {
             return a32 / b32;
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_ADD16(short a, short b)
+        internal static short silk_ADD16(short a, short b)
         {
             short ret = (short)(a + b);
 #if DEBUG_MACROS
@@ -1333,7 +1347,7 @@ namespace Concentus.Common
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD32(int a, int b)
+        internal static int silk_ADD32(int a, int b)
         {
             int ret = a + b;
 #if DEBUG_MACROS
@@ -1346,14 +1360,14 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static uint silk_ADD32(uint a, uint b)
+        internal static uint silk_ADD32(uint a, uint b)
         {
             uint ret = a + b;
             return ret;
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_ADD64(long a, long b)
+        internal static long silk_ADD64(long a, long b)
         {
             long ret = a + b;
             Inlines.OpusAssert(ret == silk_ADD_SAT64(a, b));
@@ -1362,7 +1376,7 @@ namespace Concentus.Common
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_SUB16(short a, short b)
+        internal static short silk_SUB16(short a, short b)
         {
             short ret = (short)(a - b);
             Inlines.OpusAssert(ret == silk_SUB_SAT16(a, b));
@@ -1371,7 +1385,7 @@ namespace Concentus.Common
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SUB32(int a, int b)
+        internal static int silk_SUB32(int a, int b)
         {
             int ret = a - b;
             Inlines.OpusAssert(ret == silk_SUB_SAT32(a, b));
@@ -1380,7 +1394,7 @@ namespace Concentus.Common
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_SUB64(long a, long b)
+        internal static long silk_SUB64(long a, long b)
         {
             long ret = a - b;
             Inlines.OpusAssert(ret == silk_SUB_SAT64(a, b));
@@ -1389,20 +1403,20 @@ namespace Concentus.Common
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SAT8(int a)
+        internal static int silk_SAT8(int a)
         {
             return a > byte.MaxValue ? byte.MaxValue : ((a) < byte.MinValue ? byte.MinValue : (a));
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SAT16(int a)
+        internal static int silk_SAT16(int a)
         {
             return a > short.MaxValue ? short.MaxValue : ((a) < short.MinValue ? short.MinValue : (a));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SAT32(long a)
+        internal static int silk_SAT32(long a)
         {
             return a > int.MaxValue ? int.MaxValue : ((a) < int.MinValue ? int.MinValue : (int)(a));
         }
@@ -1414,7 +1428,7 @@ namespace Concentus.Common
         /// <param name="b16"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_ADD_SAT16(short a16, short b16)
+        internal static short silk_ADD_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_ADD32((int)(a16), (b16)));
             Inlines.OpusAssert(res == silk_SAT16((int)a16 + (int)b16));
@@ -1422,7 +1436,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD_SAT32(int a32, int b32)
+        internal static int silk_ADD_SAT32(int a32, int b32)
         {
             int res = (unchecked(((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
                 ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
@@ -1432,7 +1446,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_ADD_SAT64(long a64, long b64)
+        internal static long silk_ADD_SAT64(long a64, long b64)
         {
             long res;
             res = (unchecked((ulong)(a64 + b64) & 0x8000000000000000UL) == 0 ?
@@ -1460,7 +1474,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_SUB_SAT16(short a16, short b16)
+        internal static short silk_SUB_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_SUB32((int)(a16), (b16)));
             Inlines.OpusAssert(res == silk_SAT16((int)a16 - (int)b16));
@@ -1468,7 +1482,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SUB_SAT32(int a32, int b32)
+        internal static int silk_SUB_SAT32(int a32, int b32)
         {
             int res = (unchecked(((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
                 (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
@@ -1478,7 +1492,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_SUB_SAT64(long a64, long b64)
+        internal static long silk_SUB_SAT64(long a64, long b64)
         {
             long res;
             res = (unchecked((ulong)((a64) - (b64)) & 0x8000000000000000UL) == 0 ?
@@ -1515,7 +1529,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static sbyte silk_ADD_POS_SAT8(sbyte a, sbyte b)
+        internal static sbyte silk_ADD_POS_SAT8(sbyte a, sbyte b)
         {
             return (sbyte)((((a + b) & 0x80) != 0) ? sbyte.MaxValue : (a + b));
         }
@@ -1527,7 +1541,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_ADD_POS_SAT16(short a, short b)
+        internal static short silk_ADD_POS_SAT16(short a, short b)
         {
             return (short)(unchecked(((a + b) & 0x8000) != 0) ? short.MaxValue : (a + b));
         }
@@ -1539,7 +1553,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD_POS_SAT32(int a, int b)
+        internal static int silk_ADD_POS_SAT32(int a, int b)
         {
             return (unchecked(((a + b) & 0x80000000) != 0) ? int.MaxValue : (a + b));
         }
@@ -1551,13 +1565,13 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_ADD_POS_SAT64(long a, long b)
+        internal static long silk_ADD_POS_SAT64(long a, long b)
         {
             return ((unchecked((ulong)(a + b) & 0x8000000000000000L) != 0) ? long.MaxValue : (a + b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static sbyte silk_LSHIFT8(sbyte a, int shift)
+        internal static sbyte silk_LSHIFT8(sbyte a, int shift)
         {
             sbyte ret = (sbyte)(a << shift);
 #if DEBUG_MACROS
@@ -1571,7 +1585,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_LSHIFT16(short a, int shift)
+        internal static short silk_LSHIFT16(short a, int shift)
         {
             short ret = (short)(a << shift);
 #if DEBUG_MACROS
@@ -1585,7 +1599,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_LSHIFT32(int a, int shift)
+        internal static int silk_LSHIFT32(int a, int shift)
         {
             int ret = a << shift;
 #if DEBUG_MACROS
@@ -1599,7 +1613,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_LSHIFT64(long a, int shift)
+        internal static long silk_LSHIFT64(long a, int shift)
         {
             long ret = a << shift;
 #if DEBUG_MACROS
@@ -1613,7 +1627,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_LSHIFT(int a, int shift)
+        internal static int silk_LSHIFT(int a, int shift)
         {
             int ret = a << shift;
 #if DEBUG_MACROS
@@ -1627,7 +1641,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_LSHIFT_ovflw(int a, int shift)
+        internal static int silk_LSHIFT_ovflw(int a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32)) /* no check for overflow */
@@ -1639,7 +1653,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static uint silk_LSHIFT_uint(uint a, int shift)
+        internal static uint silk_LSHIFT_uint(uint a, int shift)
         {
             uint ret = a << shift;
 #if DEBUG_MACROS
@@ -1658,13 +1672,13 @@ namespace Concentus.Common
         /// <param name="shift"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_LSHIFT_SAT32(int a, int shift)
+        internal static int silk_LSHIFT_SAT32(int a, int shift)
         {
             return (silk_LSHIFT32(silk_LIMIT((a), silk_RSHIFT32(int.MinValue, (shift)), silk_RSHIFT32(int.MaxValue, (shift))), (shift)));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static sbyte silk_RSHIFT8(sbyte a, int shift)
+        internal static sbyte silk_RSHIFT8(sbyte a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 8))
@@ -1676,7 +1690,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_RSHIFT16(short a, int shift)
+        internal static short silk_RSHIFT16(short a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 16))
@@ -1688,7 +1702,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_RSHIFT32(int a, int shift)
+        internal static int silk_RSHIFT32(int a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32))
@@ -1700,7 +1714,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_RSHIFT(int a, int shift)
+        internal static int silk_RSHIFT(int a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 32))
@@ -1712,7 +1726,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_RSHIFT64(long a, int shift)
+        internal static long silk_RSHIFT64(long a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift >= 64))
@@ -1724,7 +1738,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static uint silk_RSHIFT_uint(uint a, int shift)
+        internal static uint silk_RSHIFT_uint(uint a, int shift)
         {
 #if DEBUG_MACROS
             if ((shift < 0) || (shift > 32))
@@ -1736,7 +1750,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD_LSHIFT(int a, int b, int shift)
+        internal static int silk_ADD_LSHIFT(int a, int b, int shift)
         {
             int ret = a + (b << shift);
 #if DEBUG_MACROS
@@ -1749,7 +1763,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD_LSHIFT32(int a, int b, int shift)
+        internal static int silk_ADD_LSHIFT32(int a, int b, int shift)
         {
             int ret = a + (b << shift);
 #if DEBUG_MACROS
@@ -1762,7 +1776,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static uint silk_ADD_LSHIFT_uint(uint a, uint b, int shift)
+        internal static uint silk_ADD_LSHIFT_uint(uint a, uint b, int shift)
         {
             uint ret;
             ret = a + (b << shift);
@@ -1776,7 +1790,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD_RSHIFT(int a, int b, int shift)
+        internal static int silk_ADD_RSHIFT(int a, int b, int shift)
         {
             int ret = a + (b >> shift);
 #if DEBUG_MACROS
@@ -1789,7 +1803,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_ADD_RSHIFT32(int a, int b, int shift)
+        internal static int silk_ADD_RSHIFT32(int a, int b, int shift)
         {
             int ret = a + (b >> shift);
 #if DEBUG_MACROS
@@ -1802,7 +1816,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static uint silk_ADD_RSHIFT_uint(uint a, uint b, int shift)
+        internal static uint silk_ADD_RSHIFT_uint(uint a, uint b, int shift)
         {
             uint ret;
             ret = a + (b >> shift);
@@ -1816,7 +1830,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SUB_LSHIFT32(int a, int b, int shift)
+        internal static int silk_SUB_LSHIFT32(int a, int b, int shift)
         {
             int ret;
             ret = a - (b << shift);
@@ -1830,7 +1844,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SUB_RSHIFT32(int a, int b, int shift)
+        internal static int silk_SUB_RSHIFT32(int a, int b, int shift)
         {
             int ret;
             ret = a - (b >> shift);
@@ -1844,7 +1858,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_RSHIFT_ROUND(int a, int shift)
+        internal static int silk_RSHIFT_ROUND(int a, int shift)
         {
             int ret;
             ret = shift == 1 ? (a >> 1) + (a & 1) : ((a >> (shift - 1)) + 1) >> 1;
@@ -1859,7 +1873,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_RSHIFT_ROUND64(long a, int shift)
+        internal static long silk_RSHIFT_ROUND64(long a, int shift)
         {
             long ret;
 #if DEBUG_MACROS
@@ -1874,25 +1888,25 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_min(int a, int b)
+        internal static int silk_min(int a, int b)
         {
             return ((a) < (b)) ? (a) : (b);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_max(int a, int b)
+        internal static int silk_max(int a, int b)
         {
             return ((a) > (b)) ? (a) : (b);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static float silk_min(float a, float b)
+        internal static float silk_min(float a, float b)
         {
             return ((a) < (b)) ? (a) : (b);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static float silk_max(float a, float b)
+        internal static float silk_max(float a, float b)
         {
             return ((a) > (b)) ? (a) : (b);
         }
@@ -1902,97 +1916,97 @@ namespace Concentus.Common
         /// Because of limitations of the C# JIT, this macro is actually evaluated at runtime and therefore should not be used if you want to maximize performance
         /// </summary>
         [MethodImpl(INLINE_ATTR)]
-        public static int SILK_CONST(float number, int scale)
+        internal static int SILK_CONST(float number, int scale)
         {
             return ((int)((number) * ((long)1 << (scale)) + 0.5));
         }
 
         /* silk_min() versions with typecast in the function call */
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_min_int(int a, int b)
+        internal static int silk_min_int(int a, int b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_min_16(short a, short b)
+        internal static short silk_min_16(short a, short b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_min_32(int a, int b)
+        internal static int silk_min_32(int a, int b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_min_64(long a, long b)
+        internal static long silk_min_64(long a, long b)
         {
             return (((a) < (b)) ? (a) : (b));
         }
 
         /* silk_min() versions with typecast in the function call */
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_max_int(int a, int b)
+        internal static int silk_max_int(int a, int b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_max_16(short a, short b)
+        internal static short silk_max_16(short a, short b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_max_32(int a, int b)
+        internal static int silk_max_32(int a, int b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_max_64(long a, long b)
+        internal static long silk_max_64(long a, long b)
         {
             return (((a) > (b)) ? (a) : (b));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static float silk_LIMIT(float a, float limit1, float limit2)
+        internal static float silk_LIMIT(float a, float limit1, float limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_LIMIT(int a, int limit1, int limit2)
+        internal static int silk_LIMIT(int a, int limit1, int limit2)
         {
             return silk_LIMIT_32(a, limit1, limit2);
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_LIMIT_int(int a, int limit1, int limit2)
+        internal static int silk_LIMIT_int(int a, int limit1, int limit2)
         {
             return silk_LIMIT_32(a, limit1, limit2);
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static short silk_LIMIT_16(short a, short limit1, short limit2)
+        internal static short silk_LIMIT_16(short a, short limit1, short limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_LIMIT_32(int a, int limit1, int limit2)
+        internal static int silk_LIMIT_32(int a, int limit1, int limit2)
         {
             return ((limit1) > (limit2) ? ((a) > (limit1) ? (limit1) : ((a) < (limit2) ? (limit2) : (a))) : ((a) > (limit2) ? (limit2) : ((a) < (limit1) ? (limit1) : (a))));
         }
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_abs(int a)
+        internal static int silk_abs(int a)
         {
             // Be careful, silk_abs returns wrong when input equals to silk_intXX_MIN
             return ((a) > 0) ? (a) : -(a);
@@ -2000,25 +2014,25 @@ namespace Concentus.Common
 
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_abs_int16(int a)
+        internal static int silk_abs_int16(int a)
         {
             return (a ^ (a >> 15)) - (a >> 15);
         }
         
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_abs_int32(int a)
+        internal static int silk_abs_int32(int a)
         {
             return (a ^ (a >> 31)) - (a >> 31);
         }
         
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_abs_int64(long a)
+        internal static long silk_abs_int64(long a)
         {
             return ((a) > 0) ? (a) : -(a);
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_sign(int a)
+        internal static long silk_sign(int a)
         {
             return (a) > 0 ? 1 : ((a) < 0 ? -1 : 0);
         }
@@ -2030,7 +2044,7 @@ namespace Concentus.Common
         /// bits, take the most significant bits by right-shifting.
         /// </summary>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_RAND(int seed)
+        internal static int silk_RAND(int seed)
         {
             return silk_MLA_ovflw(907633515, seed, 196314165);
         }
@@ -2042,14 +2056,14 @@ namespace Concentus.Common
         /// <param name="b32"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMMUL(int a32, int b32)
+        internal static int silk_SMMUL(int a32, int b32)
         {
             return (int)silk_RSHIFT64(silk_SMULL((a32), (b32)), 32);
         }
 
         /* a32 + (b32 * (c32 >> 16)) >> 16 */
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMLAWT(int a32, int b32, int c32)
+        internal static int silk_SMLAWT(int a32, int b32, int c32)
         {
             int ret = a32 + ((b32 >> 16) * (c32 >> 16)) + (((b32 & 0x0000FFFF) * ((c32 >> 16)) >> 16));
 #if DEBUG_MACROS
@@ -2069,7 +2083,7 @@ namespace Concentus.Common
         /// <param name="Qres">I    Q-domain of result (>= 0)</param>
         /// <returns>O    returns a good approximation of "(a32 &lt;&lt; Qres) / b32"</returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_DIV32_varQ(int a32, int b32, int Qres)
+        internal static int silk_DIV32_varQ(int a32, int b32, int Qres)
         {
             int a_headrm, b_headrm, lshift;
             int b32_inv, a32_nrm, b32_nrm, result;
@@ -2123,7 +2137,7 @@ namespace Concentus.Common
         /// <param name="Qres">I    Q-domain of result (> 0)</param>
         /// <returns>a good approximation of "(1 &lt;&lt; Qres) / b32"</returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_INVERSE32_varQ(int b32, int Qres)
+        internal static int silk_INVERSE32_varQ(int b32, int Qres)
         {
             int b_headrm, lshift;
             int b32_inv, b32_nrm, err_Q32, result;
@@ -2174,7 +2188,7 @@ namespace Concentus.Common
         /// </summary>
         // fixme: This method should be as optimized as possible
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMLAWB(int a32, int b32, int c32)
+        internal static int silk_SMLAWB(int a32, int b32, int c32)
         {
             //return (int)(a32 + ((b32 * (long)((short)c32)) >> 16));
             int ret;
@@ -2190,57 +2204,57 @@ namespace Concentus.Common
 
         ///* (a32 * (b32 >> 16)) >> 16 */
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMULWT(int a32, int b32)
+        internal static int silk_SMULWT(int a32, int b32)
         {
             return (((a32) >> 16) * ((b32) >> 16) + ((((a32) & 0x0000FFFF) * ((b32) >> 16)) >> 16));
         }
 
         ///* (int)((short)(a32)) * (b32 >> 16) */
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMULBT(int a32, int b32)
+        internal static int silk_SMULBT(int a32, int b32)
         {
             return ((int)((short)(a32)) * ((b32) >> 16));
         }
 
         ///* a32 + (int)((short)(b32)) * (c32 >> 16) */
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMLABT(int a32, int b32, int c32)
+        internal static int silk_SMLABT(int a32, int b32, int c32)
         {
             return ((a32) + ((int)((short)(b32))) * ((c32) >> 16));
         }
 
         ///* a64 + (b32 * c32) */
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_SMLAL(long a64, int b32, int c32)
+        internal static long silk_SMLAL(long a64, int b32, int c32)
         {
             return (silk_ADD64((a64), ((long)(b32) * (long)(c32))));
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static void MatrixSet<T>(T[] Matrix_base_adr, int Matrix_ptr, int row, int column, int N, T value)
+        internal static void MatrixSet<T>(T[] Matrix_base_adr, int Matrix_ptr, int row, int column, int N, T value)
         {
             Matrix_base_adr[Matrix_ptr + (row * N) + column] = value;
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MatrixGetPointer(int row, int column, int N)
+        internal static int MatrixGetPointer(int row, int column, int N)
         {
             return (row * N) + column;
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
+        internal static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr[((row) * (N)) + (column)];
         }
 
-        public static T MatrixGet<T>(T[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
+        internal static T MatrixGet<T>(T[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
         {
             return Matrix_base_adr[matrix_ptr + (row * N) + column];
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static void MatrixSet<T>(T[] Matrix_base_adr, int row, int column, int N, T value)
+        internal static void MatrixSet<T>(T[] Matrix_base_adr, int row, int column, int N, T value)
         {
             Matrix_base_adr[((row) * (N)) + (column)] = value;
         }
@@ -2249,7 +2263,7 @@ namespace Concentus.Common
         /// (a32 * b32) >> 16
         /// </summary>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMULWW(int a32, int b32)
+        internal static int silk_SMULWW(int a32, int b32)
         {
 #if DEBUG_MACROS
             int ret, tmp1, tmp2;
@@ -2285,7 +2299,7 @@ namespace Concentus.Common
         /// a32 + ((b32 * c32) >> 16)
         /// </summary>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SMLAWW(int a32, int b32, int c32)
+        internal static int silk_SMLAWW(int a32, int b32, int c32)
         {
 #if DEBUG_MACROS
             int ret, tmp;
@@ -2305,7 +2319,7 @@ namespace Concentus.Common
 
         /* count leading zeros of opus_int64 */
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_CLZ64(long input)
+        internal static int silk_CLZ64(long input)
         {
             int in_upper;
 
@@ -2322,7 +2336,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_CLZ32(int in32)
+        internal static int silk_CLZ32(int in32)
         {
             return in32 == 0 ? 32 : 32 - EC_ILOG(unchecked((uint)in32));
         }
@@ -2334,7 +2348,7 @@ namespace Concentus.Common
         /// <param name="lz">number of leading zeros</param>
         /// <param name="frac_Q7">the 7 bits right after the leading one</param>
         [MethodImpl(INLINE_ATTR)]
-        public static void silk_CLZ_FRAC(int input, out int lz, out int frac_Q7)
+        internal static void silk_CLZ_FRAC(int input, out int lz, out int frac_Q7)
         {
             int lzeros = silk_CLZ32(input);
 
@@ -2350,7 +2364,7 @@ namespace Concentus.Common
         /// <param name="x"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_SQRT_APPROX(int x)
+        internal static int silk_SQRT_APPROX(int x)
         {
 #if PARITY
             int y, lz, frac_Q7;
@@ -2384,7 +2398,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int MUL32_FRAC_Q(int a32, int b32, int Q)
+        internal static int MUL32_FRAC_Q(int a32, int b32, int Q)
         {
             return ((int)(silk_RSHIFT_ROUND64(silk_SMULL(a32, b32), Q)));
         }
@@ -2396,7 +2410,7 @@ namespace Concentus.Common
         /// <param name="inLin">(I) input in linear scale</param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_lin2log(int inLin)
+        internal static int silk_lin2log(int inLin)
         {
             int lz, frac_Q7;
 
@@ -2413,7 +2427,7 @@ namespace Concentus.Common
         /// <param name="inLog_Q7">input on log scale</param>
         /// <returns>Linearized value</returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_log2lin(int inLog_Q7)
+        internal static int silk_log2lin(int inLog_Q7)
         {
             int output, frac_Q7;
 
@@ -2452,7 +2466,7 @@ namespace Concentus.Common
         /// <param name="ifact_Q2">(I) interp. factor, weight on 2nd vector</param>
         /// <param name="d">(I) number of parameters</param>
         [MethodImpl(INLINE_ATTR)]
-        public static void silk_interpolate(
+        internal static void silk_interpolate(
             short[] xi,
             short[] x0,
             short[] x1,
@@ -2479,7 +2493,7 @@ namespace Concentus.Common
         /// <param name="len">I vector lengths</param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_inner_prod_aligned_scale(
+        internal static int silk_inner_prod_aligned_scale(
             short[] inVec1,
             short[] inVec2,
             int scale,
@@ -2496,10 +2510,10 @@ namespace Concentus.Common
 
         /* Copy and multiply a vector by a constant */
         [MethodImpl(INLINE_ATTR)]
-        public static void silk_scale_copy_vector16(
-            short[] data_out,
+        internal static void silk_scale_copy_vector16(
+            Span<short> data_out,
             int data_out_ptr,
-        short[] data_in,
+        Span<short> data_in,
         int data_in_ptr,
         int gain_Q16,           /* I    Gain in Q16                                                 */
         int dataSize            /* I    Length                                                      */
@@ -2513,7 +2527,7 @@ namespace Concentus.Common
 
         /* Multiply a vector by a constant */
         [MethodImpl(INLINE_ATTR)]
-        public static void silk_scale_vector32_Q26_lshift_18(
+        internal static void silk_scale_vector32_Q26_lshift_18(
             int[] data1,             /* I/O  Q0/Q18                                                      */
             int data1_ptr,
             int gain_Q26,           /* I    Q26                                                         */
@@ -2528,7 +2542,7 @@ namespace Concentus.Common
 
         /* sum = for(i=0;i<len;i++)inVec1[i]*inVec2[i];      ---        inner product   */
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_inner_prod(
+        internal static int silk_inner_prod(
             short[] inVec1,             /*    I input vector 1                                              */
             int inVec1_ptr,
             short[] inVec2,             /*    I input vector 2                                              */
@@ -2544,7 +2558,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static int silk_inner_prod_self(
+        internal static int silk_inner_prod_self(
             short[] inVec,             /*    I input vector 1 (will be crossed with itself)                                             */
             int inVec_ptr,
             int len                /*    I vector lengths                                              */
@@ -2558,7 +2572,7 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        public static long silk_inner_prod16_aligned_64(
+        internal static long silk_inner_prod16_aligned_64(
             short[] inVec1,             /*    I input vector 1                                              */
             int inVec1_ptr,
             short[] inVec2,             /*    I input vector 2                                              */
@@ -2575,25 +2589,6 @@ namespace Concentus.Common
             return sum;
         }
 
-#if UNSAFE
-        [MethodImpl(INLINE_ATTR)]
-        public static unsafe long silk_inner_prod16_aligned_64(
-            short* inVec1,             /*    I input vector 1                                              */
-            short* inVec2,             /*    I input vector 2                                              */
-            int len                 /*    I vector lengths                                              */
-        )
-        {
-            int i;
-            long sum = 0;
-            for (i = 0; i < len; i++)
-            {
-                sum = silk_SMLALBB(sum, inVec1[i], inVec2[i]);
-            }
-            return sum;
-        }
-#endif
-
-
         #endregion
 
         #region EntropyCoder helper functions, common to both projects
@@ -2605,7 +2600,7 @@ namespace Concentus.Common
         /// <param name="b"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static uint EC_MINI(uint a, uint b)
+        internal static uint EC_MINI(uint a, uint b)
         {
             return unchecked(a + ((b - a) & ((b < a) ? 0xFFFFFFFFU : 0)));
         }
@@ -2616,7 +2611,7 @@ namespace Concentus.Common
         /// <param name="x"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int EC_CLZ(uint x)
+        internal static int EC_CLZ(uint x)
         {
             if (x == 0)
                 return 0;
@@ -2634,7 +2629,7 @@ namespace Concentus.Common
             return (int)(1 - y);
         }
 
-        //public static int clz_fast(uint x)
+        //internal static int clz_fast(uint x)
         //{
         //    x |= (x >> 1);
         //    x |= (x >> 2);
@@ -2656,7 +2651,7 @@ namespace Concentus.Common
         /// <param name="x"></param>
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
-        public static int EC_ILOG(uint x)
+        internal static int EC_ILOG(uint x)
         {
 #if PARITY
             if(x == 0)
@@ -2702,7 +2697,7 @@ namespace Concentus.Common
 #region C++ Math
 
         [MethodImpl(INLINE_ATTR)]
-        public static int abs(int a)
+        internal static int abs(int a)
         {
             if (a < 0)
                 return 0 - a;

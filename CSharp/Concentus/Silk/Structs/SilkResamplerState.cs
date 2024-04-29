@@ -85,10 +85,10 @@ namespace Concentus.Silk.Structs
             Fs_out_kHz = other.Fs_out_kHz;
             inputDelay = other.inputDelay;
             Coefs = other.Coefs;
-            Array.Copy(other.sIIR, this.sIIR, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
-            Array.Copy(other.sFIR_i32, this.sFIR_i32, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            Array.Copy(other.sFIR_i16, this.sFIR_i16, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
-            Array.Copy(other.delayBuf, this.delayBuf, 48);
+            Arrays.MemCopy(other.sIIR, 0, this.sIIR, 0, SilkConstants.SILK_RESAMPLER_MAX_IIR_ORDER);
+            Arrays.MemCopy(other.sFIR_i32, 0, this.sFIR_i32, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Arrays.MemCopy(other.sFIR_i16, 0, this.sFIR_i16, 0, SilkConstants.SILK_RESAMPLER_MAX_FIR_ORDER);
+            Arrays.MemCopy(other.delayBuf, 0, this.delayBuf, 0, 48);
         }
     }
 }

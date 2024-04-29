@@ -109,16 +109,16 @@ namespace Concentus.Common
 
         private class FuncDef
         {
-            public FuncDef(double[] t, int os)
+            internal FuncDef(double[] t, int os)
             {
                 table = t;
                 oversample = os;
             }
 
-            public double[] table;
-            public int oversample;
+            internal double[] table;
+            internal int oversample;
 
-            public static readonly double[] kaiser12_table/*[68]*/ = {
+            internal static readonly double[] kaiser12_table/*[68]*/ = {
                 0.99859849, 1.00000000, 0.99859849, 0.99440475, 0.98745105, 0.97779076,
                 0.96549770, 0.95066529, 0.93340547, 0.91384741, 0.89213598, 0.86843014,
                 0.84290116, 0.81573067, 0.78710866, 0.75723148, 0.72629970, 0.69451601,
@@ -140,7 +140,7 @@ namespace Concentus.Common
             0.03111947, 0.02127838, 0.01402878, 0.00886058, 0.00531256, 0.00298291,
             0.00153438, 0.00069463, 0.00025272, 0.0000527734, 0.00000500, 0.00000000};
             */
-            public static readonly double[] kaiser10_table/*[36]*/ = {
+            internal static readonly double[] kaiser10_table/*[36]*/ = {
                 0.99537781, 1.00000000, 0.99537781, 0.98162644, 0.95908712, 0.92831446,
                 0.89005583, 0.84522401, 0.79486424, 0.74011713, 0.68217934, 0.62226347,
                 0.56155915, 0.50119680, 0.44221549, 0.38553619, 0.33194107, 0.28205962,
@@ -148,7 +148,7 @@ namespace Concentus.Common
                 0.05731132, 0.04193980, 0.02979584, 0.02044510, 0.01345224, 0.00839739,
                 0.00488951, 0.00257636, 0.00115101, 0.00035515, 0.00000000, 0.00000000};
 
-            public static readonly double[] kaiser8_table/*[36]*/ = {
+            internal static readonly double[] kaiser8_table/*[36]*/ = {
                 0.99635258, 1.00000000, 0.99635258, 0.98548012, 0.96759014, 0.94302200,
                 0.91223751, 0.87580811, 0.83439927, 0.78875245, 0.73966538, 0.68797126,
                 0.63451750, 0.58014482, 0.52566725, 0.47185369, 0.41941150, 0.36897272,
@@ -156,7 +156,7 @@ namespace Concentus.Common
                 0.10562887, 0.08273982, 0.06335451, 0.04724088, 0.03412321, 0.02369490,
                 0.01563093, 0.00959968, 0.00527363, 0.00233883, 0.00050000, 0.00000000};
 
-            public static readonly double[] kaiser6_table/*[36]*/ = {
+            internal static readonly double[] kaiser6_table/*[36]*/ = {
                 0.99733006, 1.00000000, 0.99733006, 0.98935595, 0.97618418, 0.95799003,
                 0.93501423, 0.90755855, 0.87598009, 0.84068475, 0.80211977, 0.76076565,
                 0.71712752, 0.67172623, 0.62508937, 0.57774224, 0.53019925, 0.48295561,
@@ -167,11 +167,11 @@ namespace Concentus.Common
 
         private class QualityMapping
         {
-            public int base_length = 0;
-            public int oversample = 0;
-            public float downsample_bandwidth = 0;
-            public float upsample_bandwidth = 0;
-            public FuncDef window_func = null;
+            internal int base_length = 0;
+            internal int oversample = 0;
+            internal float downsample_bandwidth = 0;
+            internal float upsample_bandwidth = 0;
+            internal FuncDef window_func = null;
 
             private QualityMapping(int bl, int os, float dsb, float usb, FuncDef wf)
             {
@@ -191,7 +191,7 @@ namespace Concentus.Common
                   by the sinusoids/noise just below the Nyquist rate (guaranteed only for
                   up-sampling).
             */
-            public static readonly QualityMapping[] quality_map = {
+            internal static readonly QualityMapping[] quality_map = {
                 new QualityMapping(  8,  4, 0.830f, 0.860f, new FuncDef(FuncDef.kaiser6_table, 32) ), /* Q0 */
                 new QualityMapping( 16,  4, 0.850f, 0.880f, new FuncDef(FuncDef.kaiser6_table, 32) ), /* Q1 */
                 new QualityMapping( 32,  4, 0.882f, 0.910f, new FuncDef(FuncDef.kaiser6_table, 32) ), /* Q2 */  /* 82.3% cutoff ( ~60 dB stop) 6  */
@@ -213,7 +213,7 @@ namespace Concentus.Common
         /// <summary>
         /// typedef int (* resampler_basic_func)(SpeexResamplerState*, int , Pointer&lt;short&gt;, int *, Pointer&lt;short&gt;, Pointer&lt;int&gt;);
         /// </summary>
-        private delegate int resampler_basic_func(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len);
+        private delegate int resampler_basic_func(int channel_index, Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len);
 
         private static short WORD2INT(float x)
         {
@@ -270,7 +270,7 @@ namespace Concentus.Common
                 interp2 += 1;
         }
 
-        private int resampler_basic_direct_single(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        private int resampler_basic_direct_single(int channel_index, Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int N = this.filt_len;
             int out_sample = 0;
@@ -306,7 +306,7 @@ namespace Concentus.Common
             return out_sample;
         }
 
-        private int resampler_basic_interpolate_single(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        private int resampler_basic_interpolate_single(int channel_index, Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int N = this.filt_len;
             int out_sample = 0;
@@ -516,7 +516,7 @@ namespace Concentus.Common
             }
         }
 
-        private void speex_resampler_process_native(int channel_index, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        private void speex_resampler_process_native(int channel_index, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int j = 0;
             int N = this.filt_len;
@@ -540,7 +540,7 @@ namespace Concentus.Common
                 this.mem[j] = this.mem[j + ilen];
         }
 
-        private int speex_resampler_magic(int channel_index, short[] output, ref int output_ptr, int out_len)
+        private int speex_resampler_magic(int channel_index, Span<short> output, ref int output_ptr, int out_len)
         {
             int tmp_in_len = this.magic_samples[channel_index];
             int mem_ptr = channel_index * this.mem_alloc_size;
@@ -563,7 +563,7 @@ namespace Concentus.Common
 
         #endregion
 
-        #region Public API
+        #region internal API
 
         /// <summary>
         /// Create a new resampler with integer input and output rates (in hertz).
@@ -632,14 +632,13 @@ namespace Concentus.Common
             this.initialised = 1;
         }
 
+        [Obsolete("Just use the regular constructor")]
         public static SpeexResampler Create(int nb_channels, int in_rate, int out_rate, int quality)
         {
             return new SpeexResampler(nb_channels, in_rate, out_rate, in_rate, out_rate, quality);
         }
 
-        /// <summary>
-        /// DEPRECATED. Use the regular constructor instead.
-        /// </summary>
+        [Obsolete("Just use the regular constructor")]
         public static SpeexResampler Create(int nb_channels, int ratio_num, int ratio_den, int in_rate, int out_rate, int quality)
         {
             return new SpeexResampler(nb_channels, ratio_num, ratio_den, in_rate, out_rate, quality);
@@ -657,7 +656,7 @@ namespace Concentus.Common
         /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
         /// of output samples actually produced</param>
-        public void Process(int channel_index, short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        internal void Process(int channel_index, Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int j;
             int ilen = in_len;
@@ -715,7 +714,7 @@ namespace Concentus.Common
         /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">Size of the output buffer. After this function returns, this value will be set to the number
         /// of output samples actually produced</param>
-        public void Process(int channel_index, float[] input, int input_ptr, ref int in_len, float[] output, int output_ptr, ref int out_len)
+        internal void Process(int channel_index, Span<float> input, int input_ptr, ref int in_len, Span<float> output, int output_ptr, ref int out_len)
         {
             int j;
             int istride_save = this.in_stride;
@@ -789,7 +788,7 @@ namespace Concentus.Common
         /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
         /// will be set to the number of samples per channel actually produced</param>
-        public void ProcessInterleaved(float[] input, int input_ptr, ref int in_len, float[] output, int output_ptr, ref int out_len)
+        internal void ProcessInterleaved(Span<float> input, int input_ptr, ref int in_len, Span<float> output, int output_ptr, ref int out_len)
         {
             int i;
             int istride_save, ostride_save;
@@ -822,7 +821,7 @@ namespace Concentus.Common
         /// <param name="output_ptr">Offset to start from when writing output</param>
         /// <param name="out_len">The size of the output buffer in samples-per-channel. After this function returns, this value
         /// will be set to the number of samples per channel actually produced</param>
-        public void ProcessInterleaved(short[] input, int input_ptr, ref int in_len, short[] output, int output_ptr, ref int out_len)
+        internal void ProcessInterleaved(Span<short> input, int input_ptr, ref int in_len, Span<short> output, int output_ptr, ref int out_len)
         {
             int i;
             int istride_save, ostride_save;
@@ -852,7 +851,7 @@ namespace Concentus.Common
         /// it is probably easier not to use this call (so that the output duration
         /// is the same for the first frame).
         /// </summary>
-        public void SkipZeroes()
+        internal void SkipZeroes()
         {
             int i;
             for (i = 0; i < this.nb_channels; i++)
@@ -862,7 +861,7 @@ namespace Concentus.Common
         /// <summary>
         /// Clears the resampler buffers so a new (unrelated) stream can be processed.
         /// </summary>
-        public void ResetMem()
+        internal void ResetMem()
         {
             int i;
             for (i = 0; i < this.nb_channels; i++)

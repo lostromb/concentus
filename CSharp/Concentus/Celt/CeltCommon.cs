@@ -377,7 +377,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void celt_preemphasis(short[] pcmp, int pcmp_ptr, int[] inp, int inp_ptr,
+        internal static void celt_preemphasis(Span<short> pcmp, int pcmp_ptr, Span<int> inp, int inp_ptr,
                                 int N, int CC, int upsample, int[] coef, ref int mem, int clip)
         {
             int i;
@@ -423,7 +423,7 @@ namespace Concentus.Celt
             mem = m;
         }
 
-        internal static void celt_preemphasis(short[] pcmp, int[] inp, int inp_ptr,
+        internal static void celt_preemphasis(short[] pcmp, Span<int> inp, int inp_ptr,
                                 int N, int CC, int upsample, int[] coef, BoxedValueInt mem, int clip)
         {
             int i;
@@ -523,7 +523,7 @@ namespace Concentus.Celt
                 N = (m.eBands[i + 1] - m.eBands[i]) << LM;
                 /* band is too narrow to be split down to LM=-1 */
                 narrow = ((m.eBands[i + 1] - m.eBands[i]) == 1) ? 1 : 0;
-                Array.Copy(X[tf_chan], (m.eBands[i] << LM), tmp, 0, N);
+                Arrays.MemCopy(X[tf_chan], (m.eBands[i] << LM), tmp, 0, N);
                 /* Just add the right channel if we're in stereo */
                 /*if (C==2)
                    for (j=0;j<N;j++)
@@ -533,7 +533,7 @@ namespace Concentus.Celt
                 /* Check the -1 case for transients */
                 if (isTransient != 0 && narrow == 0)
                 {
-                    Array.Copy(tmp, 0, tmp_1, 0, N);
+                    Arrays.MemCopy(tmp, 0, tmp_1, 0, N);
                     Bands.haar1ZeroOffset(tmp_1, N >> LM, 1 << LM);
                     L1 = l1_metric(tmp_1, N, LM + 1, bias);
                     if (L1 < best_L1)
@@ -654,7 +654,7 @@ namespace Concentus.Celt
             return tf_select;
         }
 
-        internal static void tf_encode(int start, int end, int isTransient, int[] tf_res, int LM, int tf_select, EntropyCoder enc)
+        internal static void tf_encode(int start, int end, int isTransient, int[] tf_res, int LM, int tf_select, EntropyCoder enc, Span<byte> encodedData)
         {
             int curr, i;
             int tf_select_rsv;
@@ -673,7 +673,7 @@ namespace Concentus.Celt
             {
                 if (tell + logp <= budget)
                 {
-                    enc.enc_bit_logp(tf_res[i] ^ curr, (uint)logp);
+                    enc.enc_bit_logp(encodedData, tf_res[i] ^ curr, (uint)logp);
                     tell = (uint)enc.tell();
                     curr = tf_res[i];
                     tf_changed |= curr;
@@ -686,7 +686,7 @@ namespace Concentus.Celt
             if (tf_select_rsv != 0 &&
                   Tables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
                   Tables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
-                enc.enc_bit_logp(tf_select, 1);
+                enc.enc_bit_logp(encodedData, tf_select, 1);
             else
                 tf_select = 0;
             for (i = start; i < end; i++)
@@ -711,35 +711,10 @@ namespace Concentus.Celt
                 int sum = 0; /* Q10 */
                 int minXC; /* Q10 */
                            /* Compute inter-channel correlation for low frequencies */
-#if UNSAFE
-                unsafe
-                {
-                    fixed (int* px0_base = X[0], px1_base = X[1])
-                    {
-                        for (i = 0; i < 8; i++)
-                        {
-                            int* px0 = px0_base + (m.eBands[i] << LM);
-                            int* px1 = px1_base + (m.eBands[i] << LM);
-                            int partial = Kernels.celt_inner_prod(px0, px1, (m.eBands[i + 1] - m.eBands[i]) << LM);
-                            sum = Inlines.ADD16(sum, Inlines.EXTRACT16(Inlines.SHR32(partial, 18)));
-                        }
-                        sum = Inlines.MULT16_16_Q15(((short)(0.5 + (1.0f / 8) * (((int)1) << (15))))/*Inlines.QCONST16(1.0f / 8, 15)*/, sum);
-                        sum = Inlines.MIN16(((short)(0.5 + (1.0f) * (((int)1) << (10))))/*Inlines.QCONST16(1.0f, 10)*/, Inlines.ABS32(sum));
-                        minXC = sum;
-                        for (i = 8; i < intensity; i++)
-                        {
-                            int* px0 = px0_base + (m.eBands[i] << LM);
-                            int* px1 = px1_base + (m.eBands[i] << LM);
-                            int partial = Kernels.celt_inner_prod(px0, px1, (m.eBands[i + 1] - m.eBands[i]) << LM);
-                            minXC = Inlines.MIN16(minXC, Inlines.ABS16(Inlines.EXTRACT16(Inlines.SHR32(partial, 18))));
-                        }
-                    }
-                }
-#else
                 for (i = 0; i < 8; i++)
                 {
                     int partial;
-                    partial = Kernels.celt_inner_prod(X[0], (m.eBands[i] << LM), X[1], (m.eBands[i] << LM),
+                    partial = Kernels.celt_inner_prod(X[0].AsSpan().Slice(m.eBands[i] << LM), X[1].AsSpan().Slice(m.eBands[i] << LM),
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     sum = Inlines.ADD16(sum, Inlines.EXTRACT16(Inlines.SHR32(partial, 18)));
                 }
@@ -749,11 +724,11 @@ namespace Concentus.Celt
                 for (i = 8; i < intensity; i++)
                 {
                     int partial;
-                    partial = Kernels.celt_inner_prod(X[0], (m.eBands[i] << LM), X[1], (m.eBands[i] << LM),
+                    partial = Kernels.celt_inner_prod(X[0].AsSpan().Slice(m.eBands[i] << LM), X[1].AsSpan().Slice(m.eBands[i] << LM),
                           (m.eBands[i + 1] - m.eBands[i]) << LM);
                     minXC = Inlines.MIN16(minXC, Inlines.ABS16(Inlines.EXTRACT16(Inlines.SHR32(partial, 18))));
                 }
-#endif
+
                 minXC = Inlines.MIN16(((short)(0.5 + (1.0f) * (((int)1) << (10))))/*Inlines.QCONST16(1.0f, 10)*/, Inlines.ABS32(minXC));
                 /*printf ("%f\n", sum);*/
                 /* mid-side savings estimations based on the LF average*/
@@ -827,7 +802,7 @@ namespace Concentus.Celt
                   > Inlines.MULT16_32_Q15((m.eBands[13] << (LM + 1)), sumLR)) ? 1 : 0;
         }
 
-        internal static int median_of_5(int[] x, int x_ptr)
+        internal static int median_of_5(Span<int> x, int x_ptr)
         {
             int t0, t1, t2, t3, t4;
             t2 = x[x_ptr + 2];
@@ -874,7 +849,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static int median_of_3(int[] x, int x_ptr)
+        internal static int median_of_3(Span<int> x, int x_ptr)
         {
             int t0, t1, t2;
             if (x[x_ptr] > x[x_ptr + 1])
@@ -1032,7 +1007,7 @@ namespace Concentus.Celt
             return maxDepth;
         }
 
-        internal static void deemphasis(int[][] input, int[] input_ptrs, short[] pcm, int pcm_ptr, int N, int C, int downsample, int[] coef,
+        internal static void deemphasis(int[][] input, int[] input_ptrs, Span<short> pcm, int pcm_ptr, int N, int C, int downsample, int[] coef,
               int[] mem, int accum)
         {
             int c;
@@ -1115,7 +1090,7 @@ namespace Concentus.Celt
         /* Special case for stereo with no downsampling and no accumulation. This is
            quite common and we can make it faster by processing both channels in the
            same loop, reducing overhead due to the dependency loop in the IIR filter */
-        internal static void deemphasis_stereo_simple(int[][] input, int[] input_ptrs, short[] pcm, int pcm_ptr, int N, int coef0, int[] mem)
+        internal static void deemphasis_stereo_simple(int[][] input, int[] input_ptrs, Span<short> pcm, int pcm_ptr, int N, int coef0, int[] mem)
         {
             int[] x0 = input[0];
             int[] x1 = input[1];
@@ -1177,7 +1152,7 @@ namespace Concentus.Celt
                       downsample, silence);
                 /* Store a temporary copy in the output buffer because the IMDCT destroys its input. */
                 freq2 = out_syn_ptrs[1] + (overlap / 2);
-                Array.Copy(freq, 0, out_syn[1], freq2, N);
+                Arrays.MemCopy(freq, 0, out_syn[1], freq2, N);
                 for (b = 0; b < B; b++)
                     MDCT.clt_mdct_backward(mode.mdct, out_syn[1], freq2 + b, out_syn[0], out_syn_ptrs[0] + (NB * b), mode.window, overlap, shift, B);
                 for (b = 0; b < B; b++)
@@ -1210,7 +1185,7 @@ namespace Concentus.Celt
 
         }
 
-        internal static void tf_decode(int start, int end, int isTransient, int[] tf_res, int LM, EntropyCoder dec)
+        internal static void tf_decode(int start, int end, int isTransient, int[] tf_res, int LM, EntropyCoder dec, ReadOnlySpan<byte> encodedData)
         {
             int i, curr, tf_select;
             int tf_select_rsv;
@@ -1229,7 +1204,7 @@ namespace Concentus.Celt
             {
                 if (tell + logp <= budget)
                 {
-                    curr ^= dec.dec_bit_logp((uint)logp);
+                    curr ^= dec.dec_bit_logp(encodedData, (uint)logp);
                     tell = (uint)dec.tell();
                     tf_changed |= curr;
                 }
@@ -1241,7 +1216,7 @@ namespace Concentus.Celt
               Tables.tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
               Tables.tf_select_table[LM][4 * isTransient + 2 + tf_changed])
             {
-                tf_select = dec.dec_bit_logp(1);
+                tf_select = dec.dec_bit_logp(encodedData, 1);
             }
             for (i = start; i < end; i++)
             {
@@ -1291,7 +1266,7 @@ namespace Concentus.Celt
             return ret;
         }
 
-        internal static void comb_filter_const(int[] y, int y_ptr, int[] x, int x_ptr, int T, int N,
+        internal static void comb_filter_const(Span<int> y, int y_ptr, Span<int> x, int x_ptr, int T, int N,
               int g10, int g11, int g12)
         {
             int x0, x1, x2, x3, x4;
@@ -1321,7 +1296,7 @@ namespace Concentus.Celt
                 new short[]{ ((short)(0.5 + (0.7998046875f) * (((int)1) << (15))))/*Inlines.QCONST16(0.7998046875f, 15)*/, ((short)(0.5 + (0.1000976562f) * (((int)1) << (15))))/*Inlines.QCONST16(0.1000976562f, 15)*/, ((short)(0.5 + (0.0f) * (((int)1) << (15))))/*Inlines.QCONST16(0.0f, 15)*/}
             };
 
-        internal static void comb_filter(int[] y, int y_ptr, int[] x, int x_ptr, int T0, int T1, int N,
+        internal static void comb_filter(Span<int> y, int y_ptr, Span<int> x, int x_ptr, int T0, int T1, int N,
               int g0, int g1, int tapset0, int tapset1,
             int[] window, int overlap)
         {

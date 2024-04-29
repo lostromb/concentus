@@ -33,46 +33,67 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#if !UNSAFE
-
 namespace Concentus.Celt
 {
     using Concentus.Celt.Enums;
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
+    using System.Numerics;
     using System.Threading;
 
     internal static class CeltPitchXCorr
     {
         internal static int pitch_xcorr(
             int[] _x,
+            int x_idx,
             int[] _y,
-            int[] xcorr,
+            int y_idx,
+            Span<int> xcorr,
             int len,
             int max_pitch)
         {
             int i;
             int maxcorr = 1;
             Inlines.OpusAssert(max_pitch > 0);
-            for (i = 0; i < max_pitch - 3; i += 4)
+            if (Vector.IsHardwareAccelerated)
             {
-                int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                Kernels.xcorr_kernel(_x, _y, i, ref sum0, ref sum1, ref sum2, ref sum3, len);
-                xcorr[i] = sum0;
-                xcorr[i + 1] = sum1;
-                xcorr[i + 2] = sum2;
-                xcorr[i + 3] = sum3;
-                sum0 = Inlines.MAX32(sum0, sum1);
-                sum2 = Inlines.MAX32(sum2, sum3);
-                sum0 = Inlines.MAX32(sum0, sum2);
-                maxcorr = Inlines.MAX32(maxcorr, sum0);
+                for (i = 0; i < max_pitch - 3; i += 4)
+                {
+                    int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                    Kernels.xcorr_kernel_vector(_x, x_idx, _y, y_idx + i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                    xcorr[i] = sum0;
+                    xcorr[i + 1] = sum1;
+                    xcorr[i + 2] = sum2;
+                    xcorr[i + 3] = sum3;
+                    sum0 = Inlines.MAX32(sum0, sum1);
+                    sum2 = Inlines.MAX32(sum2, sum3);
+                    sum0 = Inlines.MAX32(sum0, sum2);
+                    maxcorr = Inlines.MAX32(maxcorr, sum0);
+                }
+            }
+            else
+            {
+                for (i = 0; i < max_pitch - 3; i += 4)
+                {
+                    int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
+                    Kernels.xcorr_kernel(_x, x_idx, _y, y_idx + i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                    xcorr[i] = sum0;
+                    xcorr[i + 1] = sum1;
+                    xcorr[i + 2] = sum2;
+                    xcorr[i + 3] = sum3;
+                    sum0 = Inlines.MAX32(sum0, sum1);
+                    sum2 = Inlines.MAX32(sum2, sum3);
+                    sum0 = Inlines.MAX32(sum0, sum2);
+                    maxcorr = Inlines.MAX32(maxcorr, sum0);
+                }
             }
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
             {
-                int inner_sum = Kernels.celt_inner_prod(_x, 0, _y, i, len);
+                int inner_sum = Kernels.celt_inner_prod(_x.AsSpan(), _y.AsSpan(i), len);
                 xcorr[i] = inner_sum;
                 maxcorr = Inlines.MAX32(maxcorr, inner_sum);
             }
@@ -81,9 +102,9 @@ namespace Concentus.Celt
 
         internal static int pitch_xcorr(
             short[] _x,
-            int _x_ptr,
+            int x_idx,
             short[] _y,
-            int _y_ptr,
+            int y_idx,
             int[] xcorr,
             int len,
             int max_pitch)
@@ -94,7 +115,7 @@ namespace Concentus.Celt
             for (i = 0; i < max_pitch - 3; i += 4)
             {
                 int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                Kernels.xcorr_kernel(_x, _x_ptr, _y, _y_ptr + i, ref sum0, ref sum1, ref sum2, ref sum3, len);
+                Kernels.xcorr_kernel(_x, x_idx, _y, y_idx + i, ref sum0, ref sum1, ref sum2, ref sum3, len);
 
                 xcorr[i] = sum0;
                 xcorr[i + 1] = sum1;
@@ -105,44 +126,11 @@ namespace Concentus.Celt
                 sum0 = Inlines.MAX32(sum0, sum2);
                 maxcorr = Inlines.MAX32(maxcorr, sum0);
             }
+
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
             {
-                int inner_sum = Kernels.celt_inner_prod(_x, _x_ptr, _y, _y_ptr + i, len);
-                xcorr[i] = inner_sum;
-                maxcorr = Inlines.MAX32(maxcorr, inner_sum);
-            }
-            return maxcorr;
-        }
-
-        internal static int pitch_xcorr(
-            short[] _x,
-            short[] _y,
-            int[] xcorr,
-            int len,
-            int max_pitch)
-        {
-            int i;
-            int maxcorr = 1;
-            Inlines.OpusAssert(max_pitch > 0);
-            for (i = 0; i < max_pitch - 3; i += 4)
-            {
-                int sum0 = 0, sum1 = 0, sum2 = 0, sum3 = 0;
-                Kernels.xcorr_kernel(_x, 0, _y, i, ref sum0, ref sum1, ref sum2, ref sum3, len);
-
-                xcorr[i] = sum0;
-                xcorr[i + 1] = sum1;
-                xcorr[i + 2] = sum2;
-                xcorr[i + 3] = sum3;
-                sum0 = Inlines.MAX32(sum0, sum1);
-                sum2 = Inlines.MAX32(sum2, sum3);
-                sum0 = Inlines.MAX32(sum0, sum2);
-                maxcorr = Inlines.MAX32(maxcorr, sum0);
-            }
-            /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
-            for (; i < max_pitch; i++)
-            {
-                int inner_sum = Kernels.celt_inner_prod(_x, _y, i, len);
+                int inner_sum = Kernels.celt_inner_prod(_x.AsSpan(x_idx), _y.AsSpan(y_idx + i), len);
                 xcorr[i] = inner_sum;
                 maxcorr = Inlines.MAX32(maxcorr, inner_sum);
             }
@@ -150,5 +138,3 @@ namespace Concentus.Celt
         }
     }
 }
-
-#endif

@@ -69,87 +69,114 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
-        //FIXME: For the most part this method is used to zero-out arrays, which is usually already done by the runtime.
+        //OPT: For the most part this method is used to zero-out arrays, which is usually already done by the runtime.
 
         internal static void MemSetByte(byte[] array, byte value)
         {
-            for (int c = 0; c < array.Length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan().Fill(value);
         }
 
         internal static void MemSetInt(int[] array, int value, int length)
         {
-            for (int c = 0; c < length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(0, length).Fill(value);
         }
 
         internal static void MemSetShort(short[] array, short value, int length)
         {
-            for (int c = 0; c < length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(0, length).Fill(value);
         }
 
         internal static void MemSetFloat(float[] array, float value, int length)
         {
-            for (int c = 0; c < length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(0, length).Fill(value);
         }
 
         internal static void MemSetSbyte(sbyte[] array, sbyte value, int length)
         {
-            for (int c = 0; c < length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(0, length).Fill(value);
         }
 
         internal static void MemSetWithOffset<T>(T[] array, T value, int offset, int length)
         {
-            for (int c = offset; c < offset + length; c++)
-            {
-                array[c] = value;
-            }
+            array.AsSpan(offset, length).Fill(value);
         }
 
-        internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)
+        internal static void MemSetWithOffset<T>(Span<T> array, T value, int offset, int length)
+        {
+            array.Slice(offset, length).Fill(value);
+        }
+
+        internal static void MemMoveByte(byte[] array, int src_idx, int dst_idx, int length)
         {
             if (src_idx == dst_idx || length == 0)
                 return;
 
-            // Do regions overlap?
-            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
-            {
-                // Take extra precautions
-                if (dst_idx < src_idx)
-                {
-                    // Copy forwards
-                    for (int c = 0; c < length; c++)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-                else
-                {
-                    // Copy backwards
-                    for (int c = length - 1; c >= 0; c--)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-            }
-            else
-            {
-                // Memory regions cannot overlap; just do a fast copy
-                Array.Copy(array, src_idx, array, dst_idx, length);
-            }
+            Buffer.BlockCopy(array, src_idx, array, dst_idx, length);
+        }
+
+        internal static void MemMoveByte(Span<byte> array, int src_idx, int dst_idx, int length)
+        {
+            if (src_idx == dst_idx || length == 0)
+                return;
+
+            array.Slice(src_idx, length).CopyTo(array.Slice(dst_idx, length));
+        }
+
+        //internal static void MemMove<T>(T[] array, int src_idx, int dst_idx, int length)
+        //{
+        //    if (src_idx == dst_idx || length == 0)
+        //        return;
+
+        //    // Do regions overlap?
+        //    if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+        //    {
+        //        // Take extra precautions
+        //        if (dst_idx < src_idx)
+        //        {
+        //            // Copy forwards
+        //            for (int c = 0; c < length; c++)
+        //            {
+        //                array[c + dst_idx] = array[c + src_idx];
+        //            }
+        //        }
+        //        else
+        //        {
+        //            // Copy backwards
+        //            for (int c = length - 1; c >= 0; c--)
+        //            {
+        //                array[c + dst_idx] = array[c + src_idx];
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // Memory regions cannot overlap; just do a fast copy
+        //        Array.Copy(array, src_idx, array, dst_idx, length);
+        //    }
+        //}
+
+        internal static void MemCopy(int[] src, int src_idx, int[] dst, int dst_idx, int length)
+        {
+            if (length == 0)
+                return;
+
+            Buffer.BlockCopy(src, src_idx * sizeof(int), dst, dst_idx * sizeof(int), length * sizeof(int));
+        }
+
+        internal static void MemCopy(short[] src, int src_idx, short[] dst, int dst_idx, int length)
+        {
+            if (length == 0)
+                return;
+
+            Buffer.BlockCopy(src, src_idx * sizeof(short), dst, dst_idx * sizeof(short), length * sizeof(short));
+        }
+
+        internal static void MemCopy(sbyte[] src, int src_idx, sbyte[] dst, int dst_idx, int length)
+        {
+            if (length == 0)
+                return;
+
+            Buffer.BlockCopy(src, src_idx, dst, dst_idx, length);
         }
 
         internal static void MemMoveInt(int[] array, int src_idx, int dst_idx, int length)
@@ -157,32 +184,33 @@ namespace Concentus.Common.CPlusPlus
             if (src_idx == dst_idx || length == 0)
                 return;
 
-            // Do regions overlap?
-            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
-            {
-                // Take extra precautions
-                if (dst_idx < src_idx)
-                {
-                    // Copy forwards
-                    for (int c = 0; c < length; c++)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-                else
-                {
-                    // Copy backwards
-                    for (int c = length - 1; c >= 0; c--)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-            }
-            else
-            {
-                // Memory regions cannot overlap; just do a fast copy
-                Array.Copy(array, src_idx, array, dst_idx, length);
-            }
+            Buffer.BlockCopy(array, src_idx * sizeof(int), array, dst_idx * sizeof(int), length * sizeof(int));
+            //// Do regions overlap?
+            //if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+            //{
+            //    // Take extra precautions
+            //    if (dst_idx < src_idx)
+            //    {
+            //        // Copy forwards
+            //        for (int c = 0; c < length; c++)
+            //        {
+            //            array[c + dst_idx] = array[c + src_idx];
+            //        }
+            //    }
+            //    else
+            //    {
+            //        // Copy backwards
+            //        for (int c = length - 1; c >= 0; c--)
+            //        {
+            //            array[c + dst_idx] = array[c + src_idx];
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    // Memory regions cannot overlap; just do a fast copy
+            //    Array.Copy(array, src_idx, array, dst_idx, length);
+            //}
         }
 
         internal static void MemMoveShort(short[] array, int src_idx, int dst_idx, int length)
@@ -190,32 +218,33 @@ namespace Concentus.Common.CPlusPlus
             if (src_idx == dst_idx || length == 0)
                 return;
 
-            // Do regions overlap?
-            if (src_idx + length > dst_idx || dst_idx + length > src_idx)
-            {
-                // Take extra precautions
-                if (dst_idx < src_idx)
-                {
-                    // Copy forwards
-                    for (int c = 0; c < length; c++)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-                else
-                {
-                    // Copy backwards
-                    for (int c = length - 1; c >= 0; c--)
-                    {
-                        array[c + dst_idx] = array[c + src_idx];
-                    }
-                }
-            }
-            else
-            {
-                // Memory regions cannot overlap; just do a fast copy
-                Array.Copy(array, src_idx, array, dst_idx, length);
-            }
+            Buffer.BlockCopy(array, src_idx * sizeof(short), array, dst_idx * sizeof(short), length * sizeof(short));
+            //// Do regions overlap?
+            //if (src_idx + length > dst_idx || dst_idx + length > src_idx)
+            //{
+            //    // Take extra precautions
+            //    if (dst_idx < src_idx)
+            //    {
+            //        // Copy forwards
+            //        for (int c = 0; c < length; c++)
+            //        {
+            //            array[c + dst_idx] = array[c + src_idx];
+            //        }
+            //    }
+            //    else
+            //    {
+            //        // Copy backwards
+            //        for (int c = length - 1; c >= 0; c--)
+            //        {
+            //            array[c + dst_idx] = array[c + src_idx];
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    // Memory regions cannot overlap; just do a fast copy
+            //    Array.Copy(array, src_idx, array, dst_idx, length);
+            //}
         }
     }
 }

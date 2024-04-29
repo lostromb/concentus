@@ -106,7 +106,7 @@ namespace Concentus.Silk
             int HarmShapeFIRPacked_Q12, LF_shp_Q14;
             int[] x_filt_Q12;
             int[] st_res_Q2;
-            short[] B_Q10 = new short[2];
+            Span<short> B_Q10 = stackalloc short[2];
 
             /* Set up pointers */
             px = x_ptr;
@@ -216,8 +216,6 @@ namespace Concentus.Silk
             P.sLTP_shp_buf_idx = LTP_shp_buf_idx;
         }
 
-#if !UNSAFE
-
         /// <summary>
         /// Second order ARMA filter, alternative implementation
         /// </summary>
@@ -229,12 +227,12 @@ namespace Concentus.Silk
         /// <param name="len">I     signal length (must be even)</param>
         /// <param name="stride">I     Operate on interleaved signal if > 1</param>
         internal static void silk_biquad_alt(
-            short[] input,
+            ReadOnlySpan<short> input,
             int input_ptr,
             int[] B_Q28,
             int[] A_Q28,
             int[] S,
-            short[] output,
+            Span<short> output,
             int output_ptr,
             int len,
             int stride)
@@ -269,13 +267,13 @@ namespace Concentus.Silk
         }
 
         internal static void silk_biquad_alt(
-            short[] input,
+            ReadOnlySpan<short> input,
             int input_ptr,
             int[] B_Q28,
             int[] A_Q28,
-            int[] S,
+            Span<int> S,
             int S_ptr,
-            short[] output,
+            Span<short> output,
             int output_ptr,
             int len,
             int stride)
@@ -310,83 +308,7 @@ namespace Concentus.Silk
             }
         }
 
-#else
-        /// <summary>
-        /// Second order ARMA filter, alternative implementation
-        /// </summary>
-        /// <param name="input">I     input signal</param>
-        /// <param name="B_Q28">I     MA coefficients [3]</param>
-        /// <param name="A_Q28">I     AR coefficients [2]</param>
-        /// <param name="S">I/O   State vector [2]</param>
-        /// <param name="output">O     output signal</param>
-        /// <param name="len">I     signal length (must be even)</param>
-        /// <param name="stride">I     Operate on interleaved signal if > 1</param>
-        internal static unsafe void silk_biquad_alt(
-            short[] input,
-            int input_ptr,
-            int[] B_Q28,
-            int[] A_Q28,
-            int[] S,
-            int S_ptr,
-            short[] output,
-            int output_ptr,
-            int len,
-            int stride)
-        {
-            /* DIRECT FORM II TRANSPOSED (uses 2 element state vector) */
-            int k;
-            int inval, A0_U_Q28, A0_L_Q28, A1_U_Q28, A1_L_Q28, out32_Q14;
-
-            /* Negate A_Q28 values and split in two parts */
-            A0_L_Q28 = (-A_Q28[0]) & 0x00003FFF;        /* lower part */
-            A0_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[0], 14);      /* upper part */
-            A1_L_Q28 = (-A_Q28[1]) & 0x00003FFF;        /* lower part */
-            A1_U_Q28 = Inlines.silk_RSHIFT(-A_Q28[1], 14);      /* upper part */
-            
-            fixed (short* pinput_base = input, poutput_base = output)
-            {
-                fixed (int* pS_base = S, pBQ28 = B_Q28)
-                {
-                    int* pS = pS_base + S_ptr;
-                    short* pinput = pinput_base + input_ptr;
-                    short* poutput = poutput_base + output_ptr;
-                    for (k = 0; k < len; k++)
-                    {
-                        /* S[ 0 ], S[ 1 ]: Q12 */
-                        inval = pinput[k * stride];
-                        out32_Q14 = Inlines.silk_LSHIFT(Inlines.silk_SMLAWB(pS[0], pBQ28[0], inval), 2);
-
-                        pS[0] = pS[1] + Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A0_L_Q28), 14);
-                        pS[0] = Inlines.silk_SMLAWB(pS[0], out32_Q14, A0_U_Q28);
-                        pS[0] = Inlines.silk_SMLAWB(pS[0], pBQ28[1], inval);
-
-                        pS[1] = Inlines.silk_RSHIFT_ROUND(Inlines.silk_SMULWB(out32_Q14, A1_L_Q28), 14);
-                        pS[1] = Inlines.silk_SMLAWB(pS[1], out32_Q14, A1_U_Q28);
-                        pS[1] = Inlines.silk_SMLAWB(pS[1], pBQ28[2], inval);
-
-                        /* Scale back to Q0 and saturate */
-                        poutput[k * stride] = (short)Inlines.silk_SAT16(Inlines.silk_RSHIFT(out32_Q14 + (1 << 14) - 1, 14));
-                    }
-                }
-            }
-        }
-
-        internal static unsafe void silk_biquad_alt(
-            short[] input,
-            int input_ptr,
-            int[] B_Q28,
-            int[] A_Q28,
-            int[] S,
-            short[] output,
-            int output_ptr,
-            int len,
-            int stride)
-        {
-            silk_biquad_alt(input, input_ptr, B_Q28, A_Q28, S, 0, output, output_ptr, len, stride);
-        }
-#endif
-
-            /* Coefficients for 2-band filter bank based on first-order allpass filters */
+        /* Coefficients for 2-band filter bank based on first-order allpass filters */
         private readonly static short A_fb1_20 = 5394 << 1;
         private readonly static short A_fb1_21 = -24290; /* (opus_int16)(20623 << 1) */
 
@@ -399,11 +321,11 @@ namespace Concentus.Silk
         /// <param name="outH">O    High band [N/2]</param>
         /// <param name="N">I    Number of input samples</param>
         internal static void silk_ana_filt_bank_1(
-            short[] input,
+            Span<short> input,
             int input_ptr,
             int[] S,
             short[] outL,
-            short[] outH,
+            Span<short> outH,
             int outH_ptr,
             int N)
         {
@@ -529,14 +451,14 @@ namespace Concentus.Silk
                 }
                 else
                 {
-                    Array.Copy(Tables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
-                    Array.Copy(Tables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
+                    Arrays.MemCopy(Tables.silk_Transition_LP_B_Q28[ind], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                    Arrays.MemCopy(Tables.silk_Transition_LP_A_Q28[ind], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
                 }
             }
             else
             {
-                Array.Copy(Tables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
-                Array.Copy(Tables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
+                Arrays.MemCopy(Tables.silk_Transition_LP_B_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, B_Q28, 0, SilkConstants.TRANSITION_NB);
+                Arrays.MemCopy(Tables.silk_Transition_LP_A_Q28[SilkConstants.TRANSITION_INT_NUM - 1], 0, A_Q28, 0, SilkConstants.TRANSITION_NA);
             }
         }
         
@@ -552,19 +474,19 @@ namespace Concentus.Silk
         /// <param name="len">I    Signal length</param>
         /// <param name="d">I    Filter order</param>
         internal static void silk_LPC_analysis_filter(
-                    short[] output,
+                    Span<short> output,
                     int output_ptr,
-                    short[] input,
+                    Span<short> input,
                     int input_ptr,
-                    short[] B,
+                    Span<short> B,
                     int B_ptr,
                     int len,
                     int d)
         {
             int j;
 
-            short[] mem = new short[SilkConstants.SILK_MAX_ORDER_LPC];
-            short[] num = new short[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<short> mem = stackalloc short[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<short> num = stackalloc short[SilkConstants.SILK_MAX_ORDER_LPC];
 
             Inlines.OpusAssert(d >= 6);
             Inlines.OpusAssert((d & 1) == 0);
@@ -579,19 +501,8 @@ namespace Concentus.Silk
             {
                 mem[j] = input[input_ptr + d - j - 1];
             }
-#if UNSAFE
-            unsafe
-            {
-                fixed (short* pinput_base = input, poutput_base = output)
-                {
-                    short* pinput = pinput_base + input_ptr + d;
-                    short* poutput = poutput_base + output_ptr + d;
-                    Kernels.celt_fir(pinput, num, poutput, len - d, d, mem);
-                }
-            }
-#else
-            Kernels.celt_fir(input, input_ptr + d, num, output, output_ptr + d, len - d, d, mem);
-#endif
+
+            Kernels.celt_fir(input.Slice(input_ptr + d), num, output.Slice(output_ptr + d), len - d, d, mem);
             for (j = output_ptr; j < output_ptr + d; j++)
             {
                 output[j] = 0;

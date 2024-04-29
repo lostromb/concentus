@@ -62,7 +62,7 @@ namespace Concentus.Structs
     ///  streams must be decoded with separate decoder states and can be decoded
     ///  in parallel.
     /// </summary>
-    public class OpusDecoder
+    public class OpusDecoder : IOpusDecoder
     {
         internal int channels;
         internal int Fs;          /** Sampling rate (at the API level) */
@@ -112,14 +112,6 @@ namespace Concentus.Structs
         }
 
         /// <summary>
-        /// Deprecated. Just use the regular constructor
-        /// </summary>
-        public static OpusDecoder Create(int Fs, int channels)
-        {
-            return new OpusDecoder(Fs, channels);
-        }
-
-        /// <summary>
         /// Allocates and initializes a decoder state.
         /// Internally Opus stores data at 48000 Hz, so that should be the default
         /// value for Fs. However, the decoder can efficiently decode to buffers
@@ -132,6 +124,7 @@ namespace Concentus.Structs
         /// <param name="Fs">Sample rate to decode at (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
         /// <param name="channels">Number of channels (1 or 2) to decode</param>
         /// <returns>The created encoder</returns>
+        [Obsolete("Use OpusCodecFactory methods which can give you native code if supported by your platform")]
         public OpusDecoder(int Fs, int channels)
         {
             int ret;
@@ -149,7 +142,7 @@ namespace Concentus.Structs
             {
                 if (ret == OpusError.OPUS_BAD_ARG)
                     throw new ArgumentException("OPUS_BAD_ARG when creating decoder");
-                throw new OpusException("Error while initializing decoder", ret);
+                throw new OpusException("Error while initializing decoder: " + CodecHelpers.opus_strerror(ret), ret);
             }
         }
 
@@ -199,11 +192,11 @@ namespace Concentus.Structs
             this.frame_size = Fs / 400;
             return OpusError.OPUS_OK;
         }
-        
+
         private static readonly byte[] SILENCE = { 0xFF, 0xFF };
 
-        internal int opus_decode_frame(byte[] data, int data_ptr,
-      int len, short[] pcm, int pcm_ptr, int frame_size, int decode_fec)
+        internal int opus_decode_frame(ReadOnlySpan<byte> data, int data_ptr,
+      int len, Span<short> pcm, int pcm_ptr, int frame_size, int decode_fec)
         {
             SilkDecoder silk_dec;
             CeltDecoder celt_dec;
@@ -253,13 +246,14 @@ namespace Concentus.Structs
                 /* In that case, don't conceal more than what the ToC says */
                 frame_size = Inlines.IMIN(frame_size, this.frame_size);
             }
-            if (data != null)
+            if (!data.IsEmpty)
             {
                 audiosize = this.frame_size;
                 mode = this.mode;
-                dec.dec_init(data, data_ptr, (uint)len);
+                dec.dec_init(data.Slice(data_ptr), (uint)len);
             }
-            else {
+            else
+            {
                 audiosize = frame_size;
                 mode = this.prev_mode;
 
@@ -305,7 +299,7 @@ namespace Concentus.Structs
 
             pcm_transition_silk_size = 0;
             pcm_transition_celt_size = 0;
-            if (data != null && this.prev_mode > 0 && (
+            if (!data.IsEmpty && this.prev_mode > 0 && (
                 (mode == OpusMode.MODE_CELT_ONLY && this.prev_mode != OpusMode.MODE_CELT_ONLY && (this.prev_redundancy == 0))
              || (mode != OpusMode.MODE_CELT_ONLY && this.prev_mode == OpusMode.MODE_CELT_ONLY))
                )
@@ -329,7 +323,8 @@ namespace Concentus.Structs
 
                 return OpusError.OPUS_BAD_ARG;
             }
-            else {
+            else
+            {
                 frame_size = audiosize;
             }
 
@@ -341,7 +336,7 @@ namespace Concentus.Structs
             if (mode != OpusMode.MODE_CELT_ONLY)
             {
                 int lost_flag, decoded_samples;
-                short[] pcm_ptr2;
+                Span<short> pcm_ptr2;
                 int pcm_ptr2_ptr = 0;
 
                 if (celt_accum != 0)
@@ -361,7 +356,7 @@ namespace Concentus.Structs
                 /* The SILK PLC cannot produce frames of less than 10 ms */
                 this.DecControl.payloadSize_ms = Inlines.IMAX(10, 1000 * audiosize / this.Fs);
 
-                if (data != null)
+                if (!data.IsEmpty)
                 {
                     this.DecControl.nChannelsInternal = this.stream_channels;
                     if (mode == OpusMode.MODE_SILK_ONLY)
@@ -378,24 +373,26 @@ namespace Concentus.Structs
                         {
                             this.DecControl.internalSampleRate = 16000;
                         }
-                        else {
+                        else
+                        {
                             this.DecControl.internalSampleRate = 16000;
                             Inlines.OpusAssert(false);
                         }
                     }
-                    else {
+                    else
+                    {
                         /* Hybrid mode */
                         this.DecControl.internalSampleRate = 16000;
                     }
                 }
 
-                lost_flag = data == null ? 1 : 2 * decode_fec;
+                lost_flag = data.IsEmpty ? 1 : 2 * decode_fec;
                 decoded_samples = 0;
                 do
                 {
                     /* Call SILK decoder */
                     int first_frame = (decoded_samples == 0) ? 1 : 0;
-                    silk_ret = DecodeAPI.silk_Decode(silk_dec, this.DecControl,
+                    silk_ret = DecodeAPI.silk_Decode(silk_dec, this.DecControl, data.Slice(data_ptr),
                                             lost_flag, first_frame, dec, pcm_ptr2, pcm_ptr2_ptr, out silk_frame_size);
                     if (silk_ret != 0)
                     {
@@ -405,7 +402,8 @@ namespace Concentus.Structs
                             silk_frame_size = frame_size;
                             Arrays.MemSetWithOffset<short>(pcm_ptr2, 0, pcm_ptr2_ptr, frame_size * this.channels);
                         }
-                        else {
+                        else
+                        {
 
                             return OpusError.OPUS_INTERNAL_ERROR;
                         }
@@ -416,21 +414,21 @@ namespace Concentus.Structs
             }
 
             start_band = 0;
-            if (decode_fec == 0 && mode != OpusMode.MODE_CELT_ONLY && data != null
+            if (decode_fec == 0 && mode != OpusMode.MODE_CELT_ONLY && !data.IsEmpty
              && dec.tell() + 17 + 20 * (this.mode == OpusMode.MODE_HYBRID ? 1 : 0) <= 8 * len)
             {
                 /* Check if we have a redundant 0-8 kHz band */
                 if (mode == OpusMode.MODE_HYBRID)
-                    redundancy = dec.dec_bit_logp(12);
+                    redundancy = dec.dec_bit_logp(data.Slice(data_ptr), 12);
                 else
                     redundancy = 1;
                 if (redundancy != 0)
                 {
-                    celt_to_silk = dec.dec_bit_logp(1);
+                    celt_to_silk = dec.dec_bit_logp(data.Slice(data_ptr), 1);
                     /* redundancy_bytes will be at least two, in the non-hybrid
                        case due to the ec_tell() check above */
                     redundancy_bytes = mode == OpusMode.MODE_HYBRID ?
-                                      (int)dec.dec_uint(256) + 2 :
+                                      (int)dec.dec_uint(data.Slice(data_ptr), 256) + 2 :
                                       len - ((dec.tell() + 7) >> 3);
                     len -= redundancy_bytes;
                     /* This is a sanity check. It should never happen for a valid
@@ -553,7 +551,7 @@ namespace Concentus.Structs
                     for (i = 0; i < F2_5; i++)
                         pcm[this.channels * i + c + pcm_ptr] = redundant_audio[this.channels * i + c];
                 }
-                CodecHelpers.smooth_fade(redundant_audio,(this.channels * F2_5), pcm,(pcm_ptr + (this.channels * F2_5)),
+                CodecHelpers.smooth_fade(redundant_audio, (this.channels * F2_5), pcm, (pcm_ptr + (this.channels * F2_5)),
                             pcm, (pcm_ptr + (this.channels * F2_5)), F2_5, this.channels, window, this.Fs);
             }
             if (transition != 0)
@@ -566,7 +564,8 @@ namespace Concentus.Structs
                                 pcm, (pcm_ptr + (this.channels * F2_5)), F2_5,
                                 this.channels, window, this.Fs);
                 }
-                else {
+                else
+                {
                     /* Not enough time to do a clean transition, but we do it anyway
                        This will not preserve amplitude perfectly and may introduce
                        a bit of temporal aliasing, but it shouldn't be too bad and
@@ -601,8 +600,8 @@ namespace Concentus.Structs
             return celt_ret < 0 ? celt_ret : audiosize;
         }
 
-        internal int opus_decode_native(byte[] data, int data_ptr,
-          int len, short[] pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
+        internal int opus_decode_native(ReadOnlySpan<byte> data, int data_ptr,
+          int len, Span<short> pcm_out, int pcm_out_ptr, int frame_size, int decode_fec,
           int self_delimited, out int packet_offset, int soft_clip)
         {
             int i, nb_samples;
@@ -618,9 +617,9 @@ namespace Concentus.Structs
             if (decode_fec < 0 || decode_fec > 1)
                 return OpusError.OPUS_BAD_ARG;
             /* For FEC/PLC, frame_size has to be to have a multiple of 2.5 ms */
-            if ((decode_fec != 0 || len == 0 || data == null) && frame_size % (this.Fs / 400) != 0)
+            if ((decode_fec != 0 || len == 0 || data.IsEmpty) && frame_size % (this.Fs / 400) != 0)
                 return OpusError.OPUS_BAD_ARG;
-            if (len == 0 || data == null)
+            if (len == 0 || data.IsEmpty)
             {
                 int pcm_count = 0;
                 do
@@ -642,7 +641,7 @@ namespace Concentus.Structs
             packet_bandwidth = OpusPacketInfo.GetBandwidth(data, data_ptr);
             packet_frame_size = OpusPacketInfo.GetNumSamplesPerFrame(data, data_ptr, this.Fs);
             packet_stream_channels = OpusPacketInfo.GetNumEncodedChannels(data, data_ptr);
-            
+
             count = OpusPacketInfo.opus_packet_parse_impl(data, data_ptr, len, self_delimited, out toc, null, null, 0,
                                            size, 0, out offset, out packet_offset);
 
@@ -680,7 +679,8 @@ namespace Concentus.Structs
                       packet_frame_size, 1);
                 if (ret < 0)
                     return ret;
-                else {
+                else
+                {
                     this.last_packet_duration = frame_size;
                     return frame_size;
                 }
@@ -714,7 +714,7 @@ namespace Concentus.Structs
         /// <summary>
         /// Decodes an Opus packet.
         /// </summary>
-        /// <param name="in_data">The input payload. This may be NULL if that previous packet was lost in transit (when PLC is enabled)</param>
+        /// <param name="in_data">The input payload. This may be NULL if the previous packet was lost in transit (when PLC is enabled)</param>
         /// <param name="in_data_offset">The offset to use when reading the input payload. Usually 0</param>
         /// <param name="len">The number of bytes in the payload</param>
         /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
@@ -731,8 +731,38 @@ namespace Concentus.Structs
         /// recovery scheme, you will actually decode this packet twice, first with decode_fec TRUE and then again with FALSE. If FEC data is not
         /// available in this packet, the decoder will simply generate a best-effort recreation of the lost packet.</param>
         /// <returns>The number of decoded samples</returns>
+        [Obsolete("Use Span<> overrides instead")]
         public int Decode(byte[] in_data, int in_data_offset,
              int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec = false)
+        {
+            if (in_data == null)
+            {
+                return Decode(ReadOnlySpan<byte>.Empty, out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            }
+            else
+            {
+                return Decode(in_data.AsSpan(in_data_offset, len), out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            }
+        }
+
+        /// <summary>
+        /// Decodes an Opus packet.
+        /// </summary>
+        /// <param name="in_data">The input payload. This may be empty if the previous packet was lost in transit (when PLC is enabled)</param>
+        /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
+        /// You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need
+        /// exact sizing. Otherwise, the minimum safe buffer size is 5760 samples</param>
+        /// <param name="frame_size">The number of samples (per channel) of available space in the output PCM buf.
+        /// If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
+        /// not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
+        /// then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
+        /// not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
+        /// be a multiple of 10 ms.</param>
+        /// <param name="decode_fec">Indicates that we want to recreate the PREVIOUS (lost) packet using FEC data from THIS packet. Using this packet
+        /// recovery scheme, you will actually decode this packet twice, first with decode_fec TRUE and then again with FALSE. If FEC data is not
+        /// available in this packet, the decoder will simply generate a best-effort recreation of the lost packet.</param>
+        /// <returns>The number of decoded samples</returns>
+        public int Decode(ReadOnlySpan<byte> in_data, Span<short> out_pcm, int frame_size, bool decode_fec = false)
         {
             if (frame_size <= 0)
             {
@@ -742,21 +772,21 @@ namespace Concentus.Structs
             try
             {
                 int dummy;
-                int ret = opus_decode_native(in_data, in_data_offset, len, out_pcm, out_pcm_offset, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
+                int ret = opus_decode_native(in_data, 0, in_data.Length, out_pcm, 0, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
 
                 if (ret < 0)
                 {
                     // An error happened; report it
                     if (ret == OpusError.OPUS_BAD_ARG)
                         throw new ArgumentException("OPUS_BAD_ARG while decoding");
-                    throw new OpusException("An error occurred during decoding", ret);
+                    throw new OpusException("An error occurred during decoding: " + CodecHelpers.opus_strerror(ret), ret);
                 }
 
                 return ret;
             }
             catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during decoding: " + e.Message);
+                throw new OpusException("public error during decoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 
@@ -781,8 +811,38 @@ namespace Concentus.Structs
         /// available in this packet, the decoder will simply generate a best-effort recreation of the lost packet. In that case,
         /// the length of frame_size must be EXACTLY the length of the audio that was lost, or else the decoder will be in an inconsistent state.</param>
         /// <returns>The number of decoded samples (per channel)</returns>
+        [Obsolete("Use Span<> overrides instead")]
         public int Decode(byte[] in_data, int in_data_offset,
             int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec = false)
+        {
+            if (in_data == null)
+            {
+                return Decode(ReadOnlySpan<byte>.Empty, out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            }
+            else
+            {
+                return Decode(in_data.AsSpan(in_data_offset, len), out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            }
+        }
+
+        /// <summary>
+        /// Decodes an Opus packet.
+        /// </summary>
+        /// <param name="in_data">The input payload. This may be empty if the previous packet was lost in transit (when PLC is enabled)</param>
+        /// <param name="out_pcm">A buffer to put the output PCM. The output size is (# of samples) * (# of channels).
+        /// You can use the OpusPacketInfo helpers to get a hint of the frame size before you decode the packet if you need
+        /// exact sizing. Otherwise, the minimum safe buffer size is 5760 samples</param>
+        /// <param name="frame_size">The number of samples (per channel) of available space in the output PCM buf.
+        /// If this is less than the maximum packet duration (120ms; 5760 for 48khz), this function will
+        /// not be capable of decoding some packets. In the case of PLC (data == NULL) or FEC (decode_fec == true),
+        /// then frame_size needs to be exactly the duration of the audio that is missing, otherwise the decoder will
+        /// not be in an optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size *must*
+        /// be a multiple of 10 ms.</param>
+        /// <param name="decode_fec">Indicates that we want to recreate the PREVIOUS (lost) packet using FEC data from THIS packet. Using this packet
+        /// recovery scheme, you will actually decode this packet twice, first with decode_fec TRUE and then again with FALSE. If FEC data is not
+        /// available in this packet, the decoder will simply generate a best-effort recreation of the lost packet.</param>
+        /// <returns>The number of decoded samples</returns>
+        public int Decode(ReadOnlySpan<byte> in_data, Span<float> out_pcm, int frame_size, bool decode_fec = false)
         {
             short[] output;
             int ret, i;
@@ -792,40 +852,40 @@ namespace Concentus.Structs
             {
                 throw new ArgumentException("Frame size must be > 0");
             }
-            if (in_data != null && len > 0 && !decode_fec)
+            if (in_data != null && in_data.Length > 0 && !decode_fec)
             {
-                nb_samples = OpusPacketInfo.GetNumSamples(this, in_data, in_data_offset, len);
+                nb_samples = OpusPacketInfo.GetNumSamples(in_data, 0, in_data.Length, this.Fs);
                 if (nb_samples > 0)
                     frame_size = Inlines.IMIN(frame_size, nb_samples);
                 else
-                    throw new OpusException("An invalid packet was provided (unable to parse # of samples)");
+                    throw new OpusException("An invalid packet was provided (unable to parse # of samples)", OpusError.OPUS_INVALID_PACKET);
             }
             output = new short[frame_size * this.channels];
 
             try
             {
                 int dummy;
-                ret = opus_decode_native(in_data, in_data_offset, len, output, 0, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
+                ret = opus_decode_native(in_data, 0, in_data.Length, output, 0, frame_size, decode_fec ? 1 : 0, 0, out dummy, 0);
 
                 if (ret < 0)
                 {
                     // An error happened; report it
                     if (ret == OpusError.OPUS_BAD_ARG)
                         throw new ArgumentException("OPUS_BAD_ARG when decoding");
-                    throw new OpusException("An error occurred during decoding", ret);
+                    throw new OpusException("An error occurred during decoding: " + CodecHelpers.opus_strerror(ret), ret);
                 }
 
                 if (ret > 0)
                 {
                     for (i = 0; i < ret * this.channels; i++)
-                        out_pcm[out_pcm_offset + i] = (1.0f / 32768.0f) * (output[i]);
+                        out_pcm[i] = (1.0f / 32768.0f) * (output[i]);
                 }
 
                 return ret;
             }
             catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during decoding: " + e.Message);
+                throw new OpusException("public error during decoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 
@@ -870,7 +930,7 @@ namespace Concentus.Structs
                 return channels;
             }
         }
-        
+
         /// <summary>
         /// Gets the last estimated pitch value of the decoded audio
         /// </summary>

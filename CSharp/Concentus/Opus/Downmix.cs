@@ -57,18 +57,18 @@ namespace Concentus
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <param name="C"></param>
-        public delegate void downmix_func<T>(T[] _x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C);
+        internal delegate void downmix_func<T>(ReadOnlySpan<T> _x, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C);
 
-        internal static void downmix_float(float[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
+        internal static void downmix_float(ReadOnlySpan<float> x, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
         {
             int scale;
             int j;
-            int c1x = c1 + x_ptr;
+            int c1x = c1;
             for (j = 0; j < subframe; j++)
                 sub[sub_ptr + j] = Inlines.FLOAT2INT16(x[(j + offset) * C + c1x]);
             if (c2 > -1)
             {
-                int c2x = c2 + x_ptr;
+                int c2x = c2;
                 for (j = 0; j < subframe; j++)
                     sub[sub_ptr + j] += Inlines.FLOAT2INT16(x[(j + offset) * C + c2x]);
             }
@@ -78,7 +78,7 @@ namespace Concentus
                 int cx;
                 for (c = 1; c < C; c++)
                 {
-                    cx = c + x_ptr;
+                    cx = c;
                     for (j = 0; j < subframe; j++)
                         sub[sub_ptr + j] += Inlines.FLOAT2INT16(x[(j + offset) * C + cx]);
                 }
@@ -92,7 +92,7 @@ namespace Concentus
                 sub[sub_ptr + j] *= scale;
         }
 
-        internal static void downmix_int(short[] x, int x_ptr, int[] sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
+        internal static void downmix_int(ReadOnlySpan<short> x, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
         {
             int scale;
             int j;

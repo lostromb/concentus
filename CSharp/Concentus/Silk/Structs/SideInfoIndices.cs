@@ -72,9 +72,9 @@ namespace Concentus.Silk.Structs
         /// <param name="other"></param>
         internal void Assign(SideInfoIndices other)
         {
-            Array.Copy(other.GainsIndices, this.GainsIndices, SilkConstants.MAX_NB_SUBFR);
-            Array.Copy(other.LTPIndex, this.LTPIndex, SilkConstants.MAX_NB_SUBFR);
-            Array.Copy(other.NLSFIndices, this.NLSFIndices, SilkConstants.MAX_LPC_ORDER + 1);
+            Arrays.MemCopy(other.GainsIndices, 0, this.GainsIndices, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemCopy(other.LTPIndex, 0, this.LTPIndex, 0, SilkConstants.MAX_NB_SUBFR);
+            Arrays.MemCopy(other.NLSFIndices, 0, this.NLSFIndices, 0, SilkConstants.MAX_LPC_ORDER + 1);
             this.lagIndex = other.lagIndex;
             this.contourIndex = other.contourIndex;
             this.signalType = other.signalType;

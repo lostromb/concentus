@@ -71,6 +71,7 @@ namespace Concentus.Celt
               int[][] eBands, int[][] oldEBands,
               int budget, int tell,
               byte[] prob_model, int[][] error, EntropyCoder enc,
+              Span<byte> encodedData,
               int C, int LM, int intra, int max_decay, int lfe)
         {
             int i, c;
@@ -81,7 +82,7 @@ namespace Concentus.Celt
 
             if (tell + 3 <= budget)
             {
-                enc.enc_bit_logp(intra, 3);
+                enc.enc_bit_logp(encodedData, intra, 3);
             }
 
             if (intra != 0)
@@ -140,17 +141,17 @@ namespace Concentus.Celt
                     {
                         int pi;
                         pi = 2 * Inlines.IMIN(i, 20);
-                        Laplace.ec_laplace_encode(enc, ref qi, (((uint)prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
+                        Laplace.ec_laplace_encode(enc, encodedData, ref qi, (((uint)prob_model[pi]) << 7), ((int)prob_model[pi + 1]) << 6);
                     }
                     else if (budget - tell >= 2)
                     {
                         qi = Inlines.IMAX(-1, Inlines.IMIN(qi, 1));
-                        enc.enc_icdf(2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf, 2);
+                        enc.enc_icdf(encodedData, 2 * qi ^ (0 - (qi < 0 ? 1 : 0)), small_energy_icdf, 2);
                     }
                     else if (budget - tell >= 1)
                     {
                         qi = Inlines.IMIN(0, qi);
-                        enc.enc_bit_logp(-qi, 1);
+                        enc.enc_bit_logp(encodedData, - qi, 1);
                     }
                     else
                         qi = -1;
@@ -169,7 +170,7 @@ namespace Concentus.Celt
 
         internal static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
               int[][] eBands, int[][] oldEBands, uint budget,
-              int[][] error, EntropyCoder enc, int C, int LM, int nbAvailableBytes,
+              int[][] error, EntropyCoder enc, Span<byte> encodedData, int C, int LM, int nbAvailableBytes,
               int force_intra, ref int delayedIntra, int two_pass, int loss_rate, int lfe)
         {
             int intra;
@@ -204,14 +205,14 @@ namespace Concentus.Celt
 
             oldEBands_intra = Arrays.InitTwoDimensionalArray<int>(C, m.nbEBands);
             error_intra = Arrays.InitTwoDimensionalArray<int>(C, m.nbEBands);
-            Array.Copy(oldEBands[0], 0, oldEBands_intra[0], 0, m.nbEBands);
+            Arrays.MemCopy(oldEBands[0], 0, oldEBands_intra[0], 0, m.nbEBands);
             if (C == 2)
-                Array.Copy(oldEBands[1], 0, oldEBands_intra[1], 0, m.nbEBands);
+                Arrays.MemCopy(oldEBands[1], 0, oldEBands_intra[1], 0, m.nbEBands);
 
             if (two_pass != 0 || intra != 0)
             {
                 badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, (int)budget,
-                      (int)tell, Tables.e_prob_model[LM][1], error_intra, enc, C, LM, 1, max_decay, lfe);
+                      (int)tell, Tables.e_prob_model[LM][1], error_intra, enc, encodedData, C, LM, 1, max_decay, lfe);
             }
 
             if (intra == 0)
@@ -231,20 +232,20 @@ namespace Concentus.Celt
 
                 nstart_bytes = enc_start_state.range_bytes();
                 nintra_bytes = enc_intra_state.range_bytes();
-                intra_buf = enc_intra_state.buf_ptr + (int)nstart_bytes;
+                intra_buf = (int)nstart_bytes;
                 save_bytes = nintra_bytes - nstart_bytes;
 
                 if (save_bytes != 0)
                 {
                     intra_bits = new byte[(int)save_bytes];
                     /* Copy bits from intra bit-stream */
-                    Array.Copy(enc_intra_state.buf, intra_buf, intra_bits, 0, (int)save_bytes);
+                    encodedData.Slice(intra_buf, (int)save_bytes).CopyTo(intra_bits);
                 }
 
                 enc.Assign(enc_start_state);
 
                 badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, (int)budget,
-                      (int)tell, Tables.e_prob_model[LM][intra], error, enc, C, LM, 0, max_decay, lfe);
+                      (int)tell, Tables.e_prob_model[LM][intra], error, enc, encodedData, C, LM, 0, max_decay, lfe);
 
                 if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && ((int)enc.tell_frac()) + intra_bias > tell_intra)))
                 {
@@ -252,26 +253,26 @@ namespace Concentus.Celt
                     /* Copy intra bits to bit-stream */
                     if (intra_bits != null)
                     {
-                        Array.Copy(intra_bits, 0, enc_intra_state.buf, intra_buf, (int)(nintra_bytes - nstart_bytes));
+                        intra_bits.AsSpan(0, (int)(nintra_bytes - nstart_bytes)).CopyTo(encodedData.Slice(intra_buf));
                     }
-                    Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
-                    Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);
+                    Arrays.MemCopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
+                    Arrays.MemCopy(error_intra[0], 0, error[0], 0, m.nbEBands);
                     if (C == 2)
                     {
-                        Array.Copy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
-                        Array.Copy(error_intra[1], 0, error[1], 0, m.nbEBands);
+                        Arrays.MemCopy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
+                        Arrays.MemCopy(error_intra[1], 0, error[1], 0, m.nbEBands);
                     }
                     intra = 1;
                 }
             }
             else
             {
-                Array.Copy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
-                Array.Copy(error_intra[0], 0, error[0], 0, m.nbEBands);
+                Arrays.MemCopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
+                Arrays.MemCopy(error_intra[0], 0, error[0], 0, m.nbEBands);
                 if (C == 2)
                 {
-                    Array.Copy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
-                    Array.Copy(error_intra[1], 0, error[1], 0, m.nbEBands);
+                    Arrays.MemCopy(oldEBands_intra[1], 0, oldEBands[1], 0, m.nbEBands);
+                    Arrays.MemCopy(error_intra[1], 0, error[1], 0, m.nbEBands);
                 }
             }
 
@@ -286,7 +287,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void quant_fine_energy(CeltMode m, int start, int end, int[][] oldEBands, int[][] error, int[] fine_quant, EntropyCoder enc, int C)
+        internal static void quant_fine_energy(CeltMode m, int start, int end, int[][] oldEBands, int[][] error, int[] fine_quant, EntropyCoder enc, Span<byte> encodedData, int C)
         {
             int i, c;
 
@@ -307,7 +308,7 @@ namespace Concentus.Celt
                         q2 = frac - 1;
                     if (q2 < 0)
                         q2 = 0;
-                    enc.enc_bits((uint)q2, (uint)fine_quant[i]);
+                    enc.enc_bits(encodedData, (uint)q2, (uint)fine_quant[i]);
                     offset = Inlines.SUB16(
                         (Inlines.SHR32(
                             Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/,
@@ -319,7 +320,18 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void quant_energy_finalise(CeltMode m, int start, int end, int[][] oldEBands, int[][] error, int[] fine_quant, int[] fine_priority, int bits_left, EntropyCoder enc, int C)
+        internal static void quant_energy_finalise(
+            CeltMode m,
+            int start,
+            int end,
+            int[][] oldEBands,
+            int[][] error,
+            int[] fine_quant,
+            int[] fine_priority,
+            int bits_left,
+            EntropyCoder enc,
+            Span<byte> encodedData,
+            int C)
         {
             int i, prio, c;
 
@@ -339,7 +351,7 @@ namespace Concentus.Celt
                         int q2;
                         int offset;
                         q2 = error[c][i] < 0 ? 0 : 1;
-                        enc.enc_bits((uint)q2, 1);
+                        enc.enc_bits(encodedData, (uint)q2, 1);
                         offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
                         oldEBands[c][i] += offset;
                         bits_left--;
@@ -348,7 +360,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_coarse_energy(CeltMode m, int start, int end, int[] oldEBands, int intra, EntropyCoder dec, int C, int LM)
+        internal static void unquant_coarse_energy(CeltMode m, int start, int end, int[] oldEBands, int intra, EntropyCoder dec, ReadOnlySpan<byte> encodedData, int C, int LM)
         {
             byte[] prob_model = Tables.e_prob_model[LM][intra];
             int i, c;
@@ -388,17 +400,17 @@ namespace Concentus.Celt
                     {
                         int pi;
                         pi = 2 * Inlines.IMIN(i, 20);
-                        qi = Laplace.ec_laplace_decode(dec,
+                        qi = Laplace.ec_laplace_decode(dec, encodedData,
                               (uint)prob_model[pi] << 7, prob_model[pi + 1] << 6);
                     }
                     else if (budget - tell >= 2)
                     {
-                        qi = dec.dec_icdf(small_energy_icdf, 2);
+                        qi = dec.dec_icdf(encodedData, small_energy_icdf, 2);
                         qi = (qi >> 1) ^ -(qi & 1);
                     }
                     else if (budget - tell >= 1)
                     {
-                        qi = 0 - dec.dec_bit_logp(1);
+                        qi = 0 - dec.dec_bit_logp(encodedData, 1);
                     }
                     else
                     {
@@ -415,7 +427,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_fine_energy(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, EntropyCoder dec, int C)
+        internal static void unquant_fine_energy(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, EntropyCoder dec, ReadOnlySpan<byte> encodedData, int C)
         {
             int i, c;
             /* Decode finer resolution */
@@ -428,7 +440,7 @@ namespace Concentus.Celt
                 {
                     int q2;
                     int offset;
-                    q2 = (int)dec.dec_bits((uint)fine_quant[i]);
+                    q2 = (int)dec.dec_bits(encodedData, (uint)fine_quant[i]);
                     offset = Inlines.SUB16((Inlines.SHR32(
                         Inlines.SHL32(q2, CeltConstants.DB_SHIFT) + 
                         ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/, fine_quant[i])),
@@ -438,7 +450,17 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void unquant_energy_finalise(CeltMode m, int start, int end, int[] oldEBands, int[] fine_quant, int[] fine_priority, int bits_left, EntropyCoder dec, int C)
+        internal static void unquant_energy_finalise(
+            CeltMode m,
+            int start,
+            int end,
+            int[] oldEBands,
+            int[] fine_quant,
+            int[] fine_priority,
+            int bits_left,
+            EntropyCoder dec,
+            ReadOnlySpan<byte> encodedData,
+            int C)
         {
             int i, prio, c;
 
@@ -454,7 +476,7 @@ namespace Concentus.Celt
                     {
                         int q2;
                         int offset;
-                        q2 = (int)dec.dec_bits(1);
+                        q2 = (int)dec.dec_bits(encodedData, 1);
                         offset = Inlines.SHR16((Inlines.SHL16((q2), CeltConstants.DB_SHIFT) - ((short)(0.5 + (.5f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(.5f, CeltConstants.DB_SHIFT)*/), fine_quant[i] + 1);
                         oldEBands[i + c * m.nbEBands] += offset;
                         bits_left--;
@@ -502,7 +524,7 @@ namespace Concentus.Celt
         /// <param name="bandLogE"></param>
         /// <param name="C"></param>
         internal static void amp2Log2(CeltMode m, int effEnd, int end,
-              int[] bandE, int[] bandLogE, int bandLogE_ptr, int C)
+              int[] bandE, Span<int> bandLogE, int bandLogE_ptr, int C)
         {
             int c, i;
             c = 0;
