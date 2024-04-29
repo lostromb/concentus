@@ -63,9 +63,9 @@ namespace Concentus.Structs
             encoders = new OpusEncoder[nb_streams];
             for (int c = 0; c < nb_streams; c++)
                 encoders[c] = new OpusEncoder();
-            // fixme is this nb_streams or nb_channels?
-            window_mem = new int[nb_streams * 120];
-            preemph_mem = new int[nb_streams];
+            int nb_channels = (nb_coupled_streams * 2) /*stereo channels*/ + (nb_streams - nb_coupled_streams) /*mono channels*/;
+            window_mem = new int[nb_channels * 120];
+            preemph_mem = new int[nb_channels];
         }
 
         public void ResetState()
@@ -156,7 +156,8 @@ namespace Concentus.Structs
         private static readonly int[] diff_table/*[17]*/ = {
              ((short)(0.5 + (0.5000000f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.5000000f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.2924813f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.2924813f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.1609640f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.1609640f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0849625f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0849625f, CeltConstants.DB_SHIFT)*/,
              ((short)(0.5 + (0.0437314f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0437314f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0221971f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0221971f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0111839f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0111839f, CeltConstants.DB_SHIFT)*/, ((short)(0.5 + (0.0056136f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0056136f, CeltConstants.DB_SHIFT)*/,
-             ((short)(0.5 + (0.0028123f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0028123f, CeltConstants.DB_SHIFT)*/
+             ((short)(0.5 + (0.0028123f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0028123f, CeltConstants.DB_SHIFT)*/,
+             0, 0, 0, 0, 0, 0, 0, 0
        };
 
         /* Computes a rough approximation of log2(2^a + 2^b) */
@@ -845,9 +846,18 @@ namespace Concentus.Structs
             int max_data_bytes
         )
         {
-            // todo: catch error codes here
-            return opus_multistream_encode_native<short>(opus_copy_channel_in_short,
+            int ret = opus_multistream_encode_native<short>(opus_copy_channel_in_short,
                pcm, pcm_offset, frame_size, outputBuffer, outputBuffer_offset, max_data_bytes, 16, Downmix.downmix_int, 0);
+            
+            if (ret < 0)
+            {
+                // An error happened; report it
+                if (ret == OpusError.OPUS_BAD_ARG)
+                    throw new ArgumentException("OPUS_BAD_ARG while encoding");
+                throw new OpusException("An error occurred during encoding: " + CodecHelpers.opus_strerror(ret), ret);
+            }
+
+            return ret;
         }
 
         public int EncodeMultistream(
@@ -859,9 +869,18 @@ namespace Concentus.Structs
             int max_data_bytes
         )
         {
-            // todo: catch error codes here
-            return opus_multistream_encode_native<float>(opus_copy_channel_in_float,
+            int ret = opus_multistream_encode_native<float>(opus_copy_channel_in_float,
                pcm, pcm_offset, frame_size, outputBuffer, outputBuffer_offset, max_data_bytes, 16, Downmix.downmix_float, 1);
+
+            if (ret < 0)
+            {
+                // An error happened; report it
+                if (ret == OpusError.OPUS_BAD_ARG)
+                    throw new ArgumentException("OPUS_BAD_ARG while encoding");
+                throw new OpusException("An error occurred during encoding: " + CodecHelpers.opus_strerror(ret), ret);
+            }
+
+            return ret;
         }
 
         #endregion

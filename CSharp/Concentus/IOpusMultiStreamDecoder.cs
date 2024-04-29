@@ -36,8 +36,8 @@ namespace Concentus
 {
     public interface IOpusMultiStreamDecoder
     {
-        int DecodeMultistream(byte[] data, int data_offset, int len, float[] out_pcm, int out_pcm_offset, int frame_size, int decode_fec);
-        int DecodeMultistream(byte[] data, int data_offset, int len, short[] out_pcm, int out_pcm_offset, int frame_size, int decode_fec);
+        int DecodeMultistream(byte[] data, int data_offset, int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec);
+        int DecodeMultistream(byte[] data, int data_offset, int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec);
         OpusDecoder GetMultistreamDecoderState(int streamId);
         void ResetState();
 

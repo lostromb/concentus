@@ -432,13 +432,13 @@ namespace TestOpusEncode
                         //    len = Repacketizer.opus_multistream_packet_unpad(packet, len, 2);
                         //    if (len < 1) test_failed();
                         //}
-                        out_samples = MSdec.DecodeMultistream(packet, 0, len, out2buf, 0, MAX_FRAME_SAMP, 0);
+                        out_samples = MSdec.DecodeMultistream(packet, 0, len, out2buf, 0, MAX_FRAME_SAMP, false);
                         if (out_samples != frame_size * 6) test_failed();
                         dec_final_range = MSdec.FinalRange;
                         if (enc_final_range != dec_final_range) test_failed();
                         /*LBRR decode*/
                         loss = (fast_rand() & 63) == 0;
-                        out_samples = MSdec_err.DecodeMultistream(packet, 0, loss ? 0 : len, out2buf, 0, frame_size * 6, ((fast_rand() & 3) != 0) ? 1 : 0);
+                        out_samples = MSdec_err.DecodeMultistream(packet, 0, loss ? 0 : len, out2buf, 0, frame_size * 6, (fast_rand() & 3) != 0);
                         if (out_samples != (frame_size * 6)) test_failed();
                         i += frame_size;
                         count++;

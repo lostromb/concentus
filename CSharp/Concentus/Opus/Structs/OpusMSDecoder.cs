@@ -342,18 +342,39 @@ namespace Concentus.Structs
               short[] out_pcm,
               int out_pcm_offset,
               int frame_size,
-              int decode_fec
+              bool decode_fec
         )
         {
-            return opus_multistream_decode_native<short>(data, data_offset, len,
-                out_pcm, out_pcm_offset, opus_copy_channel_out_short, frame_size, decode_fec, 0);
+            int ret = opus_multistream_decode_native<short>(data, data_offset, len,
+                out_pcm, out_pcm_offset, opus_copy_channel_out_short, frame_size, decode_fec ? 1 : 0, 0);
+
+            if (ret < 0)
+            {
+                // An error happened; report it
+                if (ret == OpusError.OPUS_BAD_ARG)
+                    throw new ArgumentException("OPUS_BAD_ARG while decoding");
+                throw new OpusException("An error occurred during decoding: " + CodecHelpers.opus_strerror(ret), ret);
+            }
+
+            return ret;
+
         }
 
         public int DecodeMultistream(byte[] data, int data_offset,
-          int len, float[] out_pcm, int out_pcm_offset, int frame_size, int decode_fec)
+          int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
-            return opus_multistream_decode_native<float>(data, data_offset, len,
-                out_pcm, out_pcm_offset, opus_copy_channel_out_float, frame_size, decode_fec, 0);
+            int ret = opus_multistream_decode_native<float>(data, data_offset, len,
+                out_pcm, out_pcm_offset, opus_copy_channel_out_float, frame_size, decode_fec ? 1 : 0, 0);
+
+            if (ret < 0)
+            {
+                // An error happened; report it
+                if (ret == OpusError.OPUS_BAD_ARG)
+                    throw new ArgumentException("OPUS_BAD_ARG while decoding");
+                throw new OpusException("An error occurred during decoding: " + CodecHelpers.opus_strerror(ret), ret);
+            }
+
+            return ret;
         }
 
         #endregion

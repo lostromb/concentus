@@ -489,7 +489,7 @@ namespace Concentus.Common.CPlusPlus
 #else
         public void MemMove(int move_dist, int length)
         {
-            Arrays.MemMove(_array, _offset, _offset + move_dist, length);
+            _array.AsSpan(_offset, length).CopyTo(_array.AsSpan(_offset + move_dist, length));
         }
 #endif
 

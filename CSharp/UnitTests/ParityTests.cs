@@ -495,8 +495,20 @@ namespace UnitTests
             foreach (TestParameters p in allTestsRandom)
             {
                 testsRun++;
+                Console.WriteLine("{0,5} {1} {2} Cpx={3,2} {4}Kbps {5,2}Khz {6,3} Ms PLC {7,2}% {8} {9} {10}... ",
+                    testsRun,
+                    PrintApplication(p.Application),
+                    p.Channels == 1 ? "Mono  " : "Stereo",
+                    p.Complexity,
+                    p.Bitrate > 0 ? string.Format("{0,3}", p.Bitrate) : "VAR",
+                    p.SampleRate / 1000,
+                    p.FrameSize,
+                    p.PacketLossPercent,
+                    PrintVBRMode(p),
+                    p.UseDTX ? "DTX" : "   ",
+                    PrintForceMode(p.ForceMode));
                 TestResults response = TestDriver.RunTest(p, GetTestSample(p));
-                Assert.IsTrue(response.Passed);
+                Assert.IsTrue(response.Passed, response.Message);
                 if (testsRun > 50) break;
             }
         }
@@ -557,5 +569,36 @@ namespace UnitTests
                 Assert.IsTrue(decodeResult > 0);
             }
         }
+
+        private static string PrintApplication(OpusApplication app)
+        {
+            if (app == OpusApplication.OPUS_APPLICATION_AUDIO)
+                return "Music   ";
+            else if (app == OpusApplication.OPUS_APPLICATION_VOIP)
+                return "Voip    ";
+            return "LowDelay";
+        }
+
+        private static string PrintVBRMode(TestParameters p)
+        {
+            if (p.UseVBR)
+            {
+                if (p.ConstrainedVBR)
+                    return "CVBR";
+                else
+                    return "VBR ";
+            }
+            return "    ";
+        }
+
+        private static string PrintForceMode(OpusMode mode)
+        {
+            if (mode == OpusMode.MODE_CELT_ONLY)
+                return "CELT";
+            if (mode == OpusMode.MODE_SILK_ONLY)
+                return "SILK";
+            return "    ";
+        }
+
     }
 }
