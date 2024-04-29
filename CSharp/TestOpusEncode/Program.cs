@@ -361,7 +361,7 @@ namespace TestOpusEncode
             if (i < 16) test_failed();
 
             {
-                OpusEncoder tmp_enc;
+                IOpusEncoder tmp_enc;
                 tmp_enc = MSenc.GetMultistreamEncoderState(1);
                 if (tmp_enc == null) test_failed();
                 j = tmp_enc.LSBDepth;

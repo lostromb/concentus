@@ -88,7 +88,7 @@ namespace Concentus.Structs
         #region Encoder API functions
 
         internal delegate void opus_copy_channel_in_func<T>(
-            Span<short> dst, int dst_ptr, int dst_stride, Span<T> src, int src_ptr, int src_stride, int src_channel, int frame_size);
+            Span<short> dst, int dst_ptr, int dst_stride, ReadOnlySpan<T> src, int src_stride, int src_channel, int frame_size);
 
         internal static int validate_encoder_layout(ChannelLayout layout)
         {
@@ -191,7 +191,7 @@ namespace Concentus.Structs
         //    return log2(pow(4, a) + pow(4, b)) / 2;
         //}
 
-        internal static void surround_analysis<T>(CeltMode celt_mode, T[] pcm, int pcm_ptr,
+        internal static void surround_analysis<T>(CeltMode celt_mode, ReadOnlySpan<T> pcm,
             int[] bandLogE, int[] mem, int[] preemph_mem,
           int len, int overlap, int channels, int rate, opus_copy_channel_in_func<T> copy_channel_in
     )
@@ -229,7 +229,7 @@ namespace Concentus.Structs
             for (c = 0; c < channels; c++)
             {
                 Array.Copy(mem, c * overlap, input, 0, overlap);
-                copy_channel_in(x, 0, 1, pcm, pcm_ptr, channels, c, len);
+                copy_channel_in(x, 0, 1, pcm, channels, c, len);
                 BoxedValueInt boxed_preemph = new BoxedValueInt(preemph_mem[c]);
                 CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0);
                 preemph_mem[c] = boxed_preemph.Val;
@@ -602,11 +602,9 @@ namespace Concentus.Structs
         internal int opus_multistream_encode_native<T>
         (
             opus_copy_channel_in_func<T> copy_channel_in,
-            T[] pcm,
-            int pcm_ptr,
+            ReadOnlySpan<T> pcm,
             int analysis_frame_size,
             Span<byte> data,
-            int data_ptr,
             int max_data_bytes,
             int lsb_depth,
             Downmix.downmix_func<T> downmix,
@@ -630,6 +628,7 @@ namespace Concentus.Structs
             int frame_size;
             int rate_sum;
             int smallest_packet;
+            int data_ptr = 0;
 
             if (this.surround != 0)
             {
@@ -649,7 +648,7 @@ namespace Concentus.Structs
                 channels = this.layout.nb_streams + this.layout.nb_coupled_streams;
                 delay_compensation = this.encoders[encoder_ptr].Lookahead;
                 delay_compensation -= Fs / 400;
-                frame_size = CodecHelpers.compute_frame_size(pcm.AsSpan(pcm_ptr), analysis_frame_size,
+                frame_size = CodecHelpers.compute_frame_size(pcm, analysis_frame_size,
                       this.variable_duration, channels, Fs, this.bitrate_bps,
                       delay_compensation, downmix, this.subframe_mem, this.encoders[encoder_ptr].analysis.enabled);
             }
@@ -678,7 +677,7 @@ namespace Concentus.Structs
             bandSMR = new int[21 * this.layout.nb_channels];
             if (this.surround != 0)
             {
-                surround_analysis(celt_mode, pcm, pcm_ptr, bandSMR, mem, preemph_mem, frame_size, 120, this.layout.nb_channels, Fs, copy_channel_in);
+                surround_analysis(celt_mode, pcm, bandSMR, mem, preemph_mem, frame_size, 120, this.layout.nb_channels, Fs, copy_channel_in);
             }
 
             /* Compute bitrate allocation between streams (this could be a lot better) */
@@ -744,9 +743,9 @@ namespace Concentus.Structs
                     left = OpusMultistream.get_left_channel(this.layout, s, -1);
                     right = OpusMultistream.get_right_channel(this.layout, s, -1);
                     copy_channel_in(buf, 0, 2,
-                       pcm, pcm_ptr, this.layout.nb_channels, left, frame_size);
+                       pcm, this.layout.nb_channels, left, frame_size);
                     copy_channel_in(buf, 1, 2,
-                       pcm, pcm_ptr, this.layout.nb_channels, right, frame_size);
+                       pcm, this.layout.nb_channels, right, frame_size);
                     encoder_ptr += 1;
                     if (this.surround != 0)
                     {
@@ -764,7 +763,7 @@ namespace Concentus.Structs
                     int i;
                     int chan = OpusMultistream.get_mono_channel(this.layout, s, -1);
                     copy_channel_in(buf, 0, 1,
-                       pcm, pcm_ptr, this.layout.nb_channels, chan, frame_size);
+                       pcm, this.layout.nb_channels, chan, frame_size);
                     encoder_ptr += 1;
                     if (this.surround != 0)
                     {
@@ -787,7 +786,7 @@ namespace Concentus.Structs
                 if (vbr == 0 && s == this.layout.nb_streams - 1)
                     enc.Bitrate = (curr_max * (8 * Fs / frame_size));
                 len = enc.opus_encode_native(buf, 0, frame_size, tmp_data, 0, curr_max, lsb_depth,
-                      pcm.AsSpan(pcm_ptr), analysis_frame_size, c1, c2, this.layout.nb_channels, downmix, float_api);
+                      pcm, analysis_frame_size, c1, c2, this.layout.nb_channels, downmix, float_api);
                 if (len < 0)
                 {
                     return len;
@@ -807,10 +806,9 @@ namespace Concentus.Structs
 
         internal static void opus_copy_channel_in_float(
           Span<short> dst,
-          int dst_ptr,
+          int dst_offset,
           int dst_stride,
-          Span<float> src,
-          int src_ptr,
+          ReadOnlySpan<float> src,
           int src_stride,
           int src_channel,
           int frame_size
@@ -818,15 +816,14 @@ namespace Concentus.Structs
         {
             int i;
             for (i = 0; i < frame_size; i++)
-                dst[dst_ptr + i * dst_stride] = Inlines.FLOAT2INT16(src[i * src_stride + src_channel + src_ptr]);
+                dst[i * dst_stride + dst_offset] = Inlines.FLOAT2INT16(src[i * src_stride + src_channel]);
         }
 
         internal static void opus_copy_channel_in_short(
           Span<short> dst,
-          int dst_ptr,
+          int dst_offset,
           int dst_stride,
-          Span<short> src,
-          int src_ptr,
+          ReadOnlySpan<short> src,
           int src_stride,
           int src_channel,
           int frame_size
@@ -834,20 +831,30 @@ namespace Concentus.Structs
         {
             int i;
             for (i = 0; i < frame_size; i++)
-                dst[dst_ptr + i * dst_stride] = src[i * src_stride + src_channel + src_ptr];
+                dst[i * dst_stride + dst_offset] = src[i * src_stride + src_channel];
         }
 
+        /// <inheritdoc />
         public int EncodeMultistream(
             short[] pcm,
             int pcm_offset,
             int frame_size,
             byte[] outputBuffer,
             int outputBuffer_offset,
-            int max_data_bytes
-        )
+            int max_data_bytes)
+        {
+            return EncodeMultistream(pcm.AsSpan(pcm_offset), frame_size, outputBuffer.AsSpan(outputBuffer_offset), max_data_bytes);
+        }
+
+        [Obsolete("Use Span<> overrides instead")]
+        public int EncodeMultistream(
+            ReadOnlySpan<short> pcm,
+            int frame_size,
+            Span<byte> outputBuffer,
+            int max_data_bytes)
         {
             int ret = opus_multistream_encode_native<short>(opus_copy_channel_in_short,
-               pcm, pcm_offset, frame_size, outputBuffer, outputBuffer_offset, max_data_bytes, 16, Downmix.downmix_int, 0);
+               pcm, frame_size, outputBuffer, max_data_bytes, 16, Downmix.downmix_int, 0);
             
             if (ret < 0)
             {
@@ -860,17 +867,27 @@ namespace Concentus.Structs
             return ret;
         }
 
+        [Obsolete("Use Span<> overrides instead")]
         public int EncodeMultistream(
             float[] pcm,
             int pcm_offset,
             int frame_size,
             byte[] outputBuffer,
             int outputBuffer_offset,
-            int max_data_bytes
-        )
+            int max_data_bytes)
+        {
+            return EncodeMultistream(pcm.AsSpan(pcm_offset), frame_size, outputBuffer.AsSpan(outputBuffer_offset), max_data_bytes);
+        }
+
+        /// <inheritdoc />
+        public int EncodeMultistream(
+            ReadOnlySpan<float> pcm,
+            int frame_size,
+            Span<byte> outputBuffer,
+            int max_data_bytes)
         {
             int ret = opus_multistream_encode_native<float>(opus_copy_channel_in_float,
-               pcm, pcm_offset, frame_size, outputBuffer, outputBuffer_offset, max_data_bytes, 16, Downmix.downmix_float, 1);
+               pcm, frame_size, outputBuffer, max_data_bytes, 16, Downmix.downmix_float, 1);
 
             if (ret < 0)
             {
@@ -887,6 +904,7 @@ namespace Concentus.Structs
 
         #region Getters and Setters
 
+        /// <inheritdoc />
         public int Bitrate
         {
             get
@@ -911,6 +929,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public OpusApplication Application
         {
             get
@@ -926,6 +945,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public int ForceChannels
         {
             get
@@ -941,6 +961,16 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
+        public int NumChannels
+        {
+            get
+            {
+                return layout.nb_channels;
+            }
+        }
+
+        /// <inheritdoc />
         public OpusBandwidth MaxBandwidth
         {
             get
@@ -956,6 +986,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public OpusBandwidth Bandwidth
         {
             get
@@ -971,6 +1002,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public bool UseDTX
         {
             get
@@ -986,6 +1018,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public int Complexity
         {
             get
@@ -1001,6 +1034,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public OpusMode ForceMode
         {
             get
@@ -1016,6 +1050,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public bool UseInbandFEC
         {
             get
@@ -1031,6 +1066,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public int PacketLossPercent
         {
             get
@@ -1046,6 +1082,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public bool UseVBR
         {
             get
@@ -1061,6 +1098,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public bool UseConstrainedVBR
         {
             get
@@ -1091,6 +1129,7 @@ namespace Concentus.Structs
         //    }
         //}
 
+        /// <inheritdoc />
         public OpusSignal SignalType
         {
             get
@@ -1106,6 +1145,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public int Lookahead
         {
             get
@@ -1114,6 +1154,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public int SampleRate
         {
             get
@@ -1122,6 +1163,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public uint FinalRange
         {
             get
@@ -1137,6 +1179,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public int LSBDepth
         {
             get
@@ -1152,6 +1195,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public bool PredictionDisabled
         {
             get
@@ -1167,6 +1211,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public OpusFramesize ExpertFrameDuration
         {
             get
@@ -1179,7 +1224,8 @@ namespace Concentus.Structs
             }
         }
 
-        public OpusEncoder GetMultistreamEncoderState(int streamId)
+        /// <inheritdoc />
+        public IOpusEncoder GetMultistreamEncoderState(int streamId)
         {
             if (streamId >= layout.nb_streams)
                 throw new ArgumentException("Requested stream doesn't exist");
