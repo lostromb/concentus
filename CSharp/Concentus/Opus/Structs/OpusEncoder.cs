@@ -2077,6 +2077,8 @@ namespace Concentus.Structs
             return Celt_Encoder.GetMode();
         }
 
+        public void Dispose() { }
+
         #endregion
     }
 }

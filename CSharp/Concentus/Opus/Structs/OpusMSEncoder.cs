@@ -1241,6 +1241,8 @@ namespace Concentus.Structs
             return encoders[streamId];
         }
 
+        public void Dispose() { }
+
         #endregion
     }
 }

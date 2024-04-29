@@ -989,5 +989,7 @@ namespace Concentus.Structs
             stream_channels = channels;
             frame_size = Fs / 400;
         }
+
+        public void Dispose() { }
     }
 }

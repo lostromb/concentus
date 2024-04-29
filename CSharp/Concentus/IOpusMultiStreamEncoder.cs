@@ -42,7 +42,7 @@ namespace Concentus
     /// single packets and map them to the correct channels. The behavior of a multistream encoder is functionally the
     /// same as a single encoder in most other respects.
     /// </summary>
-    public interface IOpusMultiStreamEncoder
+    public interface IOpusMultiStreamEncoder : IDisposable
     {
         /// <summary>
         /// Encodes a multistream Opus frame.

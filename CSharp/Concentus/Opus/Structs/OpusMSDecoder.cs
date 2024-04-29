@@ -492,7 +492,9 @@ namespace Concentus.Structs
         {
             return decoders[streamId];
         }
-        
+
+        public void Dispose() { }
+
         #endregion
     }
 }
