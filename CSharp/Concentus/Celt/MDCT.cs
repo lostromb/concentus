@@ -39,14 +39,14 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
 
     internal static class MDCT
     {
 
-#if !UNSAFE
         /* Forward MDCT trashes the input array */
-        internal static void clt_mdct_forward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
+        internal static void clt_mdct_forward(MDCTLookup l, Span<int> input, int input_ptr, Span<int> output, int output_ptr,
             int[] window, int overlap, int shift, int stride)
         {
             int i;
@@ -156,126 +156,8 @@ namespace Concentus.Celt
                 }
             }
         }
-#else
-        /* Forward MDCT trashes the input array */
-        internal static unsafe void clt_mdct_forward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
-            int[] window, int overlap, int shift, int stride)
-        {
-            int i;
-            int N, N2, N4;
-            int[] f;
-            int[] f2;
-            FFTState st = l.kfft[shift];
-            int scale;
 
-            int scale_shift = st.scale_shift - 1;
-            scale = st.scale;
-
-            N = l.n;
-            fixed (short* ptrig_base = l.trig)
-            {
-                short* trig = ptrig_base;
-                for (i = 0; i < shift; i++)
-                {
-                    N = N >> 1;
-                    trig += N;
-                }
-                N2 = N >> 1;
-                N4 = N >> 2;
-
-                f = new int[N2];
-                f2 = new int[N4 * 2];
-                fixed (int* pinput_base = input, pwindow = window, pf = f, pf2 = f2)
-                {
-                    int* pinput = pinput_base + input_ptr;
-                    /* Consider the input to be composed of four blocks: [a, b, c, d] */
-                    /* Window, shuffle, fold */
-                    {
-                        /* Temp pointers to make it really clear to the compiler what we're doing */
-                        int* xp1 = pinput + (overlap >> 1);
-                        int* xp2 = pinput + N2 - 1 + (overlap >> 1);
-                        int* yp = pf;
-                        int* wp1 = pwindow + (overlap >> 1);
-                        int* wp2 = pwindow + ((overlap >> 1) - 1);
-                        for (i = 0; i < ((overlap + 3) >> 2); i++)
-                        {
-                            /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
-                            *yp++ = Inlines.MULT16_32_Q15(*wp2, xp1[N2]) + Inlines.MULT16_32_Q15(*wp1, *xp2);
-                            *yp++ = Inlines.MULT16_32_Q15(*wp1, *xp1) - Inlines.MULT16_32_Q15(*wp2, xp2[0 - N2]);
-                            xp1 += 2;
-                            xp2 -= 2;
-                            wp1 += 2;
-                            wp2 -= 2;
-                        }
-                        wp1 = pwindow;
-                        wp2 = pwindow + (overlap - 1);
-                        for (; i < N4 - ((overlap + 3) >> 2); i++)
-                        {
-                            /* Real part arranged as a-bR, Imag part arranged as -c-dR */
-                            *yp++ = *xp2;
-                            *yp++ = *xp1;
-                            xp1 += 2;
-                            xp2 -= 2;
-                        }
-                        for (; i < N4; i++)
-                        {
-                            /* Real part arranged as a-bR, Imag part arranged as -c-dR */
-                            *yp++ = Inlines.MULT16_32_Q15(*wp2, *xp2) - Inlines.MULT16_32_Q15(*wp1, xp1[0 - N2]);
-                            *yp++ = Inlines.MULT16_32_Q15(*wp2, *xp1) + Inlines.MULT16_32_Q15(*wp1, xp2[N2]);
-                            xp1 += 2;
-                            xp2 -= 2;
-                            wp1 += 2;
-                            wp2 -= 2;
-                        }
-                    }
-                    /* Pre-rotation */
-                    {
-                        int* yp = pf;
-                        short* t = trig;
-                        for (i = 0; i < N4; i++)
-                        {
-                            short t0, t1;
-                            int re, im, yr, yi;
-                            t0 = t[i];
-                            t1 = t[N4 + i];
-                            re = *yp++;
-                            im = *yp++;
-                            yr = KissFFT.S_MUL(re, t0) - KissFFT.S_MUL(im, t1);
-                            yi = KissFFT.S_MUL(im, t0) + KissFFT.S_MUL(re, t1);
-                            pf2[2 * st.bitrev[i]] = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yr), scale_shift);
-                            pf2[2 * st.bitrev[i] + 1] = Inlines.PSHR32(Inlines.MULT16_32_Q16(scale, yi), scale_shift);
-                        }
-                    }
-
-                    /* N/4 complex FFT, does not downscale anymore */
-                    KissFFT.opus_fft_impl(st, f2, 0);
-
-                    /* Post-rotate */
-                    fixed (int* poutput_base = output)
-                    {
-                        /* Temp pointers to make it really clear to the compiler what we're doing */
-                        int* fp = pf2;
-                        int* yp1 = poutput_base + output_ptr;
-                        int* yp2 = poutput_base + output_ptr + (stride * (N2 - 1));
-                        short* t = trig;
-                        for (i = 0; i < N4; i++)
-                        {
-                            int yr, yi;
-                            yr = KissFFT.S_MUL(fp[1], t[N4 + i]) - KissFFT.S_MUL(fp[0], t[i]);
-                            yi = KissFFT.S_MUL(fp[0], t[N4 + i]) + KissFFT.S_MUL(fp[1], t[i]);
-                            *yp1 = yr;
-                            *yp2 = yi;
-                            fp += 2;
-                            yp1 += (2 * stride);
-                            yp2 -= (2 * stride);
-                        }
-                    }
-                }
-            }
-        }
-#endif
-
-        internal static void clt_mdct_backward(MDCTLookup l, int[] input, int input_ptr, int[] output, int output_ptr,
+        internal static void clt_mdct_backward(MDCTLookup l, Span<int> input, int input_ptr, Span<int> output, int output_ptr,
               int[] window, int overlap, int shift, int stride)
         {
             int i;

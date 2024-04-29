@@ -63,7 +63,7 @@ namespace Concentus.Silk
         internal static void silk_PLC(
             SilkChannelDecoder psDec,             /* I/O Decoder state        */
             SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
-            short[] frame,            /* I/O  signal              */
+            Span<short> frame,            /* I/O  signal              */
             int frame_ptr,
             int lost               /* I Loss flag              */
         )
@@ -125,7 +125,7 @@ namespace Concentus.Silk
                     {
                         LTP_Gain_Q14 = temp_LTP_Gain_Q14;
 
-                        Array.Copy(psDecCtrl.LTPCoef_Q14, Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER), psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
+                        Arrays.MemCopy(psDecCtrl.LTPCoef_Q14, Inlines.silk_SMULBB(psDec.nb_subfr - 1 - j, SilkConstants.LTP_ORDER), psPLC.LTPCoef_Q14, 0, SilkConstants.LTP_ORDER);
 
                         psPLC.pitchL_Q8 = Inlines.silk_LSHIFT(psDecCtrl.pitchL[psDec.nb_subfr - 1 - j], 8);
                     }
@@ -166,11 +166,11 @@ namespace Concentus.Silk
             }
 
             /* Save LPC coeficients */
-            Array.Copy(psDecCtrl.PredCoef_Q12[1], psPLC.prevLPC_Q12, psDec.LPC_order);
+            Arrays.MemCopy(psDecCtrl.PredCoef_Q12[1], 0, psPLC.prevLPC_Q12, 0, psDec.LPC_order);
             psPLC.prevLTP_scale_Q14 = (short)(psDecCtrl.LTP_scale_Q14);
 
             /* Save last two gains */
-            Array.Copy(psDecCtrl.Gains_Q16, psDec.nb_subfr - 2, psPLC.prevGain_Q16, 0, 2);
+            Arrays.MemCopy(psDecCtrl.Gains_Q16, psDec.nb_subfr - 2, psPLC.prevGain_Q16, 0, 2);
 
             psPLC.subfr_length = psDec.subfr_length;
             psPLC.nb_subfr = psDec.nb_subfr;
@@ -221,7 +221,7 @@ namespace Concentus.Silk
         internal static void silk_PLC_conceal(
             SilkChannelDecoder psDec,             /* I/O Decoder state        */
             SilkDecoderControl psDecCtrl,         /* I/O Decoder control      */
-            short[] frame,            /* O LPC residual signal    */
+            Span<short> frame,            /* O LPC residual signal    */
             int frame_ptr
         )
         {
@@ -369,7 +369,7 @@ namespace Concentus.Silk
             sLPC_Q14_ptr = psDec.ltp_mem_length - SilkConstants.MAX_LPC_ORDER;
 
             /* Copy LPC state */
-            Array.Copy(psDec.sLPC_Q14_buf, 0, sLTP_Q14, sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemCopy(psDec.sLPC_Q14_buf, 0, sLTP_Q14, sLPC_Q14_ptr, SilkConstants.MAX_LPC_ORDER);
 
             Inlines.OpusAssert(psDec.LPC_order >= 10); /* check that unrolling works */
             for (i = 0; i < psDec.frame_length; i++)
@@ -401,7 +401,7 @@ namespace Concentus.Silk
             }
 
             /* Save LPC state */
-            Array.Copy(sLTP_Q14, sLPC_Q14_ptr + psDec.frame_length, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemCopy(sLTP_Q14, sLPC_Q14_ptr + psDec.frame_length, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
 
             /**************************************/
             /* Update states                      */
@@ -417,7 +417,7 @@ namespace Concentus.Silk
         /* Glues concealed frames with new good received frames */
         internal static void silk_PLC_glue_frames(
             SilkChannelDecoder psDec,             /* I/O decoder state        */
-            short[] frame,            /* I/O signal               */
+            Span<short> frame,            /* I/O signal               */
             int frame_ptr,
             int length              /* I length of signal       */
         )

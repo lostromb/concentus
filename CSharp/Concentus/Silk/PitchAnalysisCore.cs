@@ -59,7 +59,7 @@ namespace Concentus.Silk
         // fixme can I linearize this?
         private class silk_pe_stage3_vals
         {
-            public readonly int[] Values = new int[SilkConstants.PE_NB_STAGE3_LAGS];
+            internal readonly int[] Values = new int[SilkConstants.PE_NB_STAGE3_LAGS];
         }
 
         /*************************************************************/
@@ -141,7 +141,7 @@ namespace Concentus.Silk
             }
             else {
                 Inlines.OpusAssert(Fs_kHz == 8);
-                Array.Copy(frame, frame_8kHz, frame_length_8kHz);
+                Arrays.MemCopy(frame, 0, frame_8kHz, 0, frame_length_8kHz);
             }
 
             /* Decimate again to 4 kHz */

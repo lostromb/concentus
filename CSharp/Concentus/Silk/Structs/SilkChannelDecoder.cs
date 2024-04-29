@@ -270,7 +270,8 @@ namespace Concentus.Silk.Structs
         /****************/
         internal int silk_decode_frame(
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
-            short[] pOut,                         /* O    Pointer to output speech frame              */
+            ReadOnlySpan<byte> frameData,
+            Span<short> pOut,                         /* O    Pointer to output speech frame              */
             int pOut_ptr,
             BoxedValueInt pN,                            /* O    Pointer to size of output frame             */
             int lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
@@ -293,12 +294,12 @@ namespace Concentus.Silk.Structs
                 /*********************************************/
                 /* Decode quantization indices of side info  */
                 /*********************************************/
-                DecodeIndices.silk_decode_indices(this, psRangeDec, this.nFramesDecoded, lostFlag, condCoding);
+                DecodeIndices.silk_decode_indices(this, psRangeDec, frameData, this.nFramesDecoded, lostFlag, condCoding);
 
                 /*********************************************/
                 /* Decode quantization indices of excitation */
                 /*********************************************/
-                DecodePulses.silk_decode_pulses(psRangeDec, pulses, this.indices.signalType,
+                DecodePulses.silk_decode_pulses(psRangeDec, frameData, pulses, this.indices.signalType,
                         this.indices.quantOffsetType, this.frame_length);
 
                 /********************************************/
@@ -335,7 +336,7 @@ namespace Concentus.Silk.Structs
             Inlines.OpusAssert(this.ltp_mem_length >= this.frame_length);
             mv_len = this.ltp_mem_length - this.frame_length;
             Arrays.MemMoveShort(this.outBuf, this.frame_length, 0, mv_len);
-            Array.Copy(pOut, pOut_ptr, this.outBuf, mv_len, this.frame_length);
+            pOut.Slice(pOut_ptr, this.frame_length).CopyTo(this.outBuf.AsSpan(mv_len));
 
             /************************************************/
             /* Comfort noise generation / estimation        */

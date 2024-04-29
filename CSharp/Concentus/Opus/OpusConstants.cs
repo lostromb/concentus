@@ -41,26 +41,26 @@ using System.Text;
 
 namespace Concentus
 {
-    public static class OpusConstants
+    internal static class OpusConstants
     {
         /// <summary>
         /// Auto/default setting
         /// </summary>
-        public const int OPUS_AUTO = -1000;
+        internal const int OPUS_AUTO = -1000;
 
         /// <summary>
         /// Maximum bitrate
         /// </summary>
-        public const int OPUS_BITRATE_MAX = -1;
+        internal const int OPUS_BITRATE_MAX = -1;
 
         // from analysis.c
-        public const int NB_FRAMES = 8;
-        public const int NB_TBANDS = 18;
-        public const int NB_TOT_BANDS = 21;
-        public const int NB_TONAL_SKIP_BANDS = 9;
-        public const int ANALYSIS_BUF_SIZE = 720; /* 15 ms at 48 kHz */
-        public const int DETECT_SIZE = 200;
+        internal const int NB_FRAMES = 8;
+        internal const int NB_TBANDS = 18;
+        internal const int NB_TOT_BANDS = 21;
+        internal const int NB_TONAL_SKIP_BANDS = 9;
+        internal const int ANALYSIS_BUF_SIZE = 720; /* 15 ms at 48 kHz */
+        internal const int DETECT_SIZE = 200;
 
-        public const int MAX_ENCODER_BUFFER = 480;
+        internal const int MAX_ENCODER_BUFFER = 480;
     }
 }

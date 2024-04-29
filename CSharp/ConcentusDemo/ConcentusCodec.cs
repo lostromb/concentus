@@ -31,13 +31,13 @@ namespace ConcentusDemo
 
         public ConcentusCodec()
         {
-            _encoder = OpusEncoder.Create(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
+            _encoder = new OpusEncoder(48000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
 
             SetBitrate(_bitrate);
             SetComplexity(_complexity);
             SetVBRMode(_vbr, _cvbr);
             _encoder.EnableAnalysis = true;
-            _decoder = OpusDecoder.Create(48000, 1);
+            _decoder = new OpusDecoder(48000, 1);
         }
 
         public void SetBitrate(int bitrate)

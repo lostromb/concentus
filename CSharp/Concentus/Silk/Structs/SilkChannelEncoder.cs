@@ -877,6 +877,7 @@ namespace Concentus.Silk.Structs
         internal int silk_encode_frame(
             BoxedValueInt pnBytesOut,                            /* O    Pointer to number of payload bytes;                                         */
             EntropyCoder psRangeEnc,                            /* I/O  compressor data structure                                                   */
+            Span<byte> encodedDataOut,
             int condCoding,                             /* I    The type of conditional coding to use                                       */
             int maxBits,                                /* I    If > 0: maximum number of output bits                                       */
             int useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
@@ -917,7 +918,7 @@ namespace Concentus.Silk.Structs
             /*******************************************/
             /* Copy new frame to front of input buffer */
             /*******************************************/
-            Array.Copy(this.inputBuf, 1, this.x_buf, x_frame + SilkConstants.LA_SHAPE_MS * this.fs_kHz, this.frame_length);
+            Arrays.MemCopy(this.inputBuf, 1, this.x_buf, x_frame + SilkConstants.LA_SHAPE_MS * this.fs_kHz, this.frame_length);
 
             if (this.prefillFlag == 0)
             {
@@ -1039,12 +1040,12 @@ namespace Concentus.Silk.Structs
                         /****************************************/
                         /* Encode Parameters                    */
                         /****************************************/
-                        EncodeIndices.silk_encode_indices(this, psRangeEnc, this.nFramesEncoded, 0, condCoding);
+                        EncodeIndices.silk_encode_indices(this, psRangeEnc, encodedDataOut, this.nFramesEncoded, 0, condCoding);
 
                         /****************************************/
                         /* Encode Excitation Signal             */
                         /****************************************/
-                        EncodePulses.silk_encode_pulses(psRangeEnc, this.indices.signalType, this.indices.quantOffsetType,
+                        EncodePulses.silk_encode_pulses(psRangeEnc, encodedDataOut, this.indices.signalType, this.indices.quantOffsetType,
                             this.pulses, this.frame_length);
 
                         nBits = psRangeEnc.tell();
@@ -1062,7 +1063,7 @@ namespace Concentus.Silk.Structs
                             /* Restore output state from earlier iteration that did meet the bitrate budget */
                             psRangeEnc.Assign(sRangeEnc_copy2);
                             Inlines.OpusAssert(sRangeEnc_copy2.offs <= 1275);
-                            Array.Copy(ec_buf_copy, 0, psRangeEnc.buf, psRangeEnc.buf_ptr, (int)sRangeEnc_copy2.offs);
+                            ec_buf_copy.AsSpan(0, (int)sRangeEnc_copy2.offs).CopyTo(encodedDataOut);
                             this.sNSQ.Assign(sNSQ_copy2);
                             this.sShape.LastGainIndex = LastGainIndex_copy2;
                         }
@@ -1096,7 +1097,7 @@ namespace Concentus.Silk.Structs
                             /* Copy part of the output state */
                             sRangeEnc_copy2.Assign(psRangeEnc);
                             Inlines.OpusAssert(psRangeEnc.offs <= 1275);
-                            Array.Copy(psRangeEnc.buf, psRangeEnc.buf_ptr, ec_buf_copy, 0, (int)psRangeEnc.offs);
+                            encodedDataOut.Slice(0, (int)psRangeEnc.offs).CopyTo(ec_buf_copy);
                             sNSQ_copy2.Assign(this.sNSQ);
                             LastGainIndex_copy2 = this.sShape.LastGainIndex;
                         }
@@ -1152,7 +1153,7 @@ namespace Concentus.Silk.Structs
             }
 
             /* Update input buffer */
-            Arrays.MemMove(this.x_buf, this.frame_length, 0, this.ltp_mem_length + SilkConstants.LA_SHAPE_MS * this.fs_kHz);
+            Arrays.MemMoveShort(this.x_buf, this.frame_length, 0, this.ltp_mem_length + SilkConstants.LA_SHAPE_MS * this.fs_kHz);
 
             /* Exit without entropy coding */
             if (this.prefillFlag != 0)
@@ -1200,7 +1201,7 @@ namespace Concentus.Silk.Structs
                 psIndices_LBRR.Assign(this.indices);
 
                 /* Save original gains */
-                Array.Copy(thisCtrl.Gains_Q16, TempGains_Q16, this.nb_subfr);
+                Arrays.MemCopy(thisCtrl.Gains_Q16, 0, TempGains_Q16, 0, this.nb_subfr);
 
                 if (this.nFramesEncoded == 0 || this.LBRR_flags[this.nFramesEncoded - 1] == 0)
                 {
@@ -1257,7 +1258,7 @@ namespace Concentus.Silk.Structs
                 }
 
                 /* Restore original gains */
-                Array.Copy(TempGains_Q16, thisCtrl.Gains_Q16, this.nb_subfr);
+                Arrays.MemCopy(TempGains_Q16, 0, thisCtrl.Gains_Q16, 0, this.nb_subfr);
             }
         }
     }

@@ -122,6 +122,7 @@ namespace Concentus.Silk
             short[] samplesIn,
             int nSamplesIn,
             EntropyCoder psRangeEnc,
+            Span<byte> encodedDataOut,
             BoxedValueInt nBytesOut,
             int prefillFlag)
         {
@@ -169,7 +170,7 @@ namespace Concentus.Silk
                 if (psEnc.nChannelsAPI == 2)
                 {
                     psEnc.state_Fxx[1].resampler_state.Assign(psEnc.state_Fxx[0].resampler_state);
-                    Array.Copy(psEnc.state_Fxx[0].In_HP_State, psEnc.state_Fxx[1].In_HP_State, 2);
+                    Arrays.MemCopy(psEnc.state_Fxx[0].In_HP_State, 0, psEnc.state_Fxx[1].In_HP_State, 0, 2);
                 }
             }
 
@@ -347,7 +348,7 @@ namespace Concentus.Silk
                 else
                 {
                     Inlines.OpusAssert(encControl.nChannelsAPI == 1 && encControl.nChannelsInternal == 1);
-                    Array.Copy(samplesIn, samplesIn_ptr, buf, 0, nSamplesFromInput);
+                    Arrays.MemCopy(samplesIn, samplesIn_ptr, buf, 0, nSamplesFromInput);
                     ret += Resampler.silk_resampler(
                         psEnc.state_Fxx[0].resampler_state,
                         psEnc.state_Fxx[0].inputBuf,
@@ -378,7 +379,7 @@ namespace Concentus.Silk
                         /* Create space at start of payload for VAD and FEC flags */
                         byte[] iCDF = { 0, 0 };
                         iCDF[0] = (byte)(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
-                        psRangeEnc.enc_icdf(0, iCDF, 8);
+                        psRangeEnc.enc_icdf(encodedDataOut, 0, iCDF, 8);
 
                         /* Encode any LBRR data from previous packet */
                         /* Encode LBRR flags */
@@ -393,7 +394,7 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[n].LBRR_flag = (sbyte)(LBRR_symbol > 0 ? 1 : 0);
                             if (LBRR_symbol != 0 && psEnc.state_Fxx[n].nFramesPerPacket > 1)
                             {
-                                psRangeEnc.enc_icdf( LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2], 8);
+                                psRangeEnc.enc_icdf(encodedDataOut, LBRR_symbol - 1, Tables.silk_LBRR_flags_iCDF_ptr[psEnc.state_Fxx[n].nFramesPerPacket - 2], 8);
                             }
                         }
 
@@ -408,11 +409,11 @@ namespace Concentus.Silk
 
                                     if (encControl.nChannelsInternal == 2 && n == 0)
                                     {
-                                        Stereo.silk_stereo_encode_pred(psRangeEnc, psEnc.sStereo.predIx[i]);
+                                        Stereo.silk_stereo_encode_pred(psRangeEnc, encodedDataOut, psEnc.sStereo.predIx[i]);
                                         /* For LBRR data there's no need to code the mid-only flag if the side-channel LBRR flag is set */
                                         if (psEnc.state_Fxx[1].LBRR_flags[i] == 0)
                                         {
-                                            Stereo.silk_stereo_encode_mid_only(psRangeEnc, psEnc.sStereo.mid_only_flags[i]);
+                                            Stereo.silk_stereo_encode_mid_only(psRangeEnc, encodedDataOut, psEnc.sStereo.mid_only_flags[i]);
                                         }
                                     }
 
@@ -426,8 +427,8 @@ namespace Concentus.Silk
                                         condCoding = SilkConstants.CODE_INDEPENDENTLY;
                                     }
 
-                                    EncodeIndices.silk_encode_indices(psEnc.state_Fxx[n], psRangeEnc, i, 1, condCoding);
-                                    EncodePulses.silk_encode_pulses(psRangeEnc, psEnc.state_Fxx[n].indices_LBRR[i].signalType, psEnc.state_Fxx[n].indices_LBRR[i].quantOffsetType,
+                                    EncodeIndices.silk_encode_indices(psEnc.state_Fxx[n], psRangeEnc, encodedDataOut, i, 1, condCoding);
+                                    EncodePulses.silk_encode_pulses(psRangeEnc, encodedDataOut, psEnc.state_Fxx[n].indices_LBRR[i].signalType, psEnc.state_Fxx[n].indices_LBRR[i].quantOffsetType,
                                         psEnc.state_Fxx[n].pulses_LBRR[i], psEnc.state_Fxx[n].frame_length);
                                 }
                             }
@@ -527,18 +528,18 @@ namespace Concentus.Silk
 
                         if (prefillFlag == 0)
                         {
-                            Stereo.silk_stereo_encode_pred(psRangeEnc, psEnc.sStereo.predIx[psEnc.state_Fxx[0].nFramesEncoded]);
+                            Stereo.silk_stereo_encode_pred(psRangeEnc, encodedDataOut, psEnc.sStereo.predIx[psEnc.state_Fxx[0].nFramesEncoded]);
                             if (psEnc.state_Fxx[1].VAD_flags[psEnc.state_Fxx[0].nFramesEncoded] == 0)
                             {
-                                Stereo.silk_stereo_encode_mid_only(psRangeEnc, psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
+                                Stereo.silk_stereo_encode_mid_only(psRangeEnc, encodedDataOut, psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
                             }
                         }
                     }
                     else
                     {
                         /* Buffering */
-                        Array.Copy(psEnc.sStereo.sMid, psEnc.state_Fxx[0].inputBuf, 2);
-                        Array.Copy(psEnc.state_Fxx[0].inputBuf, psEnc.state_Fxx[0].frame_length, psEnc.sStereo.sMid, 0, 2);
+                        Arrays.MemCopy(psEnc.sStereo.sMid, 0, psEnc.state_Fxx[0].inputBuf, 0, 2);
+                        Arrays.MemCopy(psEnc.state_Fxx[0].inputBuf, psEnc.state_Fxx[0].frame_length, psEnc.sStereo.sMid, 0, 2);
                     }
 
                     psEnc.state_Fxx[0].silk_encode_do_VAD();
@@ -606,7 +607,7 @@ namespace Concentus.Silk
                                 condCoding = SilkConstants.CODE_CONDITIONALLY;
                             }
 
-                            ret += psEnc.state_Fxx[n].silk_encode_frame(nBytesOut, psRangeEnc, condCoding, maxBits, useCBR);
+                            ret += psEnc.state_Fxx[n].silk_encode_frame(nBytesOut, psRangeEnc, encodedDataOut, condCoding, maxBits, useCBR);
                             Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
                         }
 
@@ -634,7 +635,7 @@ namespace Concentus.Silk
 
                         if (prefillFlag == 0)
                         {
-                            psRangeEnc.enc_patch_initial_bits((uint)flags, (uint)((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
+                            psRangeEnc.enc_patch_initial_bits(encodedDataOut, (uint)flags, (uint)((psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         }
 
                         /* Return zero bytes if all channels DTXed */

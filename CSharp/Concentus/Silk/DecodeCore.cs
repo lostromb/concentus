@@ -47,7 +47,7 @@ namespace Concentus.Silk
         internal static void silk_decode_core(
                 SilkChannelDecoder psDec,                         /* I/O  Decoder state                               */
                 SilkDecoderControl psDecCtrl,                     /* I    Decoder control                             */
-                short[] xq,                           /* O    Decoded speech                              */
+                Span<short> xq,                           /* O    Decoded speech                              */
                 int xq_ptr,
                 short[] pulses     /* I    Pulse signal [MAX_FRAME_LENGTH]                               */
             )
@@ -109,7 +109,7 @@ namespace Concentus.Silk
             }
 
             /* Copy LPC state */
-            Array.Copy(psDec.sLPC_Q14_buf, sLPC_Q14, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemCopy(psDec.sLPC_Q14_buf, 0, sLPC_Q14, 0, SilkConstants.MAX_LPC_ORDER);
 
             pexc_Q14 = 0;
             pxq = xq_ptr;
@@ -171,7 +171,7 @@ namespace Concentus.Silk
 
                         if (k == 2)
                         {
-                            Array.Copy(xq, xq_ptr, psDec.outBuf, psDec.ltp_mem_length, 2 * psDec.subfr_length);
+                            xq.Slice(xq_ptr, 2 * psDec.subfr_length).CopyTo(psDec.outBuf.AsSpan(psDec.ltp_mem_length));
                         }
 
                         Filters.silk_LPC_analysis_filter(sLTP, start_idx, psDec.outBuf, (start_idx + k * psDec.subfr_length),
@@ -266,13 +266,13 @@ namespace Concentus.Silk
                 /* DEBUG_STORE_DATA( dec.pcm, pxq, psDec.subfr_length * sizeof( short ) ) */
 
                 /* Update LPC filter state */
-                Array.Copy(sLPC_Q14, psDec.subfr_length, sLPC_Q14, 0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemCopy(sLPC_Q14, psDec.subfr_length, sLPC_Q14, 0, SilkConstants.MAX_LPC_ORDER);
                 pexc_Q14 += psDec.subfr_length;
                 pxq += psDec.subfr_length;
             }
 
             /* Save LPC state */
-            Array.Copy(sLPC_Q14, 0, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemCopy(sLPC_Q14, 0, psDec.sLPC_Q14_buf, 0, SilkConstants.MAX_LPC_ORDER);
         }
     }
 }

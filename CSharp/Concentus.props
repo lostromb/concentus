@@ -15,7 +15,7 @@
     <Authors>Logan Stromberg</Authors>
     <PackageProjectUrl>https://github.com/lostromb/concentus</PackageProjectUrl>
     <PackageIconUrl>http://durandal.dnsalias.net/imgur/concentus.png</PackageIconUrl>
-    <PackageLicenseUrl>https://opus-codec.org/license/</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Copyright>Copyright © Xiph.Org Foundation, Skype Limited, CSIRO, Microsoft Corp.</Copyright>
     <PackageReleaseNotes>1.1.7 Including .Net 3.5 was a mistake as it becomes the default for everyone</PackageReleaseNotes>
     <IncludeSymbols>true</IncludeSymbols>
@@ -32,6 +32,7 @@
   <ItemGroup>
     <Compile Include="$(SourceDir)\**\*.cs" Exclude="$(SourceDir)\bin\**;$(SourceDir)\obj\**" />
     <Content Include="$(SourceDir)\Readme.txt" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)\..\LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(UnsafeBuild)' == 'true'">

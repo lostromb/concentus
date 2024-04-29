@@ -87,7 +87,7 @@ namespace Concentus.Silk
             /* Middle un - windowed samples */
             Wsig_ptr += psEnc.la_pitch;
             x_buf_ptr += psEnc.la_pitch;
-            Array.Copy(x, x_buf_ptr, Wsig, Wsig_ptr, (psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1)));
+            Arrays.MemCopy(x, x_buf_ptr, Wsig, Wsig_ptr, (psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1)));
 
             /* Last LA_LTP samples */
             Wsig_ptr += psEnc.pitch_LPC_win_length - Inlines.silk_LSHIFT(psEnc.la_pitch, 1);
@@ -95,9 +95,7 @@ namespace Concentus.Silk
             ApplySineWindow.silk_apply_sine_window(Wsig, Wsig_ptr, x, x_buf_ptr, 2, psEnc.la_pitch);
 
             /* Calculate autocorrelation sequence */
-            BoxedValueInt boxed_scale = new BoxedValueInt();
-            Autocorrelation.silk_autocorr(auto_corr, boxed_scale, Wsig, psEnc.pitch_LPC_win_length, psEnc.pitchEstimationLPCOrder + 1);
-            scale = boxed_scale.Val;
+            Autocorrelation.silk_autocorr(auto_corr, out scale, Wsig, psEnc.pitch_LPC_win_length, psEnc.pitchEstimationLPCOrder + 1);
 
             /* Add white noise, as fraction of energy */
             auto_corr[0] = Inlines.silk_SMLAWB(auto_corr[0], auto_corr[0], ((int)((TuningParameters.FIND_PITCH_WHITE_NOISE_FRACTION) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_PITCH_WHITE_NOISE_FRACTION, 16)*/) + 1;

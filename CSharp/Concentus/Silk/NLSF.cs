@@ -44,6 +44,7 @@ namespace Concentus.Silk
     /// </summary>
     internal static class NLSF
     {
+        private const int MAX_LPC_ORDER = 16;
         private const int MAX_STABILIZE_LOOPS = 20;
 
         private const int QA = 16;
@@ -103,7 +104,7 @@ namespace Concentus.Silk
         /// <param name="pNLSFW_Q_OUT">(O) Pointer to input vector weights [D]</param>
         /// <param name="pNLSF_Q15">(I) Pointer to input vector [D]</param>
         /// <param name="D">(I) Input vector dimension (even)</param>
-        internal static void silk_NLSF_VQ_weights_laroia(short[] pNLSFW_Q_OUT, short[] pNLSF_Q15, int D)
+        internal static void silk_NLSF_VQ_weights_laroia(Span<short> pNLSFW_Q_OUT, Span<short> pNLSF_Q15, int D)
         {
             int k;
             int tmp1_int, tmp2_int;
@@ -152,10 +153,9 @@ namespace Concentus.Silk
         /// <param name="quant_step_size_Q16">(I) Quantization step size</param>
         /// <param name="order">(I) Number of input values</param>
         internal static void silk_NLSF_residual_dequant(
-                short[] x_Q10,
-                sbyte[] indices,
-                int indices_ptr,
-                byte[] pred_coef_Q8,
+                Span<short> x_Q10,
+                Span<sbyte> indices,
+                Span<byte> pred_coef_Q8,
                 int quant_step_size_Q16,
                 short order)
         {
@@ -166,7 +166,7 @@ namespace Concentus.Silk
             for (i = order - 1; i >= 0; i--)
             {
                 pred_Q10 = Inlines.silk_RSHIFT(Inlines.silk_SMULBB(out_Q10, (short)pred_coef_Q8[i]), 8);
-                out_Q10 = Inlines.silk_LSHIFT16((short)indices[indices_ptr + i], 10);
+                out_Q10 = Inlines.silk_LSHIFT16((short)indices[i], 10);
                 if (out_Q10 > 0)
                 {
                     out_Q10 = Inlines.silk_SUB16(out_Q10, (short)(((int)((SilkConstants.NLSF_QUANT_LEVEL_ADJ) * ((long)1 << (10)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.NLSF_QUANT_LEVEL_ADJ, 10)*/));
@@ -187,7 +187,7 @@ namespace Concentus.Silk
         /// <param name="pred_Q8">(O) LSF predictor [ LPC_ORDER ]</param>
         /// <param name="psNLSF_CB">(I) Codebook object</param>
         /// <param name="CB1_index">(I) Index of vector in first LSF codebook</param>
-        internal static void silk_NLSF_unpack(short[] ec_ix, byte[] pred_Q8, NLSFCodebook psNLSF_CB, int CB1_index)
+        internal static void silk_NLSF_unpack(Span<short> ec_ix, Span<byte> pred_Q8, NLSFCodebook psNLSF_CB, int CB1_index)
         {
             int i;
             byte entry;
@@ -328,10 +328,10 @@ namespace Concentus.Silk
         internal static void silk_NLSF_decode(short[] pNLSF_Q15, sbyte[] NLSFIndices, NLSFCodebook psNLSF_CB)
         {
             int i;
-            byte[] pred_Q8 = new byte[psNLSF_CB.order];
-            short[] ec_ix = new short[psNLSF_CB.order];
-            short[] res_Q10 = new short[psNLSF_CB.order];
-            short[] W_tmp_QW = new short[psNLSF_CB.order];
+            Span<byte> pred_Q8 = stackalloc byte[MAX_LPC_ORDER];
+            Span<short> ec_ix = stackalloc short[MAX_LPC_ORDER];
+            Span<short> res_Q10 = stackalloc short[MAX_LPC_ORDER];
+            Span<short> W_tmp_QW = stackalloc short[MAX_LPC_ORDER];
             int W_tmp_Q9, NLSF_Q15_tmp;
 
             // Decode first stage 
@@ -348,8 +348,7 @@ namespace Concentus.Silk
 
             // Predictive residual dequantizer
             silk_NLSF_residual_dequant(res_Q10,
-                NLSFIndices,
-                1,
+                NLSFIndices.AsSpan().Slice(1),
                 pred_Q8,
                 psNLSF_CB.quantStepSize_Q16,
                 psNLSF_CB.order);
@@ -386,10 +385,10 @@ namespace Concentus.Silk
         /// Fixme: Optimize this method!
         internal static int silk_NLSF_del_dec_quant(
             sbyte[] indices,
-            short[] x_Q10,
-            short[] w_Q5,
-            byte[] pred_coef_Q8,
-            short[] ec_ix,
+            Span<short> x_Q10,
+            Span<short> w_Q5,
+            Span<byte> pred_coef_Q8,
+            Span<short> ec_ix,
             byte[] ec_rates_Q5,
             int quant_step_size_Q16,
             short inv_quant_step_size_Q6,
@@ -399,21 +398,21 @@ namespace Concentus.Silk
             int i, j, nStates, ind_tmp, ind_min_max, ind_max_min, in_Q10, res_Q10;
             int pred_Q10, diff_Q10, out0_Q10, out1_Q10, rate0_Q5, rate1_Q5;
             int RD_tmp_Q25, min_Q25, min_max_Q25, max_min_Q25, pred_coef_Q16;
-            int[] ind_sort = new int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
+            Span<int> ind_sort = stackalloc int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
             sbyte[][] ind = new sbyte[SilkConstants.NLSF_QUANT_DEL_DEC_STATES][];
             for (i = 0; i < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; i++)
             {
                 ind[i] = new sbyte[SilkConstants.MAX_LPC_ORDER];
             }
 
-            short[] prev_out_Q10 = new short[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
-            int[] RD_Q25 = new int[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
-            int[] RD_min_Q25 = new int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
-            int[] RD_max_Q25 = new int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
+            Span<short> prev_out_Q10 = stackalloc short[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
+            Span<int> RD_Q25 = stackalloc int[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
+            Span<int> RD_min_Q25 = stackalloc int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
+            Span<int> RD_max_Q25 = stackalloc int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
             int rates_Q5;
 
-            int[] out0_Q10_table = new int[2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT];
-            int[] out1_Q10_table = new int[2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT];
+            Span<int> out0_Q10_table = stackalloc int[2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT];
+            Span<int>  out1_Q10_table = stackalloc int[2 * SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT];
 
             for (i = 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT; i <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT - 1; i++)
             {
@@ -654,13 +653,13 @@ namespace Concentus.Silk
             int[] RD_Q25;
             int[] tempIndices1;
             sbyte[][] tempIndices2;
-            short[] res_Q15 = new short[psNLSF_CB.order];
-            short[] res_Q10 = new short[psNLSF_CB.order];
-            short[] NLSF_tmp_Q15 = new short[psNLSF_CB.order];
-            short[] W_tmp_QW = new short[psNLSF_CB.order];
-            short[] W_adj_Q5 = new short[psNLSF_CB.order];
-            byte[] pred_Q8 = new byte[psNLSF_CB.order];
-            short[] ec_ix = new short[psNLSF_CB.order];
+            Span<short> res_Q15 = stackalloc short[MAX_LPC_ORDER];
+            Span<short> res_Q10 = stackalloc short[MAX_LPC_ORDER];
+            Span<short> NLSF_tmp_Q15 = stackalloc short[MAX_LPC_ORDER];
+            Span<short> W_tmp_QW = stackalloc short[MAX_LPC_ORDER];
+            Span<short> W_adj_Q5 = stackalloc short[MAX_LPC_ORDER];
+            Span<byte> pred_Q8 = stackalloc byte[MAX_LPC_ORDER];
+            Span<short> ec_ix = stackalloc short[MAX_LPC_ORDER];
             byte[] pCB = psNLSF_CB.CB1_NLSF_Q8;
             int iCDF_ptr;
             int pCB_element;
@@ -751,7 +750,7 @@ namespace Concentus.Silk
             Sort.silk_insertion_sort_increasing(RD_Q25, bestIndex, nSurvivors, 1);
 
             NLSFIndices[0] = (sbyte)tempIndices1[bestIndex[0]];
-            Array.Copy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
+            Arrays.MemCopy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
 
             // Decode
             silk_NLSF_decode(pNLSF_Q15, NLSFIndices, psNLSF_CB);
@@ -767,17 +766,16 @@ namespace Concentus.Silk
         /// <param name="dd">(I) polynomial order (= 1/2 * filter order)</param>
         internal static void silk_NLSF2A_find_poly(
             int[] o,
-            int[] cLSF,
-            int cLSF_ptr,
+            Span<int> cLSF,
             int dd)
         {
             int k, n, ftmp;
 
             o[0] = Inlines.silk_LSHIFT(1, QA);
-            o[1] = 0 - cLSF[cLSF_ptr];
+            o[1] = 0 - cLSF[0];
             for (k = 1; k < dd; k++)
             {
-                ftmp = cLSF[cLSF_ptr + (2 * k)];            /* QA*/
+                ftmp = cLSF[(2 * k)];            /* QA*/
                 o[k + 1] = Inlines.silk_LSHIFT(o[k - 1], 1) - (int)Inlines.silk_RSHIFT_ROUND64(Inlines.silk_SMULL(ftmp, o[k]), QA);
                 for (n = k; n > 1; n--)
                 {
@@ -845,8 +843,8 @@ namespace Concentus.Silk
             dd = Inlines.silk_RSHIFT(d, 1);
 
             /* generate even and odd polynomials using convolution */
-            silk_NLSF2A_find_poly(P, cos_LSF_QA, 0, dd);
-            silk_NLSF2A_find_poly(Q, cos_LSF_QA, 1, dd);
+            silk_NLSF2A_find_poly(P, cos_LSF_QA.AsSpan(), dd);
+            silk_NLSF2A_find_poly(Q, cos_LSF_QA.AsSpan().Slice(1), dd);
 
             /* convert even and odd polynomials to opus_int32 Q12 filter coefs */
             for (k = 0; k < dd; k++)
@@ -1265,7 +1263,7 @@ namespace Concentus.Silk
             else
             {
                 /* Copy LPC coefficients for first half from second half */
-                Array.Copy(PredCoef_Q12[1], 0, PredCoef_Q12[0], 0, psEncC.predictLPCOrder);
+                Arrays.MemCopy(PredCoef_Q12[1], 0, PredCoef_Q12[0], 0, psEncC.predictLPCOrder);
             }
         }
     }

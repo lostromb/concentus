@@ -33,18 +33,19 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#if !UNSAFE
-
 namespace Concentus.Celt
 {
     using Concentus.Celt.Enums;
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
 
     internal static class CeltLPC
     {
+        private const int LPC_ORDER = 24;
+
         internal static void celt_lpc(
             int[] _lpc, /* out: [0...p-1] LPC coefficients      */
             int[] ac,  /* in:  [0...p] autocorrelation values  */
@@ -53,7 +54,7 @@ namespace Concentus.Celt
             int i, j;
             int r;
             int error = ac[0];
-            int[] lpc = new int[p];
+            Span<int> lpc = stackalloc int[LPC_ORDER];
 
             //Arrays.MemSetInt(lpc, 0, p); strictly, this is not necessary since the runtime zeroes memory for us
 
@@ -96,14 +97,12 @@ namespace Concentus.Celt
         }
 
         internal static void celt_iir(
-            int[] _x,
-            int _x_ptr,
-                 int[] den,
-                 int[] _y,
-                 int _y_ptr,
-                 int N,
-                 int ord,
-                 int[] mem)
+            Span<int> _x,
+            int[] den,
+            Span<int> _y,
+            int N,
+            int ord,
+            Span<int> mem)
         {
             int i, j;
             int[] rden = new int[ord];
@@ -119,41 +118,39 @@ namespace Concentus.Celt
             for (i = 0; i < N - 3; i += 4)
             {
                 /* Unroll by 4 as if it were an FIR filter */
-                int sum0 = _x[_x_ptr + i];
-                int sum1 = _x[_x_ptr + i + 1];
-                int sum2 = _x[_x_ptr + i + 2];
-                int sum3 = _x[_x_ptr + i + 3];
-                Kernels.xcorr_kernel(rden, y, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
+                int sum0 = _x[i];
+                int sum1 = _x[i + 1];
+                int sum2 = _x[i + 2];
+                int sum3 = _x[i + 3];
+                Kernels.xcorr_kernel(rden, 0, y, i, ref sum0, ref sum1, ref sum2, ref sum3, ord);
 
                 /* Patch up the result to compensate for the fact that this is an IIR */
                 y[i + ord] = (0 - Inlines.ROUND16((sum0), CeltConstants.SIG_SHIFT));
-                _y[_y_ptr + i] = sum0;
+                _y[i] = sum0;
                 sum1 = Inlines.MAC16_16(sum1, y[i + ord], den[0]);
                 y[i + ord + 1] = (0 - Inlines.ROUND16((sum1), CeltConstants.SIG_SHIFT));
-                _y[_y_ptr + i + 1] = sum1;
+                _y[i + 1] = sum1;
                 sum2 = Inlines.MAC16_16(sum2, y[i + ord + 1], den[0]);
                 sum2 = Inlines.MAC16_16(sum2, y[i + ord], den[1]);
                 y[i + ord + 2] = (0 - Inlines.ROUND16((sum2), CeltConstants.SIG_SHIFT));
-                _y[_y_ptr + i + 2] = sum2;
+                _y[i + 2] = sum2;
 
                 sum3 = Inlines.MAC16_16(sum3, y[i + ord + 2], den[0]);
                 sum3 = Inlines.MAC16_16(sum3, y[i + ord + 1], den[1]);
                 sum3 = Inlines.MAC16_16(sum3, y[i + ord], den[2]);
                 y[i + ord + 3] = (0 - Inlines.ROUND16((sum3), CeltConstants.SIG_SHIFT));
-                _y[_y_ptr + i + 3] = sum3;
+                _y[i + 3] = sum3;
             }
             for (; i < N; i++)
             {
-                int sum = _x[_x_ptr + i];
+                int sum = _x[i];
                 for (j = 0; j < ord; j++)
                     sum -= Inlines.MULT16_16(rden[j], y[i + j]);
                 y[i + ord] = Inlines.ROUND16((sum), CeltConstants.SIG_SHIFT);
-                _y[_y_ptr + i] = sum;
+                _y[i] = sum;
             }
             for (i = 0; i < ord; i++)
-                mem[i] = (_y[_y_ptr + N - i - 1]);
+                mem[i] = (_y[N - i - 1]);
         }
     }
 }
-
-#endif

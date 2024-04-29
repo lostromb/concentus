@@ -52,7 +52,7 @@ namespace Concentus.Structs
         internal readonly int[] frames_ptrs = new int[48];
         internal readonly short[] len = new short[48];
         internal int framesize = 0;
-        
+
         /** (Re)initializes a previously allocated repacketizer state.
   * The state must be at least the size returned by opus_repacketizer_get_size().
   * This can be used for applications which use their own allocator instead of
@@ -82,7 +82,7 @@ namespace Concentus.Structs
             this.Reset();
         }
 
-        internal int opus_repacketizer_cat_impl(byte[] data, int data_ptr, int len, int self_delimited)
+        internal int opus_repacketizer_cat_impl(Span<byte> data, int data_ptr, int len, int self_delimited)
         {
             byte dummy_toc;
             int dummy_offset;
@@ -167,7 +167,7 @@ namespace Concentus.Structs
   *                              audio stored in the repacketizer state to more
   *                              than 120 ms.
   */
-        public int AddPacket(byte[] data, int data_offset, int len)
+        public int AddPacket(Span<byte> data, int data_offset, int len)
         {
             return opus_repacketizer_cat_impl(data, data_offset, len, 0);
         }
@@ -188,7 +188,7 @@ namespace Concentus.Structs
         }
 
         internal int opus_repacketizer_out_range_impl(int begin, int end,
-              byte[] data, int data_ptr, int maxlen, int self_delimited, int pad)
+              Span<byte> data, int data_ptr, int maxlen, int self_delimited, int pad)
         {
             int i, count;
             int tot_size;
@@ -308,17 +308,7 @@ namespace Concentus.Structs
             /* Copy the actual data */
             for (i = begin; i < count + begin; i++)
             {
-                
-                if (this.frames[i] == data)
-                {
-                    /* Using OPUS_MOVE() instead of OPUS_COPY() in case we're doing in-place
-                       padding from opus_packet_pad or opus_packet_unpad(). */
-                       Arrays.MemMove<byte>(data, frames_ptrs[i], ptr, this.len[i]);
-                }
-                else
-                {
-                    Array.Copy(this.frames[i], frames_ptrs[i], data, ptr, this.len[i]);
-                }
+                this.frames[i].AsSpan(frames_ptrs[i], this.len[i]).CopyTo(data.Slice(ptr));
                 ptr += this.len[i];
             }
 
@@ -418,7 +408,7 @@ namespace Concentus.Structs
   * @retval #OPUS_BAD_ARG \a len was less than 1 or new_len was less than len.
   * @retval #OPUS_INVALID_PACKET \a data did not contain a valid Opus packet.
   */
-        public static int PadPacket(byte[] data, int data_offset, int len, int new_len)
+        public static int PadPacket(Span<byte> data, int data_offset, int len, int new_len)
         {
             OpusRepacketizer rp = new OpusRepacketizer();
             int ret;
@@ -430,7 +420,7 @@ namespace Concentus.Structs
                 return OpusError.OPUS_BAD_ARG;
             rp.Reset();
             /* Moving payload to the end of the packet so we can do in-place padding */
-            Arrays.MemMove<byte>(data, data_offset, data_offset + new_len - len, len);
+            Arrays.MemMoveByte(data, data_offset, data_offset + new_len - len, len);
             //data.MemMoveTo(data.Point(new_len - len), len);
             rp.AddPacket(data, data_offset + new_len - len, len);
             ret = rp.opus_repacketizer_out_range_impl(0, rp.nb_frames, data, data_offset, new_len, 0, 1);

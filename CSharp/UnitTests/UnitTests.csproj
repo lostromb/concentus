@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <PlatformTarget>x86</PlatformTarget>
 
     <IsPackable>false</IsPackable>
@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Concentus.Unsafe\Concentus.Unsafe.csproj" />
     <ProjectReference Include="..\ParityTest\ParityTest.csproj" />
   </ItemGroup>
 

@@ -165,7 +165,7 @@ namespace Concentus.Silk
                 psEnc.subfr_length, psEnc.nb_subfr, psEnc.predictLPCOrder);
 
             /* Copy to prediction struct for use in next frame for interpolation */
-            Array.Copy(NLSF_Q15, psEnc.prev_NLSFq_Q15, SilkConstants.MAX_LPC_ORDER);
+            Arrays.MemCopy(NLSF_Q15, 0, psEnc.prev_NLSFq_Q15, 0, SilkConstants.MAX_LPC_ORDER);
         }
     }
 }

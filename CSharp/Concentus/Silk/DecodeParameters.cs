@@ -90,10 +90,10 @@ namespace Concentus.Silk
             else
             {
                 /* Copy LPC coefficients for first half from second half */
-                Array.Copy(psDecCtrl.PredCoef_Q12[1], psDecCtrl.PredCoef_Q12[0], psDec.LPC_order);
+                Arrays.MemCopy(psDecCtrl.PredCoef_Q12[1], 0, psDecCtrl.PredCoef_Q12[0], 0, psDec.LPC_order);
             }
 
-            Array.Copy(pNLSF_Q15, psDec.prevNLSF_Q15, psDec.LPC_order);
+            Arrays.MemCopy(pNLSF_Q15, 0, psDec.prevNLSF_Q15, 0, psDec.LPC_order);
 
             /* After a packet loss do BWE of LPC coefs */
             if (psDec.lossCnt != 0)

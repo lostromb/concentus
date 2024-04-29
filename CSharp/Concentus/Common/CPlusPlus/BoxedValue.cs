@@ -31,11 +31,11 @@
 
 namespace Concentus.Common.CPlusPlus
 {
-    public class BoxedValueInt
+    internal class BoxedValueInt
     {
-        public int Val;
+        internal int Val;
 
-        public BoxedValueInt(int v = 0)
+        internal BoxedValueInt(int v = 0)
         {
             Val = v;
         }
@@ -46,11 +46,11 @@ namespace Concentus.Common.CPlusPlus
         }
     }
 
-    public class BoxedValueShort
+    internal class BoxedValueShort
     {
-        public short Val;
+        internal short Val;
 
-        public BoxedValueShort(short v = 0)
+        internal BoxedValueShort(short v = 0)
         {
             Val = v;
         }
@@ -61,11 +61,11 @@ namespace Concentus.Common.CPlusPlus
         }
     }
 
-    public class BoxedValueSbyte
+    internal class BoxedValueSbyte
     {
-        public sbyte Val;
+        internal sbyte Val;
 
-        public BoxedValueSbyte(sbyte v = 0)
+        internal BoxedValueSbyte(sbyte v = 0)
         {
             Val = v;
         }
@@ -80,11 +80,11 @@ namespace Concentus.Common.CPlusPlus
     /// For performance reasons, do not use this generic class if possible
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class BoxedValue<T>
+    internal class BoxedValue<T>
     {
-        public T Val;
+        internal T Val;
 
-        public BoxedValue(T v = default(T))
+        internal BoxedValue(T v = default(T))
         {
             Val = v;
         }

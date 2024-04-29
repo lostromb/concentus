@@ -30,8 +30,6 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#if !UNSAFE
-
 namespace Concentus.Silk
 {
     using Concentus.Celt;
@@ -125,7 +123,8 @@ namespace Concentus.Silk
                     }
                 }
             }
-            Array.Copy(C_first_row, C_last_row, SilkConstants.SILK_MAX_ORDER_LPC);
+
+            Arrays.MemCopy(C_first_row, 0, C_last_row, 0, SilkConstants.SILK_MAX_ORDER_LPC);
 
             /* Initialize */
             CAb[0] = CAf[0] = C0 + Inlines.silk_SMMUL(((int)((TuningParameters.FIND_LPC_COND_FAC) * ((long)1 << (32)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32)*/, C0) + 1;                                /* Q(-rshifts) */
@@ -322,5 +321,3 @@ namespace Concentus.Silk
 
     }
 }
-
-#endif

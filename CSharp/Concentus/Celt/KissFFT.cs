@@ -44,14 +44,15 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
     using System.Threading;
     internal static class KissFFT
     {
-        //public const int SAMP_MAX = 2147483647;
-        //public const int SAMP_MIN = 0 - SAMP_MAX;
-        //public const int TWID_MAX = 32767;
-        //public const int TRIG_UPSCALE = 1;
+        //internal const int SAMP_MAX = 2147483647;
+        //internal const int SAMP_MIN = 0 - SAMP_MAX;
+        //internal const int TWID_MAX = 32767;
+        //internal const int TRIG_UPSCALE = 1;
 
         internal const int MAXFACTORS = 8;
         
@@ -70,7 +71,7 @@ namespace Concentus.Celt
             return x >> 1;
         }
 
-        internal static void kf_bfly2(int[] Fout, int fout_ptr, int m, int N)
+        internal static void kf_bfly2(Span<int> Fout, int fout_ptr, int m, int N)
         {
             int Fout2;
             int i;
@@ -117,7 +118,7 @@ namespace Concentus.Celt
         }
 
         internal static void kf_bfly4(
-                     int[] Fout,
+                     Span<int> Fout,
                      int fout_ptr,
                      int fstride,
                      FFTState st,
@@ -203,7 +204,7 @@ namespace Concentus.Celt
         }
 
         internal static void kf_bfly3(
-                     int[] Fout,
+                     Span<int> Fout,
                      int fout_ptr,
                      int fstride,
                      FFTState st,
@@ -263,7 +264,7 @@ namespace Concentus.Celt
         }
 
         internal static void kf_bfly5(
-                     int[] Fout,
+                     Span<int> Fout,
                      int fout_ptr,
                      int fstride,
                      FFTState st,
@@ -360,7 +361,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void opus_fft_impl(FFTState st, int[] fout, int fout_ptr)
+        internal static void opus_fft_impl(FFTState st, Span<int> fout, int fout_ptr)
         {
             int m2, m;
             int p;

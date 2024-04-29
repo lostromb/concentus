@@ -127,7 +127,7 @@ namespace Concentus.Silk
                 {
                     min_rate_dist_Q14 = rate_dist_Q14;
                     periodicity_index.Val = (sbyte)k;
-                    Array.Copy(temp_idx, 0, cbk_index, 0, nb_subfr);
+                    Arrays.MemCopy(temp_idx, 0, cbk_index, 0, nb_subfr);
                     best_sum_log_gain_Q7 = sum_log_gain_tmp_Q7;
                 }
 

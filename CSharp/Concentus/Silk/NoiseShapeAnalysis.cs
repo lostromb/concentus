@@ -304,23 +304,21 @@ namespace Concentus.Silk
                 
                 ApplySineWindow.silk_apply_sine_window(x_windowed, 0, x, x_ptr2, 1, slope_part);
                 shift = slope_part;
-                Array.Copy(x, x_ptr2 + shift, x_windowed, shift, flat_part);
+                Arrays.MemCopy(x, x_ptr2 + shift, x_windowed, shift, flat_part);
                 shift += flat_part;
                 ApplySineWindow.silk_apply_sine_window(x_windowed, shift, x, x_ptr2 + shift, 2, slope_part);
                 
                 /* Update pointer: next LPC analysis block */
                 x_ptr2 += psEnc.subfr_length;
-                BoxedValueInt scale_boxed = new BoxedValueInt(scale);
                 if (psEnc.warping_Q16 > 0)
                 {
                     /* Calculate warped auto correlation */
-                    Autocorrelation.silk_warped_autocorrelation(auto_corr, scale_boxed, x_windowed, warping_Q16, psEnc.shapeWinLength, psEnc.shapingLPCOrder);
+                    Autocorrelation.silk_warped_autocorrelation(auto_corr, out scale, x_windowed, warping_Q16, psEnc.shapeWinLength, psEnc.shapingLPCOrder);
                 }
                 else {
                     /* Calculate regular auto correlation */
-                    Autocorrelation.silk_autocorr(auto_corr, scale_boxed, x_windowed, psEnc.shapeWinLength, psEnc.shapingLPCOrder + 1);
+                    Autocorrelation.silk_autocorr(auto_corr, out scale, x_windowed, psEnc.shapeWinLength, psEnc.shapingLPCOrder + 1);
                 }
-                scale = scale_boxed.Val;
 
                 /* Add white noise, as a fraction of energy */
                 auto_corr[0] = Inlines.silk_ADD32(auto_corr[0], Inlines.silk_max_32(Inlines.silk_SMULWB(Inlines.silk_RSHIFT(auto_corr[0], 4),
@@ -365,9 +363,9 @@ namespace Concentus.Silk
 
                 /* Bandwidth expansion for synthesis filter shaping */
                 BWExpander.silk_bwexpander_32(AR2_Q24, psEnc.shapingLPCOrder, BWExp2_Q16);
-                
+
                 /* Compute noise shaping filter coefficients */
-                Array.Copy(AR2_Q24, AR1_Q24, psEnc.shapingLPCOrder);
+                Arrays.MemCopy(AR2_Q24, 0, AR1_Q24, 0, psEnc.shapingLPCOrder);
 
                 /* Bandwidth expansion for analysis filter shaping */
                 Inlines.OpusAssert(BWExp1_Q16 <= ((int)((1.0f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1.0f, 16)*/);

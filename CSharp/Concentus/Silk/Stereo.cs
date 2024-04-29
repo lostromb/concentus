@@ -48,6 +48,7 @@ namespace Concentus.Silk
         /// <param name="pred_Q13">O Predictors</param>
         internal static void silk_stereo_decode_pred(
             EntropyCoder psRangeDec,
+            ReadOnlySpan<byte> encodedData,
             int[] pred_Q13)
         {
             int n;
@@ -55,13 +56,13 @@ namespace Concentus.Silk
             int low_Q13, step_Q13;
 
             // Entropy decoding
-            n = psRangeDec.dec_icdf(Tables.silk_stereo_pred_joint_iCDF, 8);
+            n = psRangeDec.dec_icdf(encodedData, Tables.silk_stereo_pred_joint_iCDF, 8);
             ix[0][2] = Inlines.silk_DIV32_16(n, 5);
             ix[1][2] = n - 5 * ix[0][2];
             for (n = 0; n < 2; n++)
             {
-                ix[n][0] = psRangeDec.dec_icdf(Tables.silk_uniform3_iCDF, 8);
-                ix[n][1] = psRangeDec.dec_icdf(Tables.silk_uniform5_iCDF, 8);
+                ix[n][0] = psRangeDec.dec_icdf(encodedData, Tables.silk_uniform3_iCDF, 8);
+                ix[n][1] = psRangeDec.dec_icdf(encodedData, Tables.silk_uniform5_iCDF, 8);
             }
 
             // Dequantize
@@ -85,11 +86,12 @@ namespace Concentus.Silk
         /// <param name="decode_only_mid">O    Flag that only mid channel has been coded</param>
         internal static void silk_stereo_decode_mid_only(
             EntropyCoder psRangeDec,
+            ReadOnlySpan<byte> encodedData,
             BoxedValueInt decode_only_mid
         )
         {
             /* Decode flag that only mid channel is coded */
-            decode_only_mid.Val = psRangeDec.dec_icdf(Tables.silk_stereo_only_code_mid_iCDF, 8);
+            decode_only_mid.Val = psRangeDec.dec_icdf(encodedData, Tables.silk_stereo_only_code_mid_iCDF, 8);
         }
 
         /// <summary>
@@ -97,20 +99,20 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="ix">I    Quantization indices [ 2 ][ 3 ]</param>
-        internal static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, sbyte[][] ix)
+        internal static void silk_stereo_encode_pred(EntropyCoder psRangeEnc, Span<byte> encodedData, sbyte[][] ix)
         {
             int n;
 
             /* Entropy coding */
             n = 5 * ix[0][2] + ix[1][2];
             Inlines.OpusAssert(n < 25);
-            psRangeEnc.enc_icdf( n, Tables.silk_stereo_pred_joint_iCDF, 8);
+            psRangeEnc.enc_icdf(encodedData, n, Tables.silk_stereo_pred_joint_iCDF, 8);
             for (n = 0; n < 2; n++)
             {
                 Inlines.OpusAssert(ix[n][0] < 3);
                 Inlines.OpusAssert(ix[n][1] < SilkConstants.STEREO_QUANT_SUB_STEPS);
-                psRangeEnc.enc_icdf( ix[n][0], Tables.silk_uniform3_iCDF, 8);
-                psRangeEnc.enc_icdf( ix[n][1], Tables.silk_uniform5_iCDF, 8);
+                psRangeEnc.enc_icdf(encodedData, ix[n][0], Tables.silk_uniform3_iCDF, 8);
+                psRangeEnc.enc_icdf(encodedData, ix[n][1], Tables.silk_uniform5_iCDF, 8);
             }
         }
 
@@ -119,10 +121,10 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="psRangeEnc">I/O  Compressor data structure</param>
         /// <param name="mid_only_flag"></param>
-        internal static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, sbyte mid_only_flag)
+        internal static void silk_stereo_encode_mid_only(EntropyCoder psRangeEnc, Span<byte> encodedData, sbyte mid_only_flag)
         {
             /* Encode flag that only mid channel is coded */
-            psRangeEnc.enc_icdf( mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF, 8);
+            psRangeEnc.enc_icdf(encodedData, mid_only_flag, Tables.silk_stereo_only_code_mid_iCDF, 8);
         }
 
         /// <summary>
@@ -139,7 +141,7 @@ namespace Concentus.Silk
             BoxedValueInt ratio_Q14,
             short[] x,
             short[] y,
-            int[] mid_res_amp_Q0,
+            Span<int> mid_res_amp_Q0,
             int mid_res_amp_Q0_ptr,
             int length,
             int smooth_coef_Q16)
@@ -198,9 +200,9 @@ namespace Concentus.Silk
         /// <param name="frame_length">I    Number of samples</param>
         internal static void silk_stereo_LR_to_MS(
             StereoEncodeState state,
-            short[] x1,
+            Span<short> x1,
             int x1_ptr,
-            short[] x2,
+            Span<short> x2,
             int x2_ptr,
             sbyte[][] ix,
             BoxedValueSbyte mid_only_flag,
@@ -236,10 +238,10 @@ namespace Concentus.Silk
             }
 
             /* Buffering */
-            Array.Copy(state.sMid, 0, x1, mid, 2);
-            Array.Copy(state.sSide, side, 2);
-            Array.Copy(x1, mid + frame_length, state.sMid, 0, 2);
-            Array.Copy(side, frame_length, state.sSide, 0, 2);
+            state.sMid.AsSpan(0, 2).CopyTo(x1.Slice(mid));
+            Arrays.MemCopy(state.sSide, 0, side, 0, 2);
+            x1.Slice(mid + frame_length, 2).CopyTo(state.sMid);
+            Arrays.MemCopy(side, frame_length, state.sSide, 0, 2);
 
             /* LP and HP filter mid signal */
             LP_mid = new short[frame_length];
@@ -426,9 +428,9 @@ namespace Concentus.Silk
         /// <param name="frame_length">I    Number of samples</param>
         internal static void silk_stereo_MS_to_LR(
             StereoDecodeState state,
-            short[] x1,
+            Span<short> x1,
             int x1_ptr,
-            short[] x2,
+            Span<short> x2,
             int x2_ptr,
             int[] pred_Q13,
             int fs_kHz,
@@ -438,10 +440,10 @@ namespace Concentus.Silk
             int sum, diff, pred0_Q13, pred1_Q13;
 
             /* Buffering */
-            Array.Copy(state.sMid, 0, x1, x1_ptr, 2);
-            Array.Copy(state.sSide, 0, x2, x2_ptr, 2);
-            Array.Copy(x1, x1_ptr + frame_length, state.sMid, 0, 2);
-            Array.Copy(x2, x2_ptr + frame_length, state.sSide, 0, 2);
+            state.sMid.AsSpan(0, 2).CopyTo(x1.Slice(x1_ptr));
+            state.sSide.AsSpan(0, 2).CopyTo(x2.Slice(x2_ptr));
+            x1.Slice(x1_ptr + frame_length, 2).CopyTo(state.sMid);
+            x2.Slice(x2_ptr + frame_length, 2).CopyTo(state.sSide);
 
             /* Interpolate predictors and add prediction to side channel */
             pred0_Q13 = state.pred_prev_Q13[0];

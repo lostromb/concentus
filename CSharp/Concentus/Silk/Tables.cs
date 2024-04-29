@@ -986,8 +986,8 @@ namespace Concentus.Silk
         };
 
         /* Tables for 2x downsampler */
-        public const short silk_resampler_down2_0 = 9872;
-        public const short silk_resampler_down2_1 = 39809 - 65536;
+        internal const short silk_resampler_down2_0 = 9872;
+        internal const short silk_resampler_down2_1 = 39809 - 65536;
 
         /* Tables for 2x upsampler, high quality */
         internal static readonly short[] silk_resampler_up2_hq_0 = { 1746, 14986, 39083 - 65536 };

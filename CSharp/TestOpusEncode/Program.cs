@@ -136,25 +136,25 @@ namespace TestOpusEncode
 
             Console.WriteLine("  Encode+Decode tests.");
 
-            enc = OpusEncoder.Create(48000, 2, OpusApplication.OPUS_APPLICATION_VOIP);
+            enc = new OpusEncoder(48000, 2, OpusApplication.OPUS_APPLICATION_VOIP);
             if (err.Val != OpusError.OPUS_OK || enc == null) test_failed();
 
-            dec = OpusDecoder.Create(48000, 2);
+            dec = new OpusDecoder(48000, 2);
             if (err.Val != OpusError.OPUS_OK || dec == null) test_failed();
 
             // fixme: this tests assign() performed on a decoder struct, which doesn't exist
             //dec_err[0] = (OpusDecoder*)malloc(OpusDecoder_get_size(2));
             //memcpy(dec_err[0], dec, OpusDecoder_get_size(2));
-            dec_err[0] = OpusDecoder.Create(48000, 2);
-            dec_err[1] = OpusDecoder.Create(48000, 1);
-            dec_err[2] = OpusDecoder.Create(24000, 2);
-            dec_err[3] = OpusDecoder.Create(24000, 1);
-            dec_err[4] = OpusDecoder.Create(16000, 2);
-            dec_err[5] = OpusDecoder.Create(16000, 1);
-            dec_err[6] = OpusDecoder.Create(12000, 2);
-            dec_err[7] = OpusDecoder.Create(12000, 1);
-            dec_err[8] = OpusDecoder.Create(8000, 2);
-            dec_err[9] = OpusDecoder.Create(8000, 1);
+            dec_err[0] = new OpusDecoder(48000, 2);
+            dec_err[1] = new OpusDecoder(48000, 1);
+            dec_err[2] = new OpusDecoder(24000, 2);
+            dec_err[3] = new OpusDecoder(24000, 1);
+            dec_err[4] = new OpusDecoder(16000, 2);
+            dec_err[5] = new OpusDecoder(16000, 1);
+            dec_err[6] = new OpusDecoder(12000, 2);
+            dec_err[7] = new OpusDecoder(12000, 1);
+            dec_err[8] = new OpusDecoder(8000, 2);
+            dec_err[9] = new OpusDecoder(8000, 1);
             for (i = 1; i < 10; i++) if (dec_err[i] == null) test_failed();
 
             //{
@@ -361,7 +361,7 @@ namespace TestOpusEncode
             if (i < 16) test_failed();
 
             {
-                OpusEncoder tmp_enc;
+                IOpusEncoder tmp_enc;
                 tmp_enc = MSenc.GetMultistreamEncoderState(1);
                 if (tmp_enc == null) test_failed();
                 j = tmp_enc.LSBDepth;
@@ -432,13 +432,13 @@ namespace TestOpusEncode
                         //    len = Repacketizer.opus_multistream_packet_unpad(packet, len, 2);
                         //    if (len < 1) test_failed();
                         //}
-                        out_samples = MSdec.DecodeMultistream(packet, 0, len, out2buf, 0, MAX_FRAME_SAMP, 0);
+                        out_samples = MSdec.DecodeMultistream(packet, 0, len, out2buf, 0, MAX_FRAME_SAMP, false);
                         if (out_samples != frame_size * 6) test_failed();
                         dec_final_range = MSdec.FinalRange;
                         if (enc_final_range != dec_final_range) test_failed();
                         /*LBRR decode*/
                         loss = (fast_rand() & 63) == 0;
-                        out_samples = MSdec_err.DecodeMultistream(packet, 0, loss ? 0 : len, out2buf, 0, frame_size * 6, ((fast_rand() & 3) != 0) ? 1 : 0);
+                        out_samples = MSdec_err.DecodeMultistream(packet, 0, loss ? 0 : len, out2buf, 0, frame_size * 6, (fast_rand() & 3) != 0);
                         if (out_samples != (frame_size * 6)) test_failed();
                         i += frame_size;
                         count++;

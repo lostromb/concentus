@@ -53,7 +53,7 @@ namespace Concentus.Silk
         /// <param name="length">I    Length</param>
         /// <param name="rand_seed">I/O  Seed to random index generator</param>
         internal static void silk_CNG_exc(
-            int[] exc_Q10,
+            Span<int> exc_Q10,
             int exc_Q10_ptr,
             int[] exc_buf_Q14,
             int Gain_Q16,
@@ -112,7 +112,7 @@ namespace Concentus.Silk
         internal static void silk_CNG(
             SilkChannelDecoder psDec,
             SilkDecoderControl psDecCtrl,
-            short[] frame,
+            Span<short> frame,
             int frame_ptr,
             int length)
         {
@@ -186,7 +186,7 @@ namespace Concentus.Silk
                 NLSF.silk_NLSF2A(A_Q12, psCNG.CNG_smth_NLSF_Q15, psDec.LPC_order);
 
                 /* Generate CNG signal, by synthesis filtering */
-                Array.Copy(psCNG.CNG_synth_state, CNG_sig_Q10, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemCopy(psCNG.CNG_synth_state, 0, CNG_sig_Q10, 0, SilkConstants.MAX_LPC_ORDER);
 
                 for (i = 0; i < length; i++)
                 {
@@ -221,7 +221,7 @@ namespace Concentus.Silk
                     frame[frame_ptr + i] = Inlines.silk_ADD_SAT16(frame[frame_ptr + i], (short)(Inlines.silk_RSHIFT_ROUND(CNG_sig_Q10[lpci], 10)));
                 }
 
-                Array.Copy(CNG_sig_Q10, length, psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
+                Arrays.MemCopy(CNG_sig_Q10, length, psCNG.CNG_synth_state, 0, SilkConstants.MAX_LPC_ORDER);
             }
             else
             {

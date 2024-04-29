@@ -39,6 +39,7 @@ namespace Concentus.Celt
     using Concentus.Celt.Structs;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
+    using System;
     using System.Diagnostics;
 
     internal static class CWRS
@@ -201,10 +202,10 @@ namespace Concentus.Celt
             return i;
         }
 
-        internal static void encode_pulses(int[] _y, int _n, int _k, EntropyCoder _enc)
+        internal static void encode_pulses(int[] _y, int _n, int _k, EntropyCoder _enc, Span<byte> encodedData)
         {
             Inlines.OpusAssert(_k > 0);
-            _enc.enc_uint(icwrs(_n, _y), CELT_PVQ_V(_n, _k));
+            _enc.enc_uint(encodedData, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
         }
 
         internal static int cwrsi(int _n, int _k, uint _i, int[] _y)
@@ -311,9 +312,9 @@ namespace Concentus.Celt
             return yy;
         }
 
-        internal static int decode_pulses(int[] _y, int _n, int _k, EntropyCoder _dec)
+        internal static int decode_pulses(int[] _y, int _n, int _k, EntropyCoder _dec, ReadOnlySpan<byte> encodedData)
         {
-            return cwrsi(_n, _k, _dec.dec_uint(CELT_PVQ_V(_n, _k)), _y);
+            return cwrsi(_n, _k, _dec.dec_uint(encodedData, CELT_PVQ_V(_n, _k)), _y);
         }
     }
 }

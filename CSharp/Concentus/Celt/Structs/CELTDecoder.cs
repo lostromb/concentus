@@ -255,7 +255,7 @@ namespace Concentus.Celt.Structs
                             X[c][boffs + j] = (unchecked((int)seed) >> 20);
                         }
 
-                        VQ.renormalise_vector(X[c], 0, blen, CeltConstants.Q15ONE);
+                        VQ.renormalise_vector(X[c].AsSpan(), blen, CeltConstants.Q15ONE);
                     }
                 }
                 this.rng = seed;
@@ -329,7 +329,7 @@ namespace Concentus.Celt.Structs
                     /* Initialize the LPC history with the samples just before the start
                        of the region for which we're computing the excitation. */
                     {
-                        int[] lpc_mem = new int[CeltConstants.LPC_ORDER];
+                        Span<int> lpc_mem = stackalloc int[CeltConstants.LPC_ORDER];
                         for (i = 0; i < CeltConstants.LPC_ORDER; i++)
                         {
                             lpc_mem[i] =
@@ -337,19 +337,13 @@ namespace Concentus.Celt.Structs
                         }
 
                         /* Compute the excitation for exc_length samples before the loss. */
-#if UNSAFE
-                        unsafe
-                        {
-                            fixed (int* pexc_base = exc, lpc = this.lpc[c])
-                            {
-                                int* pexc = pexc_base + (CeltConstants.MAX_PERIOD - exc_length);
-                                Kernels.celt_fir(pexc, lpc, pexc, exc_length, CeltConstants.LPC_ORDER, lpc_mem);
-                            }
-                        }
-#else
-                        Kernels.celt_fir(exc, (CeltConstants.MAX_PERIOD - exc_length), this.lpc[c], 0,
-                              exc, (CeltConstants.MAX_PERIOD - exc_length), exc_length, CeltConstants.LPC_ORDER, lpc_mem);
-#endif
+                        Kernels.celt_fir(
+                            exc.AsSpan().Slice(CeltConstants.MAX_PERIOD - exc_length),
+                            this.lpc[c].AsSpan(),
+                            exc.AsSpan().Slice(CeltConstants.MAX_PERIOD - exc_length),
+                            exc_length,
+                            CeltConstants.LPC_ORDER,
+                            lpc_mem);
                     }
 
                     /* Check if the waveform is decaying, and if so how fast.
@@ -406,15 +400,15 @@ namespace Concentus.Celt.Structs
                     }
 
                     {
-                        int[] lpc_mem = new int[CeltConstants.LPC_ORDER];
+                        Span<int> lpc_mem = stackalloc int[CeltConstants.LPC_ORDER];
                         /* Copy the last decoded samples (prior to the overlap region) to
                            synthesis filter memory so we can have a continuous signal. */
                         for (i = 0; i < CeltConstants.LPC_ORDER; i++)
                             lpc_mem[i] = Inlines.ROUND16(buf[CeltConstants.DECODE_BUFFER_SIZE - N - 1 - i], CeltConstants.SIG_SHIFT);
                         /* Apply the synthesis filter to convert the excitation back into
                            the signal domain. */
-                        CeltLPC.celt_iir(buf, CeltConstants.DECODE_BUFFER_SIZE - N, this.lpc[c],
-                              buf, CeltConstants.DECODE_BUFFER_SIZE - N, extrapolation_len, CeltConstants.LPC_ORDER,
+                        CeltLPC.celt_iir(buf.AsSpan().Slice(CeltConstants.DECODE_BUFFER_SIZE - N), this.lpc[c],
+                              buf.AsSpan().Slice(CeltConstants.DECODE_BUFFER_SIZE - N), extrapolation_len, CeltConstants.LPC_ORDER,
                               lpc_mem);
                     }
 
@@ -474,8 +468,8 @@ namespace Concentus.Celt.Structs
             this.loss_count = loss_count + 1;
         }
 
-        internal int celt_decode_with_ec(byte[] data, int data_ptr,
-              int len, short[] pcm, int pcm_ptr, int frame_size, EntropyCoder dec, int accum)
+        internal int celt_decode_with_ec(ReadOnlySpan<byte> data, int data_ptr,
+              int len, Span<short> pcm, int pcm_ptr, int frame_size, EntropyCoder dec, int accum)
         {
             int c, i, N;
             int spread_decision;
@@ -556,7 +550,7 @@ namespace Concentus.Celt.Structs
             if (effEnd > mode.effEBands)
                 effEnd = mode.effEBands;
 
-            if (data == null || len <= 1)
+            if (data.IsEmpty || len <= 1)
             {
                 this.celt_decode_lost(N, LM);
                 CeltCommon.deemphasis(out_syn, out_syn_ptrs, pcm, pcm_ptr, N, CC, this.downsample, mode.preemph, this.preemph_memD, accum);
@@ -569,7 +563,7 @@ namespace Concentus.Celt.Structs
                 // If no entropy decoder was passed into this function, we need to create
                 // a new one here for local use only. It only exists in this function scope.
                 dec = new EntropyCoder();
-                dec.dec_init(data, data_ptr, (uint)len);
+                dec.dec_init(data.Slice(data_ptr), (uint)len);
             }
 
             if (C == 1)
@@ -584,7 +578,7 @@ namespace Concentus.Celt.Structs
             if (tell >= total_bits)
                 silence = 1;
             else if (tell == 1)
-                silence = dec.dec_bit_logp(15);
+                silence = dec.dec_bit_logp(data.Slice(data_ptr), 15);
             else
                 silence = 0;
 
@@ -600,14 +594,14 @@ namespace Concentus.Celt.Structs
             postfilter_tapset = 0;
             if (start == 0 && tell + 16 <= total_bits)
             {
-                if (dec.dec_bit_logp(1) != 0)
+                if (dec.dec_bit_logp(data.Slice(data_ptr), 1) != 0)
                 {
                     int qg, octave;
-                    octave = (int)dec.dec_uint(6);
-                    postfilter_pitch = (16 << octave) + (int)dec.dec_bits(4 + (uint)octave) - 1;
-                    qg = (int)dec.dec_bits(3);
+                    octave = (int)dec.dec_uint(data.Slice(data_ptr), 6);
+                    postfilter_pitch = (16 << octave) + (int)dec.dec_bits(data.Slice(data_ptr), 4 + (uint)octave) - 1;
+                    qg = (int)dec.dec_bits(data.Slice(data_ptr), 3);
                     if (dec.tell() + 2 <= total_bits)
-                        postfilter_tapset = dec.dec_icdf(Tables.tapset_icdf, 2);
+                        postfilter_tapset = dec.dec_icdf(data.Slice(data_ptr), Tables.tapset_icdf, 2);
                     postfilter_gain = ((short)(0.5 + (.09375f) * (((int)1) << (15))))/*Inlines.QCONST16(.09375f, 15)*/ * (qg + 1);
                 }
                 tell = dec.tell();
@@ -615,7 +609,7 @@ namespace Concentus.Celt.Structs
 
             if (LM > 0 && tell + 3 <= total_bits)
             {
-                isTransient = dec.dec_bit_logp(3);
+                isTransient = dec.dec_bit_logp(data.Slice(data_ptr), 3);
                 tell = dec.tell();
             }
             else
@@ -627,18 +621,18 @@ namespace Concentus.Celt.Structs
                 shortBlocks = 0;
 
             /* Decode the global flags (first symbols in the stream) */
-            intra_ener = tell + 3 <= total_bits ? dec.dec_bit_logp(3) : 0;
+            intra_ener = tell + 3 <= total_bits ? dec.dec_bit_logp(data.Slice(data_ptr), 3) : 0;
             /* Get band energies */
             QuantizeBands.unquant_coarse_energy(mode, start, end, oldBandE,
-                  intra_ener, dec, C, LM);
+                  intra_ener, dec, data.Slice(data_ptr), C, LM);
 
             tf_res = new int[nbEBands];
-            CeltCommon.tf_decode(start, end, isTransient, tf_res, LM, dec);
+            CeltCommon.tf_decode(start, end, isTransient, tf_res, LM, dec, data.Slice(data_ptr));
 
             tell = dec.tell();
             spread_decision = Spread.SPREAD_NORMAL;
             if (tell + 4 <= total_bits)
-                spread_decision = dec.dec_icdf(Tables.spread_icdf, 5);
+                spread_decision = dec.dec_icdf(data.Slice(data_ptr), Tables.spread_icdf, 5);
 
             cap = new int[nbEBands];
 
@@ -663,7 +657,7 @@ namespace Concentus.Celt.Structs
                 while (tell + (dynalloc_loop_logp << EntropyCoder.BITRES) < total_bits && boost < cap[i])
                 {
                     int flag;
-                    flag = dec.dec_bit_logp((uint)dynalloc_loop_logp);
+                    flag = dec.dec_bit_logp(data.Slice(data_ptr), (uint)dynalloc_loop_logp);
                     tell = (int)dec.tell_frac();
                     if (flag == 0)
                         break;
@@ -679,7 +673,7 @@ namespace Concentus.Celt.Structs
 
             fine_quant = new int[nbEBands];
             alloc_trim = tell + (6 << EntropyCoder.BITRES) <= total_bits ?
-                  dec.dec_icdf(Tables.trim_icdf, 7) : 5;
+                  dec.dec_icdf(data.Slice(data_ptr), Tables.trim_icdf, 7) : 5;
 
             bits = (((int)len * 8) << EntropyCoder.BITRES) - (int)dec.tell_frac() - 1;
             anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << EntropyCoder.BITRES) ? (1 << EntropyCoder.BITRES) : 0;
@@ -688,11 +682,11 @@ namespace Concentus.Celt.Structs
             pulses = new int[nbEBands];
             fine_priority = new int[nbEBands];
             
-            codedBands = Rate.compute_allocation(mode, start, end, offsets, cap,
+            codedBands = Rate.compute_allocation_decode(mode, start, end, offsets, cap,
                   alloc_trim, ref intensity, ref dual_stereo, bits, out balance, pulses,
-                  fine_quant, fine_priority, C, LM, dec, 0, 0, 0);
+                  fine_quant, fine_priority, C, LM, dec, data.Slice(data_ptr), 0, 0);
 
-            QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, C);
+            QuantizeBands.unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, data.Slice(data_ptr), C);
 
             c = 0;
             do
@@ -705,17 +699,17 @@ namespace Concentus.Celt.Structs
 
             X = Arrays.InitTwoDimensionalArray<int>(C, N);   /*< Interleaved normalised MDCTs */
             
-            Bands.quant_all_bands(0, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
+            Bands.quant_all_bands_decode(0, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
-                  len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, LM, codedBands, ref this.rng);
+                  len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, data.Slice(data_ptr), LM, codedBands, ref this.rng);
 
             if (anti_collapse_rsv > 0)
             {
-                anti_collapse_on = (int)dec.dec_bits(1);
+                anti_collapse_on = (int)dec.dec_bits(data.Slice(data_ptr), 1);
             }
 
             QuantizeBands.unquant_energy_finalise(mode, start, end, oldBandE,
-                  fine_quant, fine_priority, len * 8 - dec.tell(), dec, C);
+                  fine_quant, fine_priority, len * 8 - dec.tell(), dec, data.Slice(data_ptr), C);
 
             if (anti_collapse_on != 0)
                 Bands.anti_collapse(mode, X, collapse_masks, LM, C, N,
@@ -763,15 +757,15 @@ namespace Concentus.Celt.Structs
 
             if (C == 1)
             {
-                Array.Copy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
+                Arrays.MemCopy(oldBandE, 0, oldBandE, nbEBands, nbEBands);
             }
 
             /* In case start or end were to change */
             if (isTransient == 0)
             {
                 int max_background_increase;
-                Array.Copy(oldLogE, oldLogE2, 2 * nbEBands);
-                Array.Copy(oldBandE, oldLogE, 2 * nbEBands);
+                Arrays.MemCopy(oldLogE, 0, oldLogE2, 0, 2 * nbEBands);
+                Arrays.MemCopy(oldBandE, 0, oldLogE, 0, 2 * nbEBands);
                 /* In normal circumstances, we only allow the noise floor to increase by
                    up to 2.4 dB/second, but when we're in DTX, we allow up to 6 dB
                    increase for each update.*/
@@ -843,27 +837,27 @@ namespace Concentus.Celt.Structs
             return returnVal;
         }
 
-        public int GetLookahead()
+        internal int GetLookahead()
         {
             return this.overlap / this.downsample;
         }
 
-        public int GetPitch()
+        internal int GetPitch()
         {
             return this.postfilter_period;
         }
 
-        public CeltMode GetMode()
+        internal CeltMode GetMode()
         {
             return this.mode;
         }
 
-        public void SetSignalling(int value)
+        internal void SetSignalling(int value)
         {
             this.signalling = value;
         }
 
-        public uint GetFinalRange()
+        internal uint GetFinalRange()
         {
             return this.rng;
         }

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <Configurations>Debug;Release;Debug Fixed;Release Fixed</Configurations>
   </PropertyGroup>
 
