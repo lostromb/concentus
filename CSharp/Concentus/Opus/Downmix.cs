@@ -57,7 +57,7 @@ namespace Concentus
         /// <param name="c1"></param>
         /// <param name="c2"></param>
         /// <param name="C"></param>
-        public delegate void downmix_func<T>(ReadOnlySpan<T> _x, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C);
+        internal delegate void downmix_func<T>(ReadOnlySpan<T> _x, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C);
 
         internal static void downmix_float(ReadOnlySpan<float> x, Span<int> sub, int sub_ptr, int subframe, int offset, int c1, int c2, int C)
         {

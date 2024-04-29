@@ -124,6 +124,7 @@ namespace Concentus.Structs
         /// <param name="Fs">Sample rate to decode at (Hz). This must be one of 8000, 12000, 16000, 24000, or 48000.</param>
         /// <param name="channels">Number of channels (1 or 2) to decode</param>
         /// <returns>The created encoder</returns>
+        [Obsolete("Use OpusCodecFactory methods which can give you native code if supported by your platform")]
         public OpusDecoder(int Fs, int channels)
         {
             int ret;
@@ -785,7 +786,7 @@ namespace Concentus.Structs
             }
             catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during decoding: " + e.Message, OpusError.OPUS_BAD_ARG);
+                throw new OpusException("public error during decoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 
@@ -884,7 +885,7 @@ namespace Concentus.Structs
             }
             catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during decoding: " + e.Message, OpusError.OPUS_BAD_ARG);
+                throw new OpusException("public error during decoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 

@@ -49,17 +49,17 @@ namespace Concentus.Structs
         /// <summary>
         /// The Table of Contents byte for this packet. Contains info about modes, frame length, etc.
         /// </summary>
-        public readonly byte TOCByte;
+        internal readonly byte TOCByte;
 
         /// <summary>
         /// The list of subframes in this packet
         /// </summary>
-        public readonly IList<byte[]> Frames;
+        internal readonly IList<byte[]> Frames;
 
         /// <summary>
         /// The index of the start of the payload within the packet
         /// </summary>
-        public readonly int PayloadOffset;
+        internal readonly int PayloadOffset;
 
         private OpusPacketInfo(byte toc, IList<byte[]> frames, int payloadOffset)
         {

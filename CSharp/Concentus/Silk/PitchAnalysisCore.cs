@@ -59,7 +59,7 @@ namespace Concentus.Silk
         // fixme can I linearize this?
         private class silk_pe_stage3_vals
         {
-            public readonly int[] Values = new int[SilkConstants.PE_NB_STAGE3_LAGS];
+            internal readonly int[] Values = new int[SilkConstants.PE_NB_STAGE3_LAGS];
         }
 
         /*************************************************************/

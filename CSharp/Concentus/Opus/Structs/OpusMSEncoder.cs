@@ -42,6 +42,9 @@ using System;
 
 namespace Concentus.Structs
 {
+    /// <summary>
+    /// A managed implementation of the Opus multistream encoder.
+    /// </summary>
     public class OpusMSEncoder : IOpusMultiStreamEncoder
     {
         internal readonly ChannelLayout layout = new ChannelLayout();
@@ -68,6 +71,7 @@ namespace Concentus.Structs
             preemph_mem = new int[nb_channels];
         }
 
+        /// <inheritdoc />
         public void ResetState()
         {
             int s;
@@ -429,6 +433,7 @@ namespace Concentus.Structs
         /// <param name="coupled_streams">The number of coupled streams</param>
         /// <param name="mapping">A raw mapping between input and output channels</param>
         /// <param name="application">The application to use for the encoder</param>
+        [Obsolete("Use OpusCodecFactory methods which can give you native code if supported by your platform")]
         public static OpusMSEncoder Create(
               int Fs,
               int channels,
@@ -496,6 +501,7 @@ namespace Concentus.Structs
         /// <param name="coupled_streams">The number of coupled streams</param>
         /// <param name="mapping">A raw mapping of input/output channels</param>
         /// <param name="application">The application to use for the encoders</param>
+        [Obsolete("Use OpusCodecFactory methods which can give you native code if supported by your platform")]
         public static OpusMSEncoder CreateSurround(
               int Fs,
               int channels,
@@ -836,6 +842,7 @@ namespace Concentus.Structs
         }
 
         /// <inheritdoc />
+        [Obsolete("Use Span<> overrides instead")]
         public int EncodeMultistream(
             short[] pcm,
             int pcm_offset,
@@ -847,7 +854,7 @@ namespace Concentus.Structs
             return EncodeMultistream(pcm.AsSpan(pcm_offset), frame_size, outputBuffer.AsSpan(outputBuffer_offset), max_data_bytes);
         }
 
-        [Obsolete("Use Span<> overrides instead")]
+        /// <inheritdoc />
         public int EncodeMultistream(
             ReadOnlySpan<short> pcm,
             int frame_size,
@@ -868,6 +875,7 @@ namespace Concentus.Structs
             return ret;
         }
 
+        /// <inheritdoc />
         [Obsolete("Use Span<> overrides instead")]
         public int EncodeMultistream(
             float[] pcm,

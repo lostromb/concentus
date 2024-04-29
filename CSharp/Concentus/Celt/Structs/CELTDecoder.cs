@@ -837,27 +837,27 @@ namespace Concentus.Celt.Structs
             return returnVal;
         }
 
-        public int GetLookahead()
+        internal int GetLookahead()
         {
             return this.overlap / this.downsample;
         }
 
-        public int GetPitch()
+        internal int GetPitch()
         {
             return this.postfilter_period;
         }
 
-        public CeltMode GetMode()
+        internal CeltMode GetMode()
         {
             return this.mode;
         }
 
-        public void SetSignalling(int value)
+        internal void SetSignalling(int value)
         {
             this.signalling = value;
         }
 
-        public uint GetFinalRange()
+        internal uint GetFinalRange()
         {
             return this.rng;
         }

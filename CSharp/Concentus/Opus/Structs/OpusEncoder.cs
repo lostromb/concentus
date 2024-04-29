@@ -161,6 +161,7 @@ namespace Concentus.Structs
             //CeltEncoder.Reset();
         }
 
+        /// <inheritdoc />
         public void ResetState()
         {
             EncControlState dummy = new EncControlState();
@@ -214,6 +215,7 @@ namespace Concentus.Structs
         /// because it changes the codec delay.
         /// </para></param>
         /// <returns>The created encoder</returns>
+        [Obsolete("Use OpusCodecFactory methods which can give you native code if supported by your platform")]
         public OpusEncoder(int Fs, int channels, OpusApplication application)
         {
             int ret;
@@ -1080,7 +1082,7 @@ namespace Concentus.Structs
 
                     return 1;
                 }
-                /* Extract SILK public bandwidth for signaling in first byte */
+                /* Extract SILK internal bandwidth for signaling in first byte */
                 if (this.mode == OpusMode.MODE_SILK_ONLY)
                 {
                     if (this.silk_mode.internalSampleRate == 8000)
@@ -1493,7 +1495,7 @@ namespace Concentus.Structs
             }
             catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during encoding: " + e.Message, OpusError.OPUS_BAD_ARG);
+                throw new OpusException("public error during encoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 
@@ -1585,7 +1587,7 @@ namespace Concentus.Structs
             }
             catch (ArgumentException e)
             {
-                throw new OpusException("Internal error during encoding: " + e.Message, OpusError.OPUS_BAD_ARG);
+                throw new OpusException("public error during encoding: " + e.Message, OpusError.OPUS_BAD_ARG);
             }
         }
 
@@ -1933,7 +1935,7 @@ namespace Concentus.Structs
 
         /// <summary>
         /// Gets or sets a fixed length for each encoded frame. Typically, the encoder just chooses a frame duration based on the input length
-        /// and the current internal mode. This can be used to enforce an exact length if it is required by your application (e.g. monotonous transmission)
+        /// and the current public mode. This can be used to enforce an exact length if it is required by your application (e.g. monotonous transmission)
         /// </summary>
         public OpusFramesize ExpertFrameDuration
         {

@@ -58,7 +58,7 @@ namespace Concentus.Enums
         public const int OPUS_BUFFER_TOO_SMALL = -2;
 
         /// <summary>
-        /// -3: An internal error was detected
+        /// -3: An public error was detected
         /// </summary>
         public const int OPUS_INTERNAL_ERROR = -3;
 

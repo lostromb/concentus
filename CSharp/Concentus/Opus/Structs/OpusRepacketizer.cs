@@ -52,7 +52,7 @@ namespace Concentus.Structs
         internal readonly int[] frames_ptrs = new int[48];
         internal readonly short[] len = new short[48];
         internal int framesize = 0;
-        
+
         /** (Re)initializes a previously allocated repacketizer state.
   * The state must be at least the size returned by opus_repacketizer_get_size().
   * This can be used for applications which use their own allocator instead of

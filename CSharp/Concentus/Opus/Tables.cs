@@ -285,8 +285,8 @@ namespace Concentus
         };
 
         /* Threshold bit-rates for switching between mono and stereo */
-        public const int stereo_voice_threshold = 30000;
-        public const int stereo_music_threshold = 30000;
+        internal const int stereo_voice_threshold = 30000;
+        internal const int stereo_music_threshold = 30000;
 
         /* Threshold bit-rate for switching between SILK/hybrid and CELT-only */
         internal static readonly int[][] mode_thresholds = {

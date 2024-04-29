@@ -45,6 +45,9 @@ using System.Text;
 
 namespace Concentus.Structs
 {
+    /// <summary>
+    /// A managed implementation of the Opus multistream decoder.
+    /// </summary>
     public class OpusMSDecoder : IOpusMultiStreamDecoder
     {
         internal ChannelLayout layout = new ChannelLayout();
@@ -105,8 +108,9 @@ namespace Concentus.Structs
         /// <param name="channels"></param>
         /// <param name="streams"></param>
         /// <param name="coupled_streams"></param>
-        /// <param name="mapping">A channel mapping (just use { 0, 1, 255 })</param>
+        /// <param name="mapping">A channel mapping describing which streams go to which channels: see <seealso href="https://opus-codec.org/docs/opus_api-1.5/group__opus__multistream.html"/></param>
         /// <returns></returns>
+        [Obsolete("Use OpusCodecFactory methods which can give you native code if supported by your platform")]
         public OpusMSDecoder(
               int Fs,
               int channels,

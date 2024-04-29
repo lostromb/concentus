@@ -53,7 +53,7 @@ namespace Concentus
         /// Creates a new empty <see cref="OpusException"/>.
         /// This constructor is discouraged as it does not set the raw error code.
         /// </summary>
-        public OpusException() : base("Unknown error")
+        internal OpusException() : base("Unknown error")
         {
             OpusErrorCode = OpusError.CONCENTUS_UNKNOWN_ERROR;
         }
@@ -63,7 +63,7 @@ namespace Concentus
         /// This constructor is discouraged as it does not set the raw error code.
         /// so it reports 
         /// </summary>
-        public OpusException(string message) : base(message)
+        internal OpusException(string message) : base(message)
         {
             OpusErrorCode = OpusError.CONCENTUS_UNKNOWN_ERROR;
         }
@@ -73,7 +73,7 @@ namespace Concentus
         /// This constructor is discouraged as it does not set the raw error code.
         /// so it reports 
         /// </summary>
-        public OpusException(int opusError) : base(CodecHelpers.opus_strerror(opusError))
+        internal OpusException(int opusError) : base(CodecHelpers.opus_strerror(opusError))
         {
             OpusErrorCode = opusError;
         }
@@ -84,7 +84,7 @@ namespace Concentus
         /// <param name="message">The entire error message string.</param>
         /// <param name="opusError">The raw error code that can be passed to other C-style error handlers
         /// if necessary (it is not used to format the error string).</param>
-        public OpusException(string message, int opusError) : base(message)
+        internal OpusException(string message, int opusError) : base(message)
         {
             OpusErrorCode = opusError;
         }

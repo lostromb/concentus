@@ -98,7 +98,7 @@ namespace Concentus.Common
 
         ///*The resolution of fractional-precision bit usage measurements, i.e.,
         //   3 => 1/8th bits.*/
-        public const int BITRES = 3;
+        internal const int BITRES = 3;
 
         /*The number of bits to output at a time.*/
         private const int EC_SYM_BITS = (8);
@@ -124,48 +124,48 @@ namespace Concentus.Common
         //////////////// Coder State //////////////////// 
 
         /*The size of the buffer.*/
-        public uint storage;
+        internal uint storage;
 
         /*The offset at which the last byte containing raw bits was read/written.*/
-        public uint end_offs;
+        internal uint end_offs;
 
         /*Bits that will be read from/written at the end.*/
-        public uint end_window;
+        internal uint end_window;
 
         /*Number of valid bits in end_window.*/
-        public int nend_bits;
+        internal int nend_bits;
 
         /*The total number of whole bits read/written.
           This does not include partial bits currently in the range coder.*/
-        public int nbits_total;
+        internal int nbits_total;
 
         /*The offset at which the next range coder byte will be read/written.*/
-        public uint offs;
+        internal uint offs;
 
         /*The number of values in the current range.*/
-        public uint rng;
+        internal uint rng;
 
         /*In the decoder: the difference between the top of the current range and
            the input value, minus one.
           In the encoder: the low end of the current range.*/
-        public uint val;
+        internal uint val;
 
         /*In the decoder: the saved normalization factor from ec_decode().
           In the encoder: the number of oustanding carry propagating symbols.*/
-        public uint ext;
+        internal uint ext;
 
         /*A buffered input/output symbol, awaiting carry propagation.*/
-        public int rem;
+        internal int rem;
 
         /*Nonzero if an error occurred.*/
-        public int error;
+        internal int error;
 
-        public EntropyCoder()
+        internal EntropyCoder()
         {
             Reset();
         }
 
-        public void Reset()
+        internal void Reset()
         {
             storage = 0;
             end_offs = 0;
@@ -179,7 +179,7 @@ namespace Concentus.Common
             error = 0;
         }
 
-        public void Assign(EntropyCoder other)
+        internal void Assign(EntropyCoder other)
         {
             this.storage = other.storage;
             this.end_offs = other.end_offs;

@@ -734,14 +734,14 @@ namespace ParityTest
             return processedValues;
         }
 
-        public static Pointer<T> Pointerize<T>(T[] array)
+        internal static Pointer<T> Pointerize<T>(T[] array)
         {
             T[] newArray = new T[array.Length + BUFFER_OFFSET];
             Array.Copy(array, 0, newArray, BUFFER_OFFSET, array.Length);
             return newArray.GetPointer(BUFFER_OFFSET);
         }
 
-        public static T[] Unpointerize<T>(Pointer<T> array, int length)
+        internal static T[] Unpointerize<T>(Pointer<T> array, int length)
         {
             T[] newArray = new T[length];
             array.MemCopyTo(newArray, 0, length);

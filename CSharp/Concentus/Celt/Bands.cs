@@ -673,28 +673,28 @@ namespace Concentus.Celt
             return qn;
         }
 
-        public class band_ctx
+        internal class band_ctx
         {
-            public int encode;
-            public CeltMode m;
-            public int i;
-            public int intensity;
-            public int spread;
-            public int tf_change;
-            public EntropyCoder ec;
-            public int remaining_bits;
-            public int[][] bandE;
-            public uint seed;
+            internal int encode;
+            internal CeltMode m;
+            internal int i;
+            internal int intensity;
+            internal int spread;
+            internal int tf_change;
+            internal EntropyCoder ec;
+            internal int remaining_bits;
+            internal int[][] bandE;
+            internal uint seed;
         };
 
-        public class split_ctx
+        internal class split_ctx
         {
-            public int inv;
-            public int imid;
-            public int iside;
-            public int delta;
-            public int itheta;
-            public int qalloc;
+            internal int inv;
+            internal int imid;
+            internal int iside;
+            internal int delta;
+            internal int itheta;
+            internal int qalloc;
         };
         
         internal static void compute_theta_decode(band_ctx ctx, split_ctx sctx, ReadOnlySpan<byte> encodedData,

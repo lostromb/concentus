@@ -46,7 +46,7 @@ using System;
 
 namespace Concentus
 {
-    public static class CodecHelpers
+    internal static class CodecHelpers
     {
         internal static byte gen_toc(OpusMode mode, int framerate, OpusBandwidth bandwidth, int channels)
         {
@@ -693,7 +693,7 @@ namespace Concentus
         /// Returns the version number of this library
         /// </summary>
         /// <returns></returns>
-        public static string GetVersionString()
+        internal static string GetVersionString()
         {
             return "Concentus 1.1.6"
 #if DEBUG
