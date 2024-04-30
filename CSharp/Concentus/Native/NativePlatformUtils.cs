@@ -146,9 +146,10 @@ namespace Concentus.Native
         /// <returns>Whether the runtime believes the given library is now available for loading or not.</returns>
         internal static NativeLibraryStatus PrepareNativeLibrary(string libraryName, TextWriter logger)
         {
-#if !NETCOREAPP
+#if NETSTANDARD1_1
             // In .Net Standard mode the best we can do it just look for a library that already exists using kernel load calls
             logger?.WriteLine("Looking for native library \"{0}\"", libraryName);
+            logger?.WriteLine("(Since this is .NetStandard 1.1, native lib functionality is limited to loading already existing libraries that are on the system's default search path. Switch to at least .NetStandard 2.0 to get a better experience)");
             return ProbeLibrary(libraryName, GetCurrentPlatform(logger), logger);
 #else
             logger?.WriteLine("Preparing native library \"{0}\"", libraryName);
@@ -581,7 +582,7 @@ namespace Concentus.Native
                         return PlatformArchitecture.Unknown;
                 }
             }
-#if NETCOREAPP
+#if !NETSTANDARD1_1
             else if (os == PlatformOperatingSystem.Linux ||
                     os == PlatformOperatingSystem.Unix ||
                     os == PlatformOperatingSystem.Linux_Musl ||
@@ -598,7 +599,7 @@ namespace Concentus.Native
             return PlatformArchitecture.Unknown;
         }
 
-#if NETCOREAPP
+#if !NETSTANDARD1_1
         private static void DeleteLocalLibraryIfPresent(string normalizedLibraryName, TextWriter logger)
         {
             FileInfo existingLocalLibPath = new FileInfo(Path.Combine(Environment.CurrentDirectory, normalizedLibraryName));
@@ -810,14 +811,14 @@ namespace Concentus.Native
                             }
                             else
                             {
-                                logger?.WriteLine($"{libName} not found.");
+                                logger?.WriteLine($"Native library {libName} not found.");
                             }
 
                             return NativeLibraryStatus.Unavailable;
                         }
                         else
                         {
-                            logger?.WriteLine($"{libName} found");
+                            logger?.WriteLine($"Native library {libName} found!");
                             return NativeLibraryStatus.Available;
                         }
                     }
@@ -864,7 +865,7 @@ namespace Concentus.Native
                         }
                         else
                         {
-                            logger?.WriteLine($"{libName} found!");
+                            logger?.WriteLine($"Native library {libName} found!");
                             return NativeLibraryStatus.Available;
                         }
                     }
@@ -910,7 +911,7 @@ namespace Concentus.Native
                         }
                         else
                         {
-                            logger?.WriteLine($"{libName} found!");
+                            logger?.WriteLine($"Native library {libName} found!");
                             return NativeLibraryStatus.Available;
                         }
                     }
@@ -990,7 +991,7 @@ namespace Concentus.Native
             [DllImport("libdl.so")]
             internal static extern IntPtr dlerror(); // returns static pointer to null terminated CString
 
-#if NETCOREAPP
+#if !NETSTANDARD1_1
             internal static PlatformArchitecture? TryGetArchForUnix(TextWriter logger)
             {
                 try

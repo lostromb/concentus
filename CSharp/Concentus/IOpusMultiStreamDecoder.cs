@@ -79,13 +79,6 @@ namespace Concentus
         int DecodeMultistream(ReadOnlySpan<byte> data, Span<short> out_pcm, int frame_size, bool decode_fec);
 
         /// <summary>
-        /// Gets the internal decoder state of one of the multichannel stream's decoders, indicated by stream ID.
-        /// </summary>
-        /// <param name="streamId">The stream ID to fetch.</param>
-        /// <returns>The decoder for that stream ID.</returns>
-        IOpusDecoder GetMultistreamDecoderState(int streamId);
-
-        /// <summary>
         /// Resets all buffers and prepares this decoder to process a fresh (unrelated) stream
         /// </summary>
         void ResetState();

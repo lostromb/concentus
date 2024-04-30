@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.1;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard1.1;netstandard2.0;net8.0</TargetFrameworks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	<SignAssembly>True</SignAssembly>
 	<AssemblyOriginatorKeyFile>..\Concentus.snk</AssemblyOriginatorKeyFile>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -29,13 +29,15 @@
     <DefineConstants>$(DefineConstants)TRACE;PARITY</DefineConstants>
   </PropertyGroup>
 
+    <ItemGroup>
+	    <Content Include="runtimes\**">
+		    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    </Content>
+    </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="runtimes\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -487,8 +487,12 @@ namespace Concentus.Structs
             }
         }
 
-        /// <inheritdoc />
-        public IOpusDecoder GetMultistreamDecoderState(int streamId)
+        /// <summary>
+        /// Gets the internal decoder state of one of the multichannel stream's decoders, indicated by stream ID.
+        /// </summary>
+        /// <param name="streamId">The stream ID to fetch.</param>
+        /// <returns>The decoder for that stream ID.</returns>
+        public OpusDecoder GetMultistreamDecoderState(int streamId)
         {
             return decoders[streamId];
         }
