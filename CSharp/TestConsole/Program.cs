@@ -20,7 +20,7 @@ namespace ConcentusDemo
             encoder.SignalType = (OpusSignal.OPUS_SIGNAL_MUSIC);
             encoder.Complexity = (0);
 
-            OpusDecoder decoder = new OpusDecoder(16000, 1);
+            IOpusDecoder decoder = OpusCodecFactory.CreateDecoder(16000, 1, Console.Out);
 
             FileStream fileOut = new FileStream(@"C:\Code\concentus\AudioData\test-decoded.raw", FileMode.Create);
             int packetSamples = 960;

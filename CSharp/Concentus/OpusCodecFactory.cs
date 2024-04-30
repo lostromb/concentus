@@ -194,6 +194,7 @@ namespace Concentus
                     try
                     {
                         _isNativeLibAvailable = NativeOpus.Initialize(messageLogger);
+                        messageLogger?.WriteLine($"Is native opus available? {_isNativeLibAvailable}");
                     }
                     catch (Exception e)
                     {
