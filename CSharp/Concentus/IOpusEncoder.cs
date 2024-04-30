@@ -41,7 +41,7 @@ namespace Concentus
     /// May be backed either by managed code or a native adapter layer,
     /// depending on your platform and performance requirements.
     /// </summary>
-    public interface IOpusEncoder
+    public interface IOpusEncoder : IDisposable
     {
         /// <summary>
         /// Encodes an Opus frame.

@@ -42,7 +42,7 @@ namespace Concentus
     /// single packets and map them to the correct channels. The behavior of a multistream decoder is functionally the
     /// same as a single decoder in most other respects.
     /// </summary>
-    public interface IOpusMultiStreamDecoder
+    public interface IOpusMultiStreamDecoder : IDisposable
     {
         /// <summary>
         /// Decodes a multichannel Opus packet, putting the decoded audio into a floating-point buffer.

@@ -48,7 +48,7 @@ namespace Concentus
     ///  streams must be decoded with separate decoder states and can be decoded
     ///  in parallel.
     /// </summary>
-    public interface IOpusDecoder
+    public interface IOpusDecoder : IDisposable
     {
         /// <summary>
         /// Decodes an Opus packet, putting the decoded audio into a floating-point buffer.

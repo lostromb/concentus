@@ -1,6 +1,4 @@
-﻿using Concentus.Enums;
-using Concentus.Structs;
-using System;
+﻿
 /* Copyright (c) 2024 Logan Stromberg
 
    Redistribution and use in source and binary forms, with or without
@@ -32,6 +30,9 @@ using System;
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using Concentus.Enums;
+using Concentus.Structs;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -45,6 +46,7 @@ namespace Concentus
     /// </summary>
     public static class OpusCodecFactory
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         /// <summary>
         /// Creates an IOpusEncoder appropriate for the current platform.
         /// This could potentially involve a native code layer.
@@ -103,5 +105,6 @@ namespace Concentus
         {
             return new OpusMSDecoder(Fs, channels, streams, coupled_streams, mapping);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
