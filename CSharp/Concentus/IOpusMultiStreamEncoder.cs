@@ -71,13 +71,6 @@ namespace Concentus
         int EncodeMultistream(ReadOnlySpan<short> in_pcm, int frame_size, Span<byte> out_data, int max_data_bytes);
 
         /// <summary>
-        /// Gets the internal encoder state of one of the multichannel stream's enoders, indicated by stream ID.
-        /// </summary>
-        /// <param name="streamId">The stream ID to fetch.</param>
-        /// <returns>The encoder for that stream ID.</returns>
-        IOpusEncoder GetMultistreamEncoderState(int streamId);
-
-        /// <summary>
         /// Resets the state of this encoder, usually to prepare it for processing
         /// a new audio stream without reallocating.
         /// </summary>
@@ -128,7 +121,7 @@ namespace Concentus
         /// Hybrid is used to create a smooth transition between the two modes. Note that this value may not always be honored due to other factors such
         /// as frame size and bitrate.
         /// </summary>
-        OpusMode ForceMode { get; set; }
+        OpusMode ForceMode { set; }
 
         /// <summary>
         /// Gets the number of samples of audio that are being stored in a buffer and are therefore contributing to latency.

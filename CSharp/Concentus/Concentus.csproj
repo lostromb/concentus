@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFrameworks>netstandard1.1;netstandard2.0;net8.0</TargetFrameworks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	<SignAssembly>True</SignAssembly>
 	<AssemblyOriginatorKeyFile>..\Concentus.snk</AssemblyOriginatorKeyFile>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<Version>2.0.0</Version>
+	<Version>2.1.0</Version>
 	<Authors>Logan Stromberg</Authors>
 	<Description>This package is a pure portable C# implementation of the Opus audio compression codec (see https://opus-codec.org/ for more details). This package contains the Opus encoder, decoder, multistream codecs, repacketizer, as well as a port of the libspeexdsp resampler. It does NOT contain code to parse .ogg or .opus container files or to manage RTP packet streams</Description>
 	<Copyright>© Xiph.Org Foundation, Skype Limited, CSIRO, Microsoft Corp.</Copyright>
@@ -29,13 +29,15 @@
     <DefineConstants>$(DefineConstants)TRACE;PARITY</DefineConstants>
   </PropertyGroup>
 
+    <ItemGroup>
+	    <Content Include="runtimes\**">
+		    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    </Content>
+    </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="runtimes\" />
   </ItemGroup>
 
   <ItemGroup>

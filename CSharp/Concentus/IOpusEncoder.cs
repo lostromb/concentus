@@ -183,27 +183,16 @@ namespace Concentus
         OpusFramesize ExpertFrameDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets a user-forced mode for the encoder. There are three modes, SILK, HYBRID, and CELT. Silk can only encode below 40Kbit/s and is best suited
+        /// Sets a user-forced mode for the encoder. There are three modes, SILK, HYBRID, and CELT. Silk can only encode below 40Kbit/s and is best suited
         /// for speech. Silk also has modes such as FEC which may be desirable. Celt sounds better at higher bandwidth and is comparable to AAC. It also performs somewhat faster.
         /// Hybrid is used to create a smooth transition between the two modes. Note that this value may not always be honored due to other factors such
         /// as frame size and bitrate.
         /// </summary>
-        OpusMode ForceMode { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating that this stream is a low-frequency channel. This is used when encoding 5.1 surround audio.
-        /// </summary>
-        bool IsLFE { get; set; }
+        OpusMode ForceMode { set; }
 
         /// <summary>
         /// Gets or sets a flag to disable prediction, which does... something with the SILK codec
         /// </summary>
         bool PredictionDisabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether neural net analysis functions should be enabled, increasing encode quality
-        /// at the expense of speed.
-        /// </summary>
-        bool EnableAnalysis { get; set; }
     }
 }

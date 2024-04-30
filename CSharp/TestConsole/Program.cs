@@ -5,6 +5,7 @@ using Concentus.Common;
 using Concentus.Common.CPlusPlus;
 using Concentus.Structs;
 using Concentus.Enums;
+using Concentus;
 
 namespace ConcentusDemo
 {
@@ -12,16 +13,16 @@ namespace ConcentusDemo
     {
         public static void Main(string[] args)
         {
-            FileStream fileIn = new FileStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\repro.raw", FileMode.Open);
-            OpusEncoder encoder = new OpusEncoder(16000, 1, OpusApplication.OPUS_APPLICATION_AUDIO);
+            FileStream fileIn = new FileStream(@"C:\Code\concentus\AudioData\16Khz Mono.raw", FileMode.Open);
+            IOpusEncoder encoder = OpusCodecFactory.CreateEncoder(16000, 1, OpusApplication.OPUS_APPLICATION_AUDIO, Console.Out);
             encoder.Bitrate = (96000);
             encoder.ForceMode = (OpusMode.MODE_CELT_ONLY);
             encoder.SignalType = (OpusSignal.OPUS_SIGNAL_MUSIC);
             encoder.Complexity = (0);
 
-            OpusDecoder decoder = new OpusDecoder(16000, 1);
+            IOpusDecoder decoder = OpusCodecFactory.CreateDecoder(16000, 1, Console.Out);
 
-            FileStream fileOut = new FileStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\out_c.raw", FileMode.Create);
+            FileStream fileOut = new FileStream(@"C:\Code\concentus\AudioData\test-decoded.raw", FileMode.Create);
             int packetSamples = 960;
             byte[] inBuf = new byte[packetSamples * 2];
             byte[] data_packet = new byte[1275];
@@ -29,10 +30,10 @@ namespace ConcentusDemo
             {
                 int bytesRead = fileIn.Read(inBuf, 0, inBuf.Length);
                 short[] pcm = BytesToShorts(inBuf, 0, inBuf.Length);
-                int bytesEncoded = encoder.Encode(pcm, 0, packetSamples, data_packet, 0, 1275);
+                int bytesEncoded = encoder.Encode(pcm.AsSpan(), packetSamples, data_packet.AsSpan(), 1275);
                 //System.out.println(bytesEncoded + " bytes encoded");
 
-                int samplesDecoded = decoder.Decode(data_packet, 0, bytesEncoded, pcm, 0, packetSamples, false);
+                int samplesDecoded = decoder.Decode(data_packet.AsSpan(0, bytesEncoded), pcm.AsSpan(), packetSamples, false);
                 //System.out.println(samplesDecoded + " samples decoded");
                 byte[] bytesOut = ShortsToBytes(pcm);
                 fileOut.Write(bytesOut, 0, bytesOut.Length);

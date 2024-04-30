@@ -1233,8 +1233,12 @@ namespace Concentus.Structs
             }
         }
 
-        /// <inheritdoc />
-        public IOpusEncoder GetMultistreamEncoderState(int streamId)
+        /// <summary>
+        /// Gets the internal encoder state of one of the multichannel stream's enoders, indicated by stream ID.
+        /// </summary>
+        /// <param name="streamId">The stream ID to fetch.</param>
+        /// <returns>The encoder for that stream ID.</returns>
+        public OpusEncoder GetMultistreamEncoderState(int streamId)
         {
             if (streamId >= layout.nb_streams)
                 throw new ArgumentException("Requested stream doesn't exist");
