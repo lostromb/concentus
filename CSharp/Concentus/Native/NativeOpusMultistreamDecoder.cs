@@ -31,7 +31,9 @@ namespace Concentus.Native
                     returnVal.Dispose();
                     throw new Exception($"Failed to create opus MS decoder: error {error}");
                 }
-
+                
+                returnVal._sampleRate = sampleRate;
+                returnVal._numChannels = channelCount;
                 return returnVal;
             }
         }
