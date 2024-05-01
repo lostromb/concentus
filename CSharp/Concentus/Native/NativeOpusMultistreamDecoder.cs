@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Concentus.Native
 {
-#if !NETSTANDARD1_1
+#if !NETSTANDARD1_1 && !NET8_0_OR_GREATER
     // SafeHandle flavor of the decoder
     internal class NativeOpusMultistreamDecoder : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid, IOpusMultiStreamDecoder
     {

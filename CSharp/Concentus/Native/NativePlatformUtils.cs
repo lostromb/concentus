@@ -60,8 +60,8 @@ namespace Concentus.Native
             PlatformOperatingSystem os = PlatformOperatingSystem.Unknown;
             PlatformArchitecture arch = PlatformArchitecture.Unknown;
 #if NETCOREAPP
-            OSAndArchitecture fromRid = NativePlatformUtils.ParseRuntimeId(RuntimeInformation.RuntimeIdentifier);
-            logger?.WriteLine($"Parsed runtime ID \"{RuntimeInformation.RuntimeIdentifier}\" as {fromRid}");
+            logger?.WriteLine($"Runtime ID is \"{RuntimeInformation.RuntimeIdentifier}\"");
+            OSAndArchitecture fromRid = ParseRuntimeId(RuntimeInformation.RuntimeIdentifier);
             os = fromRid.OS;
             arch = fromRid.Architecture;
 #endif
@@ -94,7 +94,7 @@ namespace Concentus.Native
             if (arch == PlatformArchitecture.Unknown)
             {
                 // First try native kernel interop
-                arch = NativePlatformUtils.TryGetNativeArchitecture(os, logger);
+                arch = TryGetNativeArchitecture(os, logger);
             }
 
             // Then just fall back to the .net runtime values
@@ -155,6 +155,8 @@ namespace Concentus.Native
             logger?.WriteLine("Preparing native library \"{0}\"", libraryName);
 
             OSAndArchitecture platform = GetCurrentPlatform(logger);
+            logger?.WriteLine("Detected current platform as \"{0}\"", platform);
+
             string normalizedLibraryName = NormalizeLibraryName(libraryName, platform);
             lock (_mutex)
             {
@@ -170,7 +172,7 @@ namespace Concentus.Native
                     // On android we're not allowed to dlopen shared system binaries directly.
                     // So we have to probe and see if there's a native .so provided to us by this application's .apk
                     logger?.WriteLine($"Probing for {normalizedLibraryName} within local Android .apk");
-                    NativeLibraryStatus androidApkLibStatus = NativePlatformUtils.ProbeLibrary(normalizedLibraryName, platform, logger);
+                    NativeLibraryStatus androidApkLibStatus = ProbeLibrary(normalizedLibraryName, platform, logger);
                     if (androidApkLibStatus != NativeLibraryStatus.Available)
                     {
                         logger?.WriteLine("Native library \"{0}\" was not found in the local .apk", libraryName);
@@ -182,7 +184,7 @@ namespace Concentus.Native
 
                 // See if the library is actually provided by the system already
                 logger?.WriteLine($"Probing for an already existing {normalizedLibraryName}");
-                NativeLibraryStatus builtInLibStatus = NativePlatformUtils.ProbeLibrary(normalizedLibraryName, platform, logger);
+                NativeLibraryStatus builtInLibStatus = ProbeLibrary(normalizedLibraryName, platform, logger);
                 if (builtInLibStatus == NativeLibraryStatus.Available)
                 {
                     logger?.WriteLine("Native library \"{0}\" resolved to an already-existing library. Loading current file as-is.", libraryName);
