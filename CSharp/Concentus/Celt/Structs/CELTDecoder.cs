@@ -288,6 +288,7 @@ namespace Concentus.Celt.Structs
 
                 etmp = new int[overlap];
                 exc = new int[CeltConstants.MAX_PERIOD];
+                Span<int> lpc_mem = stackalloc int[CeltConstants.LPC_ORDER];
                 window = mode.window;
                 c = 0; do
                 {
@@ -329,7 +330,6 @@ namespace Concentus.Celt.Structs
                     /* Initialize the LPC history with the samples just before the start
                        of the region for which we're computing the excitation. */
                     {
-                        Span<int> lpc_mem = stackalloc int[CeltConstants.LPC_ORDER];
                         for (i = 0; i < CeltConstants.LPC_ORDER; i++)
                         {
                             lpc_mem[i] =
@@ -400,7 +400,6 @@ namespace Concentus.Celt.Structs
                     }
 
                     {
-                        Span<int> lpc_mem = stackalloc int[CeltConstants.LPC_ORDER];
                         /* Copy the last decoded samples (prior to the overlap region) to
                            synthesis filter memory so we can have a continuous signal. */
                         for (i = 0; i < CeltConstants.LPC_ORDER; i++)
