@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Concentus.Native
 {
-    internal static class NativeOpus
+    internal partial class NativeOpus
     {
         private const string LIBRARY_NAME = "opus";
 
@@ -63,7 +63,101 @@ namespace Concentus.Native
 
         internal const int OPUS_RESET_STATE = 4028;
 
-#if !NETSTANDARD1_1 // Use strongly-typed SafeHandles if we support them
+        // This is a big ugly mess and I hate it but this is the clearest way to appease all users of the library.
+
+        // If you're on .NetStandard 1.1 - 1.6, this will use P/Invoke via DllImport and passing around
+        // raw IntPtrs, which works well enough but you don't get the benefits of strong type checking, etc.
+        // Also, the native platform resolver is limited to just locating libraries that are already installed
+        // and available; it doesn't have the power to actually pull in the proper libs dynamically.
+        // This is here to support the very lowest common denominator of old .NetFX 4.5, PCL, Mono, and whatever
+        // contingent still wants to run this code on really old stuff.
+
+        // If you're on .NetStandard 2.0 - Net 7.0, this still uses DllImport, except it passes around
+        // strongly-typed SafeHandle objects which give a little more peace of mind about making
+        // sure handles are managed properly in the event of, say, an exception in the middle of a constructor,
+        // or the caller forgetting to dispose properly.
+
+        // If you're on .Net 8.0 or above, replace DllImport with LibraryImport and let the compiler
+        // create the interop code on the backend (so this has to be a partial class.
+        // This is to allow consumers who use AoT compilation to still pull in this package
+        // and use it because it eliminates all usage of reflection.
+
+#if NET8_0_OR_GREATER // Prefer LibraryImport so we can support AOT consumers of this package
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial IntPtr opus_decoder_create(int Fs, int channels, out int error);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial IntPtr opus_multistream_decoder_create(int Fs, int channels, int streams, int coupled_streams, byte* mapping, out int error);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial int opus_decode(IntPtr st, byte* data, int len, short* pcm, int frame_size, int decode_fec);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial int opus_decode_float(IntPtr st, byte* data, int len, float* pcm, int frame_size, int decode_fec);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial int opus_multistream_decode(IntPtr st, byte* data, int len, short* pcm, int frame_size, int decode_fec);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial int opus_multistream_decode_float(IntPtr st, byte* data, int len, float* pcm, int frame_size, int decode_fec);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial IntPtr opus_encoder_create(int Fs, int channels, int application, out int error);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial IntPtr opus_multistream_surround_encoder_create(int Fs, int channels, int mapping_family, out int streams, out int coupled_streams, byte* mapping, int application, out int error);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial int opus_encode(IntPtr st, short* pcm, int frame_size, byte* data, int max_data_bytes);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial int opus_encode_float(IntPtr st, float* pcm, int frame_size, byte* data, int max_data_bytes);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial int opus_multistream_encode(IntPtr st, short* pcm, int frame_size, byte* data, int max_data_bytes);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static unsafe partial int opus_multistream_encode_float(IntPtr st, float* pcm, int frame_size, byte* data, int max_data_bytes);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial int opus_decoder_ctl(IntPtr st, int request, int value);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial int opus_decoder_ctl(IntPtr st, int request, out int value);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial int opus_encoder_ctl(IntPtr st, int request, int value);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial int opus_encoder_ctl(IntPtr st, int request, out int value);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial int opus_multistream_decoder_ctl(IntPtr st, int request, int value);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial int opus_multistream_decoder_ctl(IntPtr st, int request, out int value);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial int opus_multistream_encoder_ctl(IntPtr st, int request, int value);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial int opus_multistream_encoder_ctl(IntPtr st, int request, out int value);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial IntPtr opus_get_version_string();
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial void opus_encoder_destroy(IntPtr encoder);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial void opus_multistream_encoder_destroy(IntPtr encoder);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial void opus_decoder_destroy(IntPtr decoder);
+
+        [LibraryImport(LIBRARY_NAME)]
+        internal static partial void opus_multistream_decoder_destroy(IntPtr decoder);
+#elif !NETSTANDARD1_1 // Use strongly-typed SafeHandles if we support them
         [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern NativeOpusDecoder opus_decoder_create(int Fs, int channels, out int error);
 
@@ -123,6 +217,21 @@ namespace Concentus.Native
 
         [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern int opus_multistream_encoder_ctl(NativeOpusMultistreamEncoder st, int request, out int value);
+
+        [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr opus_get_version_string();
+
+        [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void opus_encoder_destroy(IntPtr encoder);
+
+        [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void opus_multistream_encoder_destroy(IntPtr encoder);
+
+        [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void opus_decoder_destroy(IntPtr decoder);
+
+        [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void opus_multistream_decoder_destroy(IntPtr decoder);
 
 #else // If we are running in netstandard (presumably on some older platform like Mono / Net45, use IntPtr handles for compatibility
 
@@ -185,7 +294,6 @@ namespace Concentus.Native
 
         [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern int opus_multistream_encoder_ctl(IntPtr st, int request, out int value);
-#endif
 
         [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr opus_get_version_string();
@@ -201,5 +309,6 @@ namespace Concentus.Native
 
         [DllImport(LIBRARY_NAME, CallingConvention = CallingConvention.Cdecl)]
         internal static extern void opus_multistream_decoder_destroy(IntPtr decoder);
+#endif
     }
 }

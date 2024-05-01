@@ -9,6 +9,7 @@
             <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
             <Visible>False</Visible>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </Content>
     </ItemGroup>
 </Project>

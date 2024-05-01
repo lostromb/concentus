@@ -1431,7 +1431,7 @@ namespace Concentus.Structs
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
-        [Obsolete("Use Span<> overrides instead")]
+        [Obsolete("Use Span<> overrides if possible")]
         public int Encode(short[] in_pcm, int pcm_offset, int frame_size,
               byte[] out_data, int out_data_offset, int max_data_bytes)
         {
@@ -1514,7 +1514,7 @@ namespace Concentus.Structs
         /// <param name="max_data_bytes">The maximum amount of space allocated for the output payload. This may be used to impose
         /// an upper limit on the instant bitrate, but should not be used as the only bitrate control (use the Bitrate parameter for that)</param>
         /// <returns>The length of the encoded packet, in bytes. This value will always be less than or equal to 1275, the maximum Opus packet size.</returns>
-        [Obsolete("Use Span<> overrides instead")]
+        [Obsolete("Use Span<> overrides if possible")]
         public int Encode(float[] in_pcm, int in_pcm_offset, int frame_size, byte[] out_data, int out_data_offset, int max_data_bytes)
         {
             return Encode(in_pcm.AsSpan(in_pcm_offset), frame_size, out_data.AsSpan(out_data_offset), max_data_bytes);

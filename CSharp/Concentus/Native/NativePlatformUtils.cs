@@ -60,8 +60,8 @@ namespace Concentus.Native
             PlatformOperatingSystem os = PlatformOperatingSystem.Unknown;
             PlatformArchitecture arch = PlatformArchitecture.Unknown;
 #if NETCOREAPP
-            OSAndArchitecture fromRid = NativePlatformUtils.ParseRuntimeId(RuntimeInformation.RuntimeIdentifier);
-            logger?.WriteLine($"Parsed runtime ID \"{RuntimeInformation.RuntimeIdentifier}\" as {fromRid}");
+            logger?.WriteLine($"Runtime ID is \"{RuntimeInformation.RuntimeIdentifier}\"");
+            OSAndArchitecture fromRid = ParseRuntimeId(RuntimeInformation.RuntimeIdentifier);
             os = fromRid.OS;
             arch = fromRid.Architecture;
 #endif
@@ -94,7 +94,7 @@ namespace Concentus.Native
             if (arch == PlatformArchitecture.Unknown)
             {
                 // First try native kernel interop
-                arch = NativePlatformUtils.TryGetNativeArchitecture(os, logger);
+                arch = TryGetNativeArchitecture(os, logger);
             }
 
             // Then just fall back to the .net runtime values
@@ -155,6 +155,8 @@ namespace Concentus.Native
             logger?.WriteLine("Preparing native library \"{0}\"", libraryName);
 
             OSAndArchitecture platform = GetCurrentPlatform(logger);
+            logger?.WriteLine("Detected current platform as \"{0}\"", platform);
+
             string normalizedLibraryName = NormalizeLibraryName(libraryName, platform);
             lock (_mutex)
             {
@@ -170,7 +172,7 @@ namespace Concentus.Native
                     // On android we're not allowed to dlopen shared system binaries directly.
                     // So we have to probe and see if there's a native .so provided to us by this application's .apk
                     logger?.WriteLine($"Probing for {normalizedLibraryName} within local Android .apk");
-                    NativeLibraryStatus androidApkLibStatus = NativePlatformUtils.ProbeLibrary(normalizedLibraryName, platform, logger);
+                    NativeLibraryStatus androidApkLibStatus = ProbeLibrary(normalizedLibraryName, platform, logger);
                     if (androidApkLibStatus != NativeLibraryStatus.Available)
                     {
                         logger?.WriteLine("Native library \"{0}\" was not found in the local .apk", libraryName);
@@ -182,7 +184,7 @@ namespace Concentus.Native
 
                 // See if the library is actually provided by the system already
                 logger?.WriteLine($"Probing for an already existing {normalizedLibraryName}");
-                NativeLibraryStatus builtInLibStatus = NativePlatformUtils.ProbeLibrary(normalizedLibraryName, platform, logger);
+                NativeLibraryStatus builtInLibStatus = ProbeLibrary(normalizedLibraryName, platform, logger);
                 if (builtInLibStatus == NativeLibraryStatus.Available)
                 {
                     logger?.WriteLine("Native library \"{0}\" resolved to an already-existing library. Loading current file as-is.", libraryName);
@@ -565,18 +567,18 @@ namespace Concentus.Native
         {
             if (os == PlatformOperatingSystem.Windows)
             {
-                Kernel_Windows.SYSTEM_INFO info = default;
-                Kernel_Windows.GetSystemInfo(ref info);
+                KernelInteropWindows.SYSTEM_INFO info = default;
+                KernelInteropWindows.GetSystemInfo(ref info);
                 switch (info.wProcessorArchitecture)
                 {
-                    case Kernel_Windows.PROCESSOR_ARCHITECTURE_INTEL:
-                    case Kernel_Windows.PROCESSOR_ARCHITECTURE_AMD64:
+                    case KernelInteropWindows.PROCESSOR_ARCHITECTURE_INTEL:
+                    case KernelInteropWindows.PROCESSOR_ARCHITECTURE_AMD64:
                         return Unsafe.SizeOf<IntPtr>() == 4 ? PlatformArchitecture.I386 : PlatformArchitecture.X64;
-                    case Kernel_Windows.PROCESSOR_ARCHITECTURE_ARM:
+                    case KernelInteropWindows.PROCESSOR_ARCHITECTURE_ARM:
                         return PlatformArchitecture.ArmV7;
-                    case Kernel_Windows.PROCESSOR_ARCHITECTURE_ARM64:
+                    case KernelInteropWindows.PROCESSOR_ARCHITECTURE_ARM64:
                         return PlatformArchitecture.Arm64;
-                    case Kernel_Windows.PROCESSOR_ARCHITECTURE_IA64:
+                    case KernelInteropWindows.PROCESSOR_ARCHITECTURE_IA64:
                         return PlatformArchitecture.Itanium64;
                     default:
                         return PlatformArchitecture.Unknown;
@@ -588,7 +590,7 @@ namespace Concentus.Native
                     os == PlatformOperatingSystem.Linux_Musl ||
                     os == PlatformOperatingSystem.Linux_Bionic)
             {
-                PlatformArchitecture? possibleArch = Kernel_Linux.TryGetArchForUnix(logger);
+                PlatformArchitecture? possibleArch = KernelInteropLinux.TryGetArchForUnix(logger);
                 if (possibleArch.HasValue)
                 {
                     return possibleArch.Value;
@@ -788,11 +790,11 @@ namespace Concentus.Native
                     try
                     {
                         if (logger != null) logger.WriteLine($"Attempting to load {libName} as a windows .dll");
-                        Kernel_Windows.GetLastError(); // clear any previous error
-                        dllHandle = Kernel_Windows.LoadLibraryEx(libName, hFile: IntPtr.Zero, dwFlags: Kernel_Windows.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                        KernelInteropWindows.GetLastError(); // clear any previous error
+                        dllHandle = KernelInteropWindows.LoadLibraryEx(libName, hFile: IntPtr.Zero, dwFlags: KernelInteropWindows.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
                         if (dllHandle == IntPtr.Zero)
                         {
-                            uint lastError = Kernel_Windows.GetLastError();
+                            uint lastError = KernelInteropWindows.GetLastError();
                             if (lastError != 0)
                             {
                                 uint hresult = 0x80070000 | lastError;
@@ -826,7 +828,7 @@ namespace Concentus.Native
                     {
                         if (dllHandle != IntPtr.Zero)
                         {
-                            Kernel_Windows.FreeLibrary(dllHandle);
+                            KernelInteropWindows.FreeLibrary(dllHandle);
                         }
                     }
                 }
@@ -840,10 +842,10 @@ namespace Concentus.Native
                     try
                     {
                         logger?.WriteLine($"Attempting to load {libName} as a linux .so");
-                        soHandle = Kernel_Linux.dlopen(libName, Kernel_Linux.RTLD_NOW);
+                        soHandle = KernelInteropLinux.dlopen(libName, KernelInteropLinux.RTLD_NOW);
                         if (soHandle == IntPtr.Zero)
                         {
-                            IntPtr lastError = Kernel_Linux.dlerror();
+                            IntPtr lastError = KernelInteropLinux.dlerror();
                             if (lastError != IntPtr.Zero)
                             {
                                 string dlErrorMsg = Marshal.PtrToStringAnsi(lastError);
@@ -873,7 +875,7 @@ namespace Concentus.Native
                     {
                         if (soHandle != IntPtr.Zero)
                         {
-                            Kernel_Linux.dlclose(soHandle);
+                            KernelInteropLinux.dlclose(soHandle);
                         }
                     }
                 }
@@ -886,10 +888,10 @@ namespace Concentus.Native
                     try
                     {
                         logger?.WriteLine($"Attempting to load {libName} as a macOS .dylib");
-                        dylibHandle = Kernel_MacOS.dlopen(libName, Kernel_MacOS.RTLD_NOW);
+                        dylibHandle = KernelInteropMacOS.dlopen(libName, KernelInteropMacOS.RTLD_NOW);
                         if (dylibHandle == IntPtr.Zero)
                         {
-                            IntPtr lastError = Kernel_MacOS.dlerror();
+                            IntPtr lastError = KernelInteropMacOS.dlerror();
                             if (lastError != IntPtr.Zero)
                             {
                                 string dlErrorMsg = Marshal.PtrToStringAnsi(lastError);
@@ -919,7 +921,7 @@ namespace Concentus.Native
                     {
                         if (dylibHandle != IntPtr.Zero)
                         {
-                            Kernel_MacOS.dlclose(dylibHandle);
+                            KernelInteropMacOS.dlclose(dylibHandle);
                         }
                     }
                 }
@@ -930,121 +932,6 @@ namespace Concentus.Native
             }
 
             return NativeLibraryStatus.Unknown;
-        }
-
-        internal class Kernel_Windows
-        {
-            // if we use this flag then we can improperly load libraries that don't match the current architecture, so avoid it
-            internal const uint LOAD_LIBRARY_AS_DATAFILE = 0x00000002;
-
-            internal const uint LOAD_LIBRARY_SEARCH_DEFAULT_DIRS = 0x00001000;
-
-            internal const ushort PROCESSOR_ARCHITECTURE_INTEL = 0x0000;
-            internal const ushort PROCESSOR_ARCHITECTURE_AMD64 = 0x0009;
-            internal const ushort PROCESSOR_ARCHITECTURE_ARM = 0x0005;
-            internal const ushort PROCESSOR_ARCHITECTURE_ARM64 = 0x0012;
-            internal const ushort PROCESSOR_ARCHITECTURE_IA64 = 0x0006;
-            internal const ushort PROCESSOR_ARCHITECTURE_UNKNOWN = 0xFFFF;
-
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            internal static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
-
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool FreeLibrary(IntPtr hModule);
-
-            [DllImport("kernel32.dll", SetLastError = false)]
-            internal static extern uint GetLastError();
-
-            [StructLayout(LayoutKind.Sequential)]
-            internal struct SYSTEM_INFO
-            {
-                internal ushort wProcessorArchitecture;
-                internal ushort wReserved;
-                internal uint dwPageSize;
-                internal IntPtr lpMinimumApplicationAddress;
-                internal IntPtr lpMaximumApplicationAddress;
-                internal IntPtr dwActiveProcessorMask;
-                internal uint dwNumberOfProcessors;
-                internal uint dwProcessorType;
-                internal uint dwAllocationGranularity;
-                internal ushort wProcessorLevel;
-                internal ushort wProcessorRevision;
-            }
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            internal static extern void GetSystemInfo(ref SYSTEM_INFO Info);
-        }
-
-        internal class Kernel_Linux
-        {
-            internal const int RTLD_NOW = 2;
-
-            [DllImport("libdl.so")]
-            internal static extern IntPtr dlopen(string fileName, int flags);
-
-            [DllImport("libdl.so")]
-            internal static extern int dlclose(IntPtr handle);
-
-            [DllImport("libdl.so")]
-            internal static extern IntPtr dlerror(); // returns static pointer to null terminated CString
-
-#if !NETSTANDARD1_1
-            internal static PlatformArchitecture? TryGetArchForUnix(TextWriter logger)
-            {
-                try
-                {
-                    logger?.WriteLine("Running uname to determine system info...");
-                    using (Process procInfo = Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = "uname",
-                        Arguments = "-m",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        CreateNoWindow = true,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                    }))
-                    using (StreamReader stdOut = procInfo.StandardOutput)
-                    {
-                        string output = stdOut.ReadToEnd();
-                        if (string.IsNullOrEmpty(output))
-                        {
-                            return null;
-                        }
-
-                        output = output.Trim();
-                        PlatformArchitecture parsedArch;
-                        if (POSSIBLE_UNIX_MACHINES.TryGetValue(output, out parsedArch))
-                        {
-                            logger?.WriteLine($"Got architecture from uname: {output}");
-                            return parsedArch;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    logger?.WriteLine(e);
-                }
-
-                return null;
-            }
-#endif
-        }
-
-        internal class Kernel_MacOS
-        {
-            internal const int RTLD_NOW = 2;
-
-            [DllImport("libSystem.dylib")]
-            internal static extern IntPtr dlopen(string fileName, int flags);
-
-            [DllImport("libSystem.dylib")]
-            internal static extern int dlclose(IntPtr handle);
-
-            [DllImport("libSystem.dylib")]
-            internal static extern IntPtr dlerror(); // returns static pointer to null terminated CString
         }
 
         #region Big tables
@@ -1135,31 +1022,6 @@ namespace Concentus.Native
                 { "win-arm64", new string[] { "win", "any" } },
                 { "win-x64", new string[] { "win", "any" } },
                 { "win-x86", new string[] { "win", "any" } },
-            };
-
-        // helpful list from https://en.wikipedia.org/wiki/Uname
-        internal static readonly IReadOnlyDictionary<string, PlatformArchitecture> POSSIBLE_UNIX_MACHINES =
-            new Dictionary<string, PlatformArchitecture>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "amd64", PlatformArchitecture.X64 },
-                { "x86_64", PlatformArchitecture.X64 },
-                { "i686-64", PlatformArchitecture.X64 },
-                { "x86", PlatformArchitecture.I386 },
-                { "i686", PlatformArchitecture.I386 },
-                { "i686-AT386", PlatformArchitecture.I386 },
-                { "i386", PlatformArchitecture.I386 },
-                { "x86pc", PlatformArchitecture.I386 },
-                { "i86pc", PlatformArchitecture.I386 },
-                { "armv6l", PlatformArchitecture.ArmV6 },
-                { "armv7l", PlatformArchitecture.ArmV7 },
-                { "arm64", PlatformArchitecture.Arm64 },
-                { "aarch64", PlatformArchitecture.Arm64 },
-                { "aarch64_be", PlatformArchitecture.Arm64 },
-                { "armv8l", PlatformArchitecture.Arm64 },
-                { "armv8b", PlatformArchitecture.Arm64 },
-                { "mips64", PlatformArchitecture.Mips64 },
-                { "ppc64", PlatformArchitecture.PowerPC64 },
-                { "ppc64le", PlatformArchitecture.PowerPC64 },
             };
         #endregion
     }

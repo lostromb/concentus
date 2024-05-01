@@ -731,7 +731,7 @@ namespace Concentus.Structs
         /// recovery scheme, you will actually decode this packet twice, first with decode_fec TRUE and then again with FALSE. If FEC data is not
         /// available in this packet, the decoder will simply generate a best-effort recreation of the lost packet.</param>
         /// <returns>The number of decoded samples</returns>
-        [Obsolete("Use Span<> overrides instead")]
+        [Obsolete("Use Span<> overrides if possible")]
         public int Decode(byte[] in_data, int in_data_offset,
              int len, short[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec = false)
         {
@@ -811,7 +811,7 @@ namespace Concentus.Structs
         /// available in this packet, the decoder will simply generate a best-effort recreation of the lost packet. In that case,
         /// the length of frame_size must be EXACTLY the length of the audio that was lost, or else the decoder will be in an inconsistent state.</param>
         /// <returns>The number of decoded samples (per channel)</returns>
-        [Obsolete("Use Span<> overrides instead")]
+        [Obsolete("Use Span<> overrides if possible")]
         public int Decode(byte[] in_data, int in_data_offset,
             int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec = false)
         {

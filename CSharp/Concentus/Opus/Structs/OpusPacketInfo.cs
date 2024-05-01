@@ -53,17 +53,17 @@ namespace Concentus.Structs
         /// <summary>
         /// The Table of Contents byte for this packet. Contains info about modes, frame length, etc.
         /// </summary>
-        public readonly byte TOCByte;
+        public byte TOCByte { get; private set; }
 
         /// <summary>
         /// The list of subframes in this packet
         /// </summary>
-        public readonly IList<byte[]> Frames;
+        public IList<byte[]> Frames { get; private set; }
 
         /// <summary>
         /// The index of the start of the payload within the packet
         /// </summary>
-        public readonly int PayloadOffset;
+        public int PayloadOffset { get; private set; }
 
         private OpusPacketInfo(byte toc, IList<byte[]> frames, int payloadOffset)
         {
@@ -74,13 +74,14 @@ namespace Concentus.Structs
 
         /// <summary>
         /// Parse an opus packet into a packetinfo object containing one or more frames.
-        /// Opus_decode will perform this operation internally so most applications do
+        /// Opus decode will perform this operation internally so most applications do
         /// not need to use this function.
         /// </summary>
         /// <param name="packet">The packet data to be parsed</param>
         /// <param name="packet_offset">The index of the beginning of the packet in the data array (usually 0)</param>
         /// <param name="len">The packet's length</param>
         /// <returns>A parsed packet info struct</returns>
+        [Obsolete("Use Span<> overrides if possible")]
         public static OpusPacketInfo ParseOpusPacket(byte[] packet, int packet_offset, int len)
         {
             return ParseOpusPacket(packet.AsSpan(packet_offset, len));
@@ -127,7 +128,7 @@ namespace Concentus.Structs
         /// </summary>
         /// <param name="Fs">Sampling rate in Hz. This must be a multiple of 400, or inaccurate results will be returned.</param>
         /// <returns>Number of samples per frame</returns>
-        public int GetNumSamplesPerFrame(int Fs)
+        public int NumSamplesPerFrame(int Fs)
         {
             int audiosize;
             if ((TOCByte & 0x80) != 0)
@@ -185,25 +186,29 @@ namespace Concentus.Structs
         /// Gets the encoded bandwidth of an Opus packet. Note that you are not forced to decode at this bandwidth
         /// </summary>
         /// <returns>An OpusBandwidth value</returns>
-        public OpusBandwidth GetBandwidth()
+        public OpusBandwidth Bandwidth
         {
-            OpusBandwidth bandwidth;
-            if ((TOCByte & 0x80) != 0)
+            get
             {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((TOCByte >> 5) & 0x3);
-                if (bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
-                    bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                OpusBandwidth bandwidth;
+                if ((TOCByte & 0x80) != 0)
+                {
+                    bandwidth = OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND + ((TOCByte >> 5) & 0x3);
+                    if (bandwidth == OpusBandwidth.OPUS_BANDWIDTH_MEDIUMBAND)
+                        bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND;
+                }
+                else if ((TOCByte & 0x60) == 0x60)
+                {
+                    bandwidth = ((TOCByte & 0x10) != 0) ? OpusBandwidth.OPUS_BANDWIDTH_FULLBAND :
+                                                 OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
+                }
+                else
+                {
+                    bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + ((TOCByte >> 5) & 0x3);
+                }
+
+                return bandwidth;
             }
-            else if ((TOCByte & 0x60) == 0x60)
-            {
-                bandwidth = ((TOCByte & 0x10) != 0) ? OpusBandwidth.OPUS_BANDWIDTH_FULLBAND :
-                                             OpusBandwidth.OPUS_BANDWIDTH_SUPERWIDEBAND;
-            }
-            else
-            {
-                bandwidth = OpusBandwidth.OPUS_BANDWIDTH_NARROWBAND + ((TOCByte >> 5) & 0x3);
-            }
-            return bandwidth;
         }
 
         /// <summary>
@@ -235,9 +240,12 @@ namespace Concentus.Structs
         /// Gets the number of encoded channels of an Opus packet. Note that you are not forced to decode with this channel count.
         /// </summary>
         /// <returns>The number of channels</returns>
-        public int GetNumEncodedChannels()
+        public int NumEncodedChannels
         {
-            return ((TOCByte & 0x4) != 0) ? 2 : 1;
+            get
+            {
+                return ((TOCByte & 0x4) != 0) ? 2 : 1;
+            }
         }
 
         /// <summary>
@@ -301,6 +309,7 @@ namespace Concentus.Structs
         /// <param name="packet_offset">The start offset in the array for reading the packet from</param>
         /// <param name="len">The packet's length</param>
         /// <returns>The size of the PCM samples that this packet will be decoded to by the specified decoder</returns>
+        [Obsolete("Use Span<> overrides if possible")]
         public static int GetNumSamples(OpusDecoder dec, byte[] packet, int packet_offset, int len)
         {
             return GetNumSamples(packet.AsSpan(packet_offset, len), dec.Fs);
@@ -315,29 +324,6 @@ namespace Concentus.Structs
         public static int GetNumSamples(OpusDecoder dec, ReadOnlySpan<byte> packet)
         {
             return GetNumSamples(packet, dec.Fs);
-        }
-
-        /// <summary>
-        /// Gets the mode that was used to encode this packet.
-        /// Normally there is nothing you can really do with this, other than debugging.
-        /// </summary>
-        /// <returns>The OpusMode used by the encoder</returns>
-        public OpusMode GetEncoderMode()
-        {
-            OpusMode mode;
-            if ((TOCByte & 0x80) != 0)
-            {
-                mode = OpusMode.MODE_CELT_ONLY;
-            }
-            else if ((TOCByte & 0x60) == 0x60)
-            {
-                mode = OpusMode.MODE_HYBRID;
-            }
-            else
-            {
-                mode = OpusMode.MODE_SILK_ONLY;
-            }
-            return mode;
         }
 
         /// <summary>
@@ -361,6 +347,33 @@ namespace Concentus.Structs
                 mode = OpusMode.MODE_SILK_ONLY;
             }
             return mode;
+        }
+
+        /// <summary>
+        /// Gets the mode that was used to encode this packet.
+        /// Normally there is nothing you can really do with this, other than debugging.
+        /// </summary>
+        /// <returns>The OpusMode used by the encoder</returns>
+        public OpusMode EncoderMode
+        {
+            get
+            {
+                OpusMode mode;
+                if ((TOCByte & 0x80) != 0)
+                {
+                    mode = OpusMode.MODE_CELT_ONLY;
+                }
+                else if ((TOCByte & 0x60) == 0x60)
+                {
+                    mode = OpusMode.MODE_HYBRID;
+                }
+                else
+                {
+                    mode = OpusMode.MODE_SILK_ONLY;
+                }
+
+                return mode;
+            }
         }
 
         internal static int encode_size(int size, Span<byte> data, int data_ptr)
