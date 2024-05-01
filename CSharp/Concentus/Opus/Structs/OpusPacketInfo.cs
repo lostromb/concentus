@@ -81,7 +81,7 @@ namespace Concentus.Structs
         /// <param name="packet_offset">The index of the beginning of the packet in the data array (usually 0)</param>
         /// <param name="len">The packet's length</param>
         /// <returns>A parsed packet info struct</returns>
-        [Obsolete("Use Span<> overrides instead")]
+        [Obsolete("Use Span<> overrides if possible")]
         public static OpusPacketInfo ParseOpusPacket(byte[] packet, int packet_offset, int len)
         {
             return ParseOpusPacket(packet.AsSpan(packet_offset, len));
@@ -306,6 +306,20 @@ namespace Concentus.Structs
         /// </summary>
         /// <param name="dec">Your current decoder state</param>
         /// <param name="packet">An Opus packet</param>
+        /// <param name="packet_offset">The start offset in the array for reading the packet from</param>
+        /// <param name="len">The packet's length</param>
+        /// <returns>The size of the PCM samples that this packet will be decoded to by the specified decoder</returns>
+        [Obsolete("Use Span<> overrides if possible")]
+        public static int GetNumSamples(OpusDecoder dec, byte[] packet, int packet_offset, int len)
+        {
+            return GetNumSamples(packet.AsSpan(packet_offset, len), dec.Fs);
+        }
+
+        /// <summary>
+        /// Gets the number of samples of an Opus packet.
+        /// </summary>
+        /// <param name="dec">Your current decoder state</param>
+        /// <param name="packet">An Opus packet</param>
         /// <returns>The size of the PCM samples that this packet will be decoded to by the specified decoder</returns>
         public static int GetNumSamples(OpusDecoder dec, ReadOnlySpan<byte> packet)
         {
@@ -333,6 +347,33 @@ namespace Concentus.Structs
                 mode = OpusMode.MODE_SILK_ONLY;
             }
             return mode;
+        }
+
+        /// <summary>
+        /// Gets the mode that was used to encode this packet.
+        /// Normally there is nothing you can really do with this, other than debugging.
+        /// </summary>
+        /// <returns>The OpusMode used by the encoder</returns>
+        public OpusMode EncoderMode
+        {
+            get
+            {
+                OpusMode mode;
+                if ((TOCByte & 0x80) != 0)
+                {
+                    mode = OpusMode.MODE_CELT_ONLY;
+                }
+                else if ((TOCByte & 0x60) == 0x60)
+                {
+                    mode = OpusMode.MODE_HYBRID;
+                }
+                else
+                {
+                    mode = OpusMode.MODE_SILK_ONLY;
+                }
+
+                return mode;
+            }
         }
 
         internal static int encode_size(int size, Span<byte> data, int data_ptr)

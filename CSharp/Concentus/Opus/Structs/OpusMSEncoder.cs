@@ -842,7 +842,7 @@ namespace Concentus.Structs
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Span<> overrides instead")]
+        [Obsolete("Use Span<> overrides if possible")]
         public int EncodeMultistream(
             short[] pcm,
             int pcm_offset,
@@ -876,7 +876,7 @@ namespace Concentus.Structs
         }
 
         /// <inheritdoc />
-        [Obsolete("Use Span<> overrides instead")]
+        [Obsolete("Use Span<> overrides if possible")]
         public int EncodeMultistream(
             float[] pcm,
             int pcm_offset,
