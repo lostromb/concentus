@@ -9,7 +9,7 @@
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<Version>2.1.1</Version>
 	<Authors>Logan Stromberg</Authors>
-	<Description>This package is a pure portable C# implementation of the Opus audio compression codec (see https://opus-codec.org/ for more details). This package contains the Opus encoder, decoder, multistream codecs, repacketizer, as well as a port of the libspeexdsp resampler. It does NOT contain code to parse .ogg or .opus container files or to manage RTP packet streams</Description>
+	<Description>This package is a portable C# implementation of the Opus audio compression codec (see https://opus-codec.org/ for more details). This package contains the Opus encoder, decoder, multistream codecs, repacketizer, as well as a port of the libspeexdsp resampler. It does NOT contain code to parse .ogg or .opus container files or to manage RTP packet streams.</Description>
 	<Copyright>© Xiph.Org Foundation, Skype Limited, CSIRO, Microsoft Corp.</Copyright>
 	<PackageProjectUrl>https://github.com/lostromb/concentus</PackageProjectUrl>
 	<PackageIcon>icon.png</PackageIcon>
@@ -17,6 +17,7 @@
 	<PackageTags>Concentus;Opus;Audio;Codec;Resampler;Resampling;DSP;Compression;Encoder;Decoder</PackageTags>
 	<PackageReleaseNotes>Big v2.0 overhaul! See commit notes on Git. Multistream encoding is no longer broken. Encoders / decoders are now IDisposable, accept Span inputs, and will try to use native Opus libraries if supported by your system.</PackageReleaseNotes>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
