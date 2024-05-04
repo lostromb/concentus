@@ -433,7 +433,7 @@ namespace Concentus
             features[23] = info.tonality_slope;
             features[24] = tonal.lowECount;
             
-            mlp.mlp_process(Tables.net, features, frame_probs);
+            MultiLayerPerceptron.mlp_process(Tables.net, features, frame_probs);
             frame_probs[0] = .5f * (frame_probs[0] + 1);
             /* Curve fitting between the MLP probability and the actual probability */
             frame_probs[0] = .01f + 1.21f * frame_probs[0] * frame_probs[0] - .23f * (float)Math.Pow(frame_probs[0], 10);
@@ -565,7 +565,7 @@ namespace Concentus
             int offset;
             int pcm_len;
 
-            if (analysis_pcm != null)
+            if (!analysis_pcm.IsEmpty)
             {
                 /* Avoid overflow/wrap-around of the analysis buffer */
                 analysis_frame_size = Inlines.IMIN((OpusConstants.DETECT_SIZE - 5) * Fs / 100, analysis_frame_size);

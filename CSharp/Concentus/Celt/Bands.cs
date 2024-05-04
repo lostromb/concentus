@@ -1009,7 +1009,7 @@ namespace Concentus.Celt
 
             ec = ctx.ec;
 
-            stereo = (Y != null) ? 1 : 0;
+            stereo = (!Y.IsEmpty) ? 1 : 0;
             c = 0;
             do
             {
@@ -1026,7 +1026,7 @@ namespace Concentus.Celt
                 x = Y;
                 x_ptr = Y_ptr;
             } while (++c < 1 + stereo);
-            if (lowband_out != null)
+            if (!lowband_out.IsEmpty)
             {
                 lowband_out[lowband_out_ptr] = Inlines.SHR16(X[X_ptr], 4);
             }
@@ -1042,12 +1042,11 @@ namespace Concentus.Celt
             int stereo;
             Span<int> x = X;
             int x_ptr = X_ptr;
-            int encode;
             EntropyCoder ec; // porting note: pointer
 
             ec = ctx.ec;
 
-            stereo = (Y != null) ? 1 : 0;
+            stereo = (!Y.IsEmpty) ? 1 : 0;
             c = 0;
             do
             {
@@ -1064,7 +1063,7 @@ namespace Concentus.Celt
                 x_ptr = Y_ptr;
             } while (++c < 1 + stereo);
 
-            if (lowband_out != null)
+            if (!lowband_out.IsEmpty)
             {
                 lowband_out[lowband_out_ptr] = Inlines.SHR16(X[X_ptr], 4);
             }
@@ -1145,7 +1144,7 @@ namespace Concentus.Celt
                 sbits = b - mbits;
                 ctx.remaining_bits -= qalloc;
 
-                if (lowband != null)
+                if (!lowband.IsEmpty)
                 {
                     next_lowband2 = (lowband_ptr + N); /* >32-bit split case */
                 }
@@ -1216,7 +1215,7 @@ namespace Concentus.Celt
                         }
                         else
                         {
-                            if (lowband == null)
+                            if (lowband.IsEmpty)
                             {
                                 /* Noise */
                                 for (j = 0; j < N; j++)
@@ -1323,7 +1322,7 @@ namespace Concentus.Celt
                 sbits = b - mbits;
                 ctx.remaining_bits -= qalloc;
 
-                if (lowband != null)
+                if (!lowband.IsEmpty)
                 {
                     next_lowband2 = (lowband_ptr + N); /* >32-bit split case */
                 }
@@ -1396,7 +1395,7 @@ namespace Concentus.Celt
                         }
                         else
                         {
-                            if (lowband == null)
+                            if (lowband.IsEmpty)
                             {
                                 /* Noise */
                                 for (j = 0; j < N; j++)
@@ -1471,7 +1470,7 @@ namespace Concentus.Celt
                 recombine = tf_change;
             /* Band recombining to increase frequency resolution */
 
-            if (lowband_scratch != null && lowband != null && (recombine != 0 || ((N_B & 1) == 0 && tf_change < 0) || B0 > 1))
+            if (!lowband_scratch.IsEmpty && !lowband.IsEmpty && (recombine != 0 || ((N_B & 1) == 0 && tf_change < 0) || B0 > 1))
             {
                 lowband.Slice(lowband_ptr, N).CopyTo(lowband_scratch.Slice(lowband_scratch_ptr, N));
                 lowband = lowband_scratch;
@@ -1481,7 +1480,7 @@ namespace Concentus.Celt
             for (k = 0; k < recombine; k++)
             {
                 haar1(X, X_ptr, N >> k, 1 << k);
-                if (lowband != null)
+                if (!lowband.IsEmpty)
                     haar1(lowband, lowband_ptr, N >> k, 1 << k);
                 fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2;
             }
@@ -1492,7 +1491,7 @@ namespace Concentus.Celt
             while ((N_B & 1) == 0 && tf_change < 0)
             {
                 haar1(X, X_ptr, N_B, B);
-                if (lowband != null)
+                if (!lowband.IsEmpty)
                     haar1(lowband, lowband_ptr, N_B, B);
                 fill |= fill << B;
                 B <<= 1;
@@ -1507,7 +1506,7 @@ namespace Concentus.Celt
             if (B0 > 1)
             {
                 deinterleave_hadamard(X, X_ptr, N_B >> recombine, B0 << recombine, longBlocks);
-                if (lowband != null)
+                if (!lowband.IsEmpty)
                     deinterleave_hadamard(lowband, lowband_ptr, N_B >> recombine, B0 << recombine, longBlocks);
             }
 
@@ -1539,7 +1538,7 @@ namespace Concentus.Celt
                 B <<= recombine;
 
                 /* Scale output for later folding */
-                if (lowband_out != null)
+                if (!lowband_out.IsEmpty)
                 {
                     int j;
                     int n;
@@ -1587,7 +1586,7 @@ namespace Concentus.Celt
                 recombine = tf_change;
             /* Band recombining to increase frequency resolution */
 
-            if (lowband_scratch != null && lowband != null && (recombine != 0 || ((N_B & 1) == 0 && tf_change < 0) || B0 > 1))
+            if (!lowband_scratch.IsEmpty && !lowband.IsEmpty && (recombine != 0 || ((N_B & 1) == 0 && tf_change < 0) || B0 > 1))
             {
                 lowband.Slice(lowband_ptr, N).CopyTo(lowband_scratch.Slice(lowband_scratch_ptr, N));
                 lowband = lowband_scratch;
@@ -1596,7 +1595,7 @@ namespace Concentus.Celt
 
             for (k = 0; k < recombine; k++)
             {
-                if (lowband != null)
+                if (!lowband.IsEmpty)
                     haar1(lowband, lowband_ptr, N >> k, 1 << k);
                 fill = bit_interleave_table[fill & 0xF] | bit_interleave_table[fill >> 4] << 2;
             }
@@ -1606,7 +1605,7 @@ namespace Concentus.Celt
             /* Increasing the time resolution */
             while ((N_B & 1) == 0 && tf_change < 0)
             {
-                if (lowband != null)
+                if (!lowband.IsEmpty)
                     haar1(lowband, lowband_ptr, N_B, B);
                 fill |= fill << B;
                 B <<= 1;
@@ -1620,7 +1619,7 @@ namespace Concentus.Celt
             /* Reorganize the samples in time order instead of frequency order */
             if (B0 > 1)
             {
-                if (lowband != null)
+                if (!lowband.IsEmpty)
                     deinterleave_hadamard(lowband, lowband_ptr, N_B >> recombine, B0 << recombine, longBlocks);
             }
 
@@ -1652,7 +1651,7 @@ namespace Concentus.Celt
                 B <<= recombine;
 
                 /* Scale output for later folding */
-                if (lowband_out != null)
+                if (!lowband_out.IsEmpty)
                 {
                     int j;
                     int n;

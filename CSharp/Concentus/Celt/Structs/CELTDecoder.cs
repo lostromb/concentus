@@ -535,7 +535,7 @@ namespace Concentus.Celt.Structs
             }
             M = 1 << LM;
 
-            if (len < 0 || len > 1275 || pcm == null)
+            if (len < 0 || len > 1275 || pcm.IsEmpty)
                 return OpusError.OPUS_BAD_ARG;
 
             N = M * mode.shortMdctSize;

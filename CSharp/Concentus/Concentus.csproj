@@ -17,7 +17,7 @@
 	<PackageTags>Concentus;Opus;Audio;Codec;Resampler;Resampling;DSP;Compression;Encoder;Decoder</PackageTags>
 	<PackageReleaseNotes>Big v2.0 overhaul! See commit notes on Git. Multistream encoding is no longer broken. Encoders / decoders are now IDisposable, accept Span inputs, and will try to use native Opus libraries if supported by your system.</PackageReleaseNotes>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	<IsAotCompatible>true</IsAotCompatible>
+	<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
 	<Title>Concentus</Title>
   </PropertyGroup>
 

@@ -430,7 +430,7 @@ namespace Concentus.Structs
             payload_offset = 0;
             packet_offset = 0;
 
-            if (sizes == null || len < 0)
+            if (sizes.IsEmpty || len < 0)
                 return OpusError.OPUS_BAD_ARG;
             if (len == 0)
                 return OpusError.OPUS_INVALID_PACKET;
@@ -573,7 +573,7 @@ namespace Concentus.Structs
                     data.CopyTo(newFrame.AsSpan());
                     frames[frames_ptr + i] = newFrame;
                 }
-                if (frames_ptrs != null)
+                if (!frames_ptrs.IsEmpty)
                     frames_ptrs[frames_ptr + i] = data_ptr;
                 data_ptr += sizes[sizes_ptr + i];
             }

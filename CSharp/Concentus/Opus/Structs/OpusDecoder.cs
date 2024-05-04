@@ -852,7 +852,7 @@ namespace Concentus.Structs
             {
                 throw new ArgumentException("Frame size must be > 0");
             }
-            if (in_data != null && in_data.Length > 0 && !decode_fec)
+            if (!in_data.IsEmpty && in_data.Length > 0 && !decode_fec)
             {
                 nb_samples = OpusPacketInfo.GetNumSamples(in_data, this.Fs);
                 if (nb_samples > 0)
@@ -901,6 +901,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         public uint FinalRange
         {
             get
@@ -996,6 +997,7 @@ namespace Concentus.Structs
             return CodecHelpers.GetVersionString();
         }
 
+        /// <inheritdoc />
         public void Dispose() { }
     }
 }
