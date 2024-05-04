@@ -632,12 +632,31 @@ namespace Concentus.Common
             this.initialised = 1;
         }
 
+        /// <summary>
+        /// Create a new resampler with integer input and output rates (in hertz).
+        /// </summary>
+        /// <param name="nb_channels">The number of channels to be processed</param>
+        /// <param name="in_rate">Input sampling rate, in hertz</param>
+        /// <param name="out_rate">Output sampling rate, in hertz</param>
+        /// <param name="quality">Resampling quality, from 0 to 10</param>
         [Obsolete("Just use the regular constructor")]
         public static SpeexResampler Create(int nb_channels, int in_rate, int out_rate, int quality)
         {
             return new SpeexResampler(nb_channels, in_rate, out_rate, in_rate, out_rate, quality);
         }
 
+        /// <summary>
+        /// Create a new resampler with fractional input/output rates. The sampling 
+        /// rate ratio is an arbitrary rational number with both the numerator and
+        /// denominator being 32-bit integers.
+        /// </summary>
+        /// <param name="nb_channels">The number of channels to be processed</param>
+        /// <param name="ratio_num">Numerator of sampling rate ratio</param>
+        /// <param name="ratio_den">Denominator of sampling rate ratio</param>
+        /// <param name="in_rate">Input sample rate rounded to the nearest integer (in hz)</param>
+        /// <param name="out_rate">Output sample rate rounded to the nearest integer (in hz)</param>
+        /// <param name="quality">Resampling quality, from 0 to 10</param>
+        /// <returns>A newly created restampler</returns>
         [Obsolete("Just use the regular constructor")]
         public static SpeexResampler Create(int nb_channels, int ratio_num, int ratio_den, int in_rate, int out_rate, int quality)
         {
@@ -679,7 +698,7 @@ namespace Concentus.Common
                     int ichunk = (ilen > xlen) ? xlen : ilen;
                     int ochunk = olen;
 
-                    if (input != null)
+                    if (!input.IsEmpty)
                     {
                         for (j = 0; j < ichunk; ++j)
                             this.mem[x + j + filt_offs] = input[input_ptr + j * istride];
@@ -693,7 +712,7 @@ namespace Concentus.Common
                     ilen -= ichunk;
                     olen -= ochunk;
                     output_ptr += ochunk * this.out_stride;
-                    if (input != null)
+                    if (!input.IsEmpty)
 
                         input_ptr += ichunk * istride;
                 }
@@ -746,7 +765,7 @@ namespace Concentus.Common
                 }
                 if (this.magic_samples[channel_index] == 0)
                 {
-                    if (input != null)
+                    if (!input.IsEmpty)
                     {
                         for (j = 0; j < ichunk; ++j)
                             this.mem[x + j + this.filt_len - 1] = WORD2INT(input[input_ptr + j * istride_save]);
@@ -769,7 +788,7 @@ namespace Concentus.Common
                 ilen -= ichunk;
                 olen -= ochunk;
                 output_ptr += ((ochunk + omagic) * ostride_save);
-                if (input != null)
+                if (!input.IsEmpty)
                     input_ptr += ichunk * istride_save;
             }
             this.out_stride = ostride_save;
@@ -801,7 +820,7 @@ namespace Concentus.Common
             {
                 out_len = bak_out_len;
                 in_len = bak_in_len;
-                if (input != null)
+                if (!input.IsEmpty)
                     this.Process(i, input, input_ptr + i, ref in_len, output, output_ptr + i, ref out_len);
                 else
                     this.Process(i, null, 0, ref in_len, output, output_ptr + i, ref out_len);
@@ -834,7 +853,7 @@ namespace Concentus.Common
             {
                 out_len = bak_out_len;
                 in_len = bak_in_len;
-                if (input != null)
+                if (!input.IsEmpty)
                     this.Process(i, input, input_ptr + i, ref in_len, output, output_ptr + i, ref out_len);
                 else
                     this.Process(i, null, 0, ref in_len, output, output_ptr + i, ref out_len);

@@ -22,8 +22,8 @@ namespace ConcentusDemo
 
         private BasicBufferShort _incomingSamples = new BasicBufferShort(48000);
 
-        private OpusEncoder _encoder;
-        private OpusDecoder _decoder;
+        private IOpusEncoder _encoder;
+        private IOpusDecoder _decoder;
         private CodecStatistics _statistics = new CodecStatistics();
         private Stopwatch _timer = new Stopwatch();
 
@@ -36,7 +36,7 @@ namespace ConcentusDemo
             SetBitrate(_bitrate);
             SetComplexity(_complexity);
             SetVBRMode(_vbr, _cvbr);
-            _encoder.EnableAnalysis = true;
+            //_encoder.EnableAnalysis = true;
             _decoder = new OpusDecoder(48000, 1);
         }
 
@@ -122,7 +122,7 @@ namespace ConcentusDemo
                 _timer.Reset();
                 _timer.Start();
                 short[] nextFrameData = _incomingSamples.Read(frameSize);
-                int thisPacketSize = _encoder.Encode(nextFrameData, 0, frameSize, scratchBuffer, outCursor, scratchBuffer.Length);
+                int thisPacketSize = _encoder.Encode(nextFrameData.AsSpan(), frameSize, scratchBuffer.AsSpan(outCursor), scratchBuffer.Length - outCursor);
                 outCursor += thisPacketSize;
                 _timer.Stop();
             }
@@ -149,7 +149,7 @@ namespace ConcentusDemo
                 // Normal decoding
                 _timer.Reset();
                 _timer.Start();
-                int thisFrameSize = _decoder.Decode(inputPacket, 0, inputPacket.Length, outputBuffer, 0, frameSize, false);
+                int thisFrameSize = _decoder.Decode(inputPacket.AsSpan(), outputBuffer.AsSpan(), frameSize, false);
                 _timer.Stop();
             }
             else
@@ -157,7 +157,7 @@ namespace ConcentusDemo
                 // packet loss path
                 _timer.Reset();
                 _timer.Start();
-                int thisFrameSize = _decoder.Decode(null, 0, 0, outputBuffer, 0, frameSize, true);
+                int thisFrameSize = _decoder.Decode(ReadOnlySpan<byte>.Empty, outputBuffer.AsSpan(), frameSize, true);
                 _timer.Stop();
             }
 

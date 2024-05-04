@@ -47,6 +47,8 @@ using System.Linq;
 using System.Text;
 
 using System.Runtime.CompilerServices;
+using Concentus.Native;
+using System.Runtime.InteropServices;
 
 namespace Concentus.Structs
 {
@@ -2075,6 +2077,12 @@ namespace Concentus.Structs
         internal CeltMode GetCeltMode()
         {
             return Celt_Encoder.GetMode();
+        }
+
+        /// <inheritdoc/>
+        public string GetVersionString()
+        {
+            return CodecHelpers.GetVersionString();
         }
 
         public void Dispose() { }

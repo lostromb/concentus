@@ -458,7 +458,7 @@ namespace Concentus.Celt.Structs
             start = this.start;
             end = this.end;
             tf_estimate = 0;
-            if (nbCompressedBytes < 2 || pcm == null)
+            if (nbCompressedBytes < 2 || pcm.IsEmpty)
             {
                 return OpusError.OPUS_BAD_ARG;
             }

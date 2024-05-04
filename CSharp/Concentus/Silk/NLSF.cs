@@ -109,7 +109,7 @@ namespace Concentus.Silk
             int k;
             int tmp1_int, tmp2_int;
 
-            Inlines.OpusAssert(pNLSFW_Q_OUT != null);
+            Inlines.OpusAssert(!pNLSFW_Q_OUT.IsEmpty);
             Inlines.OpusAssert(D > 0);
             Inlines.OpusAssert((D & 1) == 0);
 

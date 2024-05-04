@@ -1,6 +1,7 @@
 ﻿using Concentus.Enums;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -31,7 +32,9 @@ namespace Concentus.Native
                     returnVal.Dispose();
                     throw new Exception($"Failed to create opus MS decoder: error {error}");
                 }
-
+                
+                returnVal._sampleRate = sampleRate;
+                returnVal._numChannels = channelCount;
                 return returnVal;
             }
         }
@@ -105,20 +108,40 @@ namespace Concentus.Native
         /// <inheritdoc/>
         public unsafe int DecodeMultistream(ReadOnlySpan<byte> data, Span<float> out_pcm, int frame_size, bool decode_fec)
         {
-            fixed (byte* inPtr = data)
             fixed (float* outPtr = out_pcm)
             {
-                return NativeOpus.opus_multistream_decode_float(NativeHandle, inPtr, data.Length, outPtr, frame_size, decode_fec ? 1 : 0);
+                if (data.Length == 0)
+                {
+                    // If input is an empty span (for FEC), pass an explicit null pointer
+                    return NativeOpus.opus_multistream_decode_float(NativeHandle, null, 0, outPtr, frame_size, decode_fec ? 1 : 0);
+                }
+                else
+                {
+                    fixed (byte* inPtr = data)
+                    {
+                        return NativeOpus.opus_multistream_decode_float(NativeHandle, inPtr, data.Length, outPtr, frame_size, decode_fec ? 1 : 0);
+                    }
+                }
             }
         }
 
         /// <inheritdoc/>
         public unsafe int DecodeMultistream(ReadOnlySpan<byte> data, Span<short> out_pcm, int frame_size, bool decode_fec)
         {
-            fixed (byte* inPtr = data)
             fixed (short* outPtr = out_pcm)
             {
-                return NativeOpus.opus_multistream_decode(NativeHandle, inPtr, data.Length, outPtr, frame_size, decode_fec ? 1 : 0);
+                if (data.Length == 0)
+                {
+                    // If input is an empty span (for FEC), pass an explicit null pointer
+                    return NativeOpus.opus_multistream_decode(NativeHandle, null, 0, outPtr, frame_size, decode_fec ? 1 : 0);
+                }
+                else
+                {
+                    fixed (byte* inPtr = data)
+                    {
+                        return NativeOpus.opus_multistream_decode(NativeHandle, inPtr, data.Length, outPtr, frame_size, decode_fec ? 1 : 0);
+                    }
+                }
             }
         }
 
@@ -126,6 +149,12 @@ namespace Concentus.Native
         public void ResetState()
         {
             NativeOpus.opus_multistream_decoder_ctl(NativeHandle, NativeOpus.OPUS_RESET_STATE, 0);
+        }
+
+        /// <inheritdoc/>
+        public string GetVersionString()
+        {
+            return Marshal.PtrToStringAnsi(NativeOpus.opus_get_version_string()); // returned pointer is hardcoded in lib so no need to free anything
         }
 
         /// <inheritdoc/>

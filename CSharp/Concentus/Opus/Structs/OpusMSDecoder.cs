@@ -302,7 +302,7 @@ namespace Concentus.Structs
         )
         {
             int i;
-            if (src != null)
+            if (!src.IsEmpty)
             {
                 for (i = 0; i < frame_size; i++)
                     dst[i * dst_stride + dst_channel] = (1 / 32768.0f) * src[i * src_stride + src_ptr];
@@ -325,7 +325,7 @@ namespace Concentus.Structs
         )
         {
             int i;
-            if (src != null)
+            if (!src.IsEmpty)
             {
                 for (i = 0; i < frame_size; i++)
                     dst[i * dst_stride + dst_channel] = src[i * src_stride + src_ptr];
@@ -337,6 +337,7 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc />
         [Obsolete("Use Span<> overrides if possible")]
         public int DecodeMultistream(
               byte[] data,
@@ -372,6 +373,7 @@ namespace Concentus.Structs
 
         }
 
+        /// <inheritdoc />
         [Obsolete("Use Span<> overrides if possible")]
         public int DecodeMultistream(byte[] data, int data_offset,
           int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
@@ -487,6 +489,12 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc/>
+        public string GetVersionString()
+        {
+            return CodecHelpers.GetVersionString();
+        }
+
         /// <summary>
         /// Gets the internal decoder state of one of the multichannel stream's decoders, indicated by stream ID.
         /// </summary>
@@ -497,6 +505,7 @@ namespace Concentus.Structs
             return decoders[streamId];
         }
 
+        /// <inheritdoc />
         public void Dispose() { }
 
         #endregion

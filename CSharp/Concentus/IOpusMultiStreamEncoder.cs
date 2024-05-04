@@ -77,6 +77,12 @@ namespace Concentus
         void ResetState();
 
         /// <summary>
+        /// Gets the version string of the library backing this implementation.
+        /// </summary>
+        /// <returns>An arbitrary version string.</returns>
+        string GetVersionString();
+
+        /// <summary>
         /// Gets or sets the application (or signal type) of the input signal. This hints
         /// to the encoder what type of details we want to preserve in the encoding.
         /// This cannot be changed after the encoder has started
