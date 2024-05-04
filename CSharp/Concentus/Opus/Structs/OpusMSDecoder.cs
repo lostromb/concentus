@@ -348,7 +348,14 @@ namespace Concentus.Structs
               int frame_size,
               bool decode_fec)
         {
-            return DecodeMultistream(data.AsSpan(data_offset, len), out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            if (data == null)
+            {
+                return DecodeMultistream(ReadOnlySpan<byte>.Empty, out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            }
+            else
+            {
+                return DecodeMultistream(data.AsSpan(data_offset, len), out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            }
         }
 
         /// <inheritdoc />
@@ -378,7 +385,14 @@ namespace Concentus.Structs
         public int DecodeMultistream(byte[] data, int data_offset,
           int len, float[] out_pcm, int out_pcm_offset, int frame_size, bool decode_fec)
         {
-            return DecodeMultistream(data.AsSpan(data_offset, len), out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            if (data == null)
+            {
+                return DecodeMultistream(ReadOnlySpan<byte>.Empty, out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            }
+            else
+            {
+                return DecodeMultistream(data.AsSpan(data_offset, len), out_pcm.AsSpan(out_pcm_offset), frame_size, decode_fec);
+            }
         }
 
         /// <inheritdoc />
