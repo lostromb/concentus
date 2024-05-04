@@ -94,6 +94,12 @@ namespace Concentus
         void ResetState();
 
         /// <summary>
+        /// Gets the version string of the library backing this implementation.
+        /// </summary>
+        /// <returns>An arbitrary version string.</returns>
+        string GetVersionString();
+
+        /// <summary>
         /// Gets the encoded bandwidth of the last packet decoded. This may be lower than the actual decoding sample rate,
         /// and is only an indicator of the encoded audio's quality
         /// </summary>

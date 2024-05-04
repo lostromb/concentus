@@ -1,5 +1,6 @@
 ﻿using Concentus.Enums;
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Concentus.Native
@@ -98,20 +99,40 @@ namespace Concentus.Native
         /// <inheritdoc/>
         public unsafe int Decode(ReadOnlySpan<byte> in_data, Span<float> out_pcm, int frame_size, bool decode_fec = false)
         {
-            fixed (byte* inPtr = in_data)
             fixed (float* outPtr = out_pcm)
             {
-                return NativeOpus.opus_decode_float(NativeHandle, inPtr, in_data.Length, outPtr, frame_size, decode_fec ? 1 : 0);
+                if (in_data.Length == 0)
+                {
+                    // If input is an empty span (for FEC), pass an explicit null pointer
+                    return NativeOpus.opus_decode_float(NativeHandle, null, 0, outPtr, frame_size, decode_fec ? 1 : 0);
+                }
+                else
+                {
+                    fixed (byte* inPtr = in_data)
+                    {
+                        return NativeOpus.opus_decode_float(NativeHandle, inPtr, in_data.Length, outPtr, frame_size, decode_fec ? 1 : 0);
+                    }
+                }
             }
         }
 
         /// <inheritdoc/>
         public unsafe int Decode(ReadOnlySpan<byte> in_data, Span<short> out_pcm, int frame_size, bool decode_fec = false)
         {
-            fixed (byte* inPtr = in_data)
             fixed (short* outPtr = out_pcm)
             {
-                return NativeOpus.opus_decode(NativeHandle, inPtr, in_data.Length, outPtr, frame_size, decode_fec ? 1 : 0);
+                if (in_data.Length == 0)
+                {
+                    // If input is an empty span (for FEC), pass an explicit null pointer
+                    return NativeOpus.opus_decode(NativeHandle, null, 0, outPtr, frame_size, decode_fec ? 1 : 0);
+                }
+                else
+                {
+                    fixed (byte* inPtr = in_data)
+                    {
+                        return NativeOpus.opus_decode(NativeHandle, inPtr, in_data.Length, outPtr, frame_size, decode_fec ? 1 : 0);
+                    }
+                }
             }
         }
 
@@ -119,6 +140,12 @@ namespace Concentus.Native
         public void ResetState()
         {
             NativeOpus.opus_decoder_ctl(NativeHandle, NativeOpus.OPUS_RESET_STATE, 0);
+        }
+
+        /// <inheritdoc/>
+        public string GetVersionString()
+        {
+            return Marshal.PtrToStringAnsi(NativeOpus.opus_get_version_string()); // returned pointer is hardcoded in lib so no need to free anything
         }
 
         /// <inheritdoc/>

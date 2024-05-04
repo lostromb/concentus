@@ -28,3 +28,10 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+This repository and its redistributable packages contain independently compiled
+versions of the Opus C reference library, which is maintained by Xiph.org and the
+Opus open-source contributors. The source code for these libraries is freely available
+at https://gitlab.xiph.org/xiph/opus/-/tags/v1.5.2, and all binaries are being
+redistributed to you under the same terms of the general Opus license dictated above.

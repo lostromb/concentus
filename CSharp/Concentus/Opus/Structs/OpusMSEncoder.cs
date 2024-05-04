@@ -1245,6 +1245,12 @@ namespace Concentus.Structs
             return encoders[streamId];
         }
 
+        /// <inheritdoc/>
+        public string GetVersionString()
+        {
+            return CodecHelpers.GetVersionString();
+        }
+
         public void Dispose() { }
 
         #endregion

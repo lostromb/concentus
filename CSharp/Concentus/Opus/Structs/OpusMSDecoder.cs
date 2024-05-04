@@ -487,6 +487,12 @@ namespace Concentus.Structs
             }
         }
 
+        /// <inheritdoc/>
+        public string GetVersionString()
+        {
+            return CodecHelpers.GetVersionString();
+        }
+
         /// <summary>
         /// Gets the internal decoder state of one of the multichannel stream's decoders, indicated by stream ID.
         /// </summary>

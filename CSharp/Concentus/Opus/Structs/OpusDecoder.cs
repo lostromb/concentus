@@ -990,6 +990,12 @@ namespace Concentus.Structs
             frame_size = Fs / 400;
         }
 
+        /// <inheritdoc/>
+        public string GetVersionString()
+        {
+            return CodecHelpers.GetVersionString();
+        }
+
         public void Dispose() { }
     }
 }

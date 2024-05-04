@@ -2,6 +2,7 @@
 using Concentus.Enums;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -122,6 +123,12 @@ namespace Concentus.Native
         public void ResetState()
         {
             NativeOpus.opus_encoder_ctl(NativeHandle, NativeOpus.OPUS_RESET_STATE, 0);
+        }
+
+        /// <inheritdoc/>
+        public string GetVersionString()
+        {
+            return Marshal.PtrToStringAnsi(NativeOpus.opus_get_version_string()); // returned pointer is hardcoded in lib so no need to free anything
         }
 
         /// <inheritdoc/>
