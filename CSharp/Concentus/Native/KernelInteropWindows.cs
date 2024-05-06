@@ -20,8 +20,8 @@ namespace Concentus.Native
         internal const ushort PROCESSOR_ARCHITECTURE_UNKNOWN = 0xFFFF;
 
 #if NET8_0_OR_GREATER
-        [LibraryImport("kernel32.dll", SetLastError = true, StringMarshallingCustomType = typeof(System.Runtime.InteropServices.Marshalling.AnsiStringMarshaller))]
-        internal static partial IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
+        [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+        internal static partial IntPtr LoadLibraryExW(string lpFileName, IntPtr hFile, uint dwFlags);
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -30,8 +30,8 @@ namespace Concentus.Native
         [LibraryImport("kernel32.dll", SetLastError = false)]
         internal static partial uint GetLastError();
 #else
-        [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern IntPtr LoadLibraryExW(string lpFileName, IntPtr hFile, uint dwFlags);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
