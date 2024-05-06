@@ -64,12 +64,22 @@ namespace Concentus.Native
             OSAndArchitecture fromRid = ParseRuntimeId(RuntimeInformation.RuntimeIdentifier);
             os = fromRid.OS;
             arch = fromRid.Architecture;
-#endif
+#endif // NETCOREAPP
 
             // We can sometimes fail to parse new runtime IDs (like if they add "debian" as a runtime ID in the future), so fall back if needed
             if (os == PlatformOperatingSystem.Unknown)
             {
                 // Figure out our OS
+#if NET452_OR_GREATER
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                {
+                    os = PlatformOperatingSystem.Windows;
+                }
+                else if (Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    os = PlatformOperatingSystem.Unix;
+                }
+#else
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     os = PlatformOperatingSystem.Windows;
@@ -87,7 +97,8 @@ namespace Concentus.Native
                 {
                     os = PlatformOperatingSystem.FreeBSD;
                 }
-#endif
+#endif // !NET452_OR_GREATER
+#endif // NET6_0_OR_GREATER
             }
 
             // Figure out our architecture
@@ -100,6 +111,16 @@ namespace Concentus.Native
             // Then just fall back to the .net runtime values
             if (arch == PlatformArchitecture.Unknown)
             {
+#if NET452_OR_GREATER
+                if (Environment.Is64BitProcess)
+                {
+                    arch = PlatformArchitecture.X64;
+                }
+                else
+                {
+                    arch = PlatformArchitecture.I386;
+                }
+#else
                 switch (RuntimeInformation.ProcessArchitecture)
                 {
                     case Architecture.X86:
@@ -127,8 +148,9 @@ namespace Concentus.Native
                     case Architecture.S390x:
                         arch = PlatformArchitecture.S390x;
                         break;
-#endif
+#endif // NET6_0_OR_GREATER
                 }
+#endif // !NET452_OR_GREATER
             }
 
             return new OSAndArchitecture(os, arch);
@@ -253,7 +275,7 @@ namespace Concentus.Native
                 _loadedLibraries[normalizedLibraryName] = NativeLibraryStatus.Unavailable;
                 return NativeLibraryStatus.Unavailable;
             }
-#endif
+#endif // !NETSTANDARD1_1
         }
 
         /// <summary>
@@ -266,6 +288,8 @@ namespace Concentus.Native
         {
             switch (architecture)
             {
+                case PlatformArchitecture.Unknown:
+                    return "unknown";
                 case PlatformArchitecture.Any:
                     return "any";
                 case PlatformArchitecture.I386:
@@ -305,6 +329,8 @@ namespace Concentus.Native
         {
             switch (os)
             {
+                case PlatformOperatingSystem.Unknown:
+                    return "unknown";
                 case PlatformOperatingSystem.Any:
                     return "any";
                 case PlatformOperatingSystem.Windows:
@@ -791,7 +817,7 @@ namespace Concentus.Native
                     {
                         if (logger != null) logger.WriteLine($"Attempting to load {libName} as a windows .dll");
                         KernelInteropWindows.GetLastError(); // clear any previous error
-                        dllHandle = KernelInteropWindows.LoadLibraryEx(libName, hFile: IntPtr.Zero, dwFlags: KernelInteropWindows.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                        dllHandle = KernelInteropWindows.LoadLibraryExW(libName, hFile: IntPtr.Zero, dwFlags: KernelInteropWindows.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
                         if (dllHandle == IntPtr.Zero)
                         {
                             uint lastError = KernelInteropWindows.GetLastError();
