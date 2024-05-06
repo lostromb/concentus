@@ -7,15 +7,15 @@
 	<SignAssembly>True</SignAssembly>
 	<AssemblyOriginatorKeyFile>..\Concentus.snk</AssemblyOriginatorKeyFile>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<Version>8.0.0</Version>
+	<Version>2.2.0</Version>
 	<Authors>Logan Stromberg</Authors>
-	<Description>This package is a portable C# implementation of the Opus audio compression codec (see https://opus-codec.org/ for more details). This package contains the Opus encoder, decoder, multistream codecs, repacketizer, as well as a port of the libspeexdsp resampler. It does NOT contain code to parse .ogg or .opus container files or to manage RTP packet streams.</Description>
+	<Description>This package is a portable C# implementation of the Opus audio compression codec (see https://opus-codec.org/ for more details). This package contains the Opus encoder, decoder, multistream codecs, repacketizer, as well as a port of the libspeexdsp resampler. It does NOT contain code to parse .ogg or .opus container files or to manage RTP packet streams. For better performance depending on your platform, see also the Concentus.Native package.</Description>
 	<Copyright>© Xiph.Org Foundation, Skype Limited, CSIRO, Microsoft Corp.</Copyright>
 	<PackageProjectUrl>https://github.com/lostromb/concentus</PackageProjectUrl>
 	<PackageIcon>icon.png</PackageIcon>
 	<RepositoryUrl>https://github.com/lostromb/concentus</RepositoryUrl>
 	<PackageTags>Concentus;Opus;Audio;Codec;Resampler;Resampling;DSP;Compression;Encoder;Decoder</PackageTags>
-	<PackageReleaseNotes>Native binaries are no longer distributed by default; if you want to automatically try and enable native code acceleration, install the Concentus.Native package as well.</PackageReleaseNotes>
+	<PackageReleaseNotes>Native binaries are no longer distributed by default; if you want to automatically allow native code acceleration, install the Concentus.Native package as well.</PackageReleaseNotes>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
 	<Title>Concentus</Title>
