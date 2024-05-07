@@ -166,13 +166,14 @@ namespace Concentus
                 return new OpusMSDecoder(sampleRate, numChannels, streams, coupledStreams, mapping);
             }
         }
+
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        /// <summary>
-        /// Gets or sets a global flag that determines whether the codec factory should attempt to
-        /// use a native opus.dll or libopus implementation. True by default, but you can override
-        /// the value to false if the library probe causes problems or something.
-        /// </summary>
+            /// <summary>
+            /// Gets or sets a global flag that determines whether the codec factory should attempt to
+            /// use a native opus.dll or libopus implementation. True by default, but you can override
+            /// the value to false if the library probe causes problems or something.
+            /// </summary>
         public static bool AttemptToUseNativeLibrary
         {
             get
