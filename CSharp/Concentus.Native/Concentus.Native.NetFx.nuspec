@@ -3,7 +3,7 @@
     <metadata>
 		<!-- Required elements-->
 		<id>Concentus.Native.NetFx</id>
-		<version>1.5.1</version>
+		<version>1.5.2</version>
 		<description>(This is used internally by the Concentus.Native meta-package. You should not need to reference it directly). Contains native Opus redistributable binaries for various platforms, intended as an optional addon to the core Concentus library. The default behavior for Concentus would be to look for these native binaries and use them if present, otherwise, fall back to a pure C# implementation of the codec.</description>
 		<authors>Logan Stromberg</authors>
 		<icon>icon.png</icon>
