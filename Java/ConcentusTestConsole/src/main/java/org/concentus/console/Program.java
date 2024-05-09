@@ -24,24 +24,27 @@ public class Program {
     public static void main(String[] args) {
 
         try {
-            FileInputStream fileIn = new FileInputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\48Khz Stereo.raw");
+            FileInputStream fileIn = new FileInputStream("F:\\concentus\\AudioData\\48Khz Stereo.raw");
             OpusEncoder encoder = new OpusEncoder(48000, 2, OpusApplication.OPUS_APPLICATION_AUDIO);
             encoder.setBitrate(96000);
             encoder.setSignalType(OpusSignal.OPUS_SIGNAL_MUSIC);
             encoder.setComplexity(10);
             
-            FileOutputStream fileOut = new FileOutputStream("C:\\Users\\lostromb\\Documents\\Visual Studio 2015\\Projects\\Concentus-git\\AudioData\\out.opus");
+            int frameSizeMilliseconds = 20;
+            int encoderSampleRate = 48000;
+            FileOutputStream fileOut = new FileOutputStream("F:\\concentus\\AudioData\\48Khz Stereo.opus");
             OpusInfo info = new OpusInfo();
             info.setNumChannels(2);
-            info.setSampleRate(48000);
+            info.setSampleRate(encoderSampleRate);
             OpusTags tags = new OpusTags();
             //tags.setVendor("Concentus");
             //tags.addComment("title", "A test!");
             OpusFile file = new OpusFile(fileOut, info, tags);
-            int packetSamples = 960;
+            int packetSamples = encoderSampleRate * frameSizeMilliseconds / 1000;
             byte[] inBuf = new byte[packetSamples * 2 * 2];
             byte[] data_packet = new byte[1275];
             long start = System.currentTimeMillis();
+            long granulePos = 0;
             while (fileIn.available() >= inBuf.length) {
                 int bytesRead = fileIn.read(inBuf, 0, inBuf.length);
                 short[] pcm = BytesToShorts(inBuf, 0, inBuf.length);
@@ -49,6 +52,11 @@ public class Program {
                 byte[] packet = new byte[bytesEncoded];
                 System.arraycopy(data_packet, 0, packet, 0, bytesEncoded);
                 OpusAudioData data = new OpusAudioData(packet);
+                // The ogg library should be handling granule positions automatically but for some reason it doesn't.
+                // BUT when we do this, it ends up writing only a single packet per ogg page which has an absurd
+                // level of container overhead. File a bug on vorbis-java or find a new ogg library...
+                granulePos += (48000 * frameSizeMilliseconds / 1000);
+                data.setGranulePosition(granulePos);
                 file.writeAudioData(data);
             }
             file.close();
