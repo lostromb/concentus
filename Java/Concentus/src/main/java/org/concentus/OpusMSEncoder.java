@@ -130,8 +130,8 @@ public class OpusMSEncoder {
     private static final int[] diff_table/*[17]*/ = {
                 ((short) (0.5 + (0.5000000f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.5000000f, CeltConstants.DB_SHIFT)*/, ((short) (0.5 + (0.2924813f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.2924813f, CeltConstants.DB_SHIFT)*/, ((short) (0.5 + (0.1609640f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.1609640f, CeltConstants.DB_SHIFT)*/, ((short) (0.5 + (0.0849625f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0849625f, CeltConstants.DB_SHIFT)*/,
                 ((short) (0.5 + (0.0437314f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0437314f, CeltConstants.DB_SHIFT)*/, ((short) (0.5 + (0.0221971f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0221971f, CeltConstants.DB_SHIFT)*/, ((short) (0.5 + (0.0111839f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0111839f, CeltConstants.DB_SHIFT)*/, ((short) (0.5 + (0.0056136f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0056136f, CeltConstants.DB_SHIFT)*/,
-                ((short) (0.5 + (0.0028123f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0028123f, CeltConstants.DB_SHIFT)*/},
-                0, 0, 0, 0, 0, 0, 0, 0;
+                ((short) (0.5 + (0.0028123f) * (((int) 1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(0.0028123f, CeltConstants.DB_SHIFT)*/,
+                0, 0, 0, 0, 0, 0, 0, 0};
 
     /* Computes a rough approximation of log2(2^a + 2^b) */
     static int logSum(int a, int b) {
