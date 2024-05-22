@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using HellaUnsafe.Celt;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +9,15 @@ using System.Threading.Tasks;
 
 namespace CSharpConsole
 {
+    [MediumRunJob]
     public class Benchmarks
     {
         private ArrayRefOpusEncoder arrayRefEncoder;
         private FixedBufferOpusEncoder _fixedBufferEncoder;
         private InlineArrayOpusEncoder _inlineArrayEncoder;
 
-        public Benchmarks()
+        [GlobalSetup]
+        public void GlobalSetup()
         {
             arrayRefEncoder = new ArrayRefOpusEncoder();
             arrayRefEncoder.buffer = new int[128];

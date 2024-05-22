@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Running;
+using HellaUnsafe.Celt;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 
@@ -10,12 +11,7 @@ namespace CSharpConsole
 
         public static unsafe void Main(string[] args)
         {
-            _encoder = new InlineArrayOpusEncoder();
-            for (int c = 0; c < 10; c++)
-            {
-                Encode(ref _encoder);
-                Console.WriteLine("FramesEncoded is now " + _encoder.framesEncoded);
-            }
+            BenchmarkRunner.Run<Benchmarks>();
         }
 
         public static unsafe void Encode(ref InlineArrayOpusEncoder encoder)
