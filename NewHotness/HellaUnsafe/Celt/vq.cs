@@ -1,8 +1,36 @@
-﻿using System;
+﻿/* Copyright (c) 2007-2008 CSIRO
+   Copyright (c) 2007-2009 Xiph.Org Foundation
+   Written by Jean-Marc Valin */
+/*
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+
+   - Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+   OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+using System;
 
 namespace HellaUnsafe.Celt
 {
-    internal static class vq
+    internal static class VQ
     {
         internal static unsafe void exp_rotation1(float* X, int len, int stride, float c, float s)
         {
@@ -40,7 +68,7 @@ namespace HellaUnsafe.Celt
             int stride2 = 0;
             int factor;
 
-            if (2 * K >= len || spread == SPREAD_NONE)
+            if (2 * K >= len || spread == Bands.SPREAD_NONE)
                 return;
             factor = SPREAD_FACTOR[spread - 1];
 
@@ -113,7 +141,7 @@ namespace HellaUnsafe.Celt
                 {
                     tmp |= iy[i * N0 + j];
                 } while (++j < N0);
-                collapse_mask |= (tmp != 0) << i;
+                collapse_mask |= (tmp != 0 ? 1U : 0U) << i;
             } while (++i < B);
             return collapse_mask;
         }
@@ -134,7 +162,7 @@ namespace HellaUnsafe.Celt
             sum = 0;
             j = 0; do
             {
-                signx[j] = X[j] < 0;
+                signx[j] = X[j] < 0 ? 1 : 0;
                 /* OPT: Make sure the compiler doesn't use a branch on ABS16(). */
                 X[j] = Inlines.ABS16(X[j]);
                 iy[j] = 0;
@@ -264,7 +292,7 @@ namespace HellaUnsafe.Celt
             return yy;
         }
 
-        internal static unsafe uint alg_quant(float* X, int N, int K, int spread, int B, ec_enc* enc,
+        internal static unsafe uint alg_quant(float* X, int N, int K, int spread, int B, ref ec_enc enc,
             float gain, int resynth, int arch)
         {
             Span<int> iy;
@@ -296,7 +324,7 @@ namespace HellaUnsafe.Celt
         /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
         internal static unsafe uint alg_unquant(float* X, int N, int K, int spread, int B,
-              ec_dec* dec, float gain)
+              ref ec_dec dec, float gain)
         {
             float Ryy;
             uint collapse_mask;
