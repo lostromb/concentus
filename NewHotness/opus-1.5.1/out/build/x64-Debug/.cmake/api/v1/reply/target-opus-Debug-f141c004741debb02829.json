@@ -1,0 +1,2509 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "opus.dll"
+		},
+		{
+			"path" : "opus.lib"
+		},
+		{
+			"path" : "opus.pdb"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"install",
+			"add_compile_options",
+			"include",
+			"target_compile_options",
+			"target_compile_definitions",
+			"add_definitions",
+			"target_include_directories",
+			"target_sources",
+			"add_sources_group"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt",
+			"cmake/OpusConfig.cmake",
+			"cmake/OpusFunctions.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 282,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 602,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 11,
+				"parent" : 0
+			},
+			{
+				"file" : 1,
+				"parent" : 3
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 107,
+				"parent" : 4
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 367,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 340,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 377,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 328,
+				"parent" : 0
+			},
+			{
+				"command" : 6,
+				"file" : 1,
+				"line" : 9,
+				"parent" : 4
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 586,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 308,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 427,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 514,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 447,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 466,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 486,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 453,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 472,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 346,
+				"parent" : 0
+			},
+			{
+				"command" : 6,
+				"file" : 1,
+				"line" : 23,
+				"parent" : 4
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 296,
+				"parent" : 0
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 392,
+				"parent" : 0
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 383,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 24
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 384,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 26
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 391,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 28
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 437,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 30
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 438,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 32
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 446,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 34
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 462,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 36
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 481,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 38
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 482,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 40
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 508,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 42
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 509,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 44
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 510,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 180,
+				"parent" : 46
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "/DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -std:c11 -MDd"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "/w44244"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "/w44305"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "/w44267"
+				},
+				{
+					"backtrace" : 6,
+					"fragment" : "/GS"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 7,
+					"define" : "DISABLE_DEBUG_FLOAT"
+				},
+				{
+					"backtrace" : 8,
+					"define" : "DLL_EXPORT"
+				},
+				{
+					"backtrace" : 9,
+					"define" : "ENABLE_HARDENING"
+				},
+				{
+					"backtrace" : 10,
+					"define" : "HAVE_CONFIG_H"
+				},
+				{
+					"backtrace" : 11,
+					"define" : "HAVE_LRINT"
+				},
+				{
+					"backtrace" : 11,
+					"define" : "HAVE_LRINTF"
+				},
+				{
+					"backtrace" : 12,
+					"define" : "OPUS_BUILD"
+				},
+				{
+					"backtrace" : 13,
+					"define" : "OPUS_HAVE_RTCD"
+				},
+				{
+					"backtrace" : 14,
+					"define" : "OPUS_X86_MAY_HAVE_AVX2"
+				},
+				{
+					"backtrace" : 15,
+					"define" : "OPUS_X86_MAY_HAVE_SSE"
+				},
+				{
+					"backtrace" : 16,
+					"define" : "OPUS_X86_MAY_HAVE_SSE2"
+				},
+				{
+					"backtrace" : 17,
+					"define" : "OPUS_X86_MAY_HAVE_SSE4_1"
+				},
+				{
+					"backtrace" : 18,
+					"define" : "OPUS_X86_PRESUME_SSE"
+				},
+				{
+					"backtrace" : 19,
+					"define" : "OPUS_X86_PRESUME_SSE2"
+				},
+				{
+					"backtrace" : 20,
+					"define" : "USE_ALLOCA"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "_CRT_SECURE_NO_WARNINGS"
+				},
+				{
+					"define" : "opus_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/include"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/out/build/x64-Debug"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/dnn"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/celt"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/silk"
+				},
+				{
+					"backtrace" : 23,
+					"path" : "C:/Code/ConcentusNew/libopus/silk/float"
+				}
+			],
+			"language" : "C",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "11"
+			},
+			"sourceIndexes" : 
+			[
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				66,
+				67,
+				68,
+				69,
+				70,
+				71,
+				72,
+				73,
+				74,
+				75,
+				76,
+				77,
+				78,
+				79,
+				80,
+				81,
+				82,
+				83,
+				84,
+				85,
+				86,
+				87,
+				88,
+				89,
+				90,
+				91,
+				92,
+				93,
+				94,
+				95,
+				96,
+				97,
+				98,
+				99,
+				100,
+				101,
+				102,
+				103,
+				104,
+				105,
+				106,
+				107,
+				108,
+				109,
+				110,
+				111,
+				112,
+				113,
+				114,
+				115,
+				116,
+				117,
+				118,
+				119,
+				120,
+				121,
+				122,
+				123,
+				124,
+				125,
+				126,
+				127,
+				128,
+				129,
+				130,
+				131,
+				132,
+				133,
+				134,
+				135,
+				136,
+				137,
+				138,
+				139,
+				140,
+				141,
+				142,
+				194,
+				195,
+				196,
+				197,
+				198,
+				199,
+				200,
+				201,
+				202,
+				203,
+				204,
+				205,
+				206,
+				207,
+				208,
+				209,
+				210,
+				211,
+				212,
+				213,
+				214,
+				215,
+				216,
+				217,
+				218,
+				219,
+				220,
+				221,
+				222,
+				223,
+				224,
+				225,
+				226,
+				227,
+				228,
+				229,
+				230,
+				231,
+				232,
+				233,
+				234,
+				235,
+				236,
+				237,
+				238,
+				239,
+				240,
+				241,
+				242,
+				243,
+				244,
+				245,
+				246,
+				247,
+				248,
+				249,
+				250,
+				251
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "/DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -std:c11 -MDd"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "/w44244"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "/w44305"
+				},
+				{
+					"backtrace" : 5,
+					"fragment" : "/w44267"
+				},
+				{
+					"backtrace" : 6,
+					"fragment" : "/GS"
+				},
+				{
+					"fragment" : " /arch:AVX2"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 7,
+					"define" : "DISABLE_DEBUG_FLOAT"
+				},
+				{
+					"backtrace" : 8,
+					"define" : "DLL_EXPORT"
+				},
+				{
+					"backtrace" : 9,
+					"define" : "ENABLE_HARDENING"
+				},
+				{
+					"backtrace" : 10,
+					"define" : "HAVE_CONFIG_H"
+				},
+				{
+					"backtrace" : 11,
+					"define" : "HAVE_LRINT"
+				},
+				{
+					"backtrace" : 11,
+					"define" : "HAVE_LRINTF"
+				},
+				{
+					"backtrace" : 12,
+					"define" : "OPUS_BUILD"
+				},
+				{
+					"backtrace" : 13,
+					"define" : "OPUS_HAVE_RTCD"
+				},
+				{
+					"backtrace" : 14,
+					"define" : "OPUS_X86_MAY_HAVE_AVX2"
+				},
+				{
+					"backtrace" : 15,
+					"define" : "OPUS_X86_MAY_HAVE_SSE"
+				},
+				{
+					"backtrace" : 16,
+					"define" : "OPUS_X86_MAY_HAVE_SSE2"
+				},
+				{
+					"backtrace" : 17,
+					"define" : "OPUS_X86_MAY_HAVE_SSE4_1"
+				},
+				{
+					"backtrace" : 18,
+					"define" : "OPUS_X86_PRESUME_SSE"
+				},
+				{
+					"backtrace" : 19,
+					"define" : "OPUS_X86_PRESUME_SSE2"
+				},
+				{
+					"backtrace" : 20,
+					"define" : "USE_ALLOCA"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "_CRT_SECURE_NO_WARNINGS"
+				},
+				{
+					"define" : "opus_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/include"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/out/build/x64-Debug"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/dnn"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/celt"
+				},
+				{
+					"backtrace" : 22,
+					"path" : "C:/Code/ConcentusNew/libopus/silk"
+				},
+				{
+					"backtrace" : 23,
+					"path" : "C:/Code/ConcentusNew/libopus/silk/float"
+				}
+			],
+			"language" : "C",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "11"
+			},
+			"sourceIndexes" : 
+			[
+				252,
+				253,
+				254
+			]
+		}
+	],
+	"id" : "opus::@6890427a1f51a3e7e1df",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "lib"
+			},
+			{
+				"backtrace" : 2,
+				"path" : "bin"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "C:/Code/ConcentusNew/libopus/out/install/x64-Debug"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "/machine:x64 /debug /INCREMENTAL",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib",
+				"role" : "libraries"
+			}
+		],
+		"language" : "C"
+	},
+	"name" : "opus",
+	"nameOnDisk" : "opus.dll",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6
+			]
+		},
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20
+			]
+		},
+		{
+			"name" : "celt",
+			"sourceIndexes" : 
+			[
+				21,
+				22,
+				143,
+				144,
+				145,
+				146,
+				147,
+				148,
+				149,
+				150,
+				151,
+				152,
+				153,
+				154,
+				155,
+				156,
+				157,
+				158,
+				159,
+				160,
+				161,
+				162,
+				163,
+				164,
+				165,
+				166,
+				167,
+				168,
+				169,
+				170,
+				171,
+				172,
+				173,
+				174,
+				175,
+				176,
+				177,
+				178,
+				179,
+				180,
+				181,
+				182,
+				183,
+				184,
+				185,
+				186,
+				187,
+				188,
+				189,
+				190,
+				191,
+				192,
+				193,
+				194,
+				195,
+				196,
+				197,
+				198,
+				199,
+				200,
+				201,
+				202,
+				203,
+				204,
+				205,
+				206,
+				207,
+				208,
+				209,
+				210,
+				211,
+				240,
+				241,
+				243,
+				244,
+				245,
+				246,
+				247,
+				252
+			]
+		},
+		{
+			"name" : "silk",
+			"sourceIndexes" : 
+			[
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39,
+				40,
+				41,
+				42,
+				43,
+				44,
+				45,
+				46,
+				47,
+				48,
+				49,
+				50,
+				51,
+				52,
+				53,
+				54,
+				55,
+				56,
+				57,
+				58,
+				59,
+				60,
+				61,
+				62,
+				63,
+				64,
+				65,
+				66,
+				67,
+				68,
+				69,
+				70,
+				71,
+				72,
+				73,
+				74,
+				75,
+				76,
+				77,
+				78,
+				79,
+				80,
+				81,
+				82,
+				83,
+				84,
+				85,
+				86,
+				87,
+				88,
+				89,
+				90,
+				91,
+				92,
+				93,
+				94,
+				95,
+				96,
+				97,
+				98,
+				99,
+				100,
+				101,
+				102,
+				103,
+				104,
+				105,
+				106,
+				107,
+				108,
+				109,
+				110,
+				111,
+				112,
+				113,
+				114,
+				115,
+				116,
+				117,
+				118,
+				119,
+				120,
+				121,
+				122,
+				123,
+				124,
+				125,
+				126,
+				127,
+				128,
+				129,
+				130,
+				131,
+				132,
+				133,
+				134,
+				135,
+				136,
+				137,
+				138,
+				139,
+				140,
+				141,
+				142,
+				212,
+				213,
+				214,
+				215,
+				216,
+				217,
+				218,
+				219,
+				220,
+				221,
+				222,
+				223,
+				224,
+				225,
+				226,
+				227,
+				228,
+				229,
+				230,
+				231,
+				232,
+				233,
+				234,
+				235,
+				236,
+				237,
+				238,
+				239,
+				242,
+				248,
+				249,
+				250,
+				251,
+				253,
+				254
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"path" : "include/opus.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "include/opus_multistream.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "include/opus_projection.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/opus_private.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/analysis.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/mapping_matrix.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/mlp.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/opus.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/opus_decoder.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/opus_encoder.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/extensions.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/opus_multistream.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/opus_multistream_encoder.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/opus_multistream_decoder.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/repacketizer.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/opus_projection_encoder.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/opus_projection_decoder.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/mapping_matrix.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/analysis.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/mlp.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/mlp_data.c",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "include/opus_defines.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 1,
+			"path" : "include/opus_types.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/debug.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/control.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/errors.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/API.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/typedef.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/define.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/main.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/x86/main_sse.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/PLC.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/structs.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/tables.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/tuning_parameters.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/Inlines.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/MacroCount.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/MacroDebug.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/macros.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/NSQ.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/pitch_est_defines.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/resampler_private.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/resampler_rom.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/resampler_structs.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/SigProc_FIX.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/x86/SigProc_FIX_sse.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/biquad_alt_arm.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/LPC_inv_pred_gain_arm.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/macros_armv4.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/macros_armv5e.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/macros_arm64.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/SigProc_FIX_armv4.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/SigProc_FIX_armv5e.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/NSQ_del_dec_arm.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/arm/NSQ_neon.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/fixed/main_FIX.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/fixed/structs_FIX.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/fixed/arm/warped_autocorrelation_FIX_arm.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/fixed/mips/noise_shape_analysis_FIX_mipsr1.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/fixed/mips/warped_autocorrelation_FIX_mipsr1.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/float/main_FLP.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/float/structs_FLP.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/float/SigProc_FLP.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/mips/macros_mipsr1.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/mips/NSQ_del_dec_mipsr1.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"path" : "silk/mips/sigproc_fix_mipsr1.h",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/CNG.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/code_signs.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/init_decoder.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/decode_core.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/decode_frame.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/decode_parameters.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/decode_indices.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/decode_pulses.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/decoder_set_fs.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/dec_API.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/enc_API.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/encode_indices.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/encode_pulses.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/gain_quant.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/interpolate.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/LP_variable_cutoff.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NLSF_decode.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NSQ.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NSQ_del_dec.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/PLC.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/shell_coder.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/tables_gain.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/tables_LTP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/tables_NLSF_CB_NB_MB.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/tables_NLSF_CB_WB.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/tables_other.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/tables_pitch_lag.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/tables_pulses_per_block.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/VAD.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/control_audio_bandwidth.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/quant_LTP_gains.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/VQ_WMat_EC.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/HP_variable_cutoff.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NLSF_encode.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NLSF_VQ.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NLSF_unpack.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NLSF_del_dec_quant.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/process_NLSFs.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/stereo_LR_to_MS.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/stereo_MS_to_LR.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/check_control_input.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/control_SNR.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/init_encoder.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/control_codec.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/A2NLSF.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/ana_filt_bank_1.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/biquad_alt.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/bwexpander_32.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/bwexpander.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/debug.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/decode_pitch.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/inner_prod_aligned.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/lin2log.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/log2lin.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/LPC_analysis_filter.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/LPC_inv_pred_gain.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/table_LSF_cos.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NLSF2A.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NLSF_stabilize.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/NLSF_VQ_weights_laroia.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/pitch_est_tables.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/resampler.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/resampler_down2_3.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/resampler_down2.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/resampler_private_AR2.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/resampler_private_down_FIR.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/resampler_private_IIR_FIR.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/resampler_private_up2_HQ.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/resampler_rom.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/sigm_Q15.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/sort.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/sum_sqr_shift.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/stereo_decode_pred.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/stereo_encode_pred.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/stereo_find_predictor.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/stereo_quant_pred.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 25,
+			"compileGroupIndex" : 0,
+			"path" : "silk/LPC_fit.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arch.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/bands.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/celt.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/cpu_support.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "include/opus_custom.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/cwrs.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/ecintrin.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/entcode.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/entdec.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/entenc.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/fixed_debug.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/fixed_generic.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/float_cast.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/_kiss_fft_guts.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/kiss_fft.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/laplace.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mathops.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mdct.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mfrngcod.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/modes.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/os_support.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/pitch.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/celt_lpc.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/x86/celt_lpc_sse.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/quant_bands.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/rate.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/stack_alloc.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/vq.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/static_modes_float.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/static_modes_fixed.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/static_modes_float_arm_ne10.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/static_modes_fixed_arm_ne10.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/armcpu.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/fixed_armv4.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/fixed_armv5e.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/fixed_arm64.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/kiss_fft_armv4.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/kiss_fft_armv5e.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/pitch_arm.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/fft_arm.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/arm/mdct_arm.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mips/celt_mipsr1.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mips/fixed_generic_mipsr1.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mips/kiss_fft_mipsr1.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mips/mdct_mipsr1.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mips/pitch_mipsr1.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/mips/vq_mipsr1.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/x86/pitch_sse.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/x86/vq_sse.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/x86/x86_arch_macros.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"path" : "celt/x86/x86cpu.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/bands.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/celt.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/celt_encoder.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/celt_decoder.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/cwrs.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/entcode.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/entdec.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/entenc.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/kiss_fft.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/laplace.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/mathops.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/mdct.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/modes.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/pitch.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/celt_lpc.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/quant_bands.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/rate.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 27,
+			"compileGroupIndex" : 0,
+			"path" : "celt/vq.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/apply_sine_window_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/corrMatrix_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/encode_frame_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/find_LPC_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/find_LTP_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/find_pitch_lags_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/find_pred_coefs_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/LPC_analysis_filter_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/LTP_analysis_filter_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/LTP_scale_ctrl_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/noise_shape_analysis_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/process_gains_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/regularize_correlations_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/residual_energy_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/warped_autocorrelation_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/wrappers_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/autocorrelation_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/burg_modified_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/bwexpander_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/energy_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/inner_product_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/k2a_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/LPC_inv_pred_gain_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/pitch_analysis_core_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/scale_copy_vector_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/scale_vector_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/schur_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 29,
+			"compileGroupIndex" : 0,
+			"path" : "silk/float/sort_FLP.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 31,
+			"compileGroupIndex" : 0,
+			"path" : "celt/x86/x86cpu.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 31,
+			"compileGroupIndex" : 0,
+			"path" : "celt/x86/x86_celt_map.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 33,
+			"compileGroupIndex" : 0,
+			"path" : "silk/x86/x86_silk_map.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 35,
+			"compileGroupIndex" : 0,
+			"path" : "celt/x86/pitch_sse.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 37,
+			"compileGroupIndex" : 0,
+			"path" : "celt/x86/pitch_sse2.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 37,
+			"compileGroupIndex" : 0,
+			"path" : "celt/x86/vq_sse2.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 39,
+			"compileGroupIndex" : 0,
+			"path" : "celt/x86/celt_lpc_sse4_1.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 39,
+			"compileGroupIndex" : 0,
+			"path" : "celt/x86/pitch_sse4_1.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 41,
+			"compileGroupIndex" : 0,
+			"path" : "silk/x86/NSQ_sse4_1.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 41,
+			"compileGroupIndex" : 0,
+			"path" : "silk/x86/NSQ_del_dec_sse4_1.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 41,
+			"compileGroupIndex" : 0,
+			"path" : "silk/x86/VAD_sse4_1.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 41,
+			"compileGroupIndex" : 0,
+			"path" : "silk/x86/VQ_WMat_EC_sse4_1.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 43,
+			"compileGroupIndex" : 1,
+			"path" : "celt/x86/pitch_avx.c",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 45,
+			"compileGroupIndex" : 1,
+			"path" : "silk/x86/NSQ_del_dec_avx2.c",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 47,
+			"compileGroupIndex" : 1,
+			"path" : "silk/float/x86/inner_product_FLP_avx2.c",
+			"sourceGroupIndex" : 3
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

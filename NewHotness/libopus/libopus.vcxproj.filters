@@ -1,0 +1,840 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\silk">
+      <UniqueIdentifier>{1bbe1088-469a-4295-bdf4-99b220e863d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{3d72c74b-1de2-4106-afce-1c8b7b2a0dc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\src">
+      <UniqueIdentifier>{634c4277-505d-4b9a-a26a-7972ea5039db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include">
+      <UniqueIdentifier>{3a0a7be2-9d8a-46b8-af73-666fd975c2a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\silk">
+      <UniqueIdentifier>{cdd83823-1359-44a1-90d9-2116a1ed8285}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\silk\x86">
+      <UniqueIdentifier>{12229c1e-3fe2-49c5-8f1a-aa64d074237a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\silk\arm">
+      <UniqueIdentifier>{0dd0eb1b-4215-4cc4-9ae2-a59cd0f62cd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\silk\float">
+      <UniqueIdentifier>{a1faa098-60ff-4bb7-9693-890e14469fcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\silk\mips">
+      <UniqueIdentifier>{98ab13ea-3c88-4505-b6fc-c13e503ffdb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\celt">
+      <UniqueIdentifier>{82044f60-87c1-42de-8198-469c889c82c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\celt\arm">
+      <UniqueIdentifier>{4cfdee38-c1bd-4f46-94be-102cf818d54f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\celt\mips">
+      <UniqueIdentifier>{5d6bc8af-26d5-4e96-8acb-3039e05de270}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\celt\x86">
+      <UniqueIdentifier>{29507271-0b7a-4e8f-a510-3f28fbe99464}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\celt">
+      <UniqueIdentifier>{e2962980-164a-497a-b797-004124ec63ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\celt\arm">
+      <UniqueIdentifier>{109584d1-41de-4640-8a0d-29d5bfb756e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\celt\tests">
+      <UniqueIdentifier>{a46e34e3-13d6-4ec9-a2d3-8ee2ee8cc6b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\celt\x86">
+      <UniqueIdentifier>{74fd57b7-02d6-4ca4-bd64-63b5d844c114}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\silk\arm">
+      <UniqueIdentifier>{f17730f1-89d3-4ac3-91b2-c954561e74c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\silk\float">
+      <UniqueIdentifier>{2aaad510-a7da-42cd-b002-bf0a6941ff31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\silk\float\x86">
+      <UniqueIdentifier>{db87e8c7-2886-4d5e-8fd9-1a942a6f4b6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\silk\tests">
+      <UniqueIdentifier>{1607f7e0-04d9-4cbe-a84c-44dc28092ad1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\silk\x86">
+      <UniqueIdentifier>{cd37471b-9ca4-4af6-bb99-3d87f29a785a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\analysis.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\extensions.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mapping_matrix.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mlp.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mlp_data.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus_compare.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus_decoder.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus_encoder.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus_multistream.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus_multistream_decoder.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus_multistream_encoder.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus_projection_decoder.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opus_projection_encoder.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\repacketizer.c">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\x86\celt_lpc_sse4_1.c">
+      <Filter>Source Files\celt\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\x86\pitch_avx.c">
+      <Filter>Source Files\celt\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\x86\pitch_sse.c">
+      <Filter>Source Files\celt\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\x86\pitch_sse2.c">
+      <Filter>Source Files\celt\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\x86\pitch_sse4_1.c">
+      <Filter>Source Files\celt\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\x86\vq_sse2.c">
+      <Filter>Source Files\celt\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\x86\x86_celt_map.c">
+      <Filter>Source Files\celt\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\x86\x86cpu.c">
+      <Filter>Source Files\celt\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\bands.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\celt.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\celt_decoder.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\celt_encoder.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\celt_lpc.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\cwrs.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\entcode.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\entdec.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\entenc.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\kiss_fft.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\laplace.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\mathops.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\mdct.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\modes.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\pitch.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\quant_bands.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\rate.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="celt\vq.c">
+      <Filter>Source Files\celt</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\x86\inner_product_FLP_avx2.c">
+      <Filter>Source Files\silk\float\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\apply_sine_window_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\autocorrelation_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\burg_modified_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\bwexpander_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\corrMatrix_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\encode_frame_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\energy_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\find_LPC_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\find_LTP_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\find_pitch_lags_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\find_pred_coefs_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\inner_product_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\k2a_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\LPC_analysis_filter_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\LPC_inv_pred_gain_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\LTP_analysis_filter_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\LTP_scale_ctrl_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\noise_shape_analysis_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\pitch_analysis_core_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\process_gains_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\regularize_correlations_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\residual_energy_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\scale_copy_vector_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\scale_vector_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\schur_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\sort_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\warped_autocorrelation_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\float\wrappers_FLP.c">
+      <Filter>Source Files\silk\float</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\x86\NSQ_del_dec_avx2.c">
+      <Filter>Source Files\silk\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\x86\NSQ_del_dec_sse4_1.c">
+      <Filter>Source Files\silk\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\x86\NSQ_sse4_1.c">
+      <Filter>Source Files\silk\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\x86\VAD_sse4_1.c">
+      <Filter>Source Files\silk\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\x86\VQ_WMat_EC_sse4_1.c">
+      <Filter>Source Files\silk\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\x86\x86_silk_map.c">
+      <Filter>Source Files\silk\x86</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\A2NLSF.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\ana_filt_bank_1.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\biquad_alt.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\bwexpander.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\bwexpander_32.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\check_control_input.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\CNG.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\code_signs.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\control_audio_bandwidth.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\control_codec.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\control_SNR.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\debug.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\dec_API.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\decode_core.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\decode_frame.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\decode_indices.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\decode_parameters.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\decode_pitch.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\decode_pulses.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\decoder_set_fs.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\enc_API.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\encode_indices.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\encode_pulses.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\gain_quant.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\HP_variable_cutoff.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\init_decoder.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\init_encoder.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\inner_prod_aligned.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\interpolate.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\lin2log.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\log2lin.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\LP_variable_cutoff.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\LPC_analysis_filter.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\LPC_fit.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\LPC_inv_pred_gain.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NLSF_decode.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NLSF_del_dec_quant.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NLSF_encode.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NLSF_stabilize.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NLSF_unpack.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NLSF_VQ.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NLSF_VQ_weights_laroia.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NLSF2A.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NSQ.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\NSQ_del_dec.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\pitch_est_tables.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\PLC.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\process_NLSFs.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\quant_LTP_gains.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\resampler.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\resampler_down2.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\resampler_down2_3.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\resampler_private_AR2.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\resampler_private_down_FIR.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\resampler_private_IIR_FIR.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\resampler_private_up2_HQ.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\resampler_rom.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\shell_coder.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\sigm_Q15.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\sort.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\stereo_decode_pred.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\stereo_encode_pred.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\stereo_find_predictor.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\stereo_LR_to_MS.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\stereo_MS_to_LR.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\stereo_quant_pred.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\sum_sqr_shift.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\table_LSF_cos.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\tables_gain.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\tables_LTP.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\tables_NLSF_CB_NB_MB.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\tables_NLSF_CB_WB.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\tables_other.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\tables_pitch_lag.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\tables_pulses_per_block.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\VAD.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+    <ClCompile Include="silk\VQ_WMat_EC.c">
+      <Filter>Source Files\silk</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\analysis.h">
+      <Filter>Header Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mapping_matrix.h">
+      <Filter>Header Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mlp.h">
+      <Filter>Header Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\opus_private.h">
+      <Filter>Header Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\opus.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\opus_custom.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\opus_defines.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\opus_multistream.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\opus_projection.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\opus_types.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\x86\main_sse.h">
+      <Filter>Header Files\silk\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\x86\SigProc_FIX_sse.h">
+      <Filter>Header Files\silk\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\biquad_alt_arm.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\LPC_inv_pred_gain_arm.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\macros_arm64.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\macros_armv4.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\macros_armv5e.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\NSQ_del_dec_arm.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\NSQ_neon.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\SigProc_FIX_armv4.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\arm\SigProc_FIX_armv5e.h">
+      <Filter>Header Files\silk\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\float\main_FLP.h">
+      <Filter>Header Files\silk\float</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\float\SigProc_FLP.h">
+      <Filter>Header Files\silk\float</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\float\structs_FLP.h">
+      <Filter>Header Files\silk\float</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\mips\macros_mipsr1.h">
+      <Filter>Header Files\silk\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\mips\NSQ_del_dec_mipsr1.h">
+      <Filter>Header Files\silk\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\mips\sigproc_fix_mipsr1.h">
+      <Filter>Header Files\silk\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\API.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\control.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\debug.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\define.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\errors.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\Inlines.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\MacroCount.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\MacroDebug.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\macros.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\main.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\NSQ.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\pitch_est_defines.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\PLC.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\resampler_private.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\resampler_rom.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\resampler_structs.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\SigProc_FIX.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\structs.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\tables.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\tuning_parameters.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="silk\typedef.h">
+      <Filter>Header Files\silk</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\armcpu.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\fft_arm.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\fixed_arm64.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\fixed_armv4.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\fixed_armv5e.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\kiss_fft_armv4.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\kiss_fft_armv5e.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\mdct_arm.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arm\pitch_arm.h">
+      <Filter>Header Files\celt\arm</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mips\celt_mipsr1.h">
+      <Filter>Header Files\celt\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mips\fixed_generic_mipsr1.h">
+      <Filter>Header Files\celt\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mips\kiss_fft_mipsr1.h">
+      <Filter>Header Files\celt\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mips\mdct_mipsr1.h">
+      <Filter>Header Files\celt\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mips\pitch_mipsr1.h">
+      <Filter>Header Files\celt\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mips\vq_mipsr1.h">
+      <Filter>Header Files\celt\mips</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\x86\celt_lpc_sse.h">
+      <Filter>Header Files\celt\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\x86\pitch_sse.h">
+      <Filter>Header Files\celt\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\x86\vq_sse.h">
+      <Filter>Header Files\celt\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\x86\x86_arch_macros.h">
+      <Filter>Header Files\celt\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\x86\x86cpu.h">
+      <Filter>Header Files\celt\x86</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\_kiss_fft_guts.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\arch.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\bands.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\celt.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\celt_lpc.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\cpu_support.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\cwrs.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\ecintrin.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\entcode.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\entdec.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\entenc.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\fixed_debug.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\fixed_generic.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\float_cast.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\kiss_fft.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\laplace.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mathops.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mdct.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\mfrngcod.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\modes.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\os_support.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\pitch.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\quant_bands.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\rate.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\stack_alloc.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\static_modes_fixed.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\static_modes_fixed_arm_ne10.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\static_modes_float.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\static_modes_float_arm_ne10.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+    <ClInclude Include="celt\vq.h">
+      <Filter>Header Files\celt</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

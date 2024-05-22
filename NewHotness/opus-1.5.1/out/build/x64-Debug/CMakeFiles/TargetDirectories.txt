@@ -1,0 +1,8 @@
+C:/Code/ConcentusNew/libopus/out/build/x64-Debug/CMakeFiles/opus.dir
+C:/Code/ConcentusNew/libopus/out/build/x64-Debug/CMakeFiles/package.dir
+C:/Code/ConcentusNew/libopus/out/build/x64-Debug/CMakeFiles/package_source.dir
+C:/Code/ConcentusNew/libopus/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Code/ConcentusNew/libopus/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
+C:/Code/ConcentusNew/libopus/out/build/x64-Debug/CMakeFiles/list_install_components.dir
+C:/Code/ConcentusNew/libopus/out/build/x64-Debug/CMakeFiles/install.dir
+C:/Code/ConcentusNew/libopus/out/build/x64-Debug/CMakeFiles/install/local.dir

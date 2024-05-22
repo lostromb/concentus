@@ -1,0 +1,16 @@
+# Opus codec reference implementation pkg-config file
+
+prefix=C:/Code/ConcentusNew/libopus/out/install/x64-Debug
+exec_prefix=C:/Code/ConcentusNew/libopus/out/install/x64-Debug
+libdir=C:/Code/ConcentusNew/libopus/out/install/x64-Debug/lib
+includedir=C:/Code/ConcentusNew/libopus/out/install/x64-Debug/include
+
+Name: Opus
+Description: Opus IETF audio codec ( build)
+URL: https://opus-codec.org/
+Version: 1.5.2
+Requires:
+Conflicts:
+Libs: -LC:/Code/ConcentusNew/libopus/out/install/x64-Debug/lib -lopus
+Libs.private: 
+Cflags: -IC:/Code/ConcentusNew/libopus/out/install/x64-Debug/include/opus
