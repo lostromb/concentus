@@ -67,10 +67,10 @@ namespace Concentus.Native
 #endif // NETCOREAPP
 
             // We can sometimes fail to parse new runtime IDs (like if they add "debian" as a runtime ID in the future), so fall back if needed
+#if NET452_OR_GREATER
             if (os == PlatformOperatingSystem.Unknown)
             {
                 // Figure out our OS
-#if NET452_OR_GREATER
                 if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 {
                     os = PlatformOperatingSystem.Windows;
@@ -79,27 +79,36 @@ namespace Concentus.Native
                 {
                     os = PlatformOperatingSystem.Unix;
                 }
-#else
+            }
+#endif // NET452_OR_GREATER
+
+#if NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+            if (os == PlatformOperatingSystem.Unknown)
+            {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     os = PlatformOperatingSystem.Windows;
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ANDROID_STORAGE")))
                 {
-                    os = PlatformOperatingSystem.Linux;
+                    os = PlatformOperatingSystem.Android;
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     os = PlatformOperatingSystem.MacOS;
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    os = PlatformOperatingSystem.Linux;
                 }
 #if NET6_0_OR_GREATER
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
                 {
                     os = PlatformOperatingSystem.FreeBSD;
                 }
-#endif // !NET452_OR_GREATER
 #endif // NET6_0_OR_GREATER
             }
+#endif // NETCOREAPP || NETSTANDARD2_0_OR_GREATER
 
             // Figure out our architecture
             if (arch == PlatformArchitecture.Unknown)
@@ -191,7 +200,8 @@ namespace Concentus.Native
 
                 if (platform.OS == PlatformOperatingSystem.Android)
                 {
-                    // On android we're not allowed to dlopen shared system binaries directly.
+                    // On android we're not allowed to dlopen shared system binaries directly because of Private API
+                    // (see https://android-developers.googleblog.com/2016/06/android-changes-for-ndk-developers.html)
                     // So we have to probe and see if there's a native .so provided to us by this application's .apk
                     logger?.WriteLine($"Probing for {normalizedLibraryName} within local Android .apk");
                     NativeLibraryStatus androidApkLibStatus = ProbeLibrary(normalizedLibraryName, platform, logger);
@@ -614,7 +624,8 @@ namespace Concentus.Native
             else if (os == PlatformOperatingSystem.Linux ||
                     os == PlatformOperatingSystem.Unix ||
                     os == PlatformOperatingSystem.Linux_Musl ||
-                    os == PlatformOperatingSystem.Linux_Bionic)
+                    os == PlatformOperatingSystem.Linux_Bionic ||
+                    os == PlatformOperatingSystem.Android)
             {
                 PlatformArchitecture? possibleArch = KernelInteropLinux.TryGetArchForUnix(logger);
                 if (possibleArch.HasValue)
