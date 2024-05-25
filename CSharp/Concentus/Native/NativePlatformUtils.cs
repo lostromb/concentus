@@ -111,7 +111,7 @@ namespace Concentus.Native
 #endif // NETCOREAPP || NETSTANDARD2_0_OR_GREATER
 
             // Figure out our architecture
-            if (arch == PlatformArchitecture.Unknown)
+            if (os != PlatformOperatingSystem.Unknown && arch == PlatformArchitecture.Unknown)
             {
                 // First try native kernel interop
                 arch = TryGetNativeArchitecture(os, logger);
@@ -609,7 +609,7 @@ namespace Concentus.Native
                 {
                     case KernelInteropWindows.PROCESSOR_ARCHITECTURE_INTEL:
                     case KernelInteropWindows.PROCESSOR_ARCHITECTURE_AMD64:
-                        return Unsafe.SizeOf<IntPtr>() == 4 ? PlatformArchitecture.I386 : PlatformArchitecture.X64;
+                        return Marshal.SizeOf(new IntPtr()) == 4 ? PlatformArchitecture.I386 : PlatformArchitecture.X64;
                     case KernelInteropWindows.PROCESSOR_ARCHITECTURE_ARM:
                         return PlatformArchitecture.ArmV7;
                     case KernelInteropWindows.PROCESSOR_ARCHITECTURE_ARM64:
