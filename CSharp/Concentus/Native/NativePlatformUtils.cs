@@ -79,20 +79,24 @@ namespace Concentus.Native
                 {
                     os = PlatformOperatingSystem.Unix;
                 }
+                else if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+                {
+                    os = PlatformOperatingSystem.MacOS;
+                }
             }
-#endif // NET452_OR_GREATER
-
-#if NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+#else
             if (os == PlatformOperatingSystem.Unknown)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     os = PlatformOperatingSystem.Windows;
                 }
+#if !NETSTANDARD1_1
                 else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ANDROID_STORAGE")))
                 {
                     os = PlatformOperatingSystem.Android;
                 }
+#endif // !NETSTANDARD1_1
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     os = PlatformOperatingSystem.MacOS;
@@ -108,10 +112,10 @@ namespace Concentus.Native
                 }
 #endif // NET6_0_OR_GREATER
             }
-#endif // NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+#endif // !NET452_OR_GREATER
 
-            // Figure out our architecture
-            if (os != PlatformOperatingSystem.Unknown && arch == PlatformArchitecture.Unknown)
+                // Figure out our architecture
+                if (os != PlatformOperatingSystem.Unknown && arch == PlatformArchitecture.Unknown)
             {
                 // First try native kernel interop
                 arch = TryGetNativeArchitecture(os, logger);
@@ -207,7 +211,7 @@ namespace Concentus.Native
                     NativeLibraryStatus androidApkLibStatus = ProbeLibrary(normalizedLibraryName, platform, logger);
                     if (androidApkLibStatus != NativeLibraryStatus.Available)
                     {
-                        logger?.WriteLine("Native library \"{0}\" was not found in the local .apk", libraryName);
+                        logger?.WriteLine("Native library \"{0}\" was not found in the local .apk.", libraryName);
                         return NativeLibraryStatus.Unavailable;
                     }
 
@@ -324,6 +328,8 @@ namespace Concentus.Native
                     return "s390x";
                 case PlatformArchitecture.Loongarch64:
                     return "loongarch64";
+                case PlatformArchitecture.Itanium64:
+                    return "ia64";
                 default:
                     throw new PlatformNotSupportedException("No runtime ID defined for " + architecture.ToString());
             }
@@ -592,6 +598,10 @@ namespace Concentus.Native
             else if (arch.Equals("loongarch64".AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return PlatformArchitecture.Loongarch64;
+            }
+            else if (arch.Equals("ia64".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return PlatformArchitecture.Itanium64;
             }
             else
             {
