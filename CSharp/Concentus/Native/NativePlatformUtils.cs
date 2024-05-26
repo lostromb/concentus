@@ -67,42 +67,75 @@ namespace Concentus.Native
 #endif // NETCOREAPP
 
             // We can sometimes fail to parse new runtime IDs (like if they add "debian" as a runtime ID in the future), so fall back if needed
+#if NET452_OR_GREATER
             if (os == PlatformOperatingSystem.Unknown)
             {
-                // Figure out our OS
-#if NET452_OR_GREATER
-                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                try
                 {
-                    os = PlatformOperatingSystem.Windows;
+                    // Figure out our OS
+                    switch (Environment.OSVersion.Platform)
+                    {
+                        case PlatformID.Win32NT:
+                        case PlatformID.Win32S:
+                        case PlatformID.Win32Windows:
+                        case PlatformID.WinCE:
+                            os = PlatformOperatingSystem.Windows;
+                            break;
+                        case PlatformID.Unix:
+                        case PlatformID.MacOSX:
+                            if (File.Exists(@"/proc/sys/kernel/ostype") &&
+                                File.ReadAllText(@"/proc/sys/kernel/ostype").StartsWith("Linux", StringComparison.OrdinalIgnoreCase))
+                            {
+                                os = PlatformOperatingSystem.Linux;
+                            }
+                            else if (File.Exists(@"/System/Library/CoreServices/SystemVersion.plist"))
+                            {
+                                os = PlatformOperatingSystem.MacOS;
+                            }
+                            else
+                            {
+                                os = PlatformOperatingSystem.Unix;
+                            }
+                            break;
+                    }
                 }
-                else if (Environment.OSVersion.Platform == PlatformID.Unix)
+                catch (Exception e)
                 {
-                    os = PlatformOperatingSystem.Unix;
+                    logger?.WriteLine(e.ToString());
                 }
+            }
 #else
+            if (os == PlatformOperatingSystem.Unknown)
+            {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     os = PlatformOperatingSystem.Windows;
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+#if !NETSTANDARD1_1
+                else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ANDROID_STORAGE")))
                 {
-                    os = PlatformOperatingSystem.Linux;
+                    os = PlatformOperatingSystem.Android;
                 }
+#endif // !NETSTANDARD1_1
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     os = PlatformOperatingSystem.MacOS;
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    os = PlatformOperatingSystem.Linux;
                 }
 #if NET6_0_OR_GREATER
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
                 {
                     os = PlatformOperatingSystem.FreeBSD;
                 }
-#endif // !NET452_OR_GREATER
 #endif // NET6_0_OR_GREATER
             }
+#endif // !NET452_OR_GREATER
 
             // Figure out our architecture
-            if (arch == PlatformArchitecture.Unknown)
+            if (os != PlatformOperatingSystem.Unknown && arch == PlatformArchitecture.Unknown)
             {
                 // First try native kernel interop
                 arch = TryGetNativeArchitecture(os, logger);
@@ -112,14 +145,7 @@ namespace Concentus.Native
             if (arch == PlatformArchitecture.Unknown)
             {
 #if NET452_OR_GREATER
-                if (Environment.Is64BitProcess)
-                {
-                    arch = PlatformArchitecture.X64;
-                }
-                else
-                {
-                    arch = PlatformArchitecture.I386;
-                }
+                arch = Environment.Is64BitProcess ? PlatformArchitecture.X64 : PlatformArchitecture.I386;
 #else
                 switch (RuntimeInformation.ProcessArchitecture)
                 {
@@ -191,13 +217,14 @@ namespace Concentus.Native
 
                 if (platform.OS == PlatformOperatingSystem.Android)
                 {
-                    // On android we're not allowed to dlopen shared system binaries directly.
+                    // On android we're not allowed to dlopen shared system binaries directly because of Private API
+                    // (see https://android-developers.googleblog.com/2016/06/android-changes-for-ndk-developers.html)
                     // So we have to probe and see if there's a native .so provided to us by this application's .apk
                     logger?.WriteLine($"Probing for {normalizedLibraryName} within local Android .apk");
                     NativeLibraryStatus androidApkLibStatus = ProbeLibrary(normalizedLibraryName, platform, logger);
                     if (androidApkLibStatus != NativeLibraryStatus.Available)
                     {
-                        logger?.WriteLine("Native library \"{0}\" was not found in the local .apk", libraryName);
+                        logger?.WriteLine("Native library \"{0}\" was not found in the local .apk.", libraryName);
                         return NativeLibraryStatus.Unavailable;
                     }
 
@@ -314,6 +341,8 @@ namespace Concentus.Native
                     return "s390x";
                 case PlatformArchitecture.Loongarch64:
                     return "loongarch64";
+                case PlatformArchitecture.Itanium64:
+                    return "ia64";
                 default:
                     throw new PlatformNotSupportedException("No runtime ID defined for " + architecture.ToString());
             }
@@ -583,6 +612,10 @@ namespace Concentus.Native
             {
                 return PlatformArchitecture.Loongarch64;
             }
+            else if (arch.Equals("ia64".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                return PlatformArchitecture.Itanium64;
+            }
             else
             {
                 return PlatformArchitecture.Unknown;
@@ -599,7 +632,7 @@ namespace Concentus.Native
                 {
                     case KernelInteropWindows.PROCESSOR_ARCHITECTURE_INTEL:
                     case KernelInteropWindows.PROCESSOR_ARCHITECTURE_AMD64:
-                        return Unsafe.SizeOf<IntPtr>() == 4 ? PlatformArchitecture.I386 : PlatformArchitecture.X64;
+                        return Marshal.SizeOf(new IntPtr()) == 4 ? PlatformArchitecture.I386 : PlatformArchitecture.X64;
                     case KernelInteropWindows.PROCESSOR_ARCHITECTURE_ARM:
                         return PlatformArchitecture.ArmV7;
                     case KernelInteropWindows.PROCESSOR_ARCHITECTURE_ARM64:
@@ -614,7 +647,8 @@ namespace Concentus.Native
             else if (os == PlatformOperatingSystem.Linux ||
                     os == PlatformOperatingSystem.Unix ||
                     os == PlatformOperatingSystem.Linux_Musl ||
-                    os == PlatformOperatingSystem.Linux_Bionic)
+                    os == PlatformOperatingSystem.Linux_Bionic ||
+                    os == PlatformOperatingSystem.Android)
             {
                 PlatformArchitecture? possibleArch = KernelInteropLinux.TryGetArchForUnix(logger);
                 if (possibleArch.HasValue)
