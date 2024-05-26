@@ -70,18 +70,38 @@ namespace Concentus.Native
 #if NET452_OR_GREATER
             if (os == PlatformOperatingSystem.Unknown)
             {
-                // Figure out our OS
-                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                try
                 {
-                    os = PlatformOperatingSystem.Windows;
+                    // Figure out our OS
+                    switch (Environment.OSVersion.Platform)
+                    {
+                        case PlatformID.Win32NT:
+                        case PlatformID.Win32S:
+                        case PlatformID.Win32Windows:
+                        case PlatformID.WinCE:
+                            os = PlatformOperatingSystem.Windows;
+                            break;
+                        case PlatformID.Unix:
+                        case PlatformID.MacOSX:
+                            if (File.Exists(@"/proc/sys/kernel/ostype") &&
+                                File.ReadAllText(@"/proc/sys/kernel/ostype").StartsWith("Linux", StringComparison.OrdinalIgnoreCase))
+                            {
+                                os = PlatformOperatingSystem.Linux;
+                            }
+                            else if (File.Exists(@"/System/Library/CoreServices/SystemVersion.plist"))
+                            {
+                                os = PlatformOperatingSystem.MacOS;
+                            }
+                            else
+                            {
+                                os = PlatformOperatingSystem.Unix;
+                            }
+                            break;
+                    }
                 }
-                else if (Environment.OSVersion.Platform == PlatformID.Unix)
+                catch (Exception e)
                 {
-                    os = PlatformOperatingSystem.Unix;
-                }
-                else if (Environment.OSVersion.Platform == PlatformID.MacOSX)
-                {
-                    os = PlatformOperatingSystem.MacOS;
+                    logger?.WriteLine(e.ToString());
                 }
             }
 #else
@@ -114,8 +134,8 @@ namespace Concentus.Native
             }
 #endif // !NET452_OR_GREATER
 
-                // Figure out our architecture
-                if (os != PlatformOperatingSystem.Unknown && arch == PlatformArchitecture.Unknown)
+            // Figure out our architecture
+            if (os != PlatformOperatingSystem.Unknown && arch == PlatformArchitecture.Unknown)
             {
                 // First try native kernel interop
                 arch = TryGetNativeArchitecture(os, logger);
@@ -125,14 +145,7 @@ namespace Concentus.Native
             if (arch == PlatformArchitecture.Unknown)
             {
 #if NET452_OR_GREATER
-                if (Environment.Is64BitProcess)
-                {
-                    arch = PlatformArchitecture.X64;
-                }
-                else
-                {
-                    arch = PlatformArchitecture.I386;
-                }
+                arch = Environment.Is64BitProcess ? PlatformArchitecture.X64 : PlatformArchitecture.I386;
 #else
                 switch (RuntimeInformation.ProcessArchitecture)
                 {
