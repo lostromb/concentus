@@ -27,6 +27,7 @@
 */
 
 using System;
+using HellaUnsafe.Common;
 using static HellaUnsafe.Celt.KissFFT;
 using static HellaUnsafe.Celt.Arch;
 
@@ -50,7 +51,7 @@ namespace HellaUnsafe.Celt
         {
             internal int n;
             internal int maxshift;
-            internal kiss_fft_state[] kfft;
+            internal StructRef<kiss_fft_state>[] kfft;
             internal float[] trig;
         }
 
@@ -62,7 +63,7 @@ namespace HellaUnsafe.Celt
             int N, N2, N4;
             Span<float> f_span;
             Span<kiss_fft_cpx> f2_span;
-            ref kiss_fft_state st = ref l.kfft[shift];
+            ref kiss_fft_state st = ref l.kfft[shift].Value;
             float* trig;
             float scale;
             scale = st.scale;
@@ -184,7 +185,7 @@ namespace HellaUnsafe.Celt
             float* trig;
 
             fixed (float* trig_fixed = l.trig)
-            fixed (short* bitrev_fixed = l.kfft[shift].bitrev)
+            fixed (short* bitrev_fixed = l.kfft[shift].Value.bitrev)
             {
                 N = l.n;
                 trig = trig_fixed;
@@ -220,7 +221,7 @@ namespace HellaUnsafe.Celt
                     }
                 }
 
-                opus_fft_impl(l.kfft[shift], (kiss_fft_cpx*)(output + (overlap >> 1)));
+                opus_fft_impl(l.kfft[shift].Value, (kiss_fft_cpx*)(output + (overlap >> 1)));
 
                 /* Post-rotate and de-shuffle from both ends of the buffer at once to make
                    it in-place. */

@@ -38,6 +38,10 @@ namespace HellaUnsafe.Celt
 {
     internal static class MathOps
     {
+        /* Multiplies two 16-bit fractional values. Bit-exactness of this macro is important */
+        internal static short FRAC_MUL16(short a, short b) { return (short)((16384 + ((int)(short)(a) * (short)(b))) >> 15); }
+        internal static int FRAC_MUL16(int a, int b) { return ((16384 + ((int)((short)a * (short)b))) >> 15); }
+
         internal static float celt_sqrt(float x) { return (float)Sqrt(x); }
         internal static float celt_rsqrt(float x) { return 1.0f / (float)Sqrt(x); }
         internal static float celt_rsqrt_norm(float x) { return 1.0f / (float)Sqrt(x); }

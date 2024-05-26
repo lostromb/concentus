@@ -2,6 +2,7 @@
    with arguments: 48000 960
    It contains static definitions for some pre-defined modes. */
 
+using HellaUnsafe.Common;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -415,37 +416,41 @@ namespace HellaUnsafe.Celt
             3, 15, 27, 39, 51, 7, 19, 31, 43, 55, 11, 23, 35, 47, 59,
             };
 
-        internal static readonly KissFFT.kiss_fft_state fft_state48000_960_0 = new KissFFT.kiss_fft_state(
-            480,
-            0.002083333f,
-            -1,
-            new short[] {5, 96, 3, 32, 4, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, },
-            fft_bitrev480,
-            fft_twiddles48000_960);
+        internal static readonly StructRef<kiss_fft_state> fft_state48000_960_0 =
+            new StructRef<kiss_fft_state>(new kiss_fft_state(
+                480,
+                0.002083333f,
+                -1,
+                new short[] {5, 96, 3, 32, 4, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, },
+                fft_bitrev480,
+                fft_twiddles48000_960));
 
-        internal static readonly KissFFT.kiss_fft_state fft_state48000_960_1 = new KissFFT.kiss_fft_state(
-            240,
-            0.004166667f,
-            1,
-            new short[] { 5, 48, 3, 16, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
-            fft_bitrev240,
-            fft_twiddles48000_960);
+        internal static readonly StructRef<kiss_fft_state> fft_state48000_960_1 =
+            new StructRef<kiss_fft_state>(new kiss_fft_state(
+                240,
+                0.004166667f,
+                1,
+                new short[] { 5, 48, 3, 16, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
+                fft_bitrev240,
+                fft_twiddles48000_960));
 
-        internal static readonly KissFFT.kiss_fft_state fft_state48000_960_2 = new KissFFT.kiss_fft_state(
-            120,
-            0.008333333f,
-            2,
-            new short[] { 5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
-            fft_bitrev120,
-            fft_twiddles48000_960);
+        internal static readonly StructRef<kiss_fft_state> fft_state48000_960_2 =
+            new StructRef<kiss_fft_state>(new kiss_fft_state(
+                120,
+                0.008333333f,
+                2,
+                new short[] { 5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },
+                fft_bitrev120,
+                fft_twiddles48000_960));
 
-        internal static readonly KissFFT.kiss_fft_state fft_state48000_960_3 = new KissFFT.kiss_fft_state(
-            60,
-            0.016666667f,
-            3,
-            new short[] { 5, 12, 3, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
-            fft_bitrev60,
-            fft_twiddles48000_960);
+        internal static readonly StructRef<kiss_fft_state> fft_state48000_960_3 =
+            new StructRef<kiss_fft_state>(new kiss_fft_state(
+                60,
+                0.016666667f,
+                3,
+                new short[] { 5, 12, 3, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
+                fft_bitrev60,
+                fft_twiddles48000_960));
 
         internal static readonly float[] mdct_twiddles960 = {
             0.99999994f, 0.99999321f, 0.99997580f, 0.99994773f, 0.99990886f,
@@ -829,7 +834,7 @@ namespace HellaUnsafe.Celt
             {
                 n = 1920,
                 maxshift = 3,
-                kfft = new kiss_fft_state[]
+                kfft = new StructRef<kiss_fft_state>[]
                 {
                     fft_state48000_960_0,
                     fft_state48000_960_1,
@@ -850,9 +855,8 @@ namespace HellaUnsafe.Celt
         /* List of all the available modes */
         internal const int TOTAL_MODES = 1;
 
-        // OPT is this just making a copy of the mode struct for no reason?
-        internal static readonly CELTMode[] static_mode_list = {
-            mode48000_960_120,
+        internal static readonly StructRef<CELTMode>[] static_mode_list = {
+            new StructRef<CELTMode>(mode48000_960_120),
             };
     }
 }

@@ -40,6 +40,11 @@ namespace HellaUnsafe.Common
             new Span<byte>(dst, bytes).Fill(0);
         }
 
+        internal static unsafe void OPUS_CLEAR(float* dst, int bytes)
+        {
+            new Span<float>(dst, bytes).Fill(0);
+        }
+
         internal static unsafe void OPUS_CLEAR(byte* dst, uint bytes)
         {
             new Span<byte>(dst, (int)bytes).Fill(0);
