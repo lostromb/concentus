@@ -27,8 +27,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using HellaUnsafe.Celt;
 using System;
+using static HellaUnsafe.Celt.Inlines;
 
 namespace HellaUnsafe.Celt
 {
@@ -306,12 +306,12 @@ namespace HellaUnsafe.Celt
         /*U(N,K) = U(K,N) := N>0?K>0?U(N-1,K)+U(N,K-1)+U(N-1,K-1):0:K>0?1:0*/
         internal static unsafe uint CELT_PVQ_U(uint* pinnedTable, int _n, int _k)
         {
-            return CELT_PVQ_U_ROW(pinnedTable, Inlines.IMIN(_n, _k))[Inlines.IMAX(_n, _k)];
+            return CELT_PVQ_U_ROW(pinnedTable, IMIN(_n, _k))[IMAX(_n, _k)];
         }
 
         internal static unsafe uint CELT_PVQ_U(int _n, int _k)
         {
-            return CELT_PVQ_U_DATA[CELT_PVQ_U_ROW_OFFSET[Inlines.IMIN(_n, _k)] + Inlines.IMAX(_n, _k)];
+            return CELT_PVQ_U_DATA[CELT_PVQ_U_ROW_OFFSET[IMIN(_n, _k)] + IMAX(_n, _k)];
         }
 
         /*V(N,K) := U(N,K)+U(N,K+1) = the number of PVQ codewords for a band of size N
@@ -333,7 +333,7 @@ namespace HellaUnsafe.Celt
                 uint i;
                 int j;
                 int k;
-                Inlines.ASSERT(_n >= 2);
+                ASSERT(_n >= 2);
                 j = _n - 1;
                 i = _y[j] < 0 ? 1U : 0;
                 k = Math.Abs(_y[j]);
@@ -351,8 +351,8 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void encode_pulses(in int* _y, int _n, int _k, ref EntCode.ec_ctx _enc, in byte* ecbuf)
         {
-            Inlines.ASSERT(_k > 0);
-            Inlines.ASSERT(CELT_PVQ_U_DATA.Length == 1272);
+            ASSERT(_k > 0);
+            ASSERT(CELT_PVQ_U_DATA.Length == 1272);
             EntEnc.ec_enc_uint(ref _enc, ecbuf, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
         }
 
@@ -365,8 +365,8 @@ namespace HellaUnsafe.Celt
                 int k0;
                 int val;
                 float yy = 0;
-                Inlines.ASSERT(_k > 0);
-                Inlines.ASSERT(_n > 1);
+                ASSERT(_k > 0);
+                ASSERT(_n > 1);
                 while (_n > 2)
                 {
                     uint q;
@@ -383,7 +383,7 @@ namespace HellaUnsafe.Celt
                         q = row[_n];
                         if (q > _i)
                         {
-                            Inlines.ASSERT(p > q);
+                            ASSERT(p > q);
                             _k = _n;
                             do p = CELT_PVQ_U_ROW(pvqTable, --_k)[_n];
                             while (p > _i);
@@ -392,7 +392,7 @@ namespace HellaUnsafe.Celt
                         _i -= p;
                         val = (k0 - _k + s) ^ s;
                         *_y++ = val;
-                        yy = Inlines.MAC16_16(yy, val, val);
+                        yy = MAC16_16(yy, val, val);
                     }
                     /*Lots of dimensions case:*/
                     else
@@ -417,7 +417,7 @@ namespace HellaUnsafe.Celt
                             _i -= p;
                             val = (k0 - _k + s) ^ s;
                             *_y++ = val;
-                            yy = Inlines.MAC16_16(yy, val, val);
+                            yy = MAC16_16(yy, val, val);
                         }
                     }
                     _n--;
@@ -431,19 +431,19 @@ namespace HellaUnsafe.Celt
                 if (_k != 0) _i -= (2 * (uint)_k - 1);
                 val = (k0 - _k + s) ^ s;
                 *_y++ = val;
-                yy = Inlines.MAC16_16(yy, val, val);
+                yy = MAC16_16(yy, val, val);
                 /*_n==1*/
                 s = -(int)_i;
                 val = (_k + s) ^ s;
                 *_y = val;
-                yy = Inlines.MAC16_16(yy, val, val);
+                yy = MAC16_16(yy, val, val);
                 return yy;
             }
         }
 
         internal static unsafe float decode_pulses(int* _y, int _n, int _k, ref EntCode.ec_ctx _dec, in byte* ecbuf)
         {
-            Inlines.ASSERT(CELT_PVQ_U_DATA.Length == 1272);
+            ASSERT(CELT_PVQ_U_DATA.Length == 1272);
             return cwrsi(_n, _k, EntDec.ec_dec_uint(ref _dec, ecbuf, CELT_PVQ_V(_n, _k)), _y);
         }
     }

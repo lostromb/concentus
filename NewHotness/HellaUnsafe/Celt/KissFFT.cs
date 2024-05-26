@@ -85,7 +85,7 @@ namespace HellaUnsafe.Celt
 
         internal const int MAXFACTORS = 8;
 
-        private static float S_MUL(float a, float b) { return (a) * (b); }
+        internal static float S_MUL(float a, float b) { return (a) * (b); }
 
         private static void C_MUL(ref kiss_fft_cpx m, kiss_fft_cpx a, kiss_fft_cpx b)
         {

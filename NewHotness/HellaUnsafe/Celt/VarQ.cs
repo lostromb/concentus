@@ -30,7 +30,7 @@ using System;
 
 namespace HellaUnsafe.Celt
 {
-    internal static class VQ
+    internal static class VarQ
     {
         internal static unsafe void exp_rotation1(float* X, int len, int stride, float c, float s)
         {
