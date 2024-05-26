@@ -292,7 +292,7 @@ namespace HellaUnsafe.Celt
             return yy;
         }
 
-        internal static unsafe uint alg_quant(float* X, int N, int K, int spread, int B, ref ec_enc enc,
+        internal static unsafe uint alg_quant(float* X, int N, int K, int spread, int B, ref EntCode.ec_ctx enc,
             float gain, int resynth, int arch)
         {
             Span<int> iy;
@@ -324,7 +324,7 @@ namespace HellaUnsafe.Celt
         /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
         internal static unsafe uint alg_unquant(float* X, int N, int K, int spread, int B,
-              ref ec_dec dec, float gain)
+              ref EntCode.ec_ctx dec, float gain)
         {
             float Ryy;
             uint collapse_mask;
@@ -348,7 +348,7 @@ namespace HellaUnsafe.Celt
             float g;
             float t;
             float* xptr;
-            E = Inlines.EPSILON + celt_inner_prod(X, X, N, arch);
+            E = Inlines.EPSILON + Pitch.celt_inner_prod(X, X, N);
             t = Inlines.VSHR32(E, 2 * (k - 7));
             g = Inlines.MULT16_16_P15(Inlines.celt_rsqrt_norm(t), gain);
 
@@ -382,8 +382,8 @@ namespace HellaUnsafe.Celt
             }
             else
             {
-                Emid += celt_inner_prod(X, X, N, arch);
-                Eside += celt_inner_prod(Y, Y, N, arch);
+                Emid += Pitch.celt_inner_prod(X, X, N);
+                Eside += Pitch.celt_inner_prod(Y, Y, N);
             }
             mid = Inlines.celt_sqrt(Emid);
             side = Inlines.celt_sqrt(Eside);

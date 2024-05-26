@@ -33,6 +33,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static int IMUL32(int a, int b) { return a * b; }
+        internal static uint IMUL32(uint a, uint b) { return a * b; }
         internal static float MIN16(float a, float b) { return Math.Min(a, b); }
         internal static float MAX16(float a, float b) { return Math.Max(a, b); }
         internal static short MIN16(short a, short b) { return Math.Min(a, b); }

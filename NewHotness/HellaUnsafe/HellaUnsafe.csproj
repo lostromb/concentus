@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Folder Include="Celt\x86\" />
-    <Folder Include="Common\" />
     <Folder Include="Opus\" />
     <Folder Include="Silk\Float\x86\" />
     <Folder Include="Silk\x86\" />
