@@ -33,6 +33,7 @@
 
 using static System.Math;
 using static HellaUnsafe.Celt.Arch;
+using static HellaUnsafe.Celt.EntCode;
 
 namespace HellaUnsafe.Celt
 {
@@ -52,5 +53,36 @@ namespace HellaUnsafe.Celt
         internal static float celt_log2(float x) { return (float)(1.442695040888963387 * Log(x)); }
         internal static float celt_exp2(float x) { return (float)Exp(0.6931471805599453094 * (x)); }
         internal static float fast_atan2f(float a, float b) { return (float)Atan2(a, b); }
+
+        /*Compute floor(sqrt(_val)) with exact arithmetic.
+          _val must be greater than 0.
+          This has been tested on all possible 32-bit inputs greater than 0.*/
+        internal static uint isqrt32(uint _val)
+        {
+            uint b;
+            uint g;
+            int bshift;
+            /*Uses the second method from
+               http://www.azillionmonkeys.com/qed/sqroot.html
+              The main idea is to search for the largest binary digit b such that
+               (g+b)*(g+b) <= _val, and add it to the solution g.*/
+            g = 0;
+            bshift = (EC_ILOG(_val) - 1) >> 1;
+            b = 1U << bshift;
+            do
+            {
+                uint t;
+                t = (((uint)g << 1) + b) << bshift;
+                if (t <= _val)
+                {
+                    g += b;
+                    _val -= t;
+                }
+                b >>= 1;
+                bshift--;
+            }
+            while (bshift >= 0);
+            return g;
+        }
     }
 }

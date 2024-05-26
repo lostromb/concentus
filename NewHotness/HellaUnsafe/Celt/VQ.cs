@@ -360,7 +360,7 @@ namespace HellaUnsafe.Celt
             return collapse_mask;
         }
 
-        internal static unsafe void renormalise_vector(float* X, int N, float gain, int arch)
+        internal static unsafe void renormalise_vector(float* X, int N, float gain)
         {
             const int k = 0;
             int i;
@@ -381,7 +381,7 @@ namespace HellaUnsafe.Celt
             /*return celt_sqrt(E);*/
         }
 
-        internal static unsafe int stereo_itheta(in float* X, in float* Y, int stereo, int N, int arch)
+        internal static unsafe int stereo_itheta(in float* X, in float* Y, int stereo, int N)
         {
             int i;
             int itheta;

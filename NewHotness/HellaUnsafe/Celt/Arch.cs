@@ -40,10 +40,11 @@ namespace HellaUnsafe.Celt
     internal static class Arch
     {
         internal const float CELT_SIG_SCALE = 32768.0f;
+        internal const float NORM_SCALING = 1.0f;
         internal const float Q15ONE = 1.0f;
         internal const float EPSILON = 1e-15f;
         internal const float VERY_SMALL = 1e-30f;
-        internal const float VERY_LARGE = 1e15f;
+        internal const float VERY_LARGE16 = 1e15f;
         internal const float Q15_ONE = 1.0f;
 
         [Conditional("DEBUG")]

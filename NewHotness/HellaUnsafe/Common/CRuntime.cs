@@ -35,39 +35,49 @@ namespace HellaUnsafe.Common
 {
     internal static class CRuntime
     {
-        internal static unsafe void OPUS_CLEAR(byte* dst, int bytes)
+        internal static unsafe void OPUS_CLEAR(byte* dst, int elements)
         {
-            new Span<byte>(dst, bytes).Fill(0);
+            new Span<byte>(dst, elements).Fill(0);
         }
 
-        internal static unsafe void OPUS_CLEAR(float* dst, int bytes)
+        internal static unsafe void OPUS_CLEAR(float* dst, int elements)
         {
-            new Span<float>(dst, bytes).Fill(0);
+            new Span<float>(dst, elements).Fill(0);
         }
 
-        internal static unsafe void OPUS_CLEAR(byte* dst, uint bytes)
+        internal static unsafe void OPUS_CLEAR(byte* dst, uint elements)
         {
-            new Span<byte>(dst, (int)bytes).Fill(0);
+            new Span<byte>(dst, (int)elements).Fill(0);
         }
 
-        internal static unsafe void OPUS_COPY(byte* dst, byte* src, int bytes)
+        internal static unsafe void OPUS_COPY(byte* dst, byte* src, int elements)
         {
-            new Span<byte>(src, bytes).CopyTo(new Span<byte>(dst, bytes));
+            new Span<byte>(src, elements).CopyTo(new Span<byte>(dst, elements));
         }
 
-        internal static unsafe void OPUS_COPY(byte* dst, byte* src, uint bytes)
+        internal static unsafe void OPUS_COPY(float* dst, float* src, int elements)
         {
-            new Span<byte>(src, (int)bytes).CopyTo(new Span<byte>(dst, (int)bytes));
+            new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));
         }
 
-        internal static unsafe void OPUS_MOVE(byte* dst, byte* src, int bytes)
+        internal static unsafe void OPUS_COPY(float* dst, Span<float> src, int elements)
         {
-            new Span<byte>(src, bytes).CopyTo(new Span<byte>(dst, bytes));
+            src.Slice(0, elements).CopyTo(new Span<float>(dst, elements));
         }
 
-        internal static unsafe void OPUS_MOVE(byte* dst, byte* src, uint bytes)
+        internal static unsafe void OPUS_COPY(byte* dst, byte* src, uint elements)
         {
-            new Span<byte>(src, (int)bytes).CopyTo(new Span<byte>(dst, (int)bytes));
+            new Span<byte>(src, (int)elements).CopyTo(new Span<byte>(dst, (int)elements));
+        }
+
+        internal static unsafe void OPUS_MOVE(byte* dst, byte* src, int elements)
+        {
+            new Span<byte>(src, elements).CopyTo(new Span<byte>(dst, elements));
+        }
+
+        internal static unsafe void OPUS_MOVE(byte* dst, byte* src, uint elements)
+        {
+            new Span<byte>(src, (int)elements).CopyTo(new Span<byte>(dst, (int)elements));
         }
     }
 }
