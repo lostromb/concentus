@@ -1,11 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/* Copyright (c) 2003-2008 Jean-Marc Valin
+   Copyright (c) 2007-2008 CSIRO
+   Copyright (c) 2007-2009 Xiph.Org Foundation
+   Written by Jean-Marc Valin */
+/**
+   @file arch.h
+   @brief Various architecture definitions for CELT
+*/
+/*
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+
+   - Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+   OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+using System;
 using System.Diagnostics;
-using System.Text;
+using static System.Math;
 
 namespace HellaUnsafe.Celt
 {
-    internal static class Inlines
+    internal static class Arch
     {
         internal const float CELT_SIG_SCALE = 32768.0f;
         internal const float Q15ONE = 1.0f;
@@ -34,20 +66,20 @@ namespace HellaUnsafe.Celt
 
         internal static int IMUL32(int a, int b) { return a * b; }
         internal static uint IMUL32(uint a, uint b) { return a * b; }
-        internal static float MIN16(float a, float b) { return Math.Min(a, b); }
-        internal static float MAX16(float a, float b) { return Math.Max(a, b); }
-        internal static short MIN16(short a, short b) { return Math.Min(a, b); }
-        internal static short MAX16(short a, short b) { return Math.Max(a, b); }
-        internal static int IMIN(int a, int b) { return Math.Min(a, b); }
-        internal static int IMAX(int a, int b) { return Math.Max(a, b); }
-        internal static int MIN32(int a, int b) { return Math.Min(a, b); }
-        internal static int MAX32(int a, int b) { return Math.Max(a, b); }
-        internal static float MIN32(float a, float b) { return Math.Min(a, b); }
-        internal static float MAX32(float a, float b) { return Math.Max(a, b); }
+        internal static float MIN16(float a, float b) { return Min(a, b); }
+        internal static float MAX16(float a, float b) { return Max(a, b); }
+        internal static short MIN16(short a, short b) { return Min(a, b); }
+        internal static short MAX16(short a, short b) { return Max(a, b); }
+        internal static int IMIN(int a, int b) { return Min(a, b); }
+        internal static int IMAX(int a, int b) { return Max(a, b); }
+        internal static int MIN32(int a, int b) { return Min(a, b); }
+        internal static int MAX32(int a, int b) { return Max(a, b); }
+        internal static float MIN32(float a, float b) { return Min(a, b); }
+        internal static float MAX32(float a, float b) { return Max(a, b); }
         internal static uint UADD32(uint a, uint b) { return a + b; }
         internal static uint USUB32(uint a, uint b) { return a - b; }
-        internal static float ABS16(float x) { return Math.Abs(x); }
-        internal static float ABS32(float x) { return Math.Abs(x); }
+        internal static float ABS16(float x) { return Abs(x); }
+        internal static float ABS32(float x) { return Abs(x); }
         internal static float QCONST16(float x, int bits) { return x; }
         internal static float QCONST32(float x, int bits) { return x; }
         internal static float NEG16(float x) { return -x; }
@@ -98,19 +130,5 @@ namespace HellaUnsafe.Celt
         internal static float SCALEIN(float a) { return a * CELT_SIG_SCALE; }
         internal static float SCALEOUT(float a) { return a * (1 / CELT_SIG_SCALE); }
         internal static float SIG2WORD16(float x) { return x; }
-
-        internal static float celt_sqrt(float x) { return (float)Math.Sqrt(x); }
-        internal static float celt_rsqrt(float x) { return 1.0f / (float)Math.Sqrt(x); }
-        internal static float celt_rsqrt_norm(float x) { return 1.0f / (float)Math.Sqrt(x); }
-        internal static float celt_cos_norm(float x) { return (float)Math.Cos(0.5f * Math.PI * x); }
-        internal static float celt_rcp(float x) { return 1.0f / x; }
-        internal static float celt_div(float a, float b) { Inlines.ASSERT(b > 0); return a / b; }
-        internal static float frac_div32(float a, float b) { Inlines.ASSERT(b > 0); return a / b; }
-        internal static uint celt_udiv(uint a, uint b) { Inlines.ASSERT(b > 0); return a / b; }
-        internal static int celt_sudiv(int a, int b) { Inlines.ASSERT(b > 0); return a / b; }
-        internal static float celt_log2(float x) { return (float)(1.442695040888963387 * Math.Log(x)); }
-        internal static float celt_exp2(float x) { return (float)Math.Exp(0.6931471805599453094 * (x)); }
-        internal static float fast_atan2f(float a, float b) { return (float)Math.Atan2(a, b); }
-
     }
 }

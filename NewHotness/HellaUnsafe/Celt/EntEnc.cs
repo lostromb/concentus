@@ -25,8 +25,9 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using HellaUnsafe.Common;
 using static HellaUnsafe.Celt.EntCode;
+using static HellaUnsafe.Celt.Arch;
+using static HellaUnsafe.Common.CRuntime;
 
 namespace HellaUnsafe.Celt
 {
@@ -129,10 +130,10 @@ namespace HellaUnsafe.Celt
             r = celt_udiv(_this.rng, _ft);
             if (_fl > 0)
             {
-                _this.val += _this.rng - Inlines.IMUL32(r, (_ft - _fl));
-                _this.rng = Inlines.IMUL32(r, (_fh - _fl));
+                _this.val += _this.rng - IMUL32(r, (_ft - _fl));
+                _this.rng = IMUL32(r, (_fh - _fl));
             }
-            else _this.rng -= Inlines.IMUL32(r, (_ft - _fh));
+            else _this.rng -= IMUL32(r, (_ft - _fh));
             ec_enc_normalize(ref _this, buf);
         }
 
@@ -143,10 +144,10 @@ namespace HellaUnsafe.Celt
             r = _this.rng >> (int)_bits;
             if (_fl > 0)
             {
-                _this.val += _this.rng - Inlines.IMUL32(r, ((1U << (int)_bits) - _fl));
-                _this.rng = Inlines.IMUL32(r, (_fh - _fl));
+                _this.val += _this.rng - IMUL32(r, ((1U << (int)_bits) - _fl));
+                _this.rng = IMUL32(r, (_fh - _fl));
             }
-            else _this.rng -= Inlines.IMUL32(r, ((1U << (int)_bits) - _fh));
+            else _this.rng -= IMUL32(r, ((1U << (int)_bits) - _fh));
             ec_enc_normalize(ref _this, buf);
         }
 
@@ -178,10 +179,10 @@ namespace HellaUnsafe.Celt
             r = _this.rng >> (int)_ftb;
             if (_s > 0)
             {
-                _this.val += _this.rng - Inlines.IMUL32(r, _icdf[_s - 1]);
+                _this.val += _this.rng - IMUL32(r, _icdf[_s - 1]);
                 _this.rng = r * _icdf[_s - 1] - _icdf[_s];
             }
-            else _this.rng -= Inlines.IMUL32(r, _icdf[_s]);
+            else _this.rng -= IMUL32(r, _icdf[_s]);
             ec_enc_normalize(ref _this, buf);
         }
 
@@ -198,10 +199,10 @@ namespace HellaUnsafe.Celt
             r = _this.rng >> (int)_ftb;
             if (_s > 0)
             {
-                _this.val += _this.rng - Inlines.IMUL32(r, _icdf[_s - 1]);
+                _this.val += _this.rng - IMUL32(r, _icdf[_s - 1]);
                 _this.rng = r * _icdf[_s - 1] - _icdf[_s];
             }
-            else _this.rng -= Inlines.IMUL32(r, _icdf[_s]);
+            else _this.rng -= IMUL32(r, _icdf[_s]);
             ec_enc_normalize(ref _this, buf);
         }
 
@@ -215,7 +216,7 @@ namespace HellaUnsafe.Celt
             uint fl;
             int ftb;
             /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-            Inlines.ASSERT(_ft > 1);
+            ASSERT(_ft > 1);
             _ft--;
             ftb = EC_ILOG(_ft);
             if (ftb > EC_UINT_BITS)
@@ -239,7 +240,7 @@ namespace HellaUnsafe.Celt
             int used;
             window = _this.end_window;
             used = _this.nend_bits;
-            Inlines.ASSERT(_bits > 0);
+            ASSERT(_bits > 0);
             if (used + _bits > EC_WINDOW_SIZE)
             {
                 do
@@ -275,7 +276,7 @@ namespace HellaUnsafe.Celt
         {
             int shift;
             uint mask;
-            Inlines.ASSERT(_nbits <= EC_SYM_BITS);
+            ASSERT(_nbits <= EC_SYM_BITS);
             shift = EC_SYM_BITS - (int)_nbits;
             mask = ((1U << (int)_nbits) - 1) << shift;
             if (_this.offs > 0)
@@ -308,8 +309,8 @@ namespace HellaUnsafe.Celt
                   must be no larger than the existing size.*/
         internal static unsafe void ec_enc_shrink(ref ec_ctx _this, in byte* buf, uint _size)
         {
-            Inlines.ASSERT(_this.offs + _this.end_offs <= _size);
-            CRuntime.OPUS_MOVE(buf + _size - _this.end_offs,
+            ASSERT(_this.offs + _this.end_offs <= _size);
+            OPUS_MOVE(buf + _size - _this.end_offs,
                 buf + _this.storage - _this.end_offs, _this.end_offs);
             _this.storage = _size;
         }
@@ -355,7 +356,7 @@ namespace HellaUnsafe.Celt
             /*Clear any excess space and add any remaining extra bits to the last byte.*/
             if (_this.error == 0)
             {
-                CRuntime.OPUS_CLEAR(buf + _this.offs,
+                OPUS_CLEAR(buf + _this.offs,
                  _this.storage - _this.offs - _this.end_offs);
                 if (used > 0)
                 {

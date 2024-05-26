@@ -27,7 +27,7 @@
 */
 
 using static HellaUnsafe.Celt.KissFFT;
-using static HellaUnsafe.Celt.Inlines;
+using static HellaUnsafe.Celt.Arch;
 using System;
 
 namespace HellaUnsafe.Celt
@@ -46,6 +46,14 @@ namespace HellaUnsafe.Celt
     */
     internal static class MDCT
     {
+        internal unsafe struct mdct_lookup
+        {
+            internal int n;
+            internal int maxshift;
+            internal kiss_fft_state[] kfft;
+            internal float[] trig;
+        }
+
         internal static unsafe void clt_mdct_forward_c(
             in mdct_lookup l, float* input, float* output,
         in float* window, int overlap, int shift, int stride, int arch)
@@ -54,111 +62,114 @@ namespace HellaUnsafe.Celt
             int N, N2, N4;
             Span<float> f_span;
             Span<kiss_fft_cpx> f2_span;
-            ref kiss_fft_state st = l.kfft[shift];
+            ref kiss_fft_state st = ref l.kfft[shift];
             float* trig;
             float scale;
             scale = st.scale;
 
             N = l.n;
-            trig = l.trig;
-            for (i = 0; i < shift; i++)
+            fixed (float* trig_fixed = l.trig)
             {
-                N >>= 1;
-                trig += N;
-            }
-            N2 = N >> 1;
-            N4 = N >> 2;
-
-            f_span = new float[N2];
-            f2_span = new kiss_fft_cpx[N4];
-
-            fixed (float* f = f_span)
-            fixed (kiss_fft_cpx* f2 = f2_span)
-            {
-                /* Consider the input to be composed of four blocks: [a, b, c, d] */
-                /* Window, shuffle, fold */
+                trig = trig_fixed;
+                for (i = 0; i < shift; i++)
                 {
-                    /* Temp pointers to make it really clear to the compiler what we're doing */
-                    float* xp1 = input + (overlap >> 1);
-                    float* xp2 = input + N2 - 1 + (overlap >> 1);
-                    float* yp = f;
-                    float* wp1 = window + (overlap >> 1);
-                    float* wp2 = window + (overlap >> 1) - 1;
-                    for (i = 0; i < ((overlap + 3) >> 2); i++)
-                    {
-                        /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
-                        *yp++ = MULT16_32_Q15(*wp2, xp1[N2]) + MULT16_32_Q15(*wp1, *xp2);
-                        *yp++ = MULT16_32_Q15(*wp1, *xp1) - MULT16_32_Q15(*wp2, xp2[-N2]);
-                        xp1 += 2;
-                        xp2 -= 2;
-                        wp1 += 2;
-                        wp2 -= 2;
-                    }
-                    wp1 = window;
-                    wp2 = window + overlap - 1;
-                    for (; i < N4 - ((overlap + 3) >> 2); i++)
-                    {
-                        /* Real part arranged as a-bR, Imag part arranged as -c-dR */
-                        *yp++ = *xp2;
-                        *yp++ = *xp1;
-                        xp1 += 2;
-                        xp2 -= 2;
-                    }
-                    for (; i < N4; i++)
-                    {
-                        /* Real part arranged as a-bR, Imag part arranged as -c-dR */
-                        *yp++ = -MULT16_32_Q15(*wp1, xp1[-N2]) + MULT16_32_Q15(*wp2, *xp2);
-                        *yp++ = MULT16_32_Q15(*wp2, *xp1) + MULT16_32_Q15(*wp1, xp2[N2]);
-                        xp1 += 2;
-                        xp2 -= 2;
-                        wp1 += 2;
-                        wp2 -= 2;
-                    }
+                    N >>= 1;
+                    trig += N;
                 }
-                /* Pre-rotation */
+                N2 = N >> 1;
+                N4 = N >> 2;
+
+                f_span = new float[N2];
+                f2_span = new kiss_fft_cpx[N4];
+
+                fixed (float* f = f_span)
+                fixed (kiss_fft_cpx* f2 = f2_span)
                 {
-                    float* yp = f;
-                    float* t = &trig[0];
-                    for (i = 0; i < N4; i++)
+                    /* Consider the input to be composed of four blocks: [a, b, c, d] */
+                    /* Window, shuffle, fold */
                     {
-                        kiss_fft_cpx yc;
-                        float t0, t1;
-                        float re, im, yr, yi;
-                        t0 = t[i];
-                        t1 = t[N4 + i];
-                        re = *yp++;
-                        im = *yp++;
-                        yr = S_MUL(re, t0) - S_MUL(im, t1);
-                        yi = S_MUL(im, t0) + S_MUL(re, t1);
-                        yc.r = yr;
-                        yc.i = yi;
-                        yc.r = MULT16_32_Q16(scale, yc.r);
-                        yc.i = MULT16_32_Q16(scale, yc.i);
-                        f2[st.bitrev[i]] = yc;
+                        /* Temp pointers to make it really clear to the compiler what we're doing */
+                        float* xp1 = input + (overlap >> 1);
+                        float* xp2 = input + N2 - 1 + (overlap >> 1);
+                        float* yp = f;
+                        float* wp1 = window + (overlap >> 1);
+                        float* wp2 = window + (overlap >> 1) - 1;
+                        for (i = 0; i < ((overlap + 3) >> 2); i++)
+                        {
+                            /* Real part arranged as -d-cR, Imag part arranged as -b+aR*/
+                            *yp++ = MULT16_32_Q15(*wp2, xp1[N2]) + MULT16_32_Q15(*wp1, *xp2);
+                            *yp++ = MULT16_32_Q15(*wp1, *xp1) - MULT16_32_Q15(*wp2, xp2[-N2]);
+                            xp1 += 2;
+                            xp2 -= 2;
+                            wp1 += 2;
+                            wp2 -= 2;
+                        }
+                        wp1 = window;
+                        wp2 = window + overlap - 1;
+                        for (; i < N4 - ((overlap + 3) >> 2); i++)
+                        {
+                            /* Real part arranged as a-bR, Imag part arranged as -c-dR */
+                            *yp++ = *xp2;
+                            *yp++ = *xp1;
+                            xp1 += 2;
+                            xp2 -= 2;
+                        }
+                        for (; i < N4; i++)
+                        {
+                            /* Real part arranged as a-bR, Imag part arranged as -c-dR */
+                            *yp++ = -MULT16_32_Q15(*wp1, xp1[-N2]) + MULT16_32_Q15(*wp2, *xp2);
+                            *yp++ = MULT16_32_Q15(*wp2, *xp1) + MULT16_32_Q15(*wp1, xp2[N2]);
+                            xp1 += 2;
+                            xp2 -= 2;
+                            wp1 += 2;
+                            wp2 -= 2;
+                        }
                     }
-                }
-
-                /* N/4 complex FFT, does not downscale anymore */
-                opus_fft_impl(st, f2);
-
-                /* Post-rotate */
-                {
-                    /* Temp pointers to make it really clear to the compiler what we're doing */
-                    kiss_fft_cpx* fp = f2;
-                    float* yp1 = output;
-                    float* yp2 = output + stride * (N2 - 1);
-                    float* t = &trig[0];
-                    /* Temp pointers to make it really clear to the compiler what we're doing */
-                    for (i = 0; i < N4; i++)
+                    /* Pre-rotation */
                     {
-                        float yr, yi;
-                        yr = S_MUL(fp->i, t[N4 + i]) - S_MUL(fp->r, t[i]);
-                        yi = S_MUL(fp->r, t[N4 + i]) + S_MUL(fp->i, t[i]);
-                        *yp1 = yr;
-                        *yp2 = yi;
-                        fp++;
-                        yp1 += 2 * stride;
-                        yp2 -= 2 * stride;
+                        float* yp = f;
+                        float* t = &trig[0];
+                        for (i = 0; i < N4; i++)
+                        {
+                            kiss_fft_cpx yc;
+                            float t0, t1;
+                            float re, im, yr, yi;
+                            t0 = t[i];
+                            t1 = t[N4 + i];
+                            re = *yp++;
+                            im = *yp++;
+                            yr = S_MUL(re, t0) - S_MUL(im, t1);
+                            yi = S_MUL(im, t0) + S_MUL(re, t1);
+                            yc.r = yr;
+                            yc.i = yi;
+                            yc.r = MULT16_32_Q16(scale, yc.r);
+                            yc.i = MULT16_32_Q16(scale, yc.i);
+                            f2[st.bitrev[i]] = yc;
+                        }
+                    }
+
+                    /* N/4 complex FFT, does not downscale anymore */
+                    opus_fft_impl(st, f2);
+
+                    /* Post-rotate */
+                    {
+                        /* Temp pointers to make it really clear to the compiler what we're doing */
+                        kiss_fft_cpx* fp = f2;
+                        float* yp1 = output;
+                        float* yp2 = output + stride * (N2 - 1);
+                        float* t = &trig[0];
+                        /* Temp pointers to make it really clear to the compiler what we're doing */
+                        for (i = 0; i < N4; i++)
+                        {
+                            float yr, yi;
+                            yr = S_MUL(fp->i, t[N4 + i]) - S_MUL(fp->r, t[i]);
+                            yi = S_MUL(fp->r, t[N4 + i]) + S_MUL(fp->i, t[i]);
+                            *yp1 = yr;
+                            *yp2 = yi;
+                            fp++;
+                            yp1 += 2 * stride;
+                            yp2 -= 2 * stride;
+                        }
                     }
                 }
             }
@@ -172,96 +183,100 @@ namespace HellaUnsafe.Celt
             int N, N2, N4;
             float* trig;
 
-            N = l.n;
-            trig = l.trig;
-            for (i = 0; i < shift; i++)
+            fixed (float* trig_fixed = l.trig)
+            fixed (short* bitrev_fixed = l.kfft[shift].bitrev)
             {
-                N >>= 1;
-                trig += N;
-            }
-            N2 = N >> 1;
-            N4 = N >> 2;
-
-            /* Pre-rotate */
-            {
-                /* Temp pointers to make it really clear to the compiler what we're doing */
-                float* xp1 = input;
-                float* xp2 = input + stride * (N2 - 1);
-                float* yp = output + (overlap >> 1);
-                float* t = &trig[0];
-                short* bitrev = l.kfft[shift].bitrev;
-                for (i = 0; i < N4; i++)
+                N = l.n;
+                trig = trig_fixed;
+                for (i = 0; i < shift; i++)
                 {
-                    int rev;
-                    float yr, yi;
-                    rev = *bitrev++;
-                    yr = ADD32_ovflw(S_MUL(*xp2, t[i]), S_MUL(*xp1, t[N4 + i]));
-                    yi = SUB32_ovflw(S_MUL(*xp1, t[i]), S_MUL(*xp2, t[N4 + i]));
-                    /* We swap real and imag because we use an FFT instead of an IFFT. */
-                    yp[2 * rev + 1] = yr;
-                    yp[2 * rev] = yi;
-                    /* Storing the pre-rotation directly in the bitrev order. */
-                    xp1 += 2 * stride;
-                    xp2 -= 2 * stride;
+                    N >>= 1;
+                    trig += N;
                 }
-            }
+                N2 = N >> 1;
+                N4 = N >> 2;
 
-            opus_fft_impl(l.kfft[shift], (kiss_fft_cpx*)(output + (overlap >> 1)));
-
-            /* Post-rotate and de-shuffle from both ends of the buffer at once to make
-               it in-place. */
-            {
-                float* yp0 = output + (overlap >> 1);
-                float* yp1 = output + (overlap >> 1) + N2 - 2;
-                float* t = &trig[0];
-                /* Loop to (N4+1)>>1 to handle odd N4. When N4 is odd, the
-                   middle pair will be computed twice. */
-                for (i = 0; i < (N4 + 1) >> 1; i++)
+                /* Pre-rotate */
                 {
-                    float re, im, yr, yi;
-                    float t0, t1;
-                    /* We swap real and imag because we're using an FFT instead of an IFFT. */
-                    re = yp0[1];
-                    im = yp0[0];
-                    t0 = t[i];
-                    t1 = t[N4 + i];
-                    /* We'd scale up by 2 here, but instead it's done when mixing the windows */
-                    yr = ADD32_ovflw(S_MUL(re, t0), S_MUL(im, t1));
-                    yi = SUB32_ovflw(S_MUL(re, t1), S_MUL(im, t0));
-                    /* We swap real and imag because we're using an FFT instead of an IFFT. */
-                    re = yp1[1];
-                    im = yp1[0];
-                    yp0[0] = yr;
-                    yp1[1] = yi;
-
-                    t0 = t[(N4 - i - 1)];
-                    t1 = t[(N2 - i - 1)];
-                    /* We'd scale up by 2 here, but instead it's done when mixing the windows */
-                    yr = ADD32_ovflw(S_MUL(re, t0), S_MUL(im, t1));
-                    yi = SUB32_ovflw(S_MUL(re, t1), S_MUL(im, t0));
-                    yp1[0] = yr;
-                    yp0[1] = yi;
-                    yp0 += 2;
-                    yp1 -= 2;
+                    /* Temp pointers to make it really clear to the compiler what we're doing */
+                    float* xp1 = input;
+                    float* xp2 = input + stride * (N2 - 1);
+                    float* yp = output + (overlap >> 1);
+                    float* t = &trig[0];
+                    short* bitrev = bitrev_fixed;
+                    for (i = 0; i < N4; i++)
+                    {
+                        int rev;
+                        float yr, yi;
+                        rev = *bitrev++;
+                        yr = ADD32_ovflw(S_MUL(*xp2, t[i]), S_MUL(*xp1, t[N4 + i]));
+                        yi = SUB32_ovflw(S_MUL(*xp1, t[i]), S_MUL(*xp2, t[N4 + i]));
+                        /* We swap real and imag because we use an FFT instead of an IFFT. */
+                        yp[2 * rev + 1] = yr;
+                        yp[2 * rev] = yi;
+                        /* Storing the pre-rotation directly in the bitrev order. */
+                        xp1 += 2 * stride;
+                        xp2 -= 2 * stride;
+                    }
                 }
-            }
 
-            /* Mirror on both sides for TDAC */
-            {
-                float* xp1 = output + overlap - 1;
-                float* yp1 = output;
-                float* wp1 = window;
-                float* wp2 = window + overlap - 1;
+                opus_fft_impl(l.kfft[shift], (kiss_fft_cpx*)(output + (overlap >> 1)));
 
-                for (i = 0; i < overlap / 2; i++)
+                /* Post-rotate and de-shuffle from both ends of the buffer at once to make
+                   it in-place. */
                 {
-                    float x1, x2;
-                    x1 = *xp1;
-                    x2 = *yp1;
-                    *yp1++ = SUB32_ovflw(MULT16_32_Q15(*wp2, x2), MULT16_32_Q15(*wp1, x1));
-                    *xp1-- = ADD32_ovflw(MULT16_32_Q15(*wp1, x2), MULT16_32_Q15(*wp2, x1));
-                    wp1++;
-                    wp2--;
+                    float* yp0 = output + (overlap >> 1);
+                    float* yp1 = output + (overlap >> 1) + N2 - 2;
+                    float* t = &trig[0];
+                    /* Loop to (N4+1)>>1 to handle odd N4. When N4 is odd, the
+                       middle pair will be computed twice. */
+                    for (i = 0; i < (N4 + 1) >> 1; i++)
+                    {
+                        float re, im, yr, yi;
+                        float t0, t1;
+                        /* We swap real and imag because we're using an FFT instead of an IFFT. */
+                        re = yp0[1];
+                        im = yp0[0];
+                        t0 = t[i];
+                        t1 = t[N4 + i];
+                        /* We'd scale up by 2 here, but instead it's done when mixing the windows */
+                        yr = ADD32_ovflw(S_MUL(re, t0), S_MUL(im, t1));
+                        yi = SUB32_ovflw(S_MUL(re, t1), S_MUL(im, t0));
+                        /* We swap real and imag because we're using an FFT instead of an IFFT. */
+                        re = yp1[1];
+                        im = yp1[0];
+                        yp0[0] = yr;
+                        yp1[1] = yi;
+
+                        t0 = t[(N4 - i - 1)];
+                        t1 = t[(N2 - i - 1)];
+                        /* We'd scale up by 2 here, but instead it's done when mixing the windows */
+                        yr = ADD32_ovflw(S_MUL(re, t0), S_MUL(im, t1));
+                        yi = SUB32_ovflw(S_MUL(re, t1), S_MUL(im, t0));
+                        yp1[0] = yr;
+                        yp0[1] = yi;
+                        yp0 += 2;
+                        yp1 -= 2;
+                    }
+                }
+
+                /* Mirror on both sides for TDAC */
+                {
+                    float* xp1 = output + overlap - 1;
+                    float* yp1 = output;
+                    float* wp1 = window;
+                    float* wp2 = window + overlap - 1;
+
+                    for (i = 0; i < overlap / 2; i++)
+                    {
+                        float x1, x2;
+                        x1 = *xp1;
+                        x2 = *yp1;
+                        *yp1++ = SUB32_ovflw(MULT16_32_Q15(*wp2, x2), MULT16_32_Q15(*wp1, x1));
+                        *xp1-- = ADD32_ovflw(MULT16_32_Q15(*wp1, x2), MULT16_32_Q15(*wp2, x1));
+                        wp1++;
+                        wp2--;
+                    }
                 }
             }
         }

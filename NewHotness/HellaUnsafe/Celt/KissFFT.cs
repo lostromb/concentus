@@ -31,6 +31,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using static System.Math;
+using static HellaUnsafe.Celt.Arch;
 
 namespace HellaUnsafe.Celt
 {
@@ -132,12 +134,12 @@ namespace HellaUnsafe.Celt
 
         private static float KISS_FFT_COS(float phase)
         {
-            return (float)Math.Cos(phase);
+            return (float)Cos(phase);
         }
 
         private static float KISS_FFT_SIN(float phase)
         {
-            return (float)Math.Sin(phase);
+            return (float)Sin(phase);
         }
 
         private static float HALF_OF(float x) { return x * 0.5f; }
@@ -157,9 +159,9 @@ namespace HellaUnsafe.Celt
             int i;
             {
                 float tw;
-                tw = Inlines.QCONST16(0.7071067812f, 15);
+                tw = QCONST16(0.7071067812f, 15);
                 /* We know that m==4 here because the radix-2 is just after a radix-4 */
-                Inlines.ASSERT(m == 4);
+                ASSERT(m == 4);
                 for (i = 0; i < N; i++)
                 {
                     kiss_fft_cpx t;
@@ -168,8 +170,8 @@ namespace HellaUnsafe.Celt
                     C_SUB(ref Fout2[0], Fout[0], t);
                     C_ADDTO(ref Fout[0], t);
 
-                    t.r = S_MUL(Inlines.ADD32_ovflw(Fout2[1].r, Fout2[1].i), tw);
-                    t.i = S_MUL(Inlines.SUB32_ovflw(Fout2[1].i, Fout2[1].r), tw);
+                    t.r = S_MUL(ADD32_ovflw(Fout2[1].r, Fout2[1].i), tw);
+                    t.i = S_MUL(SUB32_ovflw(Fout2[1].i, Fout2[1].r), tw);
                     C_SUB(ref Fout2[1], Fout[1], t);
                     C_ADDTO(ref Fout[1], t);
 
@@ -178,8 +180,8 @@ namespace HellaUnsafe.Celt
                     C_SUB(ref Fout2[2], Fout[2], t);
                     C_ADDTO(ref Fout[2], t);
 
-                    t.r = S_MUL(Inlines.SUB32_ovflw(Fout2[3].i, Fout2[3].r), tw);
-                    t.i = S_MUL(Inlines.NEG32_ovflw(Inlines.ADD32_ovflw(Fout2[3].i, Fout2[3].r)), tw);
+                    t.r = S_MUL(SUB32_ovflw(Fout2[3].i, Fout2[3].r), tw);
+                    t.i = S_MUL(NEG32_ovflw(ADD32_ovflw(Fout2[3].i, Fout2[3].r)), tw);
                     C_SUB(ref Fout2[3], Fout[3], t);
                     C_ADDTO(ref Fout[3], t);
                     Fout += 8;
@@ -212,10 +214,10 @@ namespace HellaUnsafe.Celt
                     C_ADDTO(ref *Fout, scratch1);
                     C_SUB(ref scratch1, Fout[1], Fout[3]);
 
-                    Fout[1].r = Inlines.ADD32_ovflw(scratch0.r, scratch1.i);
-                    Fout[1].i = Inlines.SUB32_ovflw(scratch0.i, scratch1.r);
-                    Fout[3].r = Inlines.SUB32_ovflw(scratch0.r, scratch1.i);
-                    Fout[3].i = Inlines.ADD32_ovflw(scratch0.i, scratch1.r);
+                    Fout[1].r = ADD32_ovflw(scratch0.r, scratch1.i);
+                    Fout[1].i = SUB32_ovflw(scratch0.i, scratch1.r);
+                    Fout[3].r = SUB32_ovflw(scratch0.r, scratch1.i);
+                    Fout[3].i = ADD32_ovflw(scratch0.i, scratch1.r);
                     Fout += 4;
                 }
             }
@@ -249,10 +251,10 @@ namespace HellaUnsafe.Celt
                         tw3 += fstride * 3;
                         C_ADDTO(ref *Fout, scratch[3]);
 
-                        Fout[m].r = Inlines.ADD32_ovflw(scratch[5].r, scratch[4].i);
-                        Fout[m].i = Inlines.SUB32_ovflw(scratch[5].i, scratch[4].r);
-                        Fout[m3].r = Inlines.SUB32_ovflw(scratch[5].r, scratch[4].i);
-                        Fout[m3].i = Inlines.ADD32_ovflw(scratch[5].i, scratch[4].r);
+                        Fout[m].r = ADD32_ovflw(scratch[5].r, scratch[4].i);
+                        Fout[m].i = SUB32_ovflw(scratch[5].i, scratch[4].r);
+                        Fout[m3].r = SUB32_ovflw(scratch[5].r, scratch[4].i);
+                        Fout[m3].i = ADD32_ovflw(scratch[5].i, scratch[4].r);
                         ++Fout;
                     }
                 }
@@ -293,18 +295,18 @@ namespace HellaUnsafe.Celt
                     tw1 += fstride;
                     tw2 += fstride * 2;
 
-                    Fout[m].r = Inlines.SUB32_ovflw(Fout->r, HALF_OF(scratch[3].r));
-                    Fout[m].i = Inlines.SUB32_ovflw(Fout->i, HALF_OF(scratch[3].i));
+                    Fout[m].r = SUB32_ovflw(Fout->r, HALF_OF(scratch[3].r));
+                    Fout[m].i = SUB32_ovflw(Fout->i, HALF_OF(scratch[3].i));
 
                     C_MULBYSCALAR(ref scratch[0], epi3.i);
 
                     C_ADDTO(ref *Fout, scratch[3]);
 
-                    Fout[m2].r = Inlines.ADD32_ovflw(Fout[m].r, scratch[0].i);
-                    Fout[m2].i = Inlines.SUB32_ovflw(Fout[m].i, scratch[0].r);
+                    Fout[m2].r = ADD32_ovflw(Fout[m].r, scratch[0].i);
+                    Fout[m2].i = SUB32_ovflw(Fout[m].i, scratch[0].r);
 
-                    Fout[m].r = Inlines.SUB32_ovflw(Fout[m].r, scratch[0].i);
-                    Fout[m].i = Inlines.ADD32_ovflw(Fout[m].i, scratch[0].r);
+                    Fout[m].r = SUB32_ovflw(Fout[m].r, scratch[0].i);
+                    Fout[m].i = ADD32_ovflw(Fout[m].i, scratch[0].r);
 
                     ++Fout;
                 } while (--k != 0);
@@ -354,22 +356,22 @@ namespace HellaUnsafe.Celt
                     C_ADD(ref scratch[8], scratch[2], scratch[3]);
                     C_SUB(ref scratch[9], scratch[2], scratch[3]);
 
-                    Fout0->r = Inlines.ADD32_ovflw(Fout0->r, Inlines.ADD32_ovflw(scratch[7].r, scratch[8].r));
-                    Fout0->i = Inlines.ADD32_ovflw(Fout0->i, Inlines.ADD32_ovflw(scratch[7].i, scratch[8].i));
+                    Fout0->r = ADD32_ovflw(Fout0->r, ADD32_ovflw(scratch[7].r, scratch[8].r));
+                    Fout0->i = ADD32_ovflw(Fout0->i, ADD32_ovflw(scratch[7].i, scratch[8].i));
 
-                    scratch[5].r = Inlines.ADD32_ovflw(scratch[0].r, Inlines.ADD32_ovflw(S_MUL(scratch[7].r, ya.r), S_MUL(scratch[8].r, yb.r)));
-                    scratch[5].i = Inlines.ADD32_ovflw(scratch[0].i, Inlines.ADD32_ovflw(S_MUL(scratch[7].i, ya.r), S_MUL(scratch[8].i, yb.r)));
+                    scratch[5].r = ADD32_ovflw(scratch[0].r, ADD32_ovflw(S_MUL(scratch[7].r, ya.r), S_MUL(scratch[8].r, yb.r)));
+                    scratch[5].i = ADD32_ovflw(scratch[0].i, ADD32_ovflw(S_MUL(scratch[7].i, ya.r), S_MUL(scratch[8].i, yb.r)));
 
-                    scratch[6].r = Inlines.ADD32_ovflw(S_MUL(scratch[10].i, ya.i), S_MUL(scratch[9].i, yb.i));
-                    scratch[6].i = Inlines.NEG32_ovflw(Inlines.ADD32_ovflw(S_MUL(scratch[10].r, ya.i), S_MUL(scratch[9].r, yb.i)));
+                    scratch[6].r = ADD32_ovflw(S_MUL(scratch[10].i, ya.i), S_MUL(scratch[9].i, yb.i));
+                    scratch[6].i = NEG32_ovflw(ADD32_ovflw(S_MUL(scratch[10].r, ya.i), S_MUL(scratch[9].r, yb.i)));
 
                     C_SUB(ref *Fout1, scratch[5], scratch[6]);
                     C_ADD(ref *Fout4, scratch[5], scratch[6]);
 
-                    scratch[11].r = Inlines.ADD32_ovflw(scratch[0].r, Inlines.ADD32_ovflw(S_MUL(scratch[7].r, yb.r), S_MUL(scratch[8].r, ya.r)));
-                    scratch[11].i = Inlines.ADD32_ovflw(scratch[0].i, Inlines.ADD32_ovflw(S_MUL(scratch[7].i, yb.r), S_MUL(scratch[8].i, ya.r)));
-                    scratch[12].r = Inlines.SUB32_ovflw(S_MUL(scratch[9].i, ya.i), S_MUL(scratch[10].i, yb.i));
-                    scratch[12].i = Inlines.SUB32_ovflw(S_MUL(scratch[10].r, yb.i), S_MUL(scratch[9].r, ya.i));
+                    scratch[11].r = ADD32_ovflw(scratch[0].r, ADD32_ovflw(S_MUL(scratch[7].r, yb.r), S_MUL(scratch[8].r, ya.r)));
+                    scratch[11].i = ADD32_ovflw(scratch[0].i, ADD32_ovflw(S_MUL(scratch[7].i, yb.r), S_MUL(scratch[8].i, ya.r)));
+                    scratch[12].r = SUB32_ovflw(S_MUL(scratch[9].i, ya.i), S_MUL(scratch[10].i, yb.i));
+                    scratch[12].i = SUB32_ovflw(S_MUL(scratch[10].r, yb.i), S_MUL(scratch[9].r, ya.i));
 
                     C_ADD(ref *Fout2, scratch[11], scratch[12]);
                     C_SUB(ref *Fout3, scratch[11], scratch[12]);
@@ -437,13 +439,13 @@ namespace HellaUnsafe.Celt
             float scale;
             scale = st.scale;
 
-            Inlines.ASSERT(fin != fout, "In-place FFT not supported");
+            ASSERT(fin != fout, "In-place FFT not supported");
             /* Bit-reverse the input */
             for (i = 0; i < st.nfft; i++)
             {
                 kiss_fft_cpx x = fin[i];
-                fout[st.bitrev[i]].r = Inlines.SHR32(Inlines.MULT16_32_Q16(scale, x.r), scale_shift);
-                fout[st.bitrev[i]].i = Inlines.SHR32(Inlines.MULT16_32_Q16(scale, x.i), scale_shift);
+                fout[st.bitrev[i]].r = SHR32(MULT16_32_Q16(scale, x.r), scale_shift);
+                fout[st.bitrev[i]].i = SHR32(MULT16_32_Q16(scale, x.i), scale_shift);
             }
             opus_fft_impl(st, fout);
         }
@@ -451,7 +453,7 @@ namespace HellaUnsafe.Celt
         internal static unsafe void opus_ifft_c(in kiss_fft_state st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
         {
             int i;
-            Inlines.ASSERT(fin != fout, "In-place FFT not supported");
+            ASSERT(fin != fout, "In-place FFT not supported");
             /* Bit-reverse the input */
             for (i = 0; i < st.nfft; i++)
                 fout[st.bitrev[i]] = fin[i];

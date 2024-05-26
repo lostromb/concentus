@@ -1,7 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/* Copyright (c) 2007-2008 CSIRO
+   Copyright (c) 2007-2009 Xiph.Org Foundation
+   Written by Jean-Marc Valin */
+/**
+   @file pitch.c
+   @brief Pitch analysis
+ */
+
+/*
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+
+   - Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+   OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 using System.Numerics;
-using System.Text;
+using static HellaUnsafe.Celt.Arch;
 
 namespace HellaUnsafe.Celt
 {
@@ -26,6 +57,7 @@ namespace HellaUnsafe.Celt
                 //{
                 //    xcorr[i] = celt_inner_prod(_x, _y + i, len);
                 //}
+                xcorr_kernel_c(x, y, sum, len);
             }
             else
             {
@@ -44,7 +76,7 @@ namespace HellaUnsafe.Celt
 
             int j;
             float y_0, y_1, y_2, y_3;
-            Inlines.ASSERT(len >= 3);
+            ASSERT(len >= 3);
             y_3 = 0; /* gcc doesn't realize that y_3 can't be used uninitialized */
             y_0 = *y++;
             y_1 = *y++;
@@ -54,55 +86,55 @@ namespace HellaUnsafe.Celt
                 float tmp;
                 tmp = *x++;
                 y_3 = *y++;
-                sum[0] = Inlines.MAC16_16(sum[0], tmp, y_0);
-                sum[1] = Inlines.MAC16_16(sum[1], tmp, y_1);
-                sum[2] = Inlines.MAC16_16(sum[2], tmp, y_2);
-                sum[3] = Inlines.MAC16_16(sum[3], tmp, y_3);
+                sum[0] = MAC16_16(sum[0], tmp, y_0);
+                sum[1] = MAC16_16(sum[1], tmp, y_1);
+                sum[2] = MAC16_16(sum[2], tmp, y_2);
+                sum[3] = MAC16_16(sum[3], tmp, y_3);
                 tmp = *x++;
                 y_0 = *y++;
-                sum[0] = Inlines.MAC16_16(sum[0], tmp, y_1);
-                sum[1] = Inlines.MAC16_16(sum[1], tmp, y_2);
-                sum[2] = Inlines.MAC16_16(sum[2], tmp, y_3);
-                sum[3] = Inlines.MAC16_16(sum[3], tmp, y_0);
+                sum[0] = MAC16_16(sum[0], tmp, y_1);
+                sum[1] = MAC16_16(sum[1], tmp, y_2);
+                sum[2] = MAC16_16(sum[2], tmp, y_3);
+                sum[3] = MAC16_16(sum[3], tmp, y_0);
                 tmp = *x++;
                 y_1 = *y++;
-                sum[0] = Inlines.MAC16_16(sum[0], tmp, y_2);
-                sum[1] = Inlines.MAC16_16(sum[1], tmp, y_3);
-                sum[2] = Inlines.MAC16_16(sum[2], tmp, y_0);
-                sum[3] = Inlines.MAC16_16(sum[3], tmp, y_1);
+                sum[0] = MAC16_16(sum[0], tmp, y_2);
+                sum[1] = MAC16_16(sum[1], tmp, y_3);
+                sum[2] = MAC16_16(sum[2], tmp, y_0);
+                sum[3] = MAC16_16(sum[3], tmp, y_1);
                 tmp = *x++;
                 y_2 = *y++;
-                sum[0] = Inlines.MAC16_16(sum[0], tmp, y_3);
-                sum[1] = Inlines.MAC16_16(sum[1], tmp, y_0);
-                sum[2] = Inlines.MAC16_16(sum[2], tmp, y_1);
-                sum[3] = Inlines.MAC16_16(sum[3], tmp, y_2);
+                sum[0] = MAC16_16(sum[0], tmp, y_3);
+                sum[1] = MAC16_16(sum[1], tmp, y_0);
+                sum[2] = MAC16_16(sum[2], tmp, y_1);
+                sum[3] = MAC16_16(sum[3], tmp, y_2);
             }
             if (j++ < len)
             {
                 float tmp = *x++;
                 y_3 = *y++;
-                sum[0] = Inlines.MAC16_16(sum[0], tmp, y_0);
-                sum[1] = Inlines.MAC16_16(sum[1], tmp, y_1);
-                sum[2] = Inlines.MAC16_16(sum[2], tmp, y_2);
-                sum[3] = Inlines.MAC16_16(sum[3], tmp, y_3);
+                sum[0] = MAC16_16(sum[0], tmp, y_0);
+                sum[1] = MAC16_16(sum[1], tmp, y_1);
+                sum[2] = MAC16_16(sum[2], tmp, y_2);
+                sum[3] = MAC16_16(sum[3], tmp, y_3);
             }
             if (j++ < len)
             {
                 float tmp = *x++;
                 y_0 = *y++;
-                sum[0] = Inlines.MAC16_16(sum[0], tmp, y_1);
-                sum[1] = Inlines.MAC16_16(sum[1], tmp, y_2);
-                sum[2] = Inlines.MAC16_16(sum[2], tmp, y_3);
-                sum[3] = Inlines.MAC16_16(sum[3], tmp, y_0);
+                sum[0] = MAC16_16(sum[0], tmp, y_1);
+                sum[1] = MAC16_16(sum[1], tmp, y_2);
+                sum[2] = MAC16_16(sum[2], tmp, y_3);
+                sum[3] = MAC16_16(sum[3], tmp, y_0);
             }
             if (j < len)
             {
                 float tmp = *x++;
                 y_1 = *y++;
-                sum[0] = Inlines.MAC16_16(sum[0], tmp, y_2);
-                sum[1] = Inlines.MAC16_16(sum[1], tmp, y_3);
-                sum[2] = Inlines.MAC16_16(sum[2], tmp, y_0);
-                sum[3] = Inlines.MAC16_16(sum[3], tmp, y_1);
+                sum[0] = MAC16_16(sum[0], tmp, y_2);
+                sum[1] = MAC16_16(sum[1], tmp, y_3);
+                sum[2] = MAC16_16(sum[2], tmp, y_0);
+                sum[3] = MAC16_16(sum[3], tmp, y_1);
             }
         }
 
@@ -120,8 +152,8 @@ namespace HellaUnsafe.Celt
             float xy02 = 0;
             for (i = 0; i < N; i++)
             {
-                xy01 = Inlines.MAC16_16(xy01, x[i], y01[i]);
-                xy02 = Inlines.MAC16_16(xy02, x[i], y02[i]);
+                xy01 = MAC16_16(xy01, x[i], y01[i]);
+                xy02 = MAC16_16(xy02, x[i], y02[i]);
             }
             *xy1 = xy01;
             *xy2 = xy02;
@@ -145,7 +177,7 @@ namespace HellaUnsafe.Celt
             for (i = 0; i < N; i++)
             {
                 // TODO yep, more vectors!
-                xy = Inlines.MAC16_16(xy, x[i], y[i]);
+                xy = MAC16_16(xy, x[i], y[i]);
             }
 
             return xy;

@@ -4,8 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using static HellaUnsafe.Celt.KissFFT;
+using static HellaUnsafe.Celt.MDCT;
+using static HellaUnsafe.Celt.Modes;
 
 namespace HellaUnsafe.Celt
 {
@@ -805,29 +810,49 @@ namespace HellaUnsafe.Celt
             -0.99186671f, -0.99485862f, -0.99716878f, -0.99879545f, -0.99973762f,
             };
 
-        //private static readonly CELTMode mode48000_960_120 = {
-        //    48000,  /* Fs */
-        //    120,    /* overlap */
-        //    21,     /* nbEBands */
-        //    21,     /* effEBands */
-        //    {0.85000610f, 0.0000000f, 1.0000000f, 1.0000000f, },    /* preemph */
-        //    eband5ms,       /* eBands */
-        //    3,      /* maxLM */
-        //    8,      /* nbShortMdcts */
-        //    120,    /* shortMdctSize */
-        //    11,     /* nbAllocVectors */
-        //    band_allocation,        /* allocVectors */
-        //    logN400,        /* logN */
-        //    window120,      /* window */
-        //    {1920, 3, {&fft_state48000_960_0, &fft_state48000_960_1, &fft_state48000_960_2, &fft_state48000_960_3, }, mdct_twiddles960},    /* mdct */
-        //    {392, cache_index50, cache_bits50, cache_caps50},       /* cache */
-        //    };
+        internal static readonly CELTMode mode48000_960_120 = new CELTMode()
+        {
+            Fs = 48000,
+            overlap = 120,
+            nbEBands = 21,
+            effEBands = 21,
+            preemph = new float[] {0.85000610f, 0.0000000f, 1.0000000f, 1.0000000f, },
+            eBands = eband5ms,
+            maxLM = 3,
+            nbShortMdcts = 8,
+            shortMdctSize = 120,
+            nbAllocVectors = 11,
+            allocVectors = band_allocation,
+            logN = logN400,
+            window = window120,
+            mdct = new mdct_lookup()
+            {
+                n = 1920,
+                maxshift = 3,
+                kfft = new kiss_fft_state[]
+                {
+                    fft_state48000_960_0,
+                    fft_state48000_960_1,
+                    fft_state48000_960_2,
+                    fft_state48000_960_3,
+                },
+                trig = mdct_twiddles960
+            },
+            cache = new PulseCache()
+            {
+                size = 392,
+                index = cache_index50,
+                bits = cache_bits50,
+                caps = cache_caps50,
+            }
+        };
 
         /* List of all the available modes */
         internal const int TOTAL_MODES = 1;
 
-        //static const CELTMode* const static_mode_list[TOTAL_MODES] = {
-        //    &mode48000_960_120,
-        //    };
+        // OPT is this just making a copy of the mode struct for no reason?
+        internal static readonly CELTMode[] static_mode_list = {
+            mode48000_960_120,
+            };
     }
 }

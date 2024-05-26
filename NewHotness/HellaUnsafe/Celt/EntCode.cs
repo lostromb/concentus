@@ -25,6 +25,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using static HellaUnsafe.Celt.Arch;
+
 namespace HellaUnsafe.Celt
 {
     /*A range encoder.
@@ -171,13 +173,13 @@ namespace HellaUnsafe.Celt
 
         internal static uint celt_udiv(uint n, uint d)
         {
-            Inlines.ASSERT(d > 0);
+            ASSERT(d > 0);
             return n / d;
         }
 
         internal static int celt_sudiv(int n, int d)
         {
-            Inlines.ASSERT(d > 0);
+            ASSERT(d > 0);
             return n / d;
         }
 

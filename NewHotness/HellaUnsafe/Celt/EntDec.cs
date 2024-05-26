@@ -1,4 +1,31 @@
-﻿using static HellaUnsafe.Celt.EntCode;
+﻿/* Copyright (c) 2001-2011 Timothy B. Terriberry
+   Copyright (c) 2008-2009 Xiph.Org Foundation */
+/*
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+
+   - Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+   OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+using static HellaUnsafe.Celt.EntCode;
 
 namespace HellaUnsafe.Celt
 {
@@ -75,9 +102,9 @@ namespace HellaUnsafe.Celt
         internal static unsafe void ec_dec_update(ref ec_ctx _this, in byte* buf, uint _fl, uint _fh, uint _ft)
         {
             uint s;
-            s = Inlines.IMUL32(_this.ext, _ft - _fh);
+            s = Arch.IMUL32(_this.ext, _ft - _fh);
             _this.val -= s;
-            _this.rng = _fl > 0 ? Inlines.IMUL32(_this.ext, _fh - _fl) : _this.rng - s;
+            _this.rng = _fl > 0 ? Arch.IMUL32(_this.ext, _fh - _fl) : _this.rng - s;
             ec_dec_normalize(ref _this, buf);
         }
 
@@ -112,7 +139,7 @@ namespace HellaUnsafe.Celt
             do
             {
                 t = s;
-                s = Inlines.IMUL32(r, _icdf[++ret]);
+                s = Arch.IMUL32(r, _icdf[++ret]);
             }
             while (d < s);
             _this.val = d - s;
@@ -135,7 +162,7 @@ namespace HellaUnsafe.Celt
             do
             {
                 t = s;
-                s = Inlines.IMUL32(r, _icdf[++ret]);
+                s = Arch.IMUL32(r, _icdf[++ret]);
             }
             while (d < s);
             _this.val = d - s;
@@ -150,7 +177,7 @@ namespace HellaUnsafe.Celt
             uint s;
             int ftb;
             /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-            Inlines.ASSERT(_ft > 1);
+            Arch.ASSERT(_ft > 1);
             _ft--;
             ftb = EC_ILOG(_ft);
             if (ftb > EC_UINT_BITS)
