@@ -26,9 +26,9 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System;
 using static HellaUnsafe.Celt.KissFFT;
 using static HellaUnsafe.Celt.Arch;
-using System;
 
 namespace HellaUnsafe.Celt
 {

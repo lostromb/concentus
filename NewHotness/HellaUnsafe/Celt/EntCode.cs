@@ -177,7 +177,19 @@ namespace HellaUnsafe.Celt
             return n / d;
         }
 
+        internal static uint celt_udiv(uint n, ushort d)
+        {
+            ASSERT(d > 0);
+            return n / d;
+        }
+
         internal static int celt_sudiv(int n, int d)
+        {
+            ASSERT(d > 0);
+            return n / d;
+        }
+
+        internal static int celt_sudiv(int n, short d)
         {
             ASSERT(d > 0);
             return n / d;
