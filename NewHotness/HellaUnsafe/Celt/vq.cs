@@ -146,7 +146,12 @@ namespace HellaUnsafe.Celt
             return collapse_mask;
         }
 
-        internal static unsafe float op_pvq_search_c(float* X, int* iy, int K, int N, int unused_arch)
+        internal static unsafe float op_pvq_search(float* X, Span<int> iy, int K, int N)
+        {
+            return op_pvq_search_c(X, iy, K, N);
+        }
+
+        internal static unsafe float op_pvq_search_c(float* X, Span<int> iy, int K, int N)
         {
             const int rshift = 0;
             int i, j;
@@ -292,8 +297,9 @@ namespace HellaUnsafe.Celt
             return yy;
         }
 
-        internal static unsafe uint alg_quant(float* X, int N, int K, int spread, int B, ref EntCode.ec_ctx enc,
-            float gain, int resynth, int arch)
+        internal static unsafe uint alg_quant(float* X, int N, int K, int spread, int B,
+            ref EntCode.ec_ctx enc, in byte* encbuf,
+            float gain, int resynth)
         {
             Span<int> iy;
             float yy;
@@ -303,13 +309,15 @@ namespace HellaUnsafe.Celt
             Inlines.ASSERT(N > 1, "alg_quant() needs at least two dimensions");
 
             /* Covers vectorization by up to 4. */
-            iy = new int[N * 3];
+            iy = new int[N * 3]; // OPT can potentially stackalloc
 
             exp_rotation(X, N, 1, B, K, spread);
 
-            yy = op_pvq_search(X, iy, K, N, arch);
-
-            encode_pulses(iy, N, K, enc);
+            yy = op_pvq_search(X, iy, K, N);
+            fixed (int* iy_ptr = iy)
+            {
+                CWRS.encode_pulses(iy_ptr, N, K, ref enc, encbuf);
+            }
 
             if (resynth != 0)
             {
@@ -324,7 +332,7 @@ namespace HellaUnsafe.Celt
         /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
         internal static unsafe uint alg_unquant(float* X, int N, int K, int spread, int B,
-              ref EntCode.ec_ctx dec, float gain)
+              ref EntCode.ec_ctx dec, in byte* encbuf, float gain)
         {
             float Ryy;
             uint collapse_mask;
@@ -333,7 +341,10 @@ namespace HellaUnsafe.Celt
             Inlines.ASSERT(K > 0, "alg_unquant() needs at least one pulse");
             Inlines.ASSERT(N > 1, "alg_unquant() needs at least two dimensions");
             iy = new int[N];
-            Ryy = decode_pulses(iy, N, K, dec);
+            fixed (int* iy_ptr = iy)
+            {
+                Ryy = CWRS.decode_pulses(iy_ptr, N, K, ref dec, encbuf);
+            }
             normalise_residual(iy, X, N, Ryy, gain);
             exp_rotation(X, N, -1, B, K, spread);
             collapse_mask = extract_collapse_mask(iy, N, B);

@@ -38,6 +38,8 @@ namespace HellaUnsafe.Celt
         internal static float MAX16(float a, float b) { return Math.Max(a, b); }
         internal static short MIN16(short a, short b) { return Math.Min(a, b); }
         internal static short MAX16(short a, short b) { return Math.Max(a, b); }
+        internal static int IMIN(int a, int b) { return Math.Min(a, b); }
+        internal static int IMAX(int a, int b) { return Math.Max(a, b); }
         internal static int MIN32(int a, int b) { return Math.Min(a, b); }
         internal static int MAX32(int a, int b) { return Math.Max(a, b); }
         internal static float MIN32(float a, float b) { return Math.Min(a, b); }
