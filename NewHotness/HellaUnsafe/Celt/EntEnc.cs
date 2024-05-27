@@ -28,6 +28,7 @@
 using static HellaUnsafe.Celt.EntCode;
 using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Common.CRuntime;
+using System;
 
 namespace HellaUnsafe.Celt
 {
@@ -174,6 +175,19 @@ namespace HellaUnsafe.Celt
                   must be 0.
           _ftb: The number of bits of precision in the cumulative distribution.*/
         internal static unsafe void ec_enc_icdf(ref ec_ctx _this, in byte* buf, int _s, in byte* _icdf, uint _ftb)
+        {
+            uint r;
+            r = _this.rng >> (int)_ftb;
+            if (_s > 0)
+            {
+                _this.val += _this.rng - IMUL32(r, _icdf[_s - 1]);
+                _this.rng = r * _icdf[_s - 1] - _icdf[_s];
+            }
+            else _this.rng -= IMUL32(r, _icdf[_s]);
+            ec_enc_normalize(ref _this, buf);
+        }
+
+        internal static unsafe void ec_enc_icdf(ref ec_ctx _this, in byte* buf, int _s, ReadOnlySpan<byte> _icdf, uint _ftb)
         {
             uint r;
             r = _this.rng >> (int)_ftb;

@@ -25,6 +25,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System;
+using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Celt.EntCode;
 
 namespace HellaUnsafe.Celt
@@ -102,9 +104,9 @@ namespace HellaUnsafe.Celt
         internal static unsafe void ec_dec_update(ref ec_ctx _this, in byte* buf, uint _fl, uint _fh, uint _ft)
         {
             uint s;
-            s = Arch.IMUL32(_this.ext, _ft - _fh);
+            s = IMUL32(_this.ext, _ft - _fh);
             _this.val -= s;
-            _this.rng = _fl > 0 ? Arch.IMUL32(_this.ext, _fh - _fl) : _this.rng - s;
+            _this.rng = _fl > 0 ? IMUL32(_this.ext, _fh - _fl) : _this.rng - s;
             ec_dec_normalize(ref _this, buf);
         }
 
@@ -139,7 +141,30 @@ namespace HellaUnsafe.Celt
             do
             {
                 t = s;
-                s = Arch.IMUL32(r, _icdf[++ret]);
+                s = IMUL32(r, _icdf[++ret]);
+            }
+            while (d < s);
+            _this.val = d - s;
+            _this.rng = t - s;
+            ec_dec_normalize(ref _this, buf);
+            return ret;
+        }
+
+        internal static unsafe int ec_dec_icdf(ref ec_ctx _this, in byte* buf, ReadOnlySpan<byte> _icdf, uint _ftb)
+        {
+            uint r;
+            uint d;
+            uint s;
+            uint t;
+            int ret;
+            s = _this.rng;
+            d = _this.val;
+            r = s >> (int)_ftb;
+            ret = -1;
+            do
+            {
+                t = s;
+                s = IMUL32(r, _icdf[++ret]);
             }
             while (d < s);
             _this.val = d - s;
@@ -162,7 +187,7 @@ namespace HellaUnsafe.Celt
             do
             {
                 t = s;
-                s = Arch.IMUL32(r, _icdf[++ret]);
+                s = IMUL32(r, _icdf[++ret]);
             }
             while (d < s);
             _this.val = d - s;
@@ -177,7 +202,7 @@ namespace HellaUnsafe.Celt
             uint s;
             int ftb;
             /*In order to optimize EC_ILOG(), it is undefined for the value 0.*/
-            Arch.ASSERT(_ft > 1);
+            ASSERT(_ft > 1);
             _ft--;
             ftb = EC_ILOG(_ft);
             if (ftb > EC_UINT_BITS)

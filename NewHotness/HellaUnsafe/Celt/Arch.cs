@@ -46,6 +46,7 @@ namespace HellaUnsafe.Celt
         internal const float VERY_SMALL = 1e-30f;
         internal const float VERY_LARGE16 = 1e15f;
         internal const float Q15_ONE = 1.0f;
+        internal const int DB_SHIFT = 0;
 
         [Conditional("DEBUG")]
         internal static void ASSERT(bool condition)
@@ -72,7 +73,9 @@ namespace HellaUnsafe.Celt
         internal static short MIN16(short a, short b) { return Min(a, b); }
         internal static short MAX16(short a, short b) { return Max(a, b); }
         internal static int IMIN(int a, int b) { return Min(a, b); }
+        internal static uint IMIN(uint a, uint b) { return ((a) < (b) ? (a) : (b)); }
         internal static int IMAX(int a, int b) { return Max(a, b); }
+        internal static uint IMAX(uint a, uint b) { return ((a) > (b) ? (a) : (b)); }
         internal static int MIN32(int a, int b) { return Min(a, b); }
         internal static int MAX32(int a, int b) { return Max(a, b); }
         internal static float MIN32(float a, float b) { return Min(a, b); }
