@@ -26,16 +26,10 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
-using static System.Math;
 using static HellaUnsafe.Celt.Arch;
-using static HellaUnsafe.Celt.Modes;
 using static HellaUnsafe.Celt.EntCode;
-using static HellaUnsafe.Celt.EntEnc;
 using static HellaUnsafe.Celt.EntDec;
-using static HellaUnsafe.Celt.MathOps;
-using static HellaUnsafe.Celt.Rate;
-using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Celt.EntEnc;
 
 namespace HellaUnsafe.Celt
 {

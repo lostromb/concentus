@@ -33,6 +33,7 @@
 
 using System.Numerics;
 using static HellaUnsafe.Celt.Arch;
+using static HellaUnsafe.Celt.Celt;
 
 namespace HellaUnsafe.Celt
 {
@@ -181,6 +182,12 @@ namespace HellaUnsafe.Celt
             }
 
             return xy;
+        }
+
+        internal static unsafe void comb_filter_const(float* y, float* x, int T, int N,
+             float g10, float g11, float g12)
+        {
+            comb_filter_const_c(y, x, T, N, g10, g11, g12);
         }
     }
 }
