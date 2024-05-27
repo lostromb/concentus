@@ -27,7 +27,10 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using HellaUnsafe.Common;
 using static HellaUnsafe.Celt.MDCT;
+using static HellaUnsafe.Celt.StaticModesFloat;
+using static HellaUnsafe.Opus.OpusDefines;
 
 namespace HellaUnsafe.Celt
 {
@@ -64,7 +67,7 @@ namespace HellaUnsafe.Celt
             internal byte[] caps;
         }
 
-        internal struct CELTMode
+        internal struct OpusCustomMode
         {
             internal int Fs;
             internal int overlap;
@@ -86,5 +89,26 @@ namespace HellaUnsafe.Celt
             internal mdct_lookup mdct;
             internal PulseCache cache;
         };
+
+        internal static StructRef<OpusCustomMode> opus_custom_mode_create(int Fs, int frame_size, out int error)
+        {
+            int i;
+            for (i = 0; i < TOTAL_MODES; i++)
+            {
+                int j;
+                for (j = 0; j < 4; j++)
+                {
+                    if (Fs == static_mode_list[i].Value.Fs &&
+                          (frame_size << j) == static_mode_list[i].Value.shortMdctSize * static_mode_list[i].Value.nbShortMdcts)
+                    {
+                        error = OPUS_OK;
+                        return static_mode_list[i];
+                    }
+                }
+            }
+
+            error = OPUS_BAD_ARG;
+            return null;
+        }
     }
 }

@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Opus\" />
     <Folder Include="Silk\Float\x86\" />
     <Folder Include="Silk\x86\" />
   </ItemGroup>

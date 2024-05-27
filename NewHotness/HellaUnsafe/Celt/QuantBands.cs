@@ -140,7 +140,7 @@ namespace HellaUnsafe.Celt
             return MIN32(200, SHR32(dist, 2 * DB_SHIFT - 6));
         }
 
-        internal static unsafe int quant_coarse_energy_impl(in CELTMode m, int start, int end,
+        internal static unsafe int quant_coarse_energy_impl(in OpusCustomMode m, int start, int end,
               in float* eBands, float* oldEBands,
               int budget, int tell,
               ReadOnlySpan<byte> prob_model, float* error, ref ec_ctx enc, in byte* ecbuf,
@@ -238,7 +238,7 @@ namespace HellaUnsafe.Celt
             return lfe != 0 ? 0 : badness;
         }
 
-        internal static unsafe void quant_coarse_energy(in CELTMode m, int start, int end, int effEnd,
+        internal static unsafe void quant_coarse_energy(in OpusCustomMode m, int start, int end, int effEnd,
               in float* eBands, float* oldEBands, uint budget,
               float* error, ref ec_ctx enc, in byte* ecbuf, int C, int LM, int nbAvailableBytes,
               int force_intra, float* delayedIntra, int two_pass, int loss_rate, int lfe)
@@ -339,7 +339,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void quant_fine_energy(
-            in CELTMode m, int start, int end, float* oldEBands, float* error,
+            in OpusCustomMode m, int start, int end, float* oldEBands, float* error,
             int* fine_quant, ref ec_ctx enc, in byte* ecbuf, int C)
         {
             int i, c;
@@ -370,7 +370,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void quant_energy_finalise(
-            in CELTMode m, int start, int end, float* oldEBands, float* error, int* fine_quant,
+            in OpusCustomMode m, int start, int end, float* oldEBands, float* error, int* fine_quant,
             int* fine_priority, int bits_left, ref ec_ctx enc, in byte* ecbuf, int C)
         {
             int i, prio, c;
@@ -398,7 +398,7 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe void unquant_coarse_energy(in CELTMode m, int start, int end, float* oldEBands,
+        internal static unsafe void unquant_coarse_energy(in OpusCustomMode m, int start, int end, float* oldEBands,
             int intra, ref ec_ctx dec, in byte* ecbuf, int C, int LM)
         {
             ReadOnlySpan<byte> prob_model = e_prob_model[LM][intra];
@@ -466,7 +466,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void unquant_fine_energy(
-            in CELTMode m, int start, int end, float* oldEBands,
+            in OpusCustomMode m, int start, int end, float* oldEBands,
             int* fine_quant, ref ec_ctx dec, in byte* ecbuf, int C)
         {
             int i, c;
@@ -487,7 +487,7 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe void unquant_energy_finalise(in CELTMode m, int start, int end, float* oldEBands,
+        internal static unsafe void unquant_energy_finalise(in OpusCustomMode m, int start, int end, float* oldEBands,
             int* fine_quant, int* fine_priority, int bits_left, ref ec_ctx dec, in byte* ecbuf, int C)
         {
             int i, prio, c;
@@ -513,7 +513,7 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe void amp2Log2(in CELTMode m, int effEnd, int end,
+        internal static unsafe void amp2Log2(in OpusCustomMode m, int effEnd, int end,
               float* bandE, float* bandLogE, int C)
         {
             int c, i;

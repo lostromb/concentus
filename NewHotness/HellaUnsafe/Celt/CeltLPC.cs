@@ -34,6 +34,8 @@ namespace HellaUnsafe.Celt
 {
     internal static class CeltLPC
     {
+        internal const int CELT_LPC_ORDER = 24;
+
         internal static unsafe void _celt_lpc(
             float* _lpc, /* out: [0...p-1] LPC coefficients      */
             in float* ac,  /* in:  [0...p] autocorrelation values  */

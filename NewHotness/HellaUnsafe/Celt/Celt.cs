@@ -40,6 +40,50 @@ namespace HellaUnsafe.Celt
         internal const int COMBFILTER_MAXPERIOD = 1024;
         internal const int COMBFILTER_MINPERIOD = 15;
 
+        internal const int CELT_SET_PREDICTION_REQUEST = 10002;
+        internal const int CELT_SET_INPUT_CLIPPING_REQUEST = 10004;
+        internal const int CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007;
+        internal const int CELT_SET_CHANNELS_REQUEST = 10008;
+        internal const int CELT_SET_START_BAND_REQUEST = 10010;
+        internal const int CELT_SET_END_BAND_REQUEST = 10012;
+        internal const int CELT_GET_MODE_REQUEST = 10015;
+        internal const int CELT_SET_SIGNALLING_REQUEST = 10016;
+        internal const int CELT_SET_TONALITY_REQUEST = 10018;
+        internal const int CELT_SET_TONALITY_SLOPE_REQUEST = 10020;
+        internal const int CELT_SET_ANALYSIS_REQUEST = 10022;
+        internal const int OPUS_SET_LFE_REQUEST = 10024;
+        internal const int OPUS_SET_ENERGY_MASK_REQUEST = 10026;
+        internal const int CELT_SET_SILK_INFO_REQUEST = 10028;
+
+        internal static readonly byte[] trim_icdf = { 126, 124, 119, 109, 87, 41, 19, 9, 4, 2, 0 };
+        /* Probs: NONE: 21.875%, LIGHT: 6.25%, NORMAL: 65.625%, AGGRESSIVE: 6.25% */
+        internal static readonly byte[] spread_icdf = { 25, 23, 2, 0 };
+
+        internal static readonly byte[] tapset_icdf = { 2, 1, 0 };
+
+        internal struct AnalysisInfo
+        {
+            internal int valid;
+            internal float tonality;
+            internal float tonality_slope;
+            internal float noisiness;
+            internal float activity;
+            internal float music_prob;
+            internal float music_prob_min;
+            internal float music_prob_max;
+            internal int bandwidth;
+            internal float activity_probability;
+            internal float max_pitch_ratio;
+            /* Store as Q6 char to save space. */
+            byte[] leak_boost; //[LEAK_BANDS];
+        }
+
+        internal struct SILKInfo
+        {
+            internal int signalType;
+            internal int offset;
+        }
+
         internal static int resampling_factor(int rate)
         {
             int ret;
@@ -221,7 +265,7 @@ namespace HellaUnsafe.Celt
               new sbyte[] {0, -2, 0, -3,    3, 0, 1,-1}, /* 20 ms */
         };
 
-        internal static unsafe void init_caps(in CELTMode m, int* cap, int LM, int C)
+        internal static unsafe void init_caps(in OpusCustomMode m, int* cap, int LM, int C)
         {
             int i;
             for (i = 0; i < m.nbEBands; i++)

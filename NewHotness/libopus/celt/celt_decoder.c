@@ -246,15 +246,15 @@ void opus_custom_decoder_destroy(CELTDecoder *st)
 /* Special case for stereo with no downsampling and no accumulation. This is
    quite common and we can make it faster by processing both channels in the
    same loop, reducing overhead due to the dependency loop in the IIR filter. */
-static void deemphasis_stereo_simple(celt_sig *in[], opus_val16 *pcm, int N, const opus_val16 coef0,
+static void deemphasis_stereo_simple(celt_sig *input[], opus_val16 *pcm, int N, const opus_val16 coef0,
       celt_sig *mem)
 {
    celt_sig * OPUS_RESTRICT x0;
    celt_sig * OPUS_RESTRICT x1;
    celt_sig m0, m1;
    int j;
-   x0=in[0];
-   x1=in[1];
+   x0=input[0];
+   x1=input[1];
    m0 = mem[0];
    m1 = mem[1];
    for (j=0;j<N;j++)
