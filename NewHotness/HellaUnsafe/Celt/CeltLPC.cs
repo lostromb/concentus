@@ -78,6 +78,16 @@ namespace HellaUnsafe.Celt
 
         private const int SIG_SHIFT = 0;
 
+        internal static unsafe void celt_fir(
+            in float* x,
+            in float* num,
+            float* y,
+            int N,
+            int ord)
+        {
+            celt_fir_c(x, num, y, N, ord);
+        }
+
         internal static unsafe void celt_fir_c(
             in float* x,
             in float* num,

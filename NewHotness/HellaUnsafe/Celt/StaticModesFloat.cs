@@ -815,7 +815,7 @@ namespace HellaUnsafe.Celt
             -0.99186671f, -0.99485862f, -0.99716878f, -0.99879545f, -0.99973762f,
             };
 
-        internal static readonly OpusCustomMode mode48000_960_120 = new OpusCustomMode()
+        internal static readonly CeltCustomMode mode48000_960_120 = new CeltCustomMode()
         {
             Fs = 48000,
             overlap = 120,
@@ -855,8 +855,8 @@ namespace HellaUnsafe.Celt
         /* List of all the available modes */
         internal const int TOTAL_MODES = 1;
 
-        internal static readonly StructRef<OpusCustomMode>[] static_mode_list = {
-            new StructRef<OpusCustomMode>(mode48000_960_120),
+        internal static readonly StructRef<CeltCustomMode>[] static_mode_list = {
+            new StructRef<CeltCustomMode>(mode48000_960_120),
             };
     }
 }

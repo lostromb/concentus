@@ -67,7 +67,7 @@ namespace HellaUnsafe.Celt
             internal byte[] caps;
         }
 
-        internal struct OpusCustomMode
+        internal struct CeltCustomMode
         {
             internal int Fs;
             internal int overlap;
@@ -90,7 +90,7 @@ namespace HellaUnsafe.Celt
             internal PulseCache cache;
         };
 
-        internal static StructRef<OpusCustomMode> opus_custom_mode_create(int Fs, int frame_size, out int error)
+        internal static StructRef<CeltCustomMode> opus_custom_mode_create(int Fs, int frame_size, out int error)
         {
             int i;
             for (i = 0; i < TOTAL_MODES; i++)

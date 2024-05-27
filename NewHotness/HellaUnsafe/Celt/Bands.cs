@@ -98,7 +98,7 @@ namespace HellaUnsafe.Celt
                   - FRAC_MUL16(icos, FRAC_MUL16(icos, -2597) + 7932);
         }
 
-        internal static unsafe void compute_band_energies(in OpusCustomMode m, in float* X, float* bandE, int end, int C, int LM)
+        internal static unsafe void compute_band_energies(in CeltCustomMode m, in float* X, float* bandE, int end, int C, int LM)
         {
             int i, c, N;
             short[] eBands = m.eBands;
@@ -116,7 +116,7 @@ namespace HellaUnsafe.Celt
             /*printf ("\n");*/
         }
 
-        internal static unsafe void normalise_bands(in OpusCustomMode m, in float* freq, float* X, in float* bandE, int end, int C, int M)
+        internal static unsafe void normalise_bands(in CeltCustomMode m, in float* freq, float* X, in float* bandE, int end, int C, int M)
         {
             int i, c, N;
             short[] eBands = m.eBands;
@@ -134,7 +134,7 @@ namespace HellaUnsafe.Celt
         }
 
         /* De-normalise the energy to produce the synthesis from the unit-energy bands */
-        internal static unsafe void denormalise_bands(in OpusCustomMode m, in float* X,
+        internal static unsafe void denormalise_bands(in CeltCustomMode m, in float* X,
             float* freq, in float* bandLogE, int start,
             int end, int M, int downsample, int silence)
         {
@@ -177,7 +177,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void anti_collapse(
-            in OpusCustomMode m, float* X_, byte* collapse_masks, int LM, int C, int size,
+            in CeltCustomMode m, float* X_, byte* collapse_masks, int LM, int C, int size,
           int start, int end, in float* logE, in float* prev1logE,
           in float* prev2logE, in int* pulses, uint seed)
         {
@@ -263,7 +263,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void intensity_stereo(
-            in OpusCustomMode m, float* X, in float* Y, float* bandE, int bandID, int N)
+            in CeltCustomMode m, float* X, in float* Y, float* bandE, int bandID, int N)
         {
             int i = bandID;
             int j;
@@ -339,7 +339,7 @@ namespace HellaUnsafe.Celt
         }
 
         /* Decide whether we should spread the pulses in the current frame */
-        internal static unsafe int spreading_decision(in OpusCustomMode m, in float* X, int* average,
+        internal static unsafe int spreading_decision(in CeltCustomMode m, in float* X, int* average,
           int last_decision, int* hf_average, int* tapset_decision, int update_hf,
           int end, int C, int M, in int* spread_weight)
         {
@@ -543,7 +543,7 @@ namespace HellaUnsafe.Celt
         {
             internal int encode;
             internal int resynth;
-            internal StructRef<OpusCustomMode> m;
+            internal StructRef<CeltCustomMode> m;
             internal int i;
             internal int intensity;
             internal int spread;
@@ -588,7 +588,7 @@ namespace HellaUnsafe.Celt
             ref ec_ctx ec = ref ctx.ec.Value;
 
             encode = ctx.encode;
-            ref OpusCustomMode m = ref ctx.m.Value;
+            ref CeltCustomMode m = ref ctx.m.Value;
             i = ctx.i;
             intensity = ctx.intensity;
 
@@ -846,7 +846,7 @@ namespace HellaUnsafe.Celt
             uint cm = 0;
             float* Y = null;
             int encode;
-            ref OpusCustomMode m = ref ctx.m.Value;
+            ref CeltCustomMode m = ref ctx.m.Value;
             int i;
             int spread;
             ref ec_ctx ec = ref ctx.ec.Value;
@@ -1281,7 +1281,7 @@ namespace HellaUnsafe.Celt
             return cm;
         }
 
-        internal static unsafe void special_hybrid_folding(ref OpusCustomMode m, float* norm, float* norm2, int start, int M, int dual_stereo)
+        internal static unsafe void special_hybrid_folding(ref CeltCustomMode m, float* norm, float* norm2, int start, int M, int dual_stereo)
         {
             int n1, n2;
             short[] eBands = m.eBands;
@@ -1295,16 +1295,16 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void quant_all_bands(
-            int encode, StructRef<OpusCustomMode> celtMode, int start, int end,
+            int encode, StructRef<CeltCustomMode> celtMode, int start, int end,
               float* X_, float* Y_, byte* collapse_masks,
               in float* bandE, int* pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, int* tf_res, int total_bits,
               int balance, StructRef<ec_ctx> ec_ref, in byte* ecbuf, int LM, int codedBands,
-              uint* seed, int complexity, int disable_inv)
+              ref uint seed, int complexity, int disable_inv)
         {
             int i;
             int remaining_bits;
-            ref OpusCustomMode m = ref celtMode.Value;
+            ref CeltCustomMode m = ref celtMode.Value;
             ref ec_ctx ec = ref ec_ref.Value;
             ReadOnlySpan<short> eBands = m.eBands;
             float* norm;
@@ -1369,7 +1369,7 @@ namespace HellaUnsafe.Celt
                 ctx.encode = encode;
                 ctx.intensity = intensity;
                 ctx.m = celtMode;
-                ctx.seed = *seed;
+                ctx.seed = seed;
                 ctx.spread = spread;
                 ctx.disable_inv = disable_inv;
                 ctx.resynth = resynth;
@@ -1580,7 +1580,7 @@ namespace HellaUnsafe.Celt
                     ctx.avoid_split_noise = 0;
                 }
 
-                *seed = ctx.seed;
+                seed = ctx.seed;
             }
         }
     }

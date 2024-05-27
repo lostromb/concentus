@@ -276,7 +276,7 @@ static void deemphasis_stereo_simple(celt_sig *input[], opus_val16 *pcm, int N, 
 #ifndef RESYNTH
 static
 #endif
-void deemphasis(celt_sig *in[], opus_val16 *pcm, int N, int C, int downsample, const opus_val16 *coef,
+void deemphasis(celt_sig *input[], opus_val16 *pcm, int N, int C, int downsample, const opus_val16 *coef,
       celt_sig *mem, int accum)
 {
    int c;
@@ -289,7 +289,7 @@ void deemphasis(celt_sig *in[], opus_val16 *pcm, int N, int C, int downsample, c
    /* Short version for common case. */
    if (downsample == 1 && C == 2 && !accum)
    {
-      deemphasis_stereo_simple(in, pcm, N, coef[0], mem);
+      deemphasis_stereo_simple(input, pcm, N, coef[0], mem);
       return;
    }
 #endif
@@ -305,7 +305,7 @@ void deemphasis(celt_sig *in[], opus_val16 *pcm, int N, int C, int downsample, c
       celt_sig * OPUS_RESTRICT x;
       opus_val16  * OPUS_RESTRICT y;
       celt_sig m = mem[c];
-      x =in[c];
+      x =input[c];
       y = pcm+c;
 #ifdef CUSTOM_MODES
       if (coef[1] != 0)

@@ -265,7 +265,7 @@ namespace HellaUnsafe.Celt
               new sbyte[] {0, -2, 0, -3,    3, 0, 1,-1}, /* 20 ms */
         };
 
-        internal static unsafe void init_caps(in OpusCustomMode m, int* cap, int LM, int C)
+        internal static unsafe void init_caps(in CeltCustomMode m, int* cap, int LM, int C)
         {
             int i;
             for (i = 0; i < m.nbEBands; i++)

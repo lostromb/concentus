@@ -30,6 +30,7 @@ using System;
 using HellaUnsafe.Common;
 using static HellaUnsafe.Celt.KissFFT;
 using static HellaUnsafe.Celt.Arch;
+using System.Text.RegularExpressions;
 
 namespace HellaUnsafe.Celt
 {
@@ -55,9 +56,16 @@ namespace HellaUnsafe.Celt
             internal float[] trig;
         }
 
+        internal static unsafe void clt_mdct_forward(
+            in mdct_lookup l, float* input, float* output,
+            in float* window, int overlap, int shift, int stride)
+        {
+            clt_mdct_forward_c(l, input, output, window, overlap, shift, stride);
+        }
+
         internal static unsafe void clt_mdct_forward_c(
             in mdct_lookup l, float* input, float* output,
-        in float* window, int overlap, int shift, int stride, int arch)
+            in float* window, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;
@@ -176,9 +184,16 @@ namespace HellaUnsafe.Celt
             }
         }
 
+        internal static unsafe void clt_mdct_backward(
+           in mdct_lookup l, float* input, float* output,
+           in float* window, int overlap, int shift, int stride)
+        {
+            clt_mdct_backward_c(l, input, output, window, overlap, shift, stride);
+        }
+
         internal static unsafe void clt_mdct_backward_c(
             in mdct_lookup l, float* input, float* output,
-            in float* window, int overlap, int shift, int stride, int arch)
+            in float* window, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;

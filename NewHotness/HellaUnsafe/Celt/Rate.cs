@@ -59,7 +59,7 @@ namespace HellaUnsafe.Celt
             return i < 8 ? i : (8 + (i & 7)) << ((i >> 3) - 1);
         }
 
-        internal static unsafe int bits2pulses(in OpusCustomMode m, int band, int LM, int bits)
+        internal static unsafe int bits2pulses(in CeltCustomMode m, int band, int LM, int bits)
         {
             int i;
             int lo, hi;
@@ -89,13 +89,13 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe int pulses2bits(in OpusCustomMode m, int band, int LM, int pulses)
+        internal static unsafe int pulses2bits(in CeltCustomMode m, int band, int LM, int pulses)
         {
             LM++;
             return pulses == 0 ? 0 : m.cache.bits[m.cache.index[LM * m.nbEBands + band] + pulses]+1;
         }
 
-        internal static unsafe int interp_bits2pulses(in OpusCustomMode m, int start, int end, int skip_start,
+        internal static unsafe int interp_bits2pulses(in CeltCustomMode m, int start, int end, int skip_start,
                   ReadOnlySpan<int> bits1, ReadOnlySpan<int> bits2, ReadOnlySpan<int> thresh, in int* cap, int total, int* _balance,
                   int skip_rsv, int* intensity, int intensity_rsv, int* dual_stereo, int dual_stereo_rsv, int* bits,
                   int* ebits, int* fine_priority, int C, int LM, ref ec_ctx ec, in byte* ecbuf, int encode, int prev, int signalBandwidth)
@@ -383,7 +383,7 @@ namespace HellaUnsafe.Celt
             return codedBands;
         }
 
-        internal static unsafe int clt_compute_allocation(in OpusCustomMode m, int start, int end, in int* offsets, in int* cap, int alloc_trim, int* intensity, int* dual_stereo,
+        internal static unsafe int clt_compute_allocation(in CeltCustomMode m, int start, int end, in int* offsets, in int* cap, int alloc_trim, int* intensity, int* dual_stereo,
               int total, int* balance, int* pulses, int* ebits, int* fine_priority, int C, int LM, ref ec_ctx ec, in byte* ecbuf, int encode, int prev, int signalBandwidth)
         {
             int lo, hi, len, j;
