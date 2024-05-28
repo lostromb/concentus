@@ -8,6 +8,11 @@ namespace HellaUnsafe.Common
     {
         internal T Value;
 
+        public StructRef()
+        {
+            Value = default(T);
+        }
+
         public StructRef(T value)
         {
             Value = value;

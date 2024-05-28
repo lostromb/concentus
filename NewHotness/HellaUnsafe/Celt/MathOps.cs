@@ -84,5 +84,19 @@ namespace HellaUnsafe.Celt
             while (bshift >= 0);
             return g;
         }
+
+        internal static unsafe float celt_maxabs16(in float* x, int len)
+        {
+            int i;
+            float maxval = 0;
+            float minval = 0;
+            for (i = 0; i < len; i++)
+            {
+                maxval = MAX16(maxval, x[i]);
+                minval = MIN16(minval, x[i]);
+            }
+
+            return MAX32(EXTEND32(maxval), -EXTEND32(minval));
+        }
     }
 }

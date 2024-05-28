@@ -29,7 +29,6 @@
 
 using System;
 using HellaUnsafe.Common;
-using static System.Math;
 using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Celt.Bands;
 using static HellaUnsafe.Celt.Celt;
@@ -47,7 +46,6 @@ using static HellaUnsafe.Celt.QuantBands;
 using static HellaUnsafe.Celt.VQ;
 using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Opus.OpusDefines;
-using HellaUnsafe.Celt;
 
 namespace HellaUnsafe.Celt
 {
@@ -787,12 +785,12 @@ namespace HellaUnsafe.Celt
 
             float*[] decode_mem_array = new float*[2];
             float*[] out_syn_array = new float*[2];
-            int[] tf_res_array = new int[nbEBands];
-            int[] cap_array = new int[nbEBands];
-            int[] offsets_array = new int[nbEBands];
-            int[] fine_quant_array = new int[nbEBands];
-            int[] pulses_array = new int[nbEBands];
-            int[] fine_priority_array = new int[nbEBands];
+            Span<int> tf_res_array = stackalloc int[nbEBands]; // nbEBands is always 21 so fairly safe to stackalloc
+            Span<int> cap_array = stackalloc int[nbEBands];
+            Span<int> offsets_array = stackalloc int[nbEBands];
+            Span<int> fine_quant_array = stackalloc int[nbEBands];
+            Span<int> pulses_array = stackalloc int[nbEBands];
+            Span<int> fine_priority_array = stackalloc int[nbEBands];
             float[] X_array = new float[C * N]; /**< Interleaved normalised MDCTs */
             byte[] collapse_masks_array = new byte[C * nbEBands];
 

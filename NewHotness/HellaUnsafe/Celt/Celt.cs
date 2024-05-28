@@ -36,9 +36,12 @@ namespace HellaUnsafe.Celt
 {
     internal static class Celt
     {
+        internal const int SIG_SHIFT = 0; // Unneeded
         internal const int SIG_SAT = 300000000; // Unneeded
         internal const int COMBFILTER_MAXPERIOD = 1024;
         internal const int COMBFILTER_MINPERIOD = 15;
+
+        internal const int LEAK_BANDS = 19;
 
         internal const int CELT_SET_PREDICTION_REQUEST = 10002;
         internal const int CELT_SET_INPUT_CLIPPING_REQUEST = 10004;
@@ -75,7 +78,7 @@ namespace HellaUnsafe.Celt
             internal float activity_probability;
             internal float max_pitch_ratio;
             /* Store as Q6 char to save space. */
-            byte[] leak_boost; //[LEAK_BANDS];
+            internal byte[] leak_boost; //[LEAK_BANDS];
         }
 
         internal struct SILKInfo

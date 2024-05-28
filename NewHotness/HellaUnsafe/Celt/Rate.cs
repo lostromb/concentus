@@ -97,7 +97,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe int interp_bits2pulses(in CeltCustomMode m, int start, int end, int skip_start,
                   ReadOnlySpan<int> bits1, ReadOnlySpan<int> bits2, ReadOnlySpan<int> thresh, in int* cap, int total, int* _balance,
-                  int skip_rsv, int* intensity, int intensity_rsv, int* dual_stereo, int dual_stereo_rsv, int* bits,
+                  int skip_rsv, ref int intensity, int intensity_rsv, int* dual_stereo, int dual_stereo_rsv, int* bits,
                   int* ebits, int* fine_priority, int C, int LM, ref ec_ctx ec, in byte* ecbuf, int encode, int prev, int signalBandwidth)
         {
             int psum;
@@ -246,15 +246,15 @@ namespace HellaUnsafe.Celt
             {
                 if (encode != 0)
                 {
-                    *intensity = IMIN(*intensity, codedBands);
-                    ec_enc_uint(ref ec, ecbuf, (uint)(*intensity - start), (uint)(codedBands + 1 - start));
+                    intensity = IMIN(intensity, codedBands);
+                    ec_enc_uint(ref ec, ecbuf, (uint)(intensity - start), (uint)(codedBands + 1 - start));
                 }
                 else
-                    *intensity = start + (int)ec_dec_uint(ref ec, ecbuf, (uint)(codedBands + 1 - start));
+                    intensity = start + (int)ec_dec_uint(ref ec, ecbuf, (uint)(codedBands + 1 - start));
             }
             else
-                *intensity = 0;
-            if (*intensity <= start)
+                intensity = 0;
+            if (intensity <= start)
             {
                 total += dual_stereo_rsv;
                 dual_stereo_rsv = 0;
@@ -302,7 +302,7 @@ namespace HellaUnsafe.Celt
                     bits[j] = bit - excess;
 
                     /* Compensate for the extra DoF in stereo */
-                    den = (C * N + ((C == 2 && N > 2 && (*dual_stereo == 0) && j < *intensity) ? 1 : 0));
+                    den = (C * N + ((C == 2 && N > 2 && (*dual_stereo == 0) && j < intensity) ? 1 : 0));
 
                     NClogN = den * (m.logN[j] + logM);
 
@@ -383,7 +383,7 @@ namespace HellaUnsafe.Celt
             return codedBands;
         }
 
-        internal static unsafe int clt_compute_allocation(in CeltCustomMode m, int start, int end, in int* offsets, in int* cap, int alloc_trim, int* intensity, int* dual_stereo,
+        internal static unsafe int clt_compute_allocation(in CeltCustomMode m, int start, int end, in int* offsets, in int* cap, int alloc_trim, ref int intensity, int* dual_stereo,
               int total, int* balance, int* pulses, int* ebits, int* fine_priority, int C, int LM, ref ec_ctx ec, in byte* ecbuf, int encode, int prev, int signalBandwidth)
         {
             int lo, hi, len, j;
@@ -492,7 +492,7 @@ namespace HellaUnsafe.Celt
                 bits2[j] = bits2j;
             }
             codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
-                  total, balance, skip_rsv, intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
+                  total, balance, skip_rsv, ref intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
                   pulses, ebits, fine_priority, C, LM, ref ec, ecbuf, encode, prev, signalBandwidth);
             return codedBands;
         }

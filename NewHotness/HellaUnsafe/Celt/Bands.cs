@@ -339,8 +339,8 @@ namespace HellaUnsafe.Celt
         }
 
         /* Decide whether we should spread the pulses in the current frame */
-        internal static unsafe int spreading_decision(in CeltCustomMode m, in float* X, int* average,
-          int last_decision, int* hf_average, int* tapset_decision, int update_hf,
+        internal static unsafe int spreading_decision(in CeltCustomMode m, in float* X, ref int average,
+          int last_decision, ref int hf_average, ref int tapset_decision, int update_hf,
           int end, int C, int M, in int* spread_weight)
         {
             int i, c, N0;
@@ -392,26 +392,26 @@ namespace HellaUnsafe.Celt
             {
                 if (hf_sum != 0)
                     hf_sum = celt_sudiv(hf_sum, C * (4 - m.nbEBands + end));
-                *hf_average = (*hf_average + hf_sum) >> 1;
-                hf_sum = *hf_average;
-                if (*tapset_decision == 2)
+                hf_average = (hf_average + hf_sum) >> 1;
+                hf_sum = hf_average;
+                if (tapset_decision == 2)
                     hf_sum += 4;
-                else if (*tapset_decision == 0)
+                else if (tapset_decision == 0)
                     hf_sum -= 4;
                 if (hf_sum > 22)
-                    *tapset_decision = 2;
+                    tapset_decision = 2;
                 else if (hf_sum > 18)
-                    *tapset_decision = 1;
+                    tapset_decision = 1;
                 else
-                    *tapset_decision = 0;
+                    tapset_decision = 0;
             }
             /*printf("%d %d %d\n", hf_sum, *hf_average, *tapset_decision);*/
             ASSERT(nbBands > 0); /* end has to be non-zero */
             ASSERT(sum >= 0);
             sum = celt_sudiv((int)sum << 8, nbBands);
             /* Recursive averaging */
-            sum = (sum + *average) >> 1;
-            *average = sum;
+            sum = (sum + average) >> 1;
+            average = sum;
             /* Hysteresis */
             sum = (3 * sum + (((3 - last_decision) << 7) + 64) + 2) >> 2;
             if (sum < 80)

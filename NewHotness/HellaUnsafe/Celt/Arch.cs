@@ -66,6 +66,7 @@ namespace HellaUnsafe.Celt
             }
         }
 
+        internal static int celt_isnan(float x) { return float.IsNaN(x) ? 1 : 0; }
         internal static int IMUL32(int a, int b) { return a * b; }
         internal static uint IMUL32(uint a, uint b) { return a * b; }
         internal static float MIN16(float a, float b) { return Min(a, b); }
@@ -73,6 +74,7 @@ namespace HellaUnsafe.Celt
         internal static short MIN16(short a, short b) { return Min(a, b); }
         internal static short MAX16(short a, short b) { return Max(a, b); }
         internal static int IMIN(int a, int b) { return Min(a, b); }
+        internal static float IMIN(float a, float b) { return Min(a, b); }
         internal static uint IMIN(uint a, uint b) { return ((a) < (b) ? (a) : (b)); }
         internal static int IMAX(int a, int b) { return Max(a, b); }
         internal static uint IMAX(uint a, uint b) { return ((a) > (b) ? (a) : (b)); }

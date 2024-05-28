@@ -241,7 +241,7 @@ namespace HellaUnsafe.Celt
         internal static unsafe void quant_coarse_energy(in CeltCustomMode m, int start, int end, int effEnd,
               in float* eBands, float* oldEBands, uint budget,
               float* error, ref ec_ctx enc, in byte* ecbuf, int C, int LM, int nbAvailableBytes,
-              int force_intra, float* delayedIntra, int two_pass, int loss_rate, int lfe)
+              int force_intra, ref float delayedIntra, int two_pass, int loss_rate, int lfe)
         {
             int intra;
             float max_decay;
@@ -251,8 +251,8 @@ namespace HellaUnsafe.Celt
             int intra_bias;
             float new_distortion;
 
-            intra = (force_intra != 0 || (two_pass == 0 && *delayedIntra > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
-            intra_bias = (int)((budget * *delayedIntra * loss_rate) / (C * 512));
+            intra = (force_intra != 0 || (two_pass == 0 && delayedIntra > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
+            intra_bias = (int)((budget * delayedIntra * loss_rate) / (C * 512));
             new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
 
             tell = (uint)ec_tell(enc);
@@ -331,9 +331,9 @@ namespace HellaUnsafe.Celt
                 }
 
                 if (intra != 0)
-                    *delayedIntra = new_distortion;
+                    delayedIntra = new_distortion;
                 else
-                    *delayedIntra = ADD32(MULT16_32_Q15(MULT16_16_Q15(pred_coef[LM], pred_coef[LM]), *delayedIntra),
+                    delayedIntra = ADD32(MULT16_32_Q15(MULT16_16_Q15(pred_coef[LM], pred_coef[LM]), delayedIntra),
                     new_distortion);
             }
         }
