@@ -27,6 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System;
 using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Celt.Modes;
 using static HellaUnsafe.Celt.Pitch;
@@ -79,12 +80,38 @@ namespace HellaUnsafe.Celt
             internal float max_pitch_ratio;
             /* Store as Q6 char to save space. */
             internal byte[] leak_boost; //[LEAK_BANDS];
+
+            public void Assign(ref AnalysisInfo other)
+            {
+                this.valid = other.valid;
+                this.tonality = other.tonality;
+                this.tonality_slope = other.tonality_slope;
+                this.noisiness = other.noisiness;
+                this.activity = other.activity;
+                this.music_prob = other.music_prob;
+                this.music_prob_min = other.music_prob_min;
+                this.music_prob_max = other.music_prob_max;
+                this.bandwidth = other.bandwidth;
+                this.activity_probability = other.activity_probability;
+                this.max_pitch_ratio = other.max_pitch_ratio;
+                ASSERT(this.leak_boost != null);
+                ASSERT(other.leak_boost != null);
+                ASSERT(this.leak_boost.Length == LEAK_BANDS);
+                ASSERT(other.leak_boost.Length == LEAK_BANDS);
+                other.leak_boost.AsSpan(0, LEAK_BANDS).CopyTo(this.leak_boost);
+            }
         }
 
         internal struct SILKInfo
         {
             internal int signalType;
             internal int offset;
+
+            public void Assign(ref SILKInfo other)
+            {
+                this.signalType = other.signalType;
+                this.offset = other.offset;
+            }
         }
 
         internal static int resampling_factor(int rate)

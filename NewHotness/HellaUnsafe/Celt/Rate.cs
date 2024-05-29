@@ -96,8 +96,8 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe int interp_bits2pulses(in CeltCustomMode m, int start, int end, int skip_start,
-                  ReadOnlySpan<int> bits1, ReadOnlySpan<int> bits2, ReadOnlySpan<int> thresh, in int* cap, int total, int* _balance,
-                  int skip_rsv, ref int intensity, int intensity_rsv, int* dual_stereo, int dual_stereo_rsv, int* bits,
+                  ReadOnlySpan<int> bits1, ReadOnlySpan<int> bits2, ReadOnlySpan<int> thresh, in int* cap, int total, out int _balance,
+                  int skip_rsv, ref int intensity, int intensity_rsv, ref int dual_stereo, int dual_stereo_rsv, int* bits,
                   int* ebits, int* fine_priority, int C, int LM, ref ec_ctx ec, in byte* ecbuf, int encode, int prev, int signalBandwidth)
         {
             int psum;
@@ -262,12 +262,12 @@ namespace HellaUnsafe.Celt
             if (dual_stereo_rsv > 0)
             {
                 if (encode != 0)
-                    ec_enc_bit_logp(ref ec, ecbuf, *dual_stereo, 1);
+                    ec_enc_bit_logp(ref ec, ecbuf, dual_stereo, 1);
                 else
-                    *dual_stereo = ec_dec_bit_logp(ref ec, ecbuf, 1);
+                    dual_stereo = ec_dec_bit_logp(ref ec, ecbuf, 1);
             }
             else
-                *dual_stereo = 0;
+                dual_stereo = 0;
 
             /* Allocate the remaining bits */
             left = total - psum;
@@ -302,7 +302,7 @@ namespace HellaUnsafe.Celt
                     bits[j] = bit - excess;
 
                     /* Compensate for the extra DoF in stereo */
-                    den = (C * N + ((C == 2 && N > 2 && (*dual_stereo == 0) && j < intensity) ? 1 : 0));
+                    den = (C * N + ((C == 2 && N > 2 && (dual_stereo == 0) && j < intensity) ? 1 : 0));
 
                     NClogN = den * (m.logN[j] + logM);
 
@@ -369,7 +369,7 @@ namespace HellaUnsafe.Celt
             }
             /* Save any remaining bits over the cap for the rebalancing in
                 quant_all_bands(). */
-            *_balance = balance;
+            _balance = balance;
 
             /* The skipped bands use all their bits for fine energy. */
             for (; j < end; j++)
@@ -383,8 +383,8 @@ namespace HellaUnsafe.Celt
             return codedBands;
         }
 
-        internal static unsafe int clt_compute_allocation(in CeltCustomMode m, int start, int end, in int* offsets, in int* cap, int alloc_trim, ref int intensity, int* dual_stereo,
-              int total, int* balance, int* pulses, int* ebits, int* fine_priority, int C, int LM, ref ec_ctx ec, in byte* ecbuf, int encode, int prev, int signalBandwidth)
+        internal static unsafe int clt_compute_allocation(in CeltCustomMode m, int start, int end, in int* offsets, in int* cap, int alloc_trim, ref int intensity, ref int dual_stereo,
+              int total, out int balance, int* pulses, int* ebits, int* fine_priority, int C, int LM, ref ec_ctx ec, in byte* ecbuf, int encode, int prev, int signalBandwidth)
         {
             int lo, hi, len, j;
             int codedBands;
@@ -492,7 +492,7 @@ namespace HellaUnsafe.Celt
                 bits2[j] = bits2j;
             }
             codedBands = interp_bits2pulses(m, start, end, skip_start, bits1, bits2, thresh, cap,
-                  total, balance, skip_rsv, ref intensity, intensity_rsv, dual_stereo, dual_stereo_rsv,
+                  total, out balance, skip_rsv, ref intensity, intensity_rsv, ref dual_stereo, dual_stereo_rsv,
                   pulses, ebits, fine_priority, C, LM, ref ec, ecbuf, encode, prev, signalBandwidth);
             return codedBands;
         }

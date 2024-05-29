@@ -989,7 +989,7 @@ namespace HellaUnsafe.Celt
                 bits -= anti_collapse_rsv;
 
                 codedBands = clt_compute_allocation(mode, start, end, offsets, cap,
-                      alloc_trim, &intensity, &dual_stereo, bits, &balance, pulses,
+                      alloc_trim, ref intensity, ref dual_stereo, bits, out balance, pulses,
                       fine_quant, fine_priority, C, LM, ref dec, data, 0, 0, 0);
 
                 unquant_fine_energy(mode, start, end, oldBandE, fine_quant, ref dec, data, C);

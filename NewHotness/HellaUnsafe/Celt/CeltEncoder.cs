@@ -158,9 +158,11 @@ namespace HellaUnsafe.Celt
             st.force_intra = 0;
             st.complexity = 5;
             st.lsb_depth = 24;
+            st.analysis = new StructRef<AnalysisInfo>();
+            st.silk_info = new StructRef<SILKInfo>();
             st.in_mem = new float[opus_custom_encoder_get_memory_size(mode.Value, channels)];
 
-            //opus_custom_encoder_ctl(st, OPUS_RESET_STATE);
+            opus_custom_encoder_ctl(ref st, OPUS_RESET_STATE);
 
             return OPUS_OK;
         }
@@ -2084,7 +2086,7 @@ namespace HellaUnsafe.Celt
                 if (st.lfe != 0)
                     signalBandwidth = 1;
                 codedBands = clt_compute_allocation(mode, start, end, offsets, cap,
-                      alloc_trim, ref st.intensity, &dual_stereo, bits, &balance, pulses,
+                      alloc_trim, ref st.intensity, ref dual_stereo, bits, out balance, pulses,
                       fine_quant, fine_priority, C, LM, ref enc, compressed, 1, st.lastCodedBands, signalBandwidth);
                 if (st.lastCodedBands != 0)
                     st.lastCodedBands = IMIN(st.lastCodedBands + 1, IMAX(st.lastCodedBands - 1, codedBands));
@@ -2170,6 +2172,297 @@ namespace HellaUnsafe.Celt
                 else
                     return nbCompressedBytes;
             }
+        }
+
+        internal static int opus_custom_encoder_ctl(
+            ref CeltCustomEncoder st, int request, int value)
+        {
+            switch (request)
+            {
+                case OPUS_SET_COMPLEXITY_REQUEST:
+                    {
+                        if (value < 0 || value > 10)
+                            goto bad_arg;
+                        st.complexity = value;
+                    }
+                    break;
+                case CELT_SET_START_BAND_REQUEST:
+                    {
+                        if (value < 0 || value >= st.mode.Value.nbEBands)
+                            goto bad_arg;
+                        st.start = value;
+                    }
+                    break;
+                case CELT_SET_END_BAND_REQUEST:
+                    {
+                        if (value < 1 || value > st.mode.Value.nbEBands)
+                            goto bad_arg;
+                        st.end = value;
+                    }
+                    break;
+                case CELT_SET_PREDICTION_REQUEST:
+                    {
+                        if (value < 0 || value > 2)
+                            goto bad_arg;
+                        st.disable_pf = value <= 1 ? 1 : 0;
+                        st.force_intra = value == 0 ? 1 : 0;
+                    }
+                    break;
+                case OPUS_SET_PACKET_LOSS_PERC_REQUEST:
+                    {
+                        if (value < 0 || value > 100)
+                            goto bad_arg;
+                        st.loss_rate = value;
+                    }
+                    break;
+                case OPUS_SET_VBR_CONSTRAINT_REQUEST:
+                    {
+                        st.constrained_vbr = value;
+                    }
+                    break;
+                case OPUS_SET_VBR_REQUEST:
+                    {
+                        st.vbr = value;
+                    }
+                    break;
+                case OPUS_SET_BITRATE_REQUEST:
+                    {
+                        if (value <= 500 && value != OPUS_BITRATE_MAX)
+                            goto bad_arg;
+                        value = IMIN(value, 260000 * st.channels);
+                        st.bitrate = value;
+                    }
+                    break;
+                case CELT_SET_CHANNELS_REQUEST:
+                    {
+                        if (value < 1 || value > 2)
+                            goto bad_arg;
+                        st.stream_channels = value;
+                    }
+                    break;
+                case OPUS_SET_LSB_DEPTH_REQUEST:
+                    {
+                        if (value < 8 || value > 24)
+                            goto bad_arg;
+                        st.lsb_depth = value;
+                    }
+                    break;
+                case OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST:
+                    {
+                        if (value < 0 || value > 1)
+                        {
+                            goto bad_arg;
+                        }
+                        st.disable_inv = value;
+                    }
+                    break;
+                case CELT_SET_SIGNALLING_REQUEST:
+                    {
+                        st.signalling = value;
+                    }
+                    break;
+                case OPUS_SET_LFE_REQUEST:
+                    {
+                        st.lfe = value;
+                    }
+                    break;
+                default:
+                    goto bad_request;
+            }
+
+            return OPUS_OK;
+            bad_arg:
+            return OPUS_BAD_ARG;
+            bad_request:
+            return OPUS_UNIMPLEMENTED;
+        }
+
+        internal static int opus_custom_encoder_ctl(
+            ref CeltCustomEncoder st, int request, out int value)
+        {
+            switch (request)
+            {
+                case OPUS_GET_LSB_DEPTH_REQUEST:
+                    {
+                        value = st.lsb_depth;
+                    }
+                    break;
+                case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
+                    {
+                        value = st.disable_inv;
+                    }
+                    break;
+                default:
+                    goto bad_request;
+            }
+
+            return OPUS_OK;
+            bad_request:
+            value = 0;
+            return OPUS_UNIMPLEMENTED;
+        }
+
+        internal static unsafe int opus_custom_encoder_ctl(ref CeltCustomEncoder st, int request)
+        {
+            switch (request)
+            {
+                case OPUS_RESET_STATE:
+                    {
+                        int i;
+                        float* oldBandE, oldLogE, oldLogE2;
+                        fixed (float* st_in_mem = st.in_mem)
+                        fixed (float* memE = st.preemph_memE)
+                        fixed (float* memD = st.preemph_memE)
+                        {
+                            oldBandE = (float*)(st_in_mem + st.channels * (st.mode.Value.overlap + COMBFILTER_MAXPERIOD));
+                            oldLogE = oldBandE + st.channels * st.mode.Value.nbEBands;
+                            oldLogE2 = oldLogE + st.channels * st.mode.Value.nbEBands;
+                            
+                            // This clears every value past ENCODER_RESET START
+                            st.rng = 0;
+                            st.spread_decision = 0;
+                            st.delayedIntra = 0;
+                            st.tonal_average = 0;
+                            st.lastCodedBands = 0;
+                            st.hf_average = 0;
+                            st.tapset_decision = 0;
+                            st.prefilter_period = 0;
+                            st.prefilter_gain = 0;
+                            st.prefilter_tapset = 0;
+                            st.consec_transient = 0;
+                            st.analysis.Value = new AnalysisInfo();
+                            st.silk_info.Value = new SILKInfo();
+                            OPUS_CLEAR(memE, 2);
+                            OPUS_CLEAR(memD, 2);
+                            OPUS_CLEAR(st_in_mem, opus_custom_encoder_get_memory_size(st.mode.Value, st.channels));
+                            st.vbr_reservoir = 0;
+                            st.vbr_drift = 0;
+                            st.vbr_offset = 0;
+                            st.vbr_count = 0;
+                            st.overlap_max = 0;
+                            st.stereo_saving = 0;
+                            st.intensity = 0;
+                            st.energy_mask = null;
+                            st.spec_avg = 0;
+                            ///////
+
+                            for (i = 0; i < st.channels * st.mode.Value.nbEBands; i++)
+                                oldLogE[i] = oldLogE2[i] = -QCONST16(28.0f, DB_SHIFT);
+                        }
+
+                        st.vbr_offset = 0;
+                        st.delayedIntra = 1;
+                        st.spread_decision = SPREAD_NORMAL;
+                        st.tonal_average = 256;
+                        st.hf_average = 0;
+                        st.tapset_decision = 0;
+                    }
+                    break;
+                default:
+                    goto bad_request;
+            }
+
+            return OPUS_OK;
+            bad_request:
+            return OPUS_UNIMPLEMENTED;
+        }
+
+        internal static int opus_custom_encoder_ctl(
+            ref CeltCustomEncoder st, int request, ref AnalysisInfo value)
+        {
+            switch (request)
+            {
+                case CELT_SET_ANALYSIS_REQUEST:
+                    {
+                        st.analysis.Value.Assign(ref value);
+                    }
+                    break;
+                default:
+                    goto bad_request;
+            }
+
+            return OPUS_OK;
+            bad_request:
+            return OPUS_UNIMPLEMENTED;
+        }
+
+        internal static int opus_custom_encoder_ctl(
+            ref CeltCustomEncoder st, int request, ref SILKInfo value)
+        {
+            switch (request)
+            {
+                case CELT_SET_SILK_INFO_REQUEST:
+                    {
+                        st.silk_info.Value.Assign(ref value);
+                    }
+                    break;
+                default:
+                    goto bad_request;
+            }
+
+            return OPUS_OK;
+            bad_request:
+            return OPUS_UNIMPLEMENTED;
+        }
+
+        internal static int opus_custom_encoder_ctl(
+            ref CeltCustomEncoder st, int request, out StructRef<CeltCustomMode> value)
+        {
+            switch (request)
+            {
+                case CELT_GET_MODE_REQUEST:
+                    {
+                        value = st.mode;
+                    }
+                    break;
+                default:
+                    goto bad_request;
+            }
+
+            return OPUS_OK;
+            bad_request:
+            value = null;
+            return OPUS_UNIMPLEMENTED;
+        }
+
+        internal static int opus_custom_encoder_ctl(
+            ref CeltCustomEncoder st, int request, out uint value)
+        {
+            switch (request)
+            {
+
+                case OPUS_GET_FINAL_RANGE_REQUEST:
+                    {
+                        value = st.rng;
+                    }
+                    break;
+                default:
+                    goto bad_request;
+            }
+
+            return OPUS_OK;
+            bad_request:
+            value = 0;
+            return OPUS_UNIMPLEMENTED;
+        }
+
+        internal static int opus_custom_encoder_ctl(
+            ref CeltCustomEncoder st, int request, float[] value)
+        {
+            switch (request)
+            {
+                case OPUS_SET_ENERGY_MASK_REQUEST:
+                    {
+                        st.energy_mask = value;
+                    }
+                    break;
+                default:
+                    goto bad_request;
+            }
+
+            return OPUS_OK;
+            bad_request:
+            return OPUS_UNIMPLEMENTED;
         }
     }
 }
