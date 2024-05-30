@@ -65,7 +65,7 @@ namespace HellaUnsafe.Celt
 
         internal static readonly byte[] tapset_icdf = { 2, 1, 0 };
 
-        internal struct AnalysisInfo
+        internal unsafe struct AnalysisInfo
         {
             internal int valid;
             internal float tonality;
@@ -79,9 +79,9 @@ namespace HellaUnsafe.Celt
             internal float activity_probability;
             internal float max_pitch_ratio;
             /* Store as Q6 char to save space. */
-            internal byte[] leak_boost; //[LEAK_BANDS];
+            internal fixed byte leak_boost[LEAK_BANDS]; // embedded array
 
-            public void Assign(ref AnalysisInfo other)
+            public unsafe void Assign(ref AnalysisInfo other)
             {
                 this.valid = other.valid;
                 this.tonality = other.tonality;
@@ -94,11 +94,11 @@ namespace HellaUnsafe.Celt
                 this.bandwidth = other.bandwidth;
                 this.activity_probability = other.activity_probability;
                 this.max_pitch_ratio = other.max_pitch_ratio;
-                ASSERT(this.leak_boost != null);
-                ASSERT(other.leak_boost != null);
-                ASSERT(this.leak_boost.Length == LEAK_BANDS);
-                ASSERT(other.leak_boost.Length == LEAK_BANDS);
-                other.leak_boost.AsSpan(0, LEAK_BANDS).CopyTo(this.leak_boost);
+                fixed (byte* source = other.leak_boost)
+                fixed (byte* dest = this.leak_boost)
+                {
+                    OPUS_COPY(dest, source, LEAK_BANDS);
+                }
             }
         }
 

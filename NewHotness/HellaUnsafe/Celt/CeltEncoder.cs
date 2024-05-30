@@ -90,8 +90,8 @@ namespace HellaUnsafe.Celt
             internal float prefilter_gain;
             internal int prefilter_tapset;
             internal int consec_transient;
-            internal StructRef<AnalysisInfo> analysis; // Embedded struct: never null!
-            internal StructRef<SILKInfo> silk_info; // Embedded struct: never null!
+            internal AnalysisInfo analysis;
+            internal SILKInfo silk_info;
 
             internal fixed float preemph_memE[2];
             internal fixed float preemph_memD[2];
@@ -158,8 +158,8 @@ namespace HellaUnsafe.Celt
             st.force_intra = 0;
             st.complexity = 5;
             st.lsb_depth = 24;
-            st.analysis = new StructRef<AnalysisInfo>();
-            st.silk_info = new StructRef<SILKInfo>();
+            st.analysis = new AnalysisInfo();
+            st.silk_info = new SILKInfo();
             st.in_mem = new float[opus_custom_encoder_get_memory_size(mode.Value, channels)];
 
             opus_custom_encoder_ctl(ref st, OPUS_RESET_STATE);
@@ -1564,8 +1564,8 @@ namespace HellaUnsafe.Celt
                           && st.complexity >= 5) ? 1 : 0;
 
                     prefilter_tapset = st.tapset_decision;
-                    pf_on = run_prefilter(ref st, input, prefilter_mem, CC, N, prefilter_tapset, out pitch_index, out gain1, out qg, enabled, nbAvailableBytes, ref st.analysis.Value);
-                    if ((gain1 > QCONST16(.4f, 15) || st.prefilter_gain > QCONST16(.4f, 15)) && (st.analysis.Value.valid == 0 || st.analysis.Value.tonality > .3)
+                    pf_on = run_prefilter(ref st, input, prefilter_mem, CC, N, prefilter_tapset, out pitch_index, out gain1, out qg, enabled, nbAvailableBytes, ref st.analysis);
+                    if ((gain1 > QCONST16(.4f, 15) || st.prefilter_gain > QCONST16(.4f, 15)) && (st.analysis.valid == 0 || st.analysis.tonality > .3)
                           && (pitch_index > 1.26 * st.prefilter_period || pitch_index < .79 * st.prefilter_period))
                         pitch_change = 1;
                     if (pf_on == 0)
@@ -1596,7 +1596,7 @@ namespace HellaUnsafe.Celt
                     /* Reduces the likelihood of energy instability on fricatives at low bitrate
                        in hybrid mode. It seems like we still want to have real transients on vowels
                        though (small SILK quantization offset value). */
-                    int allow_weak_transients = (hybrid != 0 && effectiveBytes < 15 && st.silk_info.Value.signalType != 2) ? 1 : 0;
+                    int allow_weak_transients = (hybrid != 0 && effectiveBytes < 15 && st.silk_info.signalType != 2) ? 1 : 0;
                     isTransient = transient_analysis(input, N + overlap, CC,
                           &tf_estimate, &tf_chan, allow_weak_transients, &weak_transient);
                 }
@@ -1779,7 +1779,7 @@ namespace HellaUnsafe.Celt
                 {
                     maxDepth = dynalloc_analysis(bandLogE, bandLogE2, oldBandE, nbEBands, start, end, C, offsets,
                           st.lsb_depth, modelogN, isTransient, st.vbr, st.constrained_vbr,
-                          eBands, LM, effectiveBytes, out tot_boost, st.lfe, surround_dynalloc, ref st.analysis.Value, importance, spread_weight);
+                          eBands, LM, effectiveBytes, out tot_boost, st.lfe, surround_dynalloc, ref st.analysis, importance, spread_weight);
                 }
 
                 /* Disable variable tf resolution for hybrid and at very low bitrate */
@@ -1800,7 +1800,7 @@ namespace HellaUnsafe.Celt
                         tf_res[i] = 1;
                     tf_select = 0;
                 }
-                else if (hybrid != 0 && effectiveBytes < 15 && st.silk_info.Value.signalType != 2)
+                else if (hybrid != 0 && effectiveBytes < 15 && st.silk_info.signalType != 2)
                 {
                     /* For low bitrate hybrid, we force temporal resolution to 5 ms rather than 2.5 ms. */
                     for (i = 0; i < end; i++)
@@ -1937,7 +1937,7 @@ namespace HellaUnsafe.Celt
                     else
                     {
                         alloc_trim = alloc_trim_analysis(mode, X, bandLogE,
-                           end, LM, C, N, ref st.analysis.Value, ref st.stereo_saving, tf_estimate,
+                           end, LM, C, N, ref st.analysis, ref st.stereo_saving, tf_estimate,
                            st.intensity, surround_trim, equiv_rate);
                     }
                     ec_enc_icdf(ref enc, compressed, alloc_trim, trim_icdf, 7);
@@ -1971,7 +1971,7 @@ namespace HellaUnsafe.Celt
 
                     if (hybrid == 0)
                     {
-                        target = compute_vbr(mode, ref st.analysis.Value, base_target, LM, equiv_rate,
+                        target = compute_vbr(mode, ref st.analysis, base_target, LM, equiv_rate,
                            st.lastCodedBands, C, st.intensity, st.constrained_vbr,
                            st.stereo_saving, tot_boost, tf_estimate, pitch_change, maxDepth,
                            st.lfe, st.energy_mask != null ? 1 : 0, surround_masking,
@@ -1981,8 +1981,8 @@ namespace HellaUnsafe.Celt
                     {
                         target = base_target;
                         /* Tonal frames (offset<100) need more bits than noisy (offset>100) ones. */
-                        if (st.silk_info.Value.offset < 100) target += 12 << BITRES >> (3 - LM);
-                        if (st.silk_info.Value.offset > 100) target -= 18 << BITRES >> (3 - LM);
+                        if (st.silk_info.offset < 100) target += 12 << BITRES >> (3 - LM);
+                        if (st.silk_info.offset > 100) target -= 18 << BITRES >> (3 - LM);
                         /* Boosting bitrate on transients and vowels with significant temporal
                            spikes. */
                         target += (int)MULT16_16_Q14(tf_estimate - QCONST16(.25f, 14), (50 << BITRES));
@@ -2068,7 +2068,7 @@ namespace HellaUnsafe.Celt
                 anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << BITRES) ? (1 << BITRES) : 0;
                 bits -= anti_collapse_rsv;
                 signalBandwidth = end - 1;
-                if (st.analysis.Value.valid != 0)
+                if (st.analysis.valid != 0)
                 {
                     int min_bandwidth;
                     if (equiv_rate < (int)32000 * C)
@@ -2081,7 +2081,7 @@ namespace HellaUnsafe.Celt
                         min_bandwidth = 19;
                     else
                         min_bandwidth = 20;
-                    signalBandwidth = IMAX(st.analysis.Value.bandwidth, min_bandwidth);
+                    signalBandwidth = IMAX(st.analysis.bandwidth, min_bandwidth);
                 }
                 if (st.lfe != 0)
                     signalBandwidth = 1;
@@ -2330,8 +2330,8 @@ namespace HellaUnsafe.Celt
                             st.prefilter_gain = 0;
                             st.prefilter_tapset = 0;
                             st.consec_transient = 0;
-                            st.analysis.Value = new AnalysisInfo();
-                            st.silk_info.Value = new SILKInfo();
+                            st.analysis = new AnalysisInfo();
+                            st.silk_info = new SILKInfo();
                             OPUS_CLEAR(memE, 2);
                             OPUS_CLEAR(memD, 2);
                             OPUS_CLEAR(st_in_mem, opus_custom_encoder_get_memory_size(st.mode.Value, st.channels));
@@ -2374,7 +2374,7 @@ namespace HellaUnsafe.Celt
             {
                 case CELT_SET_ANALYSIS_REQUEST:
                     {
-                        st.analysis.Value.Assign(ref value);
+                        st.analysis.Assign(ref value);
                     }
                     break;
                 default:
@@ -2393,7 +2393,7 @@ namespace HellaUnsafe.Celt
             {
                 case CELT_SET_SILK_INFO_REQUEST:
                     {
-                        st.silk_info.Value.Assign(ref value);
+                        st.silk_info.Assign(ref value);
                     }
                     break;
                 default:

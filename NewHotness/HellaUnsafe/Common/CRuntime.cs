@@ -89,5 +89,20 @@ namespace HellaUnsafe.Common
         {
             new Span<byte>(src, (int)elements).CopyTo(new Span<byte>(dst, (int)elements));
         }
+
+        internal static unsafe void silk_memset(float* dst, float src, int elements)
+        {
+            new Span<float>(dst, elements).Fill(src);
+        }
+
+        internal static unsafe void silk_memcpy(float* dst, float* src, int elements)
+        {
+            new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));
+        }
+
+        internal static unsafe void silk_memmove(float* dst, float* src, int elements)
+        {
+            new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));
+        }
     }
 }
