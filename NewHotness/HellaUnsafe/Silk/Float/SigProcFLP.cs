@@ -57,7 +57,7 @@ namespace HellaUnsafe.Silk.Float
         /* floating-point to integer conversion (rounding) */
         internal static int silk_float2int(float x)
         {
-            return (int)float2int(x);
+            return float2int(x);
         }
 
         /* floating-point to integer conversion (rounding) */
