@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -7,6 +8,11 @@ namespace HellaUnsafe.Silk
 {
     internal static class SigProcFIX
     {
+        internal static void silk_assert(bool condition)
+        {
+            Debug.Assert(condition);
+        }
+
         /// <summary>
         /// Rotate a32 right by 'rot' bits. Negative rot values result in rotating
         /// left. Output is 32bit int.
