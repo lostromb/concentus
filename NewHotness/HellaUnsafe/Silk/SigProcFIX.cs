@@ -8,6 +8,8 @@ namespace HellaUnsafe.Silk
 {
     internal static class SigProcFIX
     {
+        internal const int SILK_MAX_ORDER_LPC = 24;
+
         internal static void silk_assert(bool condition)
         {
             Debug.Assert(condition);
