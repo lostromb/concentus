@@ -1,6 +1,8 @@
 ﻿using BenchmarkDotNet.Running;
 using HellaUnsafe.Celt;
+using HellaUnsafe.Common;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Xml.Linq;
 
 namespace CSharpConsole
@@ -11,7 +13,12 @@ namespace CSharpConsole
 
         public static unsafe void Main(string[] args)
         {
-            BenchmarkRunner.Run<Benchmarks>();
+            StructRef<FixedBufferSilkEncoder> encoder = new StructRef<FixedBufferSilkEncoder>(new FixedBufferSilkEncoder());
+            fixed (FixedBufferSilkEncoder* enc = &encoder.Value)
+            {
+                enc->buffer[10] = 10;
+                //BenchmarkRunner.Run<Benchmarks>();
+            }
         }
 
         public static unsafe void Encode(ref InlineArrayOpusEncoder encoder)

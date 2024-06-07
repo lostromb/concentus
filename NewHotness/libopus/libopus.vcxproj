@@ -377,7 +377,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>OPUS_X86_MAY_HAVE_SSE;OPUS_X86_MAY_HAVE_SSE2;OPUS_X86_MAY_HAVE_AVX2;USE_ALLOCA;OPUS_BUILD;_CRT_SECURE_NO_WARNINGS;_DEBUG;LIBOPUS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_ASSERTIONS;OPUS_X86_MAY_HAVE_SSE;OPUS_X86_MAY_HAVE_SSE2;OPUS_X86_MAY_HAVE_AVX2;USE_ALLOCA;OPUS_BUILD;_CRT_SECURE_NO_WARNINGS;_DEBUG;LIBOPUS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>

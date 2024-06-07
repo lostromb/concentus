@@ -168,27 +168,27 @@ static OPUS_INLINE opus_int32 silk_float2int( silk_float x )
 
 /* floating-point to integer conversion (rounding) */
 static OPUS_INLINE void silk_float2short_array(
-    opus_int16       *out,
-    const silk_float *in,
+    opus_int16       *output,
+    const silk_float *input,
     opus_int32       length
 )
 {
     opus_int32 k;
     for( k = length - 1; k >= 0; k-- ) {
-        out[k] = silk_SAT16( (opus_int32)float2int( in[k] ) );
+        output[k] = silk_SAT16( (opus_int32)float2int( input[k] ) );
     }
 }
 
 /* integer to floating-point conversion */
 static OPUS_INLINE void silk_short2float_array(
-    silk_float       *out,
-    const opus_int16 *in,
+    silk_float       *output,
+    const opus_int16 *input,
     opus_int32       length
 )
 {
     opus_int32 k;
     for( k = length - 1; k >= 0; k-- ) {
-        out[k] = (silk_float)in[k];
+        output[k] = (silk_float)input[k];
     }
 }
 

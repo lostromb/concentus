@@ -224,7 +224,7 @@ void opus_custom_encoder_destroy(CELTEncoder *st)
 #endif /* CUSTOM_MODES */
 
 
-static int transient_analysis(const opus_val32 * OPUS_RESTRICT in, int len, int C,
+static int transient_analysis(const opus_val32 * OPUS_RESTRICT input, int len, int C,
                               opus_val16 *tf_estimate, int *tf_chan, int allow_weak_transients,
                               int *weak_transient)
 {
@@ -285,7 +285,7 @@ static int transient_analysis(const opus_val32 * OPUS_RESTRICT in, int len, int 
          float mem00;
 #endif
          opus_val32 x,y;
-         x = SHR32(in[i+c*len],SIG_SHIFT);
+         x = SHR32(input[i+c*len],SIG_SHIFT);
          y = ADD32(mem0, x);
 #ifdef FIXED_POINT
          mem0 = mem1 + y - SHL32(x,1);
@@ -458,8 +458,8 @@ static int patch_transient_decision(opus_val16 *newE, opus_val16 *oldE, int nbEB
 
 /** Apply window and compute the MDCT for all sub-frames and
     all channels in a frame */
-static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OPUS_RESTRICT in,
-                          celt_sig * OPUS_RESTRICT out, int C, int CC, int LM, int upsample,
+static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OPUS_RESTRICT input,
+                          celt_sig * OPUS_RESTRICT output, int C, int CC, int LM, int upsample,
                           int arch)
 {
    const int overlap = mode->overlap;
@@ -481,15 +481,15 @@ static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OPUS
       for (b=0;b<B;b++)
       {
          /* Interleaving the sub-frames while doing the MDCTs */
-         clt_mdct_forward(&mode->mdct, in+c*(B*N+overlap)+b*N,
-                          &out[b+c*N*B], mode->window, overlap, shift, B,
+         clt_mdct_forward(&mode->mdct, input+c*(B*N+overlap)+b*N,
+                          &output[b+c*N*B], mode->window, overlap, shift, B,
                           arch);
       }
    } while (++c<CC);
    if (CC==2&&C==1)
    {
       for (i=0;i<B*N;i++)
-         out[i] = ADD32(HALF32(out[i]), HALF32(out[B*N+i]));
+         output[i] = ADD32(HALF32(output[i]), HALF32(output[B*N+i]));
    }
    if (upsample != 1)
    {
@@ -497,8 +497,8 @@ static void compute_mdcts(const CELTMode *mode, int shortBlocks, celt_sig * OPUS
       {
          int bound = B*N/upsample;
          for (i=0;i<bound;i++)
-            out[c*B*N+i] *= upsample;
-         OPUS_CLEAR(&out[c*B*N+bound], B*N-bound);
+            output[c*B*N+i] *= upsample;
+         OPUS_CLEAR(&output[c*B*N+bound], B*N-bound);
       } while (++c<C);
    }
 }
@@ -1185,7 +1185,7 @@ static opus_val16 dynalloc_analysis(const opus_val16 *bandLogE, const opus_val16
 }
 
 
-static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem, int CC, int N,
+static int run_prefilter(CELTEncoder *st, celt_sig *input, celt_sig *prefilter_mem, int CC, int N,
       int prefilter_tapset, int *pitch, opus_val16 *gain, int *qgain, int enabled, int nbAvailableBytes, AnalysisInfo *analysis)
 {
    int c;
@@ -1210,7 +1210,7 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
 
    c=0; do {
       OPUS_COPY(pre[c], prefilter_mem+c*COMBFILTER_MAXPERIOD, COMBFILTER_MAXPERIOD);
-      OPUS_COPY(pre[c]+COMBFILTER_MAXPERIOD, in+c*(N+overlap)+overlap, N);
+      OPUS_COPY(pre[c]+COMBFILTER_MAXPERIOD, input+c*(N+overlap)+overlap, N);
    } while (++c<CC);
 
    if (enabled)
@@ -1290,16 +1290,16 @@ static int run_prefilter(CELTEncoder *st, celt_sig *in, celt_sig *prefilter_mem,
    c=0; do {
       int offset = mode->shortMdctSize-overlap;
       st->prefilter_period=IMAX(st->prefilter_period, COMBFILTER_MINPERIOD);
-      OPUS_COPY(in+c*(N+overlap), st->in_mem+c*(overlap), overlap);
+      OPUS_COPY(input+c*(N+overlap), st->in_mem+c*(overlap), overlap);
       if (offset)
-         comb_filter(in+c*(N+overlap)+overlap, pre[c]+COMBFILTER_MAXPERIOD,
+         comb_filter(input+c*(N+overlap)+overlap, pre[c]+COMBFILTER_MAXPERIOD,
                st->prefilter_period, st->prefilter_period, offset, -st->prefilter_gain, -st->prefilter_gain,
                st->prefilter_tapset, st->prefilter_tapset, NULL, 0, st->arch);
 
-      comb_filter(in+c*(N+overlap)+overlap+offset, pre[c]+COMBFILTER_MAXPERIOD+offset,
+      comb_filter(input+c*(N+overlap)+overlap+offset, pre[c]+COMBFILTER_MAXPERIOD+offset,
             st->prefilter_period, pitch_index, N-offset, -st->prefilter_gain, -gain1,
             st->prefilter_tapset, prefilter_tapset, mode->window, overlap, st->arch);
-      OPUS_COPY(st->in_mem+c*(overlap), in+c*(N+overlap)+N, overlap);
+      OPUS_COPY(st->in_mem+c*(overlap), input+c*(N+overlap)+N, overlap);
 
       if (N>COMBFILTER_MAXPERIOD)
       {
