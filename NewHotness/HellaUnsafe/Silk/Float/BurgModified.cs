@@ -42,7 +42,7 @@ namespace HellaUnsafe.Silk.Float
 
         /* Compute reflection coefficients from input signal */
         internal static unsafe float silk_burg_modified_FLP(          /* O    returns residual energy                                     */
-            float[] A,                /* O    prediction coefficients (length order)                      */
+            float* A,                /* O    prediction coefficients (length order)                      */
             in float* x,                /* I    input signal, length: nb_subfr*(D+L_sub)                    */
             in float minInvGain,         /* I    minimum inverse prediction gain                             */
             in int subfr_length,       /* I    input signal subframe length (incl. D preceding samples)    */

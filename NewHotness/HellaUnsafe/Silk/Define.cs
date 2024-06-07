@@ -6,6 +6,17 @@ namespace HellaUnsafe.Silk
 {
     internal static class Define
     {
+        internal const float silk_float_MAX = float.MaxValue;
+        internal const long silk_int64_MAX = ((long)0x7FFFFFFFFFFFFFFF);   /*  2^63 - 1 */
+        internal const long silk_int64_MIN = unchecked((long)0x8000000000000000);   /* -2^63 */
+        internal const int silk_int32_MAX = 0x7FFFFFFF;                           /*  2^31 - 1 =  2147483647 */
+        internal const int silk_int32_MIN = unchecked((int)0x80000000);             /* -2^31     = -2147483648 */
+        internal const short silk_int16_MAX = 0x7FFF;                               /*  2^15 - 1 =  32767 */
+        internal const short silk_int16_MIN = unchecked((short)0x8000);                 /* -2^15     = -32768 */
+        internal const sbyte silk_int8_MAX = 0x7F;                                 /*  2^7 - 1  =  127 */
+        internal const sbyte silk_int8_MIN = unchecked((sbyte)0x80);                    /* -2^7      = -128 */
+        internal const byte silk_uint8_MAX = 0xFF;                                 /*  2^8 - 1 = 255 */
+
         /* Max number of encoder channels (1/2) */
         internal const int ENCODER_NUM_CHANNELS                    = 2;
         /* Number of decoder channels (1/2) */
