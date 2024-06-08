@@ -51,7 +51,7 @@ namespace HellaUnsafe.Silk
         }
 
         internal static unsafe void encode_split(
-            ref ec_ctx          psRangeEnc,    /* I/O  compressor data structure                   */
+            ec_ctx*          psRangeEnc,    /* I/O  compressor data structure                   */
             in byte* ecbuf ,
             in int              p_child1,       /* I    pulse amplitude of first child subframe     */
             in int              p,              /* I    pulse amplitude of current subframe         */
@@ -59,21 +59,21 @@ namespace HellaUnsafe.Silk
         )
         {
             if( p > 0 ) {
-                ec_enc_icdf(ref psRangeEnc, ecbuf, p_child1, shell_table + silk_shell_code_table_offsets[ p ], 8 );
+                ec_enc_icdf(psRangeEnc, ecbuf, p_child1, shell_table + silk_shell_code_table_offsets[ p ], 8 );
             }
         }
 
         internal static unsafe void decode_split(
             short                  *p_child1,      /* O    pulse amplitude of first child subframe     */
             short* p_child2,      /* O    pulse amplitude of second child subframe    */
-            ref ec_ctx                      psRangeDec,    /* I/O  Compressor data structure                   */
+            ec_ctx*                      psRangeDec,    /* I/O  Compressor data structure                   */
             in byte* ecbuf ,
             in int              p,              /* I    pulse amplitude of current subframe         */
             in byte            * shell_table    /* I    table of shell cdfs */    
         )
         {
             if( p > 0 ) {
-                p_child1[ 0 ] = (short)ec_dec_icdf(ref psRangeDec, ecbuf, shell_table + silk_shell_code_table_offsets[ p ], 8 );
+                p_child1[ 0 ] = (short)ec_dec_icdf(psRangeDec, ecbuf, shell_table + silk_shell_code_table_offsets[ p ], 8 );
                 p_child2[ 0 ] = (short)(p - p_child1[ 0 ]);
             } else {
                 p_child1[ 0 ] = 0;
@@ -83,7 +83,7 @@ namespace HellaUnsafe.Silk
 
         /* Shell encoder, operates on one shell code frame of 16 pulses */
         internal static unsafe void silk_shell_encoder(
-            ref ec_ctx                      psRangeEnc,                    /* I/O  compressor data structure                   */
+            ec_ctx*                      psRangeEnc,                    /* I/O  compressor data structure                   */
             in byte* ecbuf,
             in int              *pulses0                        /* I    data: nonnegative pulse amplitudes          */
         )
@@ -97,10 +97,6 @@ namespace HellaUnsafe.Silk
             fixed (int* pulses2 = pulses2_array)
             fixed (int* pulses3 = pulses3_array)
             fixed (int* pulses4 = pulses4_array)
-            fixed (byte* shelltable0 = silk_shell_code_table0)
-            fixed (byte* shelltable1 = silk_shell_code_table1)
-            fixed (byte* shelltable2 = silk_shell_code_table2)
-            fixed (byte* shelltable3 = silk_shell_code_table3)
             {
                 /* this function operates on one shell code frame of 16 pulses */
                 silk_assert(SHELL_CODEC_FRAME_LENGTH == 16);
@@ -111,27 +107,27 @@ namespace HellaUnsafe.Silk
                 combine_pulses(pulses3, pulses2, 2);
                 combine_pulses(pulses4, pulses3, 1);
 
-                encode_split(ref psRangeEnc, ecbuf, pulses3[0], pulses4[0], shelltable3);
+                encode_split(psRangeEnc, ecbuf, pulses3[0], pulses4[0], silk_shell_code_table3);
 
-                encode_split(ref psRangeEnc, ecbuf, pulses2[0], pulses3[0], shelltable2);
+                encode_split(psRangeEnc, ecbuf, pulses2[0], pulses3[0], silk_shell_code_table2);
 
-                encode_split(ref psRangeEnc, ecbuf, pulses1[0], pulses2[0], shelltable1);
-                encode_split(ref psRangeEnc, ecbuf, pulses0[0], pulses1[0], shelltable0);
-                encode_split(ref psRangeEnc, ecbuf, pulses0[2], pulses1[1], shelltable0);
+                encode_split(psRangeEnc, ecbuf, pulses1[0], pulses2[0], silk_shell_code_table1);
+                encode_split(psRangeEnc, ecbuf, pulses0[0], pulses1[0], silk_shell_code_table0);
+                encode_split(psRangeEnc, ecbuf, pulses0[2], pulses1[1], silk_shell_code_table0);
 
-                encode_split(ref psRangeEnc, ecbuf, pulses1[2], pulses2[1], shelltable1);
-                encode_split(ref psRangeEnc, ecbuf, pulses0[4], pulses1[2], shelltable0);
-                encode_split(ref psRangeEnc, ecbuf, pulses0[6], pulses1[3], shelltable0);
+                encode_split(psRangeEnc, ecbuf, pulses1[2], pulses2[1], silk_shell_code_table1);
+                encode_split(psRangeEnc, ecbuf, pulses0[4], pulses1[2], silk_shell_code_table0);
+                encode_split(psRangeEnc, ecbuf, pulses0[6], pulses1[3], silk_shell_code_table0);
 
-                encode_split(ref psRangeEnc, ecbuf, pulses2[2], pulses3[1], shelltable2);
+                encode_split(psRangeEnc, ecbuf, pulses2[2], pulses3[1], silk_shell_code_table2);
 
-                encode_split(ref psRangeEnc, ecbuf, pulses1[4], pulses2[2], shelltable1);
-                encode_split(ref psRangeEnc, ecbuf, pulses0[8], pulses1[4], shelltable0);
-                encode_split(ref psRangeEnc, ecbuf, pulses0[10], pulses1[5], shelltable0);
+                encode_split(psRangeEnc, ecbuf, pulses1[4], pulses2[2], silk_shell_code_table1);
+                encode_split(psRangeEnc, ecbuf, pulses0[8], pulses1[4], silk_shell_code_table0);
+                encode_split(psRangeEnc, ecbuf, pulses0[10], pulses1[5], silk_shell_code_table0);
 
-                encode_split(ref psRangeEnc, ecbuf, pulses1[6], pulses2[3], shelltable1);
-                encode_split(ref psRangeEnc, ecbuf, pulses0[12], pulses1[6], shelltable0);
-                encode_split(ref psRangeEnc, ecbuf, pulses0[14], pulses1[7], shelltable0);
+                encode_split(psRangeEnc, ecbuf, pulses1[6], pulses2[3], silk_shell_code_table1);
+                encode_split(psRangeEnc, ecbuf, pulses0[12], pulses1[6], silk_shell_code_table0);
+                encode_split(psRangeEnc, ecbuf, pulses0[14], pulses1[7], silk_shell_code_table0);
             }
         }
 
@@ -139,7 +135,7 @@ namespace HellaUnsafe.Silk
         /* Shell decoder, operates on one shell code frame of 16 pulses */
         internal static unsafe void silk_shell_decoder(
             short* pulses0,                       /* O    data: nonnegative pulse amplitudes          */
-            ref ec_ctx psRangeDec,                    /* I/O  Compressor data structure                   */
+            ec_ctx* psRangeDec,                    /* I/O  Compressor data structure                   */
             in byte* ecbuf,
             int pulses4                         /* I    number of pulses per pulse-subframe         */
         )
@@ -151,35 +147,31 @@ namespace HellaUnsafe.Silk
             fixed (short* pulses1 = pulses1_array)
             fixed (short* pulses2 = pulses2_array)
             fixed (short* pulses3 = pulses3_array)
-            fixed (byte* shelltable0 = silk_shell_code_table0)
-            fixed (byte* shelltable1 = silk_shell_code_table1)
-            fixed (byte* shelltable2 = silk_shell_code_table2)
-            fixed (byte* shelltable3 = silk_shell_code_table3)
             {
                 /* this function operates on one shell code frame of 16 pulses */
                 silk_assert(SHELL_CODEC_FRAME_LENGTH == 16);
 
-                decode_split(&pulses3[0], &pulses3[1], ref psRangeDec, ecbuf, pulses4, shelltable3);
+                decode_split(&pulses3[0], &pulses3[1], psRangeDec, ecbuf, pulses4, silk_shell_code_table3);
 
-                decode_split(&pulses2[0], &pulses2[1], ref psRangeDec, ecbuf, pulses3[0], shelltable2);
+                decode_split(&pulses2[0], &pulses2[1], psRangeDec, ecbuf, pulses3[0], silk_shell_code_table2);
 
-                decode_split(&pulses1[0], &pulses1[1], ref psRangeDec, ecbuf, pulses2[0], shelltable1);
-                decode_split(&pulses0[0], &pulses0[1], ref psRangeDec, ecbuf, pulses1[0], shelltable0);
-                decode_split(&pulses0[2], &pulses0[3], ref psRangeDec, ecbuf, pulses1[1], shelltable0);
+                decode_split(&pulses1[0], &pulses1[1], psRangeDec, ecbuf, pulses2[0], silk_shell_code_table1);
+                decode_split(&pulses0[0], &pulses0[1], psRangeDec, ecbuf, pulses1[0], silk_shell_code_table0);
+                decode_split(&pulses0[2], &pulses0[3], psRangeDec, ecbuf, pulses1[1], silk_shell_code_table0);
 
-                decode_split(&pulses1[2], &pulses1[3], ref psRangeDec, ecbuf, pulses2[1], shelltable1);
-                decode_split(&pulses0[4], &pulses0[5], ref psRangeDec, ecbuf, pulses1[2], shelltable0);
-                decode_split(&pulses0[6], &pulses0[7], ref psRangeDec, ecbuf, pulses1[3], shelltable0);
+                decode_split(&pulses1[2], &pulses1[3], psRangeDec, ecbuf, pulses2[1], silk_shell_code_table1);
+                decode_split(&pulses0[4], &pulses0[5], psRangeDec, ecbuf, pulses1[2], silk_shell_code_table0);
+                decode_split(&pulses0[6], &pulses0[7], psRangeDec, ecbuf, pulses1[3], silk_shell_code_table0);
 
-                decode_split(&pulses2[2], &pulses2[3], ref psRangeDec, ecbuf, pulses3[1], shelltable2);
+                decode_split(&pulses2[2], &pulses2[3], psRangeDec, ecbuf, pulses3[1], silk_shell_code_table2);
 
-                decode_split(&pulses1[4], &pulses1[5], ref psRangeDec, ecbuf, pulses2[2], shelltable1);
-                decode_split(&pulses0[8], &pulses0[9], ref psRangeDec, ecbuf, pulses1[4], shelltable0);
-                decode_split(&pulses0[10], &pulses0[11], ref psRangeDec, ecbuf, pulses1[5], shelltable0);
+                decode_split(&pulses1[4], &pulses1[5], psRangeDec, ecbuf, pulses2[2], silk_shell_code_table1);
+                decode_split(&pulses0[8], &pulses0[9], psRangeDec, ecbuf, pulses1[4], silk_shell_code_table0);
+                decode_split(&pulses0[10], &pulses0[11], psRangeDec, ecbuf, pulses1[5], silk_shell_code_table0);
 
-                decode_split(&pulses1[6], &pulses1[7], ref psRangeDec, ecbuf, pulses2[3], shelltable1);
-                decode_split(&pulses0[12], &pulses0[13], ref psRangeDec, ecbuf, pulses1[6], shelltable0);
-                decode_split(&pulses0[14], &pulses0[15], ref psRangeDec, ecbuf, pulses1[7], shelltable0);
+                decode_split(&pulses1[6], &pulses1[7], psRangeDec, ecbuf, pulses2[3], silk_shell_code_table1);
+                decode_split(&pulses0[12], &pulses0[13], psRangeDec, ecbuf, pulses1[6], silk_shell_code_table0);
+                decode_split(&pulses0[14], &pulses0[15], psRangeDec, ecbuf, pulses1[7], silk_shell_code_table0);
             }
         }
     }

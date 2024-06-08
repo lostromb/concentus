@@ -98,5 +98,12 @@ namespace HellaUnsafe.Opus
         internal const int OPUS_FRAMESIZE_80_MS                 = 5007; /**< Use 80 ms frames */
         internal const int OPUS_FRAMESIZE_100_MS                = 5008; /**< Use 100 ms frames */
         internal const int OPUS_FRAMESIZE_120_MS                = 5009; /**< Use 120 ms frames */
+
+        internal const int MODE_SILK_ONLY = 1000;
+        internal const int MODE_HYBRID = 1001;
+        internal const int MODE_CELT_ONLY = 1002;
+
+        internal const int OPUS_SET_VOICE_RATIO_REQUEST = 11018;
+        internal const int OPUS_GET_VOICE_RATIO_REQUEST = 11019;
     }
 }

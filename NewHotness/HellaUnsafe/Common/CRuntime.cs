@@ -157,5 +157,20 @@ namespace HellaUnsafe.Common
             Unsafe.Copy((void*)dest, ref input);
             return (T*)dest;
         }
+
+        internal static unsafe ref T Array2DElementRef<T>(T* flatArray, int x, int y, int dimY) where T : unmanaged
+        {
+            return ref flatArray[(y * dimY) + x];
+        }
+
+        internal static unsafe T Array2DElement<T>(T* flatArray, int x, int y, int dimY) where T : unmanaged
+        {
+            return flatArray[(y * dimY) + x];
+        }
+
+        internal static unsafe T* Array2DRow<T>(T* flatArray, int x, int dimY) where T : unmanaged
+        {
+            return flatArray + (x * dimY);
+        }
     }
 }

@@ -965,7 +965,7 @@ namespace HellaUnsafe.Silk
         }
         };
 
-        internal static readonly byte[] silk_shell_code_table0/*[ 152 ]*/ = {
+        internal static readonly byte* silk_shell_code_table0/*[ 152 ]*/ = AllocateGlobalArray(new byte[] {
                128,      0,    214,     42,      0,    235,    128,     21,
                  0,    244,    184,     72,     11,      0,    248,    214,
                128,     42,      7,      0,    248,    225,    170,     80,
@@ -985,9 +985,9 @@ namespace HellaUnsafe.Silk
                 60,     35,     18,      8,      3,      1,      0,    255,
                253,    249,    242,    229,    208,    180,    146,    110,
                 76,     48,     27,     14,      7,      3,      1,      0
-        };
+        });
 
-        internal static readonly byte[] silk_shell_code_table1/*[ 152 ]*/ = {
+        internal static readonly byte* silk_shell_code_table1/*[ 152 ]*/ = AllocateGlobalArray(new byte[] {
                129,      0,    207,     50,      0,    236,    129,     20,
                  0,    245,    185,     72,     10,      0,    249,    213,
                129,     42,      6,      0,    250,    226,    169,     87,
@@ -1007,9 +1007,9 @@ namespace HellaUnsafe.Silk
                 62,     37,     19,      8,      3,      1,      0,    255,
                254,    250,    241,    226,    205,    177,    145,    111,
                 79,     51,     30,     15,      6,      2,      1,      0
-        };
+        });
 
-        internal static readonly byte[] silk_shell_code_table2/*[ 152 ]*/ = {
+        internal static readonly byte* silk_shell_code_table2/*[ 152 ]*/ = AllocateGlobalArray(new byte[] {
                129,      0,    203,     54,      0,    234,    129,     23,
                  0,    245,    184,     73,     10,      0,    250,    215,
                129,     41,      5,      0,    252,    232,    173,     86,
@@ -1029,9 +1029,9 @@ namespace HellaUnsafe.Silk
                 55,     29,     13,      5,      2,      1,      0,    255,
                254,    252,    246,    234,    213,    183,    147,    109,
                 73,     43,     22,     10,      4,      2,      1,      0
-        };
+        });
 
-        internal static readonly byte[] silk_shell_code_table3/*[ 152 ]*/ = {
+        internal static readonly byte* silk_shell_code_table3/*[ 152 ]*/ = AllocateGlobalArray(new byte[] {
                130,      0,    200,     58,      0,    231,    130,     26,
                  0,    244,    184,     76,     12,      0,    249,    214,
                130,     43,      6,      0,    252,    232,    173,     87,
@@ -1051,7 +1051,7 @@ namespace HellaUnsafe.Silk
                 55,     27,     11,      3,      2,      1,      0,    255,
                254,    253,    252,    239,    221,    194,    158,    117,
                 76,     42,     18,      4,      3,      2,      1,      0
-        };
+        });
 
         internal static readonly byte[] silk_shell_code_table_offsets/*[ 17 ]*/ = {
                  0,      0,      2,      5,      9,     14,     20,     27,

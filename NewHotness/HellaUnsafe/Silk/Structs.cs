@@ -25,12 +25,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-using HellaUnsafe.Common;
 using System.Runtime.CompilerServices;
-using static HellaUnsafe.Celt.KissFFT;
 using static HellaUnsafe.Silk.Define;
-using static HellaUnsafe.Silk.Macros;
-using static HellaUnsafe.Silk.TuningParameters;
 using static HellaUnsafe.Silk.ResamplerStructs;
 
 namespace HellaUnsafe.Silk
