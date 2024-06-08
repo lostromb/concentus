@@ -27,14 +27,17 @@ POSSIBILITY OF SUCH DAMAGE.
 
 
 using static HellaUnsafe.Silk.Define;
+using static HellaUnsafe.Common.CRuntime;
 
 namespace HellaUnsafe.Silk
 {
-    internal static class Tables
+    internal static unsafe class Tables
     {
         /* Cosine approximation table for LSF conversion */
         /* Q12 values (even) */
-        internal static readonly short[] silk_LSFCosTab_FIX_Q12/*[LSF_COS_TAB_SZ_FIX + 1]*/ = {
+        internal static readonly short* silk_LSFCosTab_FIX_Q12/*[LSF_COS_TAB_SZ_FIX + 1]*/ = 
+            AllocateGlobalArray(new short[]
+            {
             8192,             8190,             8182,             8170,
             8152,             8130,             8104,             8072,
             8034,             7994,             7946,             7896,
@@ -68,7 +71,7 @@ namespace HellaUnsafe.Silk
             -8034,            -8072,            -8104,            -8130,
             -8152,            -8170,            -8182,            -8190,
             -8192
-        };
+        });
 
         internal static readonly byte[][] silk_gain_iCDF/*[3][N_LEVELS_QGAIN / 8 ]*/ =
         {

@@ -140,10 +140,10 @@ namespace HellaUnsafe.Celt
             return MIN32(200, SHR32(dist, 2 * DB_SHIFT - 6));
         }
 
-        internal static unsafe int quant_coarse_energy_impl(in CeltCustomMode m, int start, int end,
+        internal static unsafe int quant_coarse_energy_impl(in CeltCustomMode* m, int start, int end,
               in float* eBands, float* oldEBands,
               int budget, int tell,
-              ReadOnlySpan<byte> prob_model, float* error, ref ec_ctx enc, in byte* ecbuf,
+              ReadOnlySpan<byte> prob_model, float* error, in ec_ctx* enc, in byte* ecbuf,
               int C, int LM, int intra, float max_decay, int lfe)
         {
             int i, c;
@@ -154,7 +154,7 @@ namespace HellaUnsafe.Celt
             float beta;
 
             if (tell + 3 <= budget)
-                ec_enc_bit_logp(ref enc, ecbuf, intra, 3);
+                ec_enc_bit_logp(enc, ecbuf, intra, 3);
             if (intra != 0)
             {
                 coef = 0;
@@ -179,12 +179,12 @@ namespace HellaUnsafe.Celt
                     float f, tmp;
                     float oldE;
                     float decay_bound;
-                    x = eBands[i + c * m.nbEBands];
-                    oldE = MAX16(-QCONST16(9.0f, DB_SHIFT), oldEBands[i + c * m.nbEBands]);
+                    x = eBands[i + c * m->nbEBands];
+                    oldE = MAX16(-QCONST16(9.0f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
                     f = x - coef * oldE - prev[c];
                     /* Rounding to nearest integer here is really important! */
                     qi = (int)Floor(.5f + f);
-                    decay_bound = MAX16(-QCONST16(28.0f, DB_SHIFT), oldEBands[i + c * m.nbEBands]) - max_decay;
+                    decay_bound = MAX16(-QCONST16(28.0f, DB_SHIFT), oldEBands[i + c * m->nbEBands]) - max_decay;
                     /* Prevent the energy from going down too quickly (e.g. for bands
                        that have just one bin) */
                     if (qi < 0 && x < decay_bound)
@@ -211,36 +211,36 @@ namespace HellaUnsafe.Celt
                     {
                         int pi;
                         pi = 2 * IMIN(i, 20);
-                        ec_laplace_encode(ref enc, ecbuf, &qi,
+                        ec_laplace_encode(enc, ecbuf, &qi,
                               (uint)(prob_model[pi] << 7), prob_model[pi + 1] << 6);
                     }
                     else if (budget - tell >= 2)
                     {
                         qi = IMAX(-1, IMIN(qi, 1));
-                        ec_enc_icdf(ref enc, ecbuf, 2 * qi ^ -((qi < 0) ? 1 : 0), small_energy_icdf, 2);
+                        ec_enc_icdf(enc, ecbuf, 2 * qi ^ -((qi < 0) ? 1 : 0), small_energy_icdf, 2);
                     }
                     else if (budget - tell >= 1)
                     {
                         qi = IMIN(0, qi);
-                        ec_enc_bit_logp(ref enc, ecbuf, -qi, 1);
+                        ec_enc_bit_logp(enc, ecbuf, -qi, 1);
                     }
                     else
                         qi = -1;
-                    error[i + c * m.nbEBands] = PSHR32(f, 7) - SHL16(qi, DB_SHIFT);
+                    error[i + c * m->nbEBands] = PSHR32(f, 7) - SHL16(qi, DB_SHIFT);
                     badness += Abs(qi0 - qi);
                     q = (float)SHL32(EXTEND32(qi), DB_SHIFT);
 
                     tmp = PSHR32(MULT16_16(coef, oldE), 8) + prev[c] + SHL32(q, 7);
-                    oldEBands[i + c * m.nbEBands] = PSHR32(tmp, 7);
+                    oldEBands[i + c * m->nbEBands] = PSHR32(tmp, 7);
                     prev[c] = prev[c] + SHL32(q, 7) - MULT16_16(beta, PSHR32(q, 8));
                 } while (++c < C);
             }
             return lfe != 0 ? 0 : badness;
         }
 
-        internal static unsafe void quant_coarse_energy(in CeltCustomMode m, int start, int end, int effEnd,
+        internal static unsafe void quant_coarse_energy(in CeltCustomMode* m, int start, int end, int effEnd,
               in float* eBands, float* oldEBands, uint budget,
-              float* error, ref ec_ctx enc, in byte* ecbuf, int C, int LM, int nbAvailableBytes,
+              float* error, in ec_ctx* enc, in byte* ecbuf, int C, int LM, int nbAvailableBytes,
               int force_intra, ref float delayedIntra, int two_pass, int loss_rate, int lfe)
         {
             int intra;
@@ -253,7 +253,7 @@ namespace HellaUnsafe.Celt
 
             intra = (force_intra != 0 || (two_pass == 0 && delayedIntra > 2 * C * (end - start) && nbAvailableBytes > (end - start) * C)) ? 1 : 0;
             intra_bias = (int)((budget * delayedIntra * loss_rate) / (C * 512));
-            new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m.nbEBands, C);
+            new_distortion = loss_distortion(eBands, oldEBands, start, effEnd, m->nbEBands, C);
 
             tell = (uint)ec_tell(enc);
             if (tell + 3 > budget)
@@ -266,20 +266,20 @@ namespace HellaUnsafe.Celt
             }
             if (lfe != 0)
                 max_decay = QCONST16(3.0f, DB_SHIFT);
-            enc_start_state = enc; // PORTING NOTE: STRUCT COPY BY VALUE
+            enc_start_state = *enc;
 
             // Porting note: merged two pinned buffers into one allocation
-            float[] scratchBuf = new float[2 * C * m.nbEBands];
+            float[] scratchBuf = new float[2 * C * m->nbEBands];
             fixed (float* scratchPtr = scratchBuf)
             {
                 float* oldEBands_intra = scratchPtr;
-                float* error_intra = scratchPtr + (C * m.nbEBands);
-                OPUS_COPY(oldEBands_intra, oldEBands, C * m.nbEBands);
+                float* error_intra = scratchPtr + (C * m->nbEBands);
+                OPUS_COPY(oldEBands_intra, oldEBands, C * m->nbEBands);
 
                 if (two_pass != 0 || intra != 0)
                 {
                     badness1 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands_intra, (int)budget,
-                          (int)tell, e_prob_model[LM][1], error_intra, ref enc, ecbuf, C, LM, 1, max_decay, lfe);
+                          (int)tell, e_prob_model[LM][1], error_intra, enc, ecbuf, C, LM, 1, max_decay, lfe);
                 }
 
                 if (intra == 0)
@@ -295,10 +295,10 @@ namespace HellaUnsafe.Celt
 
                     tell_intra = (int)ec_tell_frac(enc);
 
-                    enc_intra_state = enc; // PORTING NOTE: STRUCT COPY
+                    enc_intra_state = *enc;
 
-                    nstart_bytes = ec_range_bytes(enc_start_state);
-                    nintra_bytes = ec_range_bytes(enc_intra_state);
+                    nstart_bytes = ec_range_bytes(&enc_start_state);
+                    nintra_bytes = ec_range_bytes(&enc_intra_state);
                     intra_buf = ecbuf + nstart_bytes;
                     save_bytes = nintra_bytes - nstart_bytes;
                     byte[] save_bytes_buf = new byte[save_bytes];
@@ -308,26 +308,26 @@ namespace HellaUnsafe.Celt
                         /* Copy bits from intra bit-stream */
                         OPUS_COPY(intra_bits, intra_buf, nintra_bytes - nstart_bytes);
 
-                        enc = enc_start_state; // STRUCT COPY
+                        *enc = enc_start_state;
 
                         badness2 = quant_coarse_energy_impl(m, start, end, eBands, oldEBands, (int)budget,
-                              (int)tell, e_prob_model[LM][intra], error, ref enc, ecbuf, C, LM, 0, max_decay, lfe);
+                              (int)tell, e_prob_model[LM][intra], error, enc, ecbuf, C, LM, 0, max_decay, lfe);
 
                         if (two_pass != 0 && (badness1 < badness2 || (badness1 == badness2 && ((int)ec_tell_frac(enc)) + intra_bias > tell_intra)))
                         {
-                            enc = enc_intra_state; // STRUCT COPY
+                            *enc = enc_intra_state;
                             /* Copy intra bits to bit-stream */
                             OPUS_COPY(intra_buf, intra_bits, nintra_bytes - nstart_bytes);
-                            OPUS_COPY(oldEBands, oldEBands_intra, C * m.nbEBands);
-                            OPUS_COPY(error, error_intra, C * m.nbEBands);
+                            OPUS_COPY(oldEBands, oldEBands_intra, C * m->nbEBands);
+                            OPUS_COPY(error, error_intra, C * m->nbEBands);
                             intra = 1;
                         }
                     }
                 }
                 else
                 {
-                    OPUS_COPY(oldEBands, oldEBands_intra, C * m.nbEBands);
-                    OPUS_COPY(error, error_intra, C * m.nbEBands);
+                    OPUS_COPY(oldEBands, oldEBands_intra, C * m->nbEBands);
+                    OPUS_COPY(error, error_intra, C * m->nbEBands);
                 }
 
                 if (intra != 0)
@@ -339,8 +339,8 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void quant_fine_energy(
-            in CeltCustomMode m, int start, int end, float* oldEBands, float* error,
-            int* fine_quant, ref ec_ctx enc, in byte* ecbuf, int C)
+            in CeltCustomMode* m, int start, int end, float* oldEBands, float* error,
+            int* fine_quant, in ec_ctx* enc, in byte* ecbuf, int C)
         {
             int i, c;
 
@@ -355,23 +355,23 @@ namespace HellaUnsafe.Celt
                 {
                     int q2;
                     float offset;
-                    q2 = (int)Floor((error[i + c * m.nbEBands] + .5f) * frac);
+                    q2 = (int)Floor((error[i + c * m->nbEBands] + .5f) * frac);
                     if (q2 > frac - 1)
                         q2 = frac - 1;
                     if (q2 < 0)
                         q2 = 0;
-                    ec_enc_bits(ref enc, ecbuf, (uint)q2, (uint)fine_quant[i]);
+                    ec_enc_bits(enc, ecbuf, (uint)q2, (uint)fine_quant[i]);
                     offset = (q2 + .5f) * (1 << (14 - fine_quant[i])) * (1.0f / 16384) - .5f;
-                    oldEBands[i + c * m.nbEBands] += offset;
-                    error[i + c * m.nbEBands] -= offset;
+                    oldEBands[i + c * m->nbEBands] += offset;
+                    error[i + c * m->nbEBands] -= offset;
                     /*printf ("%f ", error[i] - offset);*/
                 } while (++c < C);
             }
         }
 
         internal static unsafe void quant_energy_finalise(
-            in CeltCustomMode m, int start, int end, float* oldEBands, float* error, int* fine_quant,
-            int* fine_priority, int bits_left, ref ec_ctx enc, in byte* ecbuf, int C)
+            in CeltCustomMode* m, int start, int end, float* oldEBands, float* error, int* fine_quant,
+            int* fine_priority, int bits_left, in ec_ctx* enc, in byte* ecbuf, int C)
         {
             int i, prio, c;
 
@@ -387,19 +387,19 @@ namespace HellaUnsafe.Celt
                     {
                         int q2;
                         float offset;
-                        q2 = error[i + c * m.nbEBands] < 0 ? 0 : 1;
-                        ec_enc_bits(ref enc, ecbuf, (uint)q2, 1);
+                        q2 = error[i + c * m->nbEBands] < 0 ? 0 : 1;
+                        ec_enc_bits(enc, ecbuf, (uint)q2, 1);
                         offset = (q2 - .5f) * (1 << (14 - fine_quant[i] - 1)) * (1.0f / 16384);
-                        oldEBands[i + c * m.nbEBands] += offset;
-                        error[i + c * m.nbEBands] -= offset;
+                        oldEBands[i + c * m->nbEBands] += offset;
+                        error[i + c * m->nbEBands] -= offset;
                         bits_left--;
                     } while (++c < C);
                 }
             }
         }
 
-        internal static unsafe void unquant_coarse_energy(in CeltCustomMode m, int start, int end, float* oldEBands,
-            int intra, ref ec_ctx dec, in byte* ecbuf, int C, int LM)
+        internal static unsafe void unquant_coarse_energy(in CeltCustomMode* m, int start, int end, float* oldEBands,
+            int intra, in ec_ctx* dec, in byte* ecbuf, int C, int LM)
         {
             ReadOnlySpan<byte> prob_model = e_prob_model[LM][intra];
             int i, c;
@@ -421,7 +421,7 @@ namespace HellaUnsafe.Celt
                 coef = pred_coef[LM];
             }
 
-            budget = (int)(dec.storage * 8);
+            budget = (int)(dec->storage * 8);
 
             /* Decode at a fixed coarse resolution */
             for (i = start; i < end; i++)
@@ -441,33 +441,33 @@ namespace HellaUnsafe.Celt
                     {
                         int pi;
                         pi = 2 * IMIN(i, 20);
-                        qi = ec_laplace_decode(ref dec, ecbuf, 
+                        qi = ec_laplace_decode(dec, ecbuf, 
                               (uint)(prob_model[pi] << 7), prob_model[pi + 1] << 6);
                     }
                     else if (budget - tell >= 2)
                     {
-                        qi = ec_dec_icdf(ref dec, ecbuf, small_energy_icdf, 2);
+                        qi = ec_dec_icdf(dec, ecbuf, small_energy_icdf, 2);
                         qi = (qi >> 1) ^ -(qi & 1);
                     }
                     else if (budget - tell >= 1)
                     {
-                        qi = -ec_dec_bit_logp(ref dec, ecbuf, 1);
+                        qi = -ec_dec_bit_logp(dec, ecbuf, 1);
                     }
                     else
                         qi = -1;
                     q = (float)SHL32(EXTEND32(qi), DB_SHIFT);
 
-                    oldEBands[i + c * m.nbEBands] = MAX16(-QCONST16(9.0f, DB_SHIFT), oldEBands[i + c * m.nbEBands]);
-                    tmp = PSHR32(MULT16_16(coef, oldEBands[i + c * m.nbEBands]), 8) + prev[c] + SHL32(q, 7);
-                    oldEBands[i + c * m.nbEBands] = PSHR32(tmp, 7);
+                    oldEBands[i + c * m->nbEBands] = MAX16(-QCONST16(9.0f, DB_SHIFT), oldEBands[i + c * m->nbEBands]);
+                    tmp = PSHR32(MULT16_16(coef, oldEBands[i + c * m->nbEBands]), 8) + prev[c] + SHL32(q, 7);
+                    oldEBands[i + c * m->nbEBands] = PSHR32(tmp, 7);
                     prev[c] = prev[c] + SHL32(q, 7) - MULT16_16(beta, PSHR32(q, 8));
                 } while (++c < C);
             }
         }
 
         internal static unsafe void unquant_fine_energy(
-            in CeltCustomMode m, int start, int end, float* oldEBands,
-            int* fine_quant, ref ec_ctx dec, in byte* ecbuf, int C)
+            in CeltCustomMode* m, int start, int end, float* oldEBands,
+            int* fine_quant, in ec_ctx* dec, in byte* ecbuf, int C)
         {
             int i, c;
             /* Decode finer resolution */
@@ -480,15 +480,15 @@ namespace HellaUnsafe.Celt
                 {
                     int q2;
                     float offset;
-                    q2 = (int)ec_dec_bits(ref dec, ecbuf, (uint)fine_quant[i]);
+                    q2 = (int)ec_dec_bits(dec, ecbuf, (uint)fine_quant[i]);
                     offset = (q2 + .5f) * (1 << (14 - fine_quant[i])) * (1.0f / 16384) - .5f;
-                    oldEBands[i + c * m.nbEBands] += offset;
+                    oldEBands[i + c * m->nbEBands] += offset;
                 } while (++c < C);
             }
         }
 
-        internal static unsafe void unquant_energy_finalise(in CeltCustomMode m, int start, int end, float* oldEBands,
-            int* fine_quant, int* fine_priority, int bits_left, ref ec_ctx dec, in byte* ecbuf, int C)
+        internal static unsafe void unquant_energy_finalise(in CeltCustomMode* m, int start, int end, float* oldEBands,
+            int* fine_quant, int* fine_priority, int bits_left, in ec_ctx* dec, in byte* ecbuf, int C)
         {
             int i, prio, c;
 
@@ -504,16 +504,16 @@ namespace HellaUnsafe.Celt
                     {
                         int q2;
                         float offset;
-                        q2 = (int)ec_dec_bits(ref dec, ecbuf, 1U);
+                        q2 = (int)ec_dec_bits(dec, ecbuf, 1U);
                         offset = (q2 - .5f) * (1 << (14 - fine_quant[i] - 1)) * (1.0f / 16384);
-                        oldEBands[i + c * m.nbEBands] += offset;
+                        oldEBands[i + c * m->nbEBands] += offset;
                         bits_left--;
                     } while (++c < C);
                 }
             }
         }
 
-        internal static unsafe void amp2Log2(in CeltCustomMode m, int effEnd, int end,
+        internal static unsafe void amp2Log2(in CeltCustomMode* m, int effEnd, int end,
               float* bandE, float* bandLogE, int C)
         {
             int c, i;
@@ -522,12 +522,12 @@ namespace HellaUnsafe.Celt
             {
                 for (i = 0; i < effEnd; i++)
                 {
-                    bandLogE[i + c * m.nbEBands] =
-                          celt_log2(bandE[i + c * m.nbEBands])
+                    bandLogE[i + c * m->nbEBands] =
+                          celt_log2(bandE[i + c * m->nbEBands])
                           - SHL16((float)eMeans[i], 6);
                 }
                 for (i = effEnd; i < end; i++)
-                    bandLogE[c * m.nbEBands + i] = -QCONST16(14.0f, DB_SHIFT);
+                    bandLogE[c * m->nbEBands + i] = -QCONST16(14.0f, DB_SHIFT);
             } while (++c < C);
         }
     }

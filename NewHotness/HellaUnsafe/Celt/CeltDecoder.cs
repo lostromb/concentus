@@ -46,6 +46,7 @@ using static HellaUnsafe.Celt.QuantBands;
 using static HellaUnsafe.Celt.VQ;
 using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Opus.OpusDefines;
+using System.Runtime.CompilerServices;
 
 namespace HellaUnsafe.Celt
 {
@@ -64,7 +65,7 @@ namespace HellaUnsafe.Celt
 
         internal unsafe struct CeltCustomDecoder
         {
-            internal StructRef<CeltCustomMode> mode;
+            internal /* const */ CeltCustomMode* mode;
             internal int overlap;
             internal int channels;
             internal int stream_channels;
@@ -101,48 +102,66 @@ namespace HellaUnsafe.Celt
             /// val16 oldLogE2[],       Size = 2*mode.nbEBands
             /// val16 backgroundLogE[], Size = 2*mode.nbEBands
             /// </summary>
-            internal float[] _decode_mem; /* Size = channels*(DECODE_BUFFER_SIZE+mode.overlap) */
-            /* opus_val16 lpc[],  Size = channels*CELT_LPC_ORDER */
-            /* opus_val16 oldEBands[], Size = 2*mode.nbEBands */
-            /* opus_val16 oldLogE[], Size = 2*mode.nbEBands */
-            /* opus_val16 oldLogE2[], Size = 2*mode.nbEBands */
-            /* opus_val16 backgroundLogE[], Size = 2*mode.nbEBands */
+            internal float _decode_mem_element0; /* Size = channels*(DECODE_BUFFER_SIZE+mode.overlap) */
+                                                        /* opus_val16 lpc[],  Size = channels*CELT_LPC_ORDER */
+                                                        /* opus_val16 oldEBands[], Size = 2*mode.nbEBands */
+                                                        /* opus_val16 oldLogE[], Size = 2*mode.nbEBands */
+                                                        /* opus_val16 oldLogE2[], Size = 2*mode.nbEBands */
+                                                        /* opus_val16 backgroundLogE[], Size = 2*mode.nbEBands */
+            internal float* _decode_mem => (float*)Unsafe.AsPointer(ref _decode_mem_element0);
         };
 
-        internal static void validate_celt_decoder(in CeltCustomDecoder st)
+        internal static unsafe void validate_celt_decoder(CeltCustomDecoder* st)
         {
-            //ASSERT(st.mode == opus_custom_mode_create(48000, 960, null));
-            ASSERT(st.overlap == 120);
-            ASSERT(st.end <= 21);
-            ASSERT(st.channels == 1 || st.channels == 2);
-            ASSERT(st.stream_channels == 1 || st.stream_channels == 2);
-            ASSERT(st.downsample > 0);
-            ASSERT(st.start == 0 || st.start == 17);
-            ASSERT(st.start < st.end);
-            ASSERT(st.last_pitch_index <= PLC_PITCH_LAG_MAX);
-            ASSERT(st.last_pitch_index >= PLC_PITCH_LAG_MIN || st.last_pitch_index == 0);
-            ASSERT(st.postfilter_period < MAX_PERIOD);
-            ASSERT(st.postfilter_period >= COMBFILTER_MINPERIOD || st.postfilter_period == 0);
-            ASSERT(st.postfilter_period_old < MAX_PERIOD);
-            ASSERT(st.postfilter_period_old >= COMBFILTER_MINPERIOD || st.postfilter_period_old == 0);
-            ASSERT(st.postfilter_tapset <= 2);
-            ASSERT(st.postfilter_tapset >= 0);
-            ASSERT(st.postfilter_tapset_old <= 2);
-            ASSERT(st.postfilter_tapset_old >= 0);
+            int error;
+            ASSERT(st->mode == opus_custom_mode_create(48000, 960, out error));
+            ASSERT(st->overlap == 120);
+            ASSERT(st->end <= 21);
+            ASSERT(st->channels == 1 || st->channels == 2);
+            ASSERT(st->stream_channels == 1 || st->stream_channels == 2);
+            ASSERT(st->downsample > 0);
+            ASSERT(st->start == 0 || st->start == 17);
+            ASSERT(st->start < st->end);
+            ASSERT(st->last_pitch_index <= PLC_PITCH_LAG_MAX);
+            ASSERT(st->last_pitch_index >= PLC_PITCH_LAG_MIN || st->last_pitch_index == 0);
+            ASSERT(st->postfilter_period < MAX_PERIOD);
+            ASSERT(st->postfilter_period >= COMBFILTER_MINPERIOD || st->postfilter_period == 0);
+            ASSERT(st->postfilter_period_old < MAX_PERIOD);
+            ASSERT(st->postfilter_period_old >= COMBFILTER_MINPERIOD || st->postfilter_period_old == 0);
+            ASSERT(st->postfilter_tapset <= 2);
+            ASSERT(st->postfilter_tapset >= 0);
+            ASSERT(st->postfilter_tapset_old <= 2);
+            ASSERT(st->postfilter_tapset_old >= 0);
         }
 
-        internal static int celt_decoder_init(ref CeltCustomDecoder st, int sampling_rate, int channels)
+        internal static unsafe int celt_decoder_init(CeltCustomDecoder* st, int sampling_rate, int channels)
         {
             int ret;
             int err;
-            ret = opus_custom_decoder_init(ref st, opus_custom_mode_create(48000, 960, out err), channels);
+            ret = opus_custom_decoder_init(st, opus_custom_mode_create(48000, 960, out err), channels);
             if (ret != OPUS_OK)
                 return ret;
-            st.downsample = resampling_factor(sampling_rate);
-            if (st.downsample == 0)
+            st->downsample = resampling_factor(sampling_rate);
+            if (st->downsample == 0)
                 return OPUS_BAD_ARG;
             else
                 return OPUS_OK;
+        }
+
+        internal static unsafe int celt_decoder_get_size(int channels)
+        {
+            int err;
+            CeltCustomMode* mode = opus_custom_mode_create(48000, 960, out err);
+            return opus_custom_decoder_get_size(mode, channels);
+        }
+
+        internal static unsafe int opus_custom_decoder_get_size(CeltCustomMode* mode, int channels)
+        {
+            int size = sizeof(CeltCustomDecoder)
+                    + (channels*(DECODE_BUFFER_SIZE+mode->overlap)-1)*sizeof(float)
+                    + channels* CELT_LPC_ORDER*sizeof(float)
+                    + 4*2*mode->nbEBands*sizeof(float);
+           return size;
         }
 
         /// <summary>
@@ -151,37 +170,34 @@ namespace HellaUnsafe.Celt
         /// <param name="mode"></param>
         /// <param name="channels"></param>
         /// <returns></returns>
-        internal static int opus_custom_decoder_get_memory_size(in CeltCustomMode mode, int channels)
+        internal static unsafe int opus_custom_decoder_get_memory_size(CeltCustomMode* mode, int channels)
         {
-            return (channels * (DECODE_BUFFER_SIZE + mode.overlap))
+            return (channels * (DECODE_BUFFER_SIZE + mode->overlap))
                     + (channels * CELT_LPC_ORDER)
-                    + (4 * 2 * mode.nbEBands);
+                    + (4 * 2 * mode->nbEBands);
         }
 
-        // Porting note: the original celt decoder had decode mem allocated directly
-        // into the space of its struct. Here in C# that extra buffer is now a regular
-        // array reference stored on the struct. This call to init() will allocate
-        // a new heap buffer each time rather than clearing the old data.
-        internal static int opus_custom_decoder_init(ref CeltCustomDecoder st, StructRef<CeltCustomMode> mode, int channels)
+        internal static unsafe int opus_custom_decoder_init(CeltCustomDecoder* st, CeltCustomMode* mode, int channels)
         {
             if (channels < 0 || channels > 2)
                 return OPUS_BAD_ARG;
 
-            st = default;
-            //OPUS_CLEAR((char*)st, opus_custom_decoder_get_size(mode, channels));
+            if (st == null)
+                return OPUS_ALLOC_FAIL;
 
-            st.mode = mode;
-            st.overlap = mode.Value.overlap;
-            st.stream_channels = st.channels = channels;
+            OPUS_CLEAR((byte*)st, opus_custom_decoder_get_size(mode, channels));
 
-            st.downsample = 1;
-            st.start = 0;
-            st.end = st.mode.Value.effEBands;
-            st.signalling = 1;
-            st.disable_inv = channels == 1 ? 1 : 0;
-            st._decode_mem = new float[opus_custom_decoder_get_memory_size(mode.Value, channels)];
+            st->mode = mode;
+            st->overlap = mode->overlap;
+            st->stream_channels = st->channels = channels;
 
-            opus_custom_decoder_ctl(ref st, OPUS_RESET_STATE);
+            st->downsample = 1;
+            st->start = 0;
+            st->end = st->mode->effEBands;
+            st->signalling = 1;
+            st->disable_inv = channels == 1 ? 1 : 0;
+
+            opus_custom_decoder_ctl(st, OPUS_RESET_STATE);
 
             return OPUS_OK;
         }
@@ -266,7 +282,7 @@ namespace HellaUnsafe.Celt
             } while (++c < C);
         }
 
-        internal static unsafe void celt_synthesis(in CeltCustomMode mode, float* X, float** out_syn,
+        internal static unsafe void celt_synthesis(in CeltCustomMode* mode, float* X, float** out_syn,
                     float* oldBandE, int start, int effEnd, int C, int CC,
                     int isTransient, int LM, int downsample,
                     int silence)
@@ -280,26 +296,25 @@ namespace HellaUnsafe.Celt
             int nbEBands;
             int overlap;
 
-            overlap = mode.overlap;
-            nbEBands = mode.nbEBands;
-            N = mode.shortMdctSize << LM;
+            overlap = mode->overlap;
+            nbEBands = mode->nbEBands;
+            N = mode->shortMdctSize << LM;
             float[] freq_buf = new float[N]; /**< Interleaved signal MDCTs */
             fixed (float* freq = freq_buf)
-            fixed (float* modeWindow = mode.window)
             {
                 M = 1 << LM;
 
                 if (isTransient != 0)
                 {
                     B = M;
-                    NB = mode.shortMdctSize;
-                    shift = mode.maxLM;
+                    NB = mode->shortMdctSize;
+                    shift = mode->maxLM;
                 }
                 else
                 {
                     B = 1;
-                    NB = mode.shortMdctSize << LM;
-                    shift = mode.maxLM - LM;
+                    NB = mode->shortMdctSize << LM;
+                    shift = mode->maxLM - LM;
                 }
 
                 if (CC == 2 && C == 1)
@@ -312,9 +327,9 @@ namespace HellaUnsafe.Celt
                     freq2 = out_syn[1] + overlap / 2;
                     OPUS_COPY(freq2, freq, N);
                     for (b = 0; b < B; b++)
-                        clt_mdct_backward(mode.mdct, &freq2[b], out_syn[0] + NB * b, modeWindow, overlap, shift, B);
+                        clt_mdct_backward(mode->mdct, &freq2[b], out_syn[0] + NB * b, mode->window, overlap, shift, B);
                     for (b = 0; b < B; b++)
-                        clt_mdct_backward(mode.mdct, &freq[b], out_syn[1] + NB * b, modeWindow, overlap, shift, B);
+                        clt_mdct_backward(mode->mdct, &freq[b], out_syn[1] + NB * b, mode->window, overlap, shift, B);
                 }
                 else if (CC == 1 && C == 2)
                 {
@@ -329,7 +344,7 @@ namespace HellaUnsafe.Celt
                     for (i = 0; i < N; i++)
                         freq[i] = ADD32(HALF32(freq[i]), HALF32(freq2[i]));
                     for (b = 0; b < B; b++)
-                        clt_mdct_backward(mode.mdct, &freq[b], out_syn[0] + NB * b, modeWindow, overlap, shift, B);
+                        clt_mdct_backward(mode->mdct, &freq[b], out_syn[0] + NB * b, mode->window, overlap, shift, B);
                 }
                 else
                 {
@@ -339,7 +354,7 @@ namespace HellaUnsafe.Celt
                         denormalise_bands(mode, X + c * N, freq, oldBandE + c * nbEBands, start, effEnd, M,
                               downsample, silence);
                         for (b = 0; b < B; b++)
-                            clt_mdct_backward(mode.mdct, &freq[b], out_syn[c] + NB * b, modeWindow, overlap, shift, B);
+                            clt_mdct_backward(mode->mdct, &freq[b], out_syn[c] + NB * b, mode->window, overlap, shift, B);
                     } while (++c < CC);
                 }
                 /* Saturate IMDCT output so that we can't overflow in the pitch postfilter
@@ -352,7 +367,7 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe void tf_decode(int start, int end, int isTransient, int* tf_res, int LM, ref ec_ctx dec, in byte* ecbuf)
+        internal static unsafe void tf_decode(int start, int end, int isTransient, int* tf_res, int LM, ec_ctx* dec, in byte* ecbuf)
         {
             int i, curr, tf_select;
             int tf_select_rsv;
@@ -361,7 +376,7 @@ namespace HellaUnsafe.Celt
             uint budget;
             uint tell;
 
-            budget = dec.storage * 8;
+            budget = dec->storage * 8;
             tell = (uint)ec_tell(dec);
             logp = isTransient != 0 ? 2 : 4;
             tf_select_rsv = (LM > 0 && tell + logp + 1 <= budget) ? 1 : 0;
@@ -371,7 +386,7 @@ namespace HellaUnsafe.Celt
             {
                 if (tell + logp <= budget)
                 {
-                    curr ^= ec_dec_bit_logp(ref dec, ecbuf, (uint)logp);
+                    curr ^= ec_dec_bit_logp(dec, ecbuf, (uint)logp);
                     tell = (uint)ec_tell(dec);
                     tf_changed |= curr;
                 }
@@ -383,7 +398,7 @@ namespace HellaUnsafe.Celt
               tf_select_table[LM][4 * isTransient + 0 + tf_changed] !=
               tf_select_table[LM][4 * isTransient + 2 + tf_changed])
             {
-                tf_select = ec_dec_bit_logp(ref dec, ecbuf, 1);
+                tf_select = ec_dec_bit_logp(dec, ecbuf, 1);
             }
             for (i = start; i < end; i++)
             {
@@ -407,24 +422,23 @@ namespace HellaUnsafe.Celt
             return pitch_index;
         }
 
-        internal static unsafe void prefilter_and_fold(ref CeltCustomDecoder st, int N)
+        internal static unsafe void prefilter_and_fold(in CeltCustomDecoder* st, int N)
         {
             int c;
             int CC;
             int i;
             int overlap;
-            ref CeltCustomMode mode = ref st.mode.Value;
-            overlap = st.overlap;
-            CC = st.channels;
+            CeltCustomMode* mode = st->mode;
+            overlap = st->overlap;
+            CC = st->channels;
             float*[] mem_array = new float*[2]; // OPT Allocating two pointers seems really wasteful. Has to be a better way to do this.
             float[] etmp_buf = new float[overlap];
             fixed (float* etmp = etmp_buf)
             fixed (float** decode_mem = mem_array)
-            fixed (float* st_decode_mem = st._decode_mem)
             {
                 c = 0; do
                 {
-                    decode_mem[c] = st_decode_mem + c * (DECODE_BUFFER_SIZE + overlap);
+                    decode_mem[c] = st->_decode_mem + c * (DECODE_BUFFER_SIZE + overlap);
                 } while (++c < CC);
 
                 c = 0; do
@@ -433,60 +447,58 @@ namespace HellaUnsafe.Celt
                        the post-filter will be re-applied in the decoder after the MDCT
                        overlap. */
                     comb_filter(etmp, decode_mem[c] + DECODE_BUFFER_SIZE - N,
-                       st.postfilter_period_old, st.postfilter_period, overlap,
-                       -st.postfilter_gain_old, -st.postfilter_gain,
-                       st.postfilter_tapset_old, st.postfilter_tapset, null, 0);
+                       st->postfilter_period_old, st->postfilter_period, overlap,
+                       -st->postfilter_gain_old, -st->postfilter_gain,
+                       st->postfilter_tapset_old, st->postfilter_tapset, null, 0);
 
                     /* Simulate TDAC on the concealed audio so that it blends with the
                        MDCT of the next frame. */
                     for (i = 0; i < overlap / 2; i++)
                     {
                         decode_mem[c][DECODE_BUFFER_SIZE - N + i] =
-                           MULT16_32_Q15(mode.window[i], etmp[overlap - 1 - i])
-                           + MULT16_32_Q15(mode.window[overlap - i - 1], etmp[i]);
+                           MULT16_32_Q15(mode->window[i], etmp[overlap - 1 - i])
+                           + MULT16_32_Q15(mode->window[overlap - i - 1], etmp[i]);
                     }
                 } while (++c < CC);
             }
         }
 
-        internal static unsafe void celt_decode_lost(ref CeltCustomDecoder st, int N, int LM)
+        internal static unsafe void celt_decode_lost(CeltCustomDecoder* st, int N, int LM)
         {
             int c;
             int i;
-            int C = st.channels;
+            int C = st->channels;
             float* lpc;
             float* oldBandE, oldLogE, oldLogE2, backgroundLogE;
-            ref CeltCustomMode mode = ref st.mode.Value;
+            CeltCustomMode* mode = st->mode;
             int nbEBands;
             int overlap;
             int start;
             int loss_duration;
             int noise_based;
 
-            nbEBands = mode.nbEBands;
-            overlap = mode.overlap;
+            nbEBands = mode->nbEBands;
+            overlap = mode->overlap;
 
             float*[] decode_mem_array = new float*[2];
             float*[] out_syn_array = new float*[2];
-            fixed (float* st_decode_mem = st._decode_mem)
             fixed (float** decode_mem = decode_mem_array)
             fixed (float** out_syn = out_syn_array)
-            fixed (short* eBands = mode.eBands)
             {
                 c = 0; do
                 {
-                    decode_mem[c] = st_decode_mem + c * (DECODE_BUFFER_SIZE + overlap);
+                    decode_mem[c] = st->_decode_mem + c * (DECODE_BUFFER_SIZE + overlap);
                     out_syn[c] = decode_mem[c] + DECODE_BUFFER_SIZE - N;
                 } while (++c < C);
-                lpc = (float*)(st_decode_mem + (DECODE_BUFFER_SIZE + overlap) * C);
+                lpc = (float*)(st->_decode_mem + (DECODE_BUFFER_SIZE + overlap) * C);
                 oldBandE = lpc + C * CELT_LPC_ORDER;
                 oldLogE = oldBandE + 2 * nbEBands;
                 oldLogE2 = oldLogE + 2 * nbEBands;
                 backgroundLogE = oldLogE2 + 2 * nbEBands;
 
-                loss_duration = st.loss_duration;
-                start = st.start;
-                noise_based = (loss_duration >= 40 || start != 0 || st.skip_plc != 0) ? 1 : 0;
+                loss_duration = st->loss_duration;
+                start = st->start;
+                noise_based = (loss_duration >= 40 || start != 0 || st->skip_plc != 0) ? 1 : 0;
                 if (noise_based != 0)
                 {
                     /* Noise-based PLC/CNG */
@@ -494,8 +506,8 @@ namespace HellaUnsafe.Celt
                     int end;
                     int effEnd;
                     float decay;
-                    end = st.end;
-                    effEnd = IMAX(start, IMIN(end, mode.effEBands));
+                    end = st->end;
+                    effEnd = IMAX(start, IMIN(end, mode->effEBands));
                     float[] x_array = new float[C * N];  /**< Interleaved normalised MDCTs */
                     fixed (float* X = x_array)
                     {
@@ -505,9 +517,9 @@ namespace HellaUnsafe.Celt
                                   DECODE_BUFFER_SIZE - N + overlap);
                         } while (++c < C);
 
-                        if (st.prefilter_and_fold != 0)
+                        if (st->prefilter_and_fold != 0)
                         {
-                            prefilter_and_fold(ref st, N);
+                            prefilter_and_fold(st, N);
                         }
 
                         /* Energy decay */
@@ -517,7 +529,7 @@ namespace HellaUnsafe.Celt
                             for (i = start; i < end; i++)
                                 oldBandE[c * nbEBands + i] = MAX16(backgroundLogE[c * nbEBands + i], oldBandE[c * nbEBands + i] - decay);
                         } while (++c < C);
-                        seed = st.rng;
+                        seed = st->rng;
                         for (c = 0; c < C; c++)
                         {
                             for (i = start; i < effEnd; i++)
@@ -525,8 +537,8 @@ namespace HellaUnsafe.Celt
                                 int j;
                                 int boffs;
                                 int blen;
-                                boffs = N * c + (eBands[i] << LM);
-                                blen = (eBands[i + 1] - eBands[i]) << LM;
+                                boffs = N * c + (mode->eBands[i] << LM);
+                                blen = (mode->eBands[i + 1] - mode->eBands[i]) << LM;
                                 for (j = 0; j < blen; j++)
                                 {
                                     seed = celt_lcg_rand(seed);
@@ -536,12 +548,12 @@ namespace HellaUnsafe.Celt
                                 renormalise_vector(X + boffs, blen, Q15ONE);
                             }
                         }
-                        st.rng = seed;
+                        st->rng = seed;
 
-                        celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, st.downsample, 0);
-                        st.prefilter_and_fold = 0;
+                        celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd, C, C, 0, LM, st->downsample, 0);
+                        st->prefilter_and_fold = 0;
                         /* Skip regular PLC until we get two consecutive packets. */
-                        st.skip_plc = 1;
+                        st->skip_plc = 1;
                     }
                 }
                 else
@@ -555,11 +567,11 @@ namespace HellaUnsafe.Celt
 
                     if (loss_duration == 0)
                     {
-                        st.last_pitch_index = pitch_index = celt_plc_pitch_search(decode_mem, C);
+                        st->last_pitch_index = pitch_index = celt_plc_pitch_search(decode_mem, C);
                     }
                     else
                     {
-                        pitch_index = st.last_pitch_index;
+                        pitch_index = st->last_pitch_index;
                         fade = QCONST16(.8f, 15);
                     }
 
@@ -569,12 +581,13 @@ namespace HellaUnsafe.Celt
 
                     float[] exc_array = new float[MAX_PERIOD + CELT_LPC_ORDER];
                     float[] fir_tmp_array = new float[exc_length];
+                    Span<float> lpc_mem_stack = stackalloc float[CELT_LPC_ORDER];
+                    fixed (float* lpc_mem = lpc_mem_stack)
                     fixed (float* _exc = exc_array)
                     fixed (float* fir_tmp = fir_tmp_array)
-                    fixed (float* modewindow = mode.window)
                     {
                         exc = _exc + CELT_LPC_ORDER;
-                        window = modewindow;
+                        window = mode->window;
                         c = 0; do
                         {
                             float decay;
@@ -667,19 +680,15 @@ namespace HellaUnsafe.Celt
                                 S1 += SHR32(MULT16_16(tmp, tmp), 10);
                             }
 
-                            Span<float> lpc_mem_stack = stackalloc float[CELT_LPC_ORDER];
-                            fixed (float* lpc_mem = lpc_mem_stack)
-                            {
-                                /* Copy the last decoded samples (prior to the overlap region) to
-                                    synthesis filter memory so we can have a continuous signal. */
-                                for (i = 0; i < CELT_LPC_ORDER; i++)
-                                    lpc_mem[i] = SROUND16(buf[DECODE_BUFFER_SIZE - N - 1 - i], 0);
-                                /* Apply the synthesis filter to convert the excitation back into
-                                    the signal domain. */
-                                celt_iir(buf + DECODE_BUFFER_SIZE - N, lpc + c * CELT_LPC_ORDER,
-                                        buf + DECODE_BUFFER_SIZE - N, extrapolation_len, CELT_LPC_ORDER,
-                                        lpc_mem);
-                            }
+                            /* Copy the last decoded samples (prior to the overlap region) to
+                                synthesis filter memory so we can have a continuous signal. */
+                            for (i = 0; i < CELT_LPC_ORDER; i++)
+                                lpc_mem[i] = SROUND16(buf[DECODE_BUFFER_SIZE - N - 1 - i], 0);
+                            /* Apply the synthesis filter to convert the excitation back into
+                                the signal domain. */
+                            celt_iir(buf + DECODE_BUFFER_SIZE - N, lpc + c * CELT_LPC_ORDER,
+                                    buf + DECODE_BUFFER_SIZE - N, extrapolation_len, CELT_LPC_ORDER,
+                                    lpc_mem);
 
                             /* Check if the synthesis energy is higher than expected, which can
                                happen with the signal changes during our window. If so,
@@ -717,28 +726,29 @@ namespace HellaUnsafe.Celt
 
                         } while (++c < C);
 
-                        st.prefilter_and_fold = 1;
+                        st->prefilter_and_fold = 1;
                     }
                 }
 
                 /* Saturate to soemthing large to avoid wrap-around. */
-                st.loss_duration = IMIN(10000, loss_duration + (1 << LM));
+                st->loss_duration = IMIN(10000, loss_duration + (1 << LM));
             }
         }
 
-        internal static unsafe int celt_decode_with_ec_dred(ref CeltCustomDecoder st, in byte* data,
-            int len, float* pcm, int frame_size, StructRef<ec_ctx> dec_ref, int accum)
+        internal static unsafe int celt_decode_with_ec_dred(CeltCustomDecoder* st, in byte* data,
+            int len, float* pcm, int frame_size, ec_ctx* dec, int accum)
         {
             int c, i, N;
             int spread_decision;
             int bits;
+            ec_ctx _dec;
             float* lpc;
             float* oldBandE, oldLogE, oldLogE2, backgroundLogE;
 
             int shortBlocks;
             int isTransient;
             int intra_ener;
-            int CC = st.channels;
+            int CC = st->channels;
             int LM, M;
             int start;
             int end;
@@ -757,31 +767,31 @@ namespace HellaUnsafe.Celt
             int anti_collapse_rsv;
             int anti_collapse_on = 0;
             int silence;
-            int C = st.stream_channels;
+            int C = st->stream_channels;
             int nbEBands;
             int overlap;
             float max_background_increase;
 
             validate_celt_decoder(st);
-            ref CeltCustomMode mode = ref st.mode.Value;
-            nbEBands = mode.nbEBands;
-            overlap = mode.overlap;
+            CeltCustomMode* mode = st->mode;
+            nbEBands = mode->nbEBands;
+            overlap = mode->overlap;
 
-            start = st.start;
-            end = st.end;
-            frame_size *= st.downsample;
+            start = st->start;
+            end = st->end;
+            frame_size *= st->downsample;
 
-            for (LM = 0; LM <= mode.maxLM; LM++)
-                if (mode.shortMdctSize << LM == frame_size)
+            for (LM = 0; LM <= mode->maxLM; LM++)
+                if (mode->shortMdctSize << LM == frame_size)
                     break;
-            if (LM > mode.maxLM)
+            if (LM > mode->maxLM)
                 return OPUS_BAD_ARG;
             M = 1 << LM;
 
             if (len < 0 || len > 1275 || pcm == null)
                 return OPUS_BAD_ARG;
 
-            N = M * mode.shortMdctSize;
+            N = M * mode->shortMdctSize;
 
             float*[] decode_mem_array = new float*[2];
             float*[] out_syn_array = new float*[2];
@@ -796,21 +806,16 @@ namespace HellaUnsafe.Celt
 
             fixed (float** out_syn = out_syn_array)
             fixed (float** decode_mem = decode_mem_array)
-            fixed (float* decoder_memory = st._decode_mem)
-            fixed (short* eBands = mode.eBands)
             fixed (int* tf_res = tf_res_array)
             fixed (int* cap = cap_array)
             fixed (int* offsets = offsets_array)
             fixed (int* fine_quant = fine_quant_array)
             fixed (int* pulses = pulses_array)
             fixed (int* fine_priority = fine_priority_array)
-            fixed (float* stpreemphmemD = st.preemph_memD)
-            fixed (float* modepreemph = mode.preemph)
             fixed (float* X = X_array)
             fixed (byte* collapse_masks = collapse_masks_array)
-            fixed (float* modewindow = mode.window)
             {
-                lpc = (float*)(decoder_memory + (DECODE_BUFFER_SIZE + overlap) * CC);
+                lpc = (float*)(st->_decode_mem + (DECODE_BUFFER_SIZE + overlap) * CC);
                 oldBandE = lpc + CC * CELT_LPC_ORDER;
                 oldLogE = oldBandE + 2 * nbEBands;
                 oldLogE2 = oldLogE + 2 * nbEBands;
@@ -818,35 +823,32 @@ namespace HellaUnsafe.Celt
 
                 c = 0; do
                 {
-                    decode_mem[c] = decoder_memory + c * (DECODE_BUFFER_SIZE + overlap);
+                    decode_mem[c] = st->_decode_mem + c * (DECODE_BUFFER_SIZE + overlap);
                     out_syn[c] = decode_mem[c] + DECODE_BUFFER_SIZE - N;
                 } while (++c < CC);
 
                 effEnd = end;
-                if (effEnd > mode.effEBands)
-                    effEnd = mode.effEBands;
+                if (effEnd > mode->effEBands)
+                    effEnd = mode->effEBands;
 
                 if (data == null || len <= 1)
                 {
-                    celt_decode_lost(ref st, N, LM);
-                    deemphasis(out_syn, pcm, N, CC, st.downsample, modepreemph, stpreemphmemD, accum);
-                    return frame_size / st.downsample;
+                    celt_decode_lost(st, N, LM);
+                    deemphasis(out_syn, pcm, N, CC, st->downsample, mode->preemph, st->preemph_memD, accum);
+                    return frame_size / st->downsample;
                 }
 
                 /* Check if there are at least two packets received consecutively before
                  * turning on the pitch-based PLC */
-                if (st.loss_duration == 0) st.skip_plc = 0;
+                if (st->loss_duration == 0) st->skip_plc = 0;
 
-                if (dec_ref == null)
+                if (dec == null)
                 {
                     // If no entropy decoder was passed into this function, we need to create
                     // a new one here for local use only. It only exists in this function scope.
-                    ec_ctx _dec = default;
-                    ec_dec_init(ref _dec, data, (uint)len);
-                    dec_ref = new StructRef<ec_ctx>(_dec);
+                    ec_dec_init(&_dec, data, (uint)len);
+                    dec = &_dec;
                 }
-
-                ref ec_ctx dec = ref dec_ref.Value;
 
                 if (C == 1)
                 {
@@ -860,14 +862,14 @@ namespace HellaUnsafe.Celt
                 if (tell >= total_bits)
                     silence = 1;
                 else if (tell == 1)
-                    silence = ec_dec_bit_logp(ref dec, data, 15);
+                    silence = ec_dec_bit_logp(dec, data, 15);
                 else
                     silence = 0;
                 if (silence != 0)
                 {
                     /* Pretend we've read all the remaining bits */
                     tell = len * 8;
-                    dec.nbits_total += tell - ec_tell(dec);
+                    dec->nbits_total += tell - ec_tell(dec);
                 }
 
                 postfilter_gain = 0;
@@ -875,14 +877,14 @@ namespace HellaUnsafe.Celt
                 postfilter_tapset = 0;
                 if (start == 0 && tell + 16 <= total_bits)
                 {
-                    if (ec_dec_bit_logp(ref dec, data, 1) != 0)
+                    if (ec_dec_bit_logp(dec, data, 1) != 0)
                     {
                         int qg, octave;
-                        octave = (int)ec_dec_uint(ref dec, data, 6);
-                        postfilter_pitch = (16 << octave) + (int)ec_dec_bits(ref dec, data, (uint)(4 + octave)) - 1;
-                        qg = (int)ec_dec_bits(ref dec, data, 3);
+                        octave = (int)ec_dec_uint(dec, data, 6);
+                        postfilter_pitch = (16 << octave) + (int)ec_dec_bits(dec, data, (uint)(4 + octave)) - 1;
+                        qg = (int)ec_dec_bits(dec, data, 3);
                         if (ec_tell(dec) + 2 <= total_bits)
-                            postfilter_tapset = ec_dec_icdf(ref dec, data, tapset_icdf, 2);
+                            postfilter_tapset = ec_dec_icdf(dec, data, tapset_icdf, 2);
                         postfilter_gain = QCONST16(.09375f, 15) * (qg + 1);
                     }
                     tell = ec_tell(dec);
@@ -890,7 +892,7 @@ namespace HellaUnsafe.Celt
 
                 if (LM > 0 && tell + 3 <= total_bits)
                 {
-                    isTransient = ec_dec_bit_logp(ref dec, data, 3);
+                    isTransient = ec_dec_bit_logp(dec, data, 3);
                     tell = ec_tell(dec);
                 }
                 else
@@ -902,15 +904,15 @@ namespace HellaUnsafe.Celt
                     shortBlocks = 0;
 
                 /* Decode the global flags (first symbols in the stream) */
-                intra_ener = tell + 3 <= total_bits ? ec_dec_bit_logp(ref dec, data, 3) : 0;
+                intra_ener = tell + 3 <= total_bits ? ec_dec_bit_logp(dec, data, 3) : 0;
                 /* If recovering from packet loss, make sure we make the energy prediction safe to reduce the
                    risk of getting loud artifacts. */
-                if (intra_ener == 0 && st.loss_duration != 0)
+                if (intra_ener == 0 && st->loss_duration != 0)
                 {
                     c = 0; do
                     {
                         float safety = 0;
-                        int missing = IMIN(10, st.loss_duration >> LM);
+                        int missing = IMIN(10, st->loss_duration >> LM);
                         if (LM == 0) safety = QCONST16(1.5f, DB_SHIFT);
                         else if (LM == 1) safety = QCONST16(.5f, DB_SHIFT);
                         for (i = start; i < end; i++)
@@ -939,14 +941,14 @@ namespace HellaUnsafe.Celt
                 }
                 /* Get band energies */
                 unquant_coarse_energy(mode, start, end, oldBandE,
-                      intra_ener, ref dec, data, C, LM);
+                      intra_ener, dec, data, C, LM);
 
-                tf_decode(start, end, isTransient, tf_res, LM, ref dec, data);
+                tf_decode(start, end, isTransient, tf_res, LM, dec, data);
 
                 tell = ec_tell(dec);
                 spread_decision = SPREAD_NORMAL;
                 if (tell + 4 <= total_bits)
-                    spread_decision = ec_dec_icdf(ref dec, data, spread_icdf, 5);
+                    spread_decision = ec_dec_icdf(dec, data, spread_icdf, 5);
 
                 init_caps(mode, cap, LM, C);
 
@@ -958,7 +960,7 @@ namespace HellaUnsafe.Celt
                     int width, quanta;
                     int dynalloc_loop_logp;
                     int boost;
-                    width = C * (eBands[i + 1] - eBands[i]) << LM;
+                    width = C * (mode->eBands[i + 1] - mode->eBands[i]) << LM;
                     /* quanta is 6 bits, but no more than 1 bit/sample
                        and no less than 1/8 bit/sample */
                     quanta = IMIN(width << BITRES, IMAX(6 << BITRES, width));
@@ -967,7 +969,7 @@ namespace HellaUnsafe.Celt
                     while (tell + (dynalloc_loop_logp << BITRES) < total_bits && boost < cap[i])
                     {
                         int flag;
-                        flag = ec_dec_bit_logp(ref dec, data, (uint)dynalloc_loop_logp);
+                        flag = ec_dec_bit_logp(dec, data, (uint)dynalloc_loop_logp);
                         tell = (int)ec_tell_frac(dec);
                         if (flag == 0)
                             break;
@@ -982,7 +984,7 @@ namespace HellaUnsafe.Celt
                 }
 
                 alloc_trim = tell + (6 << BITRES) <= total_bits ?
-                      ec_dec_icdf(ref dec, data, trim_icdf, 7) : 5;
+                      ec_dec_icdf(dec, data, trim_icdf, 7) : 5;
 
                 bits = (((int)len * 8) << BITRES) - (int)ec_tell_frac(dec) - 1;
                 anti_collapse_rsv = isTransient != 0 && LM >= 2 && bits >= ((LM + 2) << BITRES) ? (1 << BITRES) : 0;
@@ -990,9 +992,9 @@ namespace HellaUnsafe.Celt
 
                 codedBands = clt_compute_allocation(mode, start, end, offsets, cap,
                       alloc_trim, ref intensity, ref dual_stereo, bits, out balance, pulses,
-                      fine_quant, fine_priority, C, LM, ref dec, data, 0, 0, 0);
+                      fine_quant, fine_priority, C, LM, dec, data, 0, 0, 0);
 
-                unquant_fine_energy(mode, start, end, oldBandE, fine_quant, ref dec, data, C);
+                unquant_fine_energy(mode, start, end, oldBandE, fine_quant, dec, data, C);
 
                 c = 0; do
                 {
@@ -1001,59 +1003,59 @@ namespace HellaUnsafe.Celt
 
                 /* Decode fixed codebook */
 
-                quant_all_bands(0, st.mode, start, end, X, C == 2 ? X + N : null, collapse_masks,
+                quant_all_bands(0, st->mode, start, end, X, C == 2 ? X + N : null, collapse_masks,
                       null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
-                      len * (8 << BITRES) - anti_collapse_rsv, balance, dec_ref, data, LM, codedBands, ref st.rng, 0,
-                      st.disable_inv);
+                      len * (8 << BITRES) - anti_collapse_rsv, balance, dec, data, LM, codedBands, ref st->rng, 0,
+                      st->disable_inv);
 
                 if (anti_collapse_rsv > 0)
                 {
-                    anti_collapse_on = (int)ec_dec_bits(ref dec, data, 1);
+                    anti_collapse_on = (int)ec_dec_bits(dec, data, 1);
                 }
 
                 unquant_energy_finalise(mode, start, end, oldBandE,
-                      fine_quant, fine_priority, len * 8 - ec_tell(dec), ref dec, data, C);
+                      fine_quant, fine_priority, len * 8 - ec_tell(dec), dec, data, C);
 
                 if (anti_collapse_on != 0)
                     anti_collapse(mode, X, collapse_masks, LM, C, N,
-                          start, end, oldBandE, oldLogE, oldLogE2, pulses, st.rng);
+                          start, end, oldBandE, oldLogE, oldLogE2, pulses, st->rng);
 
                 if (silence != 0)
                 {
                     for (i = 0; i < C * nbEBands; i++)
                         oldBandE[i] = -QCONST16(28.0f, DB_SHIFT);
                 }
-                if (st.prefilter_and_fold != 0)
+                if (st->prefilter_and_fold != 0)
                 {
-                    prefilter_and_fold(ref st, N);
+                    prefilter_and_fold(st, N);
                 }
                 celt_synthesis(mode, X, out_syn, oldBandE, start, effEnd,
-                               C, CC, isTransient, LM, st.downsample, silence);
+                               C, CC, isTransient, LM, st->downsample, silence);
 
                 c = 0; do
                 {
-                    st.postfilter_period = IMAX(st.postfilter_period, COMBFILTER_MINPERIOD);
-                    st.postfilter_period_old = IMAX(st.postfilter_period_old, COMBFILTER_MINPERIOD);
-                    comb_filter(out_syn[c], out_syn[c], st.postfilter_period_old, st.postfilter_period, mode.shortMdctSize,
-                          st.postfilter_gain_old, st.postfilter_gain, st.postfilter_tapset_old, st.postfilter_tapset,
-                          modewindow, overlap);
+                    st->postfilter_period = IMAX(st->postfilter_period, COMBFILTER_MINPERIOD);
+                    st->postfilter_period_old = IMAX(st->postfilter_period_old, COMBFILTER_MINPERIOD);
+                    comb_filter(out_syn[c], out_syn[c], st->postfilter_period_old, st->postfilter_period, mode->shortMdctSize,
+                          st->postfilter_gain_old, st->postfilter_gain, st->postfilter_tapset_old, st->postfilter_tapset,
+                          mode->window, overlap);
                     if (LM != 0)
-                        comb_filter(out_syn[c] + mode.shortMdctSize, out_syn[c] + mode.shortMdctSize, st.postfilter_period, postfilter_pitch, N - mode.shortMdctSize,
-                              st.postfilter_gain, postfilter_gain, st.postfilter_tapset, postfilter_tapset,
-                              modewindow, overlap);
+                        comb_filter(out_syn[c] + mode->shortMdctSize, out_syn[c] + mode->shortMdctSize, st->postfilter_period, postfilter_pitch, N - mode->shortMdctSize,
+                              st->postfilter_gain, postfilter_gain, st->postfilter_tapset, postfilter_tapset,
+                              mode->window, overlap);
 
                 } while (++c < CC);
-                st.postfilter_period_old = st.postfilter_period;
-                st.postfilter_gain_old = st.postfilter_gain;
-                st.postfilter_tapset_old = st.postfilter_tapset;
-                st.postfilter_period = postfilter_pitch;
-                st.postfilter_gain = postfilter_gain;
-                st.postfilter_tapset = postfilter_tapset;
+                st->postfilter_period_old = st->postfilter_period;
+                st->postfilter_gain_old = st->postfilter_gain;
+                st->postfilter_tapset_old = st->postfilter_tapset;
+                st->postfilter_period = postfilter_pitch;
+                st->postfilter_gain = postfilter_gain;
+                st->postfilter_tapset = postfilter_tapset;
                 if (LM != 0)
                 {
-                    st.postfilter_period_old = st.postfilter_period;
-                    st.postfilter_gain_old = st.postfilter_gain;
-                    st.postfilter_tapset_old = st.postfilter_tapset;
+                    st->postfilter_period_old = st->postfilter_period;
+                    st->postfilter_gain_old = st->postfilter_gain;
+                    st->postfilter_tapset_old = st->postfilter_tapset;
                 }
 
                 if (C == 1)
@@ -1072,7 +1074,7 @@ namespace HellaUnsafe.Celt
                 /* In normal circumstances, we only allow the noise floor to increase by
                    up to 2.4 dB/second, but when we're in DTX we give the weight of
                    all missing packets to the update packet. */
-                max_background_increase = IMIN(160, st.loss_duration + M) * QCONST16(0.001f, DB_SHIFT);
+                max_background_increase = IMIN(160, st->loss_duration + M) * QCONST16(0.001f, DB_SHIFT);
                 for (i = 0; i < 2 * nbEBands; i++)
                     backgroundLogE[i] = MIN16(backgroundLogE[i] + max_background_increase, oldBandE[i]);
                 /* In case start or end were to change */
@@ -1089,23 +1091,23 @@ namespace HellaUnsafe.Celt
                         oldLogE[c * nbEBands + i] = oldLogE2[c * nbEBands + i] = -QCONST16(28.0f, DB_SHIFT);
                     }
                 } while (++c < 2);
-                st.rng = dec.rng;
+                st->rng = dec->rng;
 
-                deemphasis(out_syn, pcm, N, CC, st.downsample, modepreemph, stpreemphmemD, accum);
-                st.loss_duration = 0;
-                st.prefilter_and_fold = 0;
+                deemphasis(out_syn, pcm, N, CC, st->downsample, mode->preemph, st->preemph_memD, accum);
+                st->loss_duration = 0;
+                st->prefilter_and_fold = 0;
                 if (ec_tell(dec) > 8 * len)
                     return OPUS_INTERNAL_ERROR;
                 if (ec_get_error(dec) != 0)
-                    st.error = 1;
-                return frame_size / st.downsample;
+                    st->error = 1;
+                return frame_size / st->downsample;
             }
         }
 
-        internal static unsafe int celt_decode_with_ec(ref CeltCustomDecoder st, in byte* data,
-              int len, float* pcm, int frame_size, StructRef<ec_ctx> dec, int accum)
+        internal static unsafe int celt_decode_with_ec(CeltCustomDecoder* st, in byte* data,
+              int len, float* pcm, int frame_size, ec_ctx* dec, int accum)
         {
-            return celt_decode_with_ec_dred(ref st, data, len, pcm, frame_size, dec, accum);
+            return celt_decode_with_ec_dred(st, data, len, pcm, frame_size, dec, accum);
         }
 
         /// <summary>
@@ -1115,7 +1117,7 @@ namespace HellaUnsafe.Celt
         /// <param name="request"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        internal static int opus_custom_decoder_ctl(ref CeltCustomDecoder st, int request, int value)
+        internal static unsafe int opus_custom_decoder_ctl(CeltCustomDecoder* st, int request, int value)
         {
             switch (request)
             {
@@ -1125,33 +1127,33 @@ namespace HellaUnsafe.Celt
                         {
                             goto bad_arg;
                         }
-                        st.complexity = value;
+                        st->complexity = value;
                     }
                     break;
                 case CELT_SET_START_BAND_REQUEST:
                     {
-                        if (value < 0 || value >= st.mode.Value.nbEBands)
+                        if (value < 0 || value >= st->mode->nbEBands)
                             goto bad_arg;
-                        st.start = value;
+                        st->start = value;
                     }
                     break;
                 case CELT_SET_END_BAND_REQUEST:
                     {
-                        if (value < 1 || value > st.mode.Value.nbEBands)
+                        if (value < 1 || value > st->mode->nbEBands)
                             goto bad_arg;
-                        st.end = value;
+                        st->end = value;
                     }
                     break;
                 case CELT_SET_CHANNELS_REQUEST:
                     {
                         if (value < 1 || value > 2)
                             goto bad_arg;
-                        st.stream_channels = value;
+                        st->stream_channels = value;
                     }
                     break;
                 case CELT_SET_SIGNALLING_REQUEST:
                     {
-                        st.signalling = value;
+                        st->signalling = value;
                     }
                     break;
                 case OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST:
@@ -1160,7 +1162,7 @@ namespace HellaUnsafe.Celt
                         {
                             goto bad_arg;
                         }
-                        st.disable_inv = value;
+                        st->disable_inv = value;
                     }
                     break;
                 default:
@@ -1180,35 +1182,35 @@ namespace HellaUnsafe.Celt
         /// <param name="request"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        internal static int opus_custom_decoder_ctl(ref CeltCustomDecoder st, int request, out int value)
+        internal static unsafe int opus_custom_decoder_ctl(CeltCustomDecoder* st, int request, out int value)
         {
             value = 0;
             switch (request)
             {
                 case OPUS_GET_COMPLEXITY_REQUEST:
                     {
-                        value = st.complexity;
+                        value = st->complexity;
                     }
                     break;
                 case CELT_GET_AND_CLEAR_ERROR_REQUEST:
                     {
-                        value = st.error;
-                        st.error = 0;
+                        value = st->error;
+                        st->error = 0;
                     }
                     break;
                 case OPUS_GET_LOOKAHEAD_REQUEST:
                     {
-                        value = st.overlap / st.downsample;
+                        value = st->overlap / st->downsample;
                     }
                     break;
                 case OPUS_GET_PITCH_REQUEST:
                     {
-                        value = st.postfilter_period;
+                        value = st->postfilter_period;
                     }
                     break;
                 case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
                     {
-                        value = st.disable_inv;
+                        value = st->disable_inv;
                     }
                     break;
                 default:
@@ -1226,14 +1228,14 @@ namespace HellaUnsafe.Celt
         /// <param name="request"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        internal static int opus_custom_decoder_ctl(ref CeltCustomDecoder st, int request, out uint value)
+        internal static unsafe int opus_custom_decoder_ctl(CeltCustomDecoder* st, int request, out uint value)
         {
             value = 0;
             switch (request)
             {
                 case OPUS_GET_FINAL_RANGE_REQUEST:
                     {
-                        value = st.rng;
+                        value = st->rng;
                     }
                     break;
                 default:
@@ -1251,7 +1253,7 @@ namespace HellaUnsafe.Celt
         /// <param name="request"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        internal static unsafe int opus_custom_decoder_ctl(ref CeltCustomDecoder st, int request)
+        internal static unsafe int opus_custom_decoder_ctl(CeltCustomDecoder* st, int request)
         {
             switch (request)
             {
@@ -1259,33 +1261,16 @@ namespace HellaUnsafe.Celt
                     {
                         int i;
                         float* lpc, oldBandE, oldLogE, oldLogE2;
-                        fixed (float* mem = st._decode_mem)
-                        {
-                            lpc = mem + (DECODE_BUFFER_SIZE + st.overlap) * st.channels;
-                            oldBandE = lpc + st.channels * CELT_LPC_ORDER;
-                            oldLogE = oldBandE + 2 * st.mode.Value.nbEBands;
-                            oldLogE2 = oldLogE + 2 * st.mode.Value.nbEBands;
-
-                            st.rng = 0;
-                            st.error = 0;
-                            st.last_pitch_index = 0;
-                            st.loss_duration = 0;
-                            st.skip_plc = 0;
-                            st.postfilter_period = 0;
-                            st.postfilter_period_old = 0;
-                            st.postfilter_gain = 0;
-                            st.postfilter_gain_old = 0;
-                            st.postfilter_tapset = 0;
-                            st.postfilter_tapset_old = 0;
-                            st.prefilter_and_fold = 0;
-                            st.preemph_memD[0] = 0;
-                            st.preemph_memD[1] = 0;
-                            OPUS_CLEAR(mem, opus_custom_decoder_get_memory_size(st.mode.Value, st.channels));
-
-                            for (i = 0; i < 2 * st.mode.Value.nbEBands; i++)
-                                oldLogE[i] = oldLogE2[i] = -QCONST16(28.0f, DB_SHIFT);
-                            st.skip_plc = 1;
-                        }
+                        lpc = st->_decode_mem + (DECODE_BUFFER_SIZE + st->overlap) * st->channels;
+                        oldBandE = lpc + st->channels * CELT_LPC_ORDER;
+                        oldLogE = oldBandE + 2 * st->mode->nbEBands;
+                        oldLogE2 = oldLogE + 2 * st->mode->nbEBands;
+                        OPUS_CLEAR((byte*)&st->rng,
+                              (int)(opus_custom_decoder_get_size(st->mode, st->channels) -
+                              ((byte*)&st->rng - (byte*)st)));
+                        for (i = 0; i < 2 * st->mode->nbEBands; i++)
+                            oldLogE[i] = oldLogE2[i] = -QCONST16(28.0f, DB_SHIFT);
+                        st->skip_plc = 1;
                     }
                     break;
                 default:
@@ -1303,13 +1288,13 @@ namespace HellaUnsafe.Celt
         /// <param name="request"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        internal static int opus_custom_decoder_ctl(ref CeltCustomDecoder st, int request, out StructRef<CeltCustomMode> value)
+        internal static unsafe int opus_custom_decoder_ctl(CeltCustomDecoder* st, int request, out CeltCustomMode* value)
         {
             switch (request)
             {
                 case CELT_GET_MODE_REQUEST:
                     {
-                        value = st.mode;
+                        value = st->mode;
                     }
                     break;
                 default:

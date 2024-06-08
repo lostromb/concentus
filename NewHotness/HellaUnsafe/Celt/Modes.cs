@@ -27,24 +27,24 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using HellaUnsafe.Common;
 using static HellaUnsafe.Celt.MDCT;
 using static HellaUnsafe.Celt.StaticModesFloat;
+using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Opus.OpusDefines;
 
 namespace HellaUnsafe.Celt
 {
-    internal static class Modes
+    internal static unsafe class Modes
     {
         internal const int MAX_PERIOD = 1024;
 
-        internal static readonly short[] eband5ms = {
+        internal static readonly short* eband5ms = AllocateGlobalArray(new short[]{
             /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
               0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40, 48, 60, 78, 100
-            };
+            });
 
         /* Bit allocation table in units of 1/32 bit/sample (0.1875 dB SNR) */
-        internal static readonly byte[] band_allocation = {
+        internal static readonly byte* band_allocation = AllocateGlobalArray(new byte[]{
             /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
               0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
              90, 80, 75, 69, 63, 56, 49, 40, 34, 29, 20, 18, 10,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -57,40 +57,40 @@ namespace HellaUnsafe.Celt
             162,155,148,142,133,127,121,115,108,102, 96, 90, 84, 77, 71, 65, 59, 53, 46, 30,  1,
             172,165,158,152,143,137,131,125,118,112,106,100, 94, 87, 81, 75, 69, 63, 56, 45, 20,
             200,200,200,200,200,200,200,200,198,193,188,183,178,173,168,163,158,153,148,129,104,
-            };
+            });
 
-        internal struct PulseCache
+        internal unsafe struct PulseCache
         {
             internal int size;
-            internal short[] index;
-            internal byte[] bits;
-            internal byte[] caps;
+            internal short* index;
+            internal byte* bits;
+            internal byte* caps;
         }
 
-        internal struct CeltCustomMode
+        internal unsafe struct CeltCustomMode
         {
             internal int Fs;
             internal int overlap;
 
             internal int nbEBands;
             internal int effEBands;
-            internal float[] preemph; /*[4]*/ // OPT could this be a fixed buffer?
-            internal short[] eBands;   /**< Definition for each "pseudo-critical band" */
+            internal fixed float preemph[4];
+            internal short* eBands;   /**< Definition for each "pseudo-critical band" */
 
             internal int maxLM;
             internal int nbShortMdcts;
             internal int shortMdctSize;
 
             internal int nbAllocVectors; /**< Number of lines in the matrix below */
-            internal byte[] allocVectors;   /**< Number of bits in each band for several rates */
-            internal short[] logN;
+            internal byte* allocVectors;   /**< Number of bits in each band for several rates */
+            internal short* logN;
 
-            internal float[] window;
+            internal float* window;
             internal mdct_lookup mdct;
             internal PulseCache cache;
         };
 
-        internal static StructRef<CeltCustomMode> opus_custom_mode_create(int Fs, int frame_size, out int error)
+        internal static unsafe CeltCustomMode* opus_custom_mode_create(int Fs, int frame_size, out int error)
         {
             int i;
             for (i = 0; i < TOTAL_MODES; i++)
@@ -98,8 +98,8 @@ namespace HellaUnsafe.Celt
                 int j;
                 for (j = 0; j < 4; j++)
                 {
-                    if (Fs == static_mode_list[i].Value.Fs &&
-                          (frame_size << j) == static_mode_list[i].Value.shortMdctSize * static_mode_list[i].Value.nbShortMdcts)
+                    if (Fs == static_mode_list[i]->Fs &&
+                          (frame_size << j) == static_mode_list[i]->shortMdctSize * static_mode_list[i]->nbShortMdcts)
                     {
                         error = OPUS_OK;
                         return static_mode_list[i];

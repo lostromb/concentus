@@ -30,6 +30,9 @@
 */
 
 using System;
+using System.Drawing;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace HellaUnsafe.Common
 {
@@ -103,6 +106,56 @@ namespace HellaUnsafe.Common
         internal static unsafe void silk_memmove(float* dst, float* src, int elements)
         {
             new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));
+        }
+
+        internal static unsafe T** AllocateGlobalPointerArray<T>(int elements) where T : unmanaged
+        {
+            IntPtr dest = Marshal.AllocHGlobal(elements * sizeof(IntPtr));
+            Unsafe.InitBlock((void*)dest, 0, (uint)(elements * sizeof(IntPtr)));
+            return (T**)dest;
+        }
+
+        /// <summary>
+        /// Allocates an array on the unmanaged heap with the specified type, length, and input data.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        internal static unsafe T* AllocateGlobalArray<T>(T[] input) where T: unmanaged
+        {
+            fixed (T* src = input)
+            {
+                IntPtr dest = Marshal.AllocHGlobal(input.Length * sizeof(T));
+                Unsafe.CopyBlock((void*)dest, (void*)src, (uint)(input.Length * sizeof(T)));
+                return (T*)dest;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new unmanaged struct of type T on the unmanaged heap initialized to zero.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        internal static unsafe T* AllocGlobalStructZeroed<T>() where T : unmanaged
+        {
+            int size = sizeof(T);
+            IntPtr dest = Marshal.AllocHGlobal(size);
+            Unsafe.InitBlock((void*)dest, 0, (uint)size);
+            return (T*)dest;
+        }
+
+        /// <summary>
+        /// Initializes a new unmanaged struct of type T on the unmanaged heap
+        /// with initial value equal to a copy of the given input
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        internal static unsafe T* AllocGlobalStructInit<T>(T input) where T : unmanaged
+        {
+            IntPtr dest = Marshal.AllocHGlobal(sizeof(T));
+            Unsafe.Copy((void*)dest, ref input);
+            return (T*)dest;
         }
     }
 }

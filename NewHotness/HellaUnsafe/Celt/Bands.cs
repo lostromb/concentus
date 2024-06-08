@@ -44,7 +44,7 @@ using System.Reflection;
 
 namespace HellaUnsafe.Celt
 {
-    internal static class Bands
+    internal static unsafe class Bands
     {
         internal const int SPREAD_NONE = 0;
         internal const int SPREAD_LIGHT = 1;
@@ -98,35 +98,35 @@ namespace HellaUnsafe.Celt
                   - FRAC_MUL16(icos, FRAC_MUL16(icos, -2597) + 7932);
         }
 
-        internal static unsafe void compute_band_energies(in CeltCustomMode m, in float* X, float* bandE, int end, int C, int LM)
+        internal static unsafe void compute_band_energies(in CeltCustomMode* m, in float* X, float* bandE, int end, int C, int LM)
         {
             int i, c, N;
-            short[] eBands = m.eBands;
-            N = m.shortMdctSize << LM;
+            short* eBands = m->eBands;
+            N = m->shortMdctSize << LM;
             c = 0; do
             {
                 for (i = 0; i < end; i++)
                 {
                     float sum;
                     sum = 1e-27f + celt_inner_prod(&X[c * N + (eBands[i] << LM)], &X[c * N + (eBands[i] << LM)], (eBands[i + 1] - eBands[i]) << LM);
-                    bandE[i + c * m.nbEBands] = celt_sqrt(sum);
+                    bandE[i + c * m->nbEBands] = celt_sqrt(sum);
                     /*printf ("%f ", bandE[i+c*m.nbEBands]);*/
                 }
             } while (++c < C);
             /*printf ("\n");*/
         }
 
-        internal static unsafe void normalise_bands(in CeltCustomMode m, in float* freq, float* X, in float* bandE, int end, int C, int M)
+        internal static unsafe void normalise_bands(in CeltCustomMode* m, in float* freq, float* X, in float* bandE, int end, int C, int M)
         {
             int i, c, N;
-            short[] eBands = m.eBands;
-            N = M * m.shortMdctSize;
+            short* eBands = m->eBands;
+            N = M * m->shortMdctSize;
             c = 0; do
             {
                 for (i = 0; i < end; i++)
                 {
                     int j;
-                    float g = 1.0f / (1e-27f + bandE[i + c * m.nbEBands]);
+                    float g = 1.0f / (1e-27f + bandE[i + c * m->nbEBands]);
                     for (j = M * eBands[i]; j < M * eBands[i + 1]; j++)
                         X[j + c * N] = freq[j + c * N] * g;
                 }
@@ -134,7 +134,7 @@ namespace HellaUnsafe.Celt
         }
 
         /* De-normalise the energy to produce the synthesis from the unit-energy bands */
-        internal static unsafe void denormalise_bands(in CeltCustomMode m, in float* X,
+        internal static unsafe void denormalise_bands(in CeltCustomMode* m, in float* X,
             float* freq, in float* bandLogE, int start,
             int end, int M, int downsample, int silence)
         {
@@ -142,8 +142,8 @@ namespace HellaUnsafe.Celt
             int bound;
             float* f;
             float* x;
-            short[] eBands = m.eBands;
-            N = M * m.shortMdctSize;
+            short* eBands = m->eBands;
+            N = M * m->shortMdctSize;
             bound = M * eBands[end];
             if (downsample != 1)
                 bound = IMIN(bound, N / downsample);
@@ -177,7 +177,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void anti_collapse(
-            in CeltCustomMode m, float* X_, byte* collapse_masks, int LM, int C, int size,
+            in CeltCustomMode* m, float* X_, byte* collapse_masks, int LM, int C, int size,
           int start, int end, in float* logE, in float* prev1logE,
           in float* prev2logE, in int* pulses, uint seed)
         {
@@ -188,10 +188,10 @@ namespace HellaUnsafe.Celt
                 float thresh, sqrt_1;
                 int depth;
 
-                N0 = m.eBands[i + 1] - m.eBands[i];
+                N0 = m->eBands[i + 1] - m->eBands[i];
                 /* depth in 1/8 bits */
                 ASSERT(pulses[i] >= 0);
-                depth = celt_sudiv(1 + pulses[i], (m.eBands[i + 1] - m.eBands[i])) >> LM;
+                depth = celt_sudiv(1 + pulses[i], (m->eBands[i + 1] - m->eBands[i])) >> LM;
 
                 thresh = .5f * celt_exp2(-.125f * depth);
                 sqrt_1 = celt_rsqrt(N0 << LM);
@@ -204,14 +204,14 @@ namespace HellaUnsafe.Celt
                     float Ediff;
                     float r;
                     int renormalize = 0;
-                    prev1 = prev1logE[c * m.nbEBands + i];
-                    prev2 = prev2logE[c * m.nbEBands + i];
+                    prev1 = prev1logE[c * m->nbEBands + i];
+                    prev2 = prev2logE[c * m->nbEBands + i];
                     if (C == 1)
                     {
-                        prev1 = MAX16(prev1, prev1logE[m.nbEBands + i]);
-                        prev2 = MAX16(prev2, prev2logE[m.nbEBands + i]);
+                        prev1 = MAX16(prev1, prev1logE[m->nbEBands + i]);
+                        prev2 = MAX16(prev2, prev2logE[m->nbEBands + i]);
                     }
-                    Ediff = EXTEND32(logE[c * m.nbEBands + i]) - EXTEND32(MIN16(prev1, prev2));
+                    Ediff = EXTEND32(logE[c * m->nbEBands + i]) - EXTEND32(MIN16(prev1, prev2));
                     Ediff = MAX32(0, Ediff);
 
                     /* r needs to be multiplied by 2 or 2*sqrt(2) depending on LM because
@@ -221,7 +221,7 @@ namespace HellaUnsafe.Celt
                         r *= 1.41421356f;
                     r = MIN16(thresh, r);
                     r = r * sqrt_1;
-                    X = X_ + c * size + (m.eBands[i] << LM);
+                    X = X_ + c * size + (m->eBands[i] << LM);
                     for (k = 0; k < 1 << LM; k++)
                     {
                         /* Detect collapse */
@@ -263,7 +263,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void intensity_stereo(
-            in CeltCustomMode m, float* X, in float* Y, float* bandE, int bandID, int N)
+            in CeltCustomMode* m, float* X, in float* Y, float* bandE, int bandID, int N)
         {
             int i = bandID;
             int j;
@@ -272,7 +272,7 @@ namespace HellaUnsafe.Celt
             float norm;
             int shift = 0;
             left = VSHR32(bandE[i], shift);
-            right = VSHR32(bandE[i + m.nbEBands], shift);
+            right = VSHR32(bandE[i + m->nbEBands], shift);
             norm = EPSILON + celt_sqrt(EPSILON + MULT16_16(left, left) + MULT16_16(right, right));
             a1 = DIV32_16(SHL32(EXTEND32(left), 14), norm);
             a2 = DIV32_16(SHL32(EXTEND32(right), 14), norm);
@@ -339,32 +339,35 @@ namespace HellaUnsafe.Celt
         }
 
         /* Decide whether we should spread the pulses in the current frame */
-        internal static unsafe int spreading_decision(in CeltCustomMode m, in float* X, ref int average,
+        internal static unsafe int spreading_decision(in CeltCustomMode* m, in float* X, ref int average,
           int last_decision, ref int hf_average, ref int tapset_decision, int update_hf,
           int end, int C, int M, in int* spread_weight)
         {
             int i, c, N0;
             int sum = 0, nbBands = 0;
-            short[] eBands = m.eBands;
+            short* eBands = m->eBands;
             int decision;
             int hf_sum = 0;
 
             ASSERT(end > 0);
 
-            N0 = M * m.shortMdctSize;
+            N0 = M * m->shortMdctSize;
 
             if (M * (eBands[end] - eBands[end - 1]) <= 8)
                 return SPREAD_NONE;
+
+            Span<int> tcount = stackalloc int[3];
             c = 0; do
             {
                 for (i = 0; i < end; i++)
                 {
                     int j, N, tmp = 0;
-                    Span<int> tcount = stackalloc int[3];
                     float* x = X + M * eBands[i] + c * N0;
                     N = M * (eBands[i + 1] - eBands[i]);
                     if (N <= 8)
                         continue;
+
+                    tcount.Fill(0);
                     /* Compute rough CDF of |x[j]| */
                     for (j = 0; j < N; j++)
                     {
@@ -380,7 +383,7 @@ namespace HellaUnsafe.Celt
                     }
 
                     /* Only include four last bands (8 kHz and up) */
-                    if (i > m.nbEBands - 4)
+                    if (i > m->nbEBands - 4)
                         hf_sum += celt_sudiv(32 * (tcount[1] + tcount[0]), N);
                     tmp = (2 * tcount[2] >= N ? 1 : 0) + (2 * tcount[1] >= N ? 1 : 0) + (2 * tcount[0] >= N ? 1 : 0);
                     sum += tmp * spread_weight[i];
@@ -391,7 +394,7 @@ namespace HellaUnsafe.Celt
             if (update_hf != 0)
             {
                 if (hf_sum != 0)
-                    hf_sum = celt_sudiv(hf_sum, C * (4 - m.nbEBands + end));
+                    hf_sum = celt_sudiv(hf_sum, C * (4 - m->nbEBands + end));
                 hf_average = (hf_average + hf_sum) >> 1;
                 hf_sum = hf_average;
                 if (tapset_decision == 2)
@@ -437,12 +440,12 @@ namespace HellaUnsafe.Celt
            This is essentially a bit-reversed Gray, on top of which we've added
            an inversion of the order because we want the DC at the end rather than
            the beginning. The lines are for N=2, 4, 8, 16 */
-        internal static readonly int[] ordery_table = {
+        internal static readonly int* ordery_table = AllocateGlobalArray(new int[]{
                1,  0,
                3,  0,  2,  1,
                7,  0,  4,  3,  6,  1,  5,  2,
               15,  0,  8,  7, 12,  3, 11,  4, 14,  1,  9,  6, 13,  2, 10,  5,
-        };
+        });
 
         internal static unsafe void deinterleave_hadamard(float* X, int N0, int stride, int hadamard)
         {
@@ -454,7 +457,7 @@ namespace HellaUnsafe.Celt
             ASSERT(stride > 0);
             if (hadamard != 0)
             {
-                ReadOnlySpan<int> ordery = ordery_table.AsSpan(stride - 2);
+                int* ordery = ordery_table + stride - 2;
                 for (i = 0; i < stride; i++)
                 {
                     for (j = 0; j < N0; j++)
@@ -479,7 +482,7 @@ namespace HellaUnsafe.Celt
             tmp = new float[N];
             if (hadamard != 0)
             {
-                ReadOnlySpan<int> ordery = ordery_table.AsSpan(stride - 2);
+                int* ordery = ordery_table + stride - 2;
                 for (i = 0; i < stride; i++)
                     for (j = 0; j < N0; j++)
                         tmp[j * stride + i] = X[ordery[i] * N0 + j];
@@ -539,18 +542,18 @@ namespace HellaUnsafe.Celt
             return qn;
         }
 
-        internal struct band_ctx
+        internal unsafe struct band_ctx
         {
             internal int encode;
             internal int resynth;
-            internal StructRef<CeltCustomMode> m;
+            internal CeltCustomMode* m;
             internal int i;
             internal int intensity;
             internal int spread;
             internal int tf_change;
-            internal StructRef<ec_ctx> ec;
+            internal ec_ctx* ec;
             internal int remaining_bits;
-            //internal float[] bandE;
+            internal float* bandE;
             internal uint seed;
             internal int theta_round;
             internal int disable_inv;
@@ -567,11 +570,10 @@ namespace HellaUnsafe.Celt
             internal int qalloc;
         };
 
-        internal static unsafe void compute_theta(ref band_ctx ctx, ref split_ctx sctx, in byte* ecbuf,
+        internal static unsafe void compute_theta(band_ctx* ctx, split_ctx* sctx, in byte* ecbuf,
           float* X, float* Y, int N, int* b, int B, int B0,
           int LM,
-          int stereo, int* fill,
-          float* bandE)
+          int stereo, int* fill)
         {
             int qn;
             int itheta = 0;
@@ -585,15 +587,16 @@ namespace HellaUnsafe.Celt
             int encode;
             int i;
             int intensity;
-            ref ec_ctx ec = ref ctx.ec.Value;
+            ec_ctx* ec = ctx->ec;
+            float* bandE = ctx->bandE;
 
-            encode = ctx.encode;
-            ref CeltCustomMode m = ref ctx.m.Value;
-            i = ctx.i;
-            intensity = ctx.intensity;
+            encode = ctx->encode;
+            CeltCustomMode* m = ctx->m;
+            i = ctx->i;
+            intensity = ctx->intensity;
 
             /* Decide on the resolution to give to the split parameter theta */
-            pulse_cap = m.logN[i] + LM * (1 << BITRES);
+            pulse_cap = m->logN[i] + LM * (1 << BITRES);
             offset = (pulse_cap >> 1) - (stereo != 0 && N == 2 ? QTHETA_OFFSET_TWOPHASE : QTHETA_OFFSET);
             qn = compute_qn(N, *b, offset, pulse_cap, stereo);
             if (stereo != 0 && i >= intensity)
@@ -611,10 +614,10 @@ namespace HellaUnsafe.Celt
             {
                 if (encode != 0)
                 {
-                    if (stereo == 0 || ctx.theta_round == 0)
+                    if (stereo == 0 || ctx->theta_round == 0)
                     {
                         itheta = (itheta * (int)qn + 8192) >> 14;
-                        if (stereo == 0 && ctx.avoid_split_noise != 0 && itheta > 0 && itheta < qn)
+                        if (stereo == 0 && ctx->avoid_split_noise != 0 && itheta > 0 && itheta < qn)
                         {
                             /* Check if the selected value of theta will cause the bit allocation
                                to inject noise on one side. If so, make sure the energy of that side
@@ -635,7 +638,7 @@ namespace HellaUnsafe.Celt
                         /* Bias quantization towards itheta=0 and itheta=16384. */
                         int bias = itheta > 8192 ? 32767 / qn : -32767 / qn;
                         down = IMIN(qn - 1, IMAX(0, (itheta * (int)qn + bias) >> 14));
-                        if (ctx.theta_round < 0)
+                        if (ctx->theta_round < 0)
                             itheta = down;
                         else
                             itheta = down + 1;
@@ -652,7 +655,7 @@ namespace HellaUnsafe.Celt
                     /* Use a probability of p0 up to itheta=8192 and then use 1 after */
                     if (encode != 0)
                     {
-                        ec_encode(ref ec, ecbuf,
+                        ec_encode(ec, ecbuf,
                             (uint)(x <= x0 ? p0 * x : (x - 1 - x0) + (x0 + 1) * p0),
                             (uint)(x <= x0 ? p0 * (x + 1) : (x - x0) + (x0 + 1) * p0),
                             ft);
@@ -660,12 +663,12 @@ namespace HellaUnsafe.Celt
                     else
                     {
                         int fs;
-                        fs = (int)ec_decode(ref ec, ft);
+                        fs = (int)ec_decode(ec, ft);
                         if (fs < (x0 + 1) * p0)
                             x = fs / p0;
                         else
                             x = x0 + 1 + (fs - (x0 + 1) * p0);
-                        ec_dec_update(ref ec, ecbuf,
+                        ec_dec_update(ec, ecbuf,
                             (uint)(x <= x0 ? p0 * x : (x - 1 - x0) + (x0 + 1) * p0),
                             (uint)(x <= x0 ? p0 * (x + 1) : (x - x0) + (x0 + 1) * p0),
                             ft);
@@ -676,9 +679,9 @@ namespace HellaUnsafe.Celt
                 {
                     /* Uniform pdf */
                     if (encode != 0)
-                        ec_enc_uint(ref ec, ecbuf, (uint)itheta, (uint)qn + 1);
+                        ec_enc_uint(ec, ecbuf, (uint)itheta, (uint)qn + 1);
                     else
-                        itheta = (int)ec_dec_uint(ref ec, ecbuf, (uint)qn + 1);
+                        itheta = (int)ec_dec_uint(ec, ecbuf, (uint)qn + 1);
                 }
                 else
                 {
@@ -692,14 +695,14 @@ namespace HellaUnsafe.Celt
                         fl = itheta <= (qn >> 1) ? itheta * (itheta + 1) >> 1 :
                          ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
 
-                        ec_encode(ref ec, ecbuf, (uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec_encode(ec, ecbuf, (uint)fl, (uint)(fl + fs), (uint)ft);
                     }
                     else
                     {
                         /* Triangular pdf */
                         int fl = 0;
                         int fm;
-                        fm = (int)ec_decode(ref ec, (uint)ft);
+                        fm = (int)ec_decode(ec, (uint)ft);
 
                         if (fm < ((qn >> 1) * ((qn >> 1) + 1) >> 1))
                         {
@@ -715,7 +718,7 @@ namespace HellaUnsafe.Celt
                             fl = ft - ((qn + 1 - itheta) * (qn + 2 - itheta) >> 1);
                         }
 
-                        ec_dec_update(ref ec, ecbuf, (uint)fl, (uint)(fl + fs), (uint)ft);
+                        ec_dec_update(ec, ecbuf, (uint)fl, (uint)(fl + fs), (uint)ft);
                     }
                 }
                 ASSERT(itheta >= 0);
@@ -734,7 +737,7 @@ namespace HellaUnsafe.Celt
             {
                 if (encode != 0)
                 {
-                    inv = (itheta > 8192 && ctx.disable_inv == 0) ? 1 : 0;
+                    inv = (itheta > 8192 && ctx->disable_inv == 0) ? 1 : 0;
                     if (inv != 0)
                     {
                         int j;
@@ -743,17 +746,17 @@ namespace HellaUnsafe.Celt
                     }
                     intensity_stereo(m, X, Y, bandE, i, N);
                 }
-                if (*b > 2 << BITRES && ctx.remaining_bits > 2 << BITRES)
+                if (*b > 2 << BITRES && ctx->remaining_bits > 2 << BITRES)
                 {
                     if (encode != 0)
-                        ec_enc_bit_logp(ref ec, ecbuf, inv, 2);
+                        ec_enc_bit_logp(ec, ecbuf, inv, 2);
                     else
-                        inv = ec_dec_bit_logp(ref ec, ecbuf, 2);
+                        inv = ec_dec_bit_logp(ec, ecbuf, 2);
                 }
                 else
                     inv = 0;
                 /* inv flag override to avoid problems with downmixing. */
-                if (ctx.disable_inv != 0)
+                if (ctx->disable_inv != 0)
                     inv = 0;
                 itheta = 0;
             }
@@ -783,43 +786,43 @@ namespace HellaUnsafe.Celt
                 delta = FRAC_MUL16((N - 1) << 7, bitexact_log2tan(iside, imid));
             }
 
-            sctx.inv = inv;
-            sctx.imid = imid;
-            sctx.iside = iside;
-            sctx.delta = delta;
-            sctx.itheta = itheta;
-            sctx.qalloc = qalloc;
+            sctx->inv = inv;
+            sctx->imid = imid;
+            sctx->iside = iside;
+            sctx->delta = delta;
+            sctx->itheta = itheta;
+            sctx->qalloc = qalloc;
         }
 
-        internal static unsafe uint quant_band_n1(ref band_ctx ctx, in byte* ecbuf, float* X, float* Y,
+        internal static unsafe uint quant_band_n1(in band_ctx* ctx, in byte* ecbuf, float* X, float* Y,
             float* lowband_out)
         {
             int c;
             int stereo;
             float* x = X;
             int encode;
-            ref ec_ctx ec = ref ctx.ec.Value;
+            ec_ctx* ec = ctx->ec;
 
-            encode = ctx.encode;
+            encode = ctx->encode;
 
             stereo = Y != null ? 1 : 0;
             c = 0; do
             {
                 uint sign = 0;
-                if (ctx.remaining_bits >= 1 << BITRES)
+                if (ctx->remaining_bits >= 1 << BITRES)
                 {
                     if (encode != 0)
                     {
                         sign = x[0] < 0 ? 1U : 0;
-                        ec_enc_bits(ref ec, ecbuf, sign, 1U);
+                        ec_enc_bits(ec, ecbuf, sign, 1U);
                     }
                     else
                     {
-                        sign = ec_dec_bits(ref ec, ecbuf, 1U);
+                        sign = ec_dec_bits(ec, ecbuf, 1U);
                     }
-                    ctx.remaining_bits -= 1 << BITRES;
+                    ctx->remaining_bits -= 1 << BITRES;
                 }
-                if (ctx.resynth != 0)
+                if (ctx->resynth != 0)
                     x[0] = sign != 0 ? -NORM_SCALING : NORM_SCALING;
                 x = Y;
             } while (++c < 1 + stereo);
@@ -832,12 +835,12 @@ namespace HellaUnsafe.Celt
            It can split the band in two and transmit the energy difference with
            the two half-bands. It can be called recursively so bands can end up being
            split in 8 parts. */
-        internal static unsafe uint quant_partition(ref band_ctx ctx, in byte* ecbuf, float* X,
+        internal static unsafe uint quant_partition(band_ctx* ctx, in byte* ecbuf, float* X,
               int N, int b, int B, float* lowband,
               int LM,
-              float gain, int fill, float* bandE)
+              float gain, int fill)
         {
-            ReadOnlySpan<byte> cache;
+            byte* cache;
             int q;
             int curr_bits;
             int imid = 0, iside = 0;
@@ -846,17 +849,17 @@ namespace HellaUnsafe.Celt
             uint cm = 0;
             float* Y = null;
             int encode;
-            ref CeltCustomMode m = ref ctx.m.Value;
+            CeltCustomMode* m = ctx->m;
             int i;
             int spread;
-            ref ec_ctx ec = ref ctx.ec.Value;
+            ec_ctx* ec = ctx->ec;
 
-            encode = ctx.encode;
-            i = ctx.i;
-            spread = ctx.spread;
+            encode = ctx->encode;
+            i = ctx->i;
+            spread = ctx->spread;
 
             /* If we need 1.5 more bit than we can produce, split the band in two. */
-            cache = m.cache.bits.AsSpan(m.cache.index[(LM + 1) * m.nbEBands + i]);
+            cache = m->cache.bits + m->cache.index[(LM + 1) * m->nbEBands + i];
             if (LM != -1 && b > cache[cache[0]] + 12 && N > 2)
             {
                 int mbits, sbits, delta;
@@ -873,7 +876,7 @@ namespace HellaUnsafe.Celt
                     fill = (fill & 1) | (fill << 1);
                 B = (B + 1) >> 1;
 
-                compute_theta(ref ctx, ref sctx, ecbuf, X, Y, N, &b, B, B0, LM, 0, &fill, bandE);
+                compute_theta(ctx, &sctx, ecbuf, X, Y, N, &b, B, B0, LM, 0, &fill);
                 imid = sctx.imid;
                 iside = sctx.iside;
                 delta = sctx.delta;
@@ -894,31 +897,31 @@ namespace HellaUnsafe.Celt
                 }
                 mbits = IMAX(0, IMIN(b, (b - delta) / 2));
                 sbits = b - mbits;
-                ctx.remaining_bits -= qalloc;
+                ctx->remaining_bits -= qalloc;
 
                 if (lowband != null)
                     next_lowband2 = lowband + N; /* >32-bit split case */
 
-                rebalance = ctx.remaining_bits;
+                rebalance = ctx->remaining_bits;
                 if (mbits >= sbits)
                 {
-                    cm = quant_partition(ref ctx, ecbuf, X, N, mbits, B, lowband, LM,
-                          MULT16_16_P15(gain, mid), fill, bandE);
-                    rebalance = mbits - (rebalance - ctx.remaining_bits);
+                    cm = quant_partition(ctx, ecbuf, X, N, mbits, B, lowband, LM,
+                          MULT16_16_P15(gain, mid), fill);
+                    rebalance = mbits - (rebalance - ctx->remaining_bits);
                     if (rebalance > 3 << BITRES && itheta != 0)
                         sbits += rebalance - (3 << BITRES);
-                    cm |= quant_partition(ref ctx, ecbuf, Y, N, sbits, B, next_lowband2, LM,
-                          MULT16_16_P15(gain, side), fill >> B, bandE) << (B0 >> 1);
+                    cm |= quant_partition(ctx, ecbuf, Y, N, sbits, B, next_lowband2, LM,
+                          MULT16_16_P15(gain, side), fill >> B) << (B0 >> 1);
                 }
                 else
                 {
-                    cm = quant_partition(ref ctx, ecbuf, Y, N, sbits, B, next_lowband2, LM,
-                          MULT16_16_P15(gain, side), fill >> B, bandE) << (B0 >> 1);
-                    rebalance = sbits - (rebalance - ctx.remaining_bits);
+                    cm = quant_partition(ctx, ecbuf, Y, N, sbits, B, next_lowband2, LM,
+                          MULT16_16_P15(gain, side), fill >> B) << (B0 >> 1);
+                    rebalance = sbits - (rebalance - ctx->remaining_bits);
                     if (rebalance > 3 << BITRES && itheta != 16384)
                         mbits += rebalance - (3 << BITRES);
-                    cm |= quant_partition(ref ctx, ecbuf, X, N, mbits, B, lowband, LM,
-                          MULT16_16_P15(gain, mid), fill, bandE);
+                    cm |= quant_partition(ctx, ecbuf, X, N, mbits, B, lowband, LM,
+                          MULT16_16_P15(gain, mid), fill);
                 }
             }
             else
@@ -926,15 +929,15 @@ namespace HellaUnsafe.Celt
                 /* This is the basic no-split case */
                 q = bits2pulses(m, i, LM, b);
                 curr_bits = pulses2bits(m, i, LM, q);
-                ctx.remaining_bits -= curr_bits;
+                ctx->remaining_bits -= curr_bits;
 
                 /* Ensures we can never bust the budget */
-                while (ctx.remaining_bits < 0 && q > 0)
+                while (ctx->remaining_bits < 0 && q > 0)
                 {
-                    ctx.remaining_bits += curr_bits;
+                    ctx->remaining_bits += curr_bits;
                     q--;
                     curr_bits = pulses2bits(m, i, LM, q);
-                    ctx.remaining_bits -= curr_bits;
+                    ctx->remaining_bits -= curr_bits;
                 }
 
                 if (q != 0)
@@ -944,18 +947,18 @@ namespace HellaUnsafe.Celt
                     /* Finally do the actual quantization */
                     if (encode != 0)
                     {
-                        cm = alg_quant(X, N, K, spread, B, ref ec, ecbuf, gain, ctx.resynth);
+                        cm = alg_quant(X, N, K, spread, B, ec, ecbuf, gain, ctx->resynth);
                     }
                     else
                     {
-                        cm = alg_unquant(X, N, K, spread, B, ref ec, ecbuf, gain);
+                        cm = alg_unquant(X, N, K, spread, B, ec, ecbuf, gain);
                     }
                 }
                 else
                 {
                     /* If there's no pulse, fill the band anyway */
                     int j;
-                    if (ctx.resynth != 0)
+                    if (ctx->resynth != 0)
                     {
                         uint cm_mask;
                         /* B can be as large as 16, so this shift might overflow an int on a
@@ -973,8 +976,8 @@ namespace HellaUnsafe.Celt
                                 /* Noise */
                                 for (j = 0; j < N; j++)
                                 {
-                                    ctx.seed = celt_lcg_rand(ctx.seed);
-                                    X[j] = (float)((int)ctx.seed >> 20);
+                                    ctx->seed = celt_lcg_rand(ctx->seed);
+                                    X[j] = (float)((int)ctx->seed >> 20);
                                 }
                                 cm = cm_mask;
                             }
@@ -984,10 +987,10 @@ namespace HellaUnsafe.Celt
                                 for (j = 0; j < N; j++)
                                 {
                                     float tmp;
-                                    ctx.seed = celt_lcg_rand(ctx.seed);
+                                    ctx->seed = celt_lcg_rand(ctx->seed);
                                     /* About 48 dB below the "normal" folding level */
                                     tmp = QCONST16(1.0f / 256, 10);
-                                    tmp = ((ctx.seed) & 0x8000) != 0 ? tmp : -tmp;
+                                    tmp = ((ctx->seed) & 0x8000) != 0 ? tmp : -tmp;
                                     X[j] = lowband[j] + tmp;
                                 }
                                 cm = (uint)fill;
@@ -1011,10 +1014,10 @@ namespace HellaUnsafe.Celt
          };
 
         /* This function is responsible for encoding and decoding a band for the mono case. */
-        internal static unsafe uint quant_band(ref band_ctx ctx, in byte* ecbuf, float* X,
+        internal static unsafe uint quant_band(in band_ctx* ctx, in byte* ecbuf, float* X,
           int N, int b, int B, float* lowband,
           int LM, float* lowband_out,
-          float gain, float* lowband_scratch, int fill, float* bandE)
+          float gain, float* lowband_scratch, int fill)
         {
             int N0 = N;
             int N_B = N;
@@ -1028,8 +1031,8 @@ namespace HellaUnsafe.Celt
             int encode;
             int tf_change;
 
-            encode = ctx.encode;
-            tf_change = ctx.tf_change;
+            encode = ctx->encode;
+            tf_change = ctx->tf_change;
 
             longBlocks = B0 == 1 ? 1 : 0;
 
@@ -1038,7 +1041,7 @@ namespace HellaUnsafe.Celt
             /* Special case for one sample */
             if (N == 1)
             {
-                return quant_band_n1(ref ctx, ecbuf, X, null, lowband_out);
+                return quant_band_n1(ctx, ecbuf, X, null, lowband_out);
             }
 
             if (tf_change > 0)
@@ -1089,10 +1092,10 @@ namespace HellaUnsafe.Celt
                     deinterleave_hadamard(lowband, N_B >> recombine, B0 << recombine, longBlocks);
             }
 
-            cm = quant_partition(ref ctx, ecbuf, X, N, b, B, lowband, LM, gain, fill, bandE);
+            cm = quant_partition(ctx, ecbuf, X, N, b, B, lowband, LM, gain, fill);
 
             /* This code is used by the decoder and by the resynthesis-enabled encoder */
-            if (ctx.resynth != 0)
+            if (ctx->resynth != 0)
             {
                 /* Undo the sample reorganization going from time order to frequency order */
                 if (B0 > 1)
@@ -1132,10 +1135,10 @@ namespace HellaUnsafe.Celt
 
 
         /* This function is responsible for encoding and decoding a band for the stereo case. */
-        internal static unsafe uint quant_band_stereo(ref band_ctx ctx, in byte* ecbuf, float* X, float* Y,
+        internal static unsafe uint quant_band_stereo(in band_ctx* ctx, in byte* ecbuf, float* X, float* Y,
               int N, int b, int B, float* lowband,
               int LM, float* lowband_out,
-              float* lowband_scratch, int fill, float* bandE)
+              float* lowband_scratch, int fill)
         {
             int imid = 0, iside = 0;
             int inv = 0;
@@ -1147,19 +1150,19 @@ namespace HellaUnsafe.Celt
             split_ctx sctx = default;
             int orig_fill;
             int encode;
-            ref ec_ctx ec = ref ctx.ec.Value;
+            ec_ctx* ec = ctx->ec;
 
-            encode = ctx.encode;
+            encode = ctx->encode;
 
             /* Special case for one sample */
             if (N == 1)
             {
-                return quant_band_n1(ref ctx, ecbuf, X, Y, lowband_out);
+                return quant_band_n1(ctx, ecbuf, X, Y, lowband_out);
             }
 
             orig_fill = fill;
 
-            compute_theta(ref ctx, ref sctx, ecbuf, X, Y, N, &b, B, B, LM, 1, &fill, bandE);
+            compute_theta(ctx, &sctx, ecbuf, X, Y, N, &b, B, B, LM, 1, &fill);
             inv = sctx.inv;
             imid = sctx.imid;
             iside = sctx.iside;
@@ -1185,7 +1188,7 @@ namespace HellaUnsafe.Celt
                     sbits = 1 << BITRES;
                 mbits -= sbits;
                 c = itheta > 8192 ? 1 : 0;
-                ctx.remaining_bits -= qalloc + sbits;
+                ctx->remaining_bits -= qalloc + sbits;
 
                 x2 = c != 0 ? Y : X;
                 y2 = c != 0 ? X : Y;
@@ -1195,23 +1198,23 @@ namespace HellaUnsafe.Celt
                     {
                         /* Here we only need to encode a sign for the side. */
                         sign = (x2[0] * y2[1] - x2[1] * y2[0] < 0) ? 1U : 0;
-                        ec_enc_bits(ref ec, ecbuf, sign, 1);
+                        ec_enc_bits(ec, ecbuf, sign, 1);
                     }
                     else
                     {
-                        sign = ec_dec_bits(ref ec, ecbuf, 1);
+                        sign = ec_dec_bits(ec, ecbuf, 1);
                     }
                 }
                 sign = 1 - 2 * sign;
                 /* We use orig_fill here because we want to fold the side, but if
                    itheta==16384, we'll have cleared the low bits of fill. */
-                cm = quant_band(ref ctx, ecbuf, x2, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
-                      lowband_scratch, orig_fill, bandE);
+                cm = quant_band(ctx, ecbuf, x2, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
+                      lowband_scratch, orig_fill);
                 /* We don't split N=2 bands, so cm is either 1 or 0 (for a fold-collapse),
                    and there's no need to worry about mixing with the other channel. */
                 y2[0] = -sign * x2[1];
                 y2[1] = sign * x2[0];
-                if (ctx.resynth != 0)
+                if (ctx->resynth != 0)
                 {
                     float tmp;
                     X[0] = MULT16_16_Q15(mid, X[0]);
@@ -1233,41 +1236,41 @@ namespace HellaUnsafe.Celt
 
                 mbits = IMAX(0, IMIN(b, (b - delta) / 2));
                 sbits = b - mbits;
-                ctx.remaining_bits -= qalloc;
+                ctx->remaining_bits -= qalloc;
 
-                rebalance = ctx.remaining_bits;
+                rebalance = ctx->remaining_bits;
                 if (mbits >= sbits)
                 {
                     /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
                        mid for folding later. */
-                    cm = quant_band(ref ctx, ecbuf, X, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
-                          lowband_scratch, fill, bandE);
-                    rebalance = mbits - (rebalance - ctx.remaining_bits);
+                    cm = quant_band(ctx, ecbuf, X, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
+                          lowband_scratch, fill);
+                    rebalance = mbits - (rebalance - ctx->remaining_bits);
                     if (rebalance > 3 << BITRES && itheta != 0)
                         sbits += rebalance - (3 << BITRES);
 
                     /* For a stereo split, the high bits of fill are always zero, so no
                        folding will be done to the side. */
-                    cm |= quant_band(ref ctx, ecbuf, Y, N, sbits, B, null, LM, null, side, null, fill >> B, bandE);
+                    cm |= quant_band(ctx, ecbuf, Y, N, sbits, B, null, LM, null, side, null, fill >> B);
                 }
                 else
                 {
                     /* For a stereo split, the high bits of fill are always zero, so no
                        folding will be done to the side. */
-                    cm = quant_band(ref ctx, ecbuf, Y, N, sbits, B, null, LM, null, side, null, fill >> B, bandE);
-                    rebalance = sbits - (rebalance - ctx.remaining_bits);
+                    cm = quant_band(ctx, ecbuf, Y, N, sbits, B, null, LM, null, side, null, fill >> B);
+                    rebalance = sbits - (rebalance - ctx->remaining_bits);
                     if (rebalance > 3 << BITRES && itheta != 16384)
                         mbits += rebalance - (3 << BITRES);
                     /* In stereo mode, we do not apply a scaling to the mid because we need the normalized
                        mid for folding later. */
-                    cm |= quant_band(ref ctx, ecbuf, X, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
-                          lowband_scratch, fill, bandE);
+                    cm |= quant_band(ctx, ecbuf, X, N, mbits, B, lowband, LM, lowband_out, Q15ONE,
+                          lowband_scratch, fill);
                 }
             }
 
 
             /* This code is used by the decoder and by the resynthesis-enabled encoder */
-            if (ctx.resynth != 0)
+            if (ctx->resynth != 0)
             {
                 if (N != 2)
                     stereo_merge(X, Y, mid, N);
@@ -1281,10 +1284,10 @@ namespace HellaUnsafe.Celt
             return cm;
         }
 
-        internal static unsafe void special_hybrid_folding(ref CeltCustomMode m, float* norm, float* norm2, int start, int M, int dual_stereo)
+        internal static unsafe void special_hybrid_folding(in CeltCustomMode* m, float* norm, float* norm2, int start, int M, int dual_stereo)
         {
             int n1, n2;
-            short[] eBands = m.eBands;
+            short* eBands = m->eBands;
             n1 = M * (eBands[start + 1] - eBands[start]);
             n2 = M * (eBands[start + 2] - eBands[start + 1]);
             /* Duplicate enough of the first band folding data to be able to fold the second band.
@@ -1295,18 +1298,17 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void quant_all_bands(
-            int encode, StructRef<CeltCustomMode> celtMode, int start, int end,
+            int encode, CeltCustomMode* celtMode, int start, int end,
               float* X_, float* Y_, byte* collapse_masks,
               in float* bandE, int* pulses, int shortBlocks, int spread,
               int dual_stereo, int intensity, int* tf_res, int total_bits,
-              int balance, StructRef<ec_ctx> ec_ref, in byte* ecbuf, int LM, int codedBands,
+              int balance, ec_ctx* ec, in byte* ecbuf, int LM, int codedBands,
               ref uint seed, int complexity, int disable_inv)
         {
             int i;
             int remaining_bits;
-            ref CeltCustomMode m = ref celtMode.Value;
-            ref ec_ctx ec = ref ec_ref.Value;
-            ReadOnlySpan<short> eBands = m.eBands;
+            CeltCustomMode* m = celtMode;
+            short* eBands = m->eBands;
             float* norm;
             float* norm2;
             float* _norm;
@@ -1336,19 +1338,19 @@ namespace HellaUnsafe.Celt
                scratch space for the last band and we don't care about the data there until we're
                decoding the last band. */
             if (encode != 0 && resynth != 0)
-                resynth_alloc = M * (eBands[m.nbEBands] - eBands[m.nbEBands - 1]);
+                resynth_alloc = M * (eBands[m->nbEBands] - eBands[m->nbEBands - 1]);
             else
                 resynth_alloc = 0;
 
             // the original code had a load of separate allocations here, but I just went
             // ahead and merged them into a single buffer so there's only one thing to pin.
-            int normBufferSize = C * (M * eBands[m.nbEBands - 1] - norm_offset);
+            int normBufferSize = C * (M * eBands[m->nbEBands - 1] - norm_offset);
             float[] big_buffer = new float[normBufferSize + (resynth_alloc * 6)];
             fixed (float* scratchbuf_ptr = big_buffer)
             {
                 _norm = scratchbuf_ptr;
                 norm = _norm;
-                norm2 = norm + M * eBands[m.nbEBands - 1] - norm_offset;
+                norm2 = norm + M * eBands[m->nbEBands - 1] - norm_offset;
 
                 _lowband_scratch = scratchbuf_ptr + normBufferSize;
                 X_save = _lowband_scratch + resynth_alloc;
@@ -1360,12 +1362,11 @@ namespace HellaUnsafe.Celt
                 if (encode != 0 && resynth != 0)
                     lowband_scratch = _lowband_scratch;
                 else
-                    lowband_scratch = X_ + M * eBands[m.effEBands - 1];
+                    lowband_scratch = X_ + M * eBands[m->effEBands - 1];
 
                 lowband_offset = 0;
-                // now passing bandE as its own separate pointer because we can't stash it in the struct
-                //ctx.bandE = bandE;
-                ctx.ec = ec_ref;
+                ctx.bandE = bandE;
+                ctx.ec = ec;
                 ctx.encode = encode;
                 ctx.intensity = intensity;
                 ctx.m = celtMode;
@@ -1420,11 +1421,11 @@ namespace HellaUnsafe.Celt
                     if (resynth != 0 && (M * eBands[i] - N >= M * eBands[start] || i == start + 1) && (update_lowband != 0 || lowband_offset == 0))
                         lowband_offset = i;
                     if (i == start + 1)
-                        special_hybrid_folding(ref m, norm, norm2, start, M, dual_stereo);
+                        special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
 
                     tf_change = tf_res[i];
                     ctx.tf_change = tf_change;
-                    if (i >= m.effEBands)
+                    if (i >= m->effEBands)
                     {
                         X = norm;
                         if (Y_ != null)
@@ -1472,12 +1473,12 @@ namespace HellaUnsafe.Celt
                     }
                     if (dual_stereo != 0)
                     {
-                        x_cm = quant_band(ref ctx, ecbuf, X, N, b / 2, B,
+                        x_cm = quant_band(&ctx, ecbuf, X, N, b / 2, B,
                                 effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                                last != 0 ? null : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)x_cm, bandE);
-                        y_cm = quant_band(ref ctx, ecbuf, Y, N, b / 2, B,
+                                last != 0 ? null : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)x_cm);
+                        y_cm = quant_band(&ctx, ecbuf, Y, N, b / 2, B,
                                 effective_lowband != -1 ? norm2 + effective_lowband : null, LM,
-                                last != 0 ? null : norm2 + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)y_cm, bandE);
+                                last != 0 ? null : norm2 + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)y_cm);
                     }
                     else
                     {
@@ -1496,23 +1497,23 @@ namespace HellaUnsafe.Celt
                                 {
                                     float w_0 = 0;
                                     float w_1 = 0;
-                                    compute_channel_weights(bandE[i], bandE[i + m.nbEBands], ref w_0, ref w_1);
+                                    compute_channel_weights(bandE[i], bandE[i + m->nbEBands], ref w_0, ref w_1);
                                     /* Make a copy. */
                                     cm = x_cm | y_cm;
-                                    ec_save = ec;
+                                    ec_save = *ec;
                                     ctx_save = ctx;
                                     OPUS_COPY(X_save, X, N);
                                     OPUS_COPY(Y_save, Y, N);
                                     /* Encode and round down. */
                                     ctx.theta_round = -1;
-                                    x_cm = quant_band_stereo(ref ctx, ecbuf, X, Y, N, b, B,
+                                    x_cm = quant_band_stereo(&ctx, ecbuf, X, Y, N, b, B,
                                             effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                                            last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)cm, bandE);
+                                            last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)cm);
                                     dist0 = MULT16_32_Q15(w_0, celt_inner_prod(X_save, X, N)) + MULT16_32_Q15(w_1, celt_inner_prod(Y_save, Y, N));
 
                                     /* Save first result. */
                                     cm2 = x_cm;
-                                    ec_save2 = ec;
+                                    ec_save2 = *ec;
                                     ctx_save2 = ctx;
                                     OPUS_COPY(X_save2, X, N);
                                     OPUS_COPY(Y_save2, Y, N);
@@ -1525,25 +1526,22 @@ namespace HellaUnsafe.Celt
                                     OPUS_COPY(bytes_save, bytes_buf, save_bytes);
 
                                     /* Restore */
-                                    ec = ec_save;
+                                    *ec = ec_save;
                                     ctx = ctx_save;
-                                    // PORTING NOTE: I am assuming bandE and the EC buffer
-                                    // pointers are not modified during this whole struct copying and restoring
-                                    // operation. If that's not the case then we're in a bit of trouble.
                                     OPUS_COPY(X, X_save, N);
                                     OPUS_COPY(Y, Y_save, N);
                                     if (i == start + 1)
-                                        special_hybrid_folding(ref m, norm, norm2, start, M, dual_stereo);
+                                        special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
                                     /* Encode and round up. */
                                     ctx.theta_round = 1;
-                                    x_cm = quant_band_stereo(ref ctx, ecbuf, X, Y, N, b, B,
+                                    x_cm = quant_band_stereo(&ctx, ecbuf, X, Y, N, b, B,
                                             effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                                            last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)cm, bandE);
+                                            last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)cm);
                                     dist1 = MULT16_32_Q15(w_0, celt_inner_prod(X_save, X, N)) + MULT16_32_Q15(w_1, celt_inner_prod(Y_save, Y, N));
                                     if (dist0 >= dist1)
                                     {
                                         x_cm = cm2;
-                                        ec = ec_save2;
+                                        *ec = ec_save2;
                                         ctx = ctx_save2;
                                         OPUS_COPY(X, X_save2, N);
                                         OPUS_COPY(Y, Y_save2, N);
@@ -1556,16 +1554,16 @@ namespace HellaUnsafe.Celt
                             else
                             {
                                 ctx.theta_round = 0;
-                                x_cm = quant_band_stereo(ref ctx, ecbuf, X, Y, N, b, B,
+                                x_cm = quant_band_stereo(&ctx, ecbuf, X, Y, N, b, B,
                                         effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                                        last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)(x_cm | y_cm), bandE);
+                                        last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)(x_cm | y_cm));
                             }
                         }
                         else
                         {
-                            x_cm = quant_band(ref ctx, ecbuf, X, N, b, B,
+                            x_cm = quant_band(&ctx, ecbuf, X, N, b, B,
                                     effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                                    last != 0 ? null : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)(x_cm | y_cm), bandE);
+                                    last != 0 ? null : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)(x_cm | y_cm));
                         }
                         y_cm = x_cm;
                     }

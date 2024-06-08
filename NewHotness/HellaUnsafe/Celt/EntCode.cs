@@ -114,9 +114,9 @@ namespace HellaUnsafe.Celt
             internal int error;
         }
 
-        internal static uint ec_range_bytes(in ec_ctx _this)
+        internal static unsafe uint ec_range_bytes(in ec_ctx* _this)
         {
-            return _this.offs;
+            return _this->offs;
         }
 
         // One of the main changes I make in the Concentus codebase is that
@@ -126,15 +126,19 @@ namespace HellaUnsafe.Celt
         // Span<byte> or a byte* pointer that would otherwise require pinning each time.
         // Here, we can pin the buffer at the highest-level opus API and then just
         // reuse that same pointer for the remainder of the operation.
+        // It also reconciles the problem where managed memory buffers get passed in
+        // at the public API and we can't store an unmanaged pointer to that memory
+        // in between different calls to encode/decode because the required pinning
+        // would be out of our control
 
         //internal static uint ec_get_buffer(in ec_ctx _this)
         //{
         //    return _this.buf;
         //}
 
-        internal static int ec_get_error(in ec_ctx _this)
+        internal static unsafe int ec_get_error(in ec_ctx* _this)
         {
-            return _this.error;
+            return _this->error;
         }
 
         /*Returns the number of bits "used" by the encoded or decoded symbols so far.
@@ -143,9 +147,9 @@ namespace HellaUnsafe.Celt
           Return: The number of bits.
           This will always be slightly larger than the exact value (e.g., all
            rounding error is in the positive direction).*/
-        internal static int ec_tell(in ec_ctx _this)
+        internal static unsafe int ec_tell(in ec_ctx* _this)
         {
-            return _this.nbits_total - EC_ILOG(_this.rng);
+            return _this->nbits_total - EC_ILOG(_this->rng);
         }
 
         private static readonly uint[] correction = { 35733, 38967, 42495, 46340, 50535, 55109, 60097, 65535 };
@@ -156,15 +160,15 @@ namespace HellaUnsafe.Celt
       Return: The number of bits scaled by 2**BITRES.
               This will always be slightly larger than the exact value (e.g., all
                rounding error is in the positive direction).*/
-        internal static uint ec_tell_frac(in ec_ctx _this)
+        internal static unsafe uint ec_tell_frac(in ec_ctx* _this)
         {
             int nbits;
             int r;
             int l;
             uint b;
-            nbits = _this.nbits_total << BITRES;
-            l = EC_ILOG(_this.rng);
-            r = (int)(_this.rng >> (l - 16));
+            nbits = _this->nbits_total << BITRES;
+            l = EC_ILOG(_this->rng);
+            r = (int)(_this->rng >> (l - 16));
             b = (uint)((r >> 12) - 8);
             b += (r > correction[b] ? 1u : 0);
             l = (int)((l << 3) + b);

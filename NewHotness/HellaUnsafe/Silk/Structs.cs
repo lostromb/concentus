@@ -26,9 +26,12 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 using HellaUnsafe.Common;
+using System.Runtime.CompilerServices;
+using static HellaUnsafe.Celt.KissFFT;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.TuningParameters;
+using static HellaUnsafe.Silk.ResamplerStructs;
 
 namespace HellaUnsafe.Silk
 {
@@ -78,20 +81,20 @@ namespace HellaUnsafe.Silk
     }
 
     /* Structure containing NLSF codebook */
-    internal struct silk_NLSF_CB_struct
+    internal unsafe struct silk_NLSF_CB_struct
     {
         internal short nVectors;
         internal short order;
         internal short quantStepSize_Q16;
         internal short invQuantStepSize_Q6;
-        internal byte[] CB1_NLSF_Q8;
-        internal short[] CB1_Wght_Q9;
-        internal byte[] CB1_iCDF;
-        internal byte[] pred_Q8;
-        internal byte[] ec_sel;
-        internal byte[] ec_iCDF;
-        internal byte[] ec_Rates_Q5;
-        internal short[] deltaMin_Q15;
+        internal byte* CB1_NLSF_Q8;
+        internal short* CB1_Wght_Q9;
+        internal byte* CB1_iCDF;
+        internal byte* pred_Q8;
+        internal byte* ec_sel;
+        internal byte* ec_iCDF;
+        internal byte* ec_Rates_Q5;
+        internal short* deltaMin_Q15;
     }
 
     internal unsafe struct stereo_enc_state
@@ -103,7 +106,7 @@ namespace HellaUnsafe.Silk
         internal short smth_width_Q14;
         internal short width_prev_Q14;
         internal short silent_side_len;
-        internal fixed sbyte predIx[MAX_FRAMES_PER_PACKET][ 2 ][ 3 ];
+        internal fixed sbyte predIx[MAX_FRAMES_PER_PACKET * 2 * 3]; // Porting note: 3D array
         internal fixed sbyte mid_only_flags[MAX_FRAMES_PER_PACKET];
     }
 
@@ -177,9 +180,9 @@ namespace HellaUnsafe.Silk
         internal int warping_Q16;                       /* Warping parameter for warped noise shaping                       */
         internal int useCBR;                            /* Flag to enable constant bitrate                                  */
         internal int prefillFlag;                       /* Flag to indicate that only buffers are prefilled, no coding      */
-        internal byte* pitch_lag_low_bits_iCDF;          /* Pointer to iCDF table for low bits of pitch lag index            */
-        internal byte* pitch_contour_iCDF;               /* Pointer to iCDF table for pitch contour index                    */
-        internal StructRef<silk_NLSF_CB_struct> psNLSF_CB;                        /* Pointer to NLSF codebook                                         */
+        internal /* const */ byte* pitch_lag_low_bits_iCDF;          /* Pointer to iCDF table for low bits of pitch lag index            */
+        internal /* const */ byte* pitch_contour_iCDF;               /* Pointer to iCDF table for pitch contour index                    */
+        internal /* const */ silk_NLSF_CB_struct* psNLSF_CB;                        /* Pointer to NLSF codebook                                         */
         internal fixed int input_quality_bands_Q15[VAD_N_BANDS];
         internal int input_tilt_Q15;
         internal int SNR_dB_Q7;                         /* Quality setting                                                  */
@@ -219,8 +222,16 @@ namespace HellaUnsafe.Silk
         internal int useInBandFEC;                      /* Saves the API setting for query                                  */
         internal int LBRR_enabled;                      /* Depends on useInBandFRC, bitrate and packet loss rate            */
         internal int LBRR_GainIncreases;                /* Gains increment for coding LBRR frames                           */
-        internal SideInfoIndices[] indices_LBRR[MAX_FRAMES_PER_PACKET];
-        internal sbyte pulses_LBRR[MAX_FRAMES_PER_PACKET][MAX_FRAME_LENGTH];
+
+        [InlineArray(MAX_FRAMES_PER_PACKET)]
+        internal unsafe struct indices_LBRR_array
+        {
+            SideInfoIndices element0;
+        }
+
+        internal indices_LBRR_array _indices_LBRR_storage;
+        internal SideInfoIndices* indices_LBRR => (SideInfoIndices*)Unsafe.AsPointer(ref _indices_LBRR_storage);
+        internal fixed sbyte pulses_LBRR[MAX_FRAMES_PER_PACKET * MAX_FRAME_LENGTH]; // Porting note: 2D array
     }
 
     internal unsafe struct silk_PLC_struct
@@ -268,8 +279,8 @@ namespace HellaUnsafe.Silk
         internal int LPC_order;                          /* LPC order                                                        */
         internal fixed short prevNLSF_Q15[MAX_LPC_ORDER];      /* Used to interpolate LSFs                                         */
         internal int first_frame_after_reset;            /* Flag for deactivating NLSF interpolation                         */
-        internal byte[] pitch_lag_low_bits_iCDF;           /* Pointer to iCDF table for low bits of pitch lag index            */
-        internal byte[] pitch_contour_iCDF;                /* Pointer to iCDF table for pitch contour index                    */
+        internal /* const */ byte* pitch_lag_low_bits_iCDF;           /* Pointer to iCDF table for low bits of pitch lag index            */
+        internal /* const */ byte* pitch_contour_iCDF;                /* Pointer to iCDF table for pitch contour index                    */
 
         /* For buffering payload in case of more frames per packet */
         internal int nFramesDecoded;
@@ -285,7 +296,7 @@ namespace HellaUnsafe.Silk
 
         internal silk_resampler_state_struct resampler_state;
 
-        internal StructRef<silk_NLSF_CB_struct> psNLSF_CB;                         /* Pointer to NLSF codebook                                         */
+        internal /* const */ silk_NLSF_CB_struct* psNLSF_CB;                         /* Pointer to NLSF codebook                                         */
 
         /* Quantization indices */
         internal SideInfoIndices indices;
@@ -306,7 +317,7 @@ namespace HellaUnsafe.Silk
         internal fixed int pitchL[MAX_NB_SUBFR];
         internal fixed int Gains_Q16[MAX_NB_SUBFR];
         /* Holds interpolated and final coefficients, 4-byte aligned */
-        internal short PredCoef_Q12[2][MAX_LPC_ORDER];
+        internal fixed short PredCoef_Q12[2 * MAX_LPC_ORDER]; // Porting note: 2D array
         internal fixed short LTPCoef_Q14[LTP_ORDER * MAX_NB_SUBFR];
         internal int LTP_scale_Q14;
     }

@@ -80,38 +80,12 @@ namespace HellaUnsafe.Celt
             internal float max_pitch_ratio;
             /* Store as Q6 char to save space. */
             internal fixed byte leak_boost[LEAK_BANDS]; // embedded array
-
-            public unsafe void Assign(ref AnalysisInfo other)
-            {
-                this.valid = other.valid;
-                this.tonality = other.tonality;
-                this.tonality_slope = other.tonality_slope;
-                this.noisiness = other.noisiness;
-                this.activity = other.activity;
-                this.music_prob = other.music_prob;
-                this.music_prob_min = other.music_prob_min;
-                this.music_prob_max = other.music_prob_max;
-                this.bandwidth = other.bandwidth;
-                this.activity_probability = other.activity_probability;
-                this.max_pitch_ratio = other.max_pitch_ratio;
-                fixed (byte* source = other.leak_boost)
-                fixed (byte* dest = this.leak_boost)
-                {
-                    OPUS_COPY(dest, source, LEAK_BANDS);
-                }
-            }
         }
 
         internal struct SILKInfo
         {
             internal int signalType;
             internal int offset;
-
-            public void Assign(ref SILKInfo other)
-            {
-                this.signalType = other.signalType;
-                this.offset = other.offset;
-            }
         }
 
         internal static int resampling_factor(int rate)
@@ -295,14 +269,14 @@ namespace HellaUnsafe.Celt
               new sbyte[] {0, -2, 0, -3,    3, 0, 1,-1}, /* 20 ms */
         };
 
-        internal static unsafe void init_caps(in CeltCustomMode m, int* cap, int LM, int C)
+        internal static unsafe void init_caps(in CeltCustomMode* m, int* cap, int LM, int C)
         {
             int i;
-            for (i = 0; i < m.nbEBands; i++)
+            for (i = 0; i < m->nbEBands; i++)
             {
                 int N;
-                N = (m.eBands[i + 1] - m.eBands[i]) << LM;
-                cap[i] = (m.cache.caps[m.nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
+                N = (m->eBands[i + 1] - m->eBands[i]) << LM;
+                cap[i] = (m->cache.caps[m->nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
             }
         }
 
@@ -327,7 +301,7 @@ namespace HellaUnsafe.Celt
 
         internal static string opus_get_version_string()
         {
-            return "Concentus 0.0.1-unsafe";
+            return "Concentus 0.0.1-hella_unsafe";
         }
     }
 }

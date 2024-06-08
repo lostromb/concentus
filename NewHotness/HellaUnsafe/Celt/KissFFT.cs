@@ -66,18 +66,19 @@ namespace HellaUnsafe.Celt
             internal float scale;
             internal int shift;
             internal fixed short factors[2 * MAXFACTORS];
-            internal short[] bitrev;
-            internal kiss_twiddle_cpx[] twiddles;
+            internal short* bitrev;
+            internal kiss_twiddle_cpx* twiddles;
 
-            public unsafe kiss_fft_state(int nfft, float scale, int shift, short[] factors, short[] bitrev, kiss_twiddle_cpx[] twiddles)
+            public unsafe kiss_fft_state(int nfft, float scale, int shift, short[] factors, short* bitrev, kiss_twiddle_cpx* twiddles)
             {
                 this.nfft = nfft;
                 this.scale = scale;
                 this.shift = shift;
+                ASSERT(factors.Length == 2 * MAXFACTORS);
                 fixed (short* dest = this.factors)
-                fixed (short* source = factors)
+                fixed (short* src = factors)
                 {
-                    Unsafe.CopyBlock(dest, source, (uint)(factors.Length * sizeof(short)));
+                    Unsafe.CopyBlock(dest, src, (uint)(2 * MAXFACTORS * sizeof(short)));
                 }
 
                 this.bitrev = bitrev;
@@ -192,7 +193,7 @@ namespace HellaUnsafe.Celt
         internal static unsafe void kf_bfly4(
             kiss_fft_cpx* Fout,
             in int fstride,
-            in kiss_fft_state st,
+            in kiss_fft_state* st,
             int m,
             int N,
             int mm,
@@ -264,7 +265,7 @@ namespace HellaUnsafe.Celt
         internal static unsafe void kf_bfly3(
             kiss_fft_cpx* Fout,
             in int fstride,
-            in kiss_fft_state st,
+            in kiss_fft_state* st,
             int m,
             int N,
             int mm,
@@ -316,7 +317,7 @@ namespace HellaUnsafe.Celt
         internal static unsafe void kf_bfly5(
             kiss_fft_cpx* Fout,
             int fstride,
-            in kiss_fft_state st,
+            in kiss_fft_state* st,
             int m,
             int N,
             int mm,
@@ -381,7 +382,7 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe void opus_fft_impl(in kiss_fft_state st, kiss_fft_cpx* fout)
+        internal static unsafe void opus_fft_impl(kiss_fft_state* st, kiss_fft_cpx* fout)
         {
             int m2, m;
             int p;
@@ -391,76 +392,74 @@ namespace HellaUnsafe.Celt
             int shift;
 
             /* st->shift can be -1 */
-            shift = st.shift > 0 ? st.shift : 0;
+            shift = st->shift > 0 ? st->shift : 0;
 
             fstride[0] = 1;
             L = 0;
             do
             {
-                p = st.factors[2 * L];
-                m = st.factors[2 * L + 1];
+                p = st->factors[2 * L];
+                m = st->factors[2 * L + 1];
                 fstride[L + 1] = fstride[L] * p;
                 L++;
             } while (m != 1);
 
-            fixed (kiss_twiddle_cpx* twiddles = st.twiddles)
+            kiss_twiddle_cpx* twiddles = st->twiddles;
+            m = st->factors[2 * L - 1];
+            for (i = L - 1; i >= 0; i--)
             {
-                m = st.factors[2 * L - 1];
-                for (i = L - 1; i >= 0; i--)
+                if (i != 0)
+                    m2 = st->factors[2 * i - 1];
+                else
+                    m2 = 1;
+                switch (st->factors[2 * i])
                 {
-                    if (i != 0)
-                        m2 = st.factors[2 * i - 1];
-                    else
-                        m2 = 1;
-                    switch (st.factors[2 * i])
-                    {
-                        case 2:
-                            kf_bfly2(fout, m, fstride[i]);
-                            break;
-                        case 4:
-                            kf_bfly4(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
-                            break;
-                        case 3:
-                            kf_bfly3(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
-                            break;
-                        case 5:
-                            kf_bfly5(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
-                            break;
-                    }
-                    m = m2;
+                    case 2:
+                        kf_bfly2(fout, m, fstride[i]);
+                        break;
+                    case 4:
+                        kf_bfly4(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
+                        break;
+                    case 3:
+                        kf_bfly3(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
+                        break;
+                    case 5:
+                        kf_bfly5(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
+                        break;
                 }
+                m = m2;
             }
         }
 
-        internal static unsafe void opus_fft_c(in kiss_fft_state st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
+        internal static unsafe void opus_fft_c(kiss_fft_state* st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
         {
             const int scale_shift = 0;
             int i;
             float scale;
-            scale = st.scale;
+            scale = st->scale;
 
             ASSERT(fin != fout, "In-place FFT not supported");
             /* Bit-reverse the input */
-            for (i = 0; i < st.nfft; i++)
+            for (i = 0; i < st->nfft; i++)
             {
                 kiss_fft_cpx x = fin[i];
-                fout[st.bitrev[i]].r = SHR32(MULT16_32_Q16(scale, x.r), scale_shift);
-                fout[st.bitrev[i]].i = SHR32(MULT16_32_Q16(scale, x.i), scale_shift);
+                fout[st->bitrev[i]].r = SHR32(MULT16_32_Q16(scale, x.r), scale_shift);
+                fout[st->bitrev[i]].i = SHR32(MULT16_32_Q16(scale, x.i), scale_shift);
             }
             opus_fft_impl(st, fout);
         }
 
-        internal static unsafe void opus_ifft_c(in kiss_fft_state st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
+        internal static unsafe void opus_ifft_c(kiss_fft_state* st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
         {
             int i;
             ASSERT(fin != fout, "In-place FFT not supported");
             /* Bit-reverse the input */
-            for (i = 0; i < st.nfft; i++)
-                fout[st.bitrev[i]] = fin[i];
-            for (i = 0; i < st.nfft; i++)
+            for (i = 0; i < st->nfft; i++)
+                fout[st->bitrev[i]] = fin[i];
+            for (i = 0; i < st->nfft; i++)
                 fout[i].i = -fout[i].i;
             opus_fft_impl(st, fout);
-            for (i = 0; i < st.nfft; i++)
+            for (i = 0; i < st->nfft; i++)
                 fout[i].i = -fout[i].i;
         }
     }
