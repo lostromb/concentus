@@ -66,27 +66,24 @@ namespace HellaUnsafe.Celt
             byte* cache;
 
             LM++;
-            fixed (byte* fixed_cache_bits = m.cache.bits)
-            {
-                cache = fixed_cache_bits + m.cache.index[LM * m.nbEBands + band];
+            cache = m.cache.bits + m.cache.index[LM * m.nbEBands + band];
 
-                lo = 0;
-                hi = cache[0];
-                bits--;
-                for (i = 0; i < LOG_MAX_PSEUDO; i++)
-                {
-                    int mid = (lo + hi + 1) >> 1;
-                    /* OPT: Make sure this is implemented with a conditional move */
-                    if ((int)cache[mid] >= bits)
-                        hi = mid;
-                    else
-                        lo = mid;
-                }
-                if (bits - (lo == 0 ? -1 : (int)cache[lo]) <= (int)cache[hi] - bits)
-                    return lo;
+            lo = 0;
+            hi = cache[0];
+            bits--;
+            for (i = 0; i < LOG_MAX_PSEUDO; i++)
+            {
+                int mid = (lo + hi + 1) >> 1;
+                /* OPT: Make sure this is implemented with a conditional move */
+                if ((int)cache[mid] >= bits)
+                    hi = mid;
                 else
-                    return hi;
+                    lo = mid;
             }
+            if (bits - (lo == 0 ? -1 : (int)cache[lo]) <= (int)cache[hi] - bits)
+                return lo;
+            else
+                return hi;
         }
 
         internal static unsafe int pulses2bits(in CeltCustomMode m, int band, int LM, int pulses)

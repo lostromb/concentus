@@ -383,18 +383,16 @@ namespace HellaUnsafe.Celt
                 shift = mode.maxLM - LM;
             }
 
-            fixed (float* modewindow = mode.window)
+            float* modewindow = mode.window;
+            c = 0; do
             {
-                c = 0; do
+                for (b = 0; b < B; b++)
                 {
-                    for (b = 0; b < B; b++)
-                    {
-                        /* Interleaving the sub-frames while doing the MDCTs */
-                        clt_mdct_forward(mode.mdct, input + c * (B * N + overlap) + b * N,
-                                         &output[b + c * N * B], modewindow, overlap, shift, B);
-                    }
-                } while (++c < CC);
-            }
+                    /* Interleaving the sub-frames while doing the MDCTs */
+                    clt_mdct_forward(mode.mdct, input + c * (B * N + overlap) + b * N,
+                                        &output[b + c * N * B], modewindow, overlap, shift, B);
+                }
+            } while (++c < CC);
 
             if (CC == 2 && C == 1)
             {
@@ -1171,8 +1169,8 @@ namespace HellaUnsafe.Celt
                 }
                 /*printf("%d %f\n", pitch_index, gain1);*/
 
+                float* modewindow = mode.window;
                 fixed (float* stin_mem = st.in_mem)
-                fixed (float* modewindow = mode.window)
                 {
                     c = 0; do
                     {
@@ -1775,12 +1773,9 @@ namespace HellaUnsafe.Celt
 
                 enable_tf_analysis = (effectiveBytes >= 15 * C && hybrid == 0 && st.complexity >= 2 && st.lfe == 0) ? 1 : 0;
 
-                fixed (short* modelogN = mode.logN)
-                {
-                    maxDepth = dynalloc_analysis(bandLogE, bandLogE2, oldBandE, nbEBands, start, end, C, offsets,
-                          st.lsb_depth, modelogN, isTransient, st.vbr, st.constrained_vbr,
-                          eBands, LM, effectiveBytes, out tot_boost, st.lfe, surround_dynalloc, ref st.analysis, importance, spread_weight);
-                }
+                maxDepth = dynalloc_analysis(bandLogE, bandLogE2, oldBandE, nbEBands, start, end, C, offsets,
+                        st.lsb_depth, mode.logN, isTransient, st.vbr, st.constrained_vbr,
+                        eBands, LM, effectiveBytes, out tot_boost, st.lfe, surround_dynalloc, ref st.analysis, importance, spread_weight);
 
                 /* Disable variable tf resolution for hybrid and at very low bitrate */
                 if (enable_tf_analysis != 0)

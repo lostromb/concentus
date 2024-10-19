@@ -837,7 +837,6 @@ namespace HellaUnsafe.Celt
               int LM,
               float gain, int fill, float* bandE)
         {
-            ReadOnlySpan<byte> cache;
             int q;
             int curr_bits;
             int imid = 0, iside = 0;
@@ -856,7 +855,7 @@ namespace HellaUnsafe.Celt
             spread = ctx.spread;
 
             /* If we need 1.5 more bit than we can produce, split the band in two. */
-            cache = m.cache.bits.AsSpan(m.cache.index[(LM + 1) * m.nbEBands + i]);
+            byte* cache = &m.cache.bits[m.cache.index[(LM + 1) * m.nbEBands + i]];
             if (LM != -1 && b > cache[cache[0]] + 12 && N > 2)
             {
                 int mbits, sbits, delta;

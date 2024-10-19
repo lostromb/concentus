@@ -59,15 +59,15 @@ namespace HellaUnsafe.Celt
             200,200,200,200,200,200,200,200,198,193,188,183,178,173,168,163,158,153,148,129,104,
             };
 
-        internal struct PulseCache
+        internal unsafe struct PulseCache
         {
             internal int size;
-            internal short[] index;
-            internal byte[] bits;
-            internal byte[] caps;
+            internal short* index;
+            internal byte* bits;
+            internal byte* caps;
         }
 
-        internal struct CeltCustomMode
+        internal unsafe struct CeltCustomMode
         {
             internal int Fs;
             internal int overlap;
@@ -83,9 +83,9 @@ namespace HellaUnsafe.Celt
 
             internal int nbAllocVectors; /**< Number of lines in the matrix below */
             internal byte[] allocVectors;   /**< Number of bits in each band for several rates */
-            internal short[] logN;
+            internal short* logN;
 
-            internal float[] window;
+            internal float* window;
             internal mdct_lookup mdct;
             internal PulseCache cache;
         };

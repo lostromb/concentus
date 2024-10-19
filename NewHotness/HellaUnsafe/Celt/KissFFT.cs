@@ -66,10 +66,10 @@ namespace HellaUnsafe.Celt
             internal float scale;
             internal int shift;
             internal fixed short factors[2 * MAXFACTORS];
-            internal short[] bitrev;
-            internal kiss_twiddle_cpx[] twiddles;
+            internal short* bitrev;
+            internal kiss_twiddle_cpx* twiddles;
 
-            public unsafe kiss_fft_state(int nfft, float scale, int shift, short[] factors, short[] bitrev, kiss_twiddle_cpx[] twiddles)
+            public unsafe kiss_fft_state(int nfft, float scale, int shift, short[] factors, short* bitrev, kiss_twiddle_cpx* twiddles)
             {
                 this.nfft = nfft;
                 this.scale = scale;
@@ -403,32 +403,29 @@ namespace HellaUnsafe.Celt
                 L++;
             } while (m != 1);
 
-            fixed (kiss_twiddle_cpx* twiddles = st.twiddles)
+            m = st.factors[2 * L - 1];
+            for (i = L - 1; i >= 0; i--)
             {
-                m = st.factors[2 * L - 1];
-                for (i = L - 1; i >= 0; i--)
+                if (i != 0)
+                    m2 = st.factors[2 * i - 1];
+                else
+                    m2 = 1;
+                switch (st.factors[2 * i])
                 {
-                    if (i != 0)
-                        m2 = st.factors[2 * i - 1];
-                    else
-                        m2 = 1;
-                    switch (st.factors[2 * i])
-                    {
-                        case 2:
-                            kf_bfly2(fout, m, fstride[i]);
-                            break;
-                        case 4:
-                            kf_bfly4(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
-                            break;
-                        case 3:
-                            kf_bfly3(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
-                            break;
-                        case 5:
-                            kf_bfly5(fout, fstride[i] << shift, st, m, fstride[i], m2, twiddles);
-                            break;
-                    }
-                    m = m2;
+                    case 2:
+                        kf_bfly2(fout, m, fstride[i]);
+                        break;
+                    case 4:
+                        kf_bfly4(fout, fstride[i] << shift, st, m, fstride[i], m2, st.twiddles);
+                        break;
+                    case 3:
+                        kf_bfly3(fout, fstride[i] << shift, st, m, fstride[i], m2, st.twiddles);
+                        break;
+                    case 5:
+                        kf_bfly5(fout, fstride[i] << shift, st, m, fstride[i], m2, st.twiddles);
+                        break;
                 }
+                m = m2;
             }
         }
 

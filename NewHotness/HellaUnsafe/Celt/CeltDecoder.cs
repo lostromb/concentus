@@ -284,8 +284,8 @@ namespace HellaUnsafe.Celt
             nbEBands = mode.nbEBands;
             N = mode.shortMdctSize << LM;
             float[] freq_buf = new float[N]; /**< Interleaved signal MDCTs */
+            float* modeWindow = mode.window;
             fixed (float* freq = freq_buf)
-            fixed (float* modeWindow = mode.window)
             {
                 M = 1 << LM;
 
@@ -567,11 +567,11 @@ namespace HellaUnsafe.Celt
                        decaying signal, but we can't get more than MAX_PERIOD. */
                     exc_length = IMIN(2 * pitch_index, MAX_PERIOD);
 
+                    float* modewindow = mode.window;
                     float[] exc_array = new float[MAX_PERIOD + CELT_LPC_ORDER];
                     float[] fir_tmp_array = new float[exc_length];
                     fixed (float* _exc = exc_array)
                     fixed (float* fir_tmp = fir_tmp_array)
-                    fixed (float* modewindow = mode.window)
                     {
                         exc = _exc + CELT_LPC_ORDER;
                         window = modewindow;
@@ -794,6 +794,7 @@ namespace HellaUnsafe.Celt
             float[] X_array = new float[C * N]; /**< Interleaved normalised MDCTs */
             byte[] collapse_masks_array = new byte[C * nbEBands];
 
+            float* modewindow = mode.window;
             fixed (float** out_syn = out_syn_array)
             fixed (float** decode_mem = decode_mem_array)
             fixed (float* decoder_memory = st._decode_mem)
@@ -808,7 +809,6 @@ namespace HellaUnsafe.Celt
             fixed (float* modepreemph = mode.preemph)
             fixed (float* X = X_array)
             fixed (byte* collapse_masks = collapse_masks_array)
-            fixed (float* modewindow = mode.window)
             {
                 lpc = (float*)(decoder_memory + (DECODE_BUFFER_SIZE + overlap) * CC);
                 oldBandE = lpc + CC * CELT_LPC_ORDER;
