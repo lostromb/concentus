@@ -35,7 +35,7 @@ using System;
 using System.Diagnostics;
 using static System.Math;
 
-namespace HellaUnsafe.Celt
+namespace HellaUnsafe.Old.Celt
 {
     internal static class Arch
     {

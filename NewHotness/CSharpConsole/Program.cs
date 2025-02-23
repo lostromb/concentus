@@ -2,27 +2,49 @@
 using HellaUnsafe.Celt;
 using HellaUnsafe.Common;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 
 namespace CSharpConsole
 {
-    internal static class Program
+    internal static unsafe class Program
     {
         private static InlineArrayOpusEncoder _encoder;
 
+
+        private static ReadOnlySpan<sbyte> Test3DArray_Data/*[4][2][5]*/ =>
+        [
+                4,      6,     24,      7,      5,
+                0,      0,      2,      0,      0,
+                12,     28,     41,     13,     -4,
+                -9,     15,     42,     25,     14,
+                1,     -2,     62,     41,     -9,
+                -10,     37,     65,     -4,      3,
+                -6,      4,     66,      7,     -8,
+                16,     14,     38,     -3,     33,
+        ];
+
+        private static readonly Native3DArray<sbyte> Test3DArray = new Native3DArray<sbyte>(Test3DArray_Data, 4, 2, 5);
+
         public static unsafe void Main(string[] args)
         {
-            StructRef<FixedBufferSilkEncoder> encoder = new StructRef<FixedBufferSilkEncoder>(new FixedBufferSilkEncoder());
-            fixed (FixedBufferSilkEncoder* enc = &encoder.Value)
-            {
-                enc->buffer[10] = 10;
-                //BenchmarkRunner.Run<Benchmarks>();
-            }
+            Console.WriteLine(Test3DArray[0][0][0]);
+            Console.WriteLine(Test3DArray[3][0][3]);
+            Console.WriteLine(Test3DArray[0][1][0]);
+            Console.WriteLine(Test3DArray[3][1][3]);
+            Console.WriteLine(Test3DArray[0][0][7]);
 
-            int size = sizeof(FixedBufferOpusEncoder);
-            Console.WriteLine(size);
+            //StructRef<FixedBufferSilkEncoder> encoder = new StructRef<FixedBufferSilkEncoder>(new FixedBufferSilkEncoder());
+            //fixed (FixedBufferSilkEncoder* enc = &encoder.Value)
+            //{
+            //    enc->buffer[10] = 10;
+            //    //BenchmarkRunner.Run<Benchmarks>();
+            //}
+
+            //int size = sizeof(FixedBufferOpusEncoder);
+            //Console.WriteLine(size);
         }
 
         public static unsafe void Encode(ref InlineArrayOpusEncoder encoder)
