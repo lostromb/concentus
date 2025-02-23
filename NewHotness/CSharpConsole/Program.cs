@@ -36,6 +36,15 @@ namespace CSharpConsole
             Console.WriteLine(Test3DArray[3][1][3]);
             Console.WriteLine(Test3DArray[0][0][7]);
 
+            Span<int> span = stackalloc int[5];
+            int* ptr = CRuntime.SpanToPointerDangerous(span);
+            for (int c = 0; c < 5; c++)
+            {
+                Console.WriteLine(ptr[c] + " " + span[c]);
+                ptr[c] = c;
+                Console.WriteLine(ptr[c] + " " + span[c]);
+            }
+
             //StructRef<FixedBufferSilkEncoder> encoder = new StructRef<FixedBufferSilkEncoder>(new FixedBufferSilkEncoder());
             //fixed (FixedBufferSilkEncoder* enc = &encoder.Value)
             //{

@@ -48,7 +48,7 @@ internal static class A2NLSF
     /* Helper function for A2NLSF(..)                    */
     /* Transforms polynomials from cos(n*f) to cos(f)^n  */
     internal static unsafe void silk_A2NLSF_trans_poly(
-        Span<int> p,                     /* I/O    Polynomial                                */
+        int* p,                     /* I/O    Polynomial                                */
         in int dd                      /* I      Polynomial order (= filter order / 2 )    */
     )
     {
@@ -67,7 +67,7 @@ internal static class A2NLSF
     /* Helper function for A2NLSF(..) */
     /* Polynomial evaluation          */
     internal static unsafe int silk_A2NLSF_eval_poly( /* return the polynomial evaluation, in Q16     */
-        Span<int> p,                     /* I    Polynomial, Q16                         */
+        int* p,                     /* I    Polynomial, Q16                         */
         in int    x,                      /* I    Evaluation point, Q12                   */
         in int      dd                      /* I    Order                                   */
     )
@@ -101,8 +101,8 @@ internal static class A2NLSF
 
     internal static unsafe void silk_A2NLSF_init(
          in int* a_Q16,
-         Span<int> P,
-         Span<int> Q,
+         int* P,
+         int* Q,
          in int dd
     )
     {
@@ -143,15 +143,14 @@ internal static class A2NLSF
         int xlo, xhi, xmid;
         int ylo, yhi, ymid, thr;
         int nom, den;
-        Span<int> P = stackalloc int[SILK_MAX_ORDER_LPC / 2 + 1];
-        Span<int> Q = stackalloc int[SILK_MAX_ORDER_LPC / 2 + 1];
-        Span<int> PQ_0;
-        Span<int> PQ_1;
-        Span<int> p;
+        int* P = SpanToPointerDangerous(stackalloc int[SILK_MAX_ORDER_LPC / 2 + 1]);
+        int* Q = SpanToPointerDangerous(stackalloc int[SILK_MAX_ORDER_LPC / 2 + 1]);
+        int** PQ = SpanToPointerOfPointersDangerous<int>(stackalloc nint[2]);
+        int* p;
 
         /* Store pointers to array */
-        PQ_0 = P;
-        PQ_1 = Q;
+        PQ[0] = P;
+        PQ[1] = Q;
 
         dd = silk_RSHIFT(d, 1);
 
@@ -248,7 +247,7 @@ internal static class A2NLSF
                     break;
                 }
                 /* Alternate pointer to polynomial */
-                p = (root_ix & 1) == 1 ? PQ_1 : PQ_0;
+                p = PQ[root_ix & 1];
 
                 /* Evaluate polynomial */
                 xlo = silk_LSFCosTab_FIX_Q12[k - 1]; /* Q12*/

@@ -31,7 +31,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -69,6 +68,29 @@ namespace HellaUnsafe.Common
             }
 
             //Debug.Assert(condition);
+        }
+
+        /// <summary>
+        /// Gets an unmanaged pointer to a span. THIS IS DANGEROUS FOR OBVIOUS REASONS.
+        /// Intended for use with stackalloc spans where original code uses pointers
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        internal static unsafe T* SpanToPointerDangerous<T>(Span<T> input) where T : unmanaged
+        {
+            return (T*)Unsafe.AsPointer(ref input[0]);
+        }
+
+        /// <summary>
+        /// Given a span of native integers, cast that into an array of pointers of the specified type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        internal static unsafe T** SpanToPointerOfPointersDangerous<T>(Span<nint> input) where T : unmanaged
+        {
+            return (T**)Unsafe.AsPointer(ref input[0]);
         }
 
         internal static unsafe void OPUS_CLEAR(byte* dst, int elements)
@@ -196,19 +218,19 @@ namespace HellaUnsafe.Common
             return (T*)dest;
         }
 
-        internal static unsafe ref T Array2DElementRef<T>(T* flatArray, int x, int y, int dimY) where T : unmanaged
-        {
-            return ref flatArray[(y * dimY) + x];
-        }
+        //internal static unsafe ref T Array2DElementRef<T>(T* flatArray, int x, int y, int dimY) where T : unmanaged
+        //{
+        //    return ref flatArray[(y * dimY) + x];
+        //}
 
-        internal static unsafe T Array2DElement<T>(T* flatArray, int x, int y, int dimY) where T : unmanaged
-        {
-            return flatArray[(y * dimY) + x];
-        }
+        //internal static unsafe T Array2DElement<T>(T* flatArray, int x, int y, int dimY) where T : unmanaged
+        //{
+        //    return flatArray[(y * dimY) + x];
+        //}
 
-        internal static unsafe T* Array2DRow<T>(T* flatArray, int x, int dimY) where T : unmanaged
-        {
-            return flatArray + (x * dimY);
-        }
+        //internal static unsafe T* Array2DRow<T>(T* flatArray, int x, int dimY) where T : unmanaged
+        //{
+        //    return flatArray + (x * dimY);
+        //}
     }
 }

@@ -6,7 +6,7 @@ using System.Text;
 namespace HellaUnsafe.Common
 {
     // USAGE:
-    //private static ReadOnlySpan<sbyte> Test2DArray_Data/*[8][5]*/ =>
+    // private static ReadOnlySpan<sbyte> Test2DArray_Data/*[8][5]*/ =>
     //    [
     //            4,      6,     24,      7,      5,
     //            0,      0,      2,      0,      0,
@@ -18,11 +18,12 @@ namespace HellaUnsafe.Common
     //            16,     14,     38,     -3,     33,
     //    ];
     //
+    // private static readonly Native2DArray<sbyte> Test2DArray = new Native2DArray<sbyte>(Test2DArray_Data, 8, 5);
+    //
     // MAKE ABSOLUTELY SURE YOU CREATE A SINGLETON!
     // THE NATIVE2DARRAY CONSTRUCTOR LEAKS NATIVE HEAP MEMORY EVERY TIME!
     // It would be nice if we could just use embedded .text data as a fixed pointer in the binary
     // itself, but that is only supported under-the-hood for byte arrays because of platform endianness
-    //private static readonly Native2DArray<sbyte> Test2DArray = new Native2DArray<sbyte>(Test2DArray_Data, 8, 5);
 
     internal unsafe struct Native2DArray<T> where T : unmanaged
     {
