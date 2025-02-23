@@ -356,7 +356,7 @@ namespace HellaUnsafe.Old.Celt
         {
             ASSERT(_k > 0);
             ASSERT(CELT_PVQ_U_DATA.Length == 1272);
-            ec_enc_uint(_enc, ecbuf, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
+            //ec_enc_uint(_enc, ecbuf, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
         }
 
         internal static unsafe float cwrsi(int _n, int _k, uint _i, int* _y)
@@ -447,7 +447,8 @@ namespace HellaUnsafe.Old.Celt
         internal static unsafe float decode_pulses(int* _y, int _n, int _k, in ec_ctx* _dec, in byte* ecbuf)
         {
             ASSERT(CELT_PVQ_U_DATA.Length == 1272);
-            return cwrsi(_n, _k, ec_dec_uint(_dec, ecbuf, CELT_PVQ_V(_n, _k)), _y);
+            //return cwrsi(_n, _k, ec_dec_uint(_dec, ecbuf, CELT_PVQ_V(_n, _k)), _y);
+            return 0;
         }
     }
 }

@@ -211,8 +211,8 @@ namespace HellaUnsafe.Old.Celt
                     {
                         int pi;
                         pi = 2 * IMIN(i, 20);
-                        ec_laplace_encode(ref enc, ecbuf, &qi,
-                              (uint)(prob_model[pi] << 7), prob_model[pi + 1] << 6);
+                        //ec_laplace_encode(ref enc, ecbuf, &qi,
+                        //      (uint)(prob_model[pi] << 7), prob_model[pi + 1] << 6);
                     }
                     else if (budget - tell >= 2)
                     {
@@ -429,7 +429,7 @@ namespace HellaUnsafe.Old.Celt
                 c = 0;
                 do
                 {
-                    int qi;
+                    int qi = 0;
                     float q;
                     float tmp;
                     /* It would be better to express this invariant as a
@@ -441,8 +441,8 @@ namespace HellaUnsafe.Old.Celt
                     {
                         int pi;
                         pi = 2 * IMIN(i, 20);
-                        qi = ec_laplace_decode(ref dec, ecbuf,
-                              (uint)(prob_model[pi] << 7), prob_model[pi + 1] << 6);
+                        //qi = ec_laplace_decode(ref dec, ecbuf,
+                        //      (uint)(prob_model[pi] << 7), prob_model[pi + 1] << 6);
                     }
                     else if (budget - tell >= 2)
                     {

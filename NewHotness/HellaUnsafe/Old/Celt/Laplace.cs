@@ -92,15 +92,15 @@ namespace HellaUnsafe.Old.Celt
                 ASSERT(fs > 0);
             }
 
-            ec_encode_bin(enc, ecbuf, fl, fl + fs, 15);
+            //ec_encode_bin(enc, ecbuf, fl, fl + fs, 15);
         }
 
         internal static unsafe int ec_laplace_decode(in ec_ctx* dec, in byte* ecbuf, uint fs, int decay)
         {
             int val = 0;
             uint fl;
-            uint fm;
-            fm = ec_decode_bin(dec, 15);
+            uint fm = 0;
+            //fm = ec_decode_bin(dec, 15);
             fl = 0;
             if (fm >= fs)
             {
@@ -134,7 +134,7 @@ namespace HellaUnsafe.Old.Celt
             ASSERT(fs > 0);
             ASSERT(fl <= fm);
             ASSERT(fm < IMIN(fl + fs, 32768));
-            ec_dec_update(dec, ecbuf, fl, IMIN(fl + fs, 32768), 32768);
+            //ec_dec_update(dec, ecbuf, fl, IMIN(fl + fs, 32768), 32768);
             return val;
         }
 

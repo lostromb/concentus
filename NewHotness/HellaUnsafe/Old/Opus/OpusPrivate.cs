@@ -27,16 +27,16 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using static HellaUnsafe.Celt.KissFFT;
+using static HellaUnsafe.Old.Celt.KissFFT;
 
-namespace HellaUnsafe.Opus
+namespace HellaUnsafe.Old.Opus
 {
     internal unsafe struct OpusRepacketizer
     {
         [InlineArray(48)]
         internal unsafe struct BytePointer48
         {
-            IntPtr element0;
+            nint element0;
         }
 
         internal byte toc;

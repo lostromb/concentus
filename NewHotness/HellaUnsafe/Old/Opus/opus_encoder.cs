@@ -26,10 +26,10 @@
 */
 
 using static HellaUnsafe.Common.CRuntime;
-using static HellaUnsafe.Silk.Control;
-using static HellaUnsafe.Opus.Analysis;
+using static HellaUnsafe.Old.Silk.Control;
+using static HellaUnsafe.Old.Opus.Analysis;
 
-namespace HellaUnsafe.Opus
+namespace HellaUnsafe.Old.Opus
 {
     internal static unsafe class opus_encoder
     {
@@ -70,7 +70,7 @@ namespace HellaUnsafe.Opus
             internal int use_dtx;                 /* general DTX for both SILK and CELT */
             internal int fec_config;
             internal TonalityAnalysisState analysis;
-//#define OPUS_ENCODER_RESET_START stream_channels
+            //#define OPUS_ENCODER_RESET_START stream_channels
             internal int stream_channels;
             internal short hybrid_stereo_width_Q14;
             internal int variable_HP_smth2_Q15;
@@ -135,7 +135,7 @@ namespace HellaUnsafe.Opus
         internal const int stereo_voice_threshold = 19000;
         internal const int stereo_music_threshold = 17000;
 
-        internal static readonly int* mode_thresholds_2D/*[2][2]*/ = AllocateGlobalArray(new int []{
+        internal static readonly int* mode_thresholds_2D/*[2][2]*/ = AllocateGlobalArray(new int[]{
               /* voice */ /* music */
                 64000,      10000, /* mono */
                 44000,      10000, /* stereo */

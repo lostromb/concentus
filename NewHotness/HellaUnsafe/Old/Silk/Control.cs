@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HellaUnsafe.Silk
+namespace HellaUnsafe.Old.Silk
 {
     internal static class Control
     {

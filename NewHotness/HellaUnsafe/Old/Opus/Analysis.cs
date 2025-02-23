@@ -26,10 +26,10 @@
 */
 
 using System.Runtime.CompilerServices;
-using static HellaUnsafe.Celt.Celt;
-using static HellaUnsafe.Opus.MLP;
+using static HellaUnsafe.Old.Celt.Celt;
+using static HellaUnsafe.Old.Opus.MLP;
 
-namespace HellaUnsafe.Opus
+namespace HellaUnsafe.Old.Opus
 {
     internal static class Analysis
     {

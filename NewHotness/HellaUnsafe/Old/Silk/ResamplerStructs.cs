@@ -26,11 +26,11 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 
-using HellaUnsafe.Silk;
-using static HellaUnsafe.Celt.KissFFT;
+using HellaUnsafe.Old.Silk;
+using static HellaUnsafe.Old.Celt.KissFFT;
 using System.Runtime.CompilerServices;
 
-namespace HellaUnsafe.Silk
+namespace HellaUnsafe.Old.Silk
 {
     internal static unsafe class ResamplerStructs
     {

@@ -24,11 +24,11 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-namespace HellaUnsafe.Opus
+namespace HellaUnsafe.Old.Opus
 {
     internal static class MLP
     {
-        internal const float WEIGHTS_SCALE = (1.0f / 128);
+        internal const float WEIGHTS_SCALE = 1.0f / 128;
         internal const int MAX_NEURONS = 32;
 
         internal unsafe struct AnalysisDenseLayer

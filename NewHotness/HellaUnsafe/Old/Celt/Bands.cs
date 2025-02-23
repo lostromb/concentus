@@ -943,11 +943,11 @@ namespace HellaUnsafe.Old.Celt
                     /* Finally do the actual quantization */
                     if (encode != 0)
                     {
-                        cm = alg_quant(X, N, K, spread, B, ref ec, ecbuf, gain, ctx.resynth);
+                        cm = 0;// alg_quant(X, N, K, spread, B, ref ec, ecbuf, gain, ctx.resynth);
                     }
                     else
                     {
-                        cm = alg_unquant(X, N, K, spread, B, ref ec, ecbuf, gain);
+                        cm = 0;// alg_unquant(X, N, K, spread, B, ref ec, ecbuf, gain);
                     }
                 }
                 else
