@@ -26,7 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 using System;
-using static HellaUnsafe.Old.Celt.Arch;
+using static HellaUnsafe.Common.CRuntime;
 
 namespace HellaUnsafe.Old.Silk.Float
 {

@@ -33,6 +33,7 @@ using System;
 using System.Runtime.CompilerServices;
 using static System.Math;
 using static HellaUnsafe.Old.Celt.Arch;
+using static HellaUnsafe.Common.CRuntime;
 
 namespace HellaUnsafe.Old.Celt
 {

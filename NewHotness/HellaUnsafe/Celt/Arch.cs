@@ -48,24 +48,6 @@ namespace HellaUnsafe.Celt
         internal const float Q15_ONE = 1.0f;
         internal const int DB_SHIFT = 0;
 
-        [Conditional("DEBUG")]
-        internal static void ASSERT(bool condition)
-        {
-            if (!condition)
-            {
-                throw new Exception("Assertion failed");
-            }
-        }
-
-        [Conditional("DEBUG")]
-        internal static void ASSERT(bool condition, string message)
-        {
-            if (!condition)
-            {
-                throw new Exception(message);
-            }
-        }
-
         internal static int celt_isnan(float x) { return float.IsNaN(x) ? 1 : 0; }
         internal static int IMUL32(int a, int b) { return a * b; }
         internal static uint IMUL32(uint a, uint b) { return a * b; }

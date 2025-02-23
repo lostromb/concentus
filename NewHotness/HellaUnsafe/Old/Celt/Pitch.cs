@@ -39,6 +39,7 @@ using static HellaUnsafe.Old.Celt.EntCode;
 using static HellaUnsafe.Old.Celt.Celt;
 using static HellaUnsafe.Old.Celt.CeltLPC;
 using static HellaUnsafe.Old.Celt.MathOps;
+using static HellaUnsafe.Common.CRuntime;
 
 namespace HellaUnsafe.Old.Celt
 {

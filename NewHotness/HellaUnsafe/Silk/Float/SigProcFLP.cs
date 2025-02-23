@@ -26,11 +26,10 @@ POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 using static System.Math;
-using static HellaUnsafe.Old.Silk.SigProcFIX;
-using static HellaUnsafe.Old.Silk.Float.FloatCast;
-using System.Runtime.CompilerServices;
+using static HellaUnsafe.Silk.SigProcFIX;
+using static HellaUnsafe.Silk.Float.FloatCast;
 
-namespace HellaUnsafe.Old.Silk.Float
+namespace HellaUnsafe.Silk.Float
 {
     internal static class SigProcFLP
     {

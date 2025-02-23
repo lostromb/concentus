@@ -30,6 +30,7 @@
 */
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -38,6 +39,38 @@ namespace HellaUnsafe.Common
 {
     internal static class CRuntime
     {
+        [Conditional("DEBUG")]
+        internal static void ASSERT(bool condition)
+        {
+            if (!condition)
+            {
+                if (Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
+
+                throw new Exception("Assertion failed");
+            }
+
+            //Debug.Assert(condition);
+        }
+
+        [Conditional("DEBUG")]
+        internal static void ASSERT(bool condition, string message)
+        {
+            if (!condition)
+            {
+                if (Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
+
+                throw new Exception(message);
+            }
+
+            //Debug.Assert(condition);
+        }
+
         internal static unsafe void OPUS_CLEAR(byte* dst, int elements)
         {
             new Span<byte>(dst, elements).Fill(0);
@@ -106,6 +139,11 @@ namespace HellaUnsafe.Common
         internal static unsafe void silk_memmove(float* dst, float* src, int elements)
         {
             new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));
+        }
+
+        internal static bool opus_likely(bool input)
+        {
+            return input;
         }
 
         internal static unsafe T** AllocateGlobalPointerArray<T>(int elements) where T : unmanaged

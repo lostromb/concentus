@@ -32,6 +32,7 @@ using static HellaUnsafe.Old.Celt.Arch;
 using static HellaUnsafe.Old.Celt.EntCode;
 using static HellaUnsafe.Old.Celt.EntEnc;
 using static HellaUnsafe.Old.Celt.EntDec;
+using static HellaUnsafe.Common.CRuntime;
 
 namespace HellaUnsafe.Old.Celt
 {
