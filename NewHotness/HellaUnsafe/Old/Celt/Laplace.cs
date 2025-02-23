@@ -51,7 +51,7 @@ namespace HellaUnsafe.Old.Celt
             return (uint)(ft * (16384 - decay) >> 15);
         }
 
-        internal static unsafe void ec_laplace_encode(ref ec_ctx enc, in byte* ecbuf, int* value, uint fs, int decay)
+        internal static unsafe void ec_laplace_encode(in ec_ctx* enc, in byte* ecbuf, int* value, uint fs, int decay)
         {
             uint fl;
             int val = *value;
@@ -92,15 +92,15 @@ namespace HellaUnsafe.Old.Celt
                 ASSERT(fs > 0);
             }
 
-            ec_encode_bin(ref enc, ecbuf, fl, fl + fs, 15);
+            ec_encode_bin(enc, ecbuf, fl, fl + fs, 15);
         }
 
-        internal static unsafe int ec_laplace_decode(ref ec_ctx dec, in byte* ecbuf, uint fs, int decay)
+        internal static unsafe int ec_laplace_decode(in ec_ctx* dec, in byte* ecbuf, uint fs, int decay)
         {
             int val = 0;
             uint fl;
             uint fm;
-            fm = ec_decode_bin(ref dec, 15);
+            fm = ec_decode_bin(dec, 15);
             fl = 0;
             if (fm >= fs)
             {
@@ -134,7 +134,7 @@ namespace HellaUnsafe.Old.Celt
             ASSERT(fs > 0);
             ASSERT(fl <= fm);
             ASSERT(fm < IMIN(fl + fs, 32768));
-            ec_dec_update(ref dec, ecbuf, fl, IMIN(fl + fs, 32768), 32768);
+            ec_dec_update(dec, ecbuf, fl, IMIN(fl + fs, 32768), 32768);
             return val;
         }
 

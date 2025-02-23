@@ -307,7 +307,7 @@ namespace HellaUnsafe.Old.Celt
         }
 
         internal static unsafe uint alg_quant(float* X, int N, int K, int spread, int B,
-            ref ec_ctx enc, in byte* encbuf,
+            in ec_ctx* enc, in byte* encbuf,
             float gain, int resynth)
         {
             Span<int> iy;
@@ -325,7 +325,7 @@ namespace HellaUnsafe.Old.Celt
             yy = op_pvq_search(X, iy, K, N);
             fixed (int* iy_ptr = iy)
             {
-                CWRS.encode_pulses(iy_ptr, N, K, ref enc, encbuf);
+                CWRS.encode_pulses(iy_ptr, N, K, enc, encbuf);
             }
 
             if (resynth != 0)
@@ -341,7 +341,7 @@ namespace HellaUnsafe.Old.Celt
         /** Decode pulse vector and combine the result with the pitch vector to produce
     the final normalised signal in the current band. */
         internal static unsafe uint alg_unquant(float* X, int N, int K, int spread, int B,
-              ref ec_ctx dec, in byte* encbuf, float gain)
+              in ec_ctx* dec, in byte* encbuf, float gain)
         {
             float Ryy;
             uint collapse_mask;
@@ -352,7 +352,7 @@ namespace HellaUnsafe.Old.Celt
             iy = new int[N];
             fixed (int* iy_ptr = iy)
             {
-                Ryy = CWRS.decode_pulses(iy_ptr, N, K, ref dec, encbuf);
+                Ryy = CWRS.decode_pulses(iy_ptr, N, K, dec, encbuf);
             }
             normalise_residual(iy, X, N, Ryy, gain);
             exp_rotation(X, N, -1, B, K, spread);
