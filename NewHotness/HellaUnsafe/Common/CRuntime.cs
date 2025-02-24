@@ -218,6 +218,21 @@ namespace HellaUnsafe.Common
             return (T*)dest;
         }
 
+        /// <summary>
+        /// Initializes a new unmanaged struct of type T on the unmanaged heap
+        /// with initial value equal to the result of a value producer function
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        internal static unsafe T* AllocGlobalStructInit<T>(Func<T> input) where T : unmanaged
+        {
+            T createdObj = input();
+            IntPtr dest = Marshal.AllocHGlobal(sizeof(T));
+            Unsafe.Copy((void*)dest, ref createdObj);
+            return (T*)dest;
+        }
+
         //internal static unsafe ref T Array2DElementRef<T>(T* flatArray, int x, int y, int dimY) where T : unmanaged
         //{
         //    return ref flatArray[(y * dimY) + x];
