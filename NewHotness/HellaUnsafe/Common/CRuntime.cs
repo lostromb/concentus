@@ -70,6 +70,11 @@ namespace HellaUnsafe.Common
             //Debug.Assert(condition);
         }
 
+        internal static int BOOL2INT(bool x)
+        {
+            return x ? 1 : 0;
+        }
+
         /// <summary>
         /// Gets an unmanaged pointer to a span. THIS IS DANGEROUS FOR OBVIOUS REASONS.
         /// Intended for use with stackalloc spans where original code uses pointers

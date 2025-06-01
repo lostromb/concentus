@@ -143,8 +143,8 @@ internal static class A2NLSF
         int xlo, xhi, xmid;
         int ylo, yhi, ymid, thr;
         int nom, den;
-        int* P = SpanToPointerDangerous(stackalloc int[SILK_MAX_ORDER_LPC / 2 + 1]);
-        int* Q = SpanToPointerDangerous(stackalloc int[SILK_MAX_ORDER_LPC / 2 + 1]);
+        int* P = stackalloc int[SILK_MAX_ORDER_LPC / 2 + 1];
+        int* Q = stackalloc int[SILK_MAX_ORDER_LPC / 2 + 1];
         int** PQ = SpanToPointerOfPointersDangerous<int>(stackalloc nint[2]);
         int* p;
 

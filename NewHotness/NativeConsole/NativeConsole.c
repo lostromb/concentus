@@ -42,8 +42,11 @@ int main()
     printf("%d\r\n", Test3DArray[3][0][3]);
     printf("%d\r\n", Test3DArray[0][1][0]);
     printf("%d\r\n", Test3DArray[3][1][3]);
-    printf("%d\r\n", Test3DArray[0][0][7]);
+    
 
     int x = 3 < 4;
     x = !!x;
+    x = 17;
+    x = !!x;
+    x = 0;
 }

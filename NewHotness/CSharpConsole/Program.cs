@@ -28,8 +28,22 @@ namespace CSharpConsole
 
         private static readonly Native3DArray<sbyte> Test3DArray = new Native3DArray<sbyte>(Test3DArray_Data, 4, 2, 5);
 
+        internal static int ILog2(uint x)
+        {
+            return x == 0 ? 1 : 32 - BitOperations.LeadingZeroCount(x);
+        }
+
         public static unsafe void Main(string[] args)
         {
+            for (uint c = 0; c < 256; c++)
+            {
+                int expect = EntCode.EC_ILOG(c);
+                int actual = ILog2(c);
+                Console.WriteLine($"{c}\t Expect {expect}\tActual {actual}\tMatch? {actual == expect}");
+            }
+
+            return;
+
             Console.WriteLine(Test3DArray[0][0][0]);
             Console.WriteLine(Test3DArray[3][0][3]);
             Console.WriteLine(Test3DArray[0][1][0]);

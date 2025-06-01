@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using static HellaUnsafe.Common.CRuntime;
-using static HellaUnsafe.Silk.Define;
+﻿using static HellaUnsafe.Common.CRuntime;
 
 namespace HellaUnsafe.Silk
 {

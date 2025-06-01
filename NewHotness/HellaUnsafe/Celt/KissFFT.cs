@@ -228,7 +228,7 @@ namespace HellaUnsafe.Celt
             else
             {
                 int j;
-                kiss_fft_cpx* scratch = SpanToPointerDangerous(stackalloc kiss_fft_cpx[6]);
+                kiss_fft_cpx* scratch = stackalloc kiss_fft_cpx[6];
                 kiss_twiddle_cpx* tw1, tw2, tw3;
                 int m2 = 2 * m;
                 int m3 = 3 * m;
@@ -278,7 +278,7 @@ namespace HellaUnsafe.Celt
             int k;
             int m2 = 2 * m;
             kiss_twiddle_cpx* tw1, tw2;
-            kiss_fft_cpx* scratch = SpanToPointerDangerous(stackalloc kiss_fft_cpx[5]);
+            kiss_fft_cpx* scratch = stackalloc kiss_fft_cpx[5];
             kiss_twiddle_cpx epi3;
 
             kiss_fft_cpx* Fout_beg = Fout;
@@ -329,7 +329,7 @@ namespace HellaUnsafe.Celt
         {
             kiss_fft_cpx* Fout0, Fout1, Fout2, Fout3, Fout4;
             int i, u;
-            kiss_fft_cpx* scratch = SpanToPointerDangerous(stackalloc kiss_fft_cpx[13]);
+            kiss_fft_cpx* scratch = stackalloc kiss_fft_cpx[13];
             kiss_twiddle_cpx* tw;
             kiss_twiddle_cpx ya, yb;
             kiss_fft_cpx* Fout_beg = Fout;
@@ -392,7 +392,7 @@ namespace HellaUnsafe.Celt
             int m2, m;
             int p;
             int L;
-            int* fstride = SpanToPointerDangerous(stackalloc int[MAXFACTORS]);
+            int* fstride = stackalloc int[MAXFACTORS];
             int i;
             int shift;
 

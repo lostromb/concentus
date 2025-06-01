@@ -13,6 +13,23 @@ namespace HellaUnsafe.Common
             return AllocateGlobal<T>(managedArray.AsSpan());
         }
 
+        /// <summary>
+        /// Special case for array of pointers.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="managedArray"></param>
+        /// <returns></returns>
+        public static T** AllocateGlobal<T>(T*[] managedArray) where T : unmanaged
+        {
+            T** pointer = (T**)Marshal.AllocHGlobal(managedArray.Length * sizeof(T*));
+            for (int c = 0; c < managedArray.Length; c++)
+            {
+                pointer[c] = managedArray[c];
+            }
+
+            return pointer;
+        }
+
         public static T* AllocateGlobal<T>(ReadOnlySpan<T> managedArray) where T : unmanaged
         {
             T* pointer = (T*)Marshal.AllocHGlobal(managedArray.Length * sizeof(T));

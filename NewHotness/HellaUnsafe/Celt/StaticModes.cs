@@ -1,11 +1,9 @@
-﻿using static HellaUnsafe.Common.CRuntime;
-using static HellaUnsafe.Common.NativeArray;
-using static HellaUnsafe.Celt.MDCT;
-using static HellaUnsafe.Celt.KissFFT;
+﻿using System.Runtime.CompilerServices;
 using static HellaUnsafe.Celt.CeltMode;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-using HellaUnsafe.Common;
+using static HellaUnsafe.Celt.KissFFT;
+using static HellaUnsafe.Celt.MDCT;
+using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Common.NativeArray;
 
 namespace HellaUnsafe.Celt
 {
@@ -13,7 +11,7 @@ namespace HellaUnsafe.Celt
     {
         internal const int TOTAL_MODES = 1;
 
-        internal static readonly float* window120 = AllocateGlobal(new float[] /*[120]*/ {
+        internal static readonly float* window120 = AllocateGlobal(new float[120] {
             6.7286966e-05f, 0.00060551348f, 0.0016815970f, 0.0032947962f, 0.0054439943f,
             0.0081276923f, 0.011344001f, 0.015090633f, 0.019364886f, 0.024163635f,
             0.029483315f, 0.035319905f, 0.041668911f, 0.048525347f, 0.055883718f,
@@ -40,10 +38,10 @@ namespace HellaUnsafe.Celt
             0.99998518f, 0.99999457f, 0.99999859f, 0.99999982f, 1.0000000f,
             });
 
-        internal static readonly short* logN400 = AllocateGlobal(new short[] /*[21]*/ {
+        internal static readonly short* logN400 = AllocateGlobal(new short[21] {
             0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 16, 16, 16, 21, 21, 24, 29, 34, 36, });
 
-        internal static readonly short* cache_index50 = AllocateGlobal(new short[] /*[105]*/ {
+        internal static readonly short* cache_index50 = AllocateGlobal(new short[105] {
             -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 41, 41, 41,
             82, 82, 123, 164, 200, 222, 0, 0, 0, 0, 0, 0, 0, 0, 41,
             41, 41, 41, 123, 123, 123, 164, 164, 240, 266, 283, 295, 41, 41, 41,
@@ -53,7 +51,7 @@ namespace HellaUnsafe.Celt
             240, 240, 305, 305, 305, 305, 343, 343, 343, 351, 351, 370, 376, 382, 387,
             });
 
-        internal static readonly byte* cache_bits50 = AllocateGlobal(new byte[] /*[392]*/ {
+        internal static readonly byte* cache_bits50 = AllocateGlobal(new byte[392] {
             40, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
             7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
             7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 40, 15, 23, 28,
@@ -82,7 +80,7 @@ namespace HellaUnsafe.Celt
             224, 5, 60, 113, 161, 206, 248, 4, 65, 122, 175, 224, 4, 67, 127,
             182, 234, });
 
-        internal static readonly byte* cache_caps50 = AllocateGlobal(new byte[] /*[168]*/ {
+        internal static readonly byte* cache_caps50 = AllocateGlobal(new byte[168] {
             224, 224, 224, 224, 224, 224, 224, 224, 160, 160, 160, 160, 185, 185, 185,
             178, 178, 168, 134, 61, 37, 224, 224, 224, 224, 224, 224, 224, 224, 240,
             240, 240, 240, 207, 207, 207, 198, 198, 183, 144, 66, 40, 160, 160, 160,
@@ -96,7 +94,7 @@ namespace HellaUnsafe.Celt
             204, 204, 204, 204, 204, 201, 201, 201, 201, 198, 198, 198, 187, 187, 175,
             140, 66, 40, });
 
-        internal static readonly float* mdct_twiddles960 = AllocateGlobal(new float[] /*[1800]*/ {
+        internal static readonly float* mdct_twiddles960 = AllocateGlobal(new float[1800] {
             0.99999994f, 0.99999321f, 0.99997580f, 0.99994773f, 0.99990886f,
             0.99985933f, 0.99979913f, 0.99972820f, 0.99964654f, 0.99955416f,
             0.99945110f, 0.99933738f, 0.99921292f, 0.99907774f, 0.99893188f,
@@ -460,7 +458,7 @@ namespace HellaUnsafe.Celt
             });
 
         internal static readonly kiss_twiddle_cpx* fft_twiddles48000_960 /*[480]*/ =
-            (kiss_twiddle_cpx*)AllocateGlobal(new float[] /*[960]*/ {
+            (kiss_twiddle_cpx*)AllocateGlobal(new float[960] {
             1.0000000f, -0.0000000f, 0.99991433f, -0.013089596f,
             0.99965732f, -0.026176948f, 0.99922904f, -0.039259816f,
             0.99862953f, -0.052335956f, 0.99785892f, -0.065403129f,
@@ -703,7 +701,7 @@ namespace HellaUnsafe.Celt
             0.99965732f, 0.026176948f, 0.99991433f, 0.013089596f,
         });
 
-        internal static readonly short* fft_bitrev480 = AllocateGlobal(new short[] /*[480]*/ {
+        internal static readonly short* fft_bitrev480 = AllocateGlobal(new short[480] {
             0, 96, 192, 288, 384, 32, 128, 224, 320, 416, 64, 160, 256, 352, 448,
             8, 104, 200, 296, 392, 40, 136, 232, 328, 424, 72, 168, 264, 360, 456,
             16, 112, 208, 304, 400, 48, 144, 240, 336, 432, 80, 176, 272, 368, 464,
@@ -738,7 +736,7 @@ namespace HellaUnsafe.Celt
             31, 127, 223, 319, 415, 63, 159, 255, 351, 447, 95, 191, 287, 383, 479,
         });
 
-        internal static readonly short* fft_bitrev240 = AllocateGlobal(new short[] /*[240]*/ {
+        internal static readonly short* fft_bitrev240 = AllocateGlobal(new short[240] {
             0, 48, 96, 144, 192, 16, 64, 112, 160, 208, 32, 80, 128, 176, 224,
             4, 52, 100, 148, 196, 20, 68, 116, 164, 212, 36, 84, 132, 180, 228,
             8, 56, 104, 152, 200, 24, 72, 120, 168, 216, 40, 88, 136, 184, 232,
@@ -757,7 +755,7 @@ namespace HellaUnsafe.Celt
             15, 63, 111, 159, 207, 31, 79, 127, 175, 223, 47, 95, 143, 191, 239,
         });
 
-        internal static readonly short* fft_bitrev120 = AllocateGlobal(new short[] /*[120]*/ {
+        internal static readonly short* fft_bitrev120 = AllocateGlobal(new short[120] {
             0, 24, 48, 72, 96, 8, 32, 56, 80, 104, 16, 40, 64, 88, 112,
             4, 28, 52, 76, 100, 12, 36, 60, 84, 108, 20, 44, 68, 92, 116,
             1, 25, 49, 73, 97, 9, 33, 57, 81, 105, 17, 41, 65, 89, 113,
@@ -768,7 +766,7 @@ namespace HellaUnsafe.Celt
             7, 31, 55, 79, 103, 15, 39, 63, 87, 111, 23, 47, 71, 95, 119,
         });
 
-        internal static readonly short* fft_bitrev60 = AllocateGlobal(new short[] /*[60]*/ {
+        internal static readonly short* fft_bitrev60 = AllocateGlobal(new short[60] {
             0, 12, 24, 36, 48, 4, 16, 28, 40, 52, 8, 20, 32, 44, 56,
             1, 13, 25, 37, 49, 5, 17, 29, 41, 53, 9, 21, 33, 45, 57,
             2, 14, 26, 38, 50, 6, 18, 30, 42, 54, 10, 22, 34, 46, 58,
@@ -780,7 +778,7 @@ namespace HellaUnsafe.Celt
                 480,    /* nfft */
                 0.002083333f,   /* scale */
                 -1,     /* shift */
-                new short[] { 5, 96, 3, 32, 4, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, },    /* factors */
+                new short[16] { 5, 96, 3, 32, 4, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, },    /* factors */
                 fft_bitrev480,  /* bitrev */
                 fft_twiddles48000_960  /* bitrev */
             ));
@@ -790,7 +788,7 @@ namespace HellaUnsafe.Celt
                 240,    /* nfft */
                 0.004166667f,   /* scale */
                 1,      /* shift */
-                new short[] { 5, 48, 3, 16, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },    /* factors */
+                new short[16] { 5, 48, 3, 16, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },    /* factors */
                 fft_bitrev240,  /* bitrev */
                 fft_twiddles48000_960  /* bitrev */
             ));
@@ -800,7 +798,7 @@ namespace HellaUnsafe.Celt
                 120,    /* nfft */
                 0.008333333f,   /* scale */
                 2,      /* shift */
-                new short[] { 5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },    /* factors */
+                new short[16] { 5, 24, 3, 8, 2, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, },    /* factors */
                 fft_bitrev120,  /* bitrev */
                 fft_twiddles48000_960  /* bitrev */
             ));
@@ -810,12 +808,12 @@ namespace HellaUnsafe.Celt
                 60,     /* nfft */
                 0.016666667f,   /* scale */
                 3,      /* shift */
-                new short[] { 5, 12, 3, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },    /* factors */
+                new short[16] { 5, 12, 3, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },    /* factors */
                 fft_bitrev60,   /* bitrev */
                 fft_twiddles48000_960  /* bitrev */
             ));
 
-        internal static readonly CeltCustomMode* mode48000_960_120 = AllocGlobalStructInit(() =>
+        internal static readonly OpusCustomMode* mode48000_960_120 = AllocGlobalStructInit(() =>
             {
                 mdct_lookup mdct = new mdct_lookup()
                 {
@@ -829,7 +827,7 @@ namespace HellaUnsafe.Celt
                 mdct.kfft[2] = fft_state48000_960_2;
                 mdct.kfft[3] = fft_state48000_960_3;
 
-                CeltCustomMode returnVal = new CeltCustomMode()
+                OpusCustomMode returnVal = new OpusCustomMode()
                 {
                     Fs = 48000,
                     overlap = 120,
@@ -859,7 +857,7 @@ namespace HellaUnsafe.Celt
             });
 
         /* List of all the available modes */
-        internal static readonly CeltCustomMode*[] static_mode_list = new CeltCustomMode*[] {
+        internal static readonly OpusCustomMode*[] static_mode_list = new OpusCustomMode*[] {
                 mode48000_960_120,
             };
     }
