@@ -886,7 +886,7 @@ namespace HellaUnsafe.Old.Celt
             fixed (float* mask = mask_array)
             fixed (float* sig = sig_array)
             {
-                OPUS_CLEAR(offsets, nbEBands);
+                OPUS_CLEAR(offsets, nbEBands * sizeof(int));
                 /* Dynamic allocation code */
                 maxDepth = -QCONST16(31.9f, DB_SHIFT);
                 for (i = 0; i < end; i++)

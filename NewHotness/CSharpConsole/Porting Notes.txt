@@ -1,3 +1,65 @@
+=============================================================================
+Aliases
+=============================================================================
+
+opus_uint32	uint
+opus_int32	int
+opus_uint16	ushort
+opus_int16	short
+opus_uint8	byte
+opus_int8	sbyte
+opus_val16	float
+opus_int	int
+silk_float	float
+
+
+=============================================================================
+General guidance
+=============================================================================
+
+Remove runtime arch references
+
+"const" function params change to "in" (not necessary but whatever, it preserves semantics)
+
+=============================================================================
+Function signatures and classes
+=============================================================================
+
+internal static unsafe 
+
+
+=============================================================================
+Common Silk includes
+=============================================================================
+using System;
+using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Silk.Define;
+using static HellaUnsafe.Silk.Macros;
+using static HellaUnsafe.Silk.SigProcFIX;
+using static HellaUnsafe.Silk.Structs;
+using static HellaUnsafe.Silk.Float.SigProcFLP;
+using static HellaUnsafe.Silk.Float.Structs_FLP;
+
+
+=============================================================================
+Stackalloc arrays
+=============================================================================
+int a_fix_Q16[MAX_LPC_ORDER];
+
+
+becomes
+
+
+int* a_fix_Q16 = stackalloc int[MAX_LPC_ORDER]
+
+or
+
+Span<int> a_fix_Q16 = stackalloc int[MAX_LPC_ORDER]
+
+
+
+
+
 
 =============================================================================
 Arrays of embedded structs using InlineArrays

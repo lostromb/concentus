@@ -33,6 +33,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace HellaUnsafe.Common
 {
@@ -153,19 +154,44 @@ namespace HellaUnsafe.Common
             new Span<byte>(src, (int)elements).CopyTo(new Span<byte>(dst, (int)elements));
         }
 
-        internal static unsafe void silk_memset(float* dst, float src, int elements)
+        internal static unsafe void silk_memset(int* dst, int src, int bytes)
         {
-            new Span<float>(dst, elements).Fill(src);
+            new Span<int>(dst, bytes / sizeof(int)).Fill(src);
         }
 
-        internal static unsafe void silk_memcpy(float* dst, float* src, int elements)
+        internal static unsafe void silk_memset(float* dst, float src, int bytes)
         {
-            new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));
+            new Span<float>(dst, bytes / sizeof(float)).Fill(src);
         }
 
-        internal static unsafe void silk_memmove(float* dst, float* src, int elements)
+        internal static unsafe void silk_memset(double* dst, double src, int bytes)
         {
-            new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));
+            new Span<double>(dst, bytes / sizeof(double)).Fill(src);
+        }
+
+        internal static unsafe void silk_memcpy(int* dst, int* src, int bytes)
+        {
+            new Span<int>(src, bytes / sizeof(int)).CopyTo(new Span<int>(dst, bytes / sizeof(int)));
+        }
+
+        internal static unsafe void silk_memcpy(float* dst, float* src, int bytes)
+        {
+            new Span<float>(src, bytes / sizeof(float)).CopyTo(new Span<float>(dst, bytes / sizeof(float)));
+        }
+
+        internal static unsafe void silk_memcpy(double* dst, double* src, int bytes)
+        {
+            new Span<double>(src, bytes / sizeof(double)).CopyTo(new Span<double>(dst, bytes / sizeof(double)));
+        }
+
+        internal static unsafe void silk_memmove(float* dst, float* src, int bytes)
+        {
+            new Span<float>(src, bytes / sizeof(float)).CopyTo(new Span<float>(dst, bytes / sizeof(float)));
+        }
+
+        internal static unsafe void silk_memmove(int* dst, int* src, int bytes)
+        {
+            new Span<int>(src, bytes / sizeof(int)).CopyTo(new Span<int>(dst, bytes / sizeof(int)));
         }
 
         internal static bool opus_likely(bool input)

@@ -25,35 +25,44 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-
-using System.Runtime.CompilerServices;
-
-namespace HellaUnsafe.Old.Silk
+namespace HellaUnsafe.Silk.Float
 {
-    internal static unsafe class ResamplerStructs
+    internal static class InnerProduct
     {
-        internal const int SILK_RESAMPLER_MAX_FIR_ORDER = 36;
-        internal const int SILK_RESAMPLER_MAX_IIR_ORDER = 6;
-
-        internal unsafe struct silk_resampler_state_struct
+        internal static unsafe double silk_inner_product_FLP(
+             in float* data1,
+             in float* data2,
+             int dataSize)
         {
-            internal fixed int sIIR[SILK_RESAMPLER_MAX_IIR_ORDER]; /* this must be the first element of this struct */
-            internal fixed int _sFIR_storage[SILK_RESAMPLER_MAX_FIR_ORDER];
-            // Representing a union field with a common storage area and access methods for each union type
-            internal int* sFIR_i32 => (int*)Unsafe.AsPointer(ref _sFIR_storage[0]);
-            internal short* sFIR_i16 => (short*)Unsafe.AsPointer(ref _sFIR_storage[0]);
-            internal fixed short delayBuf[48];
-            internal int resampler_function;
-            internal int batchSize;
-            internal int invRatio_Q16;
-            internal int FIR_Order;
-            internal int FIR_Fracs;
-            internal int Fs_in_kHz;
-            internal int Fs_out_kHz;
-            internal int inputDelay;
-            internal short* Coefs;
+            return silk_inner_product_FLP_c(data1, data2, dataSize);
+        }
+
+        /* inner product of two silk_float arrays, with result as double */
+        internal static unsafe double silk_inner_product_FLP_c(
+             in float* data1,
+             in float* data2,
+             int dataSize)
+        {
+            int i;
+            double result;
+
+            /* 4x unrolled loop */
+            result = 0.0;
+            for (i = 0; i < dataSize - 3; i += 4)
+            {
+                result += data1[i + 0] * (double)data2[i + 0] +
+                          data1[i + 1] * (double)data2[i + 1] +
+                          data1[i + 2] * (double)data2[i + 2] +
+                          data1[i + 3] * (double)data2[i + 3];
+            }
+
+            /* add any remaining products */
+            for (; i < dataSize; i++)
+            {
+                result += data1[i] * (double)data2[i];
+            }
+
+            return result;
         }
     }
-
-    
 }

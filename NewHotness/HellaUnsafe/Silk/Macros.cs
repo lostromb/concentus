@@ -38,6 +38,15 @@ namespace HellaUnsafe.Silk
 
         /* a32 + (b32 * (opus_int32)((opus_int16)(c32))) >> 16 output have to be 32bit int */
         //#define silk_SMLAWB(a32, b32, c32)       ((opus_int32)((a32) + (((b32) * (opus_int64)((opus_int16)(c32))) >> 16)))
+        internal static int silk_SMLAWB(int a32, int b32, short c32)
+        {
+            return (int)(a32 + ((b32 * (long)c32) >> 16));
+        }
+
+        internal static int silk_SMLAWB(int a32, int b32, int c32)
+        {
+            return (int)(a32 + ((b32 * (long)c32) >> 16));
+        }
 
         /* (a32 * (b32 >> 16)) >> 16 */
         //#define silk_SMULWT(a32, b32)            ((opus_int32)(((a32) * (opus_int64)((b32) >> 16)) >> 16))

@@ -32,6 +32,14 @@ namespace HellaUnsafe.Common
             Depth = depth;
         }
 
+        public Native3DArray(T* nativePtr, int depth, int height, int width)
+        {
+            Pointer = nativePtr;
+            Width = width;
+            Height = height;
+            Depth = depth;
+        }
+
         public Native2DArray<T> this[int z] => Layer(z);
 
         public Native2DArray<T> Layer(int z)

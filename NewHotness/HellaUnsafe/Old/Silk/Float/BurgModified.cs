@@ -69,7 +69,7 @@ namespace HellaUnsafe.Old.Silk.Float
 
                 /* Compute autocorrelations, added over subframes */
                 C0 = (float)silk_energy_FLP(x, nb_subfr * subfr_length);
-                silk_memset(C_first_row, 0, SILK_MAX_ORDER_LPC * sizeof(double));
+                silk_memset(C_first_row, 0, SILK_MAX_ORDER_LPC * sizeof(float));
                 for (s = 0; s < nb_subfr; s++)
                 {
                     x_ptr = x + s * subfr_length;
@@ -78,7 +78,7 @@ namespace HellaUnsafe.Old.Silk.Float
                         C_first_row[n - 1] += (float)silk_inner_product_FLP(x_ptr, x_ptr + n, subfr_length - n);
                     }
                 }
-                silk_memcpy(C_last_row, C_first_row, SILK_MAX_ORDER_LPC * sizeof(double));
+                silk_memcpy(C_last_row, C_first_row, SILK_MAX_ORDER_LPC * sizeof(float));
 
                 /* Initialize */
                 CAb[0] = CAf[0] = C0 + FIND_LPC_COND_FAC * C0 + 1e-9f;

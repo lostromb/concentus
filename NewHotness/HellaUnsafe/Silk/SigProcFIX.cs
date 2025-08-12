@@ -1,10 +1,16 @@
-﻿using static HellaUnsafe.Common.CRuntime;
+﻿using System.Diagnostics;
+using static HellaUnsafe.Common.CRuntime;
 
 namespace HellaUnsafe.Silk
 {
     internal static class SigProcFIX
     {
         internal const int SILK_MAX_ORDER_LPC = 24;
+
+        internal static void silk_assert(bool condition)
+        {
+            Debug.Assert(condition);
+        }
 
         /// <summary>
         /// Rotate a32 right by 'rot' bits. Negative rot values result in rotating
@@ -253,12 +259,6 @@ namespace HellaUnsafe.Silk
             return a > int.MaxValue ? int.MaxValue : ((a) < int.MinValue ? int.MinValue : (int)(a));
         }
 
-        /// <summary>
-        /// //////////////////
-        /// </summary>
-        /// <param name="a16"></param>
-        /// <param name="b16"></param>
-        /// <returns></returns>
         internal static short silk_ADD_SAT16(short a16, short b16)
         {
             short res = (short)silk_SAT16(silk_ADD32((int)(a16), (b16)));
@@ -786,6 +786,28 @@ namespace HellaUnsafe.Silk
         internal static long silk_sign(int a)
         {
             return (a) > 0 ? 1 : ((a) < 0 ? -1 : 0);
+        }
+
+        /* PSEUDO-RANDOM GENERATOR                                                          */
+        /* Make sure to store the result as the seed for the next call (also in between     */
+        /* frames), otherwise result won't be random at all. When only using some of the    */
+        /* bits, take the most significant bits by right-shifting.                          */
+        internal const int RAND_MULTIPLIER = 196314165;
+        internal const int RAND_INCREMENT = 907633515;
+
+        internal static int silk_RAND(int seed)
+        {
+            return (silk_MLA_ovflw((RAND_INCREMENT), (seed), (RAND_MULTIPLIER)));
+        }
+
+        /*    silk_SMMUL: Signed top word multiply.
+          ARMv6        2 instruction cycles.
+          ARMv3M+      3 instruction cycles. use SMULL and ignore LSB registers.(except xM)*/
+        /*#define silk_SMMUL(a32, b32)                (opus_int32)silk_RSHIFT(silk_SMLAL(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16)), 16)*/
+        /* the following seems faster on x86 */
+        internal static int silk_SMMUL(int a32, int b32)
+        {
+            return (int)silk_RSHIFT64(silk_SMULL(a32, b32), 32);
         }
     }
 }

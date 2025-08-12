@@ -50,8 +50,7 @@ namespace HellaUnsafe.Celt
         {
             internal int n;
             internal int maxshift;
-            internal fixed ulong _kfft[4];
-            internal float* trig;
+            private fixed ulong _kfft[4];
 
             // very hackish cast of arbitrary ulong buffer into nint pointers.
             // on 32-bit hardware it'll just not use the full 64-bit width
@@ -66,6 +65,8 @@ namespace HellaUnsafe.Celt
                     }
                 }
             }
+
+            internal float* trig;
         }
 
         /* Forward MDCT trashes the input array */
