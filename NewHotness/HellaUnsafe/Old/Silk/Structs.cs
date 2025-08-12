@@ -103,7 +103,7 @@
 //        internal short smth_width_Q14;
 //        internal short width_prev_Q14;
 //        internal short silent_side_len;
-//        internal fixed sbyte predIx[MAX_FRAMES_PER_PACKET][ 2 ][ 3 ];
+//        internal fixed sbyte predIx[MAX_FRAMES_PER_PACKET][2][3];
 //        internal fixed sbyte mid_only_flags[MAX_FRAMES_PER_PACKET];
 //    }
 
@@ -220,7 +220,20 @@
 //        internal int LBRR_enabled;                      /* Depends on useInBandFRC, bitrate and packet loss rate            */
 //        internal int LBRR_GainIncreases;                /* Gains increment for coding LBRR frames                           */
 //        internal SideInfoIndices[] indices_LBRR[MAX_FRAMES_PER_PACKET];
-//        internal sbyte pulses_LBRR[MAX_FRAMES_PER_PACKET][MAX_FRAME_LENGTH];
+
+//        //internal sbyte pulses_LBRR[MAX_FRAMES_PER_PACKET][MAX_FRAME_LENGTH];
+//        internal fixed sbyte _pulses_LBRR[MAX_FRAMES_PER_PACKET * MAX_FRAME_LENGTH];
+
+//        /// <summary>
+//        /// To access the pulses_LBRR field as a 2D array, call this method and
+//        /// pass it the pointer to _pulses_LBRR. This pointer must be fixed by caller!
+//        /// </summary>
+//        /// <param name="rawptr">The value of _pulses_LBRR</param>
+//        /// <returns></returns>
+//        internal Native2DArray<sbyte> pulses_LBRR(sbyte* rawptr)
+//        {
+//            return new Native2DArray<sbyte>(rawptr, MAX_FRAMES_PER_PACKET, MAX_FRAME_LENGTH);
+//        }
 //    }
 
 //    internal unsafe struct silk_PLC_struct

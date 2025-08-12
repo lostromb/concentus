@@ -1,0 +1,53 @@
+
+=============================================================================
+Arrays of embedded structs using InlineArrays
+=============================================================================
+
+// Original C:
+// SideInfoIndices indices_LBRR[ MAX_FRAMES_PER_PACKET ];
+
+
+[System.Runtime.CompilerServices.InlineArray(MAX_NB_FRAMES)]
+public struct SideInfoIndicesArray
+{
+    private SideInfoIndices _element;
+}
+
+public unsafe struct Encoder
+{
+    private SideInfoIndicesArray _indices_LBRR;
+    public TestSideInfoIndices* indices_LBRR => (SideInfoIndices*)Unsafe.AsPointer(ref _indices_LBRR); // assumes caller struct is already fixed
+}
+
+
+
+
+=============================================================================
+Same thing without use of InlineArray - just use field duplication
+=============================================================================
+
+public unsafe struct Encoder
+{
+    private TestSideInfoIndices _indices_LBRR0;
+    private TestSideInfoIndices _indices_LBRR1;
+    private TestSideInfoIndices _indices_LBRR2;
+
+    public TestSideInfoIndices* indices_LBRR => (TestSideInfoIndices*)Unsafe.AsPointer(ref _indices_LBRR0);
+}
+
+
+
+
+
+=============================================================================
+2D arrays embedded in structs, with accessor (accessor assumes struct is already pinned)
+=============================================================================
+
+// Original C:
+// opus_int8 pulses_LBRR[ MAX_FRAMES_PER_PACKET ][ MAX_FRAME_LENGTH ];
+
+public unsafe struct Encoder
+{
+    private fixed sbyte _pulses_LBRR[MAX_FRAMES_PER_PACKET * MAX_FRAME_LENGTH];
+    public Native2DArray<sbyte> pulses_LBRR => new Native2DArray<sbyte>((sbyte*)Unsafe.AsPointer(ref _pulses_LBRR[0]), MAX_FRAMES_PER_PACKET, MAX_FRAME_LENGTH);
+}
