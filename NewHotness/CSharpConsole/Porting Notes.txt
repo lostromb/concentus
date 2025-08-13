@@ -21,6 +21,12 @@ Remove runtime arch references
 
 "const" function params change to "in" (not necessary but whatever, it preserves semantics)
 
+Any calls to SILK memset, memcpy, etc. must reconcile bytes vs. elements to copy
+
+VARDECL + ALLOC turns into regular heap array allocation + pinning if necessary
+
+Remove _c from generic unaccelerated functions (for now, until I can revisit vector implementations)
+
 =============================================================================
 Function signatures and classes
 =============================================================================

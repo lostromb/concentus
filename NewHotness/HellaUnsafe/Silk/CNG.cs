@@ -30,6 +30,7 @@ using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.SigProcFIX;
+using static HellaUnsafe.Silk.NLSF2A;
 using static HellaUnsafe.Silk.Inlines;
 using static HellaUnsafe.Silk.Structs;
 

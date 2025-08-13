@@ -1,15 +1,13 @@
-﻿
-using System;
-using static HellaUnsafe.Common.CRuntime;
-using static HellaUnsafe.Silk.Define;
-using static HellaUnsafe.Silk.Float.BurgModified;
-using static HellaUnsafe.Silk.Float.Energy;
-using static HellaUnsafe.Silk.Float.Structs_FLP;
-using static HellaUnsafe.Silk.Float.FloatCast;
+﻿using HellaUnsafe.Common;
 using static HellaUnsafe.Silk.A2NLSF;
+using static HellaUnsafe.Silk.Define;
+using static HellaUnsafe.Silk.Float.FloatCast;
+using static HellaUnsafe.Silk.Float.Structs_FLP;
+using static HellaUnsafe.Silk.NLSF2A;
+using static HellaUnsafe.Silk.NSQ;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
-using HellaUnsafe.Common;
+using static HellaUnsafe.Silk.Tables;
 
 namespace HellaUnsafe.Silk.Float
 {

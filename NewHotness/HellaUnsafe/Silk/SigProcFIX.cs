@@ -809,5 +809,12 @@ namespace HellaUnsafe.Silk
         {
             return (int)silk_RSHIFT64(silk_SMULL(a32, b32), 32);
         }
+
+        /* Macro to convert floating-point constants to fixed-point */
+        //#define SILK_FIX_CONST( C, Q )        ((opus_int32)((C) * ((opus_int64)1 << (Q)) + 0.5))       
+        internal static int SILK_FIX_CONST(double C, int Q)
+        {
+            return (int)(C * ((long)1 << Q) + 0.5);
+        }
     }
 }

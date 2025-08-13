@@ -1,14 +1,46 @@
-﻿using static HellaUnsafe.Common.CRuntime;
+﻿using HellaUnsafe.Common;
+using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Silk.Define;
+using static HellaUnsafe.Silk.Structs;
+using static HellaUnsafe.Silk.SigProcFIX;
 
 namespace HellaUnsafe.Silk
 {
     internal static unsafe class Tables
     {
+        #region tables_gain.c
+
+        internal static readonly Native2DArray<byte> silk_gain_iCDF = new Native2DArray<byte>(new byte[]
+        {
+            //{
+               224,    112,     44,     15,      3,      2,      1,      0,
+            //},
+            //{
+               254,    237,    192,    132,     70,     23,      4,      0,
+            //},
+            //{
+               255,    252,    226,    155,     61,     11,      2,      0,
+            //}
+        }, 3, N_LEVELS_QGAIN / 8);
+
+        internal static readonly byte* silk_delta_gain_iCDF = AllocateGlobalArray<byte>(new byte[/*MAX_DELTA_GAIN_QUANT - MIN_DELTA_GAIN_QUANT + 1*/] {
+               250,    245,    234,    203,     71,     50,     42,     38,
+                35,     33,     31,     29,     28,     27,     26,     25,
+                24,     23,     22,     21,     20,     19,     18,     17,
+                16,     15,     14,     13,     12,     11,     10,      9,
+                 8,      7,      6,      5,      4,      3,      2,      1,
+                 0
+        });
+
+        #endregion
+
+        #region table_LSF_cos.c
+
         /* Rom table with cosine values */
         /* Cosine approximation table for LSF conversion */
         /* Q12 values (even) */
         /* 258 */
-        internal static readonly short* silk_LSFCosTab_FIX_Q12 = AllocateGlobalArray<short>( new short[] {
+        internal static readonly short* silk_LSFCosTab_FIX_Q12 = AllocateGlobalArray<short>(new short[/*LSF_COS_TAB_SZ_FIX + 1*/] {
                 8192,             8190,             8182,             8170,
                 8152,             8130,             8104,             8072,
                 8034,             7994,             7946,             7896,
@@ -43,5 +75,916 @@ namespace HellaUnsafe.Silk
                 -8152,            -8170,            -8182,            -8190,
                 -8192
         });
+
+        #endregion
+
+        #region tables_LTP.c
+
+        internal static readonly byte* silk_LTP_per_index_iCDF = AllocateGlobalArray<byte>(new byte[/*3*/] {
+               179,     99,      0
+        });
+
+        internal static readonly byte* silk_LTP_gain_iCDF_0 = AllocateGlobalArray<byte>(new byte[/*8*/] {
+                71,     56,     43,     30,     21,     12,      6,      0
+        });
+
+        internal static readonly byte* silk_LTP_gain_iCDF_1 = AllocateGlobalArray<byte>(new byte[/*16*/] {
+               199,    165,    144,    124,    109,     96,     84,     71,
+                61,     51,     42,     32,     23,     15,      8,      0
+        });
+
+        internal static readonly byte* silk_LTP_gain_iCDF_2 = AllocateGlobalArray<byte>(new byte[/*32*/] {
+               241,    225,    211,    199,    187,    175,    164,    153,
+               142,    132,    123,    114,    105,     96,     88,     80,
+                72,     64,     57,     50,     44,     38,     33,     29,
+                24,     20,     16,     12,      9,      5,      2,      0
+        });
+
+        internal static readonly byte* silk_LTP_gain_BITS_Q5_0 = AllocateGlobalArray<byte>(new byte[/*8*/] {
+                15,    131,    138,    138,    155,    155,    173,    173
+        });
+
+        internal static readonly byte* silk_LTP_gain_BITS_Q5_1 = AllocateGlobalArray<byte>(new byte[/*16*/] {
+                69,     93,    115,    118,    131,    138,    141,    138,
+               150,    150,    155,    150,    155,    160,    166,    160
+        });
+
+        internal static readonly byte* silk_LTP_gain_BITS_Q5_2 = AllocateGlobalArray<byte>(new byte[/*32*/] {
+               131,    128,    134,    141,    141,    141,    145,    145,
+               145,    150,    155,    155,    155,    155,    160,    160,
+               160,    160,    166,    166,    173,    173,    182,    192,
+               182,    192,    192,    192,    205,    192,    205,    224
+        });
+
+        //const opus_uint8* const silk_LTP_gain_iCDF_ptrs[NB_LTP_CBKS] = {
+        //    silk_LTP_gain_iCDF_0,
+        //    silk_LTP_gain_iCDF_1,
+        //    silk_LTP_gain_iCDF_2
+        //};
+
+        internal static readonly byte** silk_LTP_gain_iCDF_ptrs = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS); // filled in later during static constructor
+
+        //const opus_uint8* const silk_LTP_gain_BITS_Q5_ptrs[NB_LTP_CBKS] = {
+        //    silk_LTP_gain_BITS_Q5_0,
+        //    silk_LTP_gain_BITS_Q5_1,
+        //    silk_LTP_gain_BITS_Q5_2
+        //};
+
+        internal static readonly byte** silk_LTP_gain_BITS_Q5_ptrs = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS); // filled in later during static constructor
+
+        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_0 = new Native2DArray<sbyte>(new sbyte[/*[8][5]*/]
+        {
+                 4,      6,     24,      7,      5,
+                 0,      0,      2,      0,      0,
+                12,     28,     41,     13,     -4,
+                -9,     15,     42,     25,     14,
+                 1,     -2,     62,     41,     -9,
+               -10,     37,     65,     -4,      3,
+                -6,      4,     66,      7,     -8,
+                16,     14,     38,     -3,     33
+        }, 8, 5);
+
+        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_1 = new Native2DArray<sbyte>(new sbyte[/*[16][5]*/]
+        {
+                13,     22,     39,     23,     12,
+                -1,     36,     64,     27,     -6,
+                -7,     10,     55,     43,     17,
+                 1,      1,      8,      1,      1,
+                 6,    -11,     74,     53,     -9,
+               -12,     55,     76,    -12,      8,
+                -3,      3,     93,     27,     -4,
+                26,     39,     59,      3,     -8,
+                 2,      0,     77,     11,      9,
+                -8,     22,     44,     -6,      7,
+                40,      9,     26,      3,      9,
+                -7,     20,    101,     -7,      4,
+                 3,     -8,     42,     26,      0,
+               -15,     33,     68,      2,     23,
+                -2,     55,     46,     -2,     15,
+                 3,     -1,     21,     16,     41
+        }, 16, 5);
+
+        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_2 = new Native2DArray<sbyte>(new sbyte[/*[32][5]*/]
+        {
+                -6,     27,     61,     39,      5,
+               -11,     42,     88,      4,      1,
+                -2,     60,     65,      6,     -4,
+                -1,     -5,     73,     56,      1,
+                -9,     19,     94,     29,     -9,
+                 0,     12,     99,      6,      4,
+                 8,    -19,    102,     46,    -13,
+                 3,      2,     13,      3,      2,
+                 9,    -21,     84,     72,    -18,
+               -11,     46,    104,    -22,      8,
+                18,     38,     48,     23,      0,
+               -16,     70,     83,    -21,     11,
+                 5,    -11,    117,     22,     -8,
+                -6,     23,    117,    -12,      3,
+                 3,     -8,     95,     28,      4,
+               -10,     15,     77,     60,    -15,
+                -1,      4,    124,      2,     -4,
+                 3,     38,     84,     24,    -25,
+                 2,     13,     42,     13,     31,
+                21,     -4,     56,     46,     -1,
+                -1,     35,     79,    -13,     19,
+                -7,     65,     88,     -9,    -14,
+                20,      4,     81,     49,    -29,
+                20,      0,     75,      3,    -17,
+                 5,     -9,     44,     92,     -8,
+                 1,     -3,     22,     69,     31,
+                -6,     95,     41,    -12,      5,
+                39,     67,     16,     -4,      1,
+                 0,     -6,    120,     55,    -36,
+               -13,     44,    122,      4,    -24,
+                81,      5,     11,      3,      7,
+                 2,      0,      9,     10,     88
+        }, 32, 5);
+
+        //const opus_int8* const silk_LTP_vq_ptrs_Q7[NB_LTP_CBKS] = {
+        //    (opus_int8 *)&silk_LTP_gain_vq_0[0][0],
+        //    (opus_int8 *)&silk_LTP_gain_vq_1[0][0],
+        //    (opus_int8 *)&silk_LTP_gain_vq_2[0][0]
+        //};
+
+        internal static readonly sbyte** silk_LTP_vq_ptrs_Q7 = AllocateGlobalPointerArray<sbyte>(NB_LTP_CBKS); // filled in later during static constructor
+
+        /* Maximum frequency-dependent response of the pitch taps above,
+            computed as max(abs(freqz(taps))) */
+        internal static readonly byte* silk_LTP_gain_vq_0_gain = AllocateGlobalArray<byte>(new byte[/*8*/] {
+              46,      2,     90,     87,     93,     91,     82,     98
+        });
+
+        internal static readonly byte* silk_LTP_gain_vq_1_gain = AllocateGlobalArray<byte>(new byte[/*16*/] {
+             109,    120,    118,     12,    113,    115,    117,    119,
+              99,     59,     87,    111,     63,    111,    112,     80
+        });
+
+        internal static readonly byte* silk_LTP_gain_vq_2_gain = AllocateGlobalArray<byte>(new byte[/*32*/] {
+             126,    124,    125,    124,    129,    121,    126,     23,
+             132,    127,    127,    127,    126,    127,    122,    133,
+             130,    134,    101,    118,    119,    145,    126,     86,
+             124,    120,    123,    119,    170,    173,    107,    109
+        });
+
+        //const opus_uint8* const silk_LTP_vq_gain_ptrs_Q7[NB_LTP_CBKS] = {
+        //    &silk_LTP_gain_vq_0_gain[0],
+        //    &silk_LTP_gain_vq_1_gain[0],
+        //    &silk_LTP_gain_vq_2_gain[0]
+        //};
+
+        internal static readonly byte** silk_LTP_vq_gain_ptrs_Q7 = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS); // filled in later during static constructor
+
+        internal static readonly sbyte* silk_LTP_vq_sizes = AllocateGlobalArray<sbyte>(new sbyte[/*NB_LTP_CBKS*/] {
+            8, 16, 32
+        });
+
+        #endregion
+
+        #region tables_other.c
+
+        /* Tables for stereo predictor coding */
+        internal static readonly short* silk_stereo_pred_quant_Q13 = AllocateGlobalArray<short>(new short[/*STEREO_QUANT_TAB_SIZE*/] {
+            -13732, -10050, -8266, -7526, -6500, -5000, -2950,  -820,
+            820,   2950,  5000,  6500,  7526,  8266, 10050, 13732
+        });
+
+        internal static readonly byte* silk_stereo_pred_joint_iCDF = AllocateGlobalArray<byte>(new byte[/*25*/] {
+            249, 247, 246, 245, 244,
+            234, 210, 202, 201, 200,
+            197, 174,  82,  59,  56,
+             55,  54,  46,  22,  12,
+             11,  10,   9,   7,   0
+        });
+
+        internal static readonly byte* silk_stereo_only_code_mid_iCDF = AllocateGlobalArray<byte>(new byte[/*2*/] { 64, 0 });
+
+        /* Tables for LBRR flags */
+        internal static readonly byte* silk_LBRR_flags_2_iCDF = AllocateGlobalArray<byte>(new byte[/*3*/] { 203, 150, 0 });
+
+        internal static readonly byte* silk_LBRR_flags_3_iCDF = AllocateGlobalArray<byte>(new byte[/*7*/] { 215, 195, 166, 125, 110, 82, 0 });
+
+        //const opus_uint8* const silk_LBRR_flags_iCDF_ptr[2] = {
+        //    silk_LBRR_flags_2_iCDF,
+        //    silk_LBRR_flags_3_iCDF
+        //};
+
+        internal static readonly byte** silk_LBRR_flags_iCDF_ptr = AllocateGlobalPointerArray<byte>(2); // filled in later during static constructor
+
+        /* Table for LSB coding */
+        internal static readonly byte* silk_lsb_iCDF = AllocateGlobalArray<byte>(new byte[/*2*/] { 120, 0 });
+
+        /* Tables for LTPScale */
+        internal static readonly byte* silk_LTPscale_iCDF = AllocateGlobalArray<byte>(new byte[/*3*/] { 128, 64, 0 });
+
+        /* Tables for signal type and offset coding */
+
+        internal static readonly byte* silk_type_offset_VAD_iCDF = AllocateGlobalArray<byte>(new byte[/*4*/] {
+            232,    158,    10,      0
+        });
+
+
+        internal static readonly byte* silk_type_offset_no_VAD_iCDF = AllocateGlobalArray<byte>(new byte[/*2*/] {
+            230,      0
+        });
+
+        /* Tables for NLSF interpolation factor */
+        internal static readonly byte* silk_NLSF_interpolation_factor_iCDF = AllocateGlobalArray<byte>(new byte[/*5*/] {
+            243, 221, 192, 181, 0
+        });
+
+        /* Quantization offsets */
+        //const short** silk_Quantization_Offsets_Q10[2][2] = {
+        //    { OFFSET_UVL_Q10, OFFSET_UVH_Q10},
+        //    { OFFSET_VL_Q10, OFFSET_VH_Q10 }
+        //};
+
+        internal static readonly Native2DArray<short> silk_Quantization_Offsets_Q10 = new Native2DArray<short>(new short[]
+        {
+            OFFSET_UVL_Q10, OFFSET_UVH_Q10,
+            OFFSET_VL_Q10, OFFSET_VH_Q10
+        }, 2, 2);
+
+        /* Table for LTPScale */
+        internal static readonly short* silk_LTPScales_table_Q14 = AllocateGlobalArray<short>(new short[/*3*/] {
+            15565, 12288, 8192
+        });
+
+        /* Uniform entropy tables */
+        internal static readonly byte* silk_uniform3_iCDF = AllocateGlobalArray<byte>(new byte[/*3*/] { 171, 85, 0 });
+        internal static readonly byte* silk_uniform4_iCDF = AllocateGlobalArray<byte>(new byte[/*4*/] { 192, 128, 64, 0 });
+        internal static readonly byte* silk_uniform5_iCDF = AllocateGlobalArray<byte>(new byte[/*5*/] { 205, 154, 102, 51, 0 });
+        internal static readonly byte* silk_uniform6_iCDF = AllocateGlobalArray<byte>(new byte[/*6*/] { 213, 171, 128, 85, 43, 0 });
+        internal static readonly byte* silk_uniform8_iCDF = AllocateGlobalArray<byte>(new byte[/*8*/] { 224, 192, 160, 128, 96, 64, 32, 0 });
+
+        internal static readonly byte* silk_NLSF_EXT_iCDF = AllocateGlobalArray<byte>(new byte[/*7*/] { 100, 40, 16, 7, 3, 1, 0 });
+
+        /*  Elliptic/Cauer filters designed with 0.1 dB passband ripple,
+                80 dB minimum stopband attenuation, and
+                [0.95 : 0.15 : 0.35] normalized cut off frequencies. */
+
+        /* Interpolation points for filter coefficients used in the bandwidth transition smoother */
+        internal static readonly Native2DArray<int> silk_Transition_LP_B_Q28 = new Native2DArray<int>(new int[]
+        {
+             250767114,  501534038,  250767114  ,
+             209867381,  419732057,  209867381  ,
+             170987846,  341967853,  170987846  ,
+             131531482,  263046905,  131531482  ,
+             89306658,  178584282,   89306658  
+        }, TRANSITION_INT_NUM, TRANSITION_NB);
+
+
+        /* Interpolation points for filter coefficients used in the bandwidth transition smoother */
+        internal static readonly Native2DArray<int> silk_Transition_LP_A_Q28 = new Native2DArray<int>(new int[]
+        {
+             506393414,  239854379  ,
+             411067935,  169683996  ,
+             306733530,  116694253  ,
+             185807084,   77959395  ,
+             35497197,   57401098  
+        }, TRANSITION_INT_NUM, TRANSITION_NA);
+
+        #endregion
+
+        #region tables_NLSF_CB_NB_MB.c
+
+        internal static readonly byte* silk_NLSF_CB1_NB_MB_Q8 = AllocateGlobalArray<byte>(new byte[/*320*/] {
+                12,     35,     60,     83,    108,    132,    157,    180,
+               206,    228,     15,     32,     55,     77,    101,    125,
+               151,    175,    201,    225,     19,     42,     66,     89,
+               114,    137,    162,    184,    209,    230,     12,     25,
+                50,     72,     97,    120,    147,    172,    200,    223,
+                26,     44,     69,     90,    114,    135,    159,    180,
+               205,    225,     13,     22,     53,     80,    106,    130,
+               156,    180,    205,    228,     15,     25,     44,     64,
+                90,    115,    142,    168,    196,    222,     19,     24,
+                62,     82,    100,    120,    145,    168,    190,    214,
+                22,     31,     50,     79,    103,    120,    151,    170,
+               203,    227,     21,     29,     45,     65,    106,    124,
+               150,    171,    196,    224,     30,     49,     75,     97,
+               121,    142,    165,    186,    209,    229,     19,     25,
+                52,     70,     93,    116,    143,    166,    192,    219,
+                26,     34,     62,     75,     97,    118,    145,    167,
+               194,    217,     25,     33,     56,     70,     91,    113,
+               143,    165,    196,    223,     21,     34,     51,     72,
+                97,    117,    145,    171,    196,    222,     20,     29,
+                50,     67,     90,    117,    144,    168,    197,    221,
+                22,     31,     48,     66,     95,    117,    146,    168,
+               196,    222,     24,     33,     51,     77,    116,    134,
+               158,    180,    200,    224,     21,     28,     70,     87,
+               106,    124,    149,    170,    194,    217,     26,     33,
+                53,     64,     83,    117,    152,    173,    204,    225,
+                27,     34,     65,     95,    108,    129,    155,    174,
+               210,    225,     20,     26,     72,     99,    113,    131,
+               154,    176,    200,    219,     34,     43,     61,     78,
+                93,    114,    155,    177,    205,    229,     23,     29,
+                54,     97,    124,    138,    163,    179,    209,    229,
+                30,     38,     56,     89,    118,    129,    158,    178,
+               200,    231,     21,     29,     49,     63,     85,    111,
+               142,    163,    193,    222,     27,     48,     77,    103,
+               133,    158,    179,    196,    215,    232,     29,     47,
+                74,     99,    124,    151,    176,    198,    220,    237,
+                33,     42,     61,     76,     93,    121,    155,    174,
+               207,    225,     29,     53,     87,    112,    136,    154,
+               170,    188,    208,    227,     24,     30,     52,     84,
+               131,    150,    166,    186,    203,    229,     37,     48,
+                64,     84,    104,    118,    156,    177,    201,    230
+        });
+
+        internal static readonly short* silk_NLSF_CB1_Wght_Q9 = AllocateGlobalArray<short>(new short[/*320*/] {
+             2897, 2314, 2314, 2314, 2287, 2287, 2314, 2300, 2327, 2287,
+             2888, 2580, 2394, 2367, 2314, 2274, 2274, 2274, 2274, 2194,
+             2487, 2340, 2340, 2314, 2314, 2314, 2340, 2340, 2367, 2354,
+             3216, 2766, 2340, 2340, 2314, 2274, 2221, 2207, 2261, 2194,
+             2460, 2474, 2367, 2394, 2394, 2394, 2394, 2367, 2407, 2314,
+             3479, 3056, 2127, 2207, 2274, 2274, 2274, 2287, 2314, 2261,
+             3282, 3141, 2580, 2394, 2247, 2221, 2207, 2194, 2194, 2114,
+             4096, 3845, 2221, 2620, 2620, 2407, 2314, 2394, 2367, 2074,
+             3178, 3244, 2367, 2221, 2553, 2434, 2340, 2314, 2167, 2221,
+             3338, 3488, 2726, 2194, 2261, 2460, 2354, 2367, 2207, 2101,
+             2354, 2420, 2327, 2367, 2394, 2420, 2420, 2420, 2460, 2367,
+             3779, 3629, 2434, 2527, 2367, 2274, 2274, 2300, 2207, 2048,
+             3254, 3225, 2713, 2846, 2447, 2327, 2300, 2300, 2274, 2127,
+             3263, 3300, 2753, 2806, 2447, 2261, 2261, 2247, 2127, 2101,
+             2873, 2981, 2633, 2367, 2407, 2354, 2194, 2247, 2247, 2114,
+             3225, 3197, 2633, 2580, 2274, 2181, 2247, 2221, 2221, 2141,
+             3178, 3310, 2740, 2407, 2274, 2274, 2274, 2287, 2194, 2114,
+             3141, 3272, 2460, 2061, 2287, 2500, 2367, 2487, 2434, 2181,
+             3507, 3282, 2314, 2700, 2647, 2474, 2367, 2394, 2340, 2127,
+             3423, 3535, 3038, 3056, 2300, 1950, 2221, 2274, 2274, 2274,
+             3404, 3366, 2087, 2687, 2873, 2354, 2420, 2274, 2474, 2540,
+             3760, 3488, 1950, 2660, 2897, 2527, 2394, 2367, 2460, 2261,
+             3028, 3272, 2740, 2888, 2740, 2154, 2127, 2287, 2234, 2247,
+             3695, 3657, 2025, 1969, 2660, 2700, 2580, 2500, 2327, 2367,
+             3207, 3413, 2354, 2074, 2888, 2888, 2340, 2487, 2247, 2167,
+             3338, 3366, 2846, 2780, 2327, 2154, 2274, 2287, 2114, 2061,
+             2327, 2300, 2181, 2167, 2181, 2367, 2633, 2700, 2700, 2553,
+             2407, 2434, 2221, 2261, 2221, 2221, 2340, 2420, 2607, 2700,
+             3038, 3244, 2806, 2888, 2474, 2074, 2300, 2314, 2354, 2380,
+             2221, 2154, 2127, 2287, 2500, 2793, 2793, 2620, 2580, 2367,
+             3676, 3713, 2234, 1838, 2181, 2753, 2726, 2673, 2513, 2207,
+             2793, 3160, 2726, 2553, 2846, 2513, 2181, 2394, 2221, 2181
+        });
+
+        internal static readonly byte* silk_NLSF_CB1_iCDF_NB_MB = AllocateGlobalArray<byte>(new byte[/*64*/] {
+               212,    178,    148,    129,    108,     96,     85,     82,
+                79,     77,     61,     59,     57,     56,     51,     49,
+                48,     45,     42,     41,     40,     38,     36,     34,
+                31,     30,     21,     12,     10,      3,      1,      0,
+               255,    245,    244,    236,    233,    225,    217,    203,
+               190,    176,    175,    161,    149,    136,    125,    114,
+               102,     91,     81,     71,     60,     52,     43,     35,
+                28,     20,     19,     18,     12,     11,      5,      0
+        });
+
+        internal static readonly byte* silk_NLSF_CB2_SELECT_NB_MB = AllocateGlobalArray<byte>(new byte[/*160*/] {
+                16,      0,      0,      0,      0,     99,     66,     36,
+                36,     34,     36,     34,     34,     34,     34,     83,
+                69,     36,     52,     34,    116,    102,     70,     68,
+                68,    176,    102,     68,     68,     34,     65,     85,
+                68,     84,     36,    116,    141,    152,    139,    170,
+               132,    187,    184,    216,    137,    132,    249,    168,
+               185,    139,    104,    102,    100,     68,     68,    178,
+               218,    185,    185,    170,    244,    216,    187,    187,
+               170,    244,    187,    187,    219,    138,    103,    155,
+               184,    185,    137,    116,    183,    155,    152,    136,
+               132,    217,    184,    184,    170,    164,    217,    171,
+               155,    139,    244,    169,    184,    185,    170,    164,
+               216,    223,    218,    138,    214,    143,    188,    218,
+               168,    244,    141,    136,    155,    170,    168,    138,
+               220,    219,    139,    164,    219,    202,    216,    137,
+               168,    186,    246,    185,    139,    116,    185,    219,
+               185,    138,    100,    100,    134,    100,    102,     34,
+                68,     68,    100,     68,    168,    203,    221,    218,
+               168,    167,    154,    136,    104,     70,    164,    246,
+               171,    137,    139,    137,    155,    218,    219,    139
+        });
+
+        internal static readonly byte* silk_NLSF_CB2_iCDF_NB_MB = AllocateGlobalArray<byte>(new byte[/*72*/] {
+               255,    254,    253,    238,     14,      3,      2,      1,
+                 0,    255,    254,    252,    218,     35,      3,      2,
+                 1,      0,    255,    254,    250,    208,     59,      4,
+                 2,      1,      0,    255,    254,    246,    194,     71,
+                10,      2,      1,      0,    255,    252,    236,    183,
+                82,      8,      2,      1,      0,    255,    252,    235,
+               180,     90,     17,      2,      1,      0,    255,    248,
+               224,    171,     97,     30,      4,      1,      0,    255,
+               254,    236,    173,     95,     37,      7,      1,      0
+        });
+
+        internal static readonly byte* silk_NLSF_CB2_BITS_NB_MB_Q5 = AllocateGlobalArray<byte>(new byte[/*72*/] {
+               255,    255,    255,    131,      6,    145,    255,    255,
+               255,    255,    255,    236,     93,     15,     96,    255,
+               255,    255,    255,    255,    194,     83,     25,     71,
+               221,    255,    255,    255,    255,    162,     73,     34,
+                66,    162,    255,    255,    255,    210,    126,     73,
+                43,     57,    173,    255,    255,    255,    201,    125,
+                71,     48,     58,    130,    255,    255,    255,    166,
+               110,     73,     57,     62,    104,    210,    255,    255,
+               251,    123,     65,     55,     68,    100,    171,    255
+        });
+
+        internal static readonly byte* silk_NLSF_PRED_NB_MB_Q8 = AllocateGlobalArray<byte>(new byte[/*18*/] {
+               179,    138,    140,    148,    151,    149,    153,    151,
+               163,    116,     67,     82,     59,     92,     72,    100,
+                89,     92
+        });
+
+        internal static readonly short* silk_NLSF_DELTA_MIN_NB_MB_Q15 = AllocateGlobalArray<short>(new short[/*11*/] {
+               250,      3,      6,      3,      3,      3,      4,      3,
+                 3,      3,    461
+        });
+
+        internal static readonly silk_NLSF_CB_struct silk_NLSF_CB_NB_MB = new silk_NLSF_CB_struct()
+        {
+            nVectors = 32,
+            order = 10,
+            quantStepSize_Q16 = (short)SILK_FIX_CONST( 0.18, 16 ),
+            invQuantStepSize_Q6 = (short)SILK_FIX_CONST( 1.0 / 0.18, 6 ),
+            CB1_NLSF_Q8 = silk_NLSF_CB1_NB_MB_Q8,
+            CB1_Wght_Q9 = silk_NLSF_CB1_Wght_Q9,
+            CB1_iCDF = silk_NLSF_CB1_iCDF_NB_MB,
+            pred_Q8 = silk_NLSF_PRED_NB_MB_Q8,
+            ec_sel = silk_NLSF_CB2_SELECT_NB_MB,
+            ec_iCDF = silk_NLSF_CB2_iCDF_NB_MB,
+            ec_Rates_Q5 = silk_NLSF_CB2_BITS_NB_MB_Q5,
+            deltaMin_Q15 = silk_NLSF_DELTA_MIN_NB_MB_Q15,
+        };
+
+        #endregion
+
+        #region tables_NLSF_CB_WB.c
+
+        internal static readonly byte* silk_NLSF_CB1_WB_Q8 = AllocateGlobalArray<byte>(new byte[/*512*/] {
+                 7,     23,     38,     54,     69,     85,    100,    116,
+               131,    147,    162,    178,    193,    208,    223,    239,
+                13,     25,     41,     55,     69,     83,     98,    112,
+               127,    142,    157,    171,    187,    203,    220,    236,
+                15,     21,     34,     51,     61,     78,     92,    106,
+               126,    136,    152,    167,    185,    205,    225,    240,
+                10,     21,     36,     50,     63,     79,     95,    110,
+               126,    141,    157,    173,    189,    205,    221,    237,
+                17,     20,     37,     51,     59,     78,     89,    107,
+               123,    134,    150,    164,    184,    205,    224,    240,
+                10,     15,     32,     51,     67,     81,     96,    112,
+               129,    142,    158,    173,    189,    204,    220,    236,
+                 8,     21,     37,     51,     65,     79,     98,    113,
+               126,    138,    155,    168,    179,    192,    209,    218,
+                12,     15,     34,     55,     63,     78,     87,    108,
+               118,    131,    148,    167,    185,    203,    219,    236,
+                16,     19,     32,     36,     56,     79,     91,    108,
+               118,    136,    154,    171,    186,    204,    220,    237,
+                11,     28,     43,     58,     74,     89,    105,    120,
+               135,    150,    165,    180,    196,    211,    226,    241,
+                 6,     16,     33,     46,     60,     75,     92,    107,
+               123,    137,    156,    169,    185,    199,    214,    225,
+                11,     19,     30,     44,     57,     74,     89,    105,
+               121,    135,    152,    169,    186,    202,    218,    234,
+                12,     19,     29,     46,     57,     71,     88,    100,
+               120,    132,    148,    165,    182,    199,    216,    233,
+                17,     23,     35,     46,     56,     77,     92,    106,
+               123,    134,    152,    167,    185,    204,    222,    237,
+                14,     17,     45,     53,     63,     75,     89,    107,
+               115,    132,    151,    171,    188,    206,    221,    240,
+                 9,     16,     29,     40,     56,     71,     88,    103,
+               119,    137,    154,    171,    189,    205,    222,    237,
+                16,     19,     36,     48,     57,     76,     87,    105,
+               118,    132,    150,    167,    185,    202,    218,    236,
+                12,     17,     29,     54,     71,     81,     94,    104,
+               126,    136,    149,    164,    182,    201,    221,    237,
+                15,     28,     47,     62,     79,     97,    115,    129,
+               142,    155,    168,    180,    194,    208,    223,    238,
+                 8,     14,     30,     45,     62,     78,     94,    111,
+               127,    143,    159,    175,    192,    207,    223,    239,
+                17,     30,     49,     62,     79,     92,    107,    119,
+               132,    145,    160,    174,    190,    204,    220,    235,
+                14,     19,     36,     45,     61,     76,     91,    108,
+               121,    138,    154,    172,    189,    205,    222,    238,
+                12,     18,     31,     45,     60,     76,     91,    107,
+               123,    138,    154,    171,    187,    204,    221,    236,
+                13,     17,     31,     43,     53,     70,     83,    103,
+               114,    131,    149,    167,    185,    203,    220,    237,
+                17,     22,     35,     42,     58,     78,     93,    110,
+               125,    139,    155,    170,    188,    206,    224,    240,
+                 8,     15,     34,     50,     67,     83,     99,    115,
+               131,    146,    162,    178,    193,    209,    224,    239,
+                13,     16,     41,     66,     73,     86,     95,    111,
+               128,    137,    150,    163,    183,    206,    225,    241,
+                17,     25,     37,     52,     63,     75,     92,    102,
+               119,    132,    144,    160,    175,    191,    212,    231,
+                19,     31,     49,     65,     83,    100,    117,    133,
+               147,    161,    174,    187,    200,    213,    227,    242,
+                18,     31,     52,     68,     88,    103,    117,    126,
+               138,    149,    163,    177,    192,    207,    223,    239,
+                16,     29,     47,     61,     76,     90,    106,    119,
+               133,    147,    161,    176,    193,    209,    224,    240,
+                15,     21,     35,     50,     61,     73,     86,     97,
+               110,    119,    129,    141,    175,    198,    218,    237
+        });
+
+        internal static readonly short* silk_NLSF_CB1_WB_Wght_Q9 = AllocateGlobalArray<short>(new short[/*512*/] {
+             3657, 2925, 2925, 2925, 2925, 2925, 2925, 2925, 2925, 2925, 2925, 2925, 2963, 2963, 2925, 2846,
+             3216, 3085, 2972, 3056, 3056, 3010, 3010, 3010, 2963, 2963, 3010, 2972, 2888, 2846, 2846, 2726,
+             3920, 4014, 2981, 3207, 3207, 2934, 3056, 2846, 3122, 3244, 2925, 2846, 2620, 2553, 2780, 2925,
+             3516, 3197, 3010, 3103, 3019, 2888, 2925, 2925, 2925, 2925, 2888, 2888, 2888, 2888, 2888, 2753,
+             5054, 5054, 2934, 3573, 3385, 3056, 3085, 2793, 3160, 3160, 2972, 2846, 2513, 2540, 2753, 2888,
+             4428, 4149, 2700, 2753, 2972, 3010, 2925, 2846, 2981, 3019, 2925, 2925, 2925, 2925, 2888, 2726,
+             3620, 3019, 2972, 3056, 3056, 2873, 2806, 3056, 3216, 3047, 2981, 3291, 3291, 2981, 3310, 2991,
+             5227, 5014, 2540, 3338, 3526, 3385, 3197, 3094, 3376, 2981, 2700, 2647, 2687, 2793, 2846, 2673,
+             5081, 5174, 4615, 4428, 2460, 2897, 3047, 3207, 3169, 2687, 2740, 2888, 2846, 2793, 2846, 2700,
+             3122, 2888, 2963, 2925, 2925, 2925, 2925, 2963, 2963, 2963, 2963, 2925, 2925, 2963, 2963, 2963,
+             4202, 3207, 2981, 3103, 3010, 2888, 2888, 2925, 2972, 2873, 2916, 3019, 2972, 3010, 3197, 2873,
+             3760, 3760, 3244, 3103, 2981, 2888, 2925, 2888, 2972, 2934, 2793, 2793, 2846, 2888, 2888, 2660,
+             3854, 4014, 3207, 3122, 3244, 2934, 3047, 2963, 2963, 3085, 2846, 2793, 2793, 2793, 2793, 2580,
+             3845, 4080, 3357, 3516, 3094, 2740, 3010, 2934, 3122, 3085, 2846, 2846, 2647, 2647, 2846, 2806,
+             5147, 4894, 3225, 3845, 3441, 3169, 2897, 3413, 3451, 2700, 2580, 2673, 2740, 2846, 2806, 2753,
+             4109, 3789, 3291, 3160, 2925, 2888, 2888, 2925, 2793, 2740, 2793, 2740, 2793, 2846, 2888, 2806,
+             5081, 5054, 3047, 3545, 3244, 3056, 3085, 2944, 3103, 2897, 2740, 2740, 2740, 2846, 2793, 2620,
+             4309, 4309, 2860, 2527, 3207, 3376, 3376, 3075, 3075, 3376, 3056, 2846, 2647, 2580, 2726, 2753,
+             3056, 2916, 2806, 2888, 2740, 2687, 2897, 3103, 3150, 3150, 3216, 3169, 3056, 3010, 2963, 2846,
+             4375, 3882, 2925, 2888, 2846, 2888, 2846, 2846, 2888, 2888, 2888, 2846, 2888, 2925, 2888, 2846,
+             2981, 2916, 2916, 2981, 2981, 3056, 3122, 3216, 3150, 3056, 3010, 2972, 2972, 2972, 2925, 2740,
+             4229, 4149, 3310, 3347, 2925, 2963, 2888, 2981, 2981, 2846, 2793, 2740, 2846, 2846, 2846, 2793,
+             4080, 4014, 3103, 3010, 2925, 2925, 2925, 2888, 2925, 2925, 2846, 2846, 2846, 2793, 2888, 2780,
+             4615, 4575, 3169, 3441, 3207, 2981, 2897, 3038, 3122, 2740, 2687, 2687, 2687, 2740, 2793, 2700,
+             4149, 4269, 3789, 3657, 2726, 2780, 2888, 2888, 3010, 2972, 2925, 2846, 2687, 2687, 2793, 2888,
+             4215, 3554, 2753, 2846, 2846, 2888, 2888, 2888, 2925, 2925, 2888, 2925, 2925, 2925, 2963, 2888,
+             5174, 4921, 2261, 3432, 3789, 3479, 3347, 2846, 3310, 3479, 3150, 2897, 2460, 2487, 2753, 2925,
+             3451, 3685, 3122, 3197, 3357, 3047, 3207, 3207, 2981, 3216, 3085, 2925, 2925, 2687, 2540, 2434,
+             2981, 3010, 2793, 2793, 2740, 2793, 2846, 2972, 3056, 3103, 3150, 3150, 3150, 3103, 3010, 3010,
+             2944, 2873, 2687, 2726, 2780, 3010, 3432, 3545, 3357, 3244, 3056, 3010, 2963, 2925, 2888, 2846,
+             3019, 2944, 2897, 3010, 3010, 2972, 3019, 3103, 3056, 3056, 3010, 2888, 2846, 2925, 2925, 2888,
+             3920, 3967, 3010, 3197, 3357, 3216, 3291, 3291, 3479, 3704, 3441, 2726, 2181, 2460, 2580, 2607
+        });
+
+        internal static readonly byte* silk_NLSF_CB1_iCDF_WB = AllocateGlobalArray<byte>(new byte[/*64*/] {
+               225,    204,    201,    184,    183,    175,    158,    154,
+               153,    135,    119,    115,    113,    110,    109,     99,
+                98,     95,     79,     68,     52,     50,     48,     45,
+                43,     32,     31,     27,     18,     10,      3,      0,
+               255,    251,    235,    230,    212,    201,    196,    182,
+               167,    166,    163,    151,    138,    124,    110,    104,
+                90,     78,     76,     70,     69,     57,     45,     34,
+                24,     21,     11,      6,      5,      4,      3,      0
+        });
+
+        internal static readonly byte* silk_NLSF_CB2_SELECT_WB = AllocateGlobalArray<byte>(new byte[/*256*/] {
+                 0,      0,      0,      0,      0,      0,      0,      1,
+               100,    102,    102,     68,     68,     36,     34,     96,
+               164,    107,    158,    185,    180,    185,    139,    102,
+                64,     66,     36,     34,     34,      0,      1,     32,
+               208,    139,    141,    191,    152,    185,    155,    104,
+                96,    171,    104,    166,    102,    102,    102,    132,
+                 1,      0,      0,      0,      0,     16,     16,      0,
+                80,    109,     78,    107,    185,    139,    103,    101,
+               208,    212,    141,    139,    173,    153,    123,    103,
+                36,      0,      0,      0,      0,      0,      0,      1,
+                48,      0,      0,      0,      0,      0,      0,     32,
+                68,    135,    123,    119,    119,    103,     69,     98,
+                68,    103,    120,    118,    118,    102,     71,     98,
+               134,    136,    157,    184,    182,    153,    139,    134,
+               208,    168,    248,     75,    189,    143,    121,    107,
+                32,     49,     34,     34,     34,      0,     17,      2,
+               210,    235,    139,    123,    185,    137,    105,    134,
+                98,    135,    104,    182,    100,    183,    171,    134,
+               100,     70,     68,     70,     66,     66,     34,    131,
+                64,    166,    102,     68,     36,      2,      1,      0,
+               134,    166,    102,     68,     34,     34,     66,    132,
+               212,    246,    158,    139,    107,    107,     87,    102,
+               100,    219,    125,    122,    137,    118,    103,    132,
+               114,    135,    137,    105,    171,    106,     50,     34,
+               164,    214,    141,    143,    185,    151,    121,    103,
+               192,     34,      0,      0,      0,      0,      0,      1,
+               208,    109,     74,    187,    134,    249,    159,    137,
+               102,    110,    154,    118,     87,    101,    119,    101,
+                 0,      2,      0,     36,     36,     66,     68,     35,
+                96,    164,    102,    100,     36,      0,      2,     33,
+               167,    138,    174,    102,    100,     84,      2,      2,
+               100,    107,    120,    119,     36,    197,     24,      0
+        });
+
+        internal static readonly byte* silk_NLSF_CB2_iCDF_WB = AllocateGlobalArray<byte>(new byte[/*72*/] {
+               255,    254,    253,    244,     12,      3,      2,      1,
+                 0,    255,    254,    252,    224,     38,      3,      2,
+                 1,      0,    255,    254,    251,    209,     57,      4,
+                 2,      1,      0,    255,    254,    244,    195,     69,
+                 4,      2,      1,      0,    255,    251,    232,    184,
+                84,      7,      2,      1,      0,    255,    254,    240,
+               186,     86,     14,      2,      1,      0,    255,    254,
+               239,    178,     91,     30,      5,      1,      0,    255,
+               248,    227,    177,    100,     19,      2,      1,      0
+        });
+
+        internal static readonly byte* silk_NLSF_CB2_BITS_WB_Q5 = AllocateGlobalArray<byte>(new byte[/*72*/] {
+               255,    255,    255,    156,      4,    154,    255,    255,
+               255,    255,    255,    227,    102,     15,     92,    255,
+               255,    255,    255,    255,    213,     83,     24,     72,
+               236,    255,    255,    255,    255,    150,     76,     33,
+                63,    214,    255,    255,    255,    190,    121,     77,
+                43,     55,    185,    255,    255,    255,    245,    137,
+                71,     43,     59,    139,    255,    255,    255,    255,
+               131,     66,     50,     66,    107,    194,    255,    255,
+               166,    116,     76,     55,     53,    125,    255,    255
+        });
+
+        internal static readonly byte* silk_NLSF_PRED_WB_Q8 = AllocateGlobalArray<byte>(new byte[/*30*/] {
+               175,    148,    160,    176,    178,    173,    174,    164,
+               177,    174,    196,    182,    198,    192,    182,     68,
+                62,     66,     60,     72,    117,     85,     90,    118,
+               136,    151,    142,    160,    142,    155
+        });
+
+        internal static readonly short* silk_NLSF_DELTA_MIN_WB_Q15 = AllocateGlobalArray<short>(new short[/*17*/] {
+               100,      3,     40,      3,      3,      3,      5,     14,
+                14,     10,     11,      3,      8,      9,      7,      3,
+               347
+        });
+
+        internal static readonly silk_NLSF_CB_struct silk_NLSF_CB_WB = new silk_NLSF_CB_struct()
+        {
+            nVectors = 32,
+            order = 16,
+            quantStepSize_Q16 = (short)SILK_FIX_CONST( 0.15, 16 ),
+            invQuantStepSize_Q6 = (short)SILK_FIX_CONST( 1.0 / 0.15, 6 ),
+            CB1_NLSF_Q8 = silk_NLSF_CB1_WB_Q8,
+            CB1_Wght_Q9 = silk_NLSF_CB1_WB_Wght_Q9,
+            CB1_iCDF = silk_NLSF_CB1_iCDF_WB,
+            pred_Q8 = silk_NLSF_PRED_WB_Q8,
+            ec_sel = silk_NLSF_CB2_SELECT_WB,
+            ec_iCDF = silk_NLSF_CB2_iCDF_WB,
+            ec_Rates_Q5 = silk_NLSF_CB2_BITS_WB_Q5,
+            deltaMin_Q15 = silk_NLSF_DELTA_MIN_WB_Q15,
+        };
+
+        #endregion
+
+        #region tables_pitch_lag.c
+
+        internal static readonly byte* silk_pitch_lag_iCDF = AllocateGlobalArray<byte>(new byte[/*2 * ( PITCH_EST_MAX_LAG_MS - PITCH_EST_MIN_LAG_MS )*/] {
+               253,    250,    244,    233,    212,    182,    150,    131,
+               120,    110,     98,     85,     72,     60,     49,     40,
+                32,     25,     19,     15,     13,     11,      9,      8,
+                 7,      6,      5,      4,      3,      2,      1,      0
+        });
+
+        internal static readonly byte* silk_pitch_delta_iCDF = AllocateGlobalArray<byte>(new byte[/*21*/] {
+               210,    208,    206,    203,    199,    193,    183,    168,
+               142,    104,     74,     52,     37,     27,     20,     14,
+                10,      6,      4,      2,      0
+        });
+
+        internal static readonly byte* silk_pitch_contour_iCDF = AllocateGlobalArray<byte>(new byte[/*34*/] {
+               223,    201,    183,    167,    152,    138,    124,    111,
+                98,     88,     79,     70,     62,     56,     50,     44,
+                39,     35,     31,     27,     24,     21,     18,     16,
+                14,     12,     10,      8,      6,      4,      3,      2,
+                 1,      0
+        });
+
+        internal static readonly byte* silk_pitch_contour_NB_iCDF = AllocateGlobalArray<byte>(new byte[/*11*/] {
+               188,    176,    155,    138,    119,     97,     67,     43,
+                26,     10,      0
+        });
+
+        internal static readonly byte* silk_pitch_contour_10_ms_iCDF = AllocateGlobalArray<byte>(new byte[/*12*/] {
+               165,    119,     80,     61,     47,     35,     27,     20,
+                14,      9,      4,      0
+        });
+
+        internal static readonly byte* silk_pitch_contour_10_ms_NB_iCDF = AllocateGlobalArray<byte>(new byte[/*3*/] {
+               113,     63,      0
+        });
+
+        #endregion
+
+        #region tables_pulses_per_block.c
+
+        internal static readonly byte* silk_max_pulses_table = AllocateGlobalArray<byte>(new byte[/*4*/] {
+                 8,     10,     12,     16
+        });
+
+        internal static readonly Native2DArray<byte> silk_pulses_per_block_iCDF = new Native2DArray<byte>(new byte[/*[10][18]*/]
+        {
+               125,     51,     26,     18,     15,     12,     11,     10,
+                 9,      8,      7,      6,      5,      4,      3,      2,
+                 1,      0,
+
+               198,    105,     45,     22,     15,     12,     11,     10,
+                 9,      8,      7,      6,      5,      4,      3,      2,
+                 1,      0,
+
+               213,    162,    116,     83,     59,     43,     32,     24,
+                18,     15,     12,      9,      7,      6,      5,      3,
+                 2,      0,
+
+               239,    187,    116,     59,     28,     16,     11,     10,
+                 9,      8,      7,      6,      5,      4,      3,      2,
+                 1,      0,
+
+               250,    229,    188,    135,     86,     51,     30,     19,
+                13,     10,      8,      6,      5,      4,      3,      2,
+                 1,      0,
+
+               249,    235,    213,    185,    156,    128,    103,     83,
+                66,     53,     42,     33,     26,     21,     17,     13,
+                10,      0,
+
+               254,    249,    235,    206,    164,    118,     77,     46,
+                27,     16,     10,      7,      5,      4,      3,      2,
+                 1,      0,
+
+               255,    253,    249,    239,    220,    191,    156,    119,
+                85,     57,     37,     23,     15,     10,      6,      4,
+                 2,      0,
+
+               255,    253,    251,    246,    237,    223,    203,    179,
+               152,    124,     98,     75,     55,     40,     29,     21,
+                15,      0,
+
+               255,    254,    253,    247,    220,    162,    106,     67,
+                42,     28,     18,     12,      9,      6,      4,      3,
+                 2,      0
+        }, 10, 18);
+
+        internal static readonly Native2DArray<byte> silk_pulses_per_block_BITS_Q5 = new Native2DArray<byte>(new byte[/*[9][18]*/]
+        {
+                31,     57,    107,    160,    205,    205,    255,    255,
+               255,    255,    255,    255,    255,    255,    255,    255,
+               255,    255,
+
+                69,     47,     67,    111,    166,    205,    255,    255,
+               255,    255,    255,    255,    255,    255,    255,    255,
+               255,    255,
+
+                82,     74,     79,     95,    109,    128,    145,    160,
+               173,    205,    205,    205,    224,    255,    255,    224,
+               255,    224,
+
+               125,     74,     59,     69,     97,    141,    182,    255,
+               255,    255,    255,    255,    255,    255,    255,    255,
+               255,    255,
+
+               173,    115,     85,     73,     76,     92,    115,    145,
+               173,    205,    224,    224,    255,    255,    255,    255,
+               255,    255,
+
+               166,    134,    113,    102,    101,    102,    107,    118,
+               125,    138,    145,    155,    166,    182,    192,    192,
+               205,    150,
+
+               224,    182,    134,    101,     83,     79,     85,     97,
+               120,    145,    173,    205,    224,    255,    255,    255,
+               255,    255,
+
+               255,    224,    192,    150,    120,    101,     92,     89,
+                93,    102,    118,    134,    160,    182,    192,    224,
+               224,    224,
+
+               255,    224,    224,    182,    155,    134,    118,    109,
+               104,    102,    106,    111,    118,    131,    145,    160,
+               173,    131
+        }, 9, 18);
+
+
+        internal static readonly Native2DArray<byte> silk_rate_levels_iCDF = new Native2DArray<byte>(new byte[/*[2][9]*/]
+        {
+               241,    190,    178,    132,     87,     74,     41,     14,    0,
+
+               223,    193,    157,    140,    106,     57,     39,     18,    0
+        }, 2, 9);
+
+            
+        internal static readonly Native2DArray<byte> silk_rate_levels_BITS_Q5 = new Native2DArray<byte>(new byte[/*[2][9]*/]
+        {
+               131,     74,    141,     79,     80,    138,     95,    104,   134,
+
+                95,     99,     91,    125,     93,     76,    123,    115,   123
+        }, 2, 9);
+
+        internal static readonly byte* silk_shell_code_table0 = AllocateGlobalArray<byte>(new byte[/*152*/] {
+               128,      0,    214,     42,      0,    235,    128,     21,
+                 0,    244,    184,     72,     11,      0,    248,    214,
+               128,     42,      7,      0,    248,    225,    170,     80,
+                25,      5,      0,    251,    236,    198,    126,     54,
+                18,      3,      0,    250,    238,    211,    159,     82,
+                35,     15,      5,      0,    250,    231,    203,    168,
+               128,     88,     53,     25,      6,      0,    252,    238,
+               216,    185,    148,    108,     71,     40,     18,      4,
+                 0,    253,    243,    225,    199,    166,    128,     90,
+                57,     31,     13,      3,      0,    254,    246,    233,
+               212,    183,    147,    109,     73,     44,     23,     10,
+                 2,      0,    255,    250,    240,    223,    198,    166,
+               128,     90,     58,     33,     16,      6,      1,      0,
+               255,    251,    244,    231,    210,    181,    146,    110,
+                75,     46,     25,     12,      5,      1,      0,    255,
+               253,    248,    238,    221,    196,    164,    128,     92,
+                60,     35,     18,      8,      3,      1,      0,    255,
+               253,    249,    242,    229,    208,    180,    146,    110,
+                76,     48,     27,     14,      7,      3,      1,      0
+        });
+
+        internal static readonly byte* silk_shell_code_table1 = AllocateGlobalArray<byte>(new byte[/*152*/] {
+               129,      0,    207,     50,      0,    236,    129,     20,
+                 0,    245,    185,     72,     10,      0,    249,    213,
+               129,     42,      6,      0,    250,    226,    169,     87,
+                27,      4,      0,    251,    233,    194,    130,     62,
+                20,      4,      0,    250,    236,    207,    160,     99,
+                47,     17,      3,      0,    255,    240,    217,    182,
+               131,     81,     41,     11,      1,      0,    255,    254,
+               233,    201,    159,    107,     61,     20,      2,      1,
+                 0,    255,    249,    233,    206,    170,    128,     86,
+                50,     23,      7,      1,      0,    255,    250,    238,
+               217,    186,    148,    108,     70,     39,     18,      6,
+                 1,      0,    255,    252,    243,    226,    200,    166,
+               128,     90,     56,     30,     13,      4,      1,      0,
+               255,    252,    245,    231,    209,    180,    146,    110,
+                76,     47,     25,     11,      4,      1,      0,    255,
+               253,    248,    237,    219,    194,    163,    128,     93,
+                62,     37,     19,      8,      3,      1,      0,    255,
+               254,    250,    241,    226,    205,    177,    145,    111,
+                79,     51,     30,     15,      6,      2,      1,      0
+        });
+
+        internal static readonly byte* silk_shell_code_table2 = AllocateGlobalArray<byte>(new byte[/*152*/] {
+               129,      0,    203,     54,      0,    234,    129,     23,
+                 0,    245,    184,     73,     10,      0,    250,    215,
+               129,     41,      5,      0,    252,    232,    173,     86,
+                24,      3,      0,    253,    240,    200,    129,     56,
+                15,      2,      0,    253,    244,    217,    164,     94,
+                38,     10,      1,      0,    253,    245,    226,    189,
+               132,     71,     27,      7,      1,      0,    253,    246,
+               231,    203,    159,    105,     56,     23,      6,      1,
+                 0,    255,    248,    235,    213,    179,    133,     85,
+                47,     19,      5,      1,      0,    255,    254,    243,
+               221,    194,    159,    117,     70,     37,     12,      2,
+                 1,      0,    255,    254,    248,    234,    208,    171,
+               128,     85,     48,     22,      8,      2,      1,      0,
+               255,    254,    250,    240,    220,    189,    149,    107,
+                67,     36,     16,      6,      2,      1,      0,    255,
+               254,    251,    243,    227,    201,    166,    128,     90,
+                55,     29,     13,      5,      2,      1,      0,    255,
+               254,    252,    246,    234,    213,    183,    147,    109,
+                73,     43,     22,     10,      4,      2,      1,      0
+        });
+
+        internal static readonly byte* silk_shell_code_table3 = AllocateGlobalArray<byte>(new byte[/*152*/] {
+               130,      0,    200,     58,      0,    231,    130,     26,
+                 0,    244,    184,     76,     12,      0,    249,    214,
+               130,     43,      6,      0,    252,    232,    173,     87,
+                24,      3,      0,    253,    241,    203,    131,     56,
+                14,      2,      0,    254,    246,    221,    167,     94,
+                35,      8,      1,      0,    254,    249,    232,    193,
+               130,     65,     23,      5,      1,      0,    255,    251,
+               239,    211,    162,     99,     45,     15,      4,      1,
+                 0,    255,    251,    243,    223,    186,    131,     74,
+                33,     11,      3,      1,      0,    255,    252,    245,
+               230,    202,    158,    105,     57,     24,      8,      2,
+                 1,      0,    255,    253,    247,    235,    214,    179,
+               132,     84,     44,     19,      7,      2,      1,      0,
+               255,    254,    250,    240,    223,    196,    159,    112,
+                69,     36,     15,      6,      2,      1,      0,    255,
+               254,    253,    245,    231,    209,    176,    136,     93,
+                55,     27,     11,      3,      2,      1,      0,    255,
+               254,    253,    252,    239,    221,    194,    158,    117,
+                76,     42,     18,      4,      3,      2,      1,      0
+        });
+
+        internal static readonly byte* silk_shell_code_table_offsets = AllocateGlobalArray<byte>(new byte[/*17*/] {
+                 0,      0,      2,      5,      9,     14,     20,     27,
+                35,     44,     54,     65,     77,     90,    104,    119,
+               135
+        });
+
+        internal static readonly byte* silk_sign_iCDF = AllocateGlobalArray<byte>(new byte[/*42*/] {
+               254,     49,     67,     77,     82,     93,     99,
+               198,     11,     18,     24,     31,     36,     45,
+               255,     46,     66,     78,     87,     94,    104,
+               208,     14,     21,     32,     42,     51,     66,
+               255,     94,    104,    109,    112,    115,    118,
+               248,     53,     69,     80,     88,     95,    102
+        });
+
+        #endregion
+
+        static Tables()
+        {
+            silk_LBRR_flags_iCDF_ptr[0] = silk_LBRR_flags_2_iCDF;
+            silk_LBRR_flags_iCDF_ptr[1] = silk_LBRR_flags_3_iCDF;
+
+            silk_LTP_gain_iCDF_ptrs[0] = silk_LTP_gain_iCDF_0;
+            silk_LTP_gain_iCDF_ptrs[1] = silk_LTP_gain_iCDF_1;
+            silk_LTP_gain_iCDF_ptrs[2] = silk_LTP_gain_iCDF_2;
+
+            silk_LTP_gain_BITS_Q5_ptrs[0] = silk_LTP_gain_BITS_Q5_0;
+            silk_LTP_gain_BITS_Q5_ptrs[1] = silk_LTP_gain_BITS_Q5_1;
+            silk_LTP_gain_BITS_Q5_ptrs[2] = silk_LTP_gain_BITS_Q5_2;
+
+            silk_LTP_vq_ptrs_Q7[0] = silk_LTP_gain_vq_0.Pointer;
+            silk_LTP_vq_ptrs_Q7[1] = silk_LTP_gain_vq_1.Pointer;
+            silk_LTP_vq_ptrs_Q7[2] = silk_LTP_gain_vq_2.Pointer;
+
+            silk_LTP_vq_gain_ptrs_Q7[0] = silk_LTP_gain_vq_0_gain;
+            silk_LTP_vq_gain_ptrs_Q7[1] = silk_LTP_gain_vq_1_gain;
+            silk_LTP_vq_gain_ptrs_Q7[2] = silk_LTP_gain_vq_2_gain;
+        }
     }
 }
