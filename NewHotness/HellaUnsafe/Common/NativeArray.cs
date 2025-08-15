@@ -36,5 +36,12 @@ namespace HellaUnsafe.Common
             managedArray.CopyTo(new Span<T>(pointer, managedArray.Length));
             return pointer;
         }
+
+        public static T* AllocateGlobalDWordAligned<T>(T[] managedArray) where T : unmanaged
+        {
+            T* pointer = (T*)NativeMemory.AlignedAlloc((nuint)(managedArray.Length * sizeof(T)), 4);
+            managedArray.CopyTo(new Span<T>(pointer, managedArray.Length));
+            return pointer;
+        }
     }
 }

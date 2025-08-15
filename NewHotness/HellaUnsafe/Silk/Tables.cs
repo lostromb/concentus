@@ -3,6 +3,8 @@ using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.SigProcFIX;
+using static HellaUnsafe.Silk.TuningParameters;
+using static HellaUnsafe.Silk.PitchEstDefines;
 
 namespace HellaUnsafe.Silk
 {
@@ -494,7 +496,7 @@ namespace HellaUnsafe.Silk
                  3,      3,    461
         });
 
-        internal static readonly silk_NLSF_CB_struct silk_NLSF_CB_NB_MB = new silk_NLSF_CB_struct()
+        internal static readonly silk_NLSF_CB_struct* silk_NLSF_CB_NB_MB = AllocGlobalStructInit(new silk_NLSF_CB_struct()
         {
             nVectors = 32,
             order = 10,
@@ -508,7 +510,7 @@ namespace HellaUnsafe.Silk
             ec_iCDF = silk_NLSF_CB2_iCDF_NB_MB,
             ec_Rates_Q5 = silk_NLSF_CB2_BITS_NB_MB_Q5,
             deltaMin_Q15 = silk_NLSF_DELTA_MIN_NB_MB_Q15,
-        };
+        });
 
         #endregion
 
@@ -699,7 +701,7 @@ namespace HellaUnsafe.Silk
                347
         });
 
-        internal static readonly silk_NLSF_CB_struct silk_NLSF_CB_WB = new silk_NLSF_CB_struct()
+        internal static readonly silk_NLSF_CB_struct* silk_NLSF_CB_WB = AllocGlobalStructInit(new silk_NLSF_CB_struct()
         {
             nVectors = 32,
             order = 16,
@@ -713,7 +715,7 @@ namespace HellaUnsafe.Silk
             ec_iCDF = silk_NLSF_CB2_iCDF_WB,
             ec_Rates_Q5 = silk_NLSF_CB2_BITS_WB_Q5,
             deltaMin_Q15 = silk_NLSF_DELTA_MIN_WB_Q15,
-        };
+        });
 
         #endregion
 
@@ -961,6 +963,83 @@ namespace HellaUnsafe.Silk
                208,     14,     21,     32,     42,     51,     66,
                255,     94,    104,    109,    112,    115,    118,
                248,     53,     69,     80,     88,     95,    102
+        });
+
+        #endregion
+
+        #region pitch_est_tables.c
+
+        internal static readonly Native2DArray<sbyte> silk_CB_lags_stage2_10_ms =
+            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR >> 1][ PE_NB_CBKS_STAGE2_10MS ]*/]
+        {
+            0, 1, 0,
+            0, 0, 1
+        }, PE_MAX_NB_SUBFR >> 1, PE_NB_CBKS_STAGE2_10MS);
+
+        internal static readonly Native2DArray<sbyte> silk_CB_lags_stage3_10_ms =
+            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR >> 1][ PE_NB_CBKS_STAGE3_10MS ]*/]
+        {
+            0, 0, 1,-1, 1,-1, 2,-2, 2,-2, 3,-3,
+            0, 1, 0, 1,-1, 2,-1, 2,-2, 3,-2, 3
+        }, PE_MAX_NB_SUBFR >> 1, PE_NB_CBKS_STAGE3_10MS);
+
+        internal static readonly Native2DArray<sbyte> silk_Lag_range_stage3_10_ms =
+            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR >> 1][ 2 ]*/]
+        {
+            -3, 7,
+            -2, 7
+        }, PE_MAX_NB_SUBFR >> 1, 2);
+
+        internal static readonly Native2DArray<sbyte> silk_CB_lags_stage2 =
+            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ]*/]
+        {
+            0, 2,-1,-1,-1, 0, 0, 1, 1, 0, 1,
+            0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+            0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0,
+            0,-1, 2, 1, 0, 1, 1, 0, 0,-1,-1
+        }, PE_MAX_NB_SUBFR, PE_NB_CBKS_STAGE2_EXT);
+
+        internal static readonly Native2DArray<sbyte> silk_CB_lags_stage3 =
+            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ]*/]
+        {
+            0, 0, 1,-1, 0, 1,-1, 0,-1, 1,-2, 2,-2,-2, 2,-3, 2, 3,-3,-4, 3,-4, 4, 4,-5, 5,-6,-5, 6,-7, 6, 5, 8,-9,
+            0, 0, 1, 0, 0, 0, 0, 0, 0, 0,-1, 1, 0, 0, 1,-1, 0, 1,-1,-1, 1,-1, 2, 1,-1, 2,-2,-2, 2,-2, 2, 2, 3,-3,
+            0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,-1, 1, 0, 0, 2, 1,-1, 2,-1,-1, 2,-1, 2, 2,-1, 3,-2,-2,-2, 3,
+            0, 1, 0, 0, 1, 0, 1,-1, 2,-1, 2,-1, 2, 3,-2, 3,-2,-2, 4, 4,-3, 5,-3,-4, 6,-4, 6, 5,-5, 8,-6,-5,-7, 9
+        }, PE_MAX_NB_SUBFR, PE_NB_CBKS_STAGE3_MAX);
+
+        internal static readonly Native3DArray<sbyte> silk_Lag_range_stage3 =
+            new Native3DArray<sbyte>(new sbyte[/*[ SILK_PE_MAX_COMPLEX + 1 ][ PE_MAX_NB_SUBFR ][ 2 ]*/]
+        {
+            /* Lags to search for low number of stage3 cbks */
+            //{
+                -5,8,
+                -1,6,
+                -1,6,
+                -4,10
+            //},
+            /* Lags to search for middle number of stage3 cbks */
+            //{
+                -6,10,
+                -2,6,
+                -1,6,
+                -5,10
+            //},
+            /* Lags to search for max number of stage3 cbks */
+            //{
+                -9,12,
+                -3,7,
+                -2,7,
+                -7,13
+            //}
+        }, SILK_PE_MAX_COMPLEX + 1, PE_MAX_NB_SUBFR, 2);
+
+
+        internal static readonly sbyte* silk_nb_cbk_searchs_stage3 = AllocateGlobalArray<sbyte>(new sbyte[/*SILK_PE_MAX_COMPLEX + 1*/] 
+        {
+            PE_NB_CBKS_STAGE3_MIN,
+            PE_NB_CBKS_STAGE3_MID,
+            PE_NB_CBKS_STAGE3_MAX
         });
 
         #endregion
