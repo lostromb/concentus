@@ -179,6 +179,11 @@ namespace HellaUnsafe.Common
             new Span<int>(src, bytes / sizeof(int)).CopyTo(new Span<int>(dst, bytes / sizeof(int)));
         }
 
+        internal static unsafe void silk_memcpy(short* dst, short* src, int bytes)
+        {
+            new Span<short>(src, bytes / sizeof(short)).CopyTo(new Span<short>(dst, bytes / sizeof(short)));
+        }
+
         internal static unsafe void silk_memcpy(float* dst, float* src, int bytes)
         {
             new Span<float>(src, bytes / sizeof(float)).CopyTo(new Span<float>(dst, bytes / sizeof(float)));
@@ -230,6 +235,13 @@ namespace HellaUnsafe.Common
                 Unsafe.CopyBlock((void*)dest, (void*)src, (uint)(input.Length * sizeof(T)));
                 return (T*)dest;
             }
+        }
+
+        internal static unsafe T* AllocateGlobalArrayDWordAligned<T>(T[] managedArray) where T : unmanaged
+        {
+            T* pointer = (T*)NativeMemory.AlignedAlloc((nuint)(managedArray.Length * sizeof(T)), 4);
+            managedArray.CopyTo(new Span<T>(pointer, managedArray.Length));
+            return pointer;
         }
 
         /// <summary>

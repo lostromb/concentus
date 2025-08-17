@@ -40,6 +40,15 @@ namespace HellaUnsafe.Common
             Width = width;
         }
 
+        public Native2DArray(T[] preallocatedData, int height, int width, int wordAlignment)
+        {
+            int numElements = height * width;
+            Pointer = (T*)NativeMemory.AlignedAlloc((nuint)(numElements * sizeof(T)), 4);
+            preallocatedData.AsSpan(0, numElements).CopyTo(new Span<T>(Pointer, numElements));
+            Height = height;
+            Width = width;
+        }
+
         public Native2DArray(ReadOnlySpan<T> preallocatedData, int height, int width)
         {
             int numElements = height * width;
