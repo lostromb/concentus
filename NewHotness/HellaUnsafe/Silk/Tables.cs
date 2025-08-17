@@ -12,7 +12,7 @@ namespace HellaUnsafe.Silk
     {
         #region tables_gain.c
 
-        internal static readonly Native2DArray<byte> silk_gain_iCDF = new Native2DArray<byte>(new byte[]
+        internal static readonly Native2DArray<byte> silk_gain_iCDF = new Native2DArray<byte>(3, N_LEVELS_QGAIN / 8, new byte[]
         {
             //{
                224,    112,     44,     15,      3,      2,      1,      0,
@@ -23,7 +23,7 @@ namespace HellaUnsafe.Silk
             //{
                255,    252,    226,    155,     61,     11,      2,      0,
             //}
-        }, 3, N_LEVELS_QGAIN / 8);
+        });
 
         internal static readonly byte* silk_delta_gain_iCDF = AllocateGlobalArray<byte>(new byte[/*MAX_DELTA_GAIN_QUANT - MIN_DELTA_GAIN_QUANT + 1*/] {
                250,    245,    234,    203,     71,     50,     42,     38,
@@ -118,23 +118,21 @@ namespace HellaUnsafe.Silk
                182,    192,    192,    192,    205,    192,    205,    224
         });
 
-        //const opus_uint8* const silk_LTP_gain_iCDF_ptrs[NB_LTP_CBKS] = {
-        //    silk_LTP_gain_iCDF_0,
-        //    silk_LTP_gain_iCDF_1,
-        //    silk_LTP_gain_iCDF_2
-        //};
+        internal static readonly byte** silk_LTP_gain_iCDF_ptrs = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS, new byte*[]
+        {
+            silk_LTP_gain_iCDF_0,
+            silk_LTP_gain_iCDF_1,
+            silk_LTP_gain_iCDF_2
+        });
 
-        internal static readonly byte** silk_LTP_gain_iCDF_ptrs = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS); // filled in later during static constructor
+        internal static readonly byte** silk_LTP_gain_BITS_Q5_ptrs = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS, new byte*[]
+        {
+            silk_LTP_gain_BITS_Q5_0,
+            silk_LTP_gain_BITS_Q5_1,
+            silk_LTP_gain_BITS_Q5_2
+        });
 
-        //const opus_uint8* const silk_LTP_gain_BITS_Q5_ptrs[NB_LTP_CBKS] = {
-        //    silk_LTP_gain_BITS_Q5_0,
-        //    silk_LTP_gain_BITS_Q5_1,
-        //    silk_LTP_gain_BITS_Q5_2
-        //};
-
-        internal static readonly byte** silk_LTP_gain_BITS_Q5_ptrs = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS); // filled in later during static constructor
-
-        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_0 = new Native2DArray<sbyte>(new sbyte[/*[8][5]*/]
+        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_0 = new Native2DArray<sbyte>(8, 5, new sbyte[]
         {
                  4,      6,     24,      7,      5,
                  0,      0,      2,      0,      0,
@@ -144,9 +142,9 @@ namespace HellaUnsafe.Silk
                -10,     37,     65,     -4,      3,
                 -6,      4,     66,      7,     -8,
                 16,     14,     38,     -3,     33
-        }, 8, 5);
+        });
 
-        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_1 = new Native2DArray<sbyte>(new sbyte[/*[16][5]*/]
+        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_1 = new Native2DArray<sbyte>(16, 5, new sbyte[]
         {
                 13,     22,     39,     23,     12,
                 -1,     36,     64,     27,     -6,
@@ -164,9 +162,9 @@ namespace HellaUnsafe.Silk
                -15,     33,     68,      2,     23,
                 -2,     55,     46,     -2,     15,
                  3,     -1,     21,     16,     41
-        }, 16, 5);
+        });
 
-        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_2 = new Native2DArray<sbyte>(new sbyte[/*[32][5]*/]
+        internal static readonly Native2DArray<sbyte> silk_LTP_gain_vq_2 = new Native2DArray<sbyte>(32, 5, new sbyte[]
         {
                 -6,     27,     61,     39,      5,
                -11,     42,     88,      4,      1,
@@ -200,15 +198,14 @@ namespace HellaUnsafe.Silk
                -13,     44,    122,      4,    -24,
                 81,      5,     11,      3,      7,
                  2,      0,      9,     10,     88
-        }, 32, 5);
+        });
 
-        //const opus_int8* const silk_LTP_vq_ptrs_Q7[NB_LTP_CBKS] = {
-        //    (opus_int8 *)&silk_LTP_gain_vq_0[0][0],
-        //    (opus_int8 *)&silk_LTP_gain_vq_1[0][0],
-        //    (opus_int8 *)&silk_LTP_gain_vq_2[0][0]
-        //};
-
-        internal static readonly sbyte** silk_LTP_vq_ptrs_Q7 = AllocateGlobalPointerArray<sbyte>(NB_LTP_CBKS); // filled in later during static constructor
+        internal static readonly sbyte** silk_LTP_vq_ptrs_Q7 = AllocateGlobalPointerArray<sbyte>(NB_LTP_CBKS, new sbyte*[]
+        {
+            &silk_LTP_gain_vq_0[0][0],
+            &silk_LTP_gain_vq_1[0][0],
+            &silk_LTP_gain_vq_2[0][0]
+        });
 
         /* Maximum frequency-dependent response of the pitch taps above,
             computed as max(abs(freqz(taps))) */
@@ -228,13 +225,12 @@ namespace HellaUnsafe.Silk
              124,    120,    123,    119,    170,    173,    107,    109
         });
 
-        //const opus_uint8* const silk_LTP_vq_gain_ptrs_Q7[NB_LTP_CBKS] = {
-        //    &silk_LTP_gain_vq_0_gain[0],
-        //    &silk_LTP_gain_vq_1_gain[0],
-        //    &silk_LTP_gain_vq_2_gain[0]
-        //};
-
-        internal static readonly byte** silk_LTP_vq_gain_ptrs_Q7 = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS); // filled in later during static constructor
+        internal static readonly byte** silk_LTP_vq_gain_ptrs_Q7 = AllocateGlobalPointerArray<byte>(NB_LTP_CBKS, new byte*[]
+        {
+            &silk_LTP_gain_vq_0_gain[0],
+            &silk_LTP_gain_vq_1_gain[0],
+            &silk_LTP_gain_vq_2_gain[0]
+        });
 
         internal static readonly sbyte* silk_LTP_vq_sizes = AllocateGlobalArray<sbyte>(new sbyte[/*NB_LTP_CBKS*/] {
             8, 16, 32
@@ -265,12 +261,11 @@ namespace HellaUnsafe.Silk
 
         internal static readonly byte* silk_LBRR_flags_3_iCDF = AllocateGlobalArray<byte>(new byte[/*7*/] { 215, 195, 166, 125, 110, 82, 0 });
 
-        //const opus_uint8* const silk_LBRR_flags_iCDF_ptr[2] = {
-        //    silk_LBRR_flags_2_iCDF,
-        //    silk_LBRR_flags_3_iCDF
-        //};
-
-        internal static readonly byte** silk_LBRR_flags_iCDF_ptr = AllocateGlobalPointerArray<byte>(2); // filled in later during static constructor
+        internal static readonly byte** silk_LBRR_flags_iCDF_ptr = AllocateGlobalPointerArray<byte>(2, new byte*[]
+        {
+            silk_LBRR_flags_2_iCDF,
+            silk_LBRR_flags_3_iCDF
+        });
 
         /* Table for LSB coding */
         internal static readonly byte* silk_lsb_iCDF = AllocateGlobalArray<byte>(new byte[/*2*/] { 120, 0 });
@@ -300,11 +295,11 @@ namespace HellaUnsafe.Silk
         //    { OFFSET_VL_Q10, OFFSET_VH_Q10 }
         //};
 
-        internal static readonly Native2DArray<short> silk_Quantization_Offsets_Q10 = new Native2DArray<short>(new short[]
+        internal static readonly Native2DArray<short> silk_Quantization_Offsets_Q10 = new Native2DArray<short>(2, 2, new short[]
         {
             OFFSET_UVL_Q10, OFFSET_UVH_Q10,
             OFFSET_VL_Q10, OFFSET_VH_Q10
-        }, 2, 2);
+        });
 
         /* Table for LTPScale */
         internal static readonly short* silk_LTPScales_table_Q14 = AllocateGlobalArray<short>(new short[/*3*/] {
@@ -325,25 +320,25 @@ namespace HellaUnsafe.Silk
                 [0.95 : 0.15 : 0.35] normalized cut off frequencies. */
 
         /* Interpolation points for filter coefficients used in the bandwidth transition smoother */
-        internal static readonly Native2DArray<int> silk_Transition_LP_B_Q28 = new Native2DArray<int>(new int[]
+        internal static readonly Native2DArray<int> silk_Transition_LP_B_Q28 = new Native2DArray<int>(TRANSITION_INT_NUM, TRANSITION_NB, new int[]
         {
              250767114,  501534038,  250767114  ,
              209867381,  419732057,  209867381  ,
              170987846,  341967853,  170987846  ,
              131531482,  263046905,  131531482  ,
              89306658,  178584282,   89306658  
-        }, TRANSITION_INT_NUM, TRANSITION_NB);
+        });
 
 
         /* Interpolation points for filter coefficients used in the bandwidth transition smoother */
-        internal static readonly Native2DArray<int> silk_Transition_LP_A_Q28 = new Native2DArray<int>(new int[]
+        internal static readonly Native2DArray<int> silk_Transition_LP_A_Q28 = new Native2DArray<int>(TRANSITION_INT_NUM, TRANSITION_NA, new int[]
         {
              506393414,  239854379  ,
              411067935,  169683996  ,
              306733530,  116694253  ,
              185807084,   77959395  ,
              35497197,   57401098  
-        }, TRANSITION_INT_NUM, TRANSITION_NA);
+        });
 
         #endregion
 
@@ -764,7 +759,7 @@ namespace HellaUnsafe.Silk
                  8,     10,     12,     16
         });
 
-        internal static readonly Native2DArray<byte> silk_pulses_per_block_iCDF = new Native2DArray<byte>(new byte[/*[10][18]*/]
+        internal static readonly Native2DArray<byte> silk_pulses_per_block_iCDF = new Native2DArray<byte>(10, 18, new byte[]
         {
                125,     51,     26,     18,     15,     12,     11,     10,
                  9,      8,      7,      6,      5,      4,      3,      2,
@@ -805,9 +800,9 @@ namespace HellaUnsafe.Silk
                255,    254,    253,    247,    220,    162,    106,     67,
                 42,     28,     18,     12,      9,      6,      4,      3,
                  2,      0
-        }, 10, 18);
+        });
 
-        internal static readonly Native2DArray<byte> silk_pulses_per_block_BITS_Q5 = new Native2DArray<byte>(new byte[/*[9][18]*/]
+        internal static readonly Native2DArray<byte> silk_pulses_per_block_BITS_Q5 = new Native2DArray<byte>(9, 18, new byte[]
         {
                 31,     57,    107,    160,    205,    205,    255,    255,
                255,    255,    255,    255,    255,    255,    255,    255,
@@ -844,23 +839,23 @@ namespace HellaUnsafe.Silk
                255,    224,    224,    182,    155,    134,    118,    109,
                104,    102,    106,    111,    118,    131,    145,    160,
                173,    131
-        }, 9, 18);
+        });
 
 
-        internal static readonly Native2DArray<byte> silk_rate_levels_iCDF = new Native2DArray<byte>(new byte[/*[2][9]*/]
+        internal static readonly Native2DArray<byte> silk_rate_levels_iCDF = new Native2DArray<byte>(2, 9, new byte[]
         {
                241,    190,    178,    132,     87,     74,     41,     14,    0,
 
                223,    193,    157,    140,    106,     57,     39,     18,    0
-        }, 2, 9);
+        });
 
             
-        internal static readonly Native2DArray<byte> silk_rate_levels_BITS_Q5 = new Native2DArray<byte>(new byte[/*[2][9]*/]
+        internal static readonly Native2DArray<byte> silk_rate_levels_BITS_Q5 = new Native2DArray<byte>(2, 9, new byte[]
         {
                131,     74,    141,     79,     80,    138,     95,    104,   134,
 
                 95,     99,     91,    125,     93,     76,    123,    115,   123
-        }, 2, 9);
+        });
 
         internal static readonly byte* silk_shell_code_table0 = AllocateGlobalArray<byte>(new byte[/*152*/] {
                128,      0,    214,     42,      0,    235,    128,     21,
@@ -970,46 +965,46 @@ namespace HellaUnsafe.Silk
         #region pitch_est_tables.c
 
         internal static readonly Native2DArray<sbyte> silk_CB_lags_stage2_10_ms =
-            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR >> 1][ PE_NB_CBKS_STAGE2_10MS ]*/]
+            new Native2DArray<sbyte>(PE_MAX_NB_SUBFR >> 1, PE_NB_CBKS_STAGE2_10MS, new sbyte[]
         {
             0, 1, 0,
             0, 0, 1
-        }, PE_MAX_NB_SUBFR >> 1, PE_NB_CBKS_STAGE2_10MS);
+        });
 
         internal static readonly Native2DArray<sbyte> silk_CB_lags_stage3_10_ms =
-            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR >> 1][ PE_NB_CBKS_STAGE3_10MS ]*/]
+            new Native2DArray<sbyte>(PE_MAX_NB_SUBFR >> 1, PE_NB_CBKS_STAGE3_10MS, new sbyte[]
         {
             0, 0, 1,-1, 1,-1, 2,-2, 2,-2, 3,-3,
             0, 1, 0, 1,-1, 2,-1, 2,-2, 3,-2, 3
-        }, PE_MAX_NB_SUBFR >> 1, PE_NB_CBKS_STAGE3_10MS);
+        });
 
         internal static readonly Native2DArray<sbyte> silk_Lag_range_stage3_10_ms =
-            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR >> 1][ 2 ]*/]
+            new Native2DArray<sbyte>(PE_MAX_NB_SUBFR >> 1, 2, new sbyte[]
         {
             -3, 7,
             -2, 7
-        }, PE_MAX_NB_SUBFR >> 1, 2);
+        });
 
         internal static readonly Native2DArray<sbyte> silk_CB_lags_stage2 =
-            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE2_EXT ]*/]
+            new Native2DArray<sbyte>(PE_MAX_NB_SUBFR, PE_NB_CBKS_STAGE2_EXT, new sbyte[]
         {
             0, 2,-1,-1,-1, 0, 0, 1, 1, 0, 1,
             0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
             0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0,
             0,-1, 2, 1, 0, 1, 1, 0, 0,-1,-1
-        }, PE_MAX_NB_SUBFR, PE_NB_CBKS_STAGE2_EXT);
+        });
 
         internal static readonly Native2DArray<sbyte> silk_CB_lags_stage3 =
-            new Native2DArray<sbyte>(new sbyte[/*[ PE_MAX_NB_SUBFR ][ PE_NB_CBKS_STAGE3_MAX ]*/]
+            new Native2DArray<sbyte>(PE_MAX_NB_SUBFR, PE_NB_CBKS_STAGE3_MAX, new sbyte[]
         {
             0, 0, 1,-1, 0, 1,-1, 0,-1, 1,-2, 2,-2,-2, 2,-3, 2, 3,-3,-4, 3,-4, 4, 4,-5, 5,-6,-5, 6,-7, 6, 5, 8,-9,
             0, 0, 1, 0, 0, 0, 0, 0, 0, 0,-1, 1, 0, 0, 1,-1, 0, 1,-1,-1, 1,-1, 2, 1,-1, 2,-2,-2, 2,-2, 2, 2, 3,-3,
             0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,-1, 1, 0, 0, 2, 1,-1, 2,-1,-1, 2,-1, 2, 2,-1, 3,-2,-2,-2, 3,
             0, 1, 0, 0, 1, 0, 1,-1, 2,-1, 2,-1, 2, 3,-2, 3,-2,-2, 4, 4,-3, 5,-3,-4, 6,-4, 6, 5,-5, 8,-6,-5,-7, 9
-        }, PE_MAX_NB_SUBFR, PE_NB_CBKS_STAGE3_MAX);
+        });
 
         internal static readonly Native3DArray<sbyte> silk_Lag_range_stage3 =
-            new Native3DArray<sbyte>(new sbyte[/*[ SILK_PE_MAX_COMPLEX + 1 ][ PE_MAX_NB_SUBFR ][ 2 ]*/]
+            new Native3DArray<sbyte>(SILK_PE_MAX_COMPLEX + 1, PE_MAX_NB_SUBFR, 2, new sbyte[]
         {
             /* Lags to search for low number of stage3 cbks */
             //{
@@ -1032,7 +1027,7 @@ namespace HellaUnsafe.Silk
                 -2,7,
                 -7,13
             //}
-        }, SILK_PE_MAX_COMPLEX + 1, PE_MAX_NB_SUBFR, 2);
+        });
 
 
         internal static readonly sbyte* silk_nb_cbk_searchs_stage3 = AllocateGlobalArray<sbyte>(new sbyte[/*SILK_PE_MAX_COMPLEX + 1*/] 
@@ -1043,27 +1038,5 @@ namespace HellaUnsafe.Silk
         });
 
         #endregion
-
-        static Tables()
-        {
-            silk_LBRR_flags_iCDF_ptr[0] = silk_LBRR_flags_2_iCDF;
-            silk_LBRR_flags_iCDF_ptr[1] = silk_LBRR_flags_3_iCDF;
-
-            silk_LTP_gain_iCDF_ptrs[0] = silk_LTP_gain_iCDF_0;
-            silk_LTP_gain_iCDF_ptrs[1] = silk_LTP_gain_iCDF_1;
-            silk_LTP_gain_iCDF_ptrs[2] = silk_LTP_gain_iCDF_2;
-
-            silk_LTP_gain_BITS_Q5_ptrs[0] = silk_LTP_gain_BITS_Q5_0;
-            silk_LTP_gain_BITS_Q5_ptrs[1] = silk_LTP_gain_BITS_Q5_1;
-            silk_LTP_gain_BITS_Q5_ptrs[2] = silk_LTP_gain_BITS_Q5_2;
-
-            silk_LTP_vq_ptrs_Q7[0] = silk_LTP_gain_vq_0.Pointer;
-            silk_LTP_vq_ptrs_Q7[1] = silk_LTP_gain_vq_1.Pointer;
-            silk_LTP_vq_ptrs_Q7[2] = silk_LTP_gain_vq_2.Pointer;
-
-            silk_LTP_vq_gain_ptrs_Q7[0] = silk_LTP_gain_vq_0_gain;
-            silk_LTP_vq_gain_ptrs_Q7[1] = silk_LTP_gain_vq_1_gain;
-            silk_LTP_vq_gain_ptrs_Q7[2] = silk_LTP_gain_vq_2_gain;
-        }
     }
 }

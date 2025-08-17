@@ -38,6 +38,7 @@ using static HellaUnsafe.Silk.Inlines;
 using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.PitchEstDefines;
 using static HellaUnsafe.Silk.ResamplerStructs;
+using static HellaUnsafe.Silk.Resampler;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.Tables;
@@ -136,9 +137,9 @@ namespace HellaUnsafe.Silk
                 }
                 else
                 {
-                    short[] x_buf_API_fs_Hz;
-                    StructRef<silk_resampler_state_struct> temp_resampler_state;
-                    short[] x_bufFIX;
+                    short[] x_buf_API_fs_Hz_data;
+                    silk_resampler_state_struct temp_resampler_state;
+                    short[] x_bufFIX_data;
                     int new_buf_samples;
                     int api_buf_samples;
                     int old_buf_samples;
@@ -148,27 +149,34 @@ namespace HellaUnsafe.Silk
                     old_buf_samples = buf_length_ms * psEnc->sCmn.fs_kHz;
 
                     new_buf_samples = buf_length_ms * fs_kHz;
-                    x_bufFIX = new short[silk_max(old_buf_samples, new_buf_samples)];
-                    silk_float2short_array(x_bufFIX, psEnc->x_buf, old_buf_samples);
+                    x_bufFIX_data = new short[silk_max(old_buf_samples, new_buf_samples)];
 
                     /* Initialize resampler for temporary resampling of x_buf data to API_fs_Hz */
-                    temp_resampler_state = new StructRef<silk_resampler_state_struct>();
-                    ret += silk_resampler_init(temp_resampler_state, silk_SMULBB(psEnc->sCmn.fs_kHz, 1000), psEnc->sCmn.API_fs_Hz, 0);
+                    temp_resampler_state = new silk_resampler_state_struct();
 
-                    /* Calculate number of samples to temporarily upsample */
-                    api_buf_samples = buf_length_ms * silk_DIV32_16(psEnc->sCmn.API_fs_Hz, 1000);
+                    fixed (short* x_bufFIX = x_bufFIX_data)
+                    {
+                        silk_float2short_array(x_bufFIX, psEnc->x_buf, old_buf_samples);
+                        ret += silk_resampler_init(&temp_resampler_state, silk_SMULBB(psEnc->sCmn.fs_kHz, 1000), psEnc->sCmn.API_fs_Hz, 0);
 
-                    /* Temporary resampling of x_buf data to API_fs_Hz */
-                    x_buf_API_fs_Hz = new short[api_buf_samples];
-                    ret += silk_resampler(temp_resampler_state, x_buf_API_fs_Hz, x_bufFIX, old_buf_samples);
+                        /* Calculate number of samples to temporarily upsample */
+                        api_buf_samples = buf_length_ms * silk_DIV32_16(psEnc->sCmn.API_fs_Hz, 1000);
 
-                    /* Initialize the resampler for enc_API.c preparing resampling from API_fs_Hz to fs_kHz */
-                    ret += silk_resampler_init(&psEnc->sCmn.resampler_state, psEnc->sCmn.API_fs_Hz, silk_SMULBB(fs_kHz, 1000), 1);
+                        x_buf_API_fs_Hz_data = new short[api_buf_samples];
+                        fixed (short* x_buf_API_fs_Hz = x_buf_API_fs_Hz_data)
+                        {
+                            /* Temporary resampling of x_buf data to API_fs_Hz */
+                            ret += silk_resampler(&temp_resampler_state, x_buf_API_fs_Hz, x_bufFIX, old_buf_samples);
 
-                    /* Correct resampler state by resampling buffered data from API_fs_Hz to fs_kHz */
-                    ret += silk_resampler(&psEnc->sCmn.resampler_state, x_bufFIX, x_buf_API_fs_Hz, api_buf_samples);
+                            /* Initialize the resampler for enc_API.c preparing resampling from API_fs_Hz to fs_kHz */
+                            ret += silk_resampler_init(&psEnc->sCmn.resampler_state, psEnc->sCmn.API_fs_Hz, silk_SMULBB(fs_kHz, 1000), 1);
 
-                    silk_short2float_array(psEnc->x_buf, x_bufFIX, new_buf_samples);
+                            /* Correct resampler state by resampling buffered data from API_fs_Hz to fs_kHz */
+                            ret += silk_resampler(&psEnc->sCmn.resampler_state, x_bufFIX, x_buf_API_fs_Hz, api_buf_samples);
+
+                            silk_short2float_array(psEnc->x_buf, x_bufFIX, new_buf_samples);
+                        }
+                    }
                 }
             }
 

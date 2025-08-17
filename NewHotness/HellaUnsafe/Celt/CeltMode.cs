@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using HellaUnsafe.Common;
+using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Celt.StaticModes;
 using static HellaUnsafe.Celt.KissFFT;
 using static HellaUnsafe.Opus.OpusDefines;
@@ -39,13 +39,13 @@ namespace HellaUnsafe.Celt
     {
         internal const int MAX_PERIOD = 1024;
 
-        internal static readonly short* eband5ms = NativeArray.AllocateGlobal(new short[] {
+        internal static readonly short* eband5ms = AllocateGlobalArray(new short[] {
             /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
               0,  1,  2,  3,  4,  5,  6,  7,  8, 10, 12, 14, 16, 20, 24, 28, 34, 40, 48, 60, 78, 100
             });
 
         /* Bit allocation table in units of 1/32 bit/sample (0.1875 dB SNR) */
-        internal static readonly byte* band_allocation = NativeArray.AllocateGlobal(new byte[] {
+        internal static readonly byte* band_allocation = AllocateGlobalArray(new byte[] {
             /*0  200 400 600 800  1k 1.2 1.4 1.6  2k 2.4 2.8 3.2  4k 4.8 5.6 6.8  8k 9.6 12k 15.6 */
               0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
              90, 80, 75, 69, 63, 56, 49, 40, 34, 29, 20, 18, 10,  0,  0,  0,  0,  0,  0,  0,  0,

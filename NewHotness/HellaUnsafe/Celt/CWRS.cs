@@ -168,7 +168,7 @@ namespace HellaUnsafe.Celt
   Otherwise, we can limit things to the set of N which can be achieved by
    splitting a band from a standard Opus mode: 176, 144, 96, 88, 72, 64, 48,
    44, 36, 32, 24, 22, 18, 16, 8, 4, 2).*/
-        internal static readonly uint* CELT_PVQ_U_DATA = NativeArray.AllocateGlobal(new uint[1272]{
+        internal static readonly uint* CELT_PVQ_U_DATA = AllocateGlobalArray(new uint[1272]{
               /*N=0, K=0...176:*/
               1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -306,7 +306,7 @@ namespace HellaUnsafe.Celt
               1409933619
             });
 
-        internal static readonly uint** CELT_PVQ_U_ROW = NativeArray.AllocateGlobal(new uint*[15] {
+        internal static readonly uint** CELT_PVQ_U_ROW = AllocateGlobalPointerArray<uint>(15, new uint*[15] {
             CELT_PVQ_U_DATA+   0,CELT_PVQ_U_DATA+ 176,CELT_PVQ_U_DATA+ 351,
             CELT_PVQ_U_DATA+ 525,CELT_PVQ_U_DATA+ 698,CELT_PVQ_U_DATA+ 870,
             CELT_PVQ_U_DATA+1041,CELT_PVQ_U_DATA+1131,CELT_PVQ_U_DATA+1178,

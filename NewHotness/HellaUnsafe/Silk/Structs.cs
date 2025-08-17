@@ -80,7 +80,7 @@ namespace HellaUnsafe.Silk
             internal short silent_side_len;
             private fixed sbyte _predIx[MAX_FRAMES_PER_PACKET * 2 * 3];
             internal Native3DArray<sbyte> predIx
-                => new Native3DArray<sbyte>((sbyte*)Unsafe.AsPointer(ref _predIx[0]), MAX_FRAMES_PER_PACKET, 2, 3);
+                => new Native3DArray<sbyte>(MAX_FRAMES_PER_PACKET, 2, 3, (sbyte*)Unsafe.AsPointer(ref _predIx[0]));
 
             internal fixed sbyte mid_only_flags[MAX_FRAMES_PER_PACKET];
         }
@@ -212,7 +212,7 @@ namespace HellaUnsafe.Silk
             
             private fixed sbyte _pulses_LBRR[MAX_FRAMES_PER_PACKET * MAX_FRAME_LENGTH];
             internal Native2DArray<sbyte> pulses_LBRR
-                => new Native2DArray<sbyte>((sbyte*)Unsafe.AsPointer(ref _pulses_LBRR[0]), MAX_FRAMES_PER_PACKET, MAX_FRAME_LENGTH);
+                => new Native2DArray<sbyte>(MAX_FRAMES_PER_PACKET, MAX_FRAME_LENGTH, (sbyte*)Unsafe.AsPointer(ref _pulses_LBRR[0]));
         }
 
 
@@ -310,7 +310,7 @@ namespace HellaUnsafe.Silk
             /* Holds interpolated and final coefficients, 4-byte aligned */
             private /*silk_DWORD_ALIGN*/ fixed short _PredCoef_Q12[2 * MAX_LPC_ORDER];
             internal Native2DArray<short> PredCoef_Q12
-                => new Native2DArray<short>((short*)Unsafe.AsPointer(ref _PredCoef_Q12[0]), 2, MAX_LPC_ORDER);
+                => new Native2DArray<short>(2, MAX_LPC_ORDER, (short*)Unsafe.AsPointer(ref _PredCoef_Q12[0]));
             internal fixed short LTPCoef_Q14[LTP_ORDER * MAX_NB_SUBFR];
             internal int LTP_scale_Q14;
         }

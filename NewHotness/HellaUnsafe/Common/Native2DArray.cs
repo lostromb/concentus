@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -31,34 +32,37 @@ namespace HellaUnsafe.Common
         public int Height;
         public int Width;
 
-        public Native2DArray(T[] preallocatedData, int height, int width)
+        public Native2DArray(int height, int width, T[] preallocatedData)
         {
             int numElements = height * width;
+            Debug.Assert(preallocatedData.Length == numElements);
             Pointer = (T*)Marshal.AllocHGlobal(numElements * sizeof(T));
             preallocatedData.AsSpan(0, numElements).CopyTo(new Span<T>(Pointer, numElements));
             Height = height;
             Width = width;
         }
 
-        public Native2DArray(T[] preallocatedData, int height, int width, int wordAlignment)
+        public Native2DArray(int height, int width, T[] preallocatedData, int wordAlignment)
         {
             int numElements = height * width;
+            Debug.Assert(preallocatedData.Length == numElements);
             Pointer = (T*)NativeMemory.AlignedAlloc((nuint)(numElements * sizeof(T)), 4);
             preallocatedData.AsSpan(0, numElements).CopyTo(new Span<T>(Pointer, numElements));
             Height = height;
             Width = width;
         }
 
-        public Native2DArray(ReadOnlySpan<T> preallocatedData, int height, int width)
+        public Native2DArray(int height, int width, ReadOnlySpan<T> preallocatedData)
         {
             int numElements = height * width;
+            Debug.Assert(preallocatedData.Length == numElements);
             Pointer = (T*)Marshal.AllocHGlobal(numElements * sizeof(T));
             preallocatedData.Slice(0, numElements).CopyTo(new Span<T>(Pointer, numElements));
             Height = height;
             Width = width;
         }
 
-        public Native2DArray(T* nativePtr, int height, int width)
+        public Native2DArray(int height, int width, T* nativePtr)
         {
             Pointer = nativePtr;
             Height = height;

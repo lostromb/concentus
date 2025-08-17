@@ -99,7 +99,7 @@ namespace HellaUnsafe.Silk
 
         /* Table with interplation fractions of 1/24, 3/24, 5/24, ... , 23/24 : 23/24 (46 Words) */
         internal static readonly Native2DArray<short> silk_resampler_frac_FIR_12 =
-            new Native2DArray<short>(new short[/*[ 12 ][ RESAMPLER_ORDER_FIR_12 / 2 ]*/]
+            new Native2DArray<short>(12, RESAMPLER_ORDER_FIR_12 / 2, new short[]
         {
               189,  -600,   617, 30567 ,
               117,  -159, -1070, 29704 ,
@@ -113,6 +113,6 @@ namespace HellaUnsafe.Silk
               -91,   773, -2865,  8798 ,
               -71,   611, -2143,  5784 ,
               -46,   425, -1375,  2996 ,
-        }, 12, RESAMPLER_ORDER_FIR_12 / 2, /*silk_DWORD_ALIGN*/ 4);
+        }, /*silk_DWORD_ALIGN*/ 4);
     }
 }

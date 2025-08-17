@@ -44,7 +44,7 @@ namespace HellaUnsafe.Silk.Float
             internal fixed float Gains[MAX_NB_SUBFR];
             private fixed float _PredCoef[2 * MAX_LPC_ORDER];     /* holds interpolated and final coefficients */
 
-            public Native2DArray<float> PredCoef => new Native2DArray<float>((float*)Unsafe.AsPointer(ref _PredCoef[0]), 2, MAX_LPC_ORDER);
+            public Native2DArray<float> PredCoef => new Native2DArray<float>(2, MAX_LPC_ORDER, (float*)Unsafe.AsPointer(ref _PredCoef[0]));
 
             internal fixed float LTPCoef[LTP_ORDER * MAX_NB_SUBFR];
             internal float LTP_scale;

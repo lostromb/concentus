@@ -61,7 +61,7 @@ namespace HellaUnsafe.Silk.Float
         {
             int i, j;
             short* PredCoef_Q12_data = stackalloc short[2 * MAX_LPC_ORDER];
-            Native2DArray<short> PredCoef_Q12 = new Native2DArray<short>(PredCoef_Q12_data, 2, MAX_LPC_ORDER);
+            Native2DArray<short> PredCoef_Q12 = new Native2DArray<short>(2, MAX_LPC_ORDER, PredCoef_Q12_data);
 
             silk_process_NLSFs(psEncC, PredCoef_Q12, NLSF_Q15, prev_NLSF_Q15);
 
@@ -90,7 +90,7 @@ namespace HellaUnsafe.Silk.Float
             short* x16 = stackalloc short[MAX_FRAME_LENGTH];
             int* Gains_Q16 = stackalloc int[MAX_NB_SUBFR];
             /*silk_DWORD_ALIGN*/ short* PredCoef_Q12_data = stackalloc short[2 * MAX_LPC_ORDER] ;
-            Native2DArray<short> PredCoef_Q12 = new Native2DArray<short>(PredCoef_Q12_data, 2, MAX_LPC_ORDER);
+            Native2DArray<short> PredCoef_Q12 = new Native2DArray<short>(2, MAX_LPC_ORDER, PredCoef_Q12_data);
             short* LTPCoef_Q14 = stackalloc short[LTP_ORDER * MAX_NB_SUBFR];
             int LTP_scale_Q14;
 

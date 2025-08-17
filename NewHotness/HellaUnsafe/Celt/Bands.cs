@@ -439,7 +439,7 @@ namespace HellaUnsafe.Celt
            This is essentially a bit-reversed Gray, on top of which we've added
            an inversion of the order because we want the DC at the end rather than
            the beginning. The lines are for N=2, 4, 8, 16 */
-        internal static readonly int* ordery_table = NativeArray.AllocateGlobal(new int[] {
+        internal static readonly int* ordery_table = AllocateGlobalArray(new int[] {
                1,  0,
                3,  0,  2,  1,
                7,  0,  4,  3,  6,  1,  5,  2,

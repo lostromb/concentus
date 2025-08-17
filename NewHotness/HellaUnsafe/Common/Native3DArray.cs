@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -12,9 +13,10 @@ namespace HellaUnsafe.Common
         public int Height; // Second index
         public int Depth; // First index (least granular)
 
-        public Native3DArray(T[] preallocatedData, int depth, int height, int width)
+        public Native3DArray(int depth, int height, int width, T[] preallocatedData)
         {
             int numElements = width * height * depth;
+            Debug.Assert(preallocatedData.Length == numElements);
             Pointer = (T*)Marshal.AllocHGlobal(numElements * sizeof(T));
             preallocatedData.AsSpan(0, numElements).CopyTo(new Span<T>(Pointer, numElements));
             Width = width;
@@ -22,9 +24,10 @@ namespace HellaUnsafe.Common
             Depth = depth;
         }
 
-        public Native3DArray(ReadOnlySpan<T> preallocatedData, int depth, int height, int width)
+        public Native3DArray(int depth, int height, int width, ReadOnlySpan<T> preallocatedData)
         {
             int numElements = width * height * depth;
+            Debug.Assert(preallocatedData.Length == numElements);
             Pointer = (T*)Marshal.AllocHGlobal(numElements * sizeof(T));
             preallocatedData.Slice(0, numElements).CopyTo(new Span<T>(Pointer, numElements));
             Width = width;
@@ -32,7 +35,7 @@ namespace HellaUnsafe.Common
             Depth = depth;
         }
 
-        public Native3DArray(T* nativePtr, int depth, int height, int width)
+        public Native3DArray(int depth, int height, int width, T* nativePtr)
         {
             Pointer = nativePtr;
             Width = width;
@@ -44,7 +47,7 @@ namespace HellaUnsafe.Common
 
         public Native2DArray<T> Layer(int z)
         {
-            return new Native2DArray<T>(&Pointer[Height * Width * z], Height, Width);
+            return new Native2DArray<T>(Height, Width , &Pointer[Height * Width * z]);
         }
 
         public T* Row(int z, int y)

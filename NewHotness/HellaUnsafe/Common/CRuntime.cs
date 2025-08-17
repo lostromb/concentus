@@ -221,6 +221,19 @@ namespace HellaUnsafe.Common
             return (T**)dest;
         }
 
+        public static unsafe T** AllocateGlobalPointerArray<T>(int length, T*[] managedArray) where T : unmanaged
+        {
+            Debug.Assert(length == managedArray.Length);
+            T** pointer = (T**)Marshal.AllocHGlobal(managedArray.Length * sizeof(T*));
+            for (int c = 0; c < managedArray.Length; c++)
+            {
+                Debug.Assert(managedArray[c] != default(T*)); // Sanity check to make sure null pointers don't reach initialization
+                pointer[c] = managedArray[c];
+            }
+
+            return pointer;
+        }
+
         /// <summary>
         /// Allocates an array on the unmanaged heap with the specified type, length, and input data.
         /// </summary>
@@ -235,6 +248,13 @@ namespace HellaUnsafe.Common
                 Unsafe.CopyBlock((void*)dest, (void*)src, (uint)(input.Length * sizeof(T)));
                 return (T*)dest;
             }
+        }
+
+        public static unsafe T* AllocateGlobalArray<T>(ReadOnlySpan<T> managedArray) where T : unmanaged
+        {
+            T* pointer = (T*)Marshal.AllocHGlobal(managedArray.Length * sizeof(T));
+            managedArray.CopyTo(new Span<T>(pointer, managedArray.Length));
+            return pointer;
         }
 
         internal static unsafe T* AllocateGlobalArrayDWordAligned<T>(T[] managedArray) where T : unmanaged
