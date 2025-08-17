@@ -5,6 +5,7 @@ using static HellaUnsafe.Silk.Float.FloatCast;
 using static HellaUnsafe.Silk.Float.Structs_FLP;
 using static HellaUnsafe.Silk.NLSF2A;
 using static HellaUnsafe.Silk.NSQ;
+using static HellaUnsafe.Silk.NSQDelDec;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.Tables;

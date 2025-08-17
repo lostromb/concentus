@@ -173,5 +173,46 @@ namespace HellaUnsafe.Silk
                 }
             }
         }
+
+        /* Approximation of 128 * log2() (very close inverse of silk_log2lin()) */
+        /* Convert input to a log scale    */
+        internal static unsafe int silk_lin2log(
+            in int inLin               /* I  input in linear scale                                         */
+        )
+        {
+            int lz, frac_Q7;
+
+            silk_CLZ_FRAC(inLin, &lz, &frac_Q7);
+
+            /* Piece-wise parabolic approximation */
+            return silk_ADD_LSHIFT32(silk_SMLAWB(frac_Q7, silk_MUL(frac_Q7, 128 - frac_Q7), 179), 31 - lz, 7);
+        }
+
+        /* Approximation of 2^() (very close inverse of silk_lin2log()) */
+        /* Convert input to a linear scale    */
+        internal static unsafe int silk_log2lin(
+            in int            inLog_Q7            /* I  input on log scale                                            */
+        )
+        {
+            int output, frac_Q7;
+
+            if( inLog_Q7 < 0 ) {
+                return 0;
+            } else if ( inLog_Q7 >= 3967 ) {
+                return silk_int32_MAX;
+            }
+
+            output = silk_LSHIFT( 1, silk_RSHIFT( inLog_Q7, 7 ) );
+            frac_Q7 = inLog_Q7 & 0x7F;
+            if( inLog_Q7 < 2048 ) {
+                /* Piece-wise parabolic approximation */
+                output = silk_ADD_RSHIFT32(output, silk_MUL(output, silk_SMLAWB( frac_Q7, silk_SMULBB( frac_Q7, 128 - frac_Q7 ), -174 ) ), 7 );
+            } else {
+                /* Piece-wise parabolic approximation */
+                output = silk_MLA(output, silk_RSHIFT(output, 7 ), silk_SMLAWB( frac_Q7, silk_SMULBB( frac_Q7, 128 - frac_Q7 ), -174 ) );
+            }
+
+            return output;
+        }
     }
 }

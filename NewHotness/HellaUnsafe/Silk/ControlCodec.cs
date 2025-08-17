@@ -34,6 +34,7 @@ using static HellaUnsafe.Silk.Control;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.Errors;
 using static HellaUnsafe.Silk.Float.Structs_FLP;
+using static HellaUnsafe.Silk.Float.SigProcFLP;
 using static HellaUnsafe.Silk.Inlines;
 using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.PitchEstDefines;

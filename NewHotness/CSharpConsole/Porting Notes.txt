@@ -121,3 +121,16 @@ public unsafe struct Encoder
     private fixed sbyte _pulses_LBRR[MAX_FRAMES_PER_PACKET * MAX_FRAME_LENGTH];
     public Native2DArray<sbyte> pulses_LBRR => new Native2DArray<sbyte>((sbyte*)Unsafe.AsPointer(ref _pulses_LBRR[0]), MAX_FRAMES_PER_PACKET, MAX_FRAME_LENGTH);
 }
+
+
+=============================================================================
+Statically allocated pointer arrays
+=============================================================================
+
+
+internal static readonly sbyte** silk_LTP_vq_ptrs_Q7 = AllocateGlobalPointerArray<sbyte>(NB_LTP_CBKS, new sbyte*[]
+{
+    &silk_LTP_gain_vq_0[0][0],
+    &silk_LTP_gain_vq_1[0][0],
+    &silk_LTP_gain_vq_2[0][0]
+});

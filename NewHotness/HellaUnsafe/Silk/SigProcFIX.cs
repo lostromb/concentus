@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Silk.Inlines;
 
 namespace HellaUnsafe.Silk
 {
@@ -64,6 +65,18 @@ namespace HellaUnsafe.Silk
         {
             return ((a32) * (b32));
         }
+
+        /* a32 + (b32 * c32) output have to be 32bit int */
+        internal static int silk_MLA(int a32, int b32, int c32)
+        {
+            return a32 + (b32 * c32);
+        }         
+
+        /* a32 + (b32 * c32) output have to be 32bit uint */
+        internal static uint silk_MLA_uint(uint a32, uint b32, uint c32)
+        {
+            return a32 + (b32 * c32);
+        }     
 
         /// <summary>
         /// ((a32 >> 16)  * (b32 >> 16))
@@ -141,6 +154,10 @@ namespace HellaUnsafe.Silk
             return unchecked((silk_ADD32_ovflw((a32), ((int)((short)(b32))) * (int)((short)(c32)))));
         }
 
+        internal static uint silk_SMLABB_ovflw(uint a32, short b32, short c32)
+        {
+            return unchecked((uint)(a32 + (b32 * c32)));
+        }
 
         internal static int silk_SMULBB(int a32, int b32)
         {
@@ -817,6 +834,7 @@ namespace HellaUnsafe.Silk
 
         /* Macro to convert floating-point constants to fixed-point */
         //#define SILK_FIX_CONST( C, Q )        ((opus_int32)((C) * ((opus_int64)1 << (Q)) + 0.5))       
+        // OPT This should never run more than once at runtime!
         internal static int SILK_FIX_CONST(double C, int Q)
         {
             return (int)(C * ((long)1 << Q) + 0.5);
