@@ -25,21 +25,16 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-using HellaUnsafe.Common;
-using System;
-using System.Runtime.InteropServices;
-using static HellaUnsafe.Celt.EntCode;
 using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Silk.Control;
+using static HellaUnsafe.Silk.ControlAudioBandwidth;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.Errors;
-using static HellaUnsafe.Silk.Float.Structs_FLP;
 using static HellaUnsafe.Silk.Float.SigProcFLP;
-using static HellaUnsafe.Silk.Inlines;
-using static HellaUnsafe.Silk.Macros;
+using static HellaUnsafe.Silk.Float.Structs_FLP;
 using static HellaUnsafe.Silk.PitchEstDefines;
-using static HellaUnsafe.Silk.ResamplerStructs;
 using static HellaUnsafe.Silk.Resampler;
+using static HellaUnsafe.Silk.ResamplerStructs;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.Tables;
