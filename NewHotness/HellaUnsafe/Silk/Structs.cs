@@ -209,7 +209,7 @@ namespace HellaUnsafe.Silk
             private SideInfoIndicesArray _indices_LBRR;
             internal SideInfoIndices* indices_LBRR
                 => (SideInfoIndices*)Unsafe.AsPointer(ref _indices_LBRR); // assumes caller struct is already fixed
-            
+
             private fixed sbyte _pulses_LBRR[MAX_FRAMES_PER_PACKET * MAX_FRAME_LENGTH];
             internal Native2DArray<sbyte> pulses_LBRR
                 => new Native2DArray<sbyte>(MAX_FRAMES_PER_PACKET, MAX_FRAME_LENGTH, (sbyte*)Unsafe.AsPointer(ref _pulses_LBRR[0]));
@@ -313,6 +313,26 @@ namespace HellaUnsafe.Silk
                 => new Native2DArray<short>(2, MAX_LPC_ORDER, (short*)Unsafe.AsPointer(ref _PredCoef_Q12[0]));
             internal fixed short LTPCoef_Q14[LTP_ORDER * MAX_NB_SUBFR];
             internal int LTP_scale_Q14;
+        }
+
+
+
+        [System.Runtime.CompilerServices.InlineArray(DECODER_NUM_CHANNELS)]
+        internal struct DecoderStateArray
+        {
+            private silk_decoder_state _element;
+        }
+
+        /************************/
+        /* Decoder Super Struct */
+        /************************/
+        internal unsafe struct silk_decoder
+        {
+            internal DecoderStateArray channel_state;
+            internal stereo_dec_state sStereo;
+            internal int nChannelsAPI;
+            internal int nChannelsInternal;
+            internal int prev_decode_only_middle;
         }
     }
 }

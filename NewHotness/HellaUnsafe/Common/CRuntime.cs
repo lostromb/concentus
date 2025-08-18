@@ -124,6 +124,11 @@ namespace HellaUnsafe.Common
             new Span<byte>(src, elements).CopyTo(new Span<byte>(dst, elements));
         }
 
+        internal static unsafe void OPUS_COPY(short* dst, short* src, int elements)
+        {
+            new Span<short>(src, elements).CopyTo(new Span<short>(dst, elements));
+        }
+
         internal static unsafe void OPUS_COPY(float* dst, float* src, int elements)
         {
             new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));

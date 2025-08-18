@@ -169,6 +169,11 @@ namespace HellaUnsafe.Silk
             return ref (*(Matrix_base_adr + (row * N + column)));
         }
 
+        internal static unsafe ref sbyte matrix_ptr(in sbyte* Matrix_base_adr, int row, int column, int N)
+        {
+            return ref (*(Matrix_base_adr + (row * N + column)));
+        }
+
         internal static unsafe float* matrix_adr(in float* Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr + (row * N + column);
