@@ -29,7 +29,7 @@ using static HellaUnsafe.Silk.SigProcFIX;
 
 namespace HellaUnsafe.Silk.Float
 {
-    internal static class Energy
+    internal static class EnergyFLP
     {
         /* sum of squares of a silk_float array, with result as double */
         internal static unsafe double silk_energy_FLP(

@@ -2,7 +2,7 @@
 using static HellaUnsafe.Silk.A2NLSF;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.Float.FloatCast;
-using static HellaUnsafe.Silk.Float.Structs_FLP;
+using static HellaUnsafe.Silk.Float.StructsFLP;
 using static HellaUnsafe.Silk.NLSF2A;
 using static HellaUnsafe.Silk.NSQ;
 using static HellaUnsafe.Silk.NSQDelDec;
@@ -13,7 +13,7 @@ using static HellaUnsafe.Silk.GainQuant;
 
 namespace HellaUnsafe.Silk.Float
 {
-    internal static unsafe class Wrappers_FLP
+    internal static unsafe class WrappersFLP
     {
         /* Convert AR filter coefficients to NLSF parameters */
         internal static unsafe void silk_A2NLSF_FLP(

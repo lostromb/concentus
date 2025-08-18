@@ -31,12 +31,12 @@ using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.TuningParameters;
-using static HellaUnsafe.Silk.Float.Energy;
-using static HellaUnsafe.Silk.Float.InnerProduct;
+using static HellaUnsafe.Silk.Float.EnergyFLP;
+using static HellaUnsafe.Silk.Float.InnerProductFLP;
 
 namespace HellaUnsafe.Silk.Float
 {
-    internal static class BurgModified
+    internal static class BurgModifiedFLP
     {
         internal const int MAX_FRAME_SIZE = 384; /* subfr_length * nb_subfr = ( 0.005 * 16000 + 16 ) * 4 = 384*/
 

@@ -27,11 +27,11 @@ POSSIBILITY OF SUCH DAMAGE.
 
 using System;
 using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Silk.BWExpander;
 using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Tables;
-using static HellaUnsafe.Silk.Float.BWExpander;
 
 /* Conversion between prediction filter coefficients and NLSFs  */
 /* Requires the order to be an even number                      */

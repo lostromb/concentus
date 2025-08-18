@@ -31,7 +31,7 @@ using static HellaUnsafe.Silk.ControlAudioBandwidth;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.Errors;
 using static HellaUnsafe.Silk.Float.SigProcFLP;
-using static HellaUnsafe.Silk.Float.Structs_FLP;
+using static HellaUnsafe.Silk.Float.StructsFLP;
 using static HellaUnsafe.Silk.PitchEstDefines;
 using static HellaUnsafe.Silk.Resampler;
 using static HellaUnsafe.Silk.ResamplerStructs;

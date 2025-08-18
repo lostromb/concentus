@@ -10,7 +10,7 @@ using static HellaUnsafe.Silk.Structs;
 
 namespace HellaUnsafe.Silk.Float
 {
-    internal unsafe static class Structs_FLP
+    internal unsafe static class StructsFLP
     {
         /********************************/
         /* Noise shaping analysis state */

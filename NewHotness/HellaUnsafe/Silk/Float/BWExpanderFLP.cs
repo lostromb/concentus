@@ -25,44 +25,32 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
+using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Silk.Macros;
+using static HellaUnsafe.Silk.Define;
+using static HellaUnsafe.Silk.SigProcFIX;
+using static HellaUnsafe.Silk.Float.SigProcFLP;
+
 namespace HellaUnsafe.Silk.Float
 {
-    internal static class InnerProduct
+    internal static class BWExpanderFLP
     {
-        internal static unsafe double silk_inner_product_FLP(
-             in float* data1,
-             in float* data2,
-             int dataSize)
-        {
-            return silk_inner_product_FLP_c(data1, data2, dataSize);
-        }
-
-        /* inner product of two silk_float arrays, with result as double */
-        internal static unsafe double silk_inner_product_FLP_c(
-             in float* data1,
-             in float* data2,
-             int dataSize)
+        /* Chirp (bw expand) LP AR filter */
+        internal static unsafe void silk_bwexpander_FLP(
+            float* ar,                /* I/O  AR filter to be expanded (without leading 1)                */
+            in int d,                  /* I    length of ar                                                */
+            in float chirp               /* I    chirp factor (typically in range (0..1) )                   */
+        )
         {
             int i;
-            double result;
+            float cfac = chirp;
 
-            /* 4x unrolled loop */
-            result = 0.0;
-            for (i = 0; i < dataSize - 3; i += 4)
+            for (i = 0; i < d - 1; i++)
             {
-                result += data1[i + 0] * (double)data2[i + 0] +
-                          data1[i + 1] * (double)data2[i + 1] +
-                          data1[i + 2] * (double)data2[i + 2] +
-                          data1[i + 3] * (double)data2[i + 3];
+                ar[i] *= cfac;
+                cfac *= chirp;
             }
-
-            /* add any remaining products */
-            for (; i < dataSize; i++)
-            {
-                result += data1[i] * (double)data2[i];
-            }
-
-            return result;
+            ar[d - 1] *= cfac;
         }
     }
 }

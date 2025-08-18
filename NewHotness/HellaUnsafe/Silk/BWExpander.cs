@@ -31,7 +31,7 @@ using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.Float.SigProcFLP;
-using static HellaUnsafe.Silk.Float.Structs_FLP;
+using static HellaUnsafe.Silk.Float.StructsFLP;
 
 namespace HellaUnsafe.Silk
 {

@@ -25,14 +25,9 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-using System;
-using static HellaUnsafe.Common.CRuntime;
-using static HellaUnsafe.Silk.Define;
-using static HellaUnsafe.Silk.Macros;
-using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.BWExpander;
-using static HellaUnsafe.Silk.Float.SigProcFLP;
-using static HellaUnsafe.Silk.Float.Structs_FLP;
+using static HellaUnsafe.Silk.Define;
+using static HellaUnsafe.Silk.SigProcFIX;
 
 namespace HellaUnsafe.Silk
 {

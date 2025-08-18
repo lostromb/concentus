@@ -32,13 +32,8 @@ POSSIBILITY OF SUCH DAMAGE.
  * Can handle slowly varying filter coefficients                        *
  *                                                                      */
 
-using System;
-using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.SigProcFIX;
-using static HellaUnsafe.Silk.Structs;
-using static HellaUnsafe.Silk.Float.SigProcFLP;
-using static HellaUnsafe.Silk.Float.Structs_FLP;
 
 namespace HellaUnsafe.Silk
 {
