@@ -9,6 +9,7 @@ using static HellaUnsafe.Silk.NSQDelDec;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.Tables;
+using static HellaUnsafe.Silk.GainQuant;
 
 namespace HellaUnsafe.Silk.Float
 {

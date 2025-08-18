@@ -90,11 +90,11 @@ namespace HellaUnsafe.Silk
         }
 
         internal static unsafe void silk_insertion_sort_increasing_all_values_int16(
-             int* a,                 /* I/O   Unsorted / Sorted vector                                   */
+             short* a,                 /* I/O   Unsorted / Sorted vector                                   */
              in int L                   /* I     Vector length                                              */
         )
         {
-            int value;
+            short value;
             int i, j;
 
             /* Safety checks */
