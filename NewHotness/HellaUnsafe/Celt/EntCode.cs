@@ -184,6 +184,11 @@ namespace HellaUnsafe.Celt
             return x == 0 ? 1 : 32 - BitOperations.LeadingZeroCount(x);
         }
 
+        internal static unsafe int ec_tell(ec_ctx* _this)
+        {
+            return _this->nbits_total - EC_ILOG(_this->rng);
+        }
+
         #region ENTDEC (Decoder portion)
 
         internal static unsafe int ec_read_byte(ec_ctx* _this)
