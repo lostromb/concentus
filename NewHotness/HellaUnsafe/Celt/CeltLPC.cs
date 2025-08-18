@@ -151,8 +151,7 @@ namespace HellaUnsafe.Celt
                            in float* window,
                            int overlap,
                            int lag,
-                           int n,
-                           int arch
+                           int n
                           )
         {
             float d;
@@ -179,7 +178,7 @@ namespace HellaUnsafe.Celt
                 xptr = xx;
             }
             shift = 0;
-            celt_pitch_xcorr_c(xptr, xptr, ac, fastN, lag + 1, arch);
+            celt_pitch_xcorr(xptr, xptr, ac, fastN, lag + 1);
             for (k = 0; k <= lag; k++)
             {
                 for (i = k + fastN, d = 0; i < n; i++)

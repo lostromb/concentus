@@ -95,7 +95,7 @@ namespace HellaUnsafe.Celt
         }
 
         /* Compute the amplitude (sqrt energy) in each of the bands */
-        internal static unsafe void compute_band_energies(in OpusCustomMode* m, in float* X, float* bandE, int end, int C, int LM, int arch)
+        internal static unsafe void compute_band_energies(in OpusCustomMode* m, in float* X, float* bandE, int end, int C, int LM)
         {
             int i, c, N;
             short* eBands = m->eBands;
@@ -105,7 +105,7 @@ namespace HellaUnsafe.Celt
                 for (i = 0; i < end; i++)
                 {
                     float sum;
-                    sum = 1e-27f + celt_inner_prod(&X[c * N + (eBands[i] << LM)], &X[c * N + (eBands[i] << LM)], (eBands[i + 1] - eBands[i]) << LM, arch);
+                    sum = 1e-27f + celt_inner_prod(&X[c * N + (eBands[i] << LM)], &X[c * N + (eBands[i] << LM)], (eBands[i + 1] - eBands[i]) << LM);
                     bandE[i + c * m->nbEBands] = celt_sqrt(sum);
                     /*printf ("%f ", bandE[i+c*m->nbEBands]);*/
                 }
@@ -178,7 +178,7 @@ namespace HellaUnsafe.Celt
         internal static unsafe void anti_collapse(
             in OpusCustomMode* m, float* X_, byte* collapse_masks, int LM, int C, int size,
             int start, int end, in float* logE, in float* prev1logE,
-            in float* prev2logE, in int* pulses, uint seed, int arch)
+            in float* prev2logE, in int* pulses, uint seed)
         {
             int c, i, j, k;
             for (i = start; i < end; i++)
@@ -237,7 +237,7 @@ namespace HellaUnsafe.Celt
                     }
                     /* We just added some energy, so we need to renormalise */
                     if (renormalize != 0)
-                        renormalise_vector(X, N0 << LM, Q15ONE, arch);
+                        renormalise_vector(X, N0 << LM, Q15ONE);
                 } while (++c < C);
             }
         }
@@ -295,7 +295,7 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe void stereo_merge(float* X, float* Y, float mid, int N, int arch)
+        internal static unsafe void stereo_merge(float* X, float* Y, float mid, int N)
         {
             int j;
             float xp = 0, side = 0;
@@ -304,7 +304,7 @@ namespace HellaUnsafe.Celt
             float t, lgain, rgain;
 
             /* Compute the norm of X+Y and X-Y as |X|^2 + |Y|^2 +/- sum(xy) */
-            dual_inner_prod(Y, X, Y, N, &xp, &side, arch);
+            dual_inner_prod(Y, X, Y, N, &xp, &side);
             /* Compensating for the mid normalization */
             xp = MULT16_32_Q15(mid, xp);
             /* mid and side are in Q15, not Q14 like X and Y */

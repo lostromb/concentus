@@ -71,6 +71,16 @@ namespace HellaUnsafe.Common
             //Debug.Assert(condition);
         }
 
+        internal static sbyte abs(sbyte t)
+        {
+            if (t < 0)
+            {
+                return (sbyte)(0 - t);
+            }
+
+            return t;
+        }
+
         internal static int BOOL2INT(bool x)
         {
             return x ? 1 : 0;
@@ -267,6 +277,23 @@ namespace HellaUnsafe.Common
         /// <returns></returns>
         internal static unsafe T* AllocateGlobalArray<T>(T[] input) where T: unmanaged
         {
+            fixed (T* src = input)
+            {
+                IntPtr dest = Marshal.AllocHGlobal(input.Length * sizeof(T));
+                Unsafe.CopyBlock((void*)dest, (void*)src, (uint)(input.Length * sizeof(T)));
+                return (T*)dest;
+            }
+        }
+
+        /// <summary>
+        /// Allocates an array on the unmanaged heap with the specified type, length, and input data.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        internal static unsafe T* AllocateGlobalArray<T>(int expectedLength, T[] input) where T : unmanaged
+        {
+            Debug.Assert(expectedLength == input.Length);
             fixed (T* src = input)
             {
                 IntPtr dest = Marshal.AllocHGlobal(input.Length * sizeof(T));

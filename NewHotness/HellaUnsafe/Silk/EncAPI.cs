@@ -27,16 +27,22 @@ POSSIBILITY OF SUCH DAMAGE.
 
 using static HellaUnsafe.Celt.EntCode;
 using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Silk.CheckControlInput;
 using static HellaUnsafe.Silk.Control;
+using static HellaUnsafe.Silk.ControlCodec;
+using static HellaUnsafe.Silk.ControlSNR;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.EncodeIndices;
 using static HellaUnsafe.Silk.EncodePulses;
 using static HellaUnsafe.Silk.Errors;
+using static HellaUnsafe.Silk.Float.EncodeFrameFLP;
 using static HellaUnsafe.Silk.Float.StructsFLP;
+using static HellaUnsafe.Silk.HPVariableCutoff;
 using static HellaUnsafe.Silk.InitEncoder;
 using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.Resampler;
 using static HellaUnsafe.Silk.SigProcFIX;
+using static HellaUnsafe.Silk.StereoEncodePred;
 using static HellaUnsafe.Silk.StereoLRToMS;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.Tables;
@@ -420,7 +426,7 @@ namespace HellaUnsafe.Silk
                             curr_nBitsUsedLBRR = ec_tell(psRangeEnc) - curr_nBitsUsedLBRR;
                         }
 
-                        silk_HP_variable_cutoff(psEnc->state_Fxx);
+                        silk_HP_variable_cutoff(&psEnc->state_Fxx[0]);
 
                         /* Total target bits for packet */
                         nBits = silk_DIV32_16(silk_MUL(encControl->bitRate, encControl->payloadSize_ms), 1000);
@@ -489,7 +495,7 @@ namespace HellaUnsafe.Silk
                                     psEnc->state_Fxx[1].sCmn.sNSQ.prev_gain_Q16 = 65536;
                                     psEnc->state_Fxx[1].sCmn.first_frame_after_reset = 1;
                                 }
-                                silk_encode_do_VAD_Fxx(&psEnc->state_Fxx[1], activity);
+                                silk_encode_do_VAD_FLP(&psEnc->state_Fxx[1], activity);
                             }
                             else
                             {
@@ -510,7 +516,7 @@ namespace HellaUnsafe.Silk
                             silk_memcpy(psEnc->state_Fxx[0].sCmn.inputBuf, psEnc->sStereo.sMid, 2 * sizeof(short));
                             silk_memcpy(psEnc->sStereo.sMid, &psEnc->state_Fxx[0].sCmn.inputBuf[psEnc->state_Fxx[0].sCmn.frame_length], 2 * sizeof(short));
                         }
-                        silk_encode_do_VAD_Fxx(&psEnc->state_Fxx[0], activity);
+                        silk_encode_do_VAD_FLP(&psEnc->state_Fxx[0], activity);
 
                         /* Encode */
                         for (n = 0; n < encControl->nChannelsInternal; n++)
@@ -572,7 +578,7 @@ namespace HellaUnsafe.Silk
                                 {
                                     condCoding = CODE_CONDITIONALLY;
                                 }
-                                if ((ret = silk_encode_frame_Fxx(&psEnc->state_Fxx[n], nBytesOut, psRangeEnc, condCoding, maxBits, useCBR)) != 0)
+                                if ((ret = silk_encode_frame_FLP(&psEnc->state_Fxx[n], nBytesOut, psRangeEnc, condCoding, maxBits, useCBR)) != 0)
                                 {
                                     silk_assert(false);
                                 }

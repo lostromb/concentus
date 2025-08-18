@@ -15,8 +15,7 @@ namespace HellaUnsafe.Celt
         internal static unsafe float celt_inner_prod(
             in float* x,
             in float* y,
-            int N,
-            int arch)
+            int N)
         {
             int i;
             float xy = 0;
@@ -26,7 +25,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe void dual_inner_prod(in float* x, in float* y01, in float* y02,
-            int N, float* xy1, float* xy2, int arch)
+            int N, float* xy1, float* xy2)
         {
             int i;
             float xy01 = 0;
@@ -196,7 +195,7 @@ namespace HellaUnsafe.Celt
 
 
         internal static unsafe void pitch_downsample(float** x, float* x_lp,
-              int len, int C, int arch)
+              int len, int C)
         {
             int i;
             float* ac = stackalloc float[5];
@@ -215,7 +214,7 @@ namespace HellaUnsafe.Celt
                 x_lp[0] += .25f * x[1][1] + .5f * x[1][0];
             }
             _celt_autocorr(x_lp, ac, null, 0,
-                           4, len >> 1, arch);
+                           4, len >> 1);
 
             /* Noise floor -40 dB */
             ac[0] *= 1.0001f;
@@ -243,8 +242,8 @@ namespace HellaUnsafe.Celt
 
         /* Pure C implementation. */
         internal static unsafe void
-        celt_pitch_xcorr_c(in float* _x, in float* _y,
-              float* xcorr, int len, int max_pitch, int arch)
+        celt_pitch_xcorr(in float* _x, in float* _y,
+              float* xcorr, int len, int max_pitch)
         {
 #if FALSE
             /* This is a simple version of the pitch correlation that should work
@@ -280,13 +279,13 @@ namespace HellaUnsafe.Celt
             /* In case max_pitch isn't a multiple of 4, do non-unrolled version. */
             for (; i < max_pitch; i++)
             {
-                xcorr[i] = celt_inner_prod(_x, _y + i, len, arch);
+                xcorr[i] = celt_inner_prod(_x, _y + i, len);
             }
 #endif
         }
 
         internal static unsafe void pitch_search(in float* x_lp, float* y,
-                  int len, int max_pitch, int* pitch, int arch)
+                  int len, int max_pitch, int* pitch)
         {
             int i, j;
             int lag;
@@ -310,7 +309,7 @@ namespace HellaUnsafe.Celt
 
             /* Coarse search with 4x decimation */
 
-            celt_pitch_xcorr_c(x_lp4, y_lp4, xcorr, len >> 2, max_pitch >> 2, arch);
+            celt_pitch_xcorr(x_lp4, y_lp4, xcorr, len >> 2, max_pitch >> 2);
 
             find_best_pitch(xcorr, y_lp4, len >> 2, max_pitch >> 2, best_pitch);
 
@@ -322,7 +321,7 @@ namespace HellaUnsafe.Celt
                 if (Abs(i - 2 * best_pitch[0]) > 2 && Abs(i - 2 * best_pitch[1]) > 2)
                     continue;
 
-                sum = celt_inner_prod(x_lp, y + i, len >> 1, arch);
+                sum = celt_inner_prod(x_lp, y + i, len >> 1);
                 xcorr[i] = MAX32(-1, sum);
             }
             find_best_pitch(xcorr, y, len >> 1, max_pitch >> 1, best_pitch);
@@ -357,7 +356,7 @@ namespace HellaUnsafe.Celt
         private static readonly int[] second_check/*[16]*/ = { 0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2 };
 
         internal static unsafe float remove_doubling(float* x, int maxperiod, int minperiod,
-          int N, int* T0_, int prev_period, float prev_gain, int arch)
+          int N, int* T0_, int prev_period, float prev_gain)
         {
             int k, i, T, T0;
             float g, g0;
@@ -380,7 +379,7 @@ namespace HellaUnsafe.Celt
 
             T = T0 = *T0_;
             float* yy_lookup = stackalloc float[maxperiod + 1];
-            dual_inner_prod(x, x, x - T0, N, &xx, &xy, arch);
+            dual_inner_prod(x, x, x - T0, N, &xx, &xy);
             yy_lookup[0] = xx;
             yy = xx;
             for (i = 1; i <= maxperiod; i++)
@@ -414,7 +413,7 @@ namespace HellaUnsafe.Celt
                 {
                     T1b = celt_udiv(2 * second_check[k] * T0 + k, 2 * k);
                 }
-                dual_inner_prod(x, &x[-T1], &x[-T1b], N, &xy, &xy2, arch);
+                dual_inner_prod(x, &x[-T1], &x[-T1b], N, &xy, &xy2);
                 xy = HALF32(xy + xy2);
                 yy = HALF32(yy_lookup[T1] + yy_lookup[T1b]);
                 g1 = compute_pitch_gain(xy, xx, yy);
@@ -446,7 +445,7 @@ namespace HellaUnsafe.Celt
                 pg = SHR32(frac_div32(best_xy, best_yy + 1), 16);
 
             for (k = 0; k < 3; k++)
-                xcorr[k] = celt_inner_prod(x, x - (T + k - 1), N, arch);
+                xcorr[k] = celt_inner_prod(x, x - (T + k - 1), N);
             if ((xcorr[2] - xcorr[0]) > MULT16_32_Q15(QCONST16(.7f, 15), xcorr[1] - xcorr[0]))
                 offset = 1;
             else if ((xcorr[0] - xcorr[2]) > MULT16_32_Q15(QCONST16(.7f, 15), xcorr[1] - xcorr[2]))

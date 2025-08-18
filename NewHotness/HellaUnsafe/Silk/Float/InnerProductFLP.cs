@@ -37,7 +37,7 @@ namespace HellaUnsafe.Silk.Float
             return silk_inner_product_FLP_c(data1, data2, dataSize);
         }
 
-        /* inner product of two silk_float arrays, with result as double */
+        /* inner product of two float arrays, with result as double */
         internal static unsafe double silk_inner_product_FLP_c(
              in float* data1,
              in float* data2,

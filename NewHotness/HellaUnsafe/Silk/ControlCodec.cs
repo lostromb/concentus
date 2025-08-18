@@ -152,7 +152,7 @@ namespace HellaUnsafe.Silk
 
                     fixed (short* x_bufFIX = x_bufFIX_data)
                     {
-                        silk_float2short_array(x_bufFIX, psEnc->x_buf, old_buf_samples);
+                        float2short_array(x_bufFIX, psEnc->x_buf, old_buf_samples);
                         ret += silk_resampler_init(&temp_resampler_state, silk_SMULBB(psEnc->sCmn.fs_kHz, 1000), psEnc->sCmn.API_fs_Hz, 0);
 
                         /* Calculate number of samples to temporarily upsample */

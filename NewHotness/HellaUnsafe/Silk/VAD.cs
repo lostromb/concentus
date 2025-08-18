@@ -78,7 +78,7 @@ namespace HellaUnsafe.Silk
         /***************************************/
         /* Get the speech activity level in Q8 */
         /***************************************/
-        internal static unsafe int silk_VAD_GetSA_Q8_c(                                   /* O    Return value, 0 if success                  */
+        internal static unsafe int silk_VAD_GetSA_Q8(                                   /* O    Return value, 0 if success                  */
             silk_encoder_state          *psEncC,                        /* I/O  Encoder state                               */
             in short*            pIn                           /* I    PCM input                                   */
         )

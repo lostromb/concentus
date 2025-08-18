@@ -110,14 +110,14 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static void renormalise_vector(float* X, int N, float gain, int arch)
+        internal static void renormalise_vector(float* X, int N, float gain)
         {
             int i;
             float E;
             float g;
             float t;
             float* xptr;
-            E = EPSILON + celt_inner_prod(X, X, N, arch);
+            E = EPSILON + celt_inner_prod(X, X, N);
             t = E;
             g = MULT16_16_P15(celt_rsqrt_norm(t), gain);
 

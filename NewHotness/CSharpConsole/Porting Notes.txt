@@ -8,9 +8,10 @@ opus_uint16	ushort
 opus_int16	short
 opus_uint8	byte
 opus_int8	sbyte
-opus_val16	float
 opus_int	int
 silk_float	float
+opus_val32	float
+opus_val16	float
 
 
 =============================================================================

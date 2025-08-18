@@ -31,7 +31,7 @@ namespace HellaUnsafe.Silk.Float
 {
     internal static class EnergyFLP
     {
-        /* sum of squares of a silk_float array, with result as double */
+        /* sum of squares of a float array, with result as double */
         internal static unsafe double silk_energy_FLP(
             in float* data,
             int dataSize

@@ -2,7 +2,7 @@
 {
     internal static class Define
     {
-        internal const float silk_float_MAX = float.MaxValue;
+        internal const float float_MAX = float.MaxValue;
         internal const long silk_int64_MAX = 0x7FFFFFFFFFFFFFFF;   /*  2^63 - 1 */
         internal const long silk_int64_MIN = unchecked((long)0x8000000000000000);   /* -2^63 */
         internal const int silk_int32_MAX = 0x7FFFFFFF;                           /*  2^31 - 1 =  2147483647 */
