@@ -35,7 +35,7 @@ using static HellaUnsafe.Celt.MDCT;
 
 namespace HellaUnsafe.Celt
 {
-    internal static unsafe class CeltMode
+    internal static unsafe class CELTModeH
     {
         internal const int MAX_PERIOD = 1024;
 
@@ -68,6 +68,7 @@ namespace HellaUnsafe.Celt
             internal byte* caps;
         }
 
+        // Alias of CELTMode, but for this port we just keep the name OpusCustomMode
         internal unsafe struct OpusCustomMode
         {
             internal int Fs;

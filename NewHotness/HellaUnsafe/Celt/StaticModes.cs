@@ -1,5 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
-using static HellaUnsafe.Celt.CeltMode;
+using static HellaUnsafe.Celt.CELTModeH;
 using static HellaUnsafe.Celt.KissFFT;
 using static HellaUnsafe.Celt.MDCT;
 using static HellaUnsafe.Common.CRuntime;

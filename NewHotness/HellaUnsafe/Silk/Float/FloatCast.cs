@@ -42,7 +42,7 @@ namespace HellaUnsafe.Silk.Float
         internal static short FLOAT2INT16(float x)
         {
             // OPT same here, see function below
-            x = x * CELT_SIG_SCALE;
+            x = x * float_SCALE;
             x = MAX32(x, -32768);
             x = MIN32(x, 32767);
             return (short)float2int(x);

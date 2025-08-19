@@ -70,11 +70,11 @@ namespace HellaUnsafe.Celt
         }
 
         /* Forward MDCT trashes the input array */
-        internal static unsafe void clt_mdct_forward_c(
+        internal static unsafe void clt_mdct_forward(
             in mdct_lookup* l,
             float* input,
             float* output,
-            in float* window, int overlap, int shift, int stride, int arch)
+            in float* window, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;
@@ -184,8 +184,8 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe void clt_mdct_backward_c(in mdct_lookup* l, float* input, float* output,
-              in float* window, int overlap, int shift, int stride, int arch)
+        internal static unsafe void clt_mdct_backward(in mdct_lookup* l, float* input, float* output,
+              in float* window, int overlap, int shift, int stride)
         {
             int i;
             int N, N2, N4;

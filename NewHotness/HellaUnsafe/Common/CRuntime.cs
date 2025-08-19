@@ -259,6 +259,16 @@ namespace HellaUnsafe.Common
             return input;
         }
 
+        internal static unsafe void* opus_alloc(int bytes)
+        {
+            return NativeMemory.Alloc((nuint)bytes);
+        }
+
+        internal static unsafe void opus_free(void* ptr)
+        {
+            NativeMemory.Free(ptr);
+        }
+
         internal static unsafe T** AllocateGlobalPointerArray<T>(int elements) where T : unmanaged
         {
             IntPtr dest = Marshal.AllocHGlobal(elements * sizeof(IntPtr));

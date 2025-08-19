@@ -1,10 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿/* Copyright (c) 2012 Xiph.Org Foundation
+   Written by Jean-Marc Valin */
+/*
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+
+   - Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+   OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HellaUnsafe.Opus
 {
@@ -24,12 +45,12 @@ namespace HellaUnsafe.Opus
             internal byte toc;
             internal int nb_frames;
             private fixed ulong _frames[48]; // use ulong as a substitute for nint (pointer-width)
-            internal byte** frames => (byte**)Unsafe.AsPointer(ref _frames[0]);
+            internal byte** frames => (byte**)Unsafe.AsPointer(ref _frames[0]); // jank! Assumes the repacketizer is globally pinned!
 
             internal fixed short len[48];
             internal int framesize;
             private fixed ulong _paddings[48]; // same here
-            internal byte** paddings => (byte**)Unsafe.AsPointer(ref _paddings[0]);
+            internal byte** paddings => (byte**)Unsafe.AsPointer(ref _paddings[0]); // jank! Assumes the repacketizer is globally pinned!
 
             internal fixed int padding_len[48];
         }
@@ -66,8 +87,8 @@ namespace HellaUnsafe.Opus
             internal MappingType mapping_type;
             internal int bitrate_bps;
             /* Encoder states go here */
-            /* then opus_val32 window_mem[channels*120]; */
-            /* then opus_val32 preemph_mem[channels]; */
+            /* then float window_mem[channels*120]; */
+            /* then float preemph_mem[channels]; */
         }
 
         internal unsafe struct OpusMSDecoder
@@ -75,5 +96,22 @@ namespace HellaUnsafe.Opus
             ChannelLayout layout;
             /* Decoder states go here */
         };
+
+        /* Make sure everything is properly aligned. */
+        internal static unsafe int align(int i)
+        {
+            // With C# constant type widths this calculation is easy
+            // This may need to be revisited if it becomes important for, say, AVX2 vector alignment or
+            // ARMv7 runtimes that disallow unaligned reads
+            return i;
+
+            //struct foo {char c; union { void* p; opus_int32 i; float v; } u;};
+
+            //unsigned int alignment = offsetof(struct foo, u);
+
+            ///* Optimizing compilers should optimize div and multiply into and
+            //   for all sensible alignment values. */
+            //return ((i + alignment - 1) / alignment) * alignment;
+        }
     }
 }

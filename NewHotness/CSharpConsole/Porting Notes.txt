@@ -14,6 +14,11 @@ opus_val32	float
 opus_val16	float
 
 
+
+Replace CELTEncoder with OpusCustomEncoder
+Replace CELTDecoder with OpusCustomDecoder
+Replace CELTMode with OpusCustomMode
+
 =============================================================================
 General guidance
 =============================================================================

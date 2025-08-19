@@ -30,7 +30,7 @@
 using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Celt.EntCode;
-using static HellaUnsafe.Celt.CeltMode;
+using static HellaUnsafe.Celt.CELTModeH;
 using static HellaUnsafe.Celt.MathOps;
 using static HellaUnsafe.Celt.Pitch;
 using static HellaUnsafe.Celt.QuantBands;
