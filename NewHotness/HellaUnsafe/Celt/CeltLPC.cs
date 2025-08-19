@@ -57,8 +57,7 @@ namespace HellaUnsafe.Celt
             in float* num,
             float* y,
             int N,
-            int ord,
-            int arch)
+            int ord)
         {
             int i, j;
             ASSERT(x != y);
@@ -94,8 +93,7 @@ namespace HellaUnsafe.Celt
                  float* _y,
                  int N,
                  int ord,
-                 float* mem,
-                 int arch)
+                 float* mem)
         {
 
             int i, j;

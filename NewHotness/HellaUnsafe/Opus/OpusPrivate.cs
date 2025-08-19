@@ -105,7 +105,7 @@ namespace HellaUnsafe.Opus
             // ARMv7 runtimes that disallow unaligned reads
             return i;
 
-            //struct foo {char c; union { void* p; opus_int32 i; float v; } u;};
+            //struct foo {char c; union { void* p; int i; float v; } u;};
 
             //unsigned int alignment = offsetof(struct foo, u);
 

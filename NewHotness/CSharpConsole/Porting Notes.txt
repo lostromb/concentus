@@ -12,7 +12,8 @@ opus_int	int
 silk_float	float
 opus_val32	float
 opus_val16	float
-
+celt_sig	float
+celt_norm	float
 
 
 Replace CELTEncoder with OpusCustomEncoder

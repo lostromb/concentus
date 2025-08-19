@@ -71,19 +71,24 @@ namespace HellaUnsafe.Common
             //Debug.Assert(condition);
         }
 
+        internal static int abs(int t)
+        {
+            return t > 0 ? t : 0 - t;
+        }
+
         internal static sbyte abs(sbyte t)
         {
-            if (t < 0)
-            {
-                return (sbyte)(0 - t);
-            }
-
-            return t;
+            return t > 0 ? t : (sbyte)(0 - t);
         }
 
         internal static double sqrt(float x)
         {
             return Math.Sqrt(x);
+        }
+
+        internal static float floor(float x)
+        {
+            return MathF.Floor(x);
         }
 
         internal static double pow(float x, float y)
@@ -259,6 +264,10 @@ namespace HellaUnsafe.Common
             return input;
         }
 
+        internal static bool opus_unlikely(bool input)
+        {
+            return input;
+        }
         internal static unsafe void* opus_alloc(int bytes)
         {
             return NativeMemory.Alloc((nuint)bytes);

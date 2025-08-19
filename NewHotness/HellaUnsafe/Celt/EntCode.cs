@@ -189,6 +189,43 @@ namespace HellaUnsafe.Celt
             return _this->nbits_total - EC_ILOG(_this->rng);
         }
 
+        private static readonly uint[] correction = new uint[]
+            {35733, 38967, 42495, 46340,
+             50535, 55109, 60097, 65535};
+
+        /* This is a faster version of ec_tell_frac() that takes advantage
+           of the low (1/8 bit) resolution to use just a linear function
+           followed by a lookup to determine the exact transition thresholds. */
+        internal static unsafe uint ec_tell_frac(ec_ctx* _this)
+        {
+            int nbits;
+            int r;
+            int l;
+            uint b;
+            nbits = _this->nbits_total << BITRES;
+            l = EC_ILOG(_this->rng);
+            r = (int)(_this->rng >> (l - 16));
+            b = (uint)((r >> 12) - 8);
+            b += (r > correction[b] ? 1u : 0);
+            l = (int)((l << 3) + b);
+            return (uint)(nbits - l);
+        }
+
+        internal static unsafe uint ec_range_bytes(ec_ctx* _this)
+        {
+            return _this->offs;
+        }
+
+        internal static unsafe byte* ec_get_buffer(ec_ctx* _this)
+        {
+            return _this->buf;
+        }
+
+        internal static unsafe int ec_get_error(ec_ctx* _this)
+        {
+            return _this->error;
+        }
+
         #region ENTDEC (Decoder portion)
 
         internal static unsafe int ec_read_byte(ec_ctx* _this)

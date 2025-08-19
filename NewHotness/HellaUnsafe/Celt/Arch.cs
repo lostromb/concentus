@@ -118,5 +118,8 @@ namespace HellaUnsafe.Celt
         internal static float SCALEIN(float a) { return a * float_SCALE; }
         internal static float SCALEOUT(float a) { return a * (1 / float_SCALE); }
         internal static float SIG2WORD16(float x) { return x; }
+
+        internal static void celt_sig_assert(bool cond) { Debug.Assert(cond); }
+        internal static void celt_assert2(bool cond, string message) { Debug.Assert(cond, message); }
     }
 }
