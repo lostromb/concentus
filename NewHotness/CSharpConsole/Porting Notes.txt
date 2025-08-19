@@ -135,3 +135,13 @@ internal static readonly sbyte** silk_LTP_vq_ptrs_Q7 = AllocateGlobalPointerArra
     &silk_LTP_gain_vq_1[0][0],
     &silk_LTP_gain_vq_2[0][0]
 });
+
+
+
+=============================================================================
+Static data arrays
+=============================================================================
+
+internal static readonly sbyte* layer0_weights = AllocateGlobalArray<sbyte>(800, new sbyte[] {
+           -30, -9, 2, -12, 5, -1, 8, 9
+		   });
