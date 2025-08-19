@@ -9,7 +9,7 @@ namespace HellaUnsafe.Opus
         internal const int OPUS_OK = 0;
         internal const int OPUS_BAD_ARG = -1;
         internal const int OPUS_BUFFER_TOO_SMALL = -2;
-        internal const int OPUS_INTERNAL_ERROR = -3;
+        internal const int intERNAL_ERROR = -3;
         internal const int OPUS_INVALID_PACKET = -4;
         internal const int OPUS_UNIMPLEMENTED = -5;
         internal const int OPUS_INVALID_STATE = -6;

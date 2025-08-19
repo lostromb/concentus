@@ -33,11 +33,11 @@ namespace HellaUnsafe.Silk
     internal static class Macros
     {
 
-        /* (a32 * (opus_int32)((opus_int16)(b32))) >> 16 output have to be 32bit int */
-        //#define silk_SMULWB(a32, b32)            ((opus_int32)(((a32) * (opus_int64)((opus_int16)(b32))) >> 16))
+        /* (a32 * (int)((short)(b32))) >> 16 output have to be 32bit int */
+        //#define silk_SMULWB(a32, b32)            ((int)(((a32) * (int64)((short)(b32))) >> 16))
 
-        /* a32 + (b32 * (opus_int32)((opus_int16)(c32))) >> 16 output have to be 32bit int */
-        //#define silk_SMLAWB(a32, b32, c32)       ((opus_int32)((a32) + (((b32) * (opus_int64)((opus_int16)(c32))) >> 16)))
+        /* a32 + (b32 * (int)((short)(c32))) >> 16 output have to be 32bit int */
+        //#define silk_SMLAWB(a32, b32, c32)       ((int)((a32) + (((b32) * (int64)((short)(c32))) >> 16)))
         internal static int silk_SMLAWB(int a32, int b32, short c32)
         {
             return (int)(a32 + ((b32 * (long)c32) >> 16));
@@ -49,41 +49,41 @@ namespace HellaUnsafe.Silk
         }
 
         /* (a32 * (b32 >> 16)) >> 16 */
-        //#define silk_SMULWT(a32, b32)            ((opus_int32)(((a32) * (opus_int64)((b32) >> 16)) >> 16))
+        //#define silk_SMULWT(a32, b32)            ((int)(((a32) * (int64)((b32) >> 16)) >> 16))
         internal static int silk_SMULWT(int a32, int b32)
         {
             return (a32 >> 16) * (b32 >> 16) + ((a32 & 0x0000FFFF) * (b32 >> 16) >> 16);
         }
 
         /* a32 + (b32 * (c32 >> 16)) >> 16 */
-        //#define silk_SMLAWT(a32, b32, c32)       ((opus_int32)((a32) + (((b32) * ((opus_int64)(c32) >> 16)) >> 16)))
+        //#define silk_SMLAWT(a32, b32, c32)       ((int)((a32) + (((b32) * ((int64)(c32) >> 16)) >> 16)))
         internal static int silk_SMLAWT(int a32, int b32, int c32)
         {
             return a32 + (b32 >> 16) * (c32 >> 16) + ((b32 & 0x0000FFFF) * (c32 >> 16) >> 16);
         }
 
-        /* (opus_int32)((opus_int16)(a3))) * (opus_int32)((opus_int16)(b32)) output have to be 32bit int */
-        //#define silk_SMULBB(a32, b32)            ((opus_int32)((opus_int16)(a32)) * (opus_int32)((opus_int16)(b32)))
+        /* (int)((short)(a3))) * (int)((short)(b32)) output have to be 32bit int */
+        //#define silk_SMULBB(a32, b32)            ((int)((short)(a32)) * (int)((short)(b32)))
 
-        /* a32 + (opus_int32)((opus_int16)(b32)) * (opus_int32)((opus_int16)(c32)) output have to be 32bit int */
-        //#define silk_SMLABB(a32, b32, c32)       ((a32) + ((opus_int32)((opus_int16)(b32))) * (opus_int32)((opus_int16)(c32)))
+        /* a32 + (int)((short)(b32)) * (int)((short)(c32)) output have to be 32bit int */
+        //#define silk_SMLABB(a32, b32, c32)       ((a32) + ((int)((short)(b32))) * (int)((short)(c32)))
 
-        /* (opus_int32)((opus_int16)(a32)) * (b32 >> 16) */
-        //#define silk_SMULBT(a32, b32)            ((opus_int32)((opus_int16)(a32)) * ((b32) >> 16))
+        /* (int)((short)(a32)) * (b32 >> 16) */
+        //#define silk_SMULBT(a32, b32)            ((int)((short)(a32)) * ((b32) >> 16))
         internal static int silk_SMULBT(int a32, int b32)
         {
             return (short)a32 * (b32 >> 16);
         }
 
-        /* a32 + (opus_int32)((opus_int16)(b32)) * (c32 >> 16) */
-        //#define silk_SMLABT(a32, b32, c32)       ((a32) + ((opus_int32)((opus_int16)(b32))) * ((c32) >> 16))
+        /* a32 + (int)((short)(b32)) * (c32 >> 16) */
+        //#define silk_SMLABT(a32, b32, c32)       ((a32) + ((int)((short)(b32))) * ((c32) >> 16))
         internal static int silk_SMLABT(int a32, int b32, int c32)
         {
             return a32 + (short)b32 * (c32 >> 16);
         }
 
         /* a64 + (b32 * c32) */
-        //#define silk_SMLAL(a64, b32, c32)        (silk_ADD64((a64), ((opus_int64)(b32) * (opus_int64)(c32))))
+        //#define silk_SMLAL(a64, b32, c32)        (silk_ADD64((a64), ((int64)(b32) * (int64)(c32))))
         internal static long silk_SMLAL(long a64, int b32, int c32)
         {
             return silk_ADD64(a64, b32 * (long)c32);

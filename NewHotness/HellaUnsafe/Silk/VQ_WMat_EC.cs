@@ -38,7 +38,7 @@ namespace HellaUnsafe.Silk
     internal static unsafe class VQ_WMat_EC
     {
         /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
-        internal static unsafe void silk_VQ_WMat_EC_c(
+        internal static unsafe void silk_VQ_WMat_EC(
             sbyte                   *ind,                           /* O    index of best codebook vector               */
             int                  *res_nrg_Q15,                   /* O    best residual energy                        */
             int                  *rate_dist_Q8,                  /* O    best total bitrate                          */

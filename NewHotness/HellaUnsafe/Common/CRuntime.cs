@@ -81,6 +81,16 @@ namespace HellaUnsafe.Common
             return t;
         }
 
+        internal static double sqrt(float x)
+        {
+            return Math.Sqrt(x);
+        }
+
+        internal static double pow(float x, float y)
+        {
+            return Math.Pow(x, y);
+        }
+
         internal static int BOOL2INT(bool x)
         {
             return x ? 1 : 0;

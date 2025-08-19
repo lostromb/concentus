@@ -61,7 +61,7 @@ namespace HellaUnsafe.Silk
             short center_freq_Q15;
             int diff_Q15, min_diff_Q15, min_center_Q15, max_center_Q15;
 
-            /* This is necessary to ensure an output within range of a opus_int16 */
+            /* This is necessary to ensure an output within range of a short */
             silk_assert( NDeltaMin_Q15[L] >= 1 );
 
             for( loops = 0; loops < MAX_LOOPS; loops++ ) {

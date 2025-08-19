@@ -717,6 +717,11 @@ namespace HellaUnsafe.Silk
             return ((a) > (b)) ? (a) : (b);
         }
 
+        internal static float silk_max(float a, float b)
+        {
+            return ((a) > (b)) ? (a) : (b);
+        }
+
         /* silk_min() versions with typecast in the function call */
         internal static int silk_min_int(int a, int b)
         {
@@ -825,7 +830,7 @@ namespace HellaUnsafe.Silk
         /*    silk_SMMUL: Signed top word multiply.
           ARMv6        2 instruction cycles.
           ARMv3M+      3 instruction cycles. use SMULL and ignore LSB registers.(except xM)*/
-        /*#define silk_SMMUL(a32, b32)                (opus_int32)silk_RSHIFT(silk_SMLAL(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16)), 16)*/
+        /*#define silk_SMMUL(a32, b32)                (int)silk_RSHIFT(silk_SMLAL(silk_SMULWB((a32), (b32)), (a32), silk_RSHIFT_ROUND((b32), 16)), 16)*/
         /* the following seems faster on x86 */
         internal static int silk_SMMUL(int a32, int b32)
         {
@@ -833,7 +838,7 @@ namespace HellaUnsafe.Silk
         }
 
         /* Macro to convert floating-point constants to fixed-point */
-        //#define SILK_FIX_CONST( C, Q )        ((opus_int32)((C) * ((opus_int64)1 << (Q)) + 0.5))       
+        //#define SILK_FIX_CONST( C, Q )        ((int)((C) * ((int64)1 << (Q)) + 0.5))       
         // OPT This should never run more than once at runtime!
         internal static int SILK_FIX_CONST(double C, int Q)
         {

@@ -31,16 +31,19 @@ using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Silk.Define;
 using static HellaUnsafe.Silk.EncodeIndices;
 using static HellaUnsafe.Silk.EncodePulses;
-using static HellaUnsafe.Silk.Float.StructsFLP;
-using static HellaUnsafe.Silk.Float.SigProcFLP;
 using static HellaUnsafe.Silk.Float.FindPitchLagsFLP;
+using static HellaUnsafe.Silk.Float.FindPredCoefsFLP;
+using static HellaUnsafe.Silk.Float.NoiseShapeAnalysisFLP;
+using static HellaUnsafe.Silk.Float.ProcessGainsFLP;
+using static HellaUnsafe.Silk.Float.SigProcFLP;
+using static HellaUnsafe.Silk.Float.StructsFLP;
 using static HellaUnsafe.Silk.Float.WrappersFLP;
+using static HellaUnsafe.Silk.GainQuant;
+using static HellaUnsafe.Silk.LPVariableCutoff;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.TuningParameters;
-using static HellaUnsafe.Silk.GainQuant;
 using static HellaUnsafe.Silk.VAD;
-using static HellaUnsafe.Silk.LPVariableCutoff;
 
 namespace HellaUnsafe.Silk.Float
 {

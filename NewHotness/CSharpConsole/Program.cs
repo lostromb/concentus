@@ -26,7 +26,7 @@ namespace CSharpConsole
                 16,     14,     38,     -3,     33,
         ];
 
-        private static readonly Native3DArray<sbyte> Test3DArray = new Native3DArray<sbyte>(Test3DArray_Data, 4, 2, 5);
+        private static readonly Native3DArray<sbyte> Test3DArray = new Native3DArray<sbyte>(4, 2, 5, Test3DArray_Data);
 
         internal static int ILog2(uint x)
         {

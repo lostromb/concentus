@@ -6,10 +6,11 @@ using static HellaUnsafe.Silk.Float.StructsFLP;
 using static HellaUnsafe.Silk.NLSF2A;
 using static HellaUnsafe.Silk.NSQ;
 using static HellaUnsafe.Silk.NSQDelDec;
+using static HellaUnsafe.Silk.ProcessNLSFs;
+using static HellaUnsafe.Silk.QuantLTPGains;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.Tables;
-using static HellaUnsafe.Silk.GainQuant;
 
 namespace HellaUnsafe.Silk.Float
 {
@@ -58,7 +59,7 @@ namespace HellaUnsafe.Silk.Float
             silk_encoder_state* psEncC,                            /* I/O  Encoder state                               */
             Native2DArray<float> PredCoef/*[2][MAX_LPC_ORDER]*/,     /* O    Prediction coefficients                     */
             short* NLSF_Q15/*[MAX_LPC_ORDER]*/,     /* I/O  Normalized LSFs (quant out) (0 - (2^15-1))  */
-            in short prev_NLSF_Q15/*[MAX_LPC_ORDER]*/      /* I    Previous Normalized LSFs (0 - (2^15-1))     */
+            in short* prev_NLSF_Q15/*[MAX_LPC_ORDER]*/      /* I    Previous Normalized LSFs (0 - (2^15-1))     */
         )
         {
             int i, j;

@@ -17,8 +17,8 @@ namespace HellaUnsafe.Silk
             internal fixed int sIIR[SILK_RESAMPLER_MAX_IIR_ORDER]; /* this must be the first element of this struct */
 
             //union{
-            //    opus_int32 i32;
-            //    opus_int16 i16[SILK_RESAMPLER_MAX_FIR_ORDER];
+            //    int i32;
+            //    short i16[SILK_RESAMPLER_MAX_FIR_ORDER];
             //}
             //sFIR;
 
