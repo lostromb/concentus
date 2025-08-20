@@ -33,7 +33,7 @@ namespace HellaUnsafe.Opus
             /// <summary>
             /// The number of bytes from the start of the decoder struct to clear from on reset
             /// </summary>
-            internal int OPUS_DECODER_RESET_START =>
+            internal static int OPUS_DECODER_RESET_START =>
                 //(void*)Unsafe.AsPointer(ref rng) - (void*)Unsafe.AsPointer(ref mode); // this doesn't work
                 //Unsafe.ByteOffset(ref mode, ref rng); // neither does this
                 sizeof(silk_DecControlStruct) + (6 * sizeof(int)); // whatever, just hardcode the lengths
@@ -968,9 +968,9 @@ namespace HellaUnsafe.Opus
                 case OPUS_RESET_STATE:
                     {
                         OPUS_CLEAR(
-                            ((byte*)&st) + st->OPUS_DECODER_RESET_START,
+                            ((byte*)&st) + OpusDecoder.OPUS_DECODER_RESET_START,
                             sizeof(OpusDecoder) -
-                            st->OPUS_DECODER_RESET_START);
+                            OpusDecoder.OPUS_DECODER_RESET_START);
 
                         opus_custom_decoder_ctl(celt_dec, OPUS_RESET_STATE);
                         silk_ResetDecoder(silk_dec);
@@ -985,8 +985,6 @@ namespace HellaUnsafe.Opus
             }
 
             return ret;
-        bad_arg:
-            return OPUS_BAD_ARG;
         }
 
         internal static unsafe void opus_decoder_destroy(OpusDecoder* st)

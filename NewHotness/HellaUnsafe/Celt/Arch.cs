@@ -39,7 +39,7 @@ namespace HellaUnsafe.Celt
 {
     internal static class Arch
     {
-        internal const float float_SCALE = 32768.0f;
+        internal const float CELT_SIG_SCALE = 32768.0f;
         internal const float NORM_SCALING = 1.0f;
         internal const float Q15ONE = 1.0f;
         internal const float EPSILON = 1e-15f;
@@ -115,12 +115,17 @@ namespace HellaUnsafe.Celt
         internal static float MULT16_32_P16(float a, float b) { return a * b; }
         internal static float DIV32_16(float a, float b) { return a / b; }
         internal static float DIV32(float a, float b) { return a / b; }
-        internal static float SCALEIN(float a) { return a * float_SCALE; }
-        internal static float SCALEOUT(float a) { return a * (1 / float_SCALE); }
+        internal static float SCALEIN(float a) { return a * CELT_SIG_SCALE; }
+        internal static float SCALEOUT(float a) { return a * (1 / CELT_SIG_SCALE); }
         internal static float SIG2WORD16(float x) { return x; }
 
+        [Conditional("DEBUG")]
         internal static void celt_sig_assert(bool cond) { Debug.Assert(cond); }
+
+        [Conditional("DEBUG")]
         internal static void celt_assert2(bool cond, string message) { Debug.Assert(cond, message); }
+
+        [Conditional("DEBUG")]
         internal static void MUST_SUCCEED(int err) { Debug.Assert(err != 0); }
     }
 }

@@ -53,10 +53,10 @@ namespace HellaUnsafe.Celt
             /// <summary>
             /// The number of bytes from the start of the decoder struct to clear from on reset
             /// </summary>
-            internal int DECODER_RESET_START =>
+            internal static int DECODER_RESET_START =>
                 //(void*)Unsafe.AsPointer(ref rng) - (void*)Unsafe.AsPointer(ref mode); // this doesn't work
                 //Unsafe.ByteOffset(ref mode, ref rng); // neither does this
-                sizeof(nint) + (9 * sizeof(int)); // whatever, just hardcode the lengths
+                sizeof(OpusCustomMode*) + (9 * sizeof(int)); // whatever, just hardcode the lengths
 
             /* Everything beyond this point gets cleared on a reset */
 
@@ -1268,9 +1268,9 @@ namespace HellaUnsafe.Celt
                         oldLogE2 = oldLogE + 2 * st->mode->nbEBands;
 
                         OPUS_CLEAR(
-                            ((byte*)st) + st->DECODER_RESET_START,
+                            ((byte*)st) + OpusCustomDecoder.DECODER_RESET_START,
                             opus_custom_decoder_get_size(st->mode, st->channels) -
-                            st->DECODER_RESET_START);
+                            OpusCustomDecoder.DECODER_RESET_START);
                         for (i = 0; i < 2 * st->mode->nbEBands; i++)
                             oldLogE[i] = oldLogE2[i] = -QCONST16(28.0f, DB_SHIFT);
                         st->skip_plc = 1;
@@ -1280,8 +1280,6 @@ namespace HellaUnsafe.Celt
                     goto bad_request;
             }
             return OPUS_OK;
-        bad_arg:
-            return OPUS_BAD_ARG;
         bad_request:
             return OPUS_UNIMPLEMENTED;
         }
