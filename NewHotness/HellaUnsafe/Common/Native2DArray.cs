@@ -75,5 +75,7 @@ namespace HellaUnsafe.Common
         {
             return &Pointer[Width * y];
         }
+
+        public int size_of => Height * Width * sizeof(T); // OPT this recalculates every time when it should be const
     }
 }

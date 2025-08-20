@@ -26,24 +26,17 @@
 */
 
 using HellaUnsafe.Common;
-using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using static HellaUnsafe.Celt.Arch;
-using static HellaUnsafe.Celt.KissFFT;
-using static HellaUnsafe.Celt.MDCT;
 using static HellaUnsafe.Celt.CeltH;
 using static HellaUnsafe.Celt.CELTModeH;
-using static HellaUnsafe.Celt.EntCode;
+using static HellaUnsafe.Celt.KissFFT;
 using static HellaUnsafe.Celt.MathOps;
 using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Opus.MLP;
 using static HellaUnsafe.Opus.MLPData;
-using static HellaUnsafe.Opus.Opus;
 using static HellaUnsafe.Opus.Opus_Encoder;
 using static HellaUnsafe.Opus.OpusPrivate;
-using static HellaUnsafe.Silk.Control;
-using static HellaUnsafe.Silk.DecAPI;
 using static HellaUnsafe.Silk.Float.FloatCast;
 using static HellaUnsafe.Silk.SigProcFIX;
 

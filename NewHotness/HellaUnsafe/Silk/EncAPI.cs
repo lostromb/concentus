@@ -121,6 +121,14 @@ namespace HellaUnsafe.Silk
             return ret;
         }
 
+        internal static unsafe int silk_Get_Encoder_Size(                         /* O    Returns error code                              */
+            int                        *encSizeBytes       /* O    Number of bytes in SILK encoder state           */
+        )
+        {
+            int ret = SILK_NO_ERROR;
+            *encSizeBytes = sizeof( silk_encoder );
+            return ret;
+        }
 
         /**************************/
         /* Encode frame with Silk */
