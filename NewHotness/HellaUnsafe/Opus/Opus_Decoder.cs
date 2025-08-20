@@ -30,8 +30,16 @@ namespace HellaUnsafe.Opus
             internal int decode_gain;
             internal int complexity;
 
+            /// <summary>
+            /// The number of bytes from the start of the decoder struct to clear from on reset
+            /// </summary>
+            internal int OPUS_DECODER_RESET_START =>
+                //(void*)Unsafe.AsPointer(ref rng) - (void*)Unsafe.AsPointer(ref mode); // this doesn't work
+                //Unsafe.ByteOffset(ref mode, ref rng); // neither does this
+                sizeof(silk_DecControlStruct) + (6 * sizeof(int)); // whatever, just hardcode the lengths
+
             /* Everything beyond this point gets cleared on a reset */
-            //#define OPUS_DECODER_RESET_START stream_channels
+
             internal int stream_channels;
 
             internal int bandwidth;
@@ -765,158 +773,221 @@ namespace HellaUnsafe.Opus
             return opus_decode_native(st, data, len, pcm, frame_size, decode_fec, 0, null, 0);
         }
 
-        //int opus_decoder_ctl(OpusDecoder *st, int request, ...)
-        //{
-        //   int ret = OPUS_OK;
-        //   va_list ap;
-        //   void *silk_dec;
-        //   OpusCustomDecoder *celt_dec;
+        /// <summary>
+        /// Int parameter (most setters)
+        /// </summary>
+        internal static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, int value)
+        {
+            int ret = OPUS_OK;
+            void* silk_dec;
+            OpusCustomDecoder* celt_dec;
 
-        //   silk_dec = (char*)st+st->silk_dec_offset;
-        //   celt_dec = (OpusCustomDecoder*)((char*)st+st->celt_dec_offset);
+            silk_dec = (char*)st + st->silk_dec_offset;
+            celt_dec = (OpusCustomDecoder*)((char*)st + st->celt_dec_offset);
 
-        //   va_start(ap, request);
+            switch (request)
+            {
+                case OPUS_SET_COMPLEXITY_REQUEST:
+                    {
+                        if (value < 0 || value > 10)
+                        {
+                            goto bad_arg;
+                        }
+                        st->complexity = value;
+                        opus_custom_decoder_ctl(celt_dec, OPUS_SET_COMPLEXITY_REQUEST, value);
+                    }
+                    break;
+                case OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST:
+                    {
+                        if (value < 0 || value > 1)
+                        {
+                            goto bad_arg;
+                        }
+                        ret = opus_custom_decoder_ctl(celt_dec, OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST, value);
+                    }
+                    break;
+                case OPUS_SET_GAIN_REQUEST:
+                    {
+                        if (value < -32768 || value > 32767)
+                        {
+                            goto bad_arg;
+                        }
+                        st->decode_gain = value;
+                    }
+                    break;
+                default:
+                    /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
+                    ret = OPUS_UNIMPLEMENTED;
+                    break;
+            }
 
-        //   switch (request)
-        //   {
-        //   case OPUS_GET_BANDWIDTH_REQUEST:
-        //   {
-        //      int *value = va_arg(ap, int*);
-        //      if (!value)
-        //      {
-        //         goto bad_arg;
-        //      }
-        //      *value = st->bandwidth;
-        //   }
-        //   break;
-        //   case OPUS_SET_COMPLEXITY_REQUEST:
-        //   {
-        //       int value = va_arg(ap, int);
-        //       if(value<0 || value>10)
-        //       {
-        //          goto bad_arg;
-        //       }
-        //       st->complexity = value;
-        //       celt_decoder_ctl(celt_dec, OPUS_SET_COMPLEXITY(value));
-        //   }
-        //   break;
-        //   case OPUS_GET_COMPLEXITY_REQUEST:
-        //   {
-        //       int *value = va_arg(ap, int*);
-        //       if (!value)
-        //       {
-        //          goto bad_arg;
-        //       }
-        //       *value = st->complexity;
-        //   }
-        //   break;
-        //   case OPUS_GET_FINAL_RANGE_REQUEST:
-        //   {
-        //      opus_uint32 *value = va_arg(ap, opus_uint32*);
-        //      if (!value)
-        //      {
-        //         goto bad_arg;
-        //      }
-        //      *value = st->rangeFinal;
-        //   }
-        //   break;
-        //   case OPUS_RESET_STATE:
-        //   {
-        //      OPUS_CLEAR((char*)&st->OPUS_DECODER_RESET_START,
-        //            sizeof(OpusDecoder)-
-        //            ((char*)&st->OPUS_DECODER_RESET_START - (char*)st));
+            return ret;
+        bad_arg:
+            return OPUS_BAD_ARG;
+        }
 
-        //      celt_decoder_ctl(celt_dec, OPUS_RESET_STATE);
-        //      silk_ResetDecoder( silk_dec );
-        //      st->stream_channels = st->channels;
-        //      st->frame_size = st->Fs/400;
-        //   }
-        //   break;
-        //   case OPUS_GET_SAMPLE_RATE_REQUEST:
-        //   {
-        //      int *value = va_arg(ap, int*);
-        //      if (!value)
-        //      {
-        //         goto bad_arg;
-        //      }
-        //      *value = st->Fs;
-        //   }
-        //   break;
-        //   case OPUS_GET_PITCH_REQUEST:
-        //   {
-        //      int *value = va_arg(ap, int*);
-        //      if (!value)
-        //      {
-        //         goto bad_arg;
-        //      }
-        //      if (st->prev_mode == MODE_CELT_ONLY)
-        //         ret = celt_decoder_ctl(celt_dec, OPUS_GET_PITCH(value));
-        //      else
-        //         *value = st->DecControl.prevPitchLag;
-        //   }
-        //   break;
-        //   case OPUS_GET_GAIN_REQUEST:
-        //   {
-        //      int *value = va_arg(ap, int*);
-        //      if (!value)
-        //      {
-        //         goto bad_arg;
-        //      }
-        //      *value = st->decode_gain;
-        //   }
-        //   break;
-        //   case OPUS_SET_GAIN_REQUEST:
-        //   {
-        //       int value = va_arg(ap, int);
-        //       if (value<-32768 || value>32767)
-        //       {
-        //          goto bad_arg;
-        //       }
-        //       st->decode_gain = value;
-        //   }
-        //   break;
-        //   case OPUS_GET_LAST_PACKET_DURATION_REQUEST:
-        //   {
-        //      int *value = va_arg(ap, int*);
-        //      if (!value)
-        //      {
-        //         goto bad_arg;
-        //      }
-        //      *value = st->last_packet_duration;
-        //   }
-        //   break;
-        //   case OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST:
-        //   {
-        //       int value = va_arg(ap, int);
-        //       if(value<0 || value>1)
-        //       {
-        //          goto bad_arg;
-        //       }
-        //       ret = celt_decoder_ctl(celt_dec, OPUS_SET_PHASE_INVERSION_DISABLED(value));
-        //   }
-        //   break;
-        //   case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
-        //   {
-        //       int *value = va_arg(ap, int*);
-        //       if (!value)
-        //       {
-        //          goto bad_arg;
-        //       }
-        //       ret = celt_decoder_ctl(celt_dec, OPUS_GET_PHASE_INVERSION_DISABLED(value));
-        //   }
-        //   break;
-        //   default:
-        //      /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
-        //      ret = OPUS_UNIMPLEMENTED;
-        //      break;
-        //   }
+        /// <summary>
+        /// Int* parameter (most getters)
+        /// </summary>
+        internal static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, int* value)
+        {
+            int ret = OPUS_OK;
+            void* silk_dec;
+            OpusCustomDecoder* celt_dec;
 
-        //   va_end(ap);
-        //   return ret;
-        //bad_arg:
-        //   va_end(ap);
-        //   return OPUS_BAD_ARG;
-        //}
+            silk_dec = (char*)st + st->silk_dec_offset;
+            celt_dec = (OpusCustomDecoder*)((char*)st + st->celt_dec_offset);
+
+            switch (request)
+            {
+                case OPUS_GET_BANDWIDTH_REQUEST:
+                    {
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        *value = st->bandwidth;
+                    }
+                    break;
+                case OPUS_GET_COMPLEXITY_REQUEST:
+                    {
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        *value = st->complexity;
+                    }
+                    break;
+                case OPUS_GET_SAMPLE_RATE_REQUEST:
+                    {
+                        if (value != null)
+                        {
+                            goto bad_arg;
+                        }
+                        *value = st->Fs;
+                    }
+                    break;
+                case OPUS_GET_PITCH_REQUEST:
+                    {
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        if (st->prev_mode == MODE_CELT_ONLY)
+                            ret = opus_custom_decoder_ctl(celt_dec, OPUS_GET_PITCH_REQUEST, value);
+                        else
+                            *value = st->DecControl.prevPitchLag;
+                    }
+                    break;
+                case OPUS_GET_GAIN_REQUEST:
+                    {
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        *value = st->decode_gain;
+                    }
+                    break;
+                case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
+                    {
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        ret = opus_custom_decoder_ctl(celt_dec, OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST, value);
+                    }
+                    break;
+                case OPUS_GET_LAST_PACKET_DURATION_REQUEST:
+                    {
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        *value = st->last_packet_duration;
+                    }
+                    break;
+                default:
+                    /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
+                    ret = OPUS_UNIMPLEMENTED;
+                    break;
+            }
+
+            return ret;
+        bad_arg:
+            return OPUS_BAD_ARG;
+        }
+
+        /// <summary>
+        /// uint* parameter
+        /// </summary>
+        internal static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, uint* value)
+        {
+            int ret = OPUS_OK;
+            void* silk_dec;
+            OpusCustomDecoder* celt_dec;
+
+            silk_dec = (char*)st + st->silk_dec_offset;
+            celt_dec = (OpusCustomDecoder*)((char*)st + st->celt_dec_offset);
+
+            switch (request)
+            {
+                case OPUS_GET_FINAL_RANGE_REQUEST:
+                    {
+                        if (value == null)
+                        {
+                            goto bad_arg;
+                        }
+                        *value = st->rangeFinal;
+                    }
+                    break;
+                default:
+                    /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
+                    ret = OPUS_UNIMPLEMENTED;
+                    break;
+            }
+
+            return ret;
+        bad_arg:
+            return OPUS_BAD_ARG;
+        }
+
+        /// <summary>
+        /// Specific handler for OPUS_RESET_STATE
+        /// </summary>
+        internal static unsafe int opus_decoder_ctl(OpusDecoder* st, int request)
+        {
+            int ret = OPUS_OK;
+            void* silk_dec;
+            OpusCustomDecoder* celt_dec;
+
+            silk_dec = (char*)st + st->silk_dec_offset;
+            celt_dec = (OpusCustomDecoder*)((char*)st + st->celt_dec_offset);
+
+            switch (request)
+            {
+                case OPUS_RESET_STATE:
+                    {
+                        OPUS_CLEAR(
+                            ((byte*)&st) + st->OPUS_DECODER_RESET_START,
+                            sizeof(OpusDecoder) -
+                            st->OPUS_DECODER_RESET_START);
+
+                        opus_custom_decoder_ctl(celt_dec, OPUS_RESET_STATE);
+                        silk_ResetDecoder(silk_dec);
+                        st->stream_channels = st->channels;
+                        st->frame_size = st->Fs / 400;
+                    }
+                    break;
+                default:
+                    /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
+                    ret = OPUS_UNIMPLEMENTED;
+                    break;
+            }
+
+            return ret;
+        bad_arg:
+            return OPUS_BAD_ARG;
+        }
 
         internal static unsafe void opus_decoder_destroy(OpusDecoder* st)
         {

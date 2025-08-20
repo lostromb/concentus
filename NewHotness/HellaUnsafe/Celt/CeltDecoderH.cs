@@ -1267,9 +1267,10 @@ namespace HellaUnsafe.Celt
                         oldLogE = oldBandE + 2 * st->mode->nbEBands;
                         oldLogE2 = oldLogE + 2 * st->mode->nbEBands;
 
-                        OPUS_CLEAR((byte*)st + st->DECODER_RESET_START,
-                              opus_custom_decoder_get_size(st->mode, st->channels) -
-                              st->DECODER_RESET_START);
+                        OPUS_CLEAR(
+                            ((byte*)st) + st->DECODER_RESET_START,
+                            opus_custom_decoder_get_size(st->mode, st->channels) -
+                            st->DECODER_RESET_START);
                         for (i = 0; i < 2 * st->mode->nbEBands; i++)
                             oldLogE[i] = oldLogE2[i] = -QCONST16(28.0f, DB_SHIFT);
                         st->skip_plc = 1;

@@ -20,6 +20,10 @@ Replace CELTEncoder with OpusCustomEncoder
 Replace CELTDecoder with OpusCustomDecoder
 Replace CELTMode with OpusCustomMode
 
+
+#define celt_encoder_ctl opus_custom_encoder_ctl
+#define celt_decoder_ctl opus_custom_decoder_ctl
+
 =============================================================================
 General guidance
 =============================================================================
@@ -148,6 +152,27 @@ internal static readonly sbyte** silk_LTP_vq_ptrs_Q7 = AllocateGlobalPointerArra
 Static data arrays
 =============================================================================
 
+1D
+
 internal static readonly sbyte* layer0_weights = AllocateGlobalArray<sbyte>(800, new sbyte[] {
            -30, -9, 2, -12, 5, -1, 8, 9
 		   });
+		   
+2D
+
+internal static readonly Native2DArray<byte> silk_gain_iCDF = new Native2DArray<byte>(3, N_LEVELS_QGAIN / 8, new byte[]
+{
+    //{
+       224,    112,     44,     15,      3,      2,      1,      0,
+    //},
+    //{
+       254,    237,    192,    132,     70,     23,      4,      0,
+    //},
+    //{
+       255,    252,    226,    155,     61,     11,      2,      0,
+    //}
+});
+
+3D
+
+internal static readonly Native3DArray<byte> e_prob_model = new Native3DArray<byte>(4, 2, 42, new byte[] {
