@@ -288,4 +288,8 @@ static OPUS_INLINE int celt_isnan(float x)
 #endif
 #endif
 
+#include <stdio.h>
+
+// Functions for bed-of-nails parity
+
 #endif /* ARCH_H */

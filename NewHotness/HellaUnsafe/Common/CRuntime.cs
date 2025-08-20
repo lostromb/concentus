@@ -396,5 +396,12 @@ namespace HellaUnsafe.Common
         //{
         //    return flatArray + (x * dimY);
         //}
+
+        // Functions for bed-of-nails parity
+
+        internal static void printf(string format, params object[] args)
+        {
+            //Console.Write(format, args);
+        }
     }
 }

@@ -18,6 +18,7 @@ int main()
     int param_use_dtx = 0;
     int param_use_vbr = 0;
     int param_use_contrained_vbr = 0;
+
     int error;
     OpusEncoder* encoder = opus_encoder_create(param_sample_rate, param_channels, param_application, &error);
     OpusDecoder* decoder = opus_decoder_create(param_sample_rate, param_channels, &error);
@@ -110,6 +111,7 @@ int main()
     opus_uint8 outPacket[1275];
     short* inAudioSamples = (short*)inAudioByte;
     FILE* fileIn = fopen(fileName, "rb");
+    printf_s("NAIL TEST START\r\n");
     while (1)
     {
         int bytesRead = fread(inAudioByte, sizeof(opus_uint8), inputBufLength, fileIn);

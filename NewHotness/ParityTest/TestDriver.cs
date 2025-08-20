@@ -8,8 +8,8 @@ namespace ParityTest
 {
     public unsafe class TestDriver
     {
-        private const string OPUS_TARGET_DLL = "opus-1.2.1-x86-float-avx.dll";
-        private const bool ACTUALLY_COMPARE = false;
+        private const string OPUS_TARGET_DLL = "opus-1.5.2-x64-float.dll";
+        private const bool ACTUALLY_COMPARE = true;
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr opus_encoder_create(int Fs, int channels, int application, out IntPtr error);

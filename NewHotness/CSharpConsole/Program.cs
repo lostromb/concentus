@@ -94,6 +94,7 @@ namespace CSharpConsole
                 byte* inAudioByte = stackalloc byte[inputBufLength];
                 byte* outPacket = stackalloc byte[1275];
                 short* inAudioSamples = (short*)inAudioByte;
+                Console.Write("NAIL TEST START\r\n");
                 while (true)
                 {
                     int bytesRead = fileIn.Read(new Span<byte>(inAudioByte, inputBufLength));
