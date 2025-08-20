@@ -109,11 +109,13 @@ namespace HellaUnsafe.Opus
 
             /* Reset decoder */
             ret = silk_InitDecoder(silk_dec);
-            if (ret != 0) return OPUS_INTERNAL_ERROR;
+            if (ret != 0)
+                return OPUS_INTERNAL_ERROR;
 
             /* Initialize CELT decoder */
             ret = celt_decoder_init(celt_dec, Fs, channels);
-            if (ret != OPUS_OK) return OPUS_INTERNAL_ERROR;
+            if (ret != OPUS_OK)
+                return OPUS_INTERNAL_ERROR;
 
             opus_custom_decoder_ctl(celt_dec, CELT_SET_SIGNALLING_REQUEST, 0);
 

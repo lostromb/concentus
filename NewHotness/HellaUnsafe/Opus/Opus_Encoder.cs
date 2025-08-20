@@ -203,7 +203,8 @@ namespace HellaUnsafe.Opus
             st->Fs = Fs;
 
             ret = silk_InitEncoder(silk_enc, &st->silk_mode);
-            if (ret != 0) return OPUS_INTERNAL_ERROR;
+            if (ret != 0)
+                return OPUS_INTERNAL_ERROR;
 
             /* default SILK parameters */
             st->silk_mode.nChannelsAPI = channels;
@@ -225,7 +226,8 @@ namespace HellaUnsafe.Opus
             /* Create CELT encoder */
             /* Initialize CELT encoder */
             err = celt_encoder_init(celt_enc, Fs, channels);
-            if (err != OPUS_OK) return OPUS_INTERNAL_ERROR;
+            if (err != OPUS_OK)
+                return OPUS_INTERNAL_ERROR;
 
             opus_custom_encoder_ctl(celt_enc, CELT_SET_SIGNALLING_REQUEST, 0);
             opus_custom_encoder_ctl(celt_enc, OPUS_SET_COMPLEXITY_REQUEST, st->silk_mode.complexity);

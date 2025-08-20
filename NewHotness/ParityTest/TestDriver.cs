@@ -236,7 +236,7 @@ namespace ParityTest
 
                         if (concentusPacketSize <= 0)
                         {
-                            returnVal.Message = "Invalid packet produced (" + concentusPacketSize + ") (frame " + frameCount + ")";
+                            returnVal.Message = "Invalid packet produced (error " + concentusPacketSize + " " + Opus.opus_strerror(concentusPacketSize)+ ") (frame " + frameCount + ")";
                             returnVal.Passed = false;
                             returnVal.FailureFrame = inputPacket;
                             return returnVal;

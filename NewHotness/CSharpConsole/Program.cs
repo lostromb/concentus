@@ -1,129 +1,121 @@
-﻿using BenchmarkDotNet.Running;
-using HellaUnsafe.Celt;
-using HellaUnsafe.Common;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Xml.Linq;
+﻿
+using static HellaUnsafe.Opus.Opus_Encoder;
+using static HellaUnsafe.Opus.Opus_Decoder;
+using static HellaUnsafe.Opus.OpusDefines;
+using static HellaUnsafe.Opus.OpusPrivate;
 
 namespace CSharpConsole
 {
     internal static unsafe class Program
     {
-        private static InlineArrayOpusEncoder _encoder;
-
-
-        private static ReadOnlySpan<sbyte> Test3DArray_Data/*[4][2][5]*/ =>
-        [
-                4,      6,     24,      7,      5,
-                0,      0,      2,      0,      0,
-                12,     28,     41,     13,     -4,
-                -9,     15,     42,     25,     14,
-                1,     -2,     62,     41,     -9,
-                -10,     37,     65,     -4,      3,
-                -6,      4,     66,      7,     -8,
-                16,     14,     38,     -3,     33,
-        ];
-
-        private static readonly Native3DArray<sbyte> Test3DArray = new Native3DArray<sbyte>(4, 2, 5, Test3DArray_Data);
-
-        internal static int ILog2(uint x)
-        {
-            return x == 0 ? 1 : 32 - BitOperations.LeadingZeroCount(x);
-        }
-
         public static unsafe void Main(string[] args)
         {
-            for (uint c = 0; c < 256; c++)
+            int param_bitrate = 96000;
+            int param_channels = 2;
+            int param_application = OPUS_APPLICATION_AUDIO;
+            int param_signal = OPUS_SIGNAL_MUSIC;
+            int param_sample_rate = 48000;
+            int param_frame_size = OPUS_FRAMESIZE_20_MS;
+            int param_complexity = 0;
+            int param_force_mode = OPUS_AUTO;
+            int param_use_dtx = 0;
+            int param_use_vbr = 0;
+            int param_use_contrained_vbr = 0;
+
+            string fileNameBase = "D:\\Code\\concentus\\AudioData\\";
+            string fileName;
+            switch (param_sample_rate)
             {
-                int expect = EntCode.EC_ILOG(c);
-                int actual = ILog2(c);
-                Console.WriteLine($"{c}\t Expect {expect}\tActual {actual}\tMatch? {actual == expect}");
+                case 8000:
+                    fileName = fileNameBase + "8Khz " + ((param_channels == 1) ? "Mono.raw" : "Stereo.raw");
+                    break;
+                case 12000:
+                    fileName = fileNameBase + "12Khz " + ((param_channels == 1) ? "Mono.raw" : "Stereo.raw");
+                    break;
+                case 16000:
+                    fileName = fileNameBase + "16Khz " + ((param_channels == 1) ? "Mono.raw" : "Stereo.raw");
+                    break;
+                case 24000:
+                    fileName = fileNameBase + "24Khz " + ((param_channels == 1) ? "Mono.raw" : "Stereo.raw");
+                    break;
+                case 48000:
+                    fileName = fileNameBase + "48Khz " + ((param_channels == 1) ? "Mono.raw" : "Stereo.raw");
+                    break;
+                default:
+                    throw new Exception("Invalid file name");
             }
 
-            return;
-
-            Console.WriteLine(Test3DArray[0][0][0]);
-            Console.WriteLine(Test3DArray[3][0][3]);
-            Console.WriteLine(Test3DArray[0][1][0]);
-            Console.WriteLine(Test3DArray[3][1][3]);
-            Console.WriteLine(Test3DArray[0][0][7]);
-
-            Span<int> span = stackalloc int[5];
-            int* ptr = CRuntime.SpanToPointerDangerous(span);
-            for (int c = 0; c < 5; c++)
+            using (FileStream fileIn = new FileStream(fileName, FileMode.Open))
             {
-                Console.WriteLine(ptr[c] + " " + span[c]);
-                ptr[c] = c;
-                Console.WriteLine(ptr[c] + " " + span[c]);
+                int error;
+                OpusEncoder* encoder = opus_encoder_create(param_sample_rate, param_channels, param_application, &error);
+                OpusDecoder* decoder = opus_decoder_create(param_sample_rate, param_channels, &error);
+                opus_encoder_ctl(encoder, OPUS_SET_BITRATE_REQUEST, param_bitrate);
+                opus_encoder_ctl(encoder, OPUS_SET_FORCE_MODE_REQUEST, param_force_mode);
+                opus_encoder_ctl(encoder, OPUS_SET_SIGNAL_REQUEST, param_signal);
+                opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY_REQUEST, param_complexity);
+                opus_encoder_ctl(encoder, OPUS_SET_DTX_REQUEST, param_use_dtx);
+                opus_encoder_ctl(encoder, OPUS_SET_VBR_REQUEST, param_use_vbr);
+                opus_encoder_ctl(encoder, OPUS_SET_VBR_CONSTRAINT_REQUEST, param_use_contrained_vbr);
+
+                int packetSamplesPerChannel = -1;
+                switch (param_frame_size)
+                {
+                    case OPUS_FRAMESIZE_2_5_MS:
+                        packetSamplesPerChannel = ((param_sample_rate * 2) + (param_sample_rate >> 1)) / 1000;
+                        break;
+                    case OPUS_FRAMESIZE_5_MS:
+                        packetSamplesPerChannel = param_sample_rate * 5 / 1000;
+                        break;
+                    case OPUS_FRAMESIZE_10_MS:
+                        packetSamplesPerChannel = param_sample_rate * 10 / 1000;
+                        break;
+                    case OPUS_FRAMESIZE_20_MS:
+                        packetSamplesPerChannel = param_sample_rate * 20 / 1000;
+                        break;
+                    case OPUS_FRAMESIZE_40_MS:
+                        packetSamplesPerChannel = param_sample_rate * 40 / 1000;
+                        break;
+                    case OPUS_FRAMESIZE_60_MS:
+                        packetSamplesPerChannel = param_sample_rate * 60 / 1000;
+                        break;
+                    case OPUS_FRAMESIZE_80_MS:
+                        packetSamplesPerChannel = param_sample_rate * 80 / 1000;
+                        break;
+                    case OPUS_FRAMESIZE_100_MS:
+                        packetSamplesPerChannel = param_sample_rate * 100 / 1000;
+                        break;
+                    case OPUS_FRAMESIZE_120_MS:
+                        packetSamplesPerChannel = param_sample_rate * 120 / 1000;
+                        break;
+                }
+
+                int inputBufLength = packetSamplesPerChannel * param_channels * sizeof(short);
+                byte* inAudioByte = stackalloc byte[inputBufLength];
+                byte* outPacket = stackalloc byte[1275];
+                short* inAudioSamples = (short*)inAudioByte;
+                while (true)
+                {
+                    int bytesRead = fileIn.Read(new Span<byte>(inAudioByte, inputBufLength));
+                    if (bytesRead < inputBufLength)
+                    {
+                        break;
+                    }
+
+                    int errorOrLength;
+                    errorOrLength = opus_encode(encoder, inAudioSamples, packetSamplesPerChannel, outPacket, 1275);
+                    Console.WriteLine("ENCODE: " + errorOrLength);
+
+                    if (errorOrLength > 0)
+                    {
+                        errorOrLength = opus_decode(decoder, outPacket, errorOrLength, inAudioSamples, packetSamplesPerChannel, 0);
+                        Console.WriteLine("DECODE: " + errorOrLength);
+                    }
+                }
+
+                opus_encoder_destroy(encoder);
+                opus_decoder_destroy(decoder);
             }
-
-            //StructRef<FixedBufferSilkEncoder> encoder = new StructRef<FixedBufferSilkEncoder>(new FixedBufferSilkEncoder());
-            //fixed (FixedBufferSilkEncoder* enc = &encoder.Value)
-            //{
-            //    enc->buffer[10] = 10;
-            //    //BenchmarkRunner.Run<Benchmarks>();
-            //}
-
-            //int size = sizeof(FixedBufferOpusEncoder);
-            //Console.WriteLine(size);
         }
-
-        public static unsafe void Encode(ref InlineArrayOpusEncoder encoder)
-        {
-            encoder.buffer[encoder.framesEncoded % 5] = encoder.framesEncoded + 1;
-            InlineArrayOpusEncoder clone = encoder;
-            MemoryMarshal.CreateSpan(ref clone.buffer[0], 128).Fill(10);
-            encoder.framesEncoded++;
-            ref InlineArrayOpusEncoder aNewRef = ref encoder;
-            aNewRef.silkEncoder.silkFramesEncoded++;
-        }
-    }
-
-    internal unsafe struct FixedBufferOpusEncoder
-    {
-        public int framesEncoded;
-        public FixedBufferSilkEncoder silkEncoder;
-        public fixed int buffer[128];
-        public int* ptr;
-    }
-
-    internal unsafe struct FixedBufferSilkEncoder
-    {
-        public int silkFramesEncoded;
-        public fixed int buffer[128];
-    }
-
-    internal struct ArrayRefOpusEncoder
-    {
-        public int framesEncoded;
-        public ArrayRefSilkEncoder silkEncoder;
-        public int[] buffer;
-    }
-
-    internal struct ArrayRefSilkEncoder
-    {
-        public int silkFramesEncoded;
-        public int[] buffer;
-    }
-
-    [System.Runtime.CompilerServices.InlineArray(128)]
-    public struct BufferInt128
-    {
-        private int _element;
-    }
-
-    internal struct InlineArrayOpusEncoder
-    {
-        public int framesEncoded;
-        public InlineArraySilkEncoder silkEncoder;
-        public BufferInt128 buffer;
-    }
-
-    internal struct InlineArraySilkEncoder
-    {
-        public int silkFramesEncoded;
-        public BufferInt128 buffer;
     }
 }

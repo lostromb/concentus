@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Celt.MathOps;
 using static HellaUnsafe.Common.CRuntime;
@@ -430,7 +431,10 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe int ec_write_byte(ec_ctx* _this, uint _value)
         {
-            if (_this->offs + _this->end_offs >= _this->storage) return -1;
+            if (_this->offs + _this->end_offs >= _this->storage)
+            {
+                return -1;
+            }
             _this->buf[_this->offs++] = (byte)_value;
             return 0;
         }
@@ -461,11 +465,19 @@ namespace HellaUnsafe.Celt
                 carry = _c >> EC_SYM_BITS;
                 /*Don't output a byte on the first write.
                   This compare should be taken care of by branch-prediction thereafter.*/
-                if (_this->rem >= 0) _this->error |= ec_write_byte(_this, (uint)(_this->rem + carry));
+                if (_this->rem >= 0)
+                {
+                    _this->error |= ec_write_byte(_this, (uint)(_this->rem + carry));
+                    Debug.Assert(_this->error == 0);
+                }
                 if (_this->ext > 0)
                 {
                     uint sym = (uint)(EC_SYM_MAX + carry) & EC_SYM_MAX;
-                    do _this->error |= ec_write_byte(_this, sym);
+                    do
+                    {
+                        _this->error |= ec_write_byte(_this, sym);
+                        Debug.Assert(_this->error == 0);
+                    }
                     while (--(_this->ext) > 0);
                 }
                 _this->rem = (int)(_c & EC_SYM_MAX);
@@ -600,6 +612,7 @@ namespace HellaUnsafe.Celt
                 do
                 {
                     _this->error |= ec_write_byte_at_end(_this, (uint)window & EC_SYM_MAX);
+                    Debug.Assert(_this->error == 0);
                     window >>= EC_SYM_BITS;
                     used -= EC_SYM_BITS;
                 }
@@ -636,7 +649,8 @@ namespace HellaUnsafe.Celt
                  (uint)_val << (EC_CODE_SHIFT + shift);
             }
             /*The encoder hasn't even encoded _nbits of data yet.*/
-            else _this->error = -1;
+            else
+                _this->error = -1;
         }
 
         internal static unsafe void ec_enc_shrink(ec_ctx* _this, uint _size)
@@ -679,6 +693,7 @@ namespace HellaUnsafe.Celt
             while (used >= EC_SYM_BITS)
             {
                 _this->error |= ec_write_byte_at_end(_this, (uint)window & EC_SYM_MAX);
+                Debug.Assert(_this->error == 0);
                 window >>= EC_SYM_BITS;
                 used -= EC_SYM_BITS;
             }
@@ -690,7 +705,8 @@ namespace HellaUnsafe.Celt
                 if (used > 0)
                 {
                     /*If there's no range coder data at all, give up.*/
-                    if (_this->end_offs >= _this->storage) _this->error = -1;
+                    if (_this->end_offs >= _this->storage)
+                        _this->error = -1;
                     else
                     {
                         l = -l;
@@ -707,6 +723,6 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        #endregion
+#endregion
     }
 }

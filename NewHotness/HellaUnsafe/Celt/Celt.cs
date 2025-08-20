@@ -153,27 +153,5 @@ namespace HellaUnsafe.Celt
                 cap[i] = (m->cache.caps[m->nbEBands * (2 * LM + C - 1) + i] + 64) * C * N >> 2;
             }
         }
-
-        private static readonly string[] error_strings = new string[]
-        {
-            "success",
-            "invalid argument",
-            "buffer too small",
-            "internal error",
-            "corrupted stream",
-            "request not implemented",
-            "invalid state",
-            "memory allocation failed"
-        };
-
-        internal static string opus_strerror(int error)
-        {
-           if (error > 0 || error < -7)
-              return "unknown error";
-           else
-              return error_strings[-error];
-        }
-
-
     }
 }

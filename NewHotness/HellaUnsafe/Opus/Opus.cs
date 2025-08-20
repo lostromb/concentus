@@ -31,7 +31,7 @@ using static HellaUnsafe.Opus.OpusDefines;
 
 namespace HellaUnsafe.Opus
 {
-    internal static unsafe class Opus
+    public static unsafe class Opus
     {
         internal static unsafe void opus_pcm_soft_clip(float* _x, int N, int C, float* declip_mem)
         {
@@ -370,6 +370,26 @@ namespace HellaUnsafe.Opus
         {
             return opus_packet_parse_impl(data, len, 0, out_toc,
                                           frames, size, payload_offset, null, null, null);
+        }
+
+        private static readonly string[] error_strings = new string[]
+        {
+            "success",
+            "invalid argument",
+            "buffer too small",
+            "internal error",
+            "corrupted stream",
+            "request not implemented",
+            "invalid state",
+            "memory allocation failed"
+        };
+
+        public static string opus_strerror(int error)
+        {
+            if (error > 0 || error < -7)
+                return "unknown error";
+            else
+                return error_strings[-error];
         }
     }
 }
