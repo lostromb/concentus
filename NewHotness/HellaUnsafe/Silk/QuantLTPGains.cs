@@ -5,6 +5,8 @@ using static HellaUnsafe.Silk.Inlines;
 using static HellaUnsafe.Silk.VQ_WMat_EC;
 using static HellaUnsafe.Silk.Tables;
 using static HellaUnsafe.Silk.TuningParameters;
+using static HellaUnsafe.Silk.Lin2Log;
+using static HellaUnsafe.Silk.Log2Lin;
 
 namespace HellaUnsafe.Silk
 {

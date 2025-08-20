@@ -531,7 +531,7 @@ namespace HellaUnsafe.Opus
                             }
 
                             {
-                                OpusCustomMode* celt_mode;
+                                OpusCustomMode* celt_mode = null;
                                 MUST_SUCCEED(opus_custom_decoder_ctl(celt_dec, CELT_GET_MODE_REQUEST, &celt_mode));
                                 window = celt_mode->window;
                             }

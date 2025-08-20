@@ -33,6 +33,8 @@ using static HellaUnsafe.Silk.Macros;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.Structs;
 using static HellaUnsafe.Silk.Tables;
+using static HellaUnsafe.Silk.Lin2Log;
+using static HellaUnsafe.Silk.Log2Lin;
 
 namespace HellaUnsafe.Silk
 {

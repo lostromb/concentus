@@ -14,12 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Old\**" />
-    <EmbeddedResource Remove="Old\**" />
-    <None Remove="Old\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
 

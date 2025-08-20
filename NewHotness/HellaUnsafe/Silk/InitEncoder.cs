@@ -30,6 +30,8 @@ using static HellaUnsafe.Silk.Inlines;
 using static HellaUnsafe.Silk.SigProcFIX;
 using static HellaUnsafe.Silk.TuningParameters;
 using static HellaUnsafe.Silk.VAD;
+using static HellaUnsafe.Silk.Lin2Log;
+using static HellaUnsafe.Silk.Log2Lin;
 
 namespace HellaUnsafe.Silk
 {
