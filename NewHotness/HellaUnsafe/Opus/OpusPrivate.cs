@@ -113,5 +113,8 @@ namespace HellaUnsafe.Opus
             //   for all sensible alignment values. */
             //return ((i + alignment - 1) / alignment) * alignment;
         }
+
+        //typedef void (* downmix_func) (const void*, opus_val32 *, int, int, int, int, int);
+        internal delegate void downmix_func(in void* _x, float* sub, int subframe, int offset, int c1, int c2, int C);
     }
 }

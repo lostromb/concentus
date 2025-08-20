@@ -434,7 +434,7 @@ namespace HellaUnsafe.Celt
             }
         }
 
-        internal static unsafe void opus_fft_c(in kiss_fft_state* st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
+        internal static unsafe void opus_fft(in kiss_fft_state* st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
         {
             int i;
             float scale = st->scale;
@@ -451,7 +451,7 @@ namespace HellaUnsafe.Celt
         }
 
 
-        internal static unsafe void opus_ifft_c(in kiss_fft_state* st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
+        internal static unsafe void opus_ifft(in kiss_fft_state* st, in kiss_fft_cpx* fin, kiss_fft_cpx* fout)
         {
             int i;
             ASSERT(fin != fout, "In-place FFT not supported");

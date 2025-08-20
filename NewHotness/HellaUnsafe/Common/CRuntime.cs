@@ -96,6 +96,16 @@ namespace HellaUnsafe.Common
             return Math.Pow(x, y);
         }
 
+        internal static double log(double x)
+        {
+            return Math.Log(x);
+        }
+
+        internal static double log10(double x)
+        {
+            return Math.Log10(x);
+        }
+
         internal static int BOOL2INT(bool x)
         {
             return x ? 1 : 0;
@@ -144,29 +154,14 @@ namespace HellaUnsafe.Common
             new Span<byte>(dst, (int)elements).Fill(0);
         }
 
-        internal static unsafe void OPUS_COPY(byte* dst, byte* src, int elements)
+        internal static unsafe void OPUS_COPY<T>(T* dst, T* src, int elements) where T : unmanaged
         {
-            new Span<byte>(src, elements).CopyTo(new Span<byte>(dst, elements));
+            new Span<T>(src, elements).CopyTo(new Span<T>(dst, elements));
         }
 
-        internal static unsafe void OPUS_COPY(short* dst, short* src, int elements)
+        internal static unsafe void OPUS_COPY<T>(T* dst, T* src, uint elements) where T : unmanaged
         {
-            new Span<short>(src, elements).CopyTo(new Span<short>(dst, elements));
-        }
-
-        internal static unsafe void OPUS_COPY(float* dst, float* src, int elements)
-        {
-            new Span<float>(src, elements).CopyTo(new Span<float>(dst, elements));
-        }
-
-        internal static unsafe void OPUS_COPY(float* dst, Span<float> src, int elements)
-        {
-            src.Slice(0, elements).CopyTo(new Span<float>(dst, elements));
-        }
-
-        internal static unsafe void OPUS_COPY(byte* dst, byte* src, uint elements)
-        {
-            new Span<byte>(src, (int)elements).CopyTo(new Span<byte>(dst, (int)elements));
+            new Span<T>(src, (int)elements).CopyTo(new Span<T>(dst, (int)elements));
         }
 
         internal static unsafe void OPUS_MOVE(byte* dst, byte* src, int elements)

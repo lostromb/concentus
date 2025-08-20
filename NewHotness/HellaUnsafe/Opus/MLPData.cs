@@ -650,7 +650,7 @@ namespace HellaUnsafe.Opus
            14, 117
         });
 
-        private static readonly AnalysisDenseLayer* layer0 = AllocGlobalStructInit<AnalysisDenseLayer>(new AnalysisDenseLayer()
+        internal static readonly AnalysisDenseLayer* layer0 = AllocGlobalStructInit<AnalysisDenseLayer>(new AnalysisDenseLayer()
         {
             bias = layer0_bias,
             input_weights = layer0_weights,
@@ -659,7 +659,7 @@ namespace HellaUnsafe.Opus
             sigmoid = 0
         });
 
-        private static readonly AnalysisGRULayer* layer1 = AllocGlobalStructInit<AnalysisGRULayer>(new AnalysisGRULayer()
+        internal static readonly AnalysisGRULayer* layer1 = AllocGlobalStructInit<AnalysisGRULayer>(new AnalysisGRULayer()
         {
             bias = layer1_bias,
             input_weights = layer1_weights,
@@ -668,7 +668,7 @@ namespace HellaUnsafe.Opus
             nb_neurons = 24
         });
 
-        private static readonly AnalysisDenseLayer* layer2 = AllocGlobalStructInit<AnalysisDenseLayer>(new AnalysisDenseLayer()
+        internal static readonly AnalysisDenseLayer* layer2 = AllocGlobalStructInit<AnalysisDenseLayer>(new AnalysisDenseLayer()
         {
             bias = layer2_bias,
             input_weights = layer2_weights,

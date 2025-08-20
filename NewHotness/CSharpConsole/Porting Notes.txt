@@ -130,7 +130,7 @@ public unsafe struct Encoder
 public unsafe struct Encoder
 {
     private fixed sbyte _pulses_LBRR[MAX_FRAMES_PER_PACKET * MAX_FRAME_LENGTH];
-    public Native2DArray<sbyte> pulses_LBRR => new Native2DArray<sbyte>((sbyte*)Unsafe.AsPointer(ref _pulses_LBRR[0]), MAX_FRAMES_PER_PACKET, MAX_FRAME_LENGTH);
+    public Native2DArray<sbyte> pulses_LBRR => new Native2DArray<sbyte>(MAX_FRAMES_PER_PACKET, MAX_FRAME_LENGTH, (sbyte*)Unsafe.AsPointer(ref _pulses_LBRR[0]));
 }
 
 
