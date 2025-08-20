@@ -11,6 +11,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;CS9080</NoWarn>
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

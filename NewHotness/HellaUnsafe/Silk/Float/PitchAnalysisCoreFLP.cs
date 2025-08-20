@@ -97,20 +97,20 @@ namespace HellaUnsafe.Silk.Float
             if( Fs_kHz == 16 ) {
                 /* Resample to 16 -> 8 khz */
                 short* frame_16_FIX = stackalloc short[ 16 * PE_MAX_FRAME_LENGTH_MS ];
-                float2short_array( frame_16_FIX, frame, frame_length );
+                silk_float2short_array( frame_16_FIX, frame, frame_length );
                 silk_memset( filt_state, 0, 2 * sizeof( int ) );
                 silk_resampler_down2( filt_state, frame_8_FIX, frame_16_FIX, frame_length );
                 silk_short2float_array( frame_8kHz, frame_8_FIX, frame_length_8kHz );
             } else if( Fs_kHz == 12 ) {
                 /* Resample to 12 -> 8 khz */
                 short* frame_12_FIX = stackalloc short[ 12 * PE_MAX_FRAME_LENGTH_MS ];
-                float2short_array( frame_12_FIX, frame, frame_length );
+                silk_float2short_array( frame_12_FIX, frame, frame_length );
                 silk_memset( filt_state, 0, 6 * sizeof( int ) );
                 silk_resampler_down2_3( filt_state, frame_8_FIX, frame_12_FIX, frame_length );
                 silk_short2float_array( frame_8kHz, frame_8_FIX, frame_length_8kHz );
             } else {
                 celt_assert( Fs_kHz == 8 );
-                float2short_array( frame_8_FIX, frame, frame_length_8kHz );
+                silk_float2short_array( frame_8_FIX, frame, frame_length_8kHz );
             }
 
             /* Decimate again to 4 kHz */

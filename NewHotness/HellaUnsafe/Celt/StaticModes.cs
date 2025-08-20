@@ -851,7 +851,7 @@ namespace HellaUnsafe.Celt
                 };
 
                 float* preemph = stackalloc float[4] { 0.85000610f, 0.0000000f, 1.0000000f, 1.0000000f, };
-                Unsafe.CopyBlock(mode48000_960_120[0].preemph, preemph, (uint)(4 * sizeof(float)));
+                Unsafe.CopyBlock(returnVal.preemph, preemph, (uint)(4 * sizeof(float)));
                 return returnVal;
             });
 

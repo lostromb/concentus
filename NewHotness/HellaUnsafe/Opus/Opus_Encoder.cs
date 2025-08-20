@@ -39,7 +39,7 @@ using static HellaUnsafe.Silk.TuningParameters;
 
 namespace HellaUnsafe.Opus
 {
-    internal static unsafe class Opus_Encoder
+    public static unsafe class Opus_Encoder
     {
         private const int MAX_ENCODER_BUFFER = 480;
         private const float PSEUDO_SNR_THRESHOLD = 316.23f;    /* 10^(25/10) */
@@ -51,7 +51,7 @@ namespace HellaUnsafe.Opus
             internal float max_follower;
         }
 
-        internal unsafe struct OpusEncoder
+        public unsafe struct OpusEncoder
         {
             internal int celt_enc_offset;
             internal int silk_enc_offset;
@@ -186,6 +186,7 @@ namespace HellaUnsafe.Opus
                  && application != OPUS_APPLICATION_RESTRICTED_LOWDELAY))
                 return OPUS_BAD_ARG;
 
+            int opusEncoderSize = opus_encoder_get_size(channels);
             OPUS_CLEAR((byte*)st, opus_encoder_get_size(channels));
             /* Create SILK encoder */
             ret = silk_Get_Encoder_Size(&silkEncSizeBytes);
@@ -194,7 +195,7 @@ namespace HellaUnsafe.Opus
             silkEncSizeBytes = align(silkEncSizeBytes);
             st->silk_enc_offset = align(sizeof(OpusEncoder));
             st->celt_enc_offset = st->silk_enc_offset + silkEncSizeBytes;
-            silk_enc = (char*)st + st->silk_enc_offset;
+            silk_enc = (byte*)st + st->silk_enc_offset;
             celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
 
             st->stream_channels = st->channels = channels;
@@ -216,7 +217,7 @@ namespace HellaUnsafe.Opus
             st->silk_mode.packetLossPercentage = 0;
             st->silk_mode.complexity = 9;
             st->silk_mode.useInBandFEC = 0;
-            st->silk_mode.useDRED = 0;
+            //st->silk_mode.useDRED = 0;
             st->silk_mode.useDTX = 0;
             st->silk_mode.useCBR = 0;
             st->silk_mode.reducedDependency = 0;
@@ -482,7 +483,7 @@ namespace HellaUnsafe.Opus
             while (++c < channels);
         }
 
-        internal static unsafe OpusEncoder* opus_encoder_create(int Fs, int channels, int application, int* error)
+        public static unsafe OpusEncoder* opus_encoder_create(int Fs, int channels, int application, int* error)
         {
             int ret;
             OpusEncoder* st;
@@ -494,6 +495,7 @@ namespace HellaUnsafe.Opus
                     *error = OPUS_BAD_ARG;
                 return null;
             }
+            int entireOpusEncoderSize = opus_encoder_get_size(channels);
             st = (OpusEncoder*)opus_alloc(opus_encoder_get_size(channels));
             if (st == null)
             {
@@ -921,8 +923,8 @@ namespace HellaUnsafe.Opus
                 return OPUS_BUFFER_TOO_SMALL;
             }
 
-            silk_enc = (char*)st + st->silk_enc_offset;
-            celt_enc = (OpusCustomEncoder*)((char*)st + st->celt_enc_offset);
+            silk_enc = (byte*)st + st->silk_enc_offset;
+            celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
 
             lsb_depth = IMIN(lsb_depth, st->lsb_depth);
 
@@ -1491,8 +1493,8 @@ namespace HellaUnsafe.Opus
             int activity = VAD_NO_DECISION;
 
             st->rangeFinal = 0;
-            silk_enc = (char*)st + st->silk_enc_offset;
-            celt_enc = (OpusCustomEncoder*)((char*)st + st->celt_enc_offset);
+            silk_enc = (byte*)st + st->silk_enc_offset;
+            celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
             opus_custom_encoder_ctl(celt_enc, CELT_GET_MODE_REQUEST, &celt_mode);
             curr_bandwidth = st->bandwidth;
             if (st->application == OPUS_APPLICATION_RESTRICTED_LOWDELAY)
@@ -2119,7 +2121,7 @@ namespace HellaUnsafe.Opus
             }
         }
 
-        internal static unsafe int opus_encode(OpusEncoder* st, in short* pcm, int analysis_frame_size,
+        public static unsafe int opus_encode(OpusEncoder* st, in short* pcm, int analysis_frame_size,
             byte* data, int max_data_bytes)
         {
             int i, ret;
@@ -2141,7 +2143,7 @@ namespace HellaUnsafe.Opus
                 return ret;
             }
         }
-        internal static unsafe int opus_encode_float(OpusEncoder* st, in float* pcm, int analysis_frame_size,
+        public static unsafe int opus_encode_float(OpusEncoder* st, in float* pcm, int analysis_frame_size,
                       byte* data, int out_data_bytes)
         {
             int frame_size;
@@ -2153,10 +2155,10 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Override for int parameter (most setters)
         /// </summary>
-        internal static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, int value)
+        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, int value)
         {
             int ret = OPUS_OK;
-            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((char*)st + st->celt_enc_offset);
+            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
             switch (request)
             {
                 case OPUS_SET_APPLICATION_REQUEST:
@@ -2379,10 +2381,10 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Override for int* parameter (most getters)
         /// </summary>
-        internal static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, int* value)
+        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, int* value)
         {
             int ret = OPUS_OK;
-            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((char*)st + st->celt_enc_offset);
+            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
             switch (request)
             {
                 case OPUS_GET_APPLICATION_REQUEST:
@@ -2565,7 +2567,7 @@ namespace HellaUnsafe.Opus
                         if (st->silk_mode.useDTX != 0 && (st->prev_mode == MODE_SILK_ONLY || st->prev_mode == MODE_HYBRID))
                         {
                             /* DTX determined by Silk. */
-                            silk_encoder* silk_enc = (silk_encoder*)(void*)((char*)st + st->silk_enc_offset);
+                            silk_encoder* silk_enc = (silk_encoder*)(void*)((byte*)st + st->silk_enc_offset);
                             *value = BOOL2INT(silk_enc->state_Fxx[0].sCmn.noSpeechCounter >= NB_SPEECH_FRAMES_BEFORE_DTX);
                             /* Stereo: check second channel unless only the middle channel was encoded. */
                             if (*value == 1 && st->silk_mode.nChannelsInternal == 2 && silk_enc->prev_decode_only_middle == 0)
@@ -2597,10 +2599,10 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Override for OPUS_GET_FINAL_RANGE_REQUEST
         /// </summary>
-        internal static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, uint* value)
+        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, uint* value)
         {
             int ret = OPUS_OK;
-            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((char*)st + st->celt_enc_offset);
+            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
             switch (request)
             {
                 case OPUS_GET_FINAL_RANGE_REQUEST:
@@ -2625,10 +2627,10 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Override for OPUS_SET_ENERGY_MASK_REQUEST
         /// </summary>
-        internal static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, float* value)
+        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, float* value)
         {
             int ret = OPUS_OK;
-            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((char*)st + st->celt_enc_offset);
+            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
             switch (request)
             {
                 case OPUS_SET_ENERGY_MASK_REQUEST:
@@ -2648,17 +2650,17 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Override for OPUS_RESET_STATE
         /// </summary>
-        internal static unsafe int opus_encoder_ctl(OpusEncoder* st, int request)
+        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request)
         {
             int ret = OPUS_OK;
-            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((char*)st + st->celt_enc_offset);
+            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
             switch (request)
             {
                 case OPUS_RESET_STATE:
                     {
                         void* silk_enc;
                         silk_EncControlStruct dummy;
-                        silk_enc = (char*)st + st->silk_enc_offset;
+                        silk_enc = (byte*)st + st->silk_enc_offset;
                         tonality_analysis_reset(&st->analysis);
 
                         OPUS_CLEAR(
@@ -2690,7 +2692,7 @@ namespace HellaUnsafe.Opus
         internal static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, OpusCustomMode** value)
         {
             int ret = OPUS_OK;
-            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((char*)st + st->celt_enc_offset);
+            OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
             switch (request)
             {
                 case CELT_GET_MODE_REQUEST:
@@ -2712,7 +2714,7 @@ namespace HellaUnsafe.Opus
             return OPUS_BAD_ARG;
         }
 
-        internal static unsafe void opus_encoder_destroy(OpusEncoder* st)
+        public static unsafe void opus_encoder_destroy(OpusEncoder* st)
         {
             opus_free(st);
         }

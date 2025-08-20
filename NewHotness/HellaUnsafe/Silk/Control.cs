@@ -73,7 +73,7 @@ namespace HellaUnsafe.Silk
             internal int useInBandFEC;
 
             /* I:   Flag to enable in-band Deep REDundancy (DRED); 0/1                              */
-            internal int useDRED;
+            //internal int useDRED;
 
             /* I:   Flag to actually code in-band Forward Error Correction (FEC) in the current packet; 0/1 */
             internal int LBRR_coded;

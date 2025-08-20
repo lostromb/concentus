@@ -18,9 +18,9 @@ using static HellaUnsafe.Silk.SigProcFIX;
 
 namespace HellaUnsafe.Opus
 {
-    internal static unsafe class Opus_Decoder
+    public static unsafe class Opus_Decoder
     {
-        internal unsafe struct OpusDecoder
+        public unsafe struct OpusDecoder
         {
             internal int celt_dec_offset;
             internal int silk_dec_offset;
@@ -122,7 +122,7 @@ namespace HellaUnsafe.Opus
             return OPUS_OK;
         }
 
-        internal static unsafe OpusDecoder* opus_decoder_create(int Fs, int channels, int* error)
+        public static unsafe OpusDecoder* opus_decoder_create(int Fs, int channels, int* error)
         {
             int ret;
             OpusDecoder* st;
@@ -731,7 +731,7 @@ namespace HellaUnsafe.Opus
             return nb_samples;
         }
 
-        internal static unsafe int opus_decode(OpusDecoder* st, in byte* data,
+        public static unsafe int opus_decode(OpusDecoder* st, in byte* data,
               int len, short* pcm, int frame_size, int decode_fec)
         {
             int ret, i;
@@ -765,7 +765,7 @@ namespace HellaUnsafe.Opus
             }
         }
 
-        internal static unsafe int opus_decode_float(OpusDecoder* st, in byte* data,
+        public static unsafe int opus_decode_float(OpusDecoder* st, in byte* data,
               int len, float* pcm, int frame_size, int decode_fec)
         {
             if (frame_size <= 0)
@@ -776,14 +776,14 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Int parameter (most setters)
         /// </summary>
-        internal static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, int value)
+        public static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, int value)
         {
             int ret = OPUS_OK;
             void* silk_dec;
             OpusCustomDecoder* celt_dec;
 
-            silk_dec = (char*)st + st->silk_dec_offset;
-            celt_dec = (OpusCustomDecoder*)((char*)st + st->celt_dec_offset);
+            silk_dec = (byte*)st + st->silk_dec_offset;
+            celt_dec = (OpusCustomDecoder*)((byte*)st + st->celt_dec_offset);
 
             switch (request)
             {
@@ -829,14 +829,14 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Int* parameter (most getters)
         /// </summary>
-        internal static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, int* value)
+        public static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, int* value)
         {
             int ret = OPUS_OK;
             void* silk_dec;
             OpusCustomDecoder* celt_dec;
 
-            silk_dec = (char*)st + st->silk_dec_offset;
-            celt_dec = (OpusCustomDecoder*)((char*)st + st->celt_dec_offset);
+            silk_dec = (byte*)st + st->silk_dec_offset;
+            celt_dec = (OpusCustomDecoder*)((byte*)st + st->celt_dec_offset);
 
             switch (request)
             {
@@ -918,16 +918,16 @@ namespace HellaUnsafe.Opus
         }
 
         /// <summary>
-        /// uint* parameter
+        /// Override for OPUS_GET_FINAL_RANGE_REQUEST
         /// </summary>
-        internal static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, uint* value)
+        public static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, uint* value)
         {
             int ret = OPUS_OK;
             void* silk_dec;
             OpusCustomDecoder* celt_dec;
 
-            silk_dec = (char*)st + st->silk_dec_offset;
-            celt_dec = (OpusCustomDecoder*)((char*)st + st->celt_dec_offset);
+            silk_dec = (byte*)st + st->silk_dec_offset;
+            celt_dec = (OpusCustomDecoder*)((byte*)st + st->celt_dec_offset);
 
             switch (request)
             {
@@ -954,21 +954,21 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Specific handler for OPUS_RESET_STATE
         /// </summary>
-        internal static unsafe int opus_decoder_ctl(OpusDecoder* st, int request)
+        public static unsafe int opus_decoder_ctl(OpusDecoder* st, int request)
         {
             int ret = OPUS_OK;
             void* silk_dec;
             OpusCustomDecoder* celt_dec;
 
-            silk_dec = (char*)st + st->silk_dec_offset;
-            celt_dec = (OpusCustomDecoder*)((char*)st + st->celt_dec_offset);
+            silk_dec = (byte*)st + st->silk_dec_offset;
+            celt_dec = (OpusCustomDecoder*)((byte*)st + st->celt_dec_offset);
 
             switch (request)
             {
                 case OPUS_RESET_STATE:
                     {
                         OPUS_CLEAR(
-                            ((byte*)&st) + OpusDecoder.OPUS_DECODER_RESET_START,
+                            ((byte*)st) + OpusDecoder.OPUS_DECODER_RESET_START,
                             sizeof(OpusDecoder) -
                             OpusDecoder.OPUS_DECODER_RESET_START);
 
@@ -987,7 +987,7 @@ namespace HellaUnsafe.Opus
             return ret;
         }
 
-        internal static unsafe void opus_decoder_destroy(OpusDecoder* st)
+        public static unsafe void opus_decoder_destroy(OpusDecoder* st)
         {
             opus_free(st);
         }

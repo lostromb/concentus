@@ -1011,14 +1011,14 @@ namespace HellaUnsafe.Silk
                 -5,8,
                 -1,6,
                 -1,6,
-                -4,10
+                -4,10,
             //},
             /* Lags to search for middle number of stage3 cbks */
             //{
                 -6,10,
                 -2,6,
                 -1,6,
-                -5,10
+                -5,10,
             //},
             /* Lags to search for max number of stage3 cbks */
             //{

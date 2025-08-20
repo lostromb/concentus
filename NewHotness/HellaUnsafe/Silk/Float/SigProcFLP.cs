@@ -60,13 +60,13 @@ namespace HellaUnsafe.Silk.Float
         }
 
         /* floating-point to integer conversion (rounding) */
-        internal static int float2int(float x)
+        internal static int silk_float2int(float x)
         {
             return float2int(x);
         }
 
         /* floating-point to integer conversion (rounding) */
-        internal static unsafe void float2short_array(
+        internal static unsafe void silk_float2short_array(
             short* output,
             in float* input,
             int length

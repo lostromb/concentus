@@ -2293,8 +2293,9 @@ namespace HellaUnsafe.Celt
                         oldBandE = (float*)(st->in_mem + st->channels * (st->mode->overlap + COMBFILTER_MAXPERIOD));
                         oldLogE = oldBandE + st->channels * st->mode->nbEBands;
                         oldLogE2 = oldLogE + st->channels * st->mode->nbEBands;
+                        int celtEncoderSize = opus_custom_encoder_get_size(st->mode, st->channels);
                         OPUS_CLEAR(
-                            ((byte*)&st) + OpusCustomEncoder.ENCODER_RESET_START,
+                            ((byte*)st) + OpusCustomEncoder.ENCODER_RESET_START,
                             opus_custom_encoder_get_size(st->mode, st->channels) -
                             OpusCustomEncoder.ENCODER_RESET_START);
                         for (i = 0; i < st->channels * st->mode->nbEBands; i++)

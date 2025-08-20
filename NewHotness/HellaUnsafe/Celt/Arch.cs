@@ -125,7 +125,11 @@ namespace HellaUnsafe.Celt
         [Conditional("DEBUG")]
         internal static void celt_assert2(bool cond, string message) { Debug.Assert(cond, message); }
 
-        [Conditional("DEBUG")]
-        internal static void MUST_SUCCEED(int err) { Debug.Assert(err != 0); }
+        internal static void MUST_SUCCEED(int err)
+        {
+#if DEBUG
+            Debug.Assert(err == 0);
+#endif
+        }
     }
 }
