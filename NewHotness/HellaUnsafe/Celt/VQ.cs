@@ -32,7 +32,7 @@ using static HellaUnsafe.Celt.EntCode;
 using static HellaUnsafe.Celt.Pitch;
 using static HellaUnsafe.Celt.Bands;
 using static HellaUnsafe.Celt.MathOps;
-using static HellaUnsafe.Celt.QuantBands;
+using static HellaUnsafe.Celt.CWRS;
 using System;
 
 namespace HellaUnsafe.Celt
@@ -154,7 +154,7 @@ namespace HellaUnsafe.Celt
             return collapse_mask;
         }
 
-        internal static unsafe float op_pvq_search(float* X, int* iy, int K, int N, int arch)
+        internal static unsafe float op_pvq_search(float* X, int* iy, int K, int N)
         {
             int i, j;
             int pulsesLeft;
@@ -303,7 +303,7 @@ namespace HellaUnsafe.Celt
         }
 
         internal static unsafe uint alg_quant(float* X, int N, int K, int spread, int B, ec_ctx* enc,
-              float gain, int resynth, int arch)
+              float gain, int resynth)
         {
             float yy;
             uint collapse_mask;
@@ -318,7 +318,7 @@ namespace HellaUnsafe.Celt
 
                 exp_rotation(X, N, 1, B, K, spread);
 
-                yy = op_pvq_search(X, iy, K, N, arch);
+                yy = op_pvq_search(X, iy, K, N);
 
                 encode_pulses(iy, N, K, enc);
 

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Celt.Bands;
 using static HellaUnsafe.Celt.Celt;
@@ -32,7 +33,7 @@ namespace HellaUnsafe.Celt
         internal const int DECODE_BUFFER_SIZE = 2048;
 
         internal const int PLC_UPDATE_FRAMES = 4;
-        internal const int PLC_UPDATE_SAMPLES = (PLC_UPDATE_FRAMES * FRAME_SIZE);
+        //internal const int PLC_UPDATE_SAMPLES = (PLC_UPDATE_FRAMES * FRAME_SIZE); // what is FRAME_SIZE????
 
         // Alias of CELTDecoder, but for this port we just keep the name OpusCustomDecoder
         internal unsafe struct OpusCustomDecoder
@@ -43,13 +44,21 @@ namespace HellaUnsafe.Celt
             internal int stream_channels;
 
             internal int downsample;
-            internal int start, end;
+            internal int start;
+            internal int end;
             internal int signalling;
             internal int disable_inv;
             internal int complexity;
 
+            /// <summary>
+            /// The number of bytes from the start of the decoder struct to clear from on reset
+            /// </summary>
+            internal int DECODER_RESET_START =>
+                //(void*)Unsafe.AsPointer(ref rng) - (void*)Unsafe.AsPointer(ref mode); // this doesn't work
+                //Unsafe.ByteOffset(ref mode, ref rng); // neither does this
+                sizeof(nint) + (9 * sizeof(int)); // whatever, just hardcode the lengths
+
             /* Everything beyond this point gets cleared on a reset */
-            //#define DECODER_RESET_START rng
 
             internal uint rng;
             internal int error;
@@ -1257,9 +1266,10 @@ namespace HellaUnsafe.Celt
                         oldBandE = lpc + st->channels * CELT_LPC_ORDER;
                         oldLogE = oldBandE + 2 * st->mode->nbEBands;
                         oldLogE2 = oldLogE + 2 * st->mode->nbEBands;
-                        OPUS_CLEAR((char*)&st->DECODER_RESET_START,
+
+                        OPUS_CLEAR((byte*)st + st->DECODER_RESET_START,
                               opus_custom_decoder_get_size(st->mode, st->channels) -
-                              ((char*)&st->DECODER_RESET_START - (char*)st));
+                              st->DECODER_RESET_START);
                         for (i = 0; i < 2 * st->mode->nbEBands; i++)
                             oldLogE[i] = oldLogE2[i] = -QCONST16(28.0f, DB_SHIFT);
                         st->skip_plc = 1;

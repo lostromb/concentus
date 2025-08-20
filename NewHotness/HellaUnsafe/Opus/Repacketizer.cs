@@ -30,6 +30,7 @@ using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Opus.Extensions;
 using static HellaUnsafe.Opus.Opus;
 using static HellaUnsafe.Opus.OpusDefines;
+using static HellaUnsafe.Opus.Opus_Decoder;
 using static HellaUnsafe.Opus.OpusPrivate;
 using static HellaUnsafe.Silk.SigProcFIX;
 

@@ -38,6 +38,7 @@ using static HellaUnsafe.Celt.Rate;
 using static HellaUnsafe.Celt.VQ;
 using static HellaUnsafe.Silk.SigProcFIX;
 using System.Runtime.CompilerServices;
+using System;
 
 namespace HellaUnsafe.Celt
 {
@@ -966,7 +967,7 @@ namespace HellaUnsafe.Celt
                         /* B can be as large as 16, so this shift might overflow an int on a
                            16-bit platform; use a long to get defined behavior.*/
                         cm_mask = (uint)(1UL << B) - 1;
-                        fill &= cm_mask;
+                        fill &= (int)cm_mask;
                         if (fill == 0)
                         {
                             OPUS_CLEAR(X, N);
@@ -992,10 +993,10 @@ namespace HellaUnsafe.Celt
                                     ctx->seed = celt_lcg_rand(ctx->seed);
                                     /* About 48 dB below the "normal" folding level */
                                     tmp = QCONST16(1.0f / 256, 10);
-                                    tmp = (ctx->seed) & 0x8000 ? tmp : -tmp;
+                                    tmp = ((ctx->seed) & 0x8000) != 0 ? tmp : -tmp;
                                     X[j] = lowband[j] + tmp;
                                 }
-                                cm = fill;
+                                cm = (uint)fill;
                             }
                             renormalise_vector(X, N, gain);
                         }
@@ -1006,6 +1007,14 @@ namespace HellaUnsafe.Celt
             return cm;
         }
 
+        internal static readonly byte[] bit_interleave_table = new byte[16]{
+                    0,1,1,1,2,3,3,3,2,3,3,3,2,3,3,3
+              };
+
+        internal static readonly byte[] bit_deinterleave_table = new byte[16]{
+                       0x00,0x03,0x0C,0x0F,0x30,0x33,0x3C,0x3F,
+                       0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF
+                 };
 
         /* This function is responsible for encoding and decoding a band for the mono case. */
         internal static uint quant_band(band_ctx* ctx, float* X,
@@ -1050,9 +1059,6 @@ namespace HellaUnsafe.Celt
 
             for (k = 0; k < recombine; k++)
             {
-                static const byte bit_interleave_table[16] ={
-                    0,1,1,1,2,3,3,3,2,3,3,3,2,3,3,3
-              };
                 if (encode != 0)
                     haar1(X, N >> k, 1 << k);
                 if (lowband != null)
@@ -1109,17 +1115,13 @@ namespace HellaUnsafe.Celt
 
                 for (k = 0; k < recombine; k++)
                 {
-                    static const byte bit_deinterleave_table[16] ={
-                       0x00,0x03,0x0C,0x0F,0x30,0x33,0x3C,0x3F,
-                       0xC0,0xC3,0xCC,0xCF,0xF0,0xF3,0xFC,0xFF
-                 };
                     cm = bit_deinterleave_table[cm];
                     haar1(X, N0 >> k, 1 << k);
                 }
                 B <<= recombine;
 
                 /* Scale output for later folding */
-                if (lowband_out != 0)
+                if (lowband_out != null)
                 {
                     int j;
                     float n;
@@ -1127,7 +1129,7 @@ namespace HellaUnsafe.Celt
                     for (j = 0; j < N0; j++)
                         lowband_out[j] = MULT16_16_Q15(n, X[j]);
                 }
-                cm &= (1 << B) - 1;
+                cm = cm & (uint)((1 << B) - 1);
             }
             return cm;
         }
@@ -1196,12 +1198,12 @@ namespace HellaUnsafe.Celt
                     if (encode != 0)
                     {
                         /* Here we only need to encode a sign for the side. */
-                        sign = x2[0] * y2[1] - x2[1] * y2[0] < 0;
-                        ec_enc_bits(ec, sign, 1);
+                        sign = BOOL2INT((x2[0] * y2[1] - x2[1] * y2[0]) < 0);
+                        ec_enc_bits(ec, (uint)sign, 1);
                     }
                     else
                     {
-                        sign = ec_dec_bits(ec, 1);
+                        sign = (int)ec_dec_bits(ec, 1);
                     }
                 }
                 sign = 1 - 2 * sign;
@@ -1320,249 +1322,257 @@ namespace HellaUnsafe.Celt
             band_ctx ctx;
 
             M = 1 << LM;
-            B = shortBlocks ? M : 1;
+            B = shortBlocks != 0 ? M : 1;
             norm_offset = M * eBands[start];
             /* No need to allocate norm for the last band because we don't need an
                output in that band. */
-            VARDECL(float, _norm);
-            ALLOC(_norm, C * (M * eBands[m->nbEBands - 1] - norm_offset), float);
-            norm = _norm;
-            norm2 = norm + M * eBands[m->nbEBands - 1] - norm_offset;
-
-            /* For decoding, we can use the last band as scratch space because we don't need that
-               scratch space for the last band and we don't care about the data there until we're
-               decoding the last band. */
-            if (encode != 0 && resynth != 0)
-                resynth_alloc = M * (eBands[m->nbEBands] - eBands[m->nbEBands - 1]);
-            else
-                resynth_alloc = ALLOC_NONE;
-
-            VARDECL(float, _lowband_scratch);
-            ALLOC(_lowband_scratch, resynth_alloc, float);
-            if (encode != 0 && resynth != 0)
-                lowband_scratch = _lowband_scratch;
-            else
-                lowband_scratch = X_ + M * eBands[m->effEBands - 1];
-
-            VARDECL(float, X_save);
-            VARDECL(float, Y_save);
-            VARDECL(float, X_save2);
-            VARDECL(float, Y_save2);
-            VARDECL(float, norm_save2);
-            ALLOC(X_save, resynth_alloc, float);
-            ALLOC(Y_save, resynth_alloc, float);
-            ALLOC(X_save2, resynth_alloc, float);
-            ALLOC(Y_save2, resynth_alloc, float);
-            ALLOC(norm_save2, resynth_alloc, float);
-
-            lowband_offset = 0;
-            ctx.bandE = bandE;
-            ctx.ec = ec;
-            ctx.encode = encode;
-            ctx.intensity = intensity;
-            ctx.m = m;
-            ctx.seed = *seed;
-            ctx.spread = spread;
-            ctx.disable_inv = disable_inv;
-            ctx.resynth = resynth;
-            ctx.theta_round = 0;
-            /* Avoid injecting noise in the first band on transients. */
-            ctx.avoid_split_noise = B > 1;
-            for (i = start; i < end; i++)
+            float[] _norm_data = new float[C * (M * eBands[m->nbEBands - 1] - norm_offset)];
+            fixed (float* _norm = _norm_data)
             {
-                int tell;
-                int b;
-                int N;
-                int curr_balance;
-                int effective_lowband = -1;
-                float* X, Y;
-                int tf_change = 0;
-                uint x_cm;
-                uint y_cm;
-                int last;
+                norm = _norm;
+                norm2 = norm + M * eBands[m->nbEBands - 1] - norm_offset;
 
-                ctx.i = i;
-                last = BOOL2INT(i == end - 1);
-
-                X = X_ + M * eBands[i];
-                if (Y_ != null)
-                    Y = Y_ + M * eBands[i];
+                /* For decoding, we can use the last band as scratch space because we don't need that
+                   scratch space for the last band and we don't care about the data there until we're
+                   decoding the last band. */
+                if (encode != 0 && resynth != 0)
+                    resynth_alloc = M * (eBands[m->nbEBands] - eBands[m->nbEBands - 1]);
                 else
-                    Y = null;
-                N = M * eBands[i + 1] - M * eBands[i];
-                celt_assert(N > 0);
-                tell = ec_tell_frac(ec);
+                    resynth_alloc = 0;
 
-                /* Compute how many bits we want to allocate to this band */
-                if (i != start)
-                    balance -= tell;
-                remaining_bits = total_bits - tell - 1;
-                ctx.remaining_bits = remaining_bits;
-                if (i <= codedBands - 1)
-                {
-                    curr_balance = celt_sudiv(balance, IMIN(3, codedBands - i));
-                    b = IMAX(0, IMIN(16383, IMIN(remaining_bits + 1, pulses[i] + curr_balance)));
-                }
-                else
-                {
-                    b = 0;
-                }
+                // not always needed but we also want to make sure it's allocated only once
+                byte* bytes_save = stackalloc byte[1275];
 
-                if (resynth != 0 && (M * eBands[i] - N >= M * eBands[start] || i == start + 1) && (update_lowband != 0 || lowband_offset == 0))
-                    lowband_offset = i;
-                if (i == start + 1)
-                    special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
-
-                tf_change = tf_res[i];
-                ctx.tf_change = tf_change;
-                if (i >= m->effEBands)
+                // OPT I know in Concentus all of these allocs were combined into a single [len * 6] buffer.
+                // We could surely do that here as well.
+                float[] _lowband_scratch_data = resynth_alloc == 0 ? Array.Empty<float>() : new float[resynth_alloc];
+                float[] X_save_data = resynth_alloc == 0 ? Array.Empty<float>() : new float[resynth_alloc];
+                float[] Y_save_data = resynth_alloc == 0 ? Array.Empty<float>() : new float[resynth_alloc];
+                float[] X_save2_data = resynth_alloc == 0 ? Array.Empty<float>() : new float[resynth_alloc];
+                float[] Y_save2_data = resynth_alloc == 0 ? Array.Empty<float>() : new float[resynth_alloc];
+                float[] norm_save2_data = resynth_alloc == 0 ? Array.Empty<float>() : new float[resynth_alloc];
+                fixed (float* _lowband_scratch = _lowband_scratch_data)
+                fixed (float* X_save = X_save_data)
+                fixed (float* Y_save = Y_save_data)
+                fixed (float* X_save2 = X_save2_data)
+                fixed (float* Y_save2 = Y_save2_data)
+                fixed (float* norm_save2 = norm_save2_data)
                 {
-                    X = norm;
-                    if (Y_ != null)
-                        Y = norm;
-                    lowband_scratch = null;
-                }
-                if (last && theta_rdo == 0)
-                    lowband_scratch = null;
+                    if (encode != 0 && resynth != 0)
+                        lowband_scratch = _lowband_scratch;
+                    else
+                        lowband_scratch = X_ + M * eBands[m->effEBands - 1];
 
-                /* Get a conservative estimate of the collapse_mask's for the bands we're
-                   going to be folding from. */
-                if (lowband_offset != 0 && (spread != SPREAD_AGGRESSIVE || B > 1 || tf_change < 0))
-                {
-                    int fold_start;
-                    int fold_end;
-                    int fold_i;
-                    /* This ensures we never repeat spectral content within one band */
-                    effective_lowband = IMAX(0, M * eBands[lowband_offset] - norm_offset - N);
-                    fold_start = lowband_offset;
-                    while (M * eBands[--fold_start] > effective_lowband + norm_offset) ;
-                    fold_end = lowband_offset - 1;
-                    while (++fold_end < i && M * eBands[fold_end] < effective_lowband + norm_offset + N) ;
-                    x_cm = y_cm = 0;
-                    fold_i = fold_start; do
+                    lowband_offset = 0;
+                    ctx.bandE = bandE;
+                    ctx.ec = ec;
+                    ctx.encode = encode;
+                    ctx.intensity = intensity;
+                    ctx.m = m;
+                    ctx.seed = *seed;
+                    ctx.spread = spread;
+                    ctx.disable_inv = disable_inv;
+                    ctx.resynth = resynth;
+                    ctx.theta_round = 0;
+                    /* Avoid injecting noise in the first band on transients. */
+                    ctx.avoid_split_noise = BOOL2INT(B > 1);
+                    for (i = start; i < end; i++)
                     {
-                        x_cm |= collapse_masks[fold_i * C + 0];
-                        y_cm |= collapse_masks[fold_i * C + C - 1];
-                    } while (++fold_i < fold_end);
-                }
-                /* Otherwise, we'll be using the LCG to fold, so all blocks will (almost
-                   always) be non-zero. */
-                else
-                    x_cm = y_cm = (1 << B) - 1;
+                        int tell;
+                        int b;
+                        int N;
+                        int curr_balance;
+                        int effective_lowband = -1;
+                        float* X, Y;
+                        int tf_change = 0;
+                        uint x_cm;
+                        uint y_cm;
+                        int last;
 
-                if (dual_stereo != 0 && i == intensity)
-                {
-                    int j;
+                        ctx.i = i;
+                        last = BOOL2INT(i == end - 1);
 
-                    /* Switch off dual stereo to do intensity. */
-                    dual_stereo = 0;
-                    if (resynth != 0)
-                        for (j = 0; j < M * eBands[i] - norm_offset; j++)
-                            norm[j] = HALF32(norm[j] + norm2[j]);
-                }
-                if (dual_stereo != 0)
-                {
-                    x_cm = quant_band(&ctx, X, N, b / 2, B,
-                          effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                          last != 0 ? null : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, x_cm);
-                    y_cm = quant_band(&ctx, Y, N, b / 2, B,
-                          effective_lowband != -1 ? norm2 + effective_lowband : null, LM,
-                          last != 0 ? null : norm2 + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, y_cm);
-                }
-                else
-                {
-                    if (Y != null)
-                    {
-                        if (theta_rdo != 0 && i < intensity)
+                        X = X_ + M * eBands[i];
+                        if (Y_ != null)
+                            Y = Y_ + M * eBands[i];
+                        else
+                            Y = null;
+                        N = M * eBands[i + 1] - M * eBands[i];
+                        celt_assert(N > 0);
+                        tell = (int)ec_tell_frac(ec);
+
+                        /* Compute how many bits we want to allocate to this band */
+                        if (i != start)
+                            balance -= tell;
+                        remaining_bits = total_bits - tell - 1;
+                        ctx.remaining_bits = remaining_bits;
+                        if (i <= codedBands - 1)
                         {
-                            ec_ctx ec_save, ec_save2;
-                            band_ctx ctx_save, ctx_save2;
-                            float dist0, dist1;
-                            uint cm, cm2;
-                            int nstart_bytes, nend_bytes, save_bytes;
-                            byte* bytes_buf;
-                            byte* bytes_save = stackalloc byte[1275];
-                            float* w = stackalloc float[2];
-                            compute_channel_weights(bandE[i], bandE[i + m->nbEBands], w);
-                            /* Make a copy. */
-                            cm = x_cm | y_cm;
-                            ec_save = *ec;
-                            ctx_save = ctx;
-                            OPUS_COPY(X_save, X, N);
-                            OPUS_COPY(Y_save, Y, N);
-                            /* Encode and round down. */
-                            ctx.theta_round = -1;
-                            x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
-                                  effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                                  last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, cm);
-                            dist0 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N)) + MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N));
-
-                            /* Save first result. */
-                            cm2 = x_cm;
-                            ec_save2 = *ec;
-                            ctx_save2 = ctx;
-                            OPUS_COPY(X_save2, X, N);
-                            OPUS_COPY(Y_save2, Y, N);
-                            if (last == 0)
-                                OPUS_COPY(norm_save2, norm + M * eBands[i] - norm_offset, N);
-                            nstart_bytes = ec_save.offs;
-                            nend_bytes = ec_save.storage;
-                            bytes_buf = ec_save.buf + nstart_bytes;
-                            save_bytes = nend_bytes - nstart_bytes;
-                            OPUS_COPY(bytes_save, bytes_buf, save_bytes);
-
-                            /* Restore */
-                            *ec = ec_save;
-                            ctx = ctx_save;
-                            OPUS_COPY(X, X_save, N);
-                            OPUS_COPY(Y, Y_save, N);
-                            if (i == start + 1)
-                                special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
-                            /* Encode and round up. */
-                            ctx.theta_round = 1;
-                            x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
-                                  effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                                  last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, cm);
-                            dist1 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N)) + MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N));
-                            if (dist0 >= dist1)
-                            {
-                                x_cm = cm2;
-                                *ec = ec_save2;
-                                ctx = ctx_save2;
-                                OPUS_COPY(X, X_save2, N);
-                                OPUS_COPY(Y, Y_save2, N);
-                                if (last == 0)
-                                    OPUS_COPY(norm + M * eBands[i] - norm_offset, norm_save2, N);
-                                OPUS_COPY(bytes_buf, bytes_save, save_bytes);
-                            }
+                            curr_balance = celt_sudiv(balance, IMIN(3, codedBands - i));
+                            b = IMAX(0, IMIN(16383, IMIN(remaining_bits + 1, pulses[i] + curr_balance)));
                         }
                         else
                         {
-                            ctx.theta_round = 0;
-                            x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
-                                  effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                                  last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, x_cm | y_cm);
+                            b = 0;
                         }
-                    }
-                    else
-                    {
-                        x_cm = quant_band(&ctx, X, N, b, B,
-                              effective_lowband != -1 ? norm + effective_lowband : null, LM,
-                              last != 0 ? null : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, x_cm | y_cm);
-                    }
-                    y_cm = x_cm;
-                }
-                collapse_masks[i * C + 0] = (byte)x_cm;
-                collapse_masks[i * C + C - 1] = (byte)y_cm;
-                balance += pulses[i] + tell;
 
-                /* Update the folding position only as long as we have 1 bit/sample depth. */
-                update_lowband = BOOL2INT(b > (N << BITRES));
-                /* We only need to avoid noise on a split for the first band. After that, we
-                   have folding. */
-                ctx.avoid_split_noise = 0;
+                        if (resynth != 0 && (M * eBands[i] - N >= M * eBands[start] || i == start + 1) && (update_lowband != 0 || lowband_offset == 0))
+                            lowband_offset = i;
+                        if (i == start + 1)
+                            special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
+
+                        tf_change = tf_res[i];
+                        ctx.tf_change = tf_change;
+                        if (i >= m->effEBands)
+                        {
+                            X = norm;
+                            if (Y_ != null)
+                                Y = norm;
+                            lowband_scratch = null;
+                        }
+                        if (last != 0 && theta_rdo == 0)
+                            lowband_scratch = null;
+
+                        /* Get a conservative estimate of the collapse_mask's for the bands we're
+                           going to be folding from. */
+                        if (lowband_offset != 0 && (spread != SPREAD_AGGRESSIVE || B > 1 || tf_change < 0))
+                        {
+                            int fold_start;
+                            int fold_end;
+                            int fold_i;
+                            /* This ensures we never repeat spectral content within one band */
+                            effective_lowband = IMAX(0, M * eBands[lowband_offset] - norm_offset - N);
+                            fold_start = lowband_offset;
+                            while (M * eBands[--fold_start] > effective_lowband + norm_offset) ;
+                            fold_end = lowband_offset - 1;
+                            while (++fold_end < i && M * eBands[fold_end] < effective_lowband + norm_offset + N) ;
+                            x_cm = y_cm = 0;
+                            fold_i = fold_start; do
+                            {
+                                x_cm |= collapse_masks[fold_i * C + 0];
+                                y_cm |= collapse_masks[fold_i * C + C - 1];
+                            } while (++fold_i < fold_end);
+                        }
+                        /* Otherwise, we'll be using the LCG to fold, so all blocks will (almost
+                           always) be non-zero. */
+                        else
+                            x_cm = y_cm = (uint)((1 << B) - 1);
+
+                        if (dual_stereo != 0 && i == intensity)
+                        {
+                            int j;
+
+                            /* Switch off dual stereo to do intensity. */
+                            dual_stereo = 0;
+                            if (resynth != 0)
+                                for (j = 0; j < M * eBands[i] - norm_offset; j++)
+                                    norm[j] = HALF32(norm[j] + norm2[j]);
+                        }
+                        if (dual_stereo != 0)
+                        {
+                            x_cm = quant_band(&ctx, X, N, b / 2, B,
+                                  effective_lowband != -1 ? norm + effective_lowband : null, LM,
+                                  last != 0 ? null : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)x_cm);
+                            y_cm = quant_band(&ctx, Y, N, b / 2, B,
+                                  effective_lowband != -1 ? norm2 + effective_lowband : null, LM,
+                                  last != 0 ? null : norm2 + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)y_cm);
+                        }
+                        else
+                        {
+                            if (Y != null)
+                            {
+                                if (theta_rdo != 0 && i < intensity)
+                                {
+                                    ec_ctx ec_save, ec_save2;
+                                    band_ctx ctx_save, ctx_save2;
+                                    float dist0, dist1;
+                                    uint cm, cm2;
+                                    int nstart_bytes, nend_bytes, save_bytes;
+                                    byte* bytes_buf;
+                                    // Normally bytes_save is stackalloced here, but I moved it out of the loop
+                                    float* w = stackalloc float[2];
+                                    compute_channel_weights(bandE[i], bandE[i + m->nbEBands], w);
+                                    /* Make a copy. */
+                                    cm = x_cm | y_cm;
+                                    ec_save = *ec;
+                                    ctx_save = ctx;
+                                    OPUS_COPY(X_save, X, N);
+                                    OPUS_COPY(Y_save, Y, N);
+                                    /* Encode and round down. */
+                                    ctx.theta_round = -1;
+                                    x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
+                                          effective_lowband != -1 ? norm + effective_lowband : null, LM,
+                                          last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)cm);
+                                    dist0 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N)) + MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N));
+
+                                    /* Save first result. */
+                                    cm2 = x_cm;
+                                    ec_save2 = *ec;
+                                    ctx_save2 = ctx;
+                                    OPUS_COPY(X_save2, X, N);
+                                    OPUS_COPY(Y_save2, Y, N);
+                                    if (last == 0)
+                                        OPUS_COPY(norm_save2, norm + M * eBands[i] - norm_offset, N);
+                                    nstart_bytes = (int)ec_save.offs;
+                                    nend_bytes = (int)ec_save.storage;
+                                    bytes_buf = ec_save.buf + nstart_bytes;
+                                    save_bytes = nend_bytes - nstart_bytes;
+                                    OPUS_COPY(bytes_save, bytes_buf, save_bytes);
+
+                                    /* Restore */
+                                    *ec = ec_save;
+                                    ctx = ctx_save;
+                                    OPUS_COPY(X, X_save, N);
+                                    OPUS_COPY(Y, Y_save, N);
+                                    if (i == start + 1)
+                                        special_hybrid_folding(m, norm, norm2, start, M, dual_stereo);
+                                    /* Encode and round up. */
+                                    ctx.theta_round = 1;
+                                    x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
+                                          effective_lowband != -1 ? norm + effective_lowband : null, LM,
+                                          last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)cm);
+                                    dist1 = MULT16_32_Q15(w[0], celt_inner_prod(X_save, X, N)) + MULT16_32_Q15(w[1], celt_inner_prod(Y_save, Y, N));
+                                    if (dist0 >= dist1)
+                                    {
+                                        x_cm = cm2;
+                                        *ec = ec_save2;
+                                        ctx = ctx_save2;
+                                        OPUS_COPY(X, X_save2, N);
+                                        OPUS_COPY(Y, Y_save2, N);
+                                        if (last == 0)
+                                            OPUS_COPY(norm + M * eBands[i] - norm_offset, norm_save2, N);
+                                        OPUS_COPY(bytes_buf, bytes_save, save_bytes);
+                                    }
+                                }
+                                else
+                                {
+                                    ctx.theta_round = 0;
+                                    x_cm = quant_band_stereo(&ctx, X, Y, N, b, B,
+                                          effective_lowband != -1 ? norm + effective_lowband : null, LM,
+                                          last != 0 ? null : norm + M * eBands[i] - norm_offset, lowband_scratch, (int)(x_cm | y_cm));
+                                }
+                            }
+                            else
+                            {
+                                x_cm = quant_band(&ctx, X, N, b, B,
+                                      effective_lowband != -1 ? norm + effective_lowband : null, LM,
+                                      last != 0 ? null : norm + M * eBands[i] - norm_offset, Q15ONE, lowband_scratch, (int)(x_cm | y_cm));
+                            }
+                            y_cm = x_cm;
+                        }
+                        collapse_masks[i * C + 0] = (byte)x_cm;
+                        collapse_masks[i * C + C - 1] = (byte)y_cm;
+                        balance += pulses[i] + tell;
+
+                        /* Update the folding position only as long as we have 1 bit/sample depth. */
+                        update_lowband = BOOL2INT(b > (N << BITRES));
+                        /* We only need to avoid noise on a split for the first band. After that, we
+                           have folding. */
+                        ctx.avoid_split_noise = 0;
+                    }
+                    *seed = ctx.seed;
+                }
             }
-            *seed = ctx.seed;
         }
     }
 }

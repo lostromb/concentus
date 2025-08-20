@@ -111,8 +111,7 @@ namespace HellaUnsafe.Silk
             int newPacketFlag,      /* I    Indicates first decoder call for this packet    */
             ec_ctx* psRangeDec,        /* I/O  Compressor data structure                       */
             short* samplesOut,        /* O    Decoded output speech vector                    */
-            int* nSamplesOut,       /* O    Number of samples decoded                       */
-            int arch                /* I    Run-time architecture                           */
+            int* nSamplesOut       /* O    Number of samples decoded                       */
         )
         {
             int i, n, decode_only_middle = 0, ret = SILK_NO_ERROR;

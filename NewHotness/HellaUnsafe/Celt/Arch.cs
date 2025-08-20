@@ -121,5 +121,6 @@ namespace HellaUnsafe.Celt
 
         internal static void celt_sig_assert(bool cond) { Debug.Assert(cond); }
         internal static void celt_assert2(bool cond, string message) { Debug.Assert(cond, message); }
+        internal static void MUST_SUCCEED(int err) { Debug.Assert(err != 0); }
     }
 }
