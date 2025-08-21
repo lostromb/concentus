@@ -289,7 +289,41 @@ static OPUS_INLINE int celt_isnan(float x)
 #endif
 
 #include <stdio.h>
+#include <stdarg.h>
 
 // Functions for bed-of-nails parity
+
+static void NailTest_PrintF(const char* const format, ...)
+{
+#if NAILTEST
+	va_list args;
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
+#endif
+}
+
+static void NailTest_PrintByteArray(unsigned char* ptr, int len)
+{
+#if NAILTEST
+	printf("array[%i]:\r\n", len);
+	int col = 0;
+	for (int count = 0; count < len; count++)
+	{
+		printf("%02x", ptr[count]);
+		if (++col == 16)
+		{
+			printf("\r\n");
+			col = 0;
+		}
+		else
+		{
+			printf(" ");
+		}
+	}
+
+	printf("\r\n");
+#endif
+}
 
 #endif /* ARCH_H */

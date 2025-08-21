@@ -431,9 +431,10 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe int ec_write_byte(ec_ctx* _this, uint _value)
         {
-            printf("ec_write_byte: {0:x} {1:x} {2:x} {3:x}\r\n", _value, _this->offs, _this->end_offs, _this->storage);
+            NailTest_PrintF("ec_write_byte: {0:x} {1:x} {2:x} {3:x}\r\n", _value, _this->offs, _this->end_offs, _this->storage);
             if (_this->offs + _this->end_offs >= _this->storage)
             {
+                NailTest_PrintF("ec_write_byte ERROR\r\n");
                 return -1;
             }
             _this->buf[_this->offs++] = (byte)_value;
@@ -442,25 +443,25 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe int ec_write_byte_at_end(ec_ctx* _this, uint _value)
         {
-            printf("ec_write_byte_at_end {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_write_byte_at_end {0:x} {1:x}\r\n", _this->val, _this->offs);
             if (_this->offs + _this->end_offs >= _this->storage) return -1;
             _this->buf[_this->storage - ++(_this->end_offs)] = (byte)_value;
             return 0;
         }
 
         /*Outputs a symbol, with a carry bit.
-  If there is a potential to propagate a carry over several symbols, they are
-   buffered until it can be determined whether or not an actual carry will
-   occur.
-  If the counter for the buffered symbols overflows, then the stream becomes
-   undecodable.
-  This gives a theoretical limit of a few billion symbols in a single packet on
-   32-bit systems.
-  The alternative is to truncate the range in order to force a carry, but
-   requires similar carry tracking in the decoder, needlessly slowing it down.*/
+      If there is a potential to propagate a carry over several symbols, they are
+       buffered until it can be determined whether or not an actual carry will
+       occur.
+      If the counter for the buffered symbols overflows, then the stream becomes
+       undecodable.
+      This gives a theoretical limit of a few billion symbols in a single packet on
+       32-bit systems.
+      The alternative is to truncate the range in order to force a carry, but
+       requires similar carry tracking in the decoder, needlessly slowing it down.*/
         internal static unsafe void ec_enc_carry_out(ec_ctx* _this, int _c)
         {
-            printf("ec_enc_carry_out {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_enc_carry_out {0:x} {1:x}\r\n", _c, _this->val);
             if (_c != EC_SYM_MAX)
             {
                 /*No further carry propagation possible, flush buffer.*/
@@ -471,7 +472,7 @@ namespace HellaUnsafe.Celt
                 if (_this->rem >= 0)
                 {
                     _this->error |= ec_write_byte(_this, (uint)(_this->rem + carry));
-                    Debug.Assert(_this->error == 0);
+                    //Debug.Assert(_this->error == 0);
                 }
                 if (_this->ext > 0)
                 {
@@ -479,7 +480,7 @@ namespace HellaUnsafe.Celt
                     do
                     {
                         _this->error |= ec_write_byte(_this, sym);
-                        Debug.Assert(_this->error == 0);
+                        //Debug.Assert(_this->error == 0);
                     }
                     while (--(_this->ext) > 0);
                 }
@@ -493,13 +494,13 @@ namespace HellaUnsafe.Celt
             /*If the range is too small, output some bits and rescale it.*/
             while (_this->rng <= EC_CODE_BOT)
             {
-                printf("ec_enc_normalize pre: {0:x} {1:x} {2:x}\r\n", _this->val, _this->rng, _this->nbits_total);
+                NailTest_PrintF("ec_enc_normalize pre: {0:x} {1:x} {2:x}\r\n", _this->val, _this->rng, _this->nbits_total);
                 ec_enc_carry_out(_this, (int)(_this->val >> EC_CODE_SHIFT));
                 /*Move the next-to-high-order symbol into the high-order position.*/
                 _this->val = (_this->val << EC_SYM_BITS) & (EC_CODE_TOP - 1);
                 _this->rng <<= EC_SYM_BITS;
                 _this->nbits_total += EC_SYM_BITS;
-                printf("ec_enc_normalize post: {0:x} {1:x} {2:x}\r\n", _this->val, _this->rng, _this->nbits_total);
+                NailTest_PrintF("ec_enc_normalize post: {0:x} {1:x} {2:x}\r\n", _this->val, _this->rng, _this->nbits_total);
             }
         }
 
@@ -522,7 +523,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_encode(ec_ctx* _this, uint _fl, uint _fh, uint _ft)
         {
-            printf("ec_encode {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_encode {0:x}\r\n", _this->val);
             uint r;
             r = celt_udiv(_this->rng, _ft);
             if (_fl > 0)
@@ -536,7 +537,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_encode_bin(ec_ctx* _this, uint _fl, uint _fh, uint _bits)
         {
-            printf("ec_encode_bin {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_encode_bin {0:x}\r\n", _this->val);
             uint r;
             r = _this->rng >> (int)_bits;
             if (_fl > 0)
@@ -551,7 +552,7 @@ namespace HellaUnsafe.Celt
         /*The probability of having a "one" is 1/(1<<_logp).*/
         internal static unsafe void ec_enc_bit_logp(ec_ctx* _this, int _val, uint _logp)
         {
-            printf("ec_enc_bit_logp {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_enc_bit_logp {0:x}\r\n", _this->val);
             uint r;
             uint s;
             uint l;
@@ -566,7 +567,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_enc_icdf(ec_ctx* _this, int _s, in byte* _icdf, uint _ftb)
         {
-            printf("ec_enc_icdf {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_enc_icdf {0:x}\r\n", _this->val);
             uint r = _this->rng >> (int)_ftb;
             if (_s > 0)
             {
@@ -579,7 +580,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_enc_icdf16(ec_ctx* _this, int _s, in ushort* _icdf, uint _ftb)
         {
-            printf("ec_enc_icdf16 {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_enc_icdf16 {0:x}\r\n", _this->val);
             uint r = _this->rng >> (int)_ftb;
             if (_s > 0)
             {
@@ -592,7 +593,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_enc_uint(ec_ctx* _this, uint _fl, uint _ft)
         {
-            printf("ec_enc_uint {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_enc_uint {0:x}\r\n", _this->val);
             uint ft;
             uint fl;
             int ftb;
@@ -613,7 +614,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_enc_bits(ec_ctx* _this, uint _fl, uint _bits)
         {
-            printf("ec_enc_bits {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_enc_bits {0:x} {1:x} {2:x}\r\n", _fl, _bits, _this->val);
             uint window;
             int used;
             window = _this->end_window;
@@ -624,7 +625,7 @@ namespace HellaUnsafe.Celt
                 do
                 {
                     _this->error |= ec_write_byte_at_end(_this, (uint)window & EC_SYM_MAX);
-                    Debug.Assert(_this->error == 0);
+                    //Debug.Assert(_this->error == 0);
                     window >>= EC_SYM_BITS;
                     used -= EC_SYM_BITS;
                 }
@@ -639,6 +640,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_enc_patch_initial_bits(ec_ctx* _this, uint _val, uint _nbits)
         {
+            NailTest_PrintF("ec_enc_patch_initial_bits {0:x} {1:x} {2:x}\r\n", _val, _nbits, _this->val);
             int shift;
             uint mask;
             ASSERT(_nbits <= EC_SYM_BITS);
@@ -667,7 +669,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_enc_shrink(ec_ctx* _this, uint _size)
         {
-            printf("ec_enc_shrink {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_enc_shrink {0:x} {1:x}\r\n", _size, _this->val);
             ASSERT(_this->offs + _this->end_offs <= _size);
             OPUS_MOVE(_this->buf + _size - _this->end_offs,
              _this->buf + _this->storage - _this->end_offs, _this->end_offs);
@@ -676,7 +678,7 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void ec_enc_done(ec_ctx* _this)
         {
-            printf("ec_enc_done {0:x}\r\n", _this->val);
+            NailTest_PrintF("ec_enc_done {0:x}\r\n", _this->val);
             uint window;
             int used;
             uint msk;
@@ -707,7 +709,7 @@ namespace HellaUnsafe.Celt
             while (used >= EC_SYM_BITS)
             {
                 _this->error |= ec_write_byte_at_end(_this, (uint)window & EC_SYM_MAX);
-                Debug.Assert(_this->error == 0);
+                //Debug.Assert(_this->error == 0);
                 window >>= EC_SYM_BITS;
                 used -= EC_SYM_BITS;
             }

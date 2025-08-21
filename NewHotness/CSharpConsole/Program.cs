@@ -3,6 +3,7 @@ using static HellaUnsafe.Opus.Opus_Encoder;
 using static HellaUnsafe.Opus.Opus_Decoder;
 using static HellaUnsafe.Opus.OpusDefines;
 using static HellaUnsafe.Opus.OpusPrivate;
+using static HellaUnsafe.Common.CRuntime;
 
 namespace CSharpConsole
 {
@@ -10,17 +11,18 @@ namespace CSharpConsole
     {
         public static unsafe void Main(string[] args)
         {
-            int param_bitrate = 96000;
-            int param_channels = 2;
+            int param_bitrate = 32 * 1024;
+            int param_channels = 1;
             int param_application = OPUS_APPLICATION_AUDIO;
             int param_signal = OPUS_SIGNAL_MUSIC;
             int param_sample_rate = 48000;
-            int param_frame_size = OPUS_FRAMESIZE_20_MS;
-            int param_complexity = 0;
+            int param_frame_size = OPUS_FRAMESIZE_60_MS;
+            int param_complexity = 8;
             int param_force_mode = OPUS_AUTO;
-            int param_use_dtx = 0;
-            int param_use_vbr = 0;
-            int param_use_contrained_vbr = 0;
+            int param_use_dtx = 1;
+            int param_use_vbr = 1;
+            int param_use_contrained_vbr = 1;
+            int param_packet_loss_percent = 0;
 
             string fileNameBase = "D:\\Code\\concentus\\AudioData\\";
             string fileName;
@@ -50,11 +52,22 @@ namespace CSharpConsole
                 int error;
                 OpusEncoder* encoder = opus_encoder_create(param_sample_rate, param_channels, param_application, &error);
                 OpusDecoder* decoder = opus_decoder_create(param_sample_rate, param_channels, &error);
-                opus_encoder_ctl(encoder, OPUS_SET_BITRATE_REQUEST, param_bitrate);
-                opus_encoder_ctl(encoder, OPUS_SET_FORCE_MODE_REQUEST, param_force_mode);
-                opus_encoder_ctl(encoder, OPUS_SET_SIGNAL_REQUEST, param_signal);
+                if (param_bitrate > 0)
+                {
+                    opus_encoder_ctl(encoder, OPUS_SET_BITRATE_REQUEST, param_bitrate);
+                }
                 opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY_REQUEST, param_complexity);
                 opus_encoder_ctl(encoder, OPUS_SET_DTX_REQUEST, param_use_dtx);
+                opus_encoder_ctl(encoder, OPUS_SET_SIGNAL_REQUEST, param_signal);
+                if (param_packet_loss_percent > 0)
+                {
+                    opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC_REQUEST, param_packet_loss_percent);
+                    opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC_REQUEST, 1);
+                }
+                if (param_force_mode != OPUS_AUTO)
+                {
+                    opus_encoder_ctl(encoder, OPUS_SET_FORCE_MODE_REQUEST, param_force_mode);
+                }
                 opus_encoder_ctl(encoder, OPUS_SET_VBR_REQUEST, param_use_vbr);
                 opus_encoder_ctl(encoder, OPUS_SET_VBR_CONSTRAINT_REQUEST, param_use_contrained_vbr);
 
@@ -109,6 +122,7 @@ namespace CSharpConsole
 
                     if (errorOrLength > 0)
                     {
+                        NailTest_PrintByteArray(outPacket, errorOrLength);
                         errorOrLength = opus_decode(decoder, outPacket, errorOrLength, inAudioSamples, packetSamplesPerChannel, 0);
                         Console.WriteLine("DECODE: " + errorOrLength);
                     }

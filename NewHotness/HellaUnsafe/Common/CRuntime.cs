@@ -37,7 +37,7 @@ using System.Xml.Linq;
 
 namespace HellaUnsafe.Common
 {
-    internal static class CRuntime
+    public static class CRuntime
     {
         [Conditional("DEBUG")]
         internal static void ASSERT(bool condition)
@@ -399,9 +399,45 @@ namespace HellaUnsafe.Common
 
         // Functions for bed-of-nails parity
 
-        internal static void printf(string format, params object[] args)
+        [Conditional("NAILTEST")]
+        public static unsafe void NailTest_PrintF(string format, params object[] args)
         {
-            //Console.Write(format, args);
+#if NAILTEST
+            PrintF(format, args);
+#endif
+        }
+
+        public static unsafe void NailTest_PrintByteArray(byte* ptr, int len)
+        {
+#if NAILTEST
+            PrintByteArray(ptr, len);
+#endif
+        }
+
+        public static unsafe void PrintF(string format, params object[] args)
+        {
+            Console.Write(format, args);
+        }
+
+        public static unsafe void PrintByteArray(byte* ptr, int len)
+        {
+            PrintF("array[{0}]:\r\n", len);
+            int col = 0;
+            for (int count = 0; count < len; count++)
+            {
+                PrintF("{0:x2}", ptr[count]);
+                if (++col == 16)
+                {
+                    PrintF("\r\n");
+                    col = 0;
+                }
+                else
+                {
+                    PrintF(" ");
+                }
+            }
+
+            PrintF("\r\n");
         }
     }
 }

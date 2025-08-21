@@ -7,6 +7,7 @@ namespace ParityTest
         public int Bitrate = 40;
         public int Channels = 2;
         public int Application = OpusDefines.OPUS_APPLICATION_AUDIO;
+        public int Signal = OpusDefines.OPUS_SIGNAL_MUSIC;
         public int SampleRate = 48000;
         public double FrameSize = 20;
         public int Complexity = 10;

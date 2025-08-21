@@ -1,14 +1,15 @@
-﻿using System.Diagnostics;
+﻿using HellaUnsafe.Opus;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-
-using HellaUnsafe.Opus;
+using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Opus.Opus_Encoder;
 
 namespace ParityTest
 {
     public unsafe class TestDriver
     {
-        private const string OPUS_TARGET_DLL = "opus-1.5.2-x64-float.dll";
+        private const string OPUS_TARGET_DLL = "opus-1.5.2-x64-float-debug.dll";
         private const bool ACTUALLY_COMPARE = true;
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
@@ -71,6 +72,7 @@ namespace ParityTest
             }
             Opus_Encoder.opus_encoder_ctl(concentusEncoder, OpusDefines.OPUS_SET_COMPLEXITY_REQUEST, parameters.Complexity);
             Opus_Encoder.opus_encoder_ctl(concentusEncoder, OpusDefines.OPUS_SET_DTX_REQUEST, parameters.UseDTX ? 1 : 0);
+            Opus_Encoder.opus_encoder_ctl(concentusEncoder, OpusDefines.OPUS_SET_SIGNAL_REQUEST, parameters.Signal);
             if (parameters.PacketLossPercent > 0)
             {
                 Opus_Encoder.opus_encoder_ctl(concentusEncoder, OpusDefines.OPUS_SET_PACKET_LOSS_PERC_REQUEST, parameters.PacketLossPercent);
@@ -105,6 +107,7 @@ namespace ParityTest
             }
             opus_encoder_ctl(opusEncoder, OpusDefines.OPUS_SET_COMPLEXITY_REQUEST, parameters.Complexity);
             opus_encoder_ctl(opusEncoder, OpusDefines.OPUS_SET_DTX_REQUEST, parameters.UseDTX ? 1 : 0);
+            opus_encoder_ctl(opusEncoder, OpusDefines.OPUS_SET_SIGNAL_REQUEST, parameters.Signal);
             if (parameters.PacketLossPercent > 0)
             {
                 opus_encoder_ctl(opusEncoder, OpusDefines.OPUS_SET_PACKET_LOSS_PERC_REQUEST, parameters.PacketLossPercent);
@@ -272,6 +275,14 @@ namespace ParityTest
                         {
                             if (opusEncoded[c] != concentusEncoded[c])
                             {
+                                fixed (byte* truePacket = opusEncoded)
+                                fixed (byte* myPacket = concentusEncoded)
+                                {
+                                    PrintF("Expected packet: ");
+                                    PrintByteArray(truePacket, concentusPacketSize);
+                                    PrintF("Actual packet:   ");
+                                    PrintByteArray(myPacket, concentusPacketSize);
+                                }
                                 returnVal.Message = "Encoded packets do not match (frame " + frameCount + ")";
                                 returnVal.Passed = false;
                                 returnVal.FailureFrame = inputPacket;

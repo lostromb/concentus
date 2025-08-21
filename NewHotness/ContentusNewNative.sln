@@ -15,6 +15,7 @@ Global
 		Debug-Dynamic|x64 = Debug-Dynamic|x64
 		Debug-SIMD-Static|x64 = Debug-SIMD-Static|x64
 		Debug-Static|x64 = Debug-Static|x64
+		NailTest|x64 = NailTest|x64
 		Release-Dynamic|x64 = Release-Dynamic|x64
 		Release-SIMD-Dynamic|x64 = Release-SIMD-Dynamic|x64
 		Release-SIMD-Static|x64 = Release-SIMD-Static|x64
@@ -27,6 +28,8 @@ Global
 		{02082653-83FD-4178-873A-B3665AD14FA1}.Debug-SIMD-Static|x64.Build.0 = Debug-SIMD-Static|x64
 		{02082653-83FD-4178-873A-B3665AD14FA1}.Debug-Static|x64.ActiveCfg = Debug-Static|x64
 		{02082653-83FD-4178-873A-B3665AD14FA1}.Debug-Static|x64.Build.0 = Debug-Static|x64
+		{02082653-83FD-4178-873A-B3665AD14FA1}.NailTest|x64.ActiveCfg = NailTest|x64
+		{02082653-83FD-4178-873A-B3665AD14FA1}.NailTest|x64.Build.0 = NailTest|x64
 		{02082653-83FD-4178-873A-B3665AD14FA1}.Release-Dynamic|x64.ActiveCfg = Release-Dynamic|x64
 		{02082653-83FD-4178-873A-B3665AD14FA1}.Release-Dynamic|x64.Build.0 = Release-Dynamic|x64
 		{02082653-83FD-4178-873A-B3665AD14FA1}.Release-SIMD-Dynamic|x64.ActiveCfg = Release-SIMD-Dynamic|x64
@@ -40,6 +43,8 @@ Global
 		{B3E64135-5B37-48C4-A193-018BCB3DA151}.Debug-SIMD-Static|x64.Build.0 = Debug|x64
 		{B3E64135-5B37-48C4-A193-018BCB3DA151}.Debug-Static|x64.ActiveCfg = Debug|x64
 		{B3E64135-5B37-48C4-A193-018BCB3DA151}.Debug-Static|x64.Build.0 = Debug|x64
+		{B3E64135-5B37-48C4-A193-018BCB3DA151}.NailTest|x64.ActiveCfg = NailTest|x64
+		{B3E64135-5B37-48C4-A193-018BCB3DA151}.NailTest|x64.Build.0 = NailTest|x64
 		{B3E64135-5B37-48C4-A193-018BCB3DA151}.Release-Dynamic|x64.ActiveCfg = Release|x64
 		{B3E64135-5B37-48C4-A193-018BCB3DA151}.Release-SIMD-Dynamic|x64.ActiveCfg = Release|x64
 		{B3E64135-5B37-48C4-A193-018BCB3DA151}.Release-SIMD-Static|x64.ActiveCfg = Release|x64

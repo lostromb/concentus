@@ -57,16 +57,20 @@
    URL="http://www.stanford.edu/class/ee398/handouts/papers/Moffat98ArithmCoding.pdf"
   }*/
 
-static int ec_write_byte(ec_enc *_this,unsigned _value){
+static int ec_write_byte(ec_enc* _this, unsigned _value) {
 
-    //printf("ec_write_byte: %x %x %x %x\r\n", _value, _this->offs, _this->end_offs, _this->storage);
-  if(_this->offs+_this->end_offs>=_this->storage)return -1;
+    NailTest_PrintF("ec_write_byte: %x %x %x %x\r\n", _value, _this->offs, _this->end_offs, _this->storage);
+    if (_this->offs + _this->end_offs >= _this->storage)
+    {
+        NailTest_PrintF("ec_write_byte ERROR\r\n");
+        return -1;
+    }
   _this->buf[_this->offs++]=(unsigned char)_value;
   return 0;
 }
 
 static int ec_write_byte_at_end(ec_enc *_this,unsigned _value){
-    //printf("ec_write_byte_at_end %x\r\n", _this->val);
+    NailTest_PrintF("ec_write_byte_at_end %x %x\r\n", _this->val, _this->offs);
   if(_this->offs+_this->end_offs>=_this->storage)return -1;
   _this->buf[_this->storage-++(_this->end_offs)]=(unsigned char)_value;
   return 0;
@@ -83,7 +87,7 @@ static int ec_write_byte_at_end(ec_enc *_this,unsigned _value){
   The alternative is to truncate the range in order to force a carry, but
    requires similar carry tracking in the decoder, needlessly slowing it down.*/
 static void ec_enc_carry_out(ec_enc *_this,int _c){
-    //printf("ec_enc_carry_out %x\r\n", _this->val);
+    NailTest_PrintF("ec_enc_carry_out %x %x\r\n", _c, _this->val);
   if(_c!=EC_SYM_MAX){
     /*No further carry propagation possible, flush buffer.*/
     int carry;
@@ -105,13 +109,13 @@ static void ec_enc_carry_out(ec_enc *_this,int _c){
 static OPUS_INLINE void ec_enc_normalize(ec_enc *_this){
   /*If the range is too small, output some bits and rescale it.*/
   while(_this->rng<=EC_CODE_BOT){
-      //printf("ec_enc_normalize pre: %x %x %x\r\n", _this->val, _this->rng, _this->nbits_total);
+      NailTest_PrintF("ec_enc_normalize pre: %x %x %x\r\n", _this->val, _this->rng, _this->nbits_total);
     ec_enc_carry_out(_this,(int)(_this->val>>EC_CODE_SHIFT));
     /*Move the next-to-high-order symbol into the high-order position.*/
     _this->val=(_this->val<<EC_SYM_BITS)&(EC_CODE_TOP-1);
     _this->rng<<=EC_SYM_BITS;
     _this->nbits_total+=EC_SYM_BITS;
-    //printf("ec_enc_normalize post: %x %x %x\r\n", _this->val, _this->rng, _this->nbits_total);
+    NailTest_PrintF("ec_enc_normalize post: %x %x %x\r\n", _this->val, _this->rng, _this->nbits_total);
   }
 }
 
@@ -132,7 +136,7 @@ void ec_enc_init(ec_enc *_this,unsigned char *_buf,opus_uint32 _size){
 }
 
 void ec_encode(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _ft){
-    //printf("ec_encode %x\r\n", _this->val);
+    NailTest_PrintF("ec_encode %x\r\n", _this->val);
   opus_uint32 r;
   r=celt_udiv(_this->rng,_ft);
   if(_fl>0){
@@ -144,7 +148,7 @@ void ec_encode(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _ft){
 }
 
 void ec_encode_bin(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _bits){
-    //printf("ec_encode_bin %x\r\n", (opus_uint32)_this->val);
+    NailTest_PrintF("ec_encode_bin %x\r\n", (opus_uint32)_this->val);
   opus_uint32 r;
   r=_this->rng>>_bits;
   if(_fl>0){
@@ -157,7 +161,7 @@ void ec_encode_bin(ec_enc *_this,unsigned _fl,unsigned _fh,unsigned _bits){
 
 /*The probability of having a "one" is 1/(1<<_logp).*/
 void ec_enc_bit_logp(ec_enc *_this,int _val,unsigned _logp){
-    //printf("ec_enc_bit_logp %x\r\n", _this->val);
+    NailTest_PrintF("ec_enc_bit_logp %x\r\n", _this->val);
   opus_uint32 r;
   opus_uint32 s;
   opus_uint32 l;
@@ -171,7 +175,7 @@ void ec_enc_bit_logp(ec_enc *_this,int _val,unsigned _logp){
 }
 
 void ec_enc_icdf(ec_enc *_this,int _s,const unsigned char *_icdf,unsigned _ftb){
-    //printf("ec_enc_icdf %x\r\n", _this->val);
+    NailTest_PrintF("ec_enc_icdf %x\r\n", _this->val);
   opus_uint32 r;
   r=_this->rng>>_ftb;
   if(_s>0){
@@ -183,7 +187,7 @@ void ec_enc_icdf(ec_enc *_this,int _s,const unsigned char *_icdf,unsigned _ftb){
 }
 
 void ec_enc_icdf16(ec_enc *_this,int _s,const opus_uint16 *_icdf,unsigned _ftb){
-    //printf("ec_enc_icdf16 %x\r\n", _this->val);
+    NailTest_PrintF("ec_enc_icdf16 %x\r\n", _this->val);
   opus_uint32 r;
   r=_this->rng>>_ftb;
   if(_s>0){
@@ -195,7 +199,7 @@ void ec_enc_icdf16(ec_enc *_this,int _s,const opus_uint16 *_icdf,unsigned _ftb){
 }
 
 void ec_enc_uint(ec_enc *_this,opus_uint32 _fl,opus_uint32 _ft){
-    //printf("ec_enc_uint %x\r\n", _this->val);
+    NailTest_PrintF("ec_enc_uint %x\r\n", _this->val);
   unsigned  ft;
   unsigned  fl;
   int       ftb;
@@ -214,7 +218,7 @@ void ec_enc_uint(ec_enc *_this,opus_uint32 _fl,opus_uint32 _ft){
 }
 
 void ec_enc_bits(ec_enc *_this,opus_uint32 _fl,unsigned _bits){
-    //printf("ec_enc_bits %x\r\n", _this->val);
+    NailTest_PrintF("ec_enc_bits %x %x %x\r\n", _fl, _bits, _this->val);
   ec_window window;
   int       used;
   window=_this->end_window;
@@ -236,7 +240,8 @@ void ec_enc_bits(ec_enc *_this,opus_uint32 _fl,unsigned _bits){
 }
 
 void ec_enc_patch_initial_bits(ec_enc *_this,unsigned _val,unsigned _nbits){
-  int      shift;
+    NailTest_PrintF("ec_enc_patch_initial_bits %x %x %x\r\n", _val, _nbits, _this->val);
+    int      shift;
   unsigned mask;
   celt_assert(_nbits<=EC_SYM_BITS);
   shift=EC_SYM_BITS-_nbits;
@@ -259,7 +264,7 @@ void ec_enc_patch_initial_bits(ec_enc *_this,unsigned _val,unsigned _nbits){
 }
 
 void ec_enc_shrink(ec_enc *_this,opus_uint32 _size){
-    //printf("ec_enc_shrink %x\r\n", _this->val);
+NailTest_PrintF("ec_enc_shrink %x %x\r\n", _size, _this->val);
   celt_assert(_this->offs+_this->end_offs<=_size);
   OPUS_MOVE(_this->buf+_size-_this->end_offs,
    _this->buf+_this->storage-_this->end_offs,_this->end_offs);
@@ -267,7 +272,7 @@ void ec_enc_shrink(ec_enc *_this,opus_uint32 _size){
 }
 
 void ec_enc_done(ec_enc *_this){
-    //printf("ec_enc_done %x\r\n", _this->val);
+    NailTest_PrintF("ec_enc_done %x\r\n", _this->val);
   ec_window   window;
   int         used;
   opus_uint32 msk;
