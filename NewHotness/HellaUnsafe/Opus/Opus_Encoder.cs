@@ -741,7 +741,7 @@ namespace HellaUnsafe.Opus
             /* Do the allocation per-channel. */
             rate /= channels;
             entry = 1 + frame20ms + 2 * fec;
-            N = rate_table.size_of / sizeof(int);
+            N = rate_table.size_of / (sizeof(int) * rate_table.Width);
             for (i = 1; i < N; i++)
             {
                 if (rate_table[i][0] > rate) break;
