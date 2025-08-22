@@ -15,53 +15,50 @@ namespace CSharpConsole
     //[MemoryDiagnoser]
     public class Benchmarks
     {
-        internal static unsafe int float2int_sse(float value)
+        internal static int silk_ADD_SAT32_baseline(int a32, int b32)
         {
-            return Sse.ConvertToInt32(Sse.LoadScalarVector128(&value));
+            int res = (unchecked(((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
+                ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
+                ((((a32) | (b32)) & 0x80000000) == 0 ? int.MaxValue : (a32) + (b32)));
+            return res;
         }
 
-        internal static unsafe int float2int_round(float value)
+        internal static int silk_ADD_SAT32_fast(int a32, int b32)
         {
-            return (int)MathF.Round(value);
+            long res = (long)a32 + b32;
+            return res < int.MinValue ? int.MinValue : (res > int.MaxValue ? int.MaxValue : (int)res);
         }
 
-        internal static unsafe int float2int_raw(float value)
-        {
-            return (int) value;
-        }
+        private static int[] a = new int[10000];
+        private static int[] b = new int[10000];
+        private static int[] result = new int[10000];
 
         [GlobalSetup]
         public void GlobalSetup()
         {
+            Random rand = new Random();
+            for (int c = 0; c < a.Length; c++)
+            {
+                a[c] = rand.Next(int.MinValue, int.MaxValue);
+                b[c] = rand.Next(int.MinValue, int.MaxValue);
+            }
         }
 
-        [Benchmark]
-        public void Naive()
+        [Benchmark(Baseline = true)]
+        public void Baseline()
         {
-            float inc2 = 10;
-            for (float x = -50; x < 50; x += 0.01f)
+            for (int c = 0; c < a.Length; c++)
             {
-                inc2 += float2int_raw(x);
+                result[c] = silk_ADD_SAT32_baseline(a[c], b[c]);
             }
         }
 
         [Benchmark]
-        public void Round()
+        public void Test()
         {
-            float inc2 = 10;
-            for (float x = -50; x < 50; x += 0.01f)
+            for (int c = 0; c < a.Length; c++)
             {
-                inc2 += float2int_round(x);
-            }
-        }
-
-        [Benchmark]
-        public void SSE()
-        {
-            float inc2 = 10;
-            for (float x = -50; x < 50; x += 0.01f)
-            {
-                inc2 += float2int_sse(x);
+                result[c] = silk_ADD_SAT32_fast(a[c], b[c]);
             }
         }
     }

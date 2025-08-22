@@ -93,18 +93,18 @@ namespace HellaUnsafe.Celt
 
         internal static float S_MUL(float a, float b) { return a * b; }
 
-        private static void C_MUL(ref kiss_fft_cpx m, kiss_fft_cpx a, kiss_fft_cpx b)
+        private static void C_MUL(ref kiss_fft_cpx m, in kiss_fft_cpx a, in kiss_fft_cpx b)
         {
             m.r = a.r * b.r - a.i * b.i;
             m.i = a.r * b.i + a.i * b.r;
         }
-        private static void C_MUL(ref kiss_fft_cpx m, kiss_fft_cpx a, kiss_twiddle_cpx b)
+        private static void C_MUL(ref kiss_fft_cpx m, in kiss_fft_cpx a, in kiss_twiddle_cpx b)
         {
             m.r = a.r * b.r - a.i * b.i;
             m.i = a.r * b.i + a.i * b.r;
         }
 
-        private static void C_MULC(ref kiss_fft_cpx m, kiss_fft_cpx a, kiss_fft_cpx b)
+        private static void C_MULC(ref kiss_fft_cpx m, in kiss_fft_cpx a, in kiss_fft_cpx b)
         {
             m.r = a.r * b.r + a.i * b.i;
             m.i = a.i * b.r - a.r * b.i;
@@ -116,22 +116,22 @@ namespace HellaUnsafe.Celt
             c.i *= s;
         }
 
-        private static void C_ADD(ref kiss_fft_cpx res, kiss_fft_cpx a, kiss_fft_cpx b)
+        private static void C_ADD(ref kiss_fft_cpx res, in kiss_fft_cpx a, in kiss_fft_cpx b)
         {
             res.r = a.r + b.r; res.i = a.i + b.i;
         }
 
-        private static void C_SUB(ref kiss_fft_cpx res, kiss_fft_cpx a, kiss_fft_cpx b)
+        private static void C_SUB(ref kiss_fft_cpx res, in kiss_fft_cpx a, in kiss_fft_cpx b)
         {
             res.r = a.r - b.r; res.i = a.i - b.i;
         }
 
-        private static void C_ADDTO(ref kiss_fft_cpx res, kiss_fft_cpx a)
+        private static void C_ADDTO(ref kiss_fft_cpx res, in kiss_fft_cpx a)
         {
             res.r += a.r; res.i += a.i;
         }
 
-        private static void C_SUBFROM(ref kiss_fft_cpx res, kiss_fft_cpx a)
+        private static void C_SUBFROM(ref kiss_fft_cpx res, in kiss_fft_cpx a)
         {
             res.r -= a.r; res.i -= a.i;
         }

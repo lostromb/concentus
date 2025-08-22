@@ -291,11 +291,14 @@ namespace HellaUnsafe.Silk
 
         internal static int silk_ADD_SAT32(int a32, int b32)
         {
-            int res = (unchecked(((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
-                ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
-                ((((a32) | (b32)) & 0x80000000) == 0 ? int.MaxValue : (a32) + (b32)));
-            ASSERT(res == silk_SAT32((long)a32 + (long)b32));
-            return res;
+            // Faster implementation (on x64 at least...)
+            return silk_SAT32((long)a32 + b32);
+
+            //int res = (unchecked(((uint)(a32) + (uint)(b32)) & 0x80000000) == 0 ?
+            //    ((((a32) & (b32)) & 0x80000000) != 0 ? int.MinValue : (a32) + (b32)) :
+            //    ((((a32) | (b32)) & 0x80000000) == 0 ? int.MaxValue : (a32) + (b32)));
+            //ASSERT(res == silk_SAT32((long)a32 + (long)b32));
+            //return res;
         }
 
         internal static long silk_ADD_SAT64(long a64, long b64)
@@ -334,11 +337,15 @@ namespace HellaUnsafe.Silk
 
         internal static int silk_SUB_SAT32(int a32, int b32)
         {
-            int res = (unchecked(((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
-                (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
-                ((((a32) ^ 0x80000000) & (b32) & 0x80000000) != 0 ? int.MaxValue : (a32) - (b32)));
-            ASSERT(res == silk_SAT32((long)a32 - (long)b32));
-            return res;
+            // Faster implementation (on x64 at least...)
+            return silk_SAT32((long)a32 - b32);
+
+            // OPT: This is apparently very costly within nsq_del_dec   
+            //int res = (unchecked(((uint)(a32) - (uint)(b32)) & 0x80000000) == 0 ?
+            //    (((a32) & ((b32) ^ 0x80000000) & 0x80000000) != 0 ? int.MinValue : (a32) - (b32)) :
+            //    ((((a32) ^ 0x80000000) & (b32) & 0x80000000) != 0 ? int.MaxValue : (a32) - (b32)));
+            //ASSERT(res == silk_SAT32((long)a32 - (long)b32));
+            //return res;
         }
 
         internal static long silk_SUB_SAT64(long a64, long b64)

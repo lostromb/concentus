@@ -45,6 +45,7 @@ namespace HellaUnsafe.Silk
             int output;
             silk_assert(order == 10 || order == 16);
 
+            // OPT This should be vectorizable... AVX512 could do an entire order=16 block at once
             /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
             output = silk_RSHIFT(order, 1);
             output = silk_SMLAWB(output, buf32[0], coef16[0]);

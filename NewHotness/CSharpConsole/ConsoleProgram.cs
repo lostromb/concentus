@@ -1,4 +1,6 @@
 ﻿
+using BenchmarkDotNet.Running;
+using System.Numerics;
 using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Opus.Opus_Decoder;
 using static HellaUnsafe.Opus.Opus_Encoder;
@@ -13,6 +15,19 @@ namespace CSharpConsole
 
         public static unsafe void Main(string[] args)
         {
+            Random rand = new Random();
+            for (int c = 0; c < 100; c++)
+            {
+                int a = rand.Next(int.MinValue, int.MaxValue);
+                int b = rand.Next(int.MinValue, int.MaxValue);
+                int expected = Benchmarks.silk_ADD_SAT32_baseline(a, b);
+                int actual = Benchmarks.silk_ADD_SAT32_fast(a, b);
+                Console.WriteLine("{0} + {1}\t=\t{2} {3} {4}", a, b, expected, actual, actual == expected);
+            }
+
+            BenchmarkRunner.Run<Benchmarks>();
+            return;
+
             int param_bitrate = 32 * 1024;
             int param_channels = 1;
             int param_application = OPUS_APPLICATION_AUDIO;

@@ -98,12 +98,12 @@ namespace HellaUnsafe.Celt
         internal static float SUB32_ovflw(float a, float b) { return a - b; }
         internal static float MULT16_16_16(float a, float b) { return a * b; }
         internal static float MULT16_16(float a, float b) { return a * b; }
-        internal static float MAC16_16(float c, float a, float b) { return c + a * b; } // OPT can use FMA intrinsic if possible
+        internal static float MAC16_16(float c, float a, float b) { return c + a * b; } // OPT can consider doing MathF.FusedMultiplyAdd - benchmarks suggest it's actuallys slower though?
         internal static float MULT16_32_Q15(float a, float b) { return a * b; }
         internal static float MULT16_32_Q16(float a, float b) { return a * b; }
         internal static float MULT32_32_Q31(float a, float b) { return a * b; }
-        internal static float MAC16_32_Q15(float c, float a, float b) { return c + a * b; } // OPT can use FMA intrinsic if possible
-        internal static float MAC16_32_Q16(float c, float a, float b) { return c + a * b; } // OPT can use FMA intrinsic if possible
+        internal static float MAC16_32_Q15(float c, float a, float b) { return c + a * b; }
+        internal static float MAC16_32_Q16(float c, float a, float b) { return c + a * b; }
         internal static float MULT16_16_Q11_32(float a, float b) { return a * b; }
         internal static float MULT16_16_Q11(float a, float b) { return a * b; }
         internal static float MULT16_16_Q13(float a, float b) { return a * b; }

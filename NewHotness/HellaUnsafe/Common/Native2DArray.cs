@@ -69,6 +69,11 @@ namespace HellaUnsafe.Common
             Width = width;
         }
 
+        //public ref T ElementAt(int y, int x)
+        //{
+        //    return ref Pointer[(Width * y) + x];
+        //}
+
         public T* this[int y] => Row(y);
 
         public T* Row(int y)
