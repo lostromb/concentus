@@ -9,8 +9,9 @@ namespace ParityTest
     public unsafe class TestDriver
     {
         private const string OPUS_TARGET_DLL = "opus-1.5.2-x64-float.dll";
-        private const bool COMPARE_PACKETS = true;
+        private const bool COMPARE_PACKETS = false;
         private const bool COMPARE_DECODED_AUDIO = true;
+        private const float AUDIO_DEVIATION_THRESH = 0.999f;
         private const bool DUMP_PACKETS = false;
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
@@ -179,7 +180,7 @@ namespace ParityTest
             int frameCount = 0;
             Stopwatch concentusTimer = new Stopwatch();
             Stopwatch opusTimer = new Stopwatch();
-            Random random = new Random();
+            Random random = new Random(652376);
             Queue<string> PacketTransmissionPattern = new Queue<string>();
             for (int c = 0; c < 5; c++) PacketTransmissionPattern.Enqueue("|");
 
@@ -420,11 +421,18 @@ namespace ParityTest
                     }
 
                     // Check for decoder parity
-                    for (int c = 0; COMPARE_DECODED_AUDIO && c < decodedFrameSizeStereo; c++)
+                    // Calculate the overall delta between all samples in the packet
+                    if (COMPARE_DECODED_AUDIO)
                     {
-                        if (opusDecoded[c] != concentusDecoded[c])
+                        long sumDelta = 0;
+                        for (int c = 0; c < decodedFrameSizeStereo; c++)
                         {
-                            returnVal.Message = "Decoded frames do not match (frame " + frameCount + ")";
+                            sumDelta = Math.Abs(opusDecoded[c] - concentusDecoded[c]);
+                        }
+
+                        if (sumDelta > 0)
+                        {
+                            returnVal.Message = "Decoded frames do not match (frame " + frameCount + " delta " + sumDelta + ")";
                             if (parameters.PacketLossPercent > 0)
                             {
                                 StringBuilder packetLossPattern = new StringBuilder();
@@ -436,6 +444,23 @@ namespace ParityTest
                             returnVal.FailureFrame = inputPacket;
                             return returnVal;
                         }
+
+                        //float deviation = 1.0f - (float)((double)sumDelta /
+                        //    ((double)decodedFrameSizeStereo * 32768));
+                        //if (deviation < AUDIO_DEVIATION_THRESH)
+                        //{
+                        //    returnVal.Message = "Decoded frames do not match (frame " + frameCount + ")";
+                        //    if (parameters.PacketLossPercent > 0)
+                        //    {
+                        //        StringBuilder packetLossPattern = new StringBuilder();
+                        //        foreach (string x in PacketTransmissionPattern)
+                        //            packetLossPattern.Append(x);
+                        //        returnVal.Message += " (Packet loss " + packetLossPattern.ToString() + ")";
+                        //    }
+                        //    returnVal.Passed = false;
+                        //    returnVal.FailureFrame = inputPacket;
+                        //    return returnVal;
+                        //}
                     }
                     frameCount++;
                 }

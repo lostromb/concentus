@@ -177,3 +177,31 @@ internal static readonly Native2DArray<byte> silk_gain_iCDF = new Native2DArray<
 3D
 
 internal static readonly Native3DArray<byte> e_prob_model = new Native3DArray<byte>(4, 2, 42, new byte[] {
+
+
+
+=============================================================================
+NAIL TESTING
+=============================================================================
+
+
+printf("ec_write_byte: {0:x} {1:x} {2:x} {3:x}\r\n", _value, _this->offs, _this->end_offs, _this->storage);
+
+printf("ec_write_byte: %x %x %x %x\r\n", _value, _this->offs, _this->end_offs, _this->storage);
+
+
+
+NailTest_PrintF("X1i {0} {1:x}\r\n", i, FloatBits(X1i));
+NailTest_PrintF("X1r {0} {1:x}\r\n", i, FloatBits(X1r));
+NailTest_PrintF("angle {0} {1:x}\r\n", i, FloatBits(angle));
+NailTest_PrintF("angle2 {0} {1:x}\r\n", i, FloatBits(angle2));
+NailTest_PrintF("tonality {0} {1:x}\r\n", i, FloatBits(tonality[i]));
+NailTest_PrintF("tonality2 {0} {1:x}\r\n", i, FloatBits(tonality2[i]));
+
+
+NailTest_PrintF("X1i %i %08x\r\n", i, FloatBits(X1i));
+NailTest_PrintF("X1r %i %08x\r\n", i, FloatBits(X1r));
+NailTest_PrintF("angle %i %08x\r\n", i, FloatBits(angle));
+NailTest_PrintF("angle2 %i %08x\r\n", i, FloatBits(angle2));
+NailTest_PrintF("tonality %i %08x\r\n", i, FloatBits(tonality[i]));
+NailTest_PrintF("tonality2 %i %08x\r\n", i, FloatBits(tonality2[i]));

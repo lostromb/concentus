@@ -635,13 +635,6 @@ namespace HellaUnsafe.Opus
                     /* No delay on this detection, but it's less reliable. */
                     tonality2[i] = 1.0f / (1.0f + 40.0f * 16.0f * pi4 * mod2) - .015f;
 
-                    NailTest_PrintF("X1i {0} {1:x}\r\n", i, FloatBits(X1i));
-                    NailTest_PrintF("X1r {0} {1:x}\r\n", i, FloatBits(X1r));
-                    NailTest_PrintF("angle {0} {1:x}\r\n", i, FloatBits(angle));
-                    NailTest_PrintF("angle2 {0} {1:x}\r\n", i, FloatBits(angle2));
-                    NailTest_PrintF("tonality {0} {1:x}\r\n", i, FloatBits(tonality[i]));
-                    NailTest_PrintF("tonality2 {0} {1:x}\r\n", i, FloatBits(tonality2[i]));
-
                     A[i] = angle2;
                     dA[i] = d_angle2;
                     d2A[i] = mod2;
@@ -693,7 +686,6 @@ namespace HellaUnsafe.Opus
                         float binE = output[i].r * (float)output[i].r + output[N - i].r * (float)output[N - i].r
                                    + output[i].i * (float)output[i].i + output[N - i].i * (float)output[N - i].i;
                         binE = SCALE_ENER(binE);
-                        NailTest_PrintF("binE {0} {1:x}\r\n", i, FloatBits(binE));
                         E += binE;
                         tE += binE * MAX32(0, tonality[i]);
                         nE += binE * 2.0f * (.5f - noisiness[i]);
@@ -707,7 +699,6 @@ namespace HellaUnsafe.Opus
 
                     tonal->E[tonal->E_count][b] = E;
                     frame_noisiness += nE / (1e-15f + E);
-                    NailTest_PrintF("frame_noisiness {0:x}\r\n", FloatBits(frame_noisiness));
 
                     frame_loudness += (float)sqrt(E + 1e-10f);
                     logE[b] = (float)log(E + 1e-10f);

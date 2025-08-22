@@ -1,18 +1,21 @@
 ﻿using System;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using static System.Math;
 using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Celt.CeltLPC;
 using static HellaUnsafe.Celt.EntCode;
 using static HellaUnsafe.Celt.MathOps;
 using static HellaUnsafe.Common.CRuntime;
+using static HellaUnsafe.Silk.SigProcFIX;
 
 namespace HellaUnsafe.Celt
 {
-    internal static class Pitch
+    internal static unsafe class Pitch
     {
         /*We make sure a C version is always available for cases where the overhead of
             vectorization and passing around an arch flag aren't worth it.*/
-        internal static unsafe float celt_inner_prod(
+        internal static unsafe float celt_inner_prod_c(
             in float* x,
             in float* y,
             int N)
@@ -24,7 +27,15 @@ namespace HellaUnsafe.Celt
             return xy;
         }
 
-        internal static unsafe void dual_inner_prod(in float* x, in float* y01, in float* y02,
+        internal static unsafe float celt_inner_prod(
+            in float* x,
+            in float* y,
+            int N)
+        {
+            return celt_inner_prod_c(x, y, N);
+        }
+
+        internal static unsafe void dual_inner_prod_c(in float* x, in float* y01, in float* y02,
             int N, float* xy1, float* xy2)
         {
             int i;
@@ -39,9 +50,18 @@ namespace HellaUnsafe.Celt
             *xy2 = xy02;
         }
 
+        internal static unsafe void dual_inner_prod(in float* x, in float* y01, in float* y02,
+            int N, float* xy1, float* xy2)
+        {
+            dual_inner_prod_c(x, y01, y02, N, xy1, xy2);
+        }
+
+        internal static readonly int* avx_mask = AllocateGlobalArray<int>(15, new int[] 
+            { -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0 });
+
         /* OPT: This is the kernel you really want to optimize. It gets used a lot
             by the prefilter and by the PLC. */
-        internal static unsafe void xcorr_kernel(float* x, float* y, float* sum/*[4]*/, int len)
+        internal static unsafe void xcorr_kernel_c(float* x, float* y, float* sum/*[4]*/, int len)
         {
             int j;
             float y_0, y_1, y_2, y_3;
@@ -104,6 +124,64 @@ namespace HellaUnsafe.Celt
                 sum[1] = MAC16_16(sum[1], tmp, y_3);
                 sum[2] = MAC16_16(sum[2], tmp, y_0);
                 sum[3] = MAC16_16(sum[3], tmp, y_1);
+            }
+        }
+
+        internal static unsafe void xcorr_kernel_avx(float* x, float* y, float* sum/*[4]*/, int len)
+        {
+            Vector256<float> xsum0, xsum1, xsum2, xsum3, xsum4, xsum5, xsum6, xsum7;
+            xsum7 = xsum6 = xsum5 = xsum4 = xsum3 = xsum2 = xsum1 = xsum0 = Vector256<float>.Zero;
+            int i;
+            Vector256<float> x0;
+            /* Compute 8 inner products using partial sums. */
+            for (i = 0; i < len - 7; i += 8)
+            {
+                x0 = Avx.LoadVector256(x + i);
+                xsum0 = Fma.MultiplyAdd(x0, Avx.LoadVector256(y + i), xsum0);
+                xsum1 = Fma.MultiplyAdd(x0, Avx.LoadVector256(y + i + 1), xsum1);
+                xsum2 = Fma.MultiplyAdd(x0, Avx.LoadVector256(y + i + 2), xsum2);
+                xsum3 = Fma.MultiplyAdd(x0, Avx.LoadVector256(y + i + 3), xsum3);
+                xsum4 = Fma.MultiplyAdd(x0, Avx.LoadVector256(y + i + 4), xsum4);
+                xsum5 = Fma.MultiplyAdd(x0, Avx.LoadVector256(y + i + 5), xsum5);
+                xsum6 = Fma.MultiplyAdd(x0, Avx.LoadVector256(y + i + 6), xsum6);
+                xsum7 = Fma.MultiplyAdd(x0, Avx.LoadVector256(y + i + 7), xsum7);
+            }
+            if (i != len)
+            {
+                Vector256<float> m = Vector256.AsSingle(Avx.LoadVector256(avx_mask + 7 + i - len));
+                x0 = Avx.MaskLoad(x + i, m);
+                xsum0 = Fma.MultiplyAdd(x0, Avx.MaskLoad(y + i, m), xsum0);
+                xsum1 = Fma.MultiplyAdd(x0, Avx.MaskLoad(y + i + 1, m), xsum1);
+                xsum2 = Fma.MultiplyAdd(x0, Avx.MaskLoad(y + i + 2, m), xsum2);
+                xsum3 = Fma.MultiplyAdd(x0, Avx.MaskLoad(y + i + 3, m), xsum3);
+                xsum4 = Fma.MultiplyAdd(x0, Avx.MaskLoad(y + i + 4, m), xsum4);
+                xsum5 = Fma.MultiplyAdd(x0, Avx.MaskLoad(y + i + 5, m), xsum5);
+                xsum6 = Fma.MultiplyAdd(x0, Avx.MaskLoad(y + i + 6, m), xsum6);
+                xsum7 = Fma.MultiplyAdd(x0, Avx.MaskLoad(y + i + 7, m), xsum7);
+            }
+            /* 8 horizontal adds. */
+            /* Compute [0 4] [1 5] [2 6] [3 7] */
+            xsum0 = Avx.Add(Avx.Permute2x128(xsum0, xsum4, 2 << 4), Avx.Permute2x128(xsum0, xsum4, 1 | (3 << 4)));
+            xsum1 = Avx.Add(Avx.Permute2x128(xsum1, xsum5, 2 << 4), Avx.Permute2x128(xsum1, xsum5, 1 | (3 << 4)));
+            xsum2 = Avx.Add(Avx.Permute2x128(xsum2, xsum6, 2 << 4), Avx.Permute2x128(xsum2, xsum6, 1 | (3 << 4)));
+            xsum3 = Avx.Add(Avx.Permute2x128(xsum3, xsum7, 2 << 4), Avx.Permute2x128(xsum3, xsum7, 1 | (3 << 4)));
+            /* Compute [0 1 4 5] [2 3 6 7] */
+            xsum0 = Avx.HorizontalAdd(xsum0, xsum1);
+            xsum1 = Avx.HorizontalAdd(xsum2, xsum3);
+            /* Compute [0 1 2 3 4 5 6 7] */
+            xsum0 = Avx.HorizontalAdd(xsum0, xsum1);
+            Avx.Store(sum, xsum0);
+        }
+
+        internal static unsafe void xcorr_kernel(float* x, float* y, float* sum/*[4]*/, int len)
+        {
+            if (Avx.IsSupported && Fma.IsSupported)
+            {
+                xcorr_kernel_avx(x, y, sum, len);
+            }
+            else
+            {
+                xcorr_kernel_c(x, y, sum, len);
             }
         }
 
@@ -240,23 +318,25 @@ namespace HellaUnsafe.Celt
             celt_fir5(x_lp, lpc2, len >> 1);
         }
 
-        /* Pure C implementation. */
-        internal static unsafe void
-        celt_pitch_xcorr(in float* _x, in float* _y,
+        internal static unsafe void celt_pitch_xcorr_avx(in float* _x, in float* _y,
               float* xcorr, int len, int max_pitch)
         {
-#if FALSE
-            /* This is a simple version of the pitch correlation that should work
-                     well on DSPs like Blackfin and TI C5x/C6x */
-            int i, j;
-            for (i = 0; i < max_pitch; i++)
+            int i;
+            celt_assert(max_pitch > 0);
+            for (i = 0; i < max_pitch - 7; i += 8)
             {
-                float sum = 0;
-                for (j = 0; j < len; j++)
-                    sum = MAC16_16(sum, _x[j], _y[i + j]);
-                xcorr[i] = sum;
+                xcorr_kernel_avx(_x, _y + i, &xcorr[i], len);
             }
-#else
+            for (; i < max_pitch; i++)
+            {
+                xcorr[i] = celt_inner_prod(_x, _y + i, len);
+            }
+        }
+
+        /* Pure C implementation. */
+        internal static unsafe void celt_pitch_xcorr_c(in float* _x, in float* _y,
+              float* xcorr, int len, int max_pitch)
+        {
             /* Unrolled version of the pitch correlation -- runs faster on x86 and ARM */
             int i;
             /*The EDSP version requires that max_pitch is at least 1, and that _x is
@@ -269,7 +349,7 @@ namespace HellaUnsafe.Celt
             for (i = 0; i < max_pitch - 3; i += 4)
             {
                 new Span<float>(sum, 4).Clear();
-                xcorr_kernel(_x, _y + i, sum, len);
+                xcorr_kernel_c(_x, _y + i, sum, len);
                 xcorr[i] = sum[0];
                 xcorr[i + 1] = sum[1];
                 xcorr[i + 2] = sum[2];
@@ -281,7 +361,19 @@ namespace HellaUnsafe.Celt
             {
                 xcorr[i] = celt_inner_prod(_x, _y + i, len);
             }
-#endif
+        }
+
+        internal static unsafe void celt_pitch_xcorr(in float* _x, in float* _y,
+              float* xcorr, int len, int max_pitch)
+        {
+            if (Avx.IsSupported && Fma.IsSupported)
+            {
+                celt_pitch_xcorr_avx(_x, _y, xcorr, len, max_pitch);
+            }
+            else
+            {
+                celt_pitch_xcorr_c(_x, _y, xcorr, len, max_pitch);
+            }
         }
 
         internal static unsafe void pitch_search(in float* x_lp, float* y,
