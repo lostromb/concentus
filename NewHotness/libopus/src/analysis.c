@@ -603,6 +603,13 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
        /* No delay on this detection, but it's less reliable. */
        tonality2[i] = 1.f/(1.f+40.f*16.f*pi4*mod2)-.015f;
 
+       NailTest_PrintF("X1i %i %08x\r\n", i, FloatBits(X1i));
+       NailTest_PrintF("X1r %i %08x\r\n", i, FloatBits(X1r));
+       NailTest_PrintF("angle %i %08x\r\n", i, FloatBits(angle));
+       NailTest_PrintF("angle2 %i %08x\r\n", i, FloatBits(angle2));
+       NailTest_PrintF("tonality %i %08x\r\n", i, FloatBits(tonality[i]));
+       NailTest_PrintF("tonality2 %i %08x\r\n", i, FloatBits(tonality2[i]));
+
        A[i] = angle2;
        dA[i] = d_angle2;
        d2A[i] = mod2;
@@ -654,6 +661,7 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
           float binE = out[i].r*(float)out[i].r + out[N-i].r*(float)out[N-i].r
                      + out[i].i*(float)out[i].i + out[N-i].i*(float)out[N-i].i;
           binE = SCALE_ENER(binE);
+          NailTest_PrintF("binE %i %08x\r\n", i, FloatBits(binE));
           E += binE;
           tE += binE*MAX32(0, tonality[i]);
           nE += binE*2.f*(.5f-noisiness[i]);
@@ -670,6 +678,7 @@ static void tonality_analysis(TonalityAnalysisState *tonal, const CELTMode *celt
 
        tonal->E[tonal->E_count][b] = E;
        frame_noisiness += nE/(1e-15f+E);
+       NailTest_PrintF("frame_noisiness %08x\r\n", FloatBits(frame_noisiness));
 
        frame_loudness += (float)sqrt(E+1e-10f);
        logE[b] = (float)log(E+1e-10f);

@@ -31,6 +31,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System;
 using static System.MathF;
 using static HellaUnsafe.Celt.Arch;
 using static HellaUnsafe.Celt.EntCode;
@@ -54,7 +55,34 @@ namespace HellaUnsafe.Celt
         internal static float frac_div32(float a, float b) { ASSERT(b > 0); return a / b; }
         internal static float celt_log2(float x) { return (1.442695040888963387f * Log(x)); }
         internal static float celt_exp2(float x) { return Exp(0.6931471805599453094f * x); }
-        internal static float fast_atan2f(float a, float b) { return Atan2(a, b); }
+        internal static float fast_atan2f(float y, float x)
+        {
+            const float cA = 0.43157974f;
+            const float cB = 0.67848403f;
+            const float cC = 0.08595542f;
+            const float cE = (3.141592653f / 2);
+            float x2, y2;
+            x2 = x * x;
+            y2 = y * y;
+            /* For very small values, we don't care about the answer, so
+               we can just return 0. */
+            if (x2 + y2 < 1e-18f)
+            {
+                return 0;
+            }
+            if (x2 < y2)
+            {
+                float den = (y2 + cB * x2) * (y2 + cC * x2);
+                return -x * y * (y2 + cA * x2) / den + (y < 0 ? -cE : cE);
+            }
+            else
+            {
+                float den = (x2 + cB * y2) * (x2 + cC * y2);
+                return x * y * (x2 + cA * y2) / den + (y < 0 ? -cE : cE) - (x * y < 0 ? -cE : cE);
+            }
+            // PORTING NOTE: We could use built-in atan2 maybe
+            //return MathF.Atan2(y, x);
+        }
 
         /*Compute floor(sqrt(_val)) with exact arithmetic.
           _val must be greater than 0.

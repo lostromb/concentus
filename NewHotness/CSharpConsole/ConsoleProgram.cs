@@ -1,17 +1,21 @@
 ﻿
-using static HellaUnsafe.Opus.Opus_Encoder;
+using BenchmarkDotNet.Running;
+using System.Runtime.Intrinsics.X86;
+using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Opus.Opus_Decoder;
+using static HellaUnsafe.Opus.Opus_Encoder;
 using static HellaUnsafe.Opus.OpusDefines;
 using static HellaUnsafe.Opus.OpusPrivate;
-using static HellaUnsafe.Common.CRuntime;
 
 namespace CSharpConsole
 {
-    internal static unsafe class Program
+    internal static unsafe class ConsoleProgram
     {
+        
+
         public static unsafe void Main(string[] args)
         {
-            int param_bitrate = 32 * 1024;
+            int param_bitrate = 16 * 1024;
             int param_channels = 1;
             int param_application = OPUS_APPLICATION_AUDIO;
             int param_signal = OPUS_SIGNAL_MUSIC;
@@ -108,6 +112,7 @@ namespace CSharpConsole
                 byte* outPacket = stackalloc byte[1275];
                 short* inAudioSamples = (short*)inAudioByte;
                 Console.Write("NAIL TEST START\r\n");
+                int frame = 0;
                 while (true)
                 {
                     int bytesRead = fileIn.Read(new Span<byte>(inAudioByte, inputBufLength));
@@ -126,6 +131,8 @@ namespace CSharpConsole
                         errorOrLength = opus_decode(decoder, outPacket, errorOrLength, inAudioSamples, packetSamplesPerChannel, 0);
                         Console.WriteLine("DECODE: " + errorOrLength);
                     }
+
+                    frame++;
                 }
 
                 opus_encoder_destroy(encoder);

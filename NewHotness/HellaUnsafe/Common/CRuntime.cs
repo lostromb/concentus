@@ -414,6 +414,14 @@ namespace HellaUnsafe.Common
 #endif
         }
 
+        public static uint FloatBits(float x)
+        {
+            Span<float> a = stackalloc float[1];
+            Span<uint> b = MemoryMarshal.Cast<float, uint>(a);
+            a[0] = x;
+            return b[0];
+        }
+        
         public static unsafe void PrintF(string format, params object[] args)
         {
             Console.Write(format, args);

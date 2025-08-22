@@ -7,18 +7,24 @@ using static HellaUnsafe.Opus.OpusPrivate;
 
 namespace CodecSample
 {
-    internal class Program
+    internal class EncoderProgram
     {
         static void Main(string[] args)
         {
             using (FileStream fileIn = new FileStream(@"D:\Code\concentus\NewHotness\CodecSample\poison.opus", FileMode.Open, FileAccess.Read))
             using (FileStream fileOut = new FileStream(@"D:\Code\concentus\NewHotness\CodecSample\jank.opus", FileMode.Create, FileAccess.Write))
             {
+                IOpusEncoder encoder = HellaUnsafeOpusEncoder.Create(48000, 2, Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO);
+                encoder.Complexity = 10;
+                encoder.UseVBR = true;
+                encoder.UseConstrainedVBR = true;
+                encoder.Bitrate = 16 * 1024;
+                IOpusDecoder decoder = OpusCodecFactory.CreateDecoder(48000, 2);
                 OpusOggReadStream readStream = new OpusOggReadStream(
-                    OpusCodecFactory.CreateDecoder(48000, 2),
+                    decoder,
                     fileIn);
                 OpusOggWriteStream writeStream = new OpusOggWriteStream(
-                    HellaUnsafeOpusEncoder.Create(48000, 2, Concentus.Enums.OpusApplication.OPUS_APPLICATION_AUDIO),
+                    encoder,
                     fileOut,
                     new OpusTags(),
                     48000);

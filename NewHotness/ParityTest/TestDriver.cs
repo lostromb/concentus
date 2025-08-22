@@ -3,14 +3,15 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using static HellaUnsafe.Common.CRuntime;
-using static HellaUnsafe.Opus.Opus_Encoder;
 
 namespace ParityTest
 {
     public unsafe class TestDriver
     {
-        private const string OPUS_TARGET_DLL = "opus-1.5.2-x64-float-debug.dll";
-        private const bool ACTUALLY_COMPARE = true;
+        private const string OPUS_TARGET_DLL = "opus-1.5.2-x64-float.dll";
+        private const bool COMPARE_PACKETS = true;
+        private const bool COMPARE_DECODED_AUDIO = true;
+        private const bool DUMP_PACKETS = false;
 
         [DllImport(OPUS_TARGET_DLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr opus_encoder_create(int Fs, int channels, int application, out IntPtr error);
@@ -258,7 +259,7 @@ namespace ParityTest
                                 opusTimer.Start();
                                 int opusPacketSize = opus_encode(opusEncoder, nextFrameBytes, frameSize, encodedPtr, 10000);
                                 opusTimer.Stop();
-                                if (ACTUALLY_COMPARE && opusPacketSize != concentusPacketSize)
+                                if (COMPARE_PACKETS && opusPacketSize != concentusPacketSize)
                                 {
                                     returnVal.Message = "Output packet sizes do not match (frame " + frameCount + ")";
                                     returnVal.Passed = false;
@@ -271,17 +272,20 @@ namespace ParityTest
                         }
 
                         // Check for encoder parity
-                        for (int c = 0; ACTUALLY_COMPARE && c < concentusPacketSize; c++)
+                        for (int c = 0; COMPARE_PACKETS && c < concentusPacketSize; c++)
                         {
                             if (opusEncoded[c] != concentusEncoded[c])
                             {
-                                fixed (byte* truePacket = opusEncoded)
-                                fixed (byte* myPacket = concentusEncoded)
+                                if (DUMP_PACKETS)
                                 {
-                                    PrintF("Expected packet: ");
-                                    PrintByteArray(truePacket, concentusPacketSize);
-                                    PrintF("Actual packet:   ");
-                                    PrintByteArray(myPacket, concentusPacketSize);
+                                    fixed (byte* truePacket = opusEncoded)
+                                    fixed (byte* myPacket = concentusEncoded)
+                                    {
+                                        PrintF("Expected packet: ");
+                                        PrintByteArray(truePacket, concentusPacketSize);
+                                        PrintF("Actual packet:   ");
+                                        PrintByteArray(myPacket, concentusPacketSize);
+                                    }
                                 }
                                 returnVal.Message = "Encoded packets do not match (frame " + frameCount + ")";
                                 returnVal.Passed = false;
@@ -416,7 +420,7 @@ namespace ParityTest
                     }
 
                     // Check for decoder parity
-                    for (int c = 0; ACTUALLY_COMPARE && c < decodedFrameSizeStereo; c++)
+                    for (int c = 0; COMPARE_DECODED_AUDIO && c < decodedFrameSizeStereo; c++)
                     {
                         if (opusDecoded[c] != concentusDecoded[c])
                         {

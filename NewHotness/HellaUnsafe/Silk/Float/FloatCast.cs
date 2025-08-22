@@ -26,16 +26,28 @@
 
 /* Version 1.1 */
 
+using System;
+using System.Runtime.Intrinsics.X86;
 using static HellaUnsafe.Celt.Arch;
 
 namespace HellaUnsafe.Silk.Float
 {
     internal static class FloatCast
     {
-        internal static int float2int(float value)
+        internal static unsafe int float2int(float value)
         {
-            // OPT we can potentially vectorize the conversion
-            return (int)value;
+            if (Sse.IsSupported)
+            {
+                // This ensures binary parity with the C code
+                // _mm_cvtss_si32(_mm_load_ss(&value));
+                return Sse.ConvertToInt32(Sse.LoadScalarVector128(&value));
+            }
+            else
+            {
+                // This function has to follow specific rounding behavior so we can't just do (int)value.
+                // This also makes it difficult to vectorize if needed
+                return (int)MathF.Round(value);
+            }
         }
 
         internal static short FLOAT2INT16(float x)

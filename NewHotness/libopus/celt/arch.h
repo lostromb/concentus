@@ -293,6 +293,12 @@ static OPUS_INLINE int celt_isnan(float x)
 
 // Functions for bed-of-nails parity
 
+static opus_uint32 FloatBits(opus_val32 x)
+{
+	opus_uint32* ptr = &x;
+	return *ptr;
+}
+
 static void NailTest_PrintF(const char* const format, ...)
 {
 #if NAILTEST

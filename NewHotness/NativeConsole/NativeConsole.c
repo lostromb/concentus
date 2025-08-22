@@ -7,7 +7,7 @@
 
 int main()
 {
-    int param_bitrate = 32 * 1024;
+    int param_bitrate = 16 * 1024;
     int param_channels = 1;
     int param_application = OPUS_APPLICATION_AUDIO;
     int param_signal = OPUS_SIGNAL_MUSIC;
@@ -124,6 +124,7 @@ int main()
     short* inAudioSamples = (short*)inAudioByte;
     FILE* fileIn = fopen(fileName, "rb");
     printf_s("NAIL TEST START\r\n");
+    int frame = 0;
     while (1)
     {
         int bytesRead = fread(inAudioByte, sizeof(opus_uint8), inputBufLength, fileIn);
@@ -142,6 +143,8 @@ int main()
             errorOrLength = opus_decode(decoder, outPacket, errorOrLength, inAudioSamples, packetSamplesPerChannel, 0);
             printf_s("DECODE: %i\r\n", errorOrLength);
         }
+
+        frame++;
     }
 
     free(inAudioByte);
