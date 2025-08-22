@@ -930,7 +930,7 @@ namespace HellaUnsafe.Opus
 
             lsb_depth = IMIN(lsb_depth, st->lsb_depth);
 
-            opus_custom_encoder_ctl(celt_enc, CELT_GET_MODE_REQUEST, &celt_mode);
+            opus_custom_encoder_ctl(celt_enc, CELT_GET_MODE_REQUEST, out celt_mode);
             analysis_info.valid = 0;
             if (st->silk_mode.complexity >= 7 && st->Fs >= 16000)
             {
@@ -1497,7 +1497,7 @@ namespace HellaUnsafe.Opus
             st->rangeFinal = 0;
             silk_enc = (byte*)st + st->silk_enc_offset;
             celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
-            opus_custom_encoder_ctl(celt_enc, CELT_GET_MODE_REQUEST, &celt_mode);
+            opus_custom_encoder_ctl(celt_enc, CELT_GET_MODE_REQUEST, out celt_mode);
             curr_bandwidth = st->bandwidth;
             if (st->application == OPUS_APPLICATION_RESTRICTED_LOWDELAY)
                 delay_compensation = 0;
@@ -1971,7 +1971,7 @@ namespace HellaUnsafe.Opus
                         {
                             return OPUS_INTERNAL_ERROR;
                         }
-                        opus_custom_encoder_ctl(celt_enc, OPUS_GET_FINAL_RANGE_REQUEST, (&redundant_rng));
+                        opus_custom_encoder_ctl(celt_enc, OPUS_GET_FINAL_RANGE_REQUEST, out redundant_rng);
                         opus_custom_encoder_ctl(celt_enc, OPUS_RESET_STATE);
                     }
 
@@ -2052,7 +2052,7 @@ namespace HellaUnsafe.Opus
                         {
                             return OPUS_INTERNAL_ERROR;
                         }
-                        opus_custom_encoder_ctl(celt_enc, OPUS_GET_FINAL_RANGE_REQUEST, &redundant_rng);
+                        opus_custom_encoder_ctl(celt_enc, OPUS_GET_FINAL_RANGE_REQUEST, out redundant_rng);
                     }
 
                     /* Signalling the mode in the first byte */
@@ -2383,7 +2383,7 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Override for int* parameter (most getters)
         /// </summary>
-        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, int* value)
+        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, out int value)
         {
             int ret = OPUS_OK;
             OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
@@ -2391,217 +2391,138 @@ namespace HellaUnsafe.Opus
             {
                 case OPUS_GET_APPLICATION_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->application;
+                        value = st->application;
                     }
                     break;
                 case OPUS_GET_BITRATE_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = user_bitrate_to_bitrate(st, st->prev_framesize, 1276);
+                        value = user_bitrate_to_bitrate(st, st->prev_framesize, 1276);
                     }
                     break;
                 case OPUS_GET_FORCE_CHANNELS_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->force_channels;
+                        value = st->force_channels;
                     }
                     break;
                 case OPUS_GET_MAX_BANDWIDTH_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->max_bandwidth;
+                        value = st->max_bandwidth;
                     }
                     break;
                 case OPUS_GET_BANDWIDTH_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->bandwidth;
+                        value = st->bandwidth;
                     }
                     break;
                 case OPUS_GET_DTX_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->use_dtx;
+                        value = st->use_dtx;
                     }
                     break;
                 case OPUS_GET_COMPLEXITY_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->silk_mode.complexity;
+                        value = st->silk_mode.complexity;
                     }
                     break;
                 case OPUS_GET_INBAND_FEC_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->fec_config;
+                        value = st->fec_config;
                     }
                     break;
                 case OPUS_GET_PACKET_LOSS_PERC_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->silk_mode.packetLossPercentage;
+                        value = st->silk_mode.packetLossPercentage;
                     }
                     break;
                 case OPUS_GET_VBR_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->use_vbr;
+                        value = st->use_vbr;
                     }
                     break;
                 case OPUS_GET_VOICE_RATIO_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->voice_ratio;
+                        value = st->voice_ratio;
                     }
                     break;
                 case OPUS_GET_VBR_CONSTRAINT_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->vbr_constraint;
+                        value = st->vbr_constraint;
                     }
                     break;
                 case OPUS_GET_SIGNAL_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->signal_type;
+                        value = st->signal_type;
                     }
                     break;
                 case OPUS_GET_LOOKAHEAD_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->Fs / 400;
+                        value = st->Fs / 400;
                         if (st->application != OPUS_APPLICATION_RESTRICTED_LOWDELAY)
-                            *value += st->delay_compensation;
+                            value += st->delay_compensation;
                     }
                     break;
                 case OPUS_GET_SAMPLE_RATE_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->Fs;
+                        value = st->Fs;
                     }
                     break;
                 case OPUS_GET_LSB_DEPTH_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->lsb_depth;
+                        value = st->lsb_depth;
                     }
                     break;
                 case OPUS_GET_EXPERT_FRAME_DURATION_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->variable_duration;
+                        value = st->variable_duration;
                     }
                     break;
                 case OPUS_GET_PREDICTION_DISABLED_REQUEST:
                     {
-                        if (value == null)
-                            goto bad_arg;
-                        *value = st->silk_mode.reducedDependency;
+                        value = st->silk_mode.reducedDependency;
                     }
                     break;
                 case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        opus_custom_encoder_ctl(celt_enc, OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST, (value));
+                        opus_custom_encoder_ctl(celt_enc, OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST, out value);
                     }
                     break;
                 case OPUS_GET_IN_DTX_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
                         if (st->silk_mode.useDTX != 0 && (st->prev_mode == MODE_SILK_ONLY || st->prev_mode == MODE_HYBRID))
                         {
                             /* DTX determined by Silk. */
                             silk_encoder* silk_enc = (silk_encoder*)(void*)((byte*)st + st->silk_enc_offset);
-                            *value = BOOL2INT(silk_enc->state_Fxx[0].sCmn.noSpeechCounter >= NB_SPEECH_FRAMES_BEFORE_DTX);
+                            value = BOOL2INT(silk_enc->state_Fxx[0].sCmn.noSpeechCounter >= NB_SPEECH_FRAMES_BEFORE_DTX);
                             /* Stereo: check second channel unless only the middle channel was encoded. */
-                            if (*value == 1 && st->silk_mode.nChannelsInternal == 2 && silk_enc->prev_decode_only_middle == 0)
+                            if (value == 1 && st->silk_mode.nChannelsInternal == 2 && silk_enc->prev_decode_only_middle == 0)
                             {
-                                *value = BOOL2INT(silk_enc->state_Fxx[1].sCmn.noSpeechCounter >= NB_SPEECH_FRAMES_BEFORE_DTX);
+                                value = BOOL2INT(silk_enc->state_Fxx[1].sCmn.noSpeechCounter >= NB_SPEECH_FRAMES_BEFORE_DTX);
                             }
                         }
                         else if (st->use_dtx != 0)
                         {
                             /* DTX determined by Opus. */
-                            *value = BOOL2INT(st->nb_no_activity_ms_Q1 >= NB_SPEECH_FRAMES_BEFORE_DTX * 20 * 2);
+                            value = BOOL2INT(st->nb_no_activity_ms_Q1 >= NB_SPEECH_FRAMES_BEFORE_DTX * 20 * 2);
                         }
                         else
                         {
-                            *value = 0;
+                            value = 0;
                         }
                     }
                     break;
                 default:
                     /* fprintf(stderr, "unknown opus_encoder_ctl() request: %d", request);*/
                     ret = OPUS_UNIMPLEMENTED;
+                    value = 0;
                     break;
             }
             return ret;
-        bad_arg:
-            return OPUS_BAD_ARG;
         }
 
         /// <summary>
         /// Override for OPUS_GET_FINAL_RANGE_REQUEST
         /// </summary>
-        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, uint* value)
+        public static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, out uint value)
         {
             int ret = OPUS_OK;
             OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
@@ -2609,21 +2530,16 @@ namespace HellaUnsafe.Opus
             {
                 case OPUS_GET_FINAL_RANGE_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->rangeFinal;
+                        value = st->rangeFinal;
                     }
                     break;
                 default:
                     /* fprintf(stderr, "unknown opus_encoder_ctl() request: %d", request);*/
                     ret = OPUS_UNIMPLEMENTED;
+                    value = 0;
                     break;
             }
             return ret;
-        bad_arg:
-            return OPUS_BAD_ARG;
         }
 
         /// <summary>
@@ -2691,7 +2607,7 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Override for CELT_GET_MODE_REQUEST
         /// </summary>
-        internal static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, OpusCustomMode** value)
+        internal static unsafe int opus_encoder_ctl(OpusEncoder* st, int request, out OpusCustomMode* value)
         {
             int ret = OPUS_OK;
             OpusCustomEncoder* celt_enc = (OpusCustomEncoder*)((byte*)st + st->celt_enc_offset);
@@ -2699,21 +2615,16 @@ namespace HellaUnsafe.Opus
             {
                 case CELT_GET_MODE_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        ret = opus_custom_encoder_ctl(celt_enc, CELT_GET_MODE_REQUEST, (value));
+                        ret = opus_custom_encoder_ctl(celt_enc, CELT_GET_MODE_REQUEST, out value);
                     }
                     break;
                 default:
                     /* fprintf(stderr, "unknown opus_encoder_ctl() request: %d", request);*/
                     ret = OPUS_UNIMPLEMENTED;
+                    value = null;
                     break;
             }
             return ret;
-        bad_arg:
-            return OPUS_BAD_ARG;
         }
 
         public static unsafe void opus_encoder_destroy(OpusEncoder* st)

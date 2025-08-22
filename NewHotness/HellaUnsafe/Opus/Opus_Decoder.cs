@@ -831,12 +831,11 @@ namespace HellaUnsafe.Opus
         /// <summary>
         /// Int* parameter (most getters)
         /// </summary>
-        public static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, int* value)
+        public static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, out int value)
         {
             int ret = OPUS_OK;
             void* silk_dec;
             OpusCustomDecoder* celt_dec;
-
             silk_dec = (byte*)st + st->silk_dec_offset;
             celt_dec = (OpusCustomDecoder*)((byte*)st + st->celt_dec_offset);
 
@@ -844,85 +843,56 @@ namespace HellaUnsafe.Opus
             {
                 case OPUS_GET_BANDWIDTH_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->bandwidth;
+                        value = st->bandwidth;
                     }
                     break;
                 case OPUS_GET_COMPLEXITY_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->complexity;
+                        value = st->complexity;
                     }
                     break;
                 case OPUS_GET_SAMPLE_RATE_REQUEST:
                     {
-                        if (value != null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->Fs;
+                        value = st->Fs;
                     }
                     break;
                 case OPUS_GET_PITCH_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
                         if (st->prev_mode == MODE_CELT_ONLY)
-                            ret = opus_custom_decoder_ctl(celt_dec, OPUS_GET_PITCH_REQUEST, value);
+                            ret = opus_custom_decoder_ctl(celt_dec, OPUS_GET_PITCH_REQUEST, out value);
                         else
-                            *value = st->DecControl.prevPitchLag;
+                            value = st->DecControl.prevPitchLag;
                     }
                     break;
                 case OPUS_GET_GAIN_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->decode_gain;
+                        value = st->decode_gain;
                     }
                     break;
                 case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        ret = opus_custom_decoder_ctl(celt_dec, OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST, value);
+                        ret = opus_custom_decoder_ctl(celt_dec, OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST, out value);
                     }
                     break;
                 case OPUS_GET_LAST_PACKET_DURATION_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->last_packet_duration;
+                        value = st->last_packet_duration;
                     }
                     break;
                 default:
                     /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
                     ret = OPUS_UNIMPLEMENTED;
+                    value = 0;
                     break;
             }
 
             return ret;
-        bad_arg:
-            return OPUS_BAD_ARG;
         }
 
         /// <summary>
         /// Override for OPUS_GET_FINAL_RANGE_REQUEST
         /// </summary>
-        public static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, uint* value)
+        public static unsafe int opus_decoder_ctl(OpusDecoder* st, int request, out uint value)
         {
             int ret = OPUS_OK;
             void* silk_dec;
@@ -935,22 +905,17 @@ namespace HellaUnsafe.Opus
             {
                 case OPUS_GET_FINAL_RANGE_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->rangeFinal;
+                        value = st->rangeFinal;
                     }
                     break;
                 default:
                     /*fprintf(stderr, "unknown opus_decoder_ctl() request: %d", request);*/
                     ret = OPUS_UNIMPLEMENTED;
+                    value = 0;
                     break;
             }
 
             return ret;
-        bad_arg:
-            return OPUS_BAD_ARG;
         }
 
         /// <summary>

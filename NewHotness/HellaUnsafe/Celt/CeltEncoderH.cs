@@ -2247,34 +2247,25 @@ namespace HellaUnsafe.Celt
         /// <summary>
         /// Override for int* parameter (most getters)
         /// </summary>
-        internal static unsafe int opus_custom_encoder_ctl(OpusCustomEncoder* st, int request, int* value)
+        internal static unsafe int opus_custom_encoder_ctl(OpusCustomEncoder* st, int request, out int value)
         {
             switch (request)
             {
                 case OPUS_GET_LSB_DEPTH_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->lsb_depth;
+                        value = st->lsb_depth;
                     }
                     break;
                 case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->disable_inv;
+                        value = st->disable_inv;
                     }
                     break;
                 default:
+                    value = 0;
                     goto bad_request;
             }
             return OPUS_OK;
-        bad_arg:
-            return OPUS_BAD_ARG;
         bad_request:
             return OPUS_UNIMPLEMENTED;
         }
@@ -2361,23 +2352,20 @@ namespace HellaUnsafe.Celt
         /// <summary>
         /// Special case for CELT_GET_MODE_REQUEST
         /// </summary>
-        internal static unsafe int opus_custom_encoder_ctl(OpusCustomEncoder* st, int request, OpusCustomMode** value)
+        internal static unsafe int opus_custom_encoder_ctl(OpusCustomEncoder* st, int request, out OpusCustomMode* value)
         {
             switch (request)
             {
                 case CELT_GET_MODE_REQUEST:
                     {
-                        if (value == null)
-                            goto bad_arg;
-                        *value = st->mode;
+                        value = st->mode;
                     }
                     break;
                 default:
+                    value = null;
                     goto bad_request;
             }
             return OPUS_OK;
-        bad_arg:
-            return OPUS_BAD_ARG;
         bad_request:
             return OPUS_UNIMPLEMENTED;
         }
@@ -2385,23 +2373,20 @@ namespace HellaUnsafe.Celt
         /// <summary>
         /// Special case for OPUS_GET_FINAL_RANGE_REQUEST
         /// </summary>
-        internal static unsafe int opus_custom_encoder_ctl(OpusCustomEncoder* st, int request, uint* value)
+        internal static unsafe int opus_custom_encoder_ctl(OpusCustomEncoder* st, int request, out uint value)
         {
             switch (request)
             {
                 case OPUS_GET_FINAL_RANGE_REQUEST:
                     {
-                        if (value == null)
-                            goto bad_arg;
-                        *value = st->rng;
+                        value = st->rng;
                     }
                     break;
                 default:
+                    value = 0;
                     goto bad_request;
             }
             return OPUS_OK;
-        bad_arg:
-            return OPUS_BAD_ARG;
         bad_request:
             return OPUS_UNIMPLEMENTED;
         }

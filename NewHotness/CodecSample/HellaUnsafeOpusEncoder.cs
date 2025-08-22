@@ -107,7 +107,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_COMPLEXITY_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_COMPLEXITY_REQUEST, out returnVal);
                 return returnVal;
             }
             set
@@ -122,7 +122,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_DTX_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_DTX_REQUEST, out returnVal);
                 return returnVal != 0;
             }
             set
@@ -137,7 +137,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_BITRATE_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_BITRATE_REQUEST, out returnVal);
                 return returnVal;
             }
             set
@@ -161,7 +161,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_VBR_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_VBR_REQUEST, out returnVal);
                 return returnVal != 0;
             }
             set
@@ -176,7 +176,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_APPLICATION_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_APPLICATION_REQUEST, out returnVal);
                 return (Concentus.Enums.OpusApplication)returnVal;
             }
             set
@@ -191,7 +191,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_FORCE_CHANNELS_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_FORCE_CHANNELS_REQUEST, out returnVal);
                 return returnVal;
             }
             set
@@ -206,7 +206,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_MAX_BANDWIDTH_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_MAX_BANDWIDTH_REQUEST, out returnVal);
                 return (Concentus.Enums.OpusBandwidth)returnVal;
             }
             set
@@ -221,7 +221,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_BANDWIDTH_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_BANDWIDTH_REQUEST, out returnVal);
                 return (Concentus.Enums.OpusBandwidth)returnVal;
             }
             set
@@ -236,7 +236,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_INBAND_FEC_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_INBAND_FEC_REQUEST, out returnVal);
                 return returnVal != 0;
             }
             set
@@ -251,7 +251,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_PACKET_LOSS_PERC_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_PACKET_LOSS_PERC_REQUEST, out returnVal);
                 return returnVal;
             }
             set
@@ -266,7 +266,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_VBR_CONSTRAINT_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_VBR_CONSTRAINT_REQUEST, out returnVal);
                 return returnVal != 0;
             }
             set
@@ -281,7 +281,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_SIGNAL_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_SIGNAL_REQUEST, out returnVal);
                 return (Concentus.Enums.OpusSignal)returnVal;
             }
             set
@@ -296,7 +296,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_LOOKAHEAD_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_LOOKAHEAD_REQUEST, out returnVal);
                 return returnVal;
             }
         }
@@ -307,7 +307,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_FINAL_RANGE_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_FINAL_RANGE_REQUEST, out returnVal);
                 return (uint)returnVal;
             }
         }
@@ -318,7 +318,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_LSB_DEPTH_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_LSB_DEPTH_REQUEST, out returnVal);
                 return returnVal;
             }
             set
@@ -333,7 +333,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_EXPERT_FRAME_DURATION_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_EXPERT_FRAME_DURATION_REQUEST, out returnVal);
                 return (Concentus.Enums.OpusFramesize)returnVal;
             }
             set
@@ -348,7 +348,7 @@ namespace HellaUnsafe
             get
             {
                 int returnVal;
-                opus_encoder_ctl(NativeHandle, OPUS_GET_PREDICTION_DISABLED_REQUEST, &returnVal);
+                opus_encoder_ctl(NativeHandle, OPUS_GET_PREDICTION_DISABLED_REQUEST, out returnVal);
                 return returnVal != 0;
             }
             set

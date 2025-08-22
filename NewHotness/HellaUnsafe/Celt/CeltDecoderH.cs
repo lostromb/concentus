@@ -1151,55 +1151,42 @@ namespace HellaUnsafe.Celt
         /// <summary>
         /// Overload with one int* parameter (getters)
         /// </summary>
-        internal static unsafe int opus_custom_decoder_ctl(OpusCustomDecoder* st, int request, int* value)
+        internal static unsafe int opus_custom_decoder_ctl(OpusCustomDecoder* st, int request, out int value)
         {
             switch (request)
             {
                 case OPUS_GET_COMPLEXITY_REQUEST:
                     {
-                        if (value == null)
-                            goto bad_arg;
-                        *value = st->complexity;
+                        value = st->complexity;
                     }
                     break;
                 case CELT_GET_AND_CLEAR_ERROR_REQUEST:
                     {
-                        if (value == null)
-                            goto bad_arg;
-                        *value = st->error;
+                        value = st->error;
                         st->error = 0;
                     }
                     break;
                 case OPUS_GET_LOOKAHEAD_REQUEST:
                     {
-                        if (value == null)
-                            goto bad_arg;
-                        *value = st->overlap / st->downsample;
+                        value = st->overlap / st->downsample;
                     }
                     break;
                 case OPUS_GET_PITCH_REQUEST:
                     {
-                        if (value == null)
-                            goto bad_arg;
-                        *value = st->postfilter_period;
+                        value = st->postfilter_period;
                     }
                     break;
                 case OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST:
                     {
-                        if (value == null)
-                        {
-                            goto bad_arg;
-                        }
-                        *value = st->disable_inv;
+                        value = st->disable_inv;
                     }
                     break;
                 default:
                     goto bad_request;
             }
             return OPUS_OK;
-        bad_arg:
-            return OPUS_BAD_ARG;
         bad_request:
+            value = 0;
             return OPUS_UNIMPLEMENTED;
         }
 
