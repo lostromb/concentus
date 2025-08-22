@@ -495,8 +495,8 @@ namespace HellaUnsafe.Silk
         {
             nVectors = 32,
             order = 10,
-            quantStepSize_Q16 = (short)SILK_FIX_CONST( 0.18, 16 ),
-            invQuantStepSize_Q6 = (short)SILK_FIX_CONST( 1.0 / 0.18, 6 ),
+            quantStepSize_Q16 = (short)/*SILK_FIX_CONST*/((int)( 0.18 * ((long)1 <<  16 ) + 0.5)),
+            invQuantStepSize_Q6 = (short)/*SILK_FIX_CONST*/((int)( 1.0 / 0.18 * ((long)1 <<  6 ) + 0.5)),
             CB1_NLSF_Q8 = silk_NLSF_CB1_NB_MB_Q8,
             CB1_Wght_Q9 = silk_NLSF_CB1_Wght_Q9,
             CB1_iCDF = silk_NLSF_CB1_iCDF_NB_MB,
@@ -700,8 +700,8 @@ namespace HellaUnsafe.Silk
         {
             nVectors = 32,
             order = 16,
-            quantStepSize_Q16 = (short)SILK_FIX_CONST( 0.15, 16 ),
-            invQuantStepSize_Q6 = (short)SILK_FIX_CONST( 1.0 / 0.15, 6 ),
+            quantStepSize_Q16 = (short)/*SILK_FIX_CONST*/((int)( 0.15 * ((long)1 <<  16 ) + 0.5)),
+            invQuantStepSize_Q6 = (short)/*SILK_FIX_CONST*/((int)( 1.0 / 0.15 * ((long)1 <<  6 ) + 0.5)),
             CB1_NLSF_Q8 = silk_NLSF_CB1_WB_Q8,
             CB1_Wght_Q9 = silk_NLSF_CB1_WB_Wght_Q9,
             CB1_iCDF = silk_NLSF_CB1_iCDF_WB,

@@ -66,7 +66,7 @@ namespace HellaUnsafe.Silk
                 {
                     /* Reduce magnitude of prediction coefficients */
                     maxabs = silk_min(maxabs, 163838);  /* ( silk_int32_MAX >> 14 ) + silk_int16_MAX = 163838 */
-                    chirp_Q16 = SILK_FIX_CONST(0.999, 16) - silk_DIV32(silk_LSHIFT(maxabs - silk_int16_MAX, 14),
+                    chirp_Q16 = /*SILK_FIX_CONST*/((int)(0.999 * ((long)1 <<  16) + 0.5)) - silk_DIV32(silk_LSHIFT(maxabs - silk_int16_MAX, 14),
                                                 silk_RSHIFT32(silk_MUL(maxabs, idx + 1), 2));
                     silk_bwexpander_32(a_QIN, d, chirp_Q16);
                 }

@@ -333,7 +333,7 @@ namespace HellaUnsafe.Silk
             if (Complexity < 1)
             {
                 psEncC->pitchEstimationComplexity = SILK_PE_MIN_COMPLEX;
-                psEncC->pitchEstimationThreshold_Q16 = SILK_FIX_CONST(0.8, 16);
+                psEncC->pitchEstimationThreshold_Q16 = /*SILK_FIX_CONST*/((int)(0.8 * ((long)1 <<  16) + 0.5));
                 psEncC->pitchEstimationLPCOrder = 6;
                 psEncC->shapingLPCOrder = 12;
                 psEncC->la_shape = 3 * psEncC->fs_kHz;
@@ -345,7 +345,7 @@ namespace HellaUnsafe.Silk
             else if (Complexity < 2)
             {
                 psEncC->pitchEstimationComplexity = SILK_PE_MID_COMPLEX;
-                psEncC->pitchEstimationThreshold_Q16 = SILK_FIX_CONST(0.76, 16);
+                psEncC->pitchEstimationThreshold_Q16 = /*SILK_FIX_CONST*/((int)(0.76 * ((long)1 <<  16) + 0.5));
                 psEncC->pitchEstimationLPCOrder = 8;
                 psEncC->shapingLPCOrder = 14;
                 psEncC->la_shape = 5 * psEncC->fs_kHz;
@@ -357,7 +357,7 @@ namespace HellaUnsafe.Silk
             else if (Complexity < 3)
             {
                 psEncC->pitchEstimationComplexity = SILK_PE_MIN_COMPLEX;
-                psEncC->pitchEstimationThreshold_Q16 = SILK_FIX_CONST(0.8, 16);
+                psEncC->pitchEstimationThreshold_Q16 = /*SILK_FIX_CONST*/((int)(0.8 * ((long)1 <<  16) + 0.5));
                 psEncC->pitchEstimationLPCOrder = 6;
                 psEncC->shapingLPCOrder = 12;
                 psEncC->la_shape = 3 * psEncC->fs_kHz;
@@ -369,7 +369,7 @@ namespace HellaUnsafe.Silk
             else if (Complexity < 4)
             {
                 psEncC->pitchEstimationComplexity = SILK_PE_MID_COMPLEX;
-                psEncC->pitchEstimationThreshold_Q16 = SILK_FIX_CONST(0.76, 16);
+                psEncC->pitchEstimationThreshold_Q16 = /*SILK_FIX_CONST*/((int)(0.76 * ((long)1 <<  16) + 0.5));
                 psEncC->pitchEstimationLPCOrder = 8;
                 psEncC->shapingLPCOrder = 14;
                 psEncC->la_shape = 5 * psEncC->fs_kHz;
@@ -381,38 +381,38 @@ namespace HellaUnsafe.Silk
             else if (Complexity < 6)
             {
                 psEncC->pitchEstimationComplexity = SILK_PE_MID_COMPLEX;
-                psEncC->pitchEstimationThreshold_Q16 = SILK_FIX_CONST(0.74, 16);
+                psEncC->pitchEstimationThreshold_Q16 = /*SILK_FIX_CONST*/((int)(0.74 * ((long)1 <<  16) + 0.5));
                 psEncC->pitchEstimationLPCOrder = 10;
                 psEncC->shapingLPCOrder = 16;
                 psEncC->la_shape = 5 * psEncC->fs_kHz;
                 psEncC->nStatesDelayedDecision = 2;
                 psEncC->useInterpolatedNLSFs = 1;
                 psEncC->NLSF_MSVQ_Survivors = 6;
-                psEncC->warping_Q16 = psEncC->fs_kHz * SILK_FIX_CONST(WARPING_MULTIPLIER, 16);
+                psEncC->warping_Q16 = psEncC->fs_kHz * /*SILK_FIX_CONST*/((int)(WARPING_MULTIPLIER * ((long)1 <<  16) + 0.5));
             }
             else if (Complexity < 8)
             {
                 psEncC->pitchEstimationComplexity = SILK_PE_MID_COMPLEX;
-                psEncC->pitchEstimationThreshold_Q16 = SILK_FIX_CONST(0.72, 16);
+                psEncC->pitchEstimationThreshold_Q16 = /*SILK_FIX_CONST*/((int)(0.72 * ((long)1 <<  16) + 0.5));
                 psEncC->pitchEstimationLPCOrder = 12;
                 psEncC->shapingLPCOrder = 20;
                 psEncC->la_shape = 5 * psEncC->fs_kHz;
                 psEncC->nStatesDelayedDecision = 3;
                 psEncC->useInterpolatedNLSFs = 1;
                 psEncC->NLSF_MSVQ_Survivors = 8;
-                psEncC->warping_Q16 = psEncC->fs_kHz * SILK_FIX_CONST(WARPING_MULTIPLIER, 16);
+                psEncC->warping_Q16 = psEncC->fs_kHz * /*SILK_FIX_CONST*/((int)(WARPING_MULTIPLIER * ((long)1 <<  16) + 0.5));
             }
             else
             {
                 psEncC->pitchEstimationComplexity = SILK_PE_MAX_COMPLEX;
-                psEncC->pitchEstimationThreshold_Q16 = SILK_FIX_CONST(0.7, 16);
+                psEncC->pitchEstimationThreshold_Q16 = /*SILK_FIX_CONST*/((int)(0.7 * ((long)1 <<  16) + 0.5));
                 psEncC->pitchEstimationLPCOrder = 16;
                 psEncC->shapingLPCOrder = 24;
                 psEncC->la_shape = 5 * psEncC->fs_kHz;
                 psEncC->nStatesDelayedDecision = MAX_DEL_DEC_STATES;
                 psEncC->useInterpolatedNLSFs = 1;
                 psEncC->NLSF_MSVQ_Survivors = 16;
-                psEncC->warping_Q16 = psEncC->fs_kHz * SILK_FIX_CONST(WARPING_MULTIPLIER, 16);
+                psEncC->warping_Q16 = psEncC->fs_kHz * /*SILK_FIX_CONST*/((int)(WARPING_MULTIPLIER * ((long)1 <<  16) + 0.5));
             }
 
             /* Do not allow higher pitch estimation LPC order than predict LPC order */
@@ -449,7 +449,7 @@ namespace HellaUnsafe.Silk
                 }
                 else
                 {
-                    psEncC->LBRR_GainIncreases = silk_max_int(7 - silk_SMULWB((int)psEncC->PacketLoss_perc, SILK_FIX_CONST(0.2, 16)), 3);
+                    psEncC->LBRR_GainIncreases = silk_max_int(7 - silk_SMULWB((int)psEncC->PacketLoss_perc, /*SILK_FIX_CONST*/((int)(0.2 * ((long)1 <<  16) + 0.5))), 3);
                 }
             }
 

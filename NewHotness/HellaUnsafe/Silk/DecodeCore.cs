@@ -148,7 +148,7 @@ namespace HellaUnsafe.Silk
                     {
 
                         silk_memset(B_Q14, 0, LTP_ORDER * sizeof(short));
-                        B_Q14[LTP_ORDER / 2] = (short)SILK_FIX_CONST(0.25, 14);
+                        B_Q14[LTP_ORDER / 2] = (short)/*SILK_FIX_CONST*/((int)(0.25 * ((long)1 <<  14) + 0.5));
 
                         signalType = TYPE_VOICED;
                         psDecCtrl->pitchL[k] = psDec->lagPrev;

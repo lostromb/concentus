@@ -104,15 +104,15 @@ namespace HellaUnsafe.Silk
                 /* Find energies and predictors */
                 is10msFrame = BOOL2INT(frame_length == 10 * fs_kHz);
                 smooth_coef_Q16 = is10msFrame != 0 ?
-                    SILK_FIX_CONST(STEREO_RATIO_SMOOTH_COEF / 2, 16) :
-                    SILK_FIX_CONST(STEREO_RATIO_SMOOTH_COEF, 16);
+                    /*SILK_FIX_CONST*/((int)(STEREO_RATIO_SMOOTH_COEF / 2 * ((long)1 <<  16) + 0.5)) :
+                    /*SILK_FIX_CONST*/((int)(STEREO_RATIO_SMOOTH_COEF * ((long)1 <<  16) + 0.5));
                 smooth_coef_Q16 = silk_SMULWB(silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
                 pred_Q13[0] = silk_stereo_find_predictor(&LP_ratio_Q14, LP_mid, LP_side, &state->mid_side_amp_Q0[0], frame_length, smooth_coef_Q16);
                 pred_Q13[1] = silk_stereo_find_predictor(&HP_ratio_Q14, HP_mid, HP_side, &state->mid_side_amp_Q0[2], frame_length, smooth_coef_Q16);
                 /* Ratio of the norms of residual and mid signals */
                 frac_Q16 = silk_SMLABB(HP_ratio_Q14, LP_ratio_Q14, 3);
-                frac_Q16 = silk_min(frac_Q16, SILK_FIX_CONST(1, 16));
+                frac_Q16 = silk_min(frac_Q16, /*SILK_FIX_CONST*/((int)(1 * ((long)1 <<  16) + 0.5)));
 
                 /* Determine bitrate distribution between mid and side, and possibly reduce stereo width */
                 total_rate_bps -= is10msFrame != 0 ? 1200 : 600;      /* Subtract approximate bitrate for coding stereo parameters */
@@ -123,18 +123,18 @@ namespace HellaUnsafe.Silk
                 silk_assert(min_mid_rate_bps < 32767);
                 /* Default bitrate distribution: 8 parts for Mid and (5+3*frac) parts for Side. so: mid_rate = ( 8 / ( 13 + 3 * frac ) ) * total_ rate */
                 frac_3_Q16 = silk_MUL(3, frac_Q16);
-                mid_side_rates_bps[0] = silk_DIV32_varQ(total_rate_bps, SILK_FIX_CONST(8 + 5, 16) + frac_3_Q16, 16 + 3);
+                mid_side_rates_bps[0] = silk_DIV32_varQ(total_rate_bps, /*SILK_FIX_CONST*/((int)(8 + 5 * ((long)1 <<  16) + 0.5)) + frac_3_Q16, 16 + 3);
                 /* If Mid bitrate below minimum, reduce stereo width */
                 if (mid_side_rates_bps[0] < min_mid_rate_bps) {
                     mid_side_rates_bps[0] = min_mid_rate_bps;
                     mid_side_rates_bps[1] = total_rate_bps - mid_side_rates_bps[0];
                     /* width = 4 * ( 2 * side_rate - min_rate ) / ( ( 1 + 3 * frac ) * min_rate ) */
                     width_Q14 = silk_DIV32_varQ(silk_LSHIFT(mid_side_rates_bps[1], 1) - min_mid_rate_bps,
-                        silk_SMULWB(SILK_FIX_CONST(1, 16) + frac_3_Q16, min_mid_rate_bps), 14 + 2);
-                    width_Q14 = silk_LIMIT(width_Q14, 0, SILK_FIX_CONST(1, 14));
+                        silk_SMULWB(/*SILK_FIX_CONST*/((int)(1 * ((long)1 <<  16) + 0.5)) + frac_3_Q16, min_mid_rate_bps), 14 + 2);
+                    width_Q14 = silk_LIMIT(width_Q14, 0, /*SILK_FIX_CONST*/((int)(1 * ((long)1 <<  14) + 0.5)));
                 } else {
                     mid_side_rates_bps[1] = total_rate_bps - mid_side_rates_bps[0];
-                    width_Q14 = SILK_FIX_CONST(1, 14);
+                    width_Q14 = /*SILK_FIX_CONST*/((int)(1 * ((long)1 <<  14) + 0.5));
                 }
 
                 /* Smoother */
@@ -149,7 +149,7 @@ namespace HellaUnsafe.Silk
                     pred_Q13[1] = 0;
                     silk_stereo_quant_pred(pred_Q13, ix);
                 } else if (state->width_prev_Q14 == 0 &&
-                    (8 * total_rate_bps < 13 * min_mid_rate_bps || silk_SMULWB(frac_Q16, state->smth_width_Q14) < SILK_FIX_CONST(0.05, 14)))
+                    (8 * total_rate_bps < 13 * min_mid_rate_bps || silk_SMULWB(frac_Q16, state->smth_width_Q14) < /*SILK_FIX_CONST*/((int)(0.05 * ((long)1 <<  14) + 0.5))))
                 {
                     /* Code as panned-mono; previous frame already had zero width */
                     /* Scale down and quantize predictors */
@@ -164,7 +164,7 @@ namespace HellaUnsafe.Silk
                     mid_side_rates_bps[1] = 0;
                     *mid_only_flag = 1;
                 } else if (state->width_prev_Q14 != 0 &&
-                    (8 * total_rate_bps < 11 * min_mid_rate_bps || silk_SMULWB(frac_Q16, state->smth_width_Q14) < SILK_FIX_CONST(0.02, 14)))
+                    (8 * total_rate_bps < 11 * min_mid_rate_bps || silk_SMULWB(frac_Q16, state->smth_width_Q14) < /*SILK_FIX_CONST*/((int)(0.02 * ((long)1 <<  14) + 0.5))))
                 {
                     /* Transition to zero-width stereo */
                     /* Scale down and quantize predictors */
@@ -175,10 +175,10 @@ namespace HellaUnsafe.Silk
                     width_Q14 = 0;
                     pred_Q13[0] = 0;
                     pred_Q13[1] = 0;
-                } else if (state->smth_width_Q14 > SILK_FIX_CONST(0.95, 14)) {
+                } else if (state->smth_width_Q14 > /*SILK_FIX_CONST*/((int)(0.95 * ((long)1 <<  14) + 0.5))) {
                     /* Full-width stereo coding */
                     silk_stereo_quant_pred(pred_Q13, ix);
-                    width_Q14 = SILK_FIX_CONST(1, 14);
+                    width_Q14 = /*SILK_FIX_CONST*/((int)(1 * ((long)1 <<  14) + 0.5));
                 } else {
                     /* Reduced-width stereo coding; scale down and quantize predictors */
                     pred_Q13[0] = silk_RSHIFT(silk_SMULBB(state->smth_width_Q14, pred_Q13[0]), 14);

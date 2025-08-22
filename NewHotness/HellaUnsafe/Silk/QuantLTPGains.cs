@@ -44,7 +44,7 @@ namespace HellaUnsafe.Silk
             for ( k = 0; k < 3; k++ ) {
                 /* Safety margin for pitch gain control, to take into account factors
                    such as state rescaling/rewhitening. */
-                int gain_safety = SILK_FIX_CONST( 0.4, 7 );
+                int gain_safety = /*SILK_FIX_CONST*/((int)( 0.4 * ((long)1 <<  7 ) + 0.5));
 
                 cl_ptr_Q5  = silk_LTP_gain_BITS_Q5_ptrs[ k ];
                 cbk_ptr_Q7 = silk_LTP_vq_ptrs_Q7[        k ];
@@ -59,8 +59,8 @@ namespace HellaUnsafe.Silk
                 rate_dist_Q7 = 0;
                 sum_log_gain_tmp_Q7 = *sum_log_gain_Q7;
                 for( j = 0; j < nb_subfr; j++ ) {
-                    max_gain_Q7 = silk_log2lin( ( SILK_FIX_CONST( MAX_SUM_LOG_GAIN_DB / 6.0, 7 ) - sum_log_gain_tmp_Q7 )
-                                                + SILK_FIX_CONST( 7, 7 ) ) - gain_safety;
+                    max_gain_Q7 = silk_log2lin( ( /*SILK_FIX_CONST*/((int)( MAX_SUM_LOG_GAIN_DB / 6.0 * ((long)1 <<  7 ) + 0.5)) - sum_log_gain_tmp_Q7 )
+                                                + /*SILK_FIX_CONST*/((int)( 7 * ((long)1 <<  7 ) + 0.5)) ) - gain_safety;
                     silk_VQ_WMat_EC(
                         &temp_idx[ j ],         /* O    index of best codebook vector                           */
                         &res_nrg_Q15_subfr,     /* O    residual energy                                         */
@@ -79,7 +79,7 @@ namespace HellaUnsafe.Silk
                     res_nrg_Q15  = silk_ADD_POS_SAT32( res_nrg_Q15, res_nrg_Q15_subfr );
                     rate_dist_Q7 = silk_ADD_POS_SAT32( rate_dist_Q7, rate_dist_Q7_subfr );
                     sum_log_gain_tmp_Q7 = silk_max(0, sum_log_gain_tmp_Q7
-                                        + silk_lin2log( gain_safety + gain_Q7 ) - SILK_FIX_CONST( 7, 7 ));
+                                        + silk_lin2log( gain_safety + gain_Q7 ) - /*SILK_FIX_CONST*/((int)( 7 * ((long)1 <<  7 ) + 0.5)));
 
                     XX_Q17_ptr += LTP_ORDER * LTP_ORDER;
                     xX_Q17_ptr += LTP_ORDER;

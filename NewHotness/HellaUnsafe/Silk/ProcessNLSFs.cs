@@ -29,21 +29,21 @@ namespace HellaUnsafe.Silk
             short* pNLSFW0_temp_QW = stackalloc short[ MAX_LPC_ORDER ];
 
             silk_assert( psEncC->speech_activity_Q8 >=   0 );
-            silk_assert( psEncC->speech_activity_Q8 <= SILK_FIX_CONST( 1.0, 8 ) );
+            silk_assert( psEncC->speech_activity_Q8 <= /*SILK_FIX_CONST*/((int)( 1.0 * ((long)1 <<  8 ) + 0.5)) );
             celt_assert( psEncC->useInterpolatedNLSFs == 1 || psEncC->indices.NLSFInterpCoef_Q2 == ( 1 << 2 ) );
 
             /***********************/
             /* Calculate mu values */
             /***********************/
             /* NLSF_mu  = 0.003 - 0.0015 * psEnc->speech_activity; */
-            NLSF_mu_Q20 = silk_SMLAWB( SILK_FIX_CONST( 0.003, 20 ), SILK_FIX_CONST( -0.001, 28 ), psEncC->speech_activity_Q8 );
+            NLSF_mu_Q20 = silk_SMLAWB( /*SILK_FIX_CONST*/((int)( 0.003 * ((long)1 <<  20 ) + 0.5)), /*SILK_FIX_CONST*/((int)( -0.001 * ((long)1 <<  28 ) + 0.5)), psEncC->speech_activity_Q8 );
             if( psEncC->nb_subfr == 2 ) {
                 /* Multiply by 1.5 for 10 ms packets */
                 NLSF_mu_Q20 = silk_ADD_RSHIFT( NLSF_mu_Q20, NLSF_mu_Q20, 1 );
             }
 
             celt_assert( NLSF_mu_Q20 >  0 );
-            silk_assert( NLSF_mu_Q20 <= SILK_FIX_CONST( 0.005, 20 ) );
+            silk_assert( NLSF_mu_Q20 <= /*SILK_FIX_CONST*/((int)( 0.005 * ((long)1 <<  20 ) + 0.5)) );
 
             /* Calculate NLSF weights */
             silk_NLSF_VQ_weights_laroia( pNLSFW_QW, pNLSF_Q15, psEncC->predictLPCOrder );

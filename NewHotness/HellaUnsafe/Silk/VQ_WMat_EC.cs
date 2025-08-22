@@ -79,7 +79,7 @@ namespace HellaUnsafe.Silk
                 gain_tmp_Q7 = cb_gain_Q7[k];
                 /* Weighted rate */
                 /* Quantization error: 1 - 2 * xX * cb + cb' * XX * cb */
-                sum1_Q15 = SILK_FIX_CONST( 1.001, 15 );
+                sum1_Q15 = /*SILK_FIX_CONST*/((int)( 1.001 * ((long)1 <<  15 ) + 0.5));
 
                 /* Penalty for too large gain */
                 penalty = silk_LSHIFT32( silk_max( silk_SUB32( gain_tmp_Q7, max_gain_Q7 ), 0 ), 11 );

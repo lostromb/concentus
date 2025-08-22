@@ -57,7 +57,7 @@ namespace HellaUnsafe.Silk
               /* adjustment based on quality */
               quality_Q15 = psEncC1->input_quality_bands_Q15[ 0 ];
               pitch_freq_log_Q7 = silk_SMLAWB( pitch_freq_log_Q7, silk_SMULWB( silk_LSHIFT( -quality_Q15, 2 ), quality_Q15 ),
-                    pitch_freq_log_Q7 - ( silk_lin2log( SILK_FIX_CONST( VARIABLE_HP_MIN_CUTOFF_HZ, 16 ) ) - ( 16 << 7 ) ) );
+                    pitch_freq_log_Q7 - ( silk_lin2log( /*SILK_FIX_CONST*/((int)( VARIABLE_HP_MIN_CUTOFF_HZ * ((long)1 <<  16 ) + 0.5)) ) - ( 16 << 7 ) ) );
 
               /* delta_freq = pitch_freq_log - psEnc->variable_HP_smth1; */
               delta_freq_Q7 = pitch_freq_log_Q7 - silk_RSHIFT( psEncC1->variable_HP_smth1_Q15, 8 );
@@ -67,11 +67,11 @@ namespace HellaUnsafe.Silk
               }
 
               /* limit delta, to reduce impact of outliers in pitch estimation */
-              delta_freq_Q7 = silk_LIMIT_32( delta_freq_Q7, -SILK_FIX_CONST( VARIABLE_HP_MAX_DELTA_FREQ, 7 ), SILK_FIX_CONST( VARIABLE_HP_MAX_DELTA_FREQ, 7 ) );
+              delta_freq_Q7 = silk_LIMIT_32( delta_freq_Q7, -/*SILK_FIX_CONST*/((int)( VARIABLE_HP_MAX_DELTA_FREQ * ((long)1 <<  7 ) + 0.5)), /*SILK_FIX_CONST*/((int)( VARIABLE_HP_MAX_DELTA_FREQ * ((long)1 <<  7 ) + 0.5)) );
 
               /* update smoother */
               psEncC1->variable_HP_smth1_Q15 = silk_SMLAWB( psEncC1->variable_HP_smth1_Q15,
-                    silk_SMULBB( psEncC1->speech_activity_Q8, delta_freq_Q7 ), SILK_FIX_CONST( VARIABLE_HP_SMTH_COEF1, 16 ) );
+                    silk_SMULBB( psEncC1->speech_activity_Q8, delta_freq_Q7 ), /*SILK_FIX_CONST*/((int)( VARIABLE_HP_SMTH_COEF1 * ((long)1 <<  16 ) + 0.5)) );
 
               /* limit frequency range */
               psEncC1->variable_HP_smth1_Q15 = silk_LIMIT_32( psEncC1->variable_HP_smth1_Q15,

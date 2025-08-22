@@ -69,15 +69,15 @@ namespace HellaUnsafe.Silk
                 out0_Q10 = (short)silk_LSHIFT( i, 10 );
                 out1_Q10 = silk_ADD16( out0_Q10, 1024 );
                 if( i > 0 ) {
-                    out0_Q10 = silk_SUB16( out0_Q10, (short)SILK_FIX_CONST( NLSF_QUANT_LEVEL_ADJ, 10 ) );
-                    out1_Q10 = silk_SUB16( out1_Q10, (short)SILK_FIX_CONST( NLSF_QUANT_LEVEL_ADJ, 10 ) );
+                    out0_Q10 = silk_SUB16( out0_Q10, (short)/*SILK_FIX_CONST*/((int)( NLSF_QUANT_LEVEL_ADJ * ((long)1 <<  10 ) + 0.5)) );
+                    out1_Q10 = silk_SUB16( out1_Q10, (short)/*SILK_FIX_CONST*/((int)( NLSF_QUANT_LEVEL_ADJ * ((long)1 <<  10 ) + 0.5)) );
                 } else if( i == 0 ) {
-                    out1_Q10 = silk_SUB16( out1_Q10, (short)SILK_FIX_CONST( NLSF_QUANT_LEVEL_ADJ, 10 ) );
+                    out1_Q10 = silk_SUB16( out1_Q10, (short)/*SILK_FIX_CONST*/((int)( NLSF_QUANT_LEVEL_ADJ * ((long)1 <<  10 ) + 0.5)) );
                 } else if( i == -1 ) {
-                    out0_Q10 = silk_ADD16( out0_Q10, (short)SILK_FIX_CONST( NLSF_QUANT_LEVEL_ADJ, 10 ) );
+                    out0_Q10 = silk_ADD16( out0_Q10, (short)/*SILK_FIX_CONST*/((int)( NLSF_QUANT_LEVEL_ADJ * ((long)1 <<  10 ) + 0.5)) );
                 } else {
-                    out0_Q10 = silk_ADD16( out0_Q10, (short)SILK_FIX_CONST( NLSF_QUANT_LEVEL_ADJ, 10 ) );
-                    out1_Q10 = silk_ADD16( out1_Q10, (short)SILK_FIX_CONST( NLSF_QUANT_LEVEL_ADJ, 10 ) );
+                    out0_Q10 = silk_ADD16( out0_Q10, (short)/*SILK_FIX_CONST*/((int)( NLSF_QUANT_LEVEL_ADJ * ((long)1 <<  10 ) + 0.5)) );
+                    out1_Q10 = silk_ADD16( out1_Q10, (short)/*SILK_FIX_CONST*/((int)( NLSF_QUANT_LEVEL_ADJ * ((long)1 <<  10 ) + 0.5)) );
                 }
                 out0_Q10_table[ i + NLSF_QUANT_MAX_AMPLITUDE_EXT ] = silk_RSHIFT( silk_SMULBB( out0_Q10, quant_step_size_Q16 ), 16 );
                 out1_Q10_table[ i + NLSF_QUANT_MAX_AMPLITUDE_EXT ] = silk_RSHIFT( silk_SMULBB( out1_Q10, quant_step_size_Q16 ), 16 );

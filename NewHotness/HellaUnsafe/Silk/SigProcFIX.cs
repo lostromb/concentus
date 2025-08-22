@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using static HellaUnsafe.Common.CRuntime;
 using static HellaUnsafe.Silk.Inlines;
 
@@ -840,6 +841,7 @@ namespace HellaUnsafe.Silk
         /* Macro to convert floating-point constants to fixed-point */
         //#define SILK_FIX_CONST( C, Q )        ((int)((C) * ((int64)1 << (Q)) + 0.5))       
         // OPT This should never run more than once at runtime!
+        [Obsolete]
         internal static int SILK_FIX_CONST(double C, int Q)
         {
             return (int)(C * ((long)1 << Q) + 0.5);

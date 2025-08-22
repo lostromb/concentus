@@ -60,7 +60,7 @@ namespace HellaUnsafe.Silk
                 ix[ n ][ 0 ] += 3 * ix[ n ][ 2 ];
                 low_Q13 = silk_stereo_pred_quant_Q13[ ix[ n ][ 0 ] ];
                 step_Q13 = silk_SMULWB( silk_stereo_pred_quant_Q13[ ix[ n ][ 0 ] + 1 ] - low_Q13,
-                    SILK_FIX_CONST( 0.5 / STEREO_QUANT_SUB_STEPS, 16 ) );
+                    /*SILK_FIX_CONST*/((int)( 0.5 / STEREO_QUANT_SUB_STEPS * ((long)1 <<  16 ) + 0.5)) );
                 pred_Q13[ n ] = silk_SMLABB( low_Q13, step_Q13, 2 * ix[ n ][ 1 ] + 1 );
             }
 

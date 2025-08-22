@@ -55,11 +55,11 @@ namespace HellaUnsafe.Silk
                 out_Q10 = silk_LSHIFT16(indices[i], 10);
                 if (out_Q10 > 0)
                 {
-                    out_Q10 = silk_SUB16(out_Q10, (short)SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
+                    out_Q10 = silk_SUB16(out_Q10, (short)/*SILK_FIX_CONST*/((int)(NLSF_QUANT_LEVEL_ADJ * ((long)1 <<  10) + 0.5)));
                 }
                 else if (out_Q10 < 0)
                 {
-                    out_Q10 = silk_ADD16(out_Q10, (short)SILK_FIX_CONST(NLSF_QUANT_LEVEL_ADJ, 10));
+                    out_Q10 = silk_ADD16(out_Q10, (short)/*SILK_FIX_CONST*/((int)(NLSF_QUANT_LEVEL_ADJ * ((long)1 <<  10) + 0.5)));
                 }
                 out_Q10 = (short)silk_SMLAWB(pred_Q10, (int)out_Q10, quant_step_size_Q16);
                 x_Q10[i] = (short)out_Q10;

@@ -60,8 +60,8 @@ namespace HellaUnsafe.Silk
         )
         {
             psDec->sPLC.pitchL_Q8 = silk_LSHIFT( psDec->frame_length, 8 - 1 );
-            psDec->sPLC.prevGain_Q16[ 0 ] = SILK_FIX_CONST( 1, 16 );
-            psDec->sPLC.prevGain_Q16[ 1 ] = SILK_FIX_CONST( 1, 16 );
+            psDec->sPLC.prevGain_Q16[ 0 ] = /*SILK_FIX_CONST*/((int)( 1 * ((long)1 <<  16 ) + 0.5));
+            psDec->sPLC.prevGain_Q16[ 1 ] = /*SILK_FIX_CONST*/((int)( 1 * ((long)1 <<  16 ) + 0.5));
             psDec->sPLC.subfr_length = 20;
             psDec->sPLC.nb_subfr = 2;
         }
@@ -250,7 +250,7 @@ namespace HellaUnsafe.Silk
                 }
 
                 /* LPC concealment. Apply BWE to previous LPC */
-                silk_bwexpander(psPLC->prevLPC_Q12, psDec->LPC_order, SILK_FIX_CONST(BWE_COEF, 16));
+                silk_bwexpander(psPLC->prevLPC_Q12, psDec->LPC_order, /*SILK_FIX_CONST*/((int)(BWE_COEF * ((long)1 <<  16) + 0.5)));
 
                 /* Preload LPC coeficients to array on stack. Gives small performance gain */
                 silk_memcpy(A_Q12, psPLC->prevLPC_Q12, psDec->LPC_order * sizeof(short));

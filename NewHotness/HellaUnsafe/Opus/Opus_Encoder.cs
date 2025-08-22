@@ -345,11 +345,11 @@ namespace HellaUnsafe.Opus
             int* A_Q28 = stackalloc int[2];
             int Fc_Q19, r_Q28, r_Q22;
 
-            silk_assert(cutoff_Hz <= silk_int32_MAX / SILK_FIX_CONST(1.5 * 3.14159 / 1000, 19));
-            Fc_Q19 = silk_DIV32_16(silk_SMULBB(SILK_FIX_CONST(1.5 * 3.14159 / 1000, 19), cutoff_Hz), Fs / 1000);
+            silk_assert(cutoff_Hz <= silk_int32_MAX / /*SILK_FIX_CONST*/((int)(1.5 * 3.14159 / 1000 * ((long)1 <<  19) + 0.5)));
+            Fc_Q19 = silk_DIV32_16(silk_SMULBB(/*SILK_FIX_CONST*/((int)(1.5 * 3.14159 / 1000 * ((long)1 <<  19) + 0.5)), cutoff_Hz), Fs / 1000);
             silk_assert(Fc_Q19 > 0 && Fc_Q19 < 32768);
 
-            r_Q28 = SILK_FIX_CONST(1.0, 28) - silk_MUL(SILK_FIX_CONST(0.92, 9), Fc_Q19);
+            r_Q28 = /*SILK_FIX_CONST*/((int)(1.0 * ((long)1 <<  28) + 0.5)) - silk_MUL(/*SILK_FIX_CONST*/((int)(0.92 * ((long)1 <<  9) + 0.5)), Fc_Q19);
 
             /* b = r * [ 1; -2; 1 ]; */
             /* a = [ 1; -2 * r * ( 1 - 0.5 * Fc^2 ); r^2 ]; */
@@ -359,7 +359,7 @@ namespace HellaUnsafe.Opus
 
             /* -r * ( 2 - Fc * Fc ); */
             r_Q22 = silk_RSHIFT(r_Q28, 6);
-            A_Q28[0] = silk_SMULWW(r_Q22, silk_SMULWW(Fc_Q19, Fc_Q19) - SILK_FIX_CONST(2.0, 22));
+            A_Q28[0] = silk_SMULWW(r_Q22, silk_SMULWW(Fc_Q19, Fc_Q19) - /*SILK_FIX_CONST*/((int)(2.0 * ((long)1 <<  22) + 0.5)));
             A_Q28[1] = silk_SMULWW(r_Q22, r_Q22);
 
             silk_biquad_float(input, B_Q28, A_Q28, hp_mem, output, len, channels);
@@ -701,7 +701,7 @@ namespace HellaUnsafe.Opus
                 if (last_fec == 1) LBRR_rate_thres_bps -= hysteresis;
                 if (last_fec == 0) LBRR_rate_thres_bps += hysteresis;
                 LBRR_rate_thres_bps = silk_SMULWB(silk_MUL(LBRR_rate_thres_bps,
-                      125 - silk_min(PacketLoss_perc, 25)), SILK_FIX_CONST(0.01, 16));
+                      125 - silk_min(PacketLoss_perc, 25)), /*SILK_FIX_CONST*/((int)(0.01 * ((long)1 <<  16) + 0.5)));
                 /* If loss <= 5%, we look at whether we have enough rate to enable FEC.
                    If loss > 5%, we decrease the bandwidth until we can enable FEC. */
                 if (rate > LBRR_rate_thres_bps)
@@ -1562,7 +1562,7 @@ namespace HellaUnsafe.Opus
                     hp_freq_smth1 = ((silk_encoder*)silk_enc)->state_Fxx[0].sCmn.variable_HP_smth1_Q15;
 
                 st->variable_HP_smth2_Q15 = silk_SMLAWB(st->variable_HP_smth2_Q15,
-                      hp_freq_smth1 - st->variable_HP_smth2_Q15, SILK_FIX_CONST(VARIABLE_HP_SMTH_COEF2, 16));
+                      hp_freq_smth1 - st->variable_HP_smth2_Q15, /*SILK_FIX_CONST*/((int)(VARIABLE_HP_SMTH_COEF2 * ((long)1 <<  16) + 0.5)));
 
                 /* convert from log scale to Hertz */
                 cutoff_Hz = silk_log2lin(silk_RSHIFT(st->variable_HP_smth2_Q15, 8));

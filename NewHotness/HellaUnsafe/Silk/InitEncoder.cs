@@ -50,7 +50,7 @@ namespace HellaUnsafe.Silk
             //silk_memset( psEnc, 0, sizeof(silk_encoder_state_FLP) );
             *psEnc = new silk_encoder_state_FLP();
 
-            psEnc->sCmn.variable_HP_smth1_Q15 = silk_LSHIFT( silk_lin2log( SILK_FIX_CONST( VARIABLE_HP_MIN_CUTOFF_HZ, 16 ) ) - ( 16 << 7 ), 8 );
+            psEnc->sCmn.variable_HP_smth1_Q15 = silk_LSHIFT( silk_lin2log( /*SILK_FIX_CONST*/((int)( VARIABLE_HP_MIN_CUTOFF_HZ * ((long)1 <<  16 ) + 0.5)) ) - ( 16 << 7 ), 8 );
             psEnc->sCmn.variable_HP_smth2_Q15 = psEnc->sCmn.variable_HP_smth1_Q15;
 
             /* Used to deactivate LSF interpolation, pitch prediction */

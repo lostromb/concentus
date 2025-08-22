@@ -54,7 +54,7 @@ namespace HellaUnsafe.Silk.Float
             int activity                            /* I    Decision of Opus voice activity detector    */
         )
         {
-            int activity_threshold = SILK_FIX_CONST(SPEECH_ACTIVITY_DTX_THRES, 8);
+            int activity_threshold = /*SILK_FIX_CONST*/((int)(SPEECH_ACTIVITY_DTX_THRES * ((long)1 <<  8) + 0.5));
 
             /****************************/
             /* Voice Activity Detection */
@@ -190,7 +190,7 @@ namespace HellaUnsafe.Silk.Float
 
                 /* Loop over quantizer and entroy coding to control bitrate */
                 maxIter = 6;
-                gainMult_Q8 = (short)SILK_FIX_CONST(1, 8);
+                gainMult_Q8 = (short)/*SILK_FIX_CONST*/((int)(1 * ((long)1 <<  8) + 0.5));
                 found_lower = 0;
                 found_upper = 0;
                 gainsID = silk_gains_ID(psEnc->sCmn.indices.GainsIndices, psEnc->sCmn.nb_subfr);
@@ -461,7 +461,7 @@ namespace HellaUnsafe.Silk.Float
             /*******************************************/
             /* Control use of inband LBRR              */
             /*******************************************/
-            if (psEnc->sCmn.LBRR_enabled != 0 && psEnc->sCmn.speech_activity_Q8 > SILK_FIX_CONST(LBRR_SPEECH_ACTIVITY_THRES, 8))
+            if (psEnc->sCmn.LBRR_enabled != 0 && psEnc->sCmn.speech_activity_Q8 > /*SILK_FIX_CONST*/((int)(LBRR_SPEECH_ACTIVITY_THRES * ((long)1 <<  8) + 0.5)))
             {
                 psEnc->sCmn.LBRR_flags[psEnc->sCmn.nFramesEncoded] = 1;
 
