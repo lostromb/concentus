@@ -843,6 +843,10 @@ namespace HellaUnsafe.Silk
         internal static int SILK_FIX_CONST(double C, int Q)
         {
             return (int)(C * ((long)1 << Q) + 0.5);
+            // Regex search and replace:
+            // SILK_FIX_CONST\((.+?),(.+?)\)
+            // with
+            // /*SILK_FIX_CONST*/\(\(int\)\(\1 * \(\(long\)1 << \2\) + 0.5\)\)
         }
     }
 }

@@ -360,7 +360,7 @@ namespace HellaUnsafe.Celt
                 for (i = 0; i < end; i++)
                 {
                     int j, N, tmp = 0;
-                    Unsafe.InitBlock(tcount, 0, sizeof(int) * 3);
+                    new Span<int>(tcount, 3).Fill(0);
                     float* x = X + M * eBands[i] + c * N0;
                     N = M * (eBands[i + 1] - eBands[i]);
                     if (N <= 8)
@@ -382,7 +382,7 @@ namespace HellaUnsafe.Celt
                     /* Only include four last bands (8 kHz and up) */
                     if (i > m->nbEBands - 4)
                         hf_sum += (int)celt_udiv((uint)(32 * (tcount[1] + tcount[0])), (uint)N);
-                    tmp = (2 * BOOL2INT(tcount[2] >= N)) + (2 * BOOL2INT(tcount[1] >= N)) + (2 * BOOL2INT(tcount[0] >= N));
+                    tmp = BOOL2INT(2 * tcount[2] >= N) + BOOL2INT(2 * tcount[1] >= N) + BOOL2INT(2 * tcount[0] >= N);
                     sum += tmp * spread_weight[i];
                     nbBands += spread_weight[i];
                 }
