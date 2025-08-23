@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using static System.Math;
@@ -127,6 +128,39 @@ namespace HellaUnsafe.Celt
             }
         }
 
+        internal static unsafe void xcorr_kernel_vector(float* x, float* y, float* sum/*[4]*/, int len)
+        {
+            int vectorEnd = len - 3 - ((len - 3) % Vector<float>.Count);
+            int idx = 0;
+            Vector<float> sum0, sum1, sum2, sum3;
+            sum0 = sum1 = sum2 = sum3 = Vector<float>.Zero;
+            while (idx < vectorEnd)
+            {
+                idx += Vector<float>.Count;
+                Vector<float> xVec = new Vector<float>(new ReadOnlySpan<float>(x + idx, Vector<float>.Count));
+                sum0 = Vector.Add(sum0, Vector.Multiply(
+                    xVec,
+                    new Vector<float>(new ReadOnlySpan<float>(y + idx, Vector<float>.Count))));
+                sum1 = Vector.Add(sum1, Vector.Multiply(
+                    xVec,
+                    new Vector<float>(new ReadOnlySpan<float>(y + idx + 1, Vector<float>.Count))));
+                sum2 = Vector.Add(sum2, Vector.Multiply(
+                    xVec,
+                    new Vector<float>(new ReadOnlySpan<float>(y + idx + 2, Vector<float>.Count))));
+                sum3 = Vector.Add(sum3, Vector.Multiply(
+                    xVec,
+                    new Vector<float>(new ReadOnlySpan<float>(y + idx + 3, Vector<float>.Count))));
+                idx += Vector<float>.Count;
+            }
+
+            // fixme handle the residual
+
+            sum[0] = Vector.Dot(sum0, Vector<float>.One);
+            sum[1] = Vector.Dot(sum1, Vector<float>.One);
+            sum[2] = Vector.Dot(sum2, Vector<float>.One);
+            sum[3] = Vector.Dot(sum3, Vector<float>.One);
+        }
+
         internal static unsafe void xcorr_kernel_avx(float* x, float* y, float* sum/*[4]*/, int len)
         {
             Vector256<float> xsum0, xsum1, xsum2, xsum3, xsum4, xsum5, xsum6, xsum7;
@@ -175,7 +209,11 @@ namespace HellaUnsafe.Celt
 
         internal static unsafe void xcorr_kernel(float* x, float* y, float* sum/*[4]*/, int len)
         {
-            if (Avx.IsSupported && Fma.IsSupported)
+            if (Vector.IsHardwareAccelerated)
+            {
+                xcorr_kernel_vector(x, y, sum, len);
+            }
+            else if (Avx.IsSupported && Fma.IsSupported)
             {
                 xcorr_kernel_avx(x, y, sum, len);
             }

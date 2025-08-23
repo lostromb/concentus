@@ -15,16 +15,6 @@ namespace CSharpConsole
 
         public static unsafe void Main(string[] args)
         {
-            Random rand = new Random();
-            for (int c = 0; c < 100; c++)
-            {
-                int a = rand.Next(int.MinValue, int.MaxValue);
-                int b = rand.Next(int.MinValue, int.MaxValue);
-                int expected = Benchmarks.silk_ADD_SAT32_baseline(a, b);
-                int actual = Benchmarks.silk_ADD_SAT32_fast(a, b);
-                Console.WriteLine("{0} + {1}\t=\t{2} {3} {4}", a, b, expected, actual, actual == expected);
-            }
-
             BenchmarkRunner.Run<Benchmarks>();
             return;
 

@@ -205,3 +205,10 @@ NailTest_PrintF("angle %i %08x\r\n", i, FloatBits(angle));
 NailTest_PrintF("angle2 %i %08x\r\n", i, FloatBits(angle2));
 NailTest_PrintF("tonality %i %08x\r\n", i, FloatBits(tonality[i]));
 NailTest_PrintF("tonality2 %i %08x\r\n", i, FloatBits(tonality2[i]));
+
+Baseline
+ 200 LowDelay Mono   Cpx= 0  16Kbps 12Khz  10 Ms PLC  0% VBR      SILK... Ok! (Speed 69.83% Pass 100.00%)
+Avx pitch_xcorr
+  206 Music    Stereo Cpx= 0 VARKbps 48Khz  40 Ms PLC  0% VBR  DTX     ... Ok! (Speed 75.25% Pass 100.00%)
+ FMA intrinsic
+ 
