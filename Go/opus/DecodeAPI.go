@@ -276,7 +276,7 @@ func silk_Decode(
 	if delay_stack_alloc != 0 {
 		samplesOut1_tmp_storage2 = make([]int16, decControl.nChannelsInternal*(channel_state[0].frame_length+2))
 		//	System.arraycopy(samplesOut, samplesOut_ptr, samplesOut1_tmp_storage2, 0, decControl.nChannelsInternal*(channel_state[0].frame_length+2))
-		copy(samplesOut1_tmp_storage2, samplesOut[samplesOut_ptr:decControl.nChannelsInternal*(channel_state[0].frame_length+2)])
+		copy(samplesOut1_tmp_storage2, samplesOut[samplesOut_ptr:samplesOut_ptr+decControl.nChannelsInternal*(channel_state[0].frame_length+2)])
 		samplesOut_tmp = samplesOut1_tmp_storage2
 		samplesOut_tmp_ptrs[0] = 0
 		samplesOut_tmp_ptrs[1] = channel_state[0].frame_length + 2

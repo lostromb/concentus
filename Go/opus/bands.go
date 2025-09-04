@@ -1125,10 +1125,14 @@ func quant_band(ctx *band_ctx, X []int, X_ptr int, N int, b int, B int, lowband 
 		var idx1 = fill & 0xF
 		var idx2 = fill >> 4
 		if idx1 < 0 {
-			fmt.Println("e")
+			if Debug {
+				fmt.Println("e")
+			}
 		}
 		if idx2 < 0 {
-			fmt.Println("e")
+			if Debug {
+				fmt.Println("e")
+			}
 		}
 		fill = int(bit_interleave_table[fill&0xF] | bit_interleave_table[fill>>4]<<2)
 	}
