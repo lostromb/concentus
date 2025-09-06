@@ -1,18 +1,23 @@
 package opus
 
+import (
+	"github.com/dosgo/concentus/go/celt"
+	"github.com/dosgo/concentus/go/comm/opusConstants"
+)
+
 type TonalityAnalysisState struct {
-	enabled                 bool
+	Enabled                 bool
 	angle                   [240]float32
 	d_angle                 [240]float32
 	d2_angle                [240]float32
 	inmem                   []int
 	mem_fill                int
-	prev_band_tonality      [NB_TBANDS]float32
+	prev_band_tonality      [opusConstants.NB_TBANDS]float32
 	prev_tonality           float32
-	E                       [NB_FRAMES][NB_TBANDS]float32
-	lowE                    [NB_TBANDS]float32
-	highE                   [NB_TBANDS]float32
-	meanE                   [NB_TOT_BANDS]float32
+	E                       [opusConstants.NB_FRAMES][opusConstants.NB_TBANDS]float32
+	lowE                    [opusConstants.NB_TBANDS]float32
+	highE                   [opusConstants.NB_TBANDS]float32
+	meanE                   [opusConstants.NB_TOT_BANDS]float32
 	mem                     [32]float32
 	cmean                   [8]float32
 	std                     [9]float32
@@ -25,8 +30,8 @@ type TonalityAnalysisState struct {
 	count                   int
 	subframe_mem            []float32
 	analysis_offset         int
-	pspeech                 [DETECT_SIZE]float32
-	pmusic                  [DETECT_SIZE]float32
+	pspeech                 [opusConstants.DETECT_SIZE]float32
+	pmusic                  [opusConstants.DETECT_SIZE]float32
 	speech_confidence       float32
 	music_confidence        float32
 	speech_confidence_count int
@@ -34,13 +39,13 @@ type TonalityAnalysisState struct {
 	write_pos               int
 	read_pos                int
 	read_subframe           int
-	info                    [DETECT_SIZE]*AnalysisInfo
+	info                    [opusConstants.DETECT_SIZE]*celt.AnalysisInfo
 }
 
 func NewTonalityAnalysisState() TonalityAnalysisState {
 	t := TonalityAnalysisState{}
-	for i := 0; i < DETECT_SIZE; i++ {
-		t.info[i] = &AnalysisInfo{}
+	for i := 0; i < opusConstants.DETECT_SIZE; i++ {
+		t.info[i] = &celt.AnalysisInfo{}
 	}
 	return t
 }
@@ -110,7 +115,7 @@ func (t *TonalityAnalysisState) Reset() {
 	t.write_pos = 0
 	t.read_pos = 0
 	t.read_subframe = 0
-	for i := 0; i < DETECT_SIZE; i++ {
+	for i := 0; i < opusConstants.DETECT_SIZE; i++ {
 		t.info[i].Reset()
 	}
 }

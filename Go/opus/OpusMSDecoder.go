@@ -1,6 +1,10 @@
 package opus
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/dosgo/concentus/go/comm"
+)
 
 type OpusMSDecoder struct {
 	layout   ChannelLayout
@@ -68,11 +72,11 @@ func OpusMSDecoder_create(Fs int, channels int, streams int, coupled_streams int
 }
 
 func opus_multistream_packet_validate(data []byte, data_ptr int, len int, nb_streams int, Fs int) int {
-	toc := BoxedValueByte{Val: 0}
+	toc := comm.BoxedValueByte{Val: 0}
 	size := make([]int16, 48)
 	samples := 0
-	packet_offset := BoxedValueInt{Val: 0}
-	dummy := BoxedValueInt{Val: 0}
+	packet_offset := comm.BoxedValueInt{Val: 0}
+	dummy := comm.BoxedValueInt{Val: 0}
 
 	for s := 0; s < nb_streams; s++ {
 		if len <= 0 {
@@ -98,7 +102,7 @@ func opus_multistream_packet_validate(data []byte, data_ptr int, len int, nb_str
 
 func (this *OpusMSDecoder) opus_multistream_decode_native(data []byte, data_ptr int, len int, pcm []int16, pcm_ptr int, frame_size int, decode_fec int, soft_clip int) int {
 	Fs := this.getSampleRate()
-	frame_size = IMIN(frame_size, Fs/25*3)
+	frame_size = inlines.IMIN(frame_size, Fs/25*3)
 	buf := make([]int16, 2*frame_size)
 	decoder_ptr := 0
 	do_plc := 0
@@ -129,7 +133,7 @@ func (this *OpusMSDecoder) opus_multistream_decode_native(data []byte, data_ptr 
 			return OpusError.OPUS_INTERNAL_ERROR
 		}
 
-		packet_offset := BoxedValueInt{Val: 0}
+		packet_offset := comm.BoxedValueInt{Val: 0}
 		ret := dec.opus_decode_native(data, data_ptr, len, buf, 0, frame_size, decode_fec, boolToInt(s != this.layout.nb_streams-1), &packet_offset, soft_clip)
 		data_ptr += packet_offset.Val
 		len -= packet_offset.Val

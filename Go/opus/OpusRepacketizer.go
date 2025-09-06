@@ -1,6 +1,10 @@
 package opus
 
-import "bytes"
+import (
+	"bytes"
+
+	"github.com/dosgo/concentus/go/comm"
+)
 
 type OpusRepacketizer struct {
 	toc       byte
@@ -21,8 +25,8 @@ func NewOpusRepacketizer() *OpusRepacketizer {
 }
 
 func (this *OpusRepacketizer) opus_repacketizer_cat_impl(data []byte, data_ptr int, len_val int, self_delimited int) int {
-	dummy_toc := BoxedValueByte{0}
-	dummy_offset := BoxedValueInt{0}
+	dummy_toc := comm.BoxedValueByte{0}
+	dummy_offset := comm.BoxedValueInt{0}
 	if len_val < 1 {
 		return OpusError.OPUS_INVALID_PACKET
 	}
@@ -259,10 +263,10 @@ func PadMultistreamPacket(data []byte, data_offset int, len_val int, new_len int
 	}
 
 	amount := new_len - len_val
-	dummy_toc := BoxedValueByte{0}
+	dummy_toc := comm.BoxedValueByte{0}
 	size := []int16{}
-	packet_offset := BoxedValueInt{0}
-	dummy_offset := BoxedValueInt{0}
+	packet_offset := comm.BoxedValueInt{0}
+	dummy_offset := comm.BoxedValueInt{0}
 
 	for s := 0; s < nb_streams-1; s++ {
 		if len_val <= 0 {
@@ -285,10 +289,10 @@ func UnpadMultistreamPacket(data []byte, data_offset int, len_val int, nb_stream
 
 	dst := data_offset
 	dst_len := 0
-	dummy_toc := BoxedValueByte{0}
+	dummy_toc := comm.BoxedValueByte{0}
 	size := []int16{}
-	packet_offset := BoxedValueInt{0}
-	dummy_offset := BoxedValueInt{0}
+	packet_offset := comm.BoxedValueInt{0}
+	dummy_offset := comm.BoxedValueInt{0}
 
 	for s := 0; s < nb_streams; s++ {
 		self_delimited := 0

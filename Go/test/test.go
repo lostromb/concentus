@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/dosgo/concentus/go/opus"
 	"crypto/md5"
 	"encoding/binary"
 	"encoding/hex"
@@ -11,18 +10,27 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"time"
+
+	"github.com/dosgo/concentus/go/comm"
+	"github.com/dosgo/concentus/go/opus"
 )
 
 func main() {
 	go func() {
 		http.ListenAndServe("localhost:6060", nil)
 	}()
-	test()
+	test1()
 }
 func test() {
+	//Avoid panic
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Errorf("decode panic: %v", r)
+		}
+	}()
 	encoder, err := opus.NewOpusEncoder(48000, 2, opus.OPUS_APPLICATION_AUDIO)
 	encoder.SetBitrate(96000)
-	encoder.SetForceMode(opus.MODE_SILK_ONLY)
+	encoder.SetForceMode(opus.MODE_CELT_ONLY)
 	encoder.SetSignalType(opus.OPUS_SIGNAL_MUSIC)
 	encoder.SetComplexity(0)
 
@@ -49,14 +57,13 @@ func test() {
 		pcm, _ := BytesToShorts(inBuf, 0, len(inBuf))
 
 		fmt.Printf("imput md5:%s\r\n", ByteSliceToMD5(inBuf))
-
-		bytesEncoded, err := encoder.Encode(pcm, 0, packetSamples, data_packet, 0, 1275)
-		if i == 4 {
-			opus.Debug = false
+		if i == 0 {
+			comm.Debug = false
 		} else {
-			opus.Debug = false
+			comm.Debug = false
 
 		}
+		bytesEncoded, err := encoder.Encode(pcm, 0, packetSamples, data_packet, 0, 1275)
 
 		fmt.Printf("i:%d bytesEncoded:%d data_packet:%s\r\n", i, bytesEncoded, ByteSliceToMD5(data_packet))
 		_, err = decoder.Decode(data_packet, 0, bytesEncoded, pcm, 0, packetSamples, false)
@@ -73,7 +80,7 @@ func test1() {
 
 	encoder, err := opus.NewOpusEncoder(16000, 1, opus.OPUS_APPLICATION_AUDIO)
 	encoder.SetBitrate(96000)
-	encoder.SetForceMode(opus.MODE_CELT_ONLY)
+	encoder.SetForceMode(opus.MODE_SILK_ONLY)
 	encoder.SetSignalType(opus.OPUS_SIGNAL_MUSIC)
 	encoder.SetComplexity(0)
 
@@ -102,9 +109,9 @@ func test1() {
 
 		fmt.Printf("imput md5:%s\r\n", ByteSliceToMD5(inBuf))
 		if i == 20 {
-			opus.Debug = false
+			//opus.Debug = false
 		} else {
-			opus.Debug = false
+			//opus.Debug = false
 
 		}
 		bytesEncoded, err := encoder.Encode(pcm, 0, packetSamples, data_packet, 0, 1275)

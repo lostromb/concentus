@@ -2,13 +2,17 @@ package opus
 
 import (
 	"errors"
+
+	"github.com/dosgo/concentus/go/celt"
+	"github.com/dosgo/concentus/go/comm"
+	"github.com/dosgo/concentus/go/comm/opusConstants"
 )
 
 type OpusMSEncoder struct {
 	layout            ChannelLayout
 	lfe_stream        int
 	application       OpusApplication
-	variable_duration OpusFramesize
+	variable_duration int
 	surround          int
 	bitrate_bps       int
 	subframe_mem      [3]float32
@@ -98,27 +102,27 @@ func logSum(a, b int) int {
 	var max, diff int
 	if a > b {
 		max = a
-		diff = SUB32(EXTEND32Int(a), EXTEND32Int(b))
+		diff = inlines.SUB32(inlines.EXTEND32Int(a), inlines.EXTEND32Int(b))
 	} else {
 		max = b
-		diff = SUB32(EXTEND32Int(b), EXTEND32Int(a))
+		diff = inlines.SUB32(inlines.EXTEND32Int(b), inlines.EXTEND32Int(a))
 	}
-	if diff >= int(QCONST16(8.0, CeltConstants.DB_SHIFT)) {
+	if diff >= int(inlines.QCONST16(8.0, CeltConstants.DB_SHIFT)) {
 		return max
 	}
-	low := SHR32(diff, CeltConstants.DB_SHIFT-1)
-	frac := SHL16Int(diff-SHL16Int(low, CeltConstants.DB_SHIFT-1), 16-CeltConstants.DB_SHIFT)
-	return max + diff_table[low] + MULT16_16_Q15Int(frac, SUB16Int(diff_table[low+1], diff_table[low]))
+	low := inlines.SHR32(diff, CeltConstants.DB_SHIFT-1)
+	frac := inlines.SHL16Int(diff-inlines.SHL16Int(low, CeltConstants.DB_SHIFT-1), 16-CeltConstants.DB_SHIFT)
+	return max + diff_table[low] + inlines.MULT16_16_Q15Int(frac, inlines.SUB16Int(diff_table[low+1], diff_table[low]))
 }
 
-func surround_analysis(celt_mode *CeltMode, pcm []int16, pcm_ptr int, bandLogE []int, mem, preemph_mem []int, len, overlap, channels, rate int) {
+func surround_analysis(celt_mode *celt.CeltMode, pcm []int16, pcm_ptr int, bandLogE []int, mem, preemph_mem []int, len, overlap, channels, rate int) {
 	var pos [8]int
-	upsample := resampling_factor(rate)
+	upsample := celt.Resampling_factor(rate)
 	frame_size := len * upsample
 
 	LM := 0
-	for ; LM < celt_mode.maxLM; LM++ {
-		if celt_mode.shortMdctSize<<LM == frame_size {
+	for ; LM < celt_mode.MaxLM; LM++ {
+		if celt_mode.ShortMdctSize<<LM == frame_size {
 			break
 		}
 	}
@@ -134,7 +138,7 @@ func surround_analysis(celt_mode *CeltMode, pcm []int16, pcm_ptr int, bandLogE [
 	for i := range maskLogE {
 		maskLogE[i] = make([]int, 21)
 		for j := range maskLogE[i] {
-			maskLogE[i][j] = -int(QCONST16(28.0, CeltConstants.DB_SHIFT))
+			maskLogE[i][j] = -int(inlines.QCONST16(28.0, CeltConstants.DB_SHIFT))
 		}
 	}
 
@@ -142,13 +146,13 @@ func surround_analysis(celt_mode *CeltMode, pcm []int16, pcm_ptr int, bandLogE [
 		copy(input[:overlap], mem[c*overlap:(c*overlap)+overlap])
 		opus_copy_channel_in_short(x, 0, 1, pcm, pcm_ptr, channels, c, len)
 
-		boxed_preemph := BoxedValueInt{preemph_mem[c]}
+		boxed_preemph := comm.BoxedValueInt{preemph_mem[c]}
 		//celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, &boxed_preemph, 0)
 		//celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0)
-		celt_preemphasis1(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, &boxed_preemph, 0)
+		celt.Celt_preemphasis1(x, input, overlap, frame_size, 1, upsample, celt_mode.Preemph, &boxed_preemph, 0)
 		preemph_mem[c] = boxed_preemph.Val
 
-		clt_mdct_forward(celt_mode.mdct, input, 0, freq[0], 0, celt_mode.window, overlap, celt_mode.maxLM-LM, 1)
+		celt.Clt_mdct_forward(celt_mode.Mdct, input, 0, freq[0], 0, celt_mode.Window, overlap, celt_mode.MaxLM-LM, 1)
 		if upsample != 1 {
 			bound := len
 			for i := 0; i < bound; i++ {
@@ -161,14 +165,14 @@ func surround_analysis(celt_mode *CeltMode, pcm []int16, pcm_ptr int, bandLogE [
 
 		bandE := make([][]int, 1)
 		bandE[0] = make([]int, 21)
-		compute_band_energies(celt_mode, freq, bandE, 21, 1, LM)
-		amp2Log2Ptr(celt_mode, 21, 21, bandE[0], bandLogE, 21*c, 1)
+		celt.Compute_band_energies(celt_mode, freq, bandE, 21, 1, LM)
+		celt.Amp2Log2Ptr(celt_mode, 21, 21, bandE[0], bandLogE, 21*c, 1)
 
 		for i := 1; i < 21; i++ {
-			bandLogE[21*c+i] = MAX16Int(bandLogE[21*c+i], bandLogE[21*c+i-1]-int(QCONST16(1.0, CeltConstants.DB_SHIFT)))
+			bandLogE[21*c+i] = inlines.MAX16Int(bandLogE[21*c+i], bandLogE[21*c+i-1]-int(inlines.QCONST16(1.0, CeltConstants.DB_SHIFT)))
 		}
 		for i := 19; i >= 0; i-- {
-			bandLogE[21*c+i] = MAX16Int(bandLogE[21*c+i], bandLogE[21*c+i+1]-int(QCONST16(2.0, CeltConstants.DB_SHIFT)))
+			bandLogE[21*c+i] = inlines.MAX16Int(bandLogE[21*c+i], bandLogE[21*c+i+1]-int(inlines.QCONST16(2.0, CeltConstants.DB_SHIFT)))
 		}
 		if pos[c] == 1 {
 			for i := 0; i < 21; i++ {
@@ -180,16 +184,16 @@ func surround_analysis(celt_mode *CeltMode, pcm []int16, pcm_ptr int, bandLogE [
 			}
 		} else if pos[c] == 2 {
 			for i := 0; i < 21; i++ {
-				maskLogE[0][i] = logSum(maskLogE[0][i], bandLogE[21*c+i]-int(QCONST16(0.5, CeltConstants.DB_SHIFT)))
-				maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21*c+i]-int(QCONST16(0.5, CeltConstants.DB_SHIFT)))
+				maskLogE[0][i] = logSum(maskLogE[0][i], bandLogE[21*c+i]-int(inlines.QCONST16(0.5, CeltConstants.DB_SHIFT)))
+				maskLogE[2][i] = logSum(maskLogE[2][i], bandLogE[21*c+i]-int(inlines.QCONST16(0.5, CeltConstants.DB_SHIFT)))
 			}
 		}
 		copy(mem[c*overlap:(c*overlap)+overlap], input[frame_size:frame_size+overlap])
 	}
 	for i := 0; i < 21; i++ {
-		maskLogE[1][i] = MIN32(maskLogE[0][i], maskLogE[2][i])
+		maskLogE[1][i] = inlines.MIN32(maskLogE[0][i], maskLogE[2][i])
 	}
-	channel_offset := HALF16Int(celt_log2(int(QCONST32(2.0, 14)) / (channels - 1)))
+	channel_offset := inlines.HALF16Int(inlines.Celt_log2(int(inlines.QCONST32(2.0, 14)) / (channels - 1)))
 	for c := 0; c < 3; c++ {
 		for i := 0; i < 21; i++ {
 			maskLogE[c][i] += channel_offset
@@ -222,9 +226,9 @@ func (st *OpusMSEncoder) opus_multistream_encoder_init(Fs, channels, streams, co
 	if surround == 0 {
 		st.lfe_stream = -1
 	}
-	st.bitrate_bps = OPUS_AUTO
+	st.bitrate_bps = opusConstants.OPUS_AUTO
 	st.application = application
-	st.variable_duration = OPUS_FRAMESIZE_ARG
+	st.variable_duration = celt.OPUS_FRAMESIZE_ARG
 	copy(st.layout.mapping[:], mapping)
 	if validate_layout(st.layout) == 0 || validate_encoder_layout(st.layout) == 0 {
 		return OpusError.OPUS_BAD_ARG
@@ -263,7 +267,7 @@ func (st *OpusMSEncoder) opus_multistream_encoder_init(Fs, channels, streams, co
 	return OpusError.OPUS_OK
 }
 
-func (st *OpusMSEncoder) opus_multistream_surround_encoder_init(Fs, channels, mapping_family int, streams, coupled_streams *BoxedValueInt, mapping []int16, application OpusApplication) int {
+func (st *OpusMSEncoder) opus_multistream_surround_encoder_init(Fs, channels, mapping_family int, streams, coupled_streams *comm.BoxedValueInt, mapping []int16, application OpusApplication) int {
 	streams.Val = 0
 	coupled_streams.Val = 0
 	if channels > 255 || channels < 1 {
@@ -322,7 +326,7 @@ func CreateOpusMSEncoder(Fs, channels, streams, coupled_streams int, mapping []i
 	return st, nil
 }
 
-func GetStreamCount(channels, mapping_family int, nb_streams, nb_coupled_streams *BoxedValueInt) error {
+func GetStreamCount(channels, mapping_family int, nb_streams, nb_coupled_streams *comm.BoxedValueInt) error {
 	if mapping_family == 0 {
 		if channels == 1 {
 			nb_streams.Val = 1
@@ -345,12 +349,12 @@ func GetStreamCount(channels, mapping_family int, nb_streams, nb_coupled_streams
 	return nil
 }
 
-func CreateSurroundOpusMSEncoder(Fs, channels, mapping_family int, streams, coupled_streams *BoxedValueInt, mapping []int16, application OpusApplication) (*OpusMSEncoder, error) {
+func CreateSurroundOpusMSEncoder(Fs, channels, mapping_family int, streams, coupled_streams *comm.BoxedValueInt, mapping []int16, application OpusApplication) (*OpusMSEncoder, error) {
 	if channels > 255 || channels < 1 || application == OPUS_APPLICATION_UNIMPLEMENTED {
 		return nil, errors.New("Invalid channel count or application")
 	}
-	nb_streams := BoxedValueInt{0}
-	nb_coupled_streams := BoxedValueInt{0}
+	nb_streams := comm.BoxedValueInt{0}
+	nb_coupled_streams := comm.BoxedValueInt{0}
 	err := GetStreamCount(channels, mapping_family, &nb_streams, &nb_coupled_streams)
 	if err != nil {
 		return nil, err
@@ -386,9 +390,9 @@ func (st *OpusMSEncoder) surround_rate_allocation(out_rates []int, frame_size in
 	coupled_ratio := 512
 	lfe_ratio := 32
 
-	if st.bitrate_bps == OPUS_AUTO {
+	if st.bitrate_bps == opusConstants.OPUS_AUTO {
 		channel_rate = Fs + 60*Fs/frame_size
-	} else if st.bitrate_bps == OPUS_BITRATE_MAX {
+	} else if st.bitrate_bps == opusConstants.OPUS_BITRATE_MAX {
 		channel_rate = 300000
 	} else {
 		nb_lfe := Ternary(st.lfe_stream != -1, 1, 0)
@@ -407,7 +411,7 @@ func (st *OpusMSEncoder) surround_rate_allocation(out_rates []int, frame_size in
 		} else {
 			out_rates[i] = lfe_offset + (channel_rate * lfe_ratio >> 8)
 		}
-		out_rates[i] = IMAX(out_rates[i], 500)
+		out_rates[i] = inlines.IMAX(out_rates[i], 500)
 		rate_sum += out_rates[i]
 	}
 	return rate_sum
@@ -418,7 +422,7 @@ const MS_FRAME_TMP = 3*1275 + 7
 func (st *OpusMSEncoder) opus_multistream_encode_native(pcm []int16, pcm_ptr, analysis_frame_size int, data []byte, data_ptr, max_data_bytes, lsb_depth, float_api int) int {
 	var Fs, tot_size, frame_size, rate_sum, smallest_packet int
 	var vbr int
-	var celt_mode *CeltMode
+	var celt_mode *celt.CeltMode
 	var bandLogE []int
 	var mem, preemph_mem []int
 
@@ -433,7 +437,7 @@ func (st *OpusMSEncoder) opus_multistream_encode_native(pcm []int16, pcm_ptr, an
 	celt_mode = st.encoders[encoder_ptr].GetCeltMode()
 
 	delay_compensation := st.encoders[encoder_ptr].GetLookahead() - Fs/400
-	frame_size = compute_frame_size(pcm, pcm_ptr, analysis_frame_size, st.variable_duration, st.layout.nb_channels, Fs, st.bitrate_bps, delay_compensation, st.subframe_mem[:], st.encoders[encoder_ptr].analysis.enabled)
+	frame_size = compute_frame_size(pcm, pcm_ptr, analysis_frame_size, st.variable_duration, st.layout.nb_channels, Fs, st.bitrate_bps, delay_compensation, st.subframe_mem[:], st.encoders[encoder_ptr].analysis.Enabled)
 
 	if 400*frame_size < Fs {
 		return OpusError.OPUS_BAD_ARG
@@ -457,10 +461,10 @@ func (st *OpusMSEncoder) opus_multistream_encode_native(pcm []int16, pcm_ptr, an
 	rate_sum = st.surround_rate_allocation(bitrates, frame_size)
 
 	if vbr == 0 {
-		if st.bitrate_bps == OPUS_AUTO {
-			max_data_bytes = IMIN(max_data_bytes, 3*rate_sum/(3*8*Fs/frame_size))
-		} else if st.bitrate_bps != OPUS_BITRATE_MAX {
-			max_data_bytes = IMIN(max_data_bytes, IMAX(smallest_packet, 3*st.bitrate_bps/(3*8*Fs/frame_size)))
+		if st.bitrate_bps == opusConstants.OPUS_AUTO {
+			max_data_bytes = inlines.IMIN(max_data_bytes, 3*rate_sum/(3*8*Fs/frame_size))
+		} else if st.bitrate_bps != opusConstants.OPUS_BITRATE_MAX {
+			max_data_bytes = inlines.IMIN(max_data_bytes, inlines.IMAX(smallest_packet, 3*st.bitrate_bps/(3*8*Fs/frame_size)))
 		}
 	}
 
@@ -530,8 +534,8 @@ func (st *OpusMSEncoder) opus_multistream_encode_native(pcm []int16, pcm_ptr, an
 		}
 
 		curr_max = max_data_bytes - tot_size
-		curr_max -= IMAX(0, 2*(st.layout.nb_streams-s-1)-1)
-		curr_max = IMIN(curr_max, MS_FRAME_TMP)
+		curr_max -= inlines.IMAX(0, 2*(st.layout.nb_streams-s-1)-1)
+		curr_max = inlines.IMIN(curr_max, MS_FRAME_TMP)
 		if s != st.layout.nb_streams-1 {
 			if curr_max > 253 {
 				curr_max -= 2
@@ -580,7 +584,7 @@ func (st *OpusMSEncoder) GetBitrate() int {
 }
 
 func (st *OpusMSEncoder) SetBitrate(value int) error {
-	if value < 0 && value != OPUS_AUTO && value != OPUS_BITRATE_MAX {
+	if value < 0 && value != opusConstants.OPUS_AUTO && value != opusConstants.OPUS_BITRATE_MAX {
 		return errors.New("Invalid bitrate")
 	}
 	st.bitrate_bps = value
@@ -746,11 +750,11 @@ func (st *OpusMSEncoder) SetPredictionDisabled(value bool) {
 	}
 }
 
-func (st *OpusMSEncoder) GetExpertFrameDuration() OpusFramesize {
+func (st *OpusMSEncoder) GetExpertFrameDuration() int {
 	return st.variable_duration
 }
 
-func (st *OpusMSEncoder) SetExpertFrameDuration(value OpusFramesize) {
+func (st *OpusMSEncoder) SetExpertFrameDuration(value int) {
 	st.variable_duration = value
 }
 

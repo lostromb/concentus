@@ -2,6 +2,8 @@ package opus
 
 import (
 	"errors"
+
+	"github.com/dosgo/concentus/go/comm"
 )
 
 type OpusPacketInfo struct {
@@ -24,12 +26,12 @@ func ParseOpusPacket(packet []byte, packet_offset, _len int) (*OpusPacketInfo, e
 		return nil, errors.New("opus_packet_parse_impl failed")
 	}
 
-	var out_toc = BoxedValueByte{0}
-	var payload_offset = BoxedValueInt{0}
+	var out_toc = comm.BoxedValueByte{0}
+	var payload_offset = comm.BoxedValueInt{0}
 
 	frames := make([][]byte, numFrames)
 	sizes := make([]int16, numFrames)
-	var packet_offset_out = BoxedValueInt{0}
+	var packet_offset_out = comm.BoxedValueInt{0}
 	errCode := opus_packet_parse_impl(packet, packet_offset, _len, 0, &out_toc, frames, 0, sizes, 0, &payload_offset, &packet_offset_out)
 	if errCode < 0 {
 		return nil, errors.New("opus_packet_parse_impl failed")
@@ -145,7 +147,7 @@ func encode_size(size int, data []byte, data_ptr int) int {
 	}
 }
 
-func parse_size(data []byte, data_ptr, len int, size *BoxedValueShort) int {
+func parse_size(data []byte, data_ptr, len int, size *comm.BoxedValueShort) int {
 	if len < 1 {
 		size.Val = -1
 		return -1
@@ -160,9 +162,9 @@ func parse_size(data []byte, data_ptr, len int, size *BoxedValueShort) int {
 		return 2
 	}
 }
-func opus_packet_parse_impl(data []byte, data_ptr, len_val, self_delimited int, out_toc *BoxedValueByte,
+func opus_packet_parse_impl(data []byte, data_ptr, len_val, self_delimited int, out_toc *comm.BoxedValueByte,
 	frames [][]byte, frames_ptr int, sizes []int16, sizes_ptr int,
-	payload_offset, packet_offset *BoxedValueInt) int {
+	payload_offset, packet_offset *comm.BoxedValueInt) int {
 	var i, bytes int
 	var count int
 	var cbr int
@@ -211,7 +213,7 @@ func opus_packet_parse_impl(data []byte, data_ptr, len_val, self_delimited int, 
 	/* Two VBR frames */
 	case 2:
 		count = 2
-		boxed_size := &BoxedValueShort{sizes[sizes_ptr]}
+		boxed_size := &comm.BoxedValueShort{sizes[sizes_ptr]}
 		bytes = parse_size(data, data_ptr, len_val, boxed_size)
 		sizes[sizes_ptr] = boxed_size.Val
 		len_val -= bytes
@@ -229,7 +231,7 @@ func opus_packet_parse_impl(data []byte, data_ptr, len_val, self_delimited int, 
 		}
 		/* Number of frames encoded in bits 0 to 5 */
 
-		ch = SignedByteToUnsignedInt(int8(data[data_ptr]))
+		ch = inlines.SignedByteToUnsignedInt(int8(data[data_ptr]))
 		data_ptr++
 		count = ch & 0x3F
 
@@ -245,7 +247,7 @@ func opus_packet_parse_impl(data []byte, data_ptr, len_val, self_delimited int, 
 				if len_val <= 0 {
 					return OpusError.OPUS_INVALID_PACKET
 				}
-				p = SignedByteToUnsignedInt(int8(data[data_ptr]))
+				p = inlines.SignedByteToUnsignedInt(int8(data[data_ptr]))
 				data_ptr++
 				len_val--
 				if p == 255 {
@@ -276,7 +278,7 @@ func opus_packet_parse_impl(data []byte, data_ptr, len_val, self_delimited int, 
 			/* VBR case */
 			last_size = len_val
 			for i = 0; i < count-1; i++ {
-				boxed_size := &BoxedValueShort{sizes[sizes_ptr+i]}
+				boxed_size := &comm.BoxedValueShort{sizes[sizes_ptr+i]}
 				bytes = parse_size(data, data_ptr, len_val, boxed_size)
 				sizes[sizes_ptr+i] = boxed_size.Val
 				len_val -= bytes
@@ -304,7 +306,7 @@ func opus_packet_parse_impl(data []byte, data_ptr, len_val, self_delimited int, 
 
 	/* Self-delimited framing has an extra size for the last frame. */
 	if self_delimited != 0 {
-		boxed_size := &BoxedValueShort{sizes[sizes_ptr+count-1]}
+		boxed_size := &comm.BoxedValueShort{sizes[sizes_ptr+count-1]}
 		bytes = parse_size(data, data_ptr, len_val, boxed_size)
 		sizes[sizes_ptr+count-1] = boxed_size.Val
 		len_val -= bytes

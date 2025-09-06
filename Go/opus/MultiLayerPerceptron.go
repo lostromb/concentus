@@ -17,7 +17,7 @@ func tansig_approx(x float32) float32 {
 	}
 	i := int(0.5 + 25*x)
 	x -= 0.04 * float32(i)
-	y = tansig_table[i]
+	y = Tansig_table[i]
 	dy = 1 - y*y
 	y = y + x*dy*(1-y*x)
 	return sign * y
