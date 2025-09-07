@@ -3,8 +3,8 @@ package opus
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/comm"
-	"github.com/dosgo/concentus/go/silk"
+	"github.com/lostromb/concentus/go/comm"
+	"github.com/lostromb/concentus/go/silk"
 )
 
 func silk_InitEncoder(encState *silk.SilkEncoder, encStatus *silk.EncControlState) int {

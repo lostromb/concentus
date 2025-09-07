@@ -1,6 +1,6 @@
 package silk
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 type NSQ_del_dec_struct struct {
 	sLPC_Q14  []int

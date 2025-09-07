@@ -1,6 +1,6 @@
 package celt
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 var CELT_PVQ_U_ROW = []int{
 	0, 176, 351, 525, 698, 870, 1041, 1131, 1178, 1207, 1226, 1240, 1248, 1254, 1257,

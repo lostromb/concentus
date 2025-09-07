@@ -3,7 +3,7 @@ package silk
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm"
 )
 
 func silk_find_pitch_lags(psEnc *SilkChannelEncoder, psEncCtrl *SilkEncoderControl, res []int16, x []int16, x_ptr int) {

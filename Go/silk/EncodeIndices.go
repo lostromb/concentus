@@ -1,6 +1,6 @@
 package silk
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 func Silk_encode_indices(psEncC *SilkChannelEncoder, psRangeEnc *comm.EntropyCoder, FrameIndex int, encode_LBRR int, condCoding int) {
 	var i, k, typeOffset int

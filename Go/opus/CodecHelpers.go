@@ -3,8 +3,8 @@ package opus
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/celt"
-	"github.com/dosgo/concentus/go/silk"
+	"github.com/lostromb/concentus/go/celt"
+	"github.com/lostromb/concentus/go/silk"
 )
 
 func gen_toc(mode int, framerate int, bandwidth int, channels int) byte {

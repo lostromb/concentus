@@ -1,6 +1,6 @@
 package celt
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 /* Copyright (c) 2007-2008 CSIRO
    Copyright (c) 2007-2011 Xiph.Org Foundation

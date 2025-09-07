@@ -1,6 +1,6 @@
 package silk
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 const (
 	NB_ATT = 2

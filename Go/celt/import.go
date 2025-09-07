@@ -1,6 +1,6 @@
 package celt
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 var inlines = comm.Inlines{}
 var kernels = comm.Kernels{}

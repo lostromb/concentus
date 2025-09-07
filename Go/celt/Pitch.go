@@ -3,7 +3,7 @@ package celt
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm"
 )
 
 func find_best_pitch(xcorr []int, y []int, len int, max_pitch int, best_pitch []int, yshift int, maxcorr int) {

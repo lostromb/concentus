@@ -1,6 +1,6 @@
 package silk
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 func combine_and_check(pulses_comb []int, pulses_comb_ptr int, pulses_in []int, pulses_in_ptr int, max_pulses int, _len int) int {
 	for k := 0; k < _len; k++ {

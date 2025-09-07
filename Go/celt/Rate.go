@@ -1,7 +1,7 @@
 package celt
 
 import (
-	"github.com/dosgo/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm"
 )
 
 const ALLOC_STEPS = 6

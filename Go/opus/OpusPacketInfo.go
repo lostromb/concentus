@@ -3,7 +3,7 @@ package opus
 import (
 	"errors"
 
-	"github.com/dosgo/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm"
 )
 
 type OpusPacketInfo struct {

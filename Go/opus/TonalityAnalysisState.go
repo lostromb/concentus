@@ -1,8 +1,8 @@
 package opus
 
 import (
-	"github.com/dosgo/concentus/go/celt"
-	"github.com/dosgo/concentus/go/comm/opusConstants"
+	"github.com/lostromb/concentus/go/celt"
+	"github.com/lostromb/concentus/go/comm/opusConstants"
 )
 
 type TonalityAnalysisState struct {

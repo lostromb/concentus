@@ -3,7 +3,7 @@ package silk
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm"
 )
 
 func silk_quant_LTP_gains(

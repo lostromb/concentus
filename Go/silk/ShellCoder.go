@@ -1,6 +1,6 @@
 package silk
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 func combine_pulsesLen(output, input []int, input_ptr int, len int) {
 	var k int

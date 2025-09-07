@@ -33,7 +33,7 @@ Copyright (c) 2006-2011 Skype Limited. All Rights Reserved
 */
 package silk
 
-import "github.com/dosgo/concentus/go/comm/arrayUtil"
+import "github.com/lostromb/concentus/go/comm/arrayUtil"
 
 ///
 /// <summary>

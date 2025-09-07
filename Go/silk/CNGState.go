@@ -32,7 +32,7 @@
  */
 package silk
 
-import "github.com/dosgo/concentus/go/comm/arrayUtil"
+import "github.com/lostromb/concentus/go/comm/arrayUtil"
 
 type CNGState struct {
 	CNG_exc_buf_Q14   []int

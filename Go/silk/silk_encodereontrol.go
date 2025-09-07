@@ -1,6 +1,6 @@
 package silk
 
-import "github.com/dosgo/concentus/go/comm/arrayUtil"
+import "github.com/lostromb/concentus/go/comm/arrayUtil"
 
 type SilkEncoderControl struct {
 	Gains_Q16          []int
