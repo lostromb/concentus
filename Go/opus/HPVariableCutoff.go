@@ -1,6 +1,6 @@
 package opus
 
-import "github.com/dosgo/concentus/go/silk"
+import "github.com/lostromb/concentus/go/silk"
 
 func silk_HP_variable_cutoff(state_Fxx []*silk.SilkChannelEncoder) {
 	var quality_Q15 int

@@ -3,9 +3,9 @@ package opus
 import (
 	"errors"
 
-	"github.com/dosgo/concentus/go/celt"
-	"github.com/dosgo/concentus/go/comm"
-	"github.com/dosgo/concentus/go/comm/opusConstants"
+	"github.com/lostromb/concentus/go/celt"
+	"github.com/lostromb/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm/opusConstants"
 )
 
 type OpusMSEncoder struct {

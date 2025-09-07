@@ -3,7 +3,7 @@ package silk
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm"
 )
 
 func warped_gain(coefs_Q24 []int, lambda_Q16 int, order int) int {

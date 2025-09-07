@@ -1,6 +1,6 @@
 package silk
 
-import "github.com/dosgo/concentus/go/comm/arrayUtil"
+import "github.com/lostromb/concentus/go/comm/arrayUtil"
 
 type StereoEncodeState struct {
 	Pred_prev_Q13   [2]int16

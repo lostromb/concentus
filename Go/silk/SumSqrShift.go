@@ -30,7 +30,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package silk
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 func silk_sum_sqr_shift5(energy *comm.BoxedValueInt, shift *comm.BoxedValueInt, x []int16, x_ptr int, _len int) {
 	var i int

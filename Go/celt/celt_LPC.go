@@ -1,6 +1,6 @@
 package celt
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 func celt_lpc(_lpc []int, ac []int, p int) {
 	var i, j int

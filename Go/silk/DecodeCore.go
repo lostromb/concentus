@@ -3,7 +3,7 @@ package silk
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/comm/arrayUtil"
+	"github.com/lostromb/concentus/go/comm/arrayUtil"
 )
 
 func silk_decode_core(

@@ -1,6 +1,6 @@
 package silk
 
-import arrayutil "github.com/dosgo/concentus/go/comm/arrayUtil"
+import arrayutil "github.com/lostromb/concentus/go/comm/arrayUtil"
 
 type SilkVADState struct {
 	AnaState        []int

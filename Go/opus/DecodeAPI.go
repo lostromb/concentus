@@ -1,8 +1,8 @@
 package opus
 
 import (
-	"github.com/dosgo/concentus/go/comm"
-	"github.com/dosgo/concentus/go/silk"
+	"github.com/lostromb/concentus/go/comm"
+	"github.com/lostromb/concentus/go/silk"
 )
 
 func silk_InitDecoder(decState *silk.SilkDecoder) int {

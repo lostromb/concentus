@@ -3,7 +3,7 @@ package comm
 import (
 	"fmt"
 
-	"github.com/dosgo/concentus/go/comm/arrayUtil"
+	"github.com/lostromb/concentus/go/comm/arrayUtil"
 )
 
 const (

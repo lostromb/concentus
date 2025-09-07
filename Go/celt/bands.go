@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/dosgo/concentus/go/comm"
-	"github.com/dosgo/concentus/go/comm/arrayUtil"
+	"github.com/lostromb/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm/arrayUtil"
 )
 
 type band_ctx struct {

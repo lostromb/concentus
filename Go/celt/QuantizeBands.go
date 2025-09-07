@@ -1,6 +1,6 @@
 package celt
 
-import "github.com/dosgo/concentus/go/comm"
+import "github.com/lostromb/concentus/go/comm"
 
 var pred_coef = []int{29440, 26112, 21248, 16384}
 var beta_coef = []int{30147, 22282, 12124, 6554}

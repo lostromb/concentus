@@ -3,9 +3,9 @@ package celt
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/comm"
-	"github.com/dosgo/concentus/go/comm/arrayUtil"
-	"github.com/dosgo/concentus/go/comm/opusConstants"
+	"github.com/lostromb/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm/arrayUtil"
+	"github.com/lostromb/concentus/go/comm/opusConstants"
 )
 
 type CeltEncoder struct {

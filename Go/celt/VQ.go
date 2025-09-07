@@ -3,7 +3,7 @@ package celt
 import (
 	"math"
 
-	"github.com/dosgo/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm"
 )
 
 var SPREAD_FACTOR = [3]int{15, 10, 5}

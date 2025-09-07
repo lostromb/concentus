@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/dosgo/concentus/go/celt"
-	"github.com/dosgo/concentus/go/comm"
-	"github.com/dosgo/concentus/go/comm/opusConstants"
-	"github.com/dosgo/concentus/go/silk"
+	"github.com/lostromb/concentus/go/celt"
+	"github.com/lostromb/concentus/go/comm"
+	"github.com/lostromb/concentus/go/comm/opusConstants"
+	"github.com/lostromb/concentus/go/silk"
 )
 
 type OpusEncoder struct {

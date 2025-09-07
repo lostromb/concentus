@@ -1,3 +1,3 @@
-module github.com/dosgo/concentus/go
+module github.com/lostromb/concentus/go
 
-go 1.25rc1
+go 1.20
