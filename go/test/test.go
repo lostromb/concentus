@@ -11,15 +11,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/lostromb/concentus/go/comm"
-	"github.com/lostromb/concentus/go/opus"
+	"github.com/dosgo/libopus/comm"
+	"github.com/dosgo/libopus/opus"
 )
 
 func main() {
 	go func() {
 		http.ListenAndServe("localhost:6060", nil)
 	}()
-	test1()
+	test3()
 }
 func test() {
 	//Avoid panic
@@ -183,4 +183,43 @@ func BytesToShorts(input []byte, offset, length int) ([]int16, error) {
 	}
 
 	return processedValues, nil
+}
+
+func test3() {
+
+	fileIn, err := os.Open("48Khz Stereo.raw")
+	if err != nil {
+		panic(err)
+	}
+	defer fileIn.Close()
+
+	var packetSamples = 960
+	inBuf := make([]byte, packetSamples*2*2)
+	data_packet := make([]int16, packetSamples*2)
+
+	i := 0
+	for {
+
+		_, err := io.ReadFull(fileIn, inBuf)
+		if err != nil {
+			break
+		}
+		if i > 1 {
+			break
+		}
+		pcm, _ := BytesToShorts(inBuf, 0, len(inBuf))
+
+		fmt.Printf("pcm:%s\r\n", IntSliceToMD5(pcm))
+		fmt.Printf("pcm:%+v\r\n", (pcm))
+
+		var resampler = comm.NewSpeexResampler(2, 48000, 88200, 10)
+
+		var inputLen = len(pcm)
+		var outLen = len(data_packet)
+		resampler.ProcessShort(0, pcm, 0, &inputLen, data_packet, 0, &outLen)
+		fmt.Printf("outLen:%d data_packet:%s \r\n", outLen, IntSliceToMD5(data_packet))
+		fmt.Printf("data_packet:%+v\r\n", (data_packet))
+		i++
+	}
+
 }
