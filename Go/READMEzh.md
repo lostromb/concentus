@@ -1,8 +1,0 @@
-## 性能说明
-
-此 Golang 版本通过 Java 版本纯翻译而成。对于同一个样本，输出结果完全一致，但执行时间快了约 **40%**。同时，Golang 也是跨平台开发的最佳语言选择之一。
-
-
-
-## 使用方法
-go get "github.com/lostromb/concentus/go
