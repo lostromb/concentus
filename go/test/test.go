@@ -11,8 +11,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/dosgo/libopus/comm"
-	"github.com/dosgo/libopus/opus"
+	"github.com/lostromb/concentus/go/comm"
+	"github.com/lostromb/concentus/go/opus"
 )
 
 func main() {
