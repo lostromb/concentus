@@ -1,6 +1,7 @@
 package celt
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 
@@ -48,7 +49,7 @@ func hysteresis_decision(val int, thresholds []int, hysteresis []int, N int, pre
 }
 
 func celt_lcg_rand(seed int) int {
-	return 1664525*seed + 1013904223
+	return int(int32(1664525*seed + 1013904223))
 }
 
 func bitexact_cos(x int) int {
@@ -235,7 +236,7 @@ func anti_collapse(m *CeltMode, X_ [][]int, collapse_masks []int16, LM int, C in
 			X = int(m.eBands[i] << LM)
 			for k = 0; k < 1<<LM; k++ {
 				/* Detect collapse */
-				if (collapse_masks[i*C+c] & 1 << k) == 0 {
+				if int32(collapse_masks[i*C+c])&int32(1<<k) == 0 {
 					/* Fill with noise */
 					Xk := X + k
 					for j = 0; j < N0; j++ {
@@ -1054,6 +1055,7 @@ func quant_partition(ctx *band_ctx, X []int, X_ptr int, N int, b int, B int, low
 						for j = 0; j < N; j++ {
 							var tmp int
 							ctx.seed = celt_lcg_rand(ctx.seed)
+
 							/* About 48 dB below the "normal" folding level */
 							tmp = int(math.Trunc(0.5 + (1.0/256)*float64(int32(1)<<(10))))
 							if ((ctx.seed) & 0x8000) != 0 {
@@ -1368,7 +1370,10 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 	if encode == 0 {
 		resynth = 1
 	}
-
+	if comm.Debug {
+		fmt.Printf("start :%d end:%d M:%d\r\n", start, end, M)
+	}
+	update_lowband := 1
 	for i := start; i < end; i++ {
 		ctx.i = i
 		last := 0
@@ -1392,9 +1397,11 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 		if i <= codedBands-1 {
 			curr_balance := inlines.Celt_sudiv(balance, inlines.IMIN(3, codedBands-i))
 			b = inlines.IMAX(0, inlines.IMIN(16383, inlines.IMIN(remaining_bits+1, pulses[i]+curr_balance)))
+			if comm.Debug {
+				//	fmt.Printf("curr_balance:%d b:%d\r\n", curr_balance, b)
+			}
 		}
 
-		update_lowband := 1
 		effective_lowband := -1
 		var x_cm = int64(0)
 		var y_cm = int64(0)
@@ -1402,7 +1409,6 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 		if resynth != 0 && M*int(eBands[i])-N >= M*int(eBands[start]) && (update_lowband != 0 || lowband_offset == 0) {
 			lowband_offset = i
 		}
-
 		tf_change := tf_res[i]
 		ctx.tf_change = tf_change
 
@@ -1426,6 +1432,7 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 			var fold_i int
 			/* This ensures we never repeat spectral content within one band */
 			effective_lowband = inlines.IMAX(0, M*int(eBands[lowband_offset])-norm_offset-N)
+
 			fold_start = lowband_offset
 			fold_start--
 			for M*int(eBands[fold_start]) > effective_lowband+norm_offset {
@@ -1468,7 +1475,6 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 		}
 
 		if dual_stereo != 0 {
-
 			var lowband []int
 			var lowband_out []int
 			if effective_lowband != -1 {
@@ -1505,6 +1511,10 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 					lowband_scratch_ptr,
 					int(x_cm|y_cm)))
 
+				Xstr, _ := json.Marshal(X)
+				if comm.Debug && i == 20 {
+					fmt.Printf("quant_all_bands effective_lowband:%d last:%d i:%d X:%s\r\n", effective_lowband, last, i, Xstr)
+				}
 			} else {
 
 				x_cm = int64(quant_band(
