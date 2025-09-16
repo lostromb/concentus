@@ -1,7 +1,6 @@
 package celt
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 
@@ -604,8 +603,7 @@ func (ed *CeltDecoder) Celt_decode_with_ec(data []byte, data_ptr int, length int
 	}
 	ed.rng = int(dec.Rng)
 	if comm.Debug {
-		Xstr, _ := json.Marshal(out_syn)
-		fmt.Printf("out_syn1:%s\r\n", Xstr)
+		fmt.Printf("out_syn1:%+v\r\n", X)
 	}
 	deemphasis(out_syn, out_syn_ptrs, pcm, pcm_ptr, N, CC, ed.downsample, mode.Preemph, ed.preemph_memD, accum)
 	ed.loss_count = 0

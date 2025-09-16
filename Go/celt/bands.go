@@ -1,7 +1,6 @@
 package celt
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 
@@ -1511,9 +1510,8 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 					lowband_scratch_ptr,
 					int(x_cm|y_cm)))
 
-				Xstr, _ := json.Marshal(X)
 				if comm.Debug && i == 20 {
-					fmt.Printf("quant_all_bands effective_lowband:%d last:%d i:%d X:%s\r\n", effective_lowband, last, i, Xstr)
+					fmt.Printf("quant_all_bands effective_lowband:%d last:%d i:%d X:%+v\r\n", effective_lowband, last, i, X)
 				}
 			} else {
 
