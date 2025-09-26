@@ -1,7 +1,6 @@
 package celt
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/lostromb/concentus/go/comm"
@@ -602,9 +601,6 @@ func (ed *CeltDecoder) Celt_decode_with_ec(data []byte, data_ptr int, length int
 		}
 	}
 	ed.rng = int(dec.Rng)
-	if comm.Debug {
-		fmt.Printf("out_syn1:%+v\r\n", X)
-	}
 	deemphasis(out_syn, out_syn_ptrs, pcm, pcm_ptr, N, CC, ed.downsample, mode.Preemph, ed.preemph_memD, accum)
 	ed.loss_count = 0
 

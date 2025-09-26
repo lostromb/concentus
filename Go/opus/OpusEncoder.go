@@ -1,9 +1,7 @@
 package opus
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 
 	"github.com/lostromb/concentus/go/celt"
@@ -690,11 +688,7 @@ func (st *OpusEncoder) opus_encode_native(pcm []int16, pcm_ptr, frame_size int, 
 				tmp_data, i*bytes_per_frame, bytes_per_frame, lsb_depth,
 				nil, 0, 0, c1, c2, analysis_channels, float_api)
 			if tmp_len < 0 {
-
 				return OpusError.OPUS_INTERNAL_ERROR
-			}
-			if comm.Debug {
-				fmt.Printf("tmp_data:%+v\r\n", tmp_data)
 			}
 			ret = rp.addPacket(tmp_data, i*bytes_per_frame, tmp_len)
 			if ret < 0 {
@@ -707,15 +701,7 @@ func (st *OpusEncoder) opus_encode_native(pcm []int16, pcm_ptr, frame_size int, 
 		} else {
 			repacketize_len = inlines.IMIN(3*st.bitrate_bps/(3*8*50/nb_frames), out_data_bytes)
 		}
-		if comm.Debug {
-			dataStr, _ := json.Marshal((data))
-			fmt.Printf("data-1:%s\r\n", dataStr)
-		}
 		ret = rp.opus_repacketizer_out_range_impl(0, nb_frames, data, data_ptr, repacketize_len, 0, boolToInt(st.use_vbr == 0))
-		if comm.Debug {
-			dataStr, _ := json.Marshal((data))
-			fmt.Printf("data:%s\r\n", dataStr)
-		}
 		if ret < 0 {
 			return OpusError.OPUS_INTERNAL_ERROR
 		}

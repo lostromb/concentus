@@ -19,18 +19,13 @@ func main() {
 	go func() {
 		http.ListenAndServe("localhost:6060", nil)
 	}()
-	test1()
+	test()
 }
 func test() {
 	//Avoid panic
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Errorf("decode panic: %v", r)
-		}
-	}()
 	encoder, err := opus.NewOpusEncoder(48000, 2, opus.OPUS_APPLICATION_AUDIO)
 	encoder.SetBitrate(96000)
-	encoder.SetForceMode(opus.MODE_CELT_ONLY)
+	encoder.SetForceMode(opus.MODE_SILK_ONLY)
 	encoder.SetSignalType(opus.OPUS_SIGNAL_MUSIC)
 	encoder.SetComplexity(0)
 

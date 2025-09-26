@@ -1369,9 +1369,6 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 	if encode == 0 {
 		resynth = 1
 	}
-	if comm.Debug {
-		fmt.Printf("start :%d end:%d M:%d\r\n", start, end, M)
-	}
 	update_lowband := 1
 	for i := start; i < end; i++ {
 		ctx.i = i
@@ -1396,9 +1393,6 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 		if i <= codedBands-1 {
 			curr_balance := inlines.Celt_sudiv(balance, inlines.IMIN(3, codedBands-i))
 			b = inlines.IMAX(0, inlines.IMIN(16383, inlines.IMIN(remaining_bits+1, pulses[i]+curr_balance)))
-			if comm.Debug {
-				//	fmt.Printf("curr_balance:%d b:%d\r\n", curr_balance, b)
-			}
 		}
 
 		effective_lowband := -1
@@ -1509,10 +1503,6 @@ func quant_all_bands(encode int, m *CeltMode, start int, end int, X_ []int, Y_ [
 					lowband_scratch,
 					lowband_scratch_ptr,
 					int(x_cm|y_cm)))
-
-				if comm.Debug && i == 20 {
-					fmt.Printf("quant_all_bands effective_lowband:%d last:%d i:%d X:%+v\r\n", effective_lowband, last, i, X)
-				}
 			} else {
 
 				x_cm = int64(quant_band(
