@@ -1015,7 +1015,11 @@ func deemphasis(input [][]int, input_ptrs []int, pcm []int16, pcm_ptr int, N int
 
 		if apply_downsampling != 0 {
 			/* Perform down-sampling */
-			{
+			if accum != 0 {
+				for j = 0; j < Nd; j++ {
+					pcm[y+(j*C)] = inlines.SAT16(inlines.ADD32(int(pcm[y+(j*C)]), int(inlines.SIG2WORD16(scratch[j*downsample]))))
+				}
+			} else {
 				for j = 0; j < Nd; j++ {
 					pcm[y+(j*C)] = inlines.SIG2WORD16(scratch[j*downsample])
 				}
