@@ -226,7 +226,6 @@ namespace UnitTests
             });
         }
 
-        [Ignore]
         [TestMethod]
         public void TestBug3()
         {
@@ -368,6 +367,59 @@ namespace UnitTests
                 DecoderSampleRate = 24000
             });
         }
+
+        // Hybrid packets decoded below 48Khz take the celt_accum + downsample path in deemphasis(),
+        // which used to overwrite the SILK output with (empty) CELT output, producing silence.
+        // See https://github.com/lostromb/concentus/issues/67
+        private void RunHybridDecodeToLowerRateTest(int decoderSampleRate, int channels, int packetLossPercent = 0)
+        {
+            foreach (double frameSize in new double[] { 10, 20, 40, 60 })
+            {
+                TestParameters p = new TestParameters()
+                {
+                    Application = Concentus.Enums.OpusApplication.OPUS_APPLICATION_VOIP,
+                    Bitrate = 32,
+                    Channels = channels,
+                    Complexity = 10,
+                    ForceMode = Concentus.Enums.OpusMode.MODE_HYBRID,
+                    FrameSize = frameSize,
+                    PacketLossPercent = packetLossPercent,
+                    SampleRate = 48000,
+                    UseVBR = true,
+                    DecoderChannels = channels,
+                    DecoderSampleRate = decoderSampleRate
+                };
+                TestResults results = TestDriver.RunTest(p, GetTestSample(p));
+                Assert.IsTrue(results.Passed, string.Format("{0}ms frames: {1}", frameSize, results.Message));
+            }
+        }
+
+        [TestMethod]
+        public void TestHybridDecodeTo8KhzMono() { RunHybridDecodeToLowerRateTest(8000, 1); }
+
+        [TestMethod]
+        public void TestHybridDecodeTo12KhzMono() { RunHybridDecodeToLowerRateTest(12000, 1); }
+
+        [TestMethod]
+        public void TestHybridDecodeTo16KhzMono() { RunHybridDecodeToLowerRateTest(16000, 1); }
+
+        [TestMethod]
+        public void TestHybridDecodeTo24KhzMono() { RunHybridDecodeToLowerRateTest(24000, 1); }
+
+        [TestMethod]
+        public void TestHybridDecodeTo8KhzStereo() { RunHybridDecodeToLowerRateTest(8000, 2); }
+
+        [TestMethod]
+        public void TestHybridDecodeTo12KhzStereo() { RunHybridDecodeToLowerRateTest(12000, 2); }
+
+        [TestMethod]
+        public void TestHybridDecodeTo16KhzStereo() { RunHybridDecodeToLowerRateTest(16000, 2); }
+
+        [TestMethod]
+        public void TestHybridDecodeTo24KhzStereo() { RunHybridDecodeToLowerRateTest(24000, 2); }
+
+        [TestMethod]
+        public void TestHybridDecodeTo16KhzWithPacketLoss() { RunHybridDecodeToLowerRateTest(16000, 1, 20); }
 
         [TestMethod]
         public void ShotgunTest()

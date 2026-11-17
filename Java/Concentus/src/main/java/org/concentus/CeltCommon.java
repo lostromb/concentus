@@ -969,7 +969,11 @@ class CeltCommon {
 
             if (apply_downsampling != 0) {
                 /* Perform down-sampling */
-                {
+                if (accum != 0) {
+                    for (j = 0; j < Nd; j++) {
+                        pcm[y + (j * C)] = Inlines.SAT16(Inlines.ADD32(pcm[y + (j * C)], Inlines.SIG2WORD16(scratch[j * downsample])));
+                    }
+                } else {
                     for (j = 0; j < Nd; j++) {
                         pcm[y + (j * C)] = Inlines.SIG2WORD16(scratch[j * downsample]);
                     }
