@@ -514,7 +514,8 @@ namespace Concentus.Silk
         /// Compute inverse of LPC prediction gain, and
         /// test if LPC coefficients are stable (all poles within unit circle)
         /// </summary>
-        /// <param name="A_QA">Prediction coefficients, order [2][SILK_MAX_ORDER_LPC]</param>
+        /// <param name="A_QA0">Prediction coefficients of even orders, [SILK_MAX_ORDER_LPC]</param>
+        /// <param name="A_QA1">Prediction coefficients of odd orders, [SILK_MAX_ORDER_LPC]</param>
         /// <param name="order">Prediction order</param>
         /// <returns>inverse prediction gain in energy domain, Q30</returns>
         internal static int LPC_inverse_pred_gain_QA(

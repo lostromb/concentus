@@ -175,7 +175,7 @@ namespace Concentus.Silk
             }
 
             /* Compute LTP coding gain */
-            if (LTPredCodGain_Q7 != null)
+            // [porting note] of the C's optional pointer, always given here
             {
                 LPC_LTP_res_nrg = 0;
                 LPC_res_nrg = 0;
