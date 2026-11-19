@@ -93,7 +93,7 @@ namespace Concentus.Celt
         }
 
         internal static int interp_bits2pulses_encode(CeltMode m, int start, int end, int skip_start,
-              int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, out int _balance,
+              Span<int> bits1, Span<int> bits2, Span<int> thresh, int[] cap, int total, out int _balance,
               int skip_rsv, ref int intensity, int intensity_rsv, ref int dual_stereo, int dual_stereo_rsv, int[] bits,
               int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, Span<byte> encodedData, int prev, int signalBandwidth)
         {
@@ -373,7 +373,7 @@ namespace Concentus.Celt
         }
 
         internal static int interp_bits2pulses_decode(CeltMode m, int start, int end, int skip_start,
-              int[] bits1, int[] bits2, int[] thresh, int[] cap, int total, out int _balance,
+              Span<int> bits1, Span<int> bits2, Span<int> thresh, int[] cap, int total, out int _balance,
               int skip_rsv, ref int intensity, int intensity_rsv, ref int dual_stereo, int dual_stereo_rsv, int[] bits,
               int[] ebits, int[] fine_priority, int C, int LM, EntropyCoder ec, ReadOnlySpan<byte> encodedData, int prev, int signalBandwidth)
         {
@@ -673,10 +673,10 @@ namespace Concentus.Celt
                 }
             }
 
-            int[] bits1 = new int[len];
-            int[] bits2 = new int[len];
-            int[] thresh = new int[len];
-            int[] trim_offset = new int[len];
+            Span<int> bits1 = stackalloc int[len];
+            Span<int> bits2 = stackalloc int[len];
+            Span<int> thresh = stackalloc int[len];
+            Span<int> trim_offset = stackalloc int[len];
 
             for (j = start; j < end; j++)
             {
@@ -797,10 +797,10 @@ namespace Concentus.Celt
                 }
             }
 
-            int[] bits1 = new int[len];
-            int[] bits2 = new int[len];
-            int[] thresh = new int[len];
-            int[] trim_offset = new int[len];
+            Span<int> bits1 = stackalloc int[len];
+            Span<int> bits2 = stackalloc int[len];
+            Span<int> thresh = stackalloc int[len];
+            Span<int> trim_offset = stackalloc int[len];
 
             for (j = start; j < end; j++)
             {

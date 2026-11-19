@@ -166,7 +166,6 @@ namespace Concentus.Celt
                                   out int tf_estimate, out int tf_chan)
         {
             int i;
-            int[] tmp;
             int mem0, mem1;
             int is_transient = 0;
             int mask_metric = 0;
@@ -174,7 +173,7 @@ namespace Concentus.Celt
             int tf_max;
             int len2;
             tf_chan = 0;
-            tmp = new int[len];
+            Span<int> tmp = stackalloc int[len];
 
             len2 = len / 2;
             for (c = 0; c < C; c++)
@@ -284,7 +283,7 @@ namespace Concentus.Celt
         {
             int i, c;
             int mean_diff = 0;
-            int[] spread_old = new int[26];
+            Span<int> spread_old = stackalloc int[26];
             /* Apply an aggressive (-6 dB/Bark) spreading function to the old frame to
                avoid false detection caused by irrelevant bands */
             if (C == 1)
@@ -470,7 +469,7 @@ namespace Concentus.Celt
             mem.Val = m;
         }
 
-        internal static int l1_metric(int[] tmp, int N, int LM, int bias)
+        internal static int l1_metric(Span<int> tmp, int N, int LM, int bias)
         {
             int i;
             int L1;
@@ -491,15 +490,10 @@ namespace Concentus.Celt
               out int tf_sum, int tf_estimate, int tf_chan)
         {
             int i;
-            int[] metric;
             int cost0;
             int cost1;
-            int[] path0;
-            int[] path1;
-            int[] tmp;
-            int[] tmp_1;
             int sel;
-            int[] selcost = new int[2];
+            Span<int> selcost = stackalloc int[2];
             int tf_select = 0;
             int bias;
 
@@ -507,11 +501,11 @@ namespace Concentus.Celt
             bias = Inlines.MULT16_16_Q14(((short)(0.5 + (.04f) * (((int)1) << (15))))/*Inlines.QCONST16(.04f, 15)*/, Inlines.MAX16((short)(0 - ((short)(0.5 + (.25f) * (((int)1) << (14))))/*Inlines.QCONST16(.25f, 14)*/), (((short)(0.5 + (.5f) * (((int)1) << (14))))/*Inlines.QCONST16(.5f, 14)*/ - tf_estimate)));
             /*printf("%f ", bias);*/
 
-            metric = new int[len];
-            tmp = new int[(m.eBands[len] - m.eBands[len - 1]) << LM];
-            tmp_1 = new int[(m.eBands[len] - m.eBands[len - 1]) << LM];
-            path0 = new int[len];
-            path1 = new int[len];
+            Span<int> metric = stackalloc int[len];
+            Span<int> tmp = stackalloc int[(m.eBands[len] - m.eBands[len - 1]) << LM];
+            Span<int> tmp_1 = stackalloc int[(m.eBands[len] - m.eBands[len - 1]) << LM];
+            Span<int> path0 = stackalloc int[len];
+            Span<int> path1 = stackalloc int[len];
 
             tf_sum = 0;
             for (i = 0; i < len; i++)
@@ -878,8 +872,9 @@ namespace Concentus.Celt
             int i, c;
             int tot_boost = 0;
             int maxDepth;
-            int[][] follower = Arrays.InitTwoDimensionalArray<int>(2, nbEBands);
-            int[] noise_floor = new int[C * nbEBands]; // opt: partitioned array
+            Span<int> follower0 = stackalloc int[nbEBands];
+            Span<int> follower1 = stackalloc int[nbEBands];
+            Span<int> noise_floor = stackalloc int[C * nbEBands]; // opt: partitioned array
 
             Arrays.MemSetInt(offsets, 0, nbEBands);
             /* Dynamic allocation code */
@@ -905,7 +900,7 @@ namespace Concentus.Celt
                 {
                     int offset;
                     int tmp;
-                    int[] f = follower[c];
+                    Span<int> f = c == 0 ? follower0 : follower1;
                     f[0] = bandLogE2[c][0];
                     for (i = 1; i < end; i++)
                     {
@@ -940,24 +935,24 @@ namespace Concentus.Celt
                     for (i = start; i < end; i++)
                     {
                         /* Consider 24 dB "cross-talk" */
-                        follower[1][i] = Inlines.MAX16(follower[1][i], follower[0][i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
-                        follower[0][i] = Inlines.MAX16(follower[0][i], follower[1][i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
-                        follower[0][i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[0][i] - follower[0][i]) + Inlines.MAX16(0, bandLogE[1][i] - follower[1][i]));
+                        follower1[i] = Inlines.MAX16(follower1[i], follower0[i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
+                        follower0[i] = Inlines.MAX16(follower0[i], follower1[i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
+                        follower0[i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[0][i] - follower0[i]) + Inlines.MAX16(0, bandLogE[1][i] - follower1[i]));
                     }
                 }
                 else {
                     for (i = start; i < end; i++)
                     {
-                        follower[0][i] = Inlines.MAX16(0, bandLogE[0][i] - follower[0][i]);
+                        follower0[i] = Inlines.MAX16(0, bandLogE[0][i] - follower0[i]);
                     }
                 }
                 for (i = start; i < end; i++)
-                    follower[0][i] = Inlines.MAX16(follower[0][i], surround_dynalloc[i]);
+                    follower0[i] = Inlines.MAX16(follower0[i], surround_dynalloc[i]);
                 /* For non-transient CBR/CVBR frames, halve the dynalloc contribution */
                 if ((vbr == 0 || constrained_vbr != 0) && isTransient == 0)
                 {
                     for (i = start; i < end; i++)
-                        follower[0][i] = Inlines.HALF16(follower[0][i]);
+                        follower0[i] = Inlines.HALF16(follower0[i]);
                 }
                 for (i = start; i < end; i++)
                 {
@@ -966,24 +961,24 @@ namespace Concentus.Celt
                     int boost_bits;
 
                     if (i < 8)
-                        follower[0][i] *= 2;
+                        follower0[i] *= 2;
                     if (i >= 12)
-                        follower[0][i] = Inlines.HALF16(follower[0][i]);
-                    follower[0][i] = Inlines.MIN16(follower[0][i], ((short)(0.5 + (4) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4, CeltConstants.DB_SHIFT)*/);
+                        follower0[i] = Inlines.HALF16(follower0[i]);
+                    follower0[i] = Inlines.MIN16(follower0[i], ((short)(0.5 + (4) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4, CeltConstants.DB_SHIFT)*/);
 
                     width = C * (eBands[i + 1] - eBands[i]) << LM;
                     if (width < 6)
                     {
-                        boost = (int)Inlines.SHR32((follower[0][i]), CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower0[i]), CeltConstants.DB_SHIFT);
                         boost_bits = boost * width << EntropyCoder.BITRES;
                     }
                     else if (width > 48)
                     {
-                        boost = (int)Inlines.SHR32((follower[0][i]) * 8, CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower0[i]) * 8, CeltConstants.DB_SHIFT);
                         boost_bits = (boost * width << EntropyCoder.BITRES) / 8;
                     }
                     else {
-                        boost = (int)Inlines.SHR32((follower[0][i]) * width / 6, CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower0[i]) * width / 6, CeltConstants.DB_SHIFT);
                         boost_bits = boost * 6 << EntropyCoder.BITRES;
                     }
                     /* For CBR and non-transient CVBR frames, limit dynalloc to 1/4 of the bits */

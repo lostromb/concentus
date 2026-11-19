@@ -89,6 +89,9 @@ namespace Concentus.Celt.Structs
         internal int[] oldLogE2 = null;
         internal int[] backgroundLogE = null;
 
+        // the temporaries of a frame, kept: a frame allocates nothing
+        private int[] s_norm;
+
         private void Reset()
         {
             mode = null;
@@ -700,7 +703,7 @@ namespace Concentus.Celt.Structs
             
             Bands.quant_all_bands_decode(0, mode, start, end, X[0], C == 2 ? X[1] : null, collapse_masks,
                   null, pulses, shortBlocks, spread_decision, dual_stereo, intensity, tf_res,
-                  len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, data.Slice(data_ptr), LM, codedBands, ref this.rng);
+                  len * (8 << EntropyCoder.BITRES) - anti_collapse_rsv, balance, dec, data.Slice(data_ptr), LM, codedBands, ref this.rng, ref this.s_norm);
 
             if (anti_collapse_rsv > 0)
             {

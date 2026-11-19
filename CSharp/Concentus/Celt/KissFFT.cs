@@ -366,7 +366,7 @@ namespace Concentus.Celt
             int m2, m;
             int p;
             int L;
-            int[] fstride = new int[MAXFACTORS];
+            Span<int> fstride = stackalloc int[MAXFACTORS];
             int i;
             int shift;
 

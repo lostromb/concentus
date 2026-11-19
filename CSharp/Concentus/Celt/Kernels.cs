@@ -42,6 +42,7 @@ namespace Concentus.Celt
     using System;
     using System.Diagnostics;
     using System.Numerics;
+    using System.Runtime.InteropServices;
 
     internal static class Kernels
     {
@@ -55,8 +56,8 @@ namespace Concentus.Celt
              )
         {
             int i, j;
-            short[] rnum = new short[ord];
-            short[] local_x = new short[N + ord];
+            Span<short> rnum = stackalloc short[ord];
+            Span<short> local_x = stackalloc short[N + ord];
 
             for (i = 0; i < ord; i++)
             {
@@ -111,8 +112,8 @@ namespace Concentus.Celt
              Span<int> mem)
         {
             int i, j;
-            int[] rnum = new int[ord];
-            int[] local_x = new int[N + ord];
+            Span<int> rnum = stackalloc int[ord];
+            Span<int> local_x = stackalloc int[N + ord];
 
             for (i = 0; i < ord; i++)
             {
@@ -164,7 +165,7 @@ namespace Concentus.Celt
         /// <param name="y"></param>
         /// <param name="sum0"></param>
         /// <param name="len"></param>
-        internal static void xcorr_kernel(short[] x, int x_idx, short[] y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        internal static void xcorr_kernel(Span<short> x, int x_idx, Span<short> y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
         {
             // I tried vectorizing this but the intermediate int16 * int16 multiply would overflow, so
             // I would have to widen each vector to int32 beforehand and that costs any potential speed benefit.
@@ -237,7 +238,7 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void xcorr_kernel(int[] x, int x_idx, int[] y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        internal static void xcorr_kernel(Span<int> x, int x_idx, Span<int> y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
         {
             int j;
             int y_0, y_1, y_2, y_3;
@@ -308,18 +309,19 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void xcorr_kernel_vector(int[] x, int x_idx, int[] y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
+        internal static void xcorr_kernel_vector(Span<int> x, int x_idx, Span<int> y, int y_idx, ref int sum0, ref int sum1, ref int sum2, ref int sum3, int len)
         {
             int idx = 0;
             int vectorEnd = len - 4 - ((len - 4) % Vector<int>.Count);
 
             while (idx < vectorEnd)
             {
-                Vector<int> xVec = new Vector<int>(x, x_idx + idx);
-                sum0 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, new Vector<int>(y, y_idx + idx)));
-                sum1 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, new Vector<int>(y, y_idx + idx + 1)));
-                sum2 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, new Vector<int>(y, y_idx + idx + 2)));
-                sum3 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, new Vector<int>(y, y_idx + idx + 3)));
+                // as new Vector<int>(array, index), of a span
+                Vector<int> xVec = MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(x.Slice(x_idx + idx)));
+                sum0 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx)))));
+                sum1 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 1)))));
+                sum2 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 2)))));
+                sum3 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 3)))));
                 idx += Vector<int>.Count;
             }
 

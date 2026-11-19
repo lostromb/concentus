@@ -52,8 +52,8 @@ namespace Concentus.Common
         }
 
         internal static int _celt_autocorr(
-                  short[] x,   /*  in: [0...n-1] samples x   */
-                   int[] ac,  /* out: [0...lag-1] ac values */
+                  Span<short> x,   /*  in: [0...n-1] samples x   */
+                   Span<int> ac,  /* out: [0...lag-1] ac values */
                    int lag,
                    int n
                   )
@@ -62,8 +62,8 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            short[] xptr;
-            short[] xx = new short[n];
+            Span<short> xx = stackalloc short[n];
+            Span<short> xptr = xx;
             Inlines.OpusAssert(n > 0);
             xptr = x;
 
@@ -128,8 +128,8 @@ namespace Concentus.Common
         }
 
         internal static int _celt_autocorr(
-                           int[] x,   /*  in: [0...n-1] samples x   */
-                           int[] ac,  /* out: [0...lag-1] ac values */
+                           Span<int> x,   /*  in: [0...n-1] samples x   */
+                           Span<int> ac,  /* out: [0...lag-1] ac values */
                            int[] window,
                            int overlap,
                            int lag,
@@ -139,8 +139,8 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            int[] actualX;
-            int[] xx = new int[n];
+            Span<int> xx = stackalloc int[n];
+            Span<int> actualX = xx;
 
             Inlines.OpusAssert(n > 0);
             Inlines.OpusAssert(overlap >= 0);

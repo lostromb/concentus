@@ -45,7 +45,7 @@ namespace Concentus.Celt
     internal static class Pitch
     {
         internal static void find_best_pitch(Span<int> xcorr, Span<int> y, int len,
-                                    int max_pitch, int[]best_pitch,
+                                    int max_pitch, Span<int> best_pitch,
                                     int yshift, int maxcorr
                                     )
         {
@@ -98,11 +98,11 @@ namespace Concentus.Celt
             }
         }
 
-        internal static void celt_fir5(int[] x,
-                int[] num,
-                int[] y,
+        internal static void celt_fir5(Span<int> x,
+                Span<int> num,
+                Span<int> y,
                 int N,
-                int[] mem)
+                Span<int> mem)
         {
             int i;
             int num0, num1, num2, num3, num4;
@@ -143,11 +143,11 @@ namespace Concentus.Celt
         internal static void pitch_downsample(int[][] x, int[] x_lp, int len, int C)
         {
             int i;
-            int[] ac = new int[5];
+            Span<int> ac = stackalloc int[5];
             int tmp = CeltConstants.Q15ONE;
-            int[] lpc = new int[4];
-            int[] mem = new int[] { 0, 0, 0, 0, 0 };
-            int[] lpc2 = new int[5];
+            Span<int> lpc = stackalloc int[4];
+            Span<int> mem = stackalloc int[5];
+            Span<int> lpc2 = stackalloc int[5];
             int c1 = ((short)(0.5 + (0.8f) * (((int)1) << (15))))/*Inlines.QCONST16(0.8f, 15)*/;
 
             int shift;
@@ -208,12 +208,12 @@ namespace Concentus.Celt
         }
 
         // Fixme: remove pointers and optimize
-        internal static void pitch_search(Span<int> x_lp, int x_lp_ptr, int[] y,
+        internal static void pitch_search(Span<int> x_lp, int x_lp_ptr, Span<int> y,
                   int len, int max_pitch, out int pitch)
         {
             int i, j;
             int lag;
-            int[] best_pitch = new int[] { 0, 0 };
+            Span<int> best_pitch = stackalloc int[2];
             int maxcorr;
             int xmax, ymax;
             int shift = 0;
@@ -223,9 +223,9 @@ namespace Concentus.Celt
             Inlines.OpusAssert(max_pitch > 0);
             lag = len + max_pitch;
 
-            int[] x_lp4 = new int[len >> 2];
-            int[] y_lp4 = new int[lag >> 2];
-            int[] xcorr = new int[max_pitch >> 1];
+            Span<int> x_lp4 = stackalloc int[len >> 2];
+            Span<int> y_lp4 = stackalloc int[lag >> 2];
+            Span<int> xcorr = stackalloc int[max_pitch >> 1];
 
             /* Downsample by 2 again */
             for (j = 0; j < len >> 2; j++)
@@ -303,14 +303,14 @@ namespace Concentus.Celt
 
         private static readonly int[] second_check = { 0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2 };
 
-        internal static int remove_doubling(int[] x, int maxperiod, int minperiod,
+        internal static int remove_doubling(Span<int> x, int maxperiod, int minperiod,
             int N, ref int T0_, int prev_period, int prev_gain)
         {
             int k, i, T, T0;
             int g, g0;
             int pg;
             int yy, xx, xy, xy2;
-            Span<int> xcorr = new int[3];
+            Span<int> xcorr = stackalloc int[3];
             int best_xy, best_yy;
             int offset;
             int minperiod0 = minperiod;
@@ -324,8 +324,8 @@ namespace Concentus.Celt
                 T0_ = maxperiod - 1;
 
             T = T0 = T0_;
-            Span<int> yy_lookup = new int[maxperiod + 1];
-            Kernels.dual_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - T0), N, out xx, out xy);
+            Span<int> yy_lookup = stackalloc int[maxperiod + 1];
+            Kernels.dual_inner_prod(x.Slice(x_ptr), x.Slice(x_ptr), x.Slice(x_ptr - T0), N, out xx, out xy);
 
             yy_lookup[0] = xx;
             yy = xx;
@@ -375,7 +375,7 @@ namespace Concentus.Celt
                     T1b = Inlines.celt_udiv(2 * second_check[k] * T0 + k, 2 * k);
                 }
 
-                Kernels.dual_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - T1), x.AsSpan().Slice(x_ptr - T1b), N, out xy, out xy2);
+                Kernels.dual_inner_prod(x.Slice(x_ptr), x.Slice(x_ptr - T1), x.Slice(x_ptr - T1b), N, out xy, out xy2);
                 
                 xy += xy2;
                 yy = yy_lookup[T1] + yy_lookup[T1b];
@@ -432,7 +432,7 @@ namespace Concentus.Celt
 
             for (k = 0; k < 3; k++)
             {
-                xcorr[k] = Kernels.celt_inner_prod(x.AsSpan().Slice(x_ptr), x.AsSpan().Slice(x_ptr - (T + k - 1)), N);
+                xcorr[k] = Kernels.celt_inner_prod(x.Slice(x_ptr), x.Slice(x_ptr - (T + k - 1)), N);
             }
 
             if ((xcorr[2] - xcorr[0]) > Inlines.MULT16_32_Q15(((short)(0.5 + (.7f) * (((int)1) << (15))))/*Inlines.QCONST16(.7f, 15)*/, xcorr[1] - xcorr[0]))

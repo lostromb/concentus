@@ -47,8 +47,8 @@ namespace Concentus.Celt
         private const int LPC_ORDER = 24;
 
         internal static void celt_lpc(
-            int[] _lpc, /* out: [0...p-1] LPC coefficients      */
-            int[] ac,  /* in:  [0...p] autocorrelation values  */
+            Span<int> _lpc, /* out: [0...p-1] LPC coefficients      */
+            Span<int> ac,  /* in:  [0...p] autocorrelation values  */
             int p)
         {
             int i, j;
@@ -105,8 +105,8 @@ namespace Concentus.Celt
             Span<int> mem)
         {
             int i, j;
-            int[] rden = new int[ord];
-            int[] y = new int[N + ord];
+            Span<int> rden = stackalloc int[ord];
+            Span<int> y = stackalloc int[N + ord];
             Inlines.OpusAssert((ord & 3) == 0);
 
             for (i = 0; i < ord; i++)
