@@ -314,16 +314,22 @@ namespace Concentus.Celt
             int idx = 0;
             int vectorEnd = len - 4 - ((len - 4) % Vector<int>.Count);
 
+            // the sums kept in vectors, added across once at the end: wrapping int sums of any order are the same
+            Vector<int> acc0 = Vector<int>.Zero, acc1 = Vector<int>.Zero, acc2 = Vector<int>.Zero, acc3 = Vector<int>.Zero;
             while (idx < vectorEnd)
             {
                 // as new Vector<int>(array, index), of a span
                 Vector<int> xVec = MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(x.Slice(x_idx + idx)));
-                sum0 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx)))));
-                sum1 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 1)))));
-                sum2 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 2)))));
-                sum3 += Vector.Dot(Vector<int>.One, Vector.Multiply(xVec, MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 3)))));
+                acc0 += xVec * MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx)));
+                acc1 += xVec * MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 1)));
+                acc2 += xVec * MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 2)));
+                acc3 += xVec * MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(y_idx + idx + 3)));
                 idx += Vector<int>.Count;
             }
+            sum0 += Vector.Dot(acc0, Vector<int>.One);
+            sum1 += Vector.Dot(acc1, Vector<int>.One);
+            sum2 += Vector.Dot(acc2, Vector<int>.One);
+            sum3 += Vector.Dot(acc3, Vector<int>.One);
 
             // FIXME this doesn't account for offset between the 4-block sum and the width of the vector
             // If the vector<int> width isn't divisible by 4 (for some reason...) the sums will be off
@@ -349,19 +355,38 @@ namespace Concentus.Celt
 
         internal static int celt_inner_prod(Span<int> x, Span<int> y, int N)
         {
-            int i;
+            int i = 0;
             int xy = 0;
-            for (i = 0; i < N; i++)
+            if (Vector.IsHardwareAccelerated && N >= Vector<int>.Count)
+            {
+                Vector<int> acc = Vector<int>.Zero;
+                for (; i <= N - Vector<int>.Count; i += Vector<int>.Count)
+                    acc += MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(x.Slice(i))) * MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y.Slice(i)));
+                xy = Vector.Dot(acc, Vector<int>.One);
+            }
+            for (; i < N; i++)
                 xy = Inlines.MAC16_16(xy, x[i], y[i]);
             return xy;
         }
         
         internal static void dual_inner_prod(Span<int> x, Span<int> y01, Span<int> y02, int N, out int xy1, out int xy2)
         {
-            int i;
+            int i = 0;
             int xy01 = 0;
             int xy02 = 0;
-            for (i = 0; i < N; i++)
+            if (Vector.IsHardwareAccelerated && N >= Vector<int>.Count)
+            {
+                Vector<int> acc1 = Vector<int>.Zero, acc2 = Vector<int>.Zero;
+                for (; i <= N - Vector<int>.Count; i += Vector<int>.Count)
+                {
+                    Vector<int> xv = MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(x.Slice(i)));
+                    acc1 += xv * MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y01.Slice(i)));
+                    acc2 += xv * MemoryMarshal.Read<Vector<int>>(MemoryMarshal.AsBytes(y02.Slice(i)));
+                }
+                xy01 = Vector.Dot(acc1, Vector<int>.One);
+                xy02 = Vector.Dot(acc2, Vector<int>.One);
+            }
+            for (; i < N; i++)
             {
                 xy01 = Inlines.MAC16_16(xy01, x[i], y01[i]);
                 xy02 = Inlines.MAC16_16(xy02, x[i], y02[i]);
