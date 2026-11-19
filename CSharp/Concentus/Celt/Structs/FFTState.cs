@@ -50,5 +50,12 @@ namespace Concentus.Celt.Structs
         internal short[] factors = new short[2 * KissFFT.MAXFACTORS];
         internal short[] bitrev = null;
         internal short[] twiddles = null;
+
+        /// <summary>
+        /// Of each radix-4 stage, its twiddles in the order kf_bfly4 reads them, each lane twice (of a
+        /// complex value's two lanes): rows of tw1 r, tw1 i, tw2 r, tw2 i, tw3 r, tw3 i, each of 2 * m.
+        /// Built on first use; the state is shared, so a race builds the same table twice, published whole.
+        /// </summary>
+        internal readonly int[][] bfly4_twiddles = new int[KissFFT.MAXFACTORS][];
     }
 }

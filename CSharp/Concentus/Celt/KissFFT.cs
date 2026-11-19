@@ -47,6 +47,9 @@ namespace Concentus.Celt
     using System;
     using System.Diagnostics;
     using System.Threading;
+#if NET7_0_OR_GREATER
+    using System.Runtime.Intrinsics;
+#endif
     internal static class KissFFT
     {
         //internal const int SAMP_MAX = 2147483647;
@@ -117,6 +120,51 @@ namespace Concentus.Celt
             }
         }
 
+#if NET7_0_OR_GREATER
+        /// <summary>
+        /// Inlines.MULT16_32_Q15 of each lane: the same 32-bit operations, so the same results
+        /// </summary>
+        private static Vector128<int> MULT16_32_Q15(Vector128<int> a, Vector128<int> b)
+        {
+            return ((a * (b >> 16)) << 1) + ((a * (b & Vector128.Create(0xFFFF))) >> 15);
+        }
+
+        /// <summary>
+        /// Of two complex values (r, i, r, i), each times its twiddle (r, r) and (i, i), as C_MUL:
+        /// r * tr - i * ti, r * ti + i * tr, each product as S_MUL's
+        /// </summary>
+        private static Vector128<int> C_MUL(Vector128<int> f, Vector128<int> tr, Vector128<int> ti)
+        {
+            Vector128<int> a = MULT16_32_Q15(tr, f);
+            Vector128<int> b = MULT16_32_Q15(ti, Vector128.Shuffle(f, Vector128.Create(1, 0, 3, 2)));
+            return a + b * Vector128.Create(-1, 1, -1, 1);
+        }
+
+        private static Vector128<int> Load(ReadOnlySpan<int> s, int at)
+        {
+            return Vector128.Create(s.Slice(at, 4));
+        }
+
+        private static int[] Bfly4Twiddles(FFTState st, int stage, int fstride, int m)
+        {
+            int[] t = st.bfly4_twiddles[stage];
+            if (t != null && t.Length == 12 * m)
+                return t;
+            t = new int[12 * m];
+            for (int j = 0; j < m; j++)
+            {
+                for (int k = 1; k <= 3; k++)
+                {
+                    int tw = j * fstride * 2 * k;
+                    t[(2 * k - 2) * 2 * m + 2 * j] = t[(2 * k - 2) * 2 * m + 2 * j + 1] = st.twiddles[tw];
+                    t[(2 * k - 1) * 2 * m + 2 * j] = t[(2 * k - 1) * 2 * m + 2 * j + 1] = st.twiddles[tw + 1];
+                }
+            }
+            st.bfly4_twiddles[stage] = t;
+            return t;
+        }
+#endif
+
         internal static void kf_bfly4(
                      Span<int> Fout,
                      int fout_ptr,
@@ -124,7 +172,8 @@ namespace Concentus.Celt
                      FFTState st,
                      int m,
                      int N,
-                     int mm)
+                     int mm,
+                     int stage = 0)
         {
             int i;
 
@@ -159,15 +208,48 @@ namespace Concentus.Celt
                 int scratch0, scratch1, scratch2, scratch3, scratch4, scratch5, scratch6, scratch7, scratch8, scratch9, scratch10, scratch11;
                 int tw1, tw2, tw3;
                 int Fout_beg = fout_ptr;
+#if NET7_0_OR_GREATER
+                int[] vt = Vector128.IsHardwareAccelerated && m >= 2 ? Bfly4Twiddles(st, stage, fstride, m) : null;
+#endif
                 for (i = 0; i < N; i++)
                 {
                     fout_ptr = Fout_beg + 2 * i * mm;
                     int m1 = fout_ptr + (2 * m);
                     int m2 = fout_ptr + (4 * m);
                     int m3 = fout_ptr + (6 * m);
-                    tw3 = tw2 = tw1 = 0;
+                    j = 0;
+#if NET7_0_OR_GREATER
+                    if (vt != null)
+                    {
+                        // two of j at a time, of the same operations on each lane as the loop below
+                        Vector128<int> rot = Vector128.Create(1, -1, 1, -1);
+                        Vector128<int> swap = Vector128.Create(1, 0, 3, 2);
+                        for (; j + 2 <= m; j += 2)
+                        {
+                            Vector128<int> f0 = Load(Fout, fout_ptr);
+                            Vector128<int> s0 = C_MUL(Load(Fout, m1), Load(vt, 2 * j), Load(vt, 2 * m + 2 * j));
+                            Vector128<int> s2 = C_MUL(Load(Fout, m2), Load(vt, 4 * m + 2 * j), Load(vt, 6 * m + 2 * j));
+                            Vector128<int> s4 = C_MUL(Load(Fout, m3), Load(vt, 8 * m + 2 * j), Load(vt, 10 * m + 2 * j));
+                            Vector128<int> s10 = f0 - s2;
+                            f0 += s2;
+                            Vector128<int> s6 = s0 + s4;
+                            Vector128<int> s8 = Vector128.Shuffle(s0 - s4, swap) * rot; // (s8.i, -s8.r)
+                            (f0 - s6).CopyTo(Fout.Slice(m2, 4));
+                            (f0 + s6).CopyTo(Fout.Slice(fout_ptr, 4));
+                            (s10 + s8).CopyTo(Fout.Slice(m1, 4));
+                            (s10 - s8).CopyTo(Fout.Slice(m3, 4));
+                            fout_ptr += 4;
+                            m1 += 4;
+                            m2 += 4;
+                            m3 += 4;
+                        }
+                    }
+#endif
+                    tw1 = j * fstride * 2;
+                    tw2 = j * fstride * 4;
+                    tw3 = j * fstride * 6;
                     /* m is guaranteed to be a multiple of 4. */
-                    for (j = 0; j < m; j++)
+                    for (; j < m; j++)
                     {
                         scratch0 = (S_MUL(Fout[m1], st.twiddles[tw1    ]) - S_MUL(Fout[m1 + 1], st.twiddles[tw1 + 1]));
                         scratch1 = (S_MUL(Fout[m1], st.twiddles[tw1 + 1]) + S_MUL(Fout[m1 + 1], st.twiddles[tw1]));
@@ -396,7 +478,7 @@ namespace Concentus.Celt
                         kf_bfly2(fout, fout_ptr, m, fstride[i]);
                         break;
                     case 4:
-                        kf_bfly4(fout, fout_ptr, fstride[i] << shift, st, m, fstride[i], m2);
+                        kf_bfly4(fout, fout_ptr, fstride[i] << shift, st, m, fstride[i], m2, i);
                         break;
                     case 3:
                         kf_bfly3(fout, fout_ptr, fstride[i] << shift, st, m, fstride[i], m2);
