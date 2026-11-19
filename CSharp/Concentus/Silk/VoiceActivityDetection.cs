@@ -105,7 +105,6 @@ namespace Concentus.Silk
             int dec_subframe_length, dec_subframe_offset, SNR_Q7, i, b, s;
             int sumSquared = 0, smooth_coef_Q16;
             short HPstateTmp;
-            short[] X;
             Span<int> Xnrg = stackalloc int[SilkConstants.VAD_N_BANDS];
             Span<int> NrgToNoiseRatio_Q8 = stackalloc int[SilkConstants.VAD_N_BANDS];
             int speech_nrg, x_tmp;
@@ -139,7 +138,7 @@ namespace Concentus.Silk
             X_offset[1] = decimated_framelength + decimated_framelength2;
             X_offset[2] = X_offset[1] + decimated_framelength;
             X_offset[3] = X_offset[2] + decimated_framelength2;
-            X = new short[X_offset[3] + decimated_framelength1];
+            Span<short> X = stackalloc short[X_offset[3] + decimated_framelength1];
 
             /* 0-8 kHz to 0-4 kHz and 4-8 kHz */
             Filters.silk_ana_filt_bank_1(pIn, pIn_ptr, psSilk_VAD.AnaState,

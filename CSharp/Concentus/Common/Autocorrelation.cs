@@ -232,8 +232,8 @@ namespace Concentus.Common
         {
             int n, i, lsh;
             int tmp1_QS, tmp2_QS;
-            Span<int> state_QS = new int[order + 1];// = { 0 };
-            Span<long> corr_QC = new long[order + 1];// = { 0 };
+            Span<int> state_QS = stackalloc int[order + 1];// = { 0 };
+            Span<long> corr_QC = stackalloc long[order + 1];// = { 0 };
 
             /* Order must be even */
             Inlines.OpusAssert((order & 1) == 0);

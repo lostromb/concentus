@@ -1017,7 +1017,7 @@ namespace Concentus.Celt
                 return;
             }
 
-            int[] scratch = new int[N];
+            Span<int> scratch = stackalloc int[N];
             coef0 = coef[0];
             Nd = N / downsample;
             c = 0; do

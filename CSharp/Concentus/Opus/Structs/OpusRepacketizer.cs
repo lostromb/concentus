@@ -410,7 +410,14 @@ namespace Concentus.Structs
   */
         public static int PadPacket(Span<byte> data, int data_offset, int len, int new_len)
         {
-            OpusRepacketizer rp = new OpusRepacketizer();
+            return PadPacket(data, data_offset, len, new_len, new OpusRepacketizer());
+        }
+
+        /// <summary>
+        /// As PadPacket, with a repacketizer of the caller's (an encoder's, kept)
+        /// </summary>
+        internal static int PadPacket(Span<byte> data, int data_offset, int len, int new_len, OpusRepacketizer rp)
+        {
             int ret;
             if (len < 1)
                 return OpusError.OPUS_BAD_ARG;

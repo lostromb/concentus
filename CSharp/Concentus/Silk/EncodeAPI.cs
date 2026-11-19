@@ -256,6 +256,7 @@ namespace Concentus.Silk
                                    (short)(psEnc.state_Fxx[0].fs_kHz * 1000));
 
             Span<short> buf = stackalloc short[nSamplesFromInputMax];
+            Span<byte> iCDF = stackalloc byte[2]; // of the loop's frames, not of each: a stackalloc in a loop grows the stack
 
             int samplesIn_ptr = 0;
             while (true)
@@ -376,7 +377,7 @@ namespace Concentus.Silk
                     if (psEnc.state_Fxx[0].nFramesEncoded == 0 && prefillFlag == 0)
                     {
                         /* Create space at start of payload for VAD and FEC flags */
-                        byte[] iCDF = { 0, 0 };
+                        iCDF.Clear();
                         iCDF[0] = (byte)(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         psRangeEnc.enc_icdf(encodedDataOut, 0, iCDF, 8);
 

@@ -104,6 +104,8 @@ namespace Concentus.Structs
         private readonly AnalysisInfo s_analysis_info = new AnalysisInfo();
         private readonly EncControlState s_dummy = new EncControlState();
         private readonly OpusRepacketizer s_rp = new OpusRepacketizer();
+        // of padding: not s_rp, which an outer call holds the 20 ms frames of while they are padded
+        private readonly OpusRepacketizer s_rp_pad = new OpusRepacketizer();
         private byte[] s_tmp_data;
         private short[] s_pcm_buf, s_pcm_silk, s_tmp_prefill;
         internal OpusBandwidth detected_bandwidth;
@@ -509,7 +511,7 @@ namespace Concentus.Structs
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
-                    ret = OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes);
+                    ret = OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes, this.s_rp_pad);
                     if (ret == OpusError.OPUS_OK)
                         ret = max_data_bytes;
                 }
@@ -1392,7 +1394,7 @@ namespace Concentus.Structs
             ret += 1 + redundancy_bytes;
             if (this.use_vbr == 0)
             {
-                if (OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK)
+                if (OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes, this.s_rp_pad) != OpusError.OPUS_OK)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }

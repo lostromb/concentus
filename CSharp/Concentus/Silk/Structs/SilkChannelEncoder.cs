@@ -143,6 +143,12 @@ namespace Concentus.Silk.Structs
         /* Buffer for find pitch and noise shape analysis */
         internal readonly short[] x_buf = new short[2 * SilkConstants.MAX_FRAME_LENGTH + SilkConstants.LA_SHAPE_MAX];
 
+        // the temporaries of silk_encode_frame and silk_LBRR_encode, kept: a frame allocates nothing.
+        // The copies are assigned before they are read
+        private readonly SilkEncoderControl s_sEncCtrl = new SilkEncoderControl();
+        private readonly EntropyCoder s_sRangeEnc_copy = new EntropyCoder(), s_sRangeEnc_copy2 = new EntropyCoder();
+        private readonly SilkNSQState s_sNSQ_copy = new SilkNSQState(), s_sNSQ_copy2 = new SilkNSQState(), s_sNSQ_LBRR = new SilkNSQState();
+
         /* Normalized correlation from pitch lag estimator */
         internal int LTPCorr_Q15 = 0;
 
@@ -882,13 +888,16 @@ namespace Concentus.Silk.Structs
             int useCBR                                  /* I    Flag to force constant-bitrate operation                                    */
         )
         {
-            SilkEncoderControl sEncCtrl = new SilkEncoderControl();
+            SilkEncoderControl sEncCtrl = this.s_sEncCtrl;
+            sEncCtrl.Reset();
             int i, iter, maxIter, found_upper, found_lower, ret = 0;
             int x_frame;
-            EntropyCoder sRangeEnc_copy = new EntropyCoder();
-            EntropyCoder sRangeEnc_copy2 = new EntropyCoder();
-            SilkNSQState sNSQ_copy = new SilkNSQState();
-            SilkNSQState sNSQ_copy2 = new SilkNSQState();
+            EntropyCoder sRangeEnc_copy = this.s_sRangeEnc_copy;
+            EntropyCoder sRangeEnc_copy2 = this.s_sRangeEnc_copy2;
+            sRangeEnc_copy.Reset();
+            sRangeEnc_copy2.Reset();
+            SilkNSQState sNSQ_copy = this.s_sNSQ_copy;
+            SilkNSQState sNSQ_copy2 = this.s_sNSQ_copy2;
             int nBits, nBits_lower, nBits_upper, gainMult_lower, gainMult_upper;
             int gainsID, gainsID_lower, gainsID_upper;
             short gainMult_Q8;
@@ -1183,7 +1192,7 @@ namespace Concentus.Silk.Structs
         {
             Span<int> TempGains_Q16 = stackalloc int[/*SilkConstants.MAX_NB_SUBFR*/ this.nb_subfr];
             SideInfoIndices psIndices_LBRR = this.indices_LBRR[this.nFramesEncoded];
-            SilkNSQState sNSQ_LBRR = new SilkNSQState();
+            SilkNSQState sNSQ_LBRR = this.s_sNSQ_LBRR;
 
             /*******************************************/
             /* Control use of inband LBRR              */

@@ -322,7 +322,7 @@ namespace Concentus.Silk
             Span<short> input,
             int input_ptr,
             int[] S,
-            short[] outL,
+            Span<short> outL,
             Span<short> outH,
             int outH_ptr,
             int N)
@@ -518,14 +518,13 @@ namespace Concentus.Silk
         /// <param name="order">Prediction order</param>
         /// <returns>inverse prediction gain in energy domain, Q30</returns>
         internal static int LPC_inverse_pred_gain_QA(
-            int[][] A_QA,
+            Span<int> A_QA0, Span<int> A_QA1,
             int order)
         {
             int k, n, mult2Q;
             int invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp_QA;
-            int[] Aold_QA, Anew_QA;
-
-            Anew_QA = A_QA[order & 1];
+            Span<int> Anew_QA = (order & 1) == 0 ? A_QA0 : A_QA1;
+            Span<int> Aold_QA = Anew_QA;
 
             invGain_Q30 = (int)1 << 30;
             for (k = order - 1; k > 0; k--)
@@ -556,7 +555,7 @@ namespace Concentus.Silk
 
                 /* Swap pointers */
                 Aold_QA = Anew_QA;
-                Anew_QA = A_QA[k & 1];
+                Anew_QA = (k & 1) == 0 ? A_QA0 : A_QA1;
 
                 /* Update AR coefficient */
                 for (n = 0; n < k; n++)
@@ -596,13 +595,10 @@ namespace Concentus.Silk
         internal static int silk_LPC_inverse_pred_gain(Span<short> A_Q12, int order)
         {
             int k;
-            int[][] Atmp_QA = new int[2][];
-            Atmp_QA[0] = new int[order];
-            Atmp_QA[1] = new int[order];
-            int[] Anew_QA;
+            Span<int> Atmp_QA0 = stackalloc int[order];
+            Span<int> Atmp_QA1 = stackalloc int[order];
             int DC_resp = 0;
-
-            Anew_QA = Atmp_QA[order & 1];
+            Span<int> Anew_QA = (order & 1) == 0 ? Atmp_QA0 : Atmp_QA1;
 
             /* Increase Q domain of the AR coefficients */
             for (k = 0; k < order; k++)
@@ -617,7 +613,7 @@ namespace Concentus.Silk
                 return 0;
             }
 
-            return LPC_inverse_pred_gain_QA(Atmp_QA, order);
+            return LPC_inverse_pred_gain_QA(Atmp_QA0, Atmp_QA1, order);
         }
     }
 }

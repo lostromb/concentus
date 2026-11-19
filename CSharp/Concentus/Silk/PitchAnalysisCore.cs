@@ -94,8 +94,6 @@ namespace Concentus.Silk
             int CBimax, CBimax_new, CBimax_old, lag, start_lag, end_lag, lag_new;
             int CCmax, CCmax_b, CCmax_new_b, CCmax_new;
             Span<int> CC = stackalloc int[SilkConstants.PE_NB_CBKS_STAGE2_EXT];
-            silk_pe_stage3_vals[] energies_st3;
-            silk_pe_stage3_vals[] cross_corr_st3;
             int frame_length, frame_length_8kHz, frame_length_4kHz;
             int sf_length;
             int min_lag;
@@ -537,13 +535,9 @@ namespace Concentus.Silk
                 }
 
                 /* Calculate the correlations and energies needed in stage 3 */
-                energies_st3 = new silk_pe_stage3_vals[nb_subfr * nb_cbk_search];
-                cross_corr_st3 = new silk_pe_stage3_vals[nb_subfr * nb_cbk_search];
-                for (int c = 0; c < nb_subfr * nb_cbk_search; c++)
-                {
-                    energies_st3[c] = new silk_pe_stage3_vals(); // fixme: these can be replaced with a linearized array probably, or at least a struct
-                    cross_corr_st3[c] = new silk_pe_stage3_vals();
-                }
+                // [porting note] [nb_subfr][nb_cbk_search][PE_NB_STAGE3_LAGS], as the C's silk_pe_stage3_vals arrays
+                Span<int> energies_st3 = stackalloc int[nb_subfr * nb_cbk_search * SilkConstants.PE_NB_STAGE3_LAGS];
+                Span<int> cross_corr_st3 = stackalloc int[nb_subfr * nb_cbk_search * SilkConstants.PE_NB_STAGE3_LAGS];
                 silk_P_Ana_calc_corr_st3(cross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
                 silk_P_Ana_calc_energy_st3(energies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity);
 
@@ -563,11 +557,9 @@ namespace Concentus.Silk
                         for (k = 0; k < nb_subfr; k++)
                         {
                             cross_corr = Inlines.silk_ADD32(cross_corr,
-                                Inlines.MatrixGet(cross_corr_st3, k, j,
-                                            nb_cbk_search).Values[lag_counter]);
+                                cross_corr_st3[Inlines.MatrixGetPointer(k, j, nb_cbk_search) * SilkConstants.PE_NB_STAGE3_LAGS + lag_counter]);
                             energy = Inlines.silk_ADD32(energy,
-                                Inlines.MatrixGet(energies_st3, k, j,
-                                            nb_cbk_search).Values[lag_counter]);
+                                energies_st3[Inlines.MatrixGetPointer(k, j, nb_cbk_search) * SilkConstants.PE_NB_STAGE3_LAGS + lag_counter]);
                             Inlines.OpusAssert(energy >= 0);
                         }
                         if (cross_corr > 0)
@@ -630,7 +622,7 @@ namespace Concentus.Silk
          * case 4*12*5 = 240 correlations, but more likely around 120.
          ***********************************************************************/
         private static void silk_P_Ana_calc_corr_st3(
-            silk_pe_stage3_vals[] cross_corr_st3,              /* O 3 DIM correlation array */
+            Span<int> cross_corr_st3,              /* O 3 DIM correlation array */
             Span<short> frame,                         /* I vector to correlate         */
             int start_lag,                       /* I lag offset to search around */
             int sf_length,                       /* I length of a 5 ms subframe   */
@@ -641,7 +633,6 @@ namespace Concentus.Silk
             int target_ptr;
             int i, j, k, lag_counter, lag_low, lag_high;
             int nb_cbk_search, delta, idx;
-            int[] scratch_mem;
             sbyte[][] Lag_range_ptr;
             sbyte[][] Lag_CB_ptr;
             
@@ -660,7 +651,7 @@ namespace Concentus.Silk
                 Lag_CB_ptr = Tables.silk_CB_lags_stage3_10_ms;
                 nb_cbk_search = SilkConstants.PE_NB_CBKS_STAGE3_10MS;
             }
-            scratch_mem = new int[SCRATCH_SIZE];
+            Span<int> scratch_mem = stackalloc int[SCRATCH_SIZE];
             Span<int> xcorr32 = stackalloc int[SCRATCH_SIZE];
 
             target_ptr = Inlines.silk_LSHIFT(sf_length, 2); /* Pointer to middle of frame */
@@ -690,7 +681,7 @@ namespace Concentus.Silk
                     {
                         Inlines.OpusAssert(idx + j < SCRATCH_SIZE);
                         Inlines.OpusAssert(idx + j < lag_counter);
-                        Inlines.MatrixGet(cross_corr_st3, k, i, nb_cbk_search).Values[j] =
+                        cross_corr_st3[Inlines.MatrixGetPointer(k, i, nb_cbk_search) * SilkConstants.PE_NB_STAGE3_LAGS + j] =
                             scratch_mem[idx + j];
                     }
                 }
@@ -704,7 +695,7 @@ namespace Concentus.Silk
         /* calculated recursively.                                          */
         /********************************************************************/
         static void silk_P_Ana_calc_energy_st3(
-            silk_pe_stage3_vals[] energies_st3,                 /* O 3 DIM energy array */
+            Span<int> energies_st3,                 /* O 3 DIM energy array */
             Span<short> frame,                          /* I vector to calc energy in    */
             int start_lag,                        /* I lag offset to search around */
             int sf_length,                        /* I length of one 5 ms subframe */
@@ -774,8 +765,8 @@ namespace Concentus.Silk
                     {
                         Inlines.OpusAssert(idx + j < SCRATCH_SIZE);
                         Inlines.OpusAssert(idx + j < lag_counter);
-                        Inlines.MatrixGet(energies_st3, k, i, nb_cbk_search).Values[j] = scratch_mem[idx + j];
-                        Inlines.OpusAssert(Inlines.MatrixGet(energies_st3, k, i, nb_cbk_search).Values[j] >= 0);
+                        energies_st3[Inlines.MatrixGetPointer(k, i, nb_cbk_search) * SilkConstants.PE_NB_STAGE3_LAGS + j] = scratch_mem[idx + j];
+                        Inlines.OpusAssert(energies_st3[Inlines.MatrixGetPointer(k, i, nb_cbk_search) * SilkConstants.PE_NB_STAGE3_LAGS + j] >= 0);
                     }
                 }
                 target_ptr += sf_length;

@@ -50,7 +50,7 @@ namespace Concentus.Silk
         )
         {
             int k, n, lz;
-            int[][] C = Arrays.InitTwoDimensionalArray<int>(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
+            Span<int> C = stackalloc int[(SilkConstants.SILK_MAX_ORDER_LPC + 1) * 2]; // [porting note] [SILK_MAX_ORDER_LPC + 1][2]
             int Ctmp1, Ctmp2, rc_tmp_Q15;
 
             Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
@@ -64,7 +64,7 @@ namespace Concentus.Silk
                 /* lz must be 1, so shift one to the right */
                 for (k = 0; k < order + 1; k++)
                 {
-                    C[k][0] = C[k][1] = Inlines.silk_RSHIFT(c[k], 1);
+                    C[(k) * 2 + 0] = C[(k) * 2 + 1] = Inlines.silk_RSHIFT(c[k], 1);
                 }
             }
             else if (lz > 2)
@@ -73,23 +73,23 @@ namespace Concentus.Silk
                 lz -= 2;
                 for (k = 0; k < order + 1; k++)
                 {
-                    C[k][0] = C[k][1] = Inlines.silk_LSHIFT(c[k], lz);
+                    C[(k) * 2 + 0] = C[(k) * 2 + 1] = Inlines.silk_LSHIFT(c[k], lz);
                 }
             }
             else {
                 /* No need to shift */
                 for (k = 0; k < order + 1; k++)
                 {
-                    C[k][0] = C[k][1] = c[k];
+                    C[(k) * 2 + 0] = C[(k) * 2 + 1] = c[k];
                 }
             }
 
             for (k = 0; k < order; k++)
             {
                 /* Check that we won't be getting an unstable rc, otherwise stop here. */
-                if (Inlines.silk_abs_int32(C[k + 1][0]) >= C[0][1])
+                if (Inlines.silk_abs_int32(C[(k + 1) * 2 + 0]) >= C[(0) * 2 + 1])
                 {
-                    if (C[k + 1][0] > 0)
+                    if (C[(k + 1) * 2 + 0] > 0)
                     {
                         rc_Q15[k] = (short)(0 - ((int)((.99f) * ((long)1 << (15)) + 0.5))/*Inlines.SILK_CONST(.99f, 15)*/);
                     }
@@ -101,7 +101,7 @@ namespace Concentus.Silk
                 }
 
                 /* Get reflection coefficient */
-                rc_tmp_Q15 = 0 - Inlines.silk_DIV32_16(C[k + 1][0], Inlines.silk_max_32(Inlines.silk_RSHIFT(C[0][1], 15), 1));
+                rc_tmp_Q15 = 0 - Inlines.silk_DIV32_16(C[(k + 1) * 2 + 0], Inlines.silk_max_32(Inlines.silk_RSHIFT(C[(0) * 2 + 1], 15), 1));
 
                 /* Clip (shouldn't happen for properly conditioned inputs) */
                 rc_tmp_Q15 = Inlines.silk_SAT16(rc_tmp_Q15);
@@ -112,10 +112,10 @@ namespace Concentus.Silk
                 /* Update correlations */
                 for (n = 0; n < order - k; n++)
                 {
-                    Ctmp1 = C[n + k + 1][0];
-                    Ctmp2 = C[n][1];
-                    C[n + k + 1][0] = Inlines.silk_SMLAWB(Ctmp1, Inlines.silk_LSHIFT(Ctmp2, 1), rc_tmp_Q15);
-                    C[n][1]         = Inlines.silk_SMLAWB(Ctmp2, Inlines.silk_LSHIFT(Ctmp1, 1), rc_tmp_Q15);
+                    Ctmp1 = C[(n + k + 1) * 2 + 0];
+                    Ctmp2 = C[(n) * 2 + 1];
+                    C[(n + k + 1) * 2 + 0] = Inlines.silk_SMLAWB(Ctmp1, Inlines.silk_LSHIFT(Ctmp2, 1), rc_tmp_Q15);
+                    C[(n) * 2 + 1]         = Inlines.silk_SMLAWB(Ctmp2, Inlines.silk_LSHIFT(Ctmp1, 1), rc_tmp_Q15);
                 }
             }
 
@@ -125,7 +125,7 @@ namespace Concentus.Silk
             }
 
             /* return residual energy */
-            return Inlines.silk_max_32(1, C[0][1]);
+            return Inlines.silk_max_32(1, C[(0) * 2 + 1]);
         }
 
         /* Slower than schur(), but more accurate.                              */
@@ -137,7 +137,7 @@ namespace Concentus.Silk
         )
         {
             int k, n;
-            int[][] C = Arrays.InitTwoDimensionalArray<int>(SilkConstants.SILK_MAX_ORDER_LPC + 1, 2);
+            Span<int> C = stackalloc int[(SilkConstants.SILK_MAX_ORDER_LPC + 1) * 2]; // [porting note] [SILK_MAX_ORDER_LPC + 1][2]
             int Ctmp1_Q30, Ctmp2_Q30, rc_tmp_Q31;
 
             Inlines.OpusAssert(order == 6 || order == 8 || order == 10 || order == 12 || order == 14 || order == 16);
@@ -151,15 +151,15 @@ namespace Concentus.Silk
 
             for (k = 0; k < order + 1; k++)
             {
-                C[k][0] = C[k][1] = c[k];
+                C[(k) * 2 + 0] = C[(k) * 2 + 1] = c[k];
             }
 
             for (k = 0; k < order; k++)
             {
                 /* Check that we won't be getting an unstable rc, otherwise stop here. */
-                if (Inlines.silk_abs_int32(C[k + 1][0]) >= C[0][1])
+                if (Inlines.silk_abs_int32(C[(k + 1) * 2 + 0]) >= C[(0) * 2 + 1])
                 {
-                    if (C[k + 1][0] > 0)
+                    if (C[(k + 1) * 2 + 0] > 0)
                     {
                         rc_Q16[k] = -((int)((.99f) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(.99f, 16)*/;
                     }
@@ -171,7 +171,7 @@ namespace Concentus.Silk
                 }
 
                 /* Get reflection coefficient: divide two Q30 values and get result in Q31 */
-                rc_tmp_Q31 = Inlines.silk_DIV32_varQ(-C[k + 1][0], C[0][1], 31);
+                rc_tmp_Q31 = Inlines.silk_DIV32_varQ(-C[(k + 1) * 2 + 0], C[(0) * 2 + 1], 31);
 
                 /* Save the output */
                 rc_Q16[k] = Inlines.silk_RSHIFT_ROUND(rc_tmp_Q31, 15);
@@ -179,12 +179,12 @@ namespace Concentus.Silk
                 /* Update correlations */
                 for (n = 0; n < order - k; n++)
                 {
-                    Ctmp1_Q30 = C[n + k + 1][0];
-                    Ctmp2_Q30 = C[n][1];
+                    Ctmp1_Q30 = C[(n + k + 1) * 2 + 0];
+                    Ctmp2_Q30 = C[(n) * 2 + 1];
 
                     /* Multiply and add the highest int32 */
-                    C[n + k + 1][0] = Ctmp1_Q30 + Inlines.silk_SMMUL(Inlines.silk_LSHIFT(Ctmp2_Q30, 1), rc_tmp_Q31);
-                    C[n][1] = Ctmp2_Q30 + Inlines.silk_SMMUL(Inlines.silk_LSHIFT(Ctmp1_Q30, 1), rc_tmp_Q31);
+                    C[(n + k + 1) * 2 + 0] = Ctmp1_Q30 + Inlines.silk_SMMUL(Inlines.silk_LSHIFT(Ctmp2_Q30, 1), rc_tmp_Q31);
+                    C[(n) * 2 + 1] = Ctmp2_Q30 + Inlines.silk_SMMUL(Inlines.silk_LSHIFT(Ctmp1_Q30, 1), rc_tmp_Q31);
                 }
             }
 
@@ -193,7 +193,7 @@ namespace Concentus.Silk
                 rc_Q16[k] = 0;
             }
 
-            return Inlines.silk_max_32(1, C[0][1]);
+            return Inlines.silk_max_32(1, C[(0) * 2 + 1]);
         }
     }
 }

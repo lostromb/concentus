@@ -86,6 +86,9 @@ namespace Concentus.Silk.Structs
         internal int prevSignalType = 0;
 
         internal readonly PLCStruct sPLC = new PLCStruct();
+
+        // the control of silk_decode_frame, kept: a frame allocates nothing
+        private readonly SilkDecoderControl s_thisCtrl = new SilkDecoderControl();
         
         internal void Reset()
         {
@@ -278,7 +281,8 @@ namespace Concentus.Silk.Structs
             int condCoding                     /* I    The type of conditional coding to use       */
         )
         {
-            SilkDecoderControl thisCtrl = new SilkDecoderControl();
+            SilkDecoderControl thisCtrl = this.s_thisCtrl;
+            thisCtrl.Reset();
             int L, mv_len, ret = 0;
 
             L = this.frame_length;

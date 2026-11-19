@@ -56,6 +56,9 @@ namespace Concentus.Silk.Structs
         internal int prev_gain_Q16 = 0;
         internal int rewhite_flag = 0;
 
+        // the delayed decision states of silk_NSQ_del_dec, kept: a frame allocates nothing
+        private NSQ_del_dec_struct[] s_psDelDec;
+
         internal void Reset()
         {
             Arrays.MemSetShort(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
@@ -104,6 +107,27 @@ namespace Concentus.Silk.Structs
             internal NSQ_del_dec_struct(int shapingOrder)
             {
                 sAR2_Q14 = new int[shapingOrder];
+            }
+
+            /// <summary>
+            /// As new NSQ_del_dec_struct(shapingOrder)
+            /// </summary>
+            internal void Reset(int shapingOrder)
+            {
+                Array.Clear(sLPC_Q14, 0, sLPC_Q14.Length);
+                Array.Clear(RandState, 0, RandState.Length);
+                Array.Clear(Q_Q10, 0, Q_Q10.Length);
+                Array.Clear(Xq_Q14, 0, Xq_Q14.Length);
+                Array.Clear(Pred_Q15, 0, Pred_Q15.Length);
+                Array.Clear(Shape_Q14, 0, Shape_Q14.Length);
+                if (sAR2_Q14.Length != shapingOrder)
+                    sAR2_Q14 = new int[shapingOrder];
+                else
+                    Array.Clear(sAR2_Q14, 0, sAR2_Q14.Length);
+                LF_AR_Q14 = 0;
+                Seed = 0;
+                SeedInit = 0;
+                RD_Q10 = 0;
             }
 
             internal void PartialCopyFrom(NSQ_del_dec_struct other, int q14Offset)
@@ -611,12 +635,19 @@ namespace Concentus.Silk.Structs
 
             Inlines.OpusAssert(this.prev_gain_Q16 != 0);
 
-            /* Initialize delayed decision states */
-            psDelDec = new NSQ_del_dec_struct[psEncC.nStatesDelayedDecision];
-            for (int c = 0; c < psEncC.nStatesDelayedDecision; c++)
+            /* Initialize delayed decision states: kept, each as new */
+            if (this.s_psDelDec == null || this.s_psDelDec.Length != psEncC.nStatesDelayedDecision)
             {
-                psDelDec[c] = new NSQ_del_dec_struct(psEncC.shapingLPCOrder);
+                this.s_psDelDec = new NSQ_del_dec_struct[psEncC.nStatesDelayedDecision];
+                for (int c = 0; c < psEncC.nStatesDelayedDecision; c++)
+                    this.s_psDelDec[c] = new NSQ_del_dec_struct(psEncC.shapingLPCOrder);
             }
+            else
+            {
+                for (int c = 0; c < psEncC.nStatesDelayedDecision; c++)
+                    this.s_psDelDec[c].Reset(psEncC.shapingLPCOrder);
+            }
+            psDelDec = this.s_psDelDec;
 
             for (k = 0; k < psEncC.nStatesDelayedDecision; k++)
             {
@@ -871,18 +902,12 @@ namespace Concentus.Silk.Structs
             int q1_Q0, q1_Q10, q2_Q10, exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
             int tmp1, tmp2, sLF_AR_shp_Q14;
             int pred_lag_ptr, shp_lag_ptr, psLPC_Q14;
-            NSQ_sample_struct[] sampleStates;
             NSQ_del_dec_struct psDD;
             int SS_left;
             int SS_right;
 
             Inlines.OpusAssert(nStatesDelayedDecision > 0);
-            sampleStates = new NSQ_sample_struct[2 * nStatesDelayedDecision];
-            // [porting note] structs must be initialized manually here
-            for (int c = 0; c < 2 * nStatesDelayedDecision; c++)
-            {
-                sampleStates[c] = new NSQ_sample_struct();
-            }
+            Span<NSQ_sample_struct> sampleStates = stackalloc NSQ_sample_struct[2 * nStatesDelayedDecision];
 
             shp_lag_ptr = this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2;
             pred_lag_ptr = this.sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2;

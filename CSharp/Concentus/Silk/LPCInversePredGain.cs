@@ -49,16 +49,15 @@ namespace Concentus.Silk
         /* Compute inverse of LPC prediction gain, and                          */
         /* test if LPC coefficients are stable (all poles within unit circle)   */
         internal static int LPC_inverse_pred_gain_QA(                 /* O   Returns inverse prediction gain in energy domain, Q30    */
-            int[][] A_QA,   /* I   Prediction coefficients [ 2 ][SILK_MAX_ORDER_LPC]                                 */
+            Span<int> A_QA0, Span<int> A_QA1,   /* I   Prediction coefficients [ 2 ][SILK_MAX_ORDER_LPC]                                 */
             int order                              /* I   Prediction order                                         */
 )
         {
             int k, n, mult2Q;
             int invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp_QA;
-            int[] Aold_QA;
-            int[] Anew_QA;
+            Span<int> Anew_QA = (order & 1) == 0 ? A_QA0 : A_QA1;
+            Span<int> Aold_QA = Anew_QA;
 
-            Anew_QA = A_QA[order & 1];
 
             invGain_Q30 = (int)1 << 30;
             for (k = order - 1; k > 0; k--)
@@ -89,7 +88,7 @@ namespace Concentus.Silk
 
                 /* Swap pointers */
                 Aold_QA = Anew_QA;
-                Anew_QA = A_QA[k & 1];
+                Anew_QA = (k & 1) == 0 ? A_QA0 : A_QA1;
 
                 /* Update AR coefficient */
                 for (n = 0; n < k; n++)
@@ -127,11 +126,10 @@ namespace Concentus.Silk
         )
         {
             int k;
-            int[][] Atmp_QA = Arrays.InitTwoDimensionalArray<int>(2, SilkConstants.SILK_MAX_ORDER_LPC);
-            int[] Anew_QA;
+            Span<int> Atmp_QA0 = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> Atmp_QA1 = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
             int DC_resp = 0;
-
-            Anew_QA = Atmp_QA[order & 1];
+            Span<int> Anew_QA = (order & 1) == 0 ? Atmp_QA0 : Atmp_QA1;
 
             /* Increase Q domain of the AR coefficients */
             for (k = 0; k < order; k++)
@@ -144,7 +142,7 @@ namespace Concentus.Silk
             {
                 return 0;
             }
-            return LPC_inverse_pred_gain_QA(Atmp_QA, order);
+            return LPC_inverse_pred_gain_QA(Atmp_QA0, Atmp_QA1, order);
         }
 
         internal static int silk_LPC_inverse_pred_gain_Q24(          /* O    Returns inverse prediction gain in energy domain, Q30       */
@@ -153,10 +151,9 @@ namespace Concentus.Silk
         )
         {
             int k;
-            int[][] Atmp_QA = Arrays.InitTwoDimensionalArray<int>(2, SilkConstants.SILK_MAX_ORDER_LPC);
-            int[] Anew_QA;
-
-            Anew_QA = Atmp_QA[order & 1];
+            Span<int> Atmp_QA0 = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> Atmp_QA1 = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> Anew_QA = (order & 1) == 0 ? Atmp_QA0 : Atmp_QA1;
 
             /* Increase Q domain of the AR coefficients */
             for (k = 0; k < order; k++)
@@ -164,7 +161,7 @@ namespace Concentus.Silk
                 Anew_QA[k] = Inlines.silk_RSHIFT32(A_Q24[k], 24 - QA);
             }
 
-            return LPC_inverse_pred_gain_QA(Atmp_QA, order);
+            return LPC_inverse_pred_gain_QA(Atmp_QA0, Atmp_QA1, order);
         }
     }
 }

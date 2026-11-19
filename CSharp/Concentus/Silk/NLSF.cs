@@ -384,7 +384,7 @@ namespace Concentus.Silk
         /// <returns>RD value in Q25</returns>
         /// Fixme: Optimize this method!
         internal static int silk_NLSF_del_dec_quant(
-            sbyte[] indices,
+            Span<sbyte> indices,
             Span<short> x_Q10,
             Span<short> w_Q5,
             Span<byte> pred_coef_Q8,
@@ -399,11 +399,7 @@ namespace Concentus.Silk
             int pred_Q10, diff_Q10, out0_Q10, out1_Q10, rate0_Q5, rate1_Q5;
             int RD_tmp_Q25, min_Q25, min_max_Q25, max_min_Q25, pred_coef_Q16;
             Span<int> ind_sort = stackalloc int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
-            sbyte[][] ind = new sbyte[SilkConstants.NLSF_QUANT_DEL_DEC_STATES][];
-            for (i = 0; i < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; i++)
-            {
-                ind[i] = new sbyte[SilkConstants.MAX_LPC_ORDER];
-            }
+            Span<sbyte> ind = stackalloc sbyte[SilkConstants.NLSF_QUANT_DEL_DEC_STATES * SilkConstants.MAX_LPC_ORDER]; // [porting note] [NLSF_QUANT_DEL_DEC_STATES][MAX_LPC_ORDER]
 
             Span<short> prev_out_Q10 = stackalloc short[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
             Span<int> RD_Q25 = stackalloc int[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
@@ -459,7 +455,7 @@ namespace Concentus.Silk
                     res_Q10 = Inlines.silk_SUB16((short)(in_Q10), (short)(pred_Q10));
                     ind_tmp = Inlines.silk_SMULWB((int)inv_quant_step_size_Q6, res_Q10);
                     ind_tmp = Inlines.silk_LIMIT(ind_tmp, 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT, SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT - 1);
-                    ind[j][i] = (sbyte)ind_tmp;
+                    ind[(j) * SilkConstants.MAX_LPC_ORDER + i] = (sbyte)ind_tmp;
                     rates_Q5 = ec_ix[i] + ind_tmp;
 
                     // compute outputs for ind_tmp and ind_tmp + 1
@@ -516,13 +512,13 @@ namespace Concentus.Silk
                     // double number of states and copy
                     for (j = 0; j < nStates; j++)
                     {
-                        ind[j + nStates][i] = (sbyte)(ind[j][i] + 1);
+                        ind[(j + nStates) * SilkConstants.MAX_LPC_ORDER + i] = (sbyte)(ind[(j) * SilkConstants.MAX_LPC_ORDER + i] + 1);
                     }
                     nStates = Inlines.silk_LSHIFT(nStates, 1);
 
                     for (j = nStates; j < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; j++)
                     {
-                        ind[j][i] = ind[j - nStates][i];
+                        ind[(j) * SilkConstants.MAX_LPC_ORDER + i] = ind[(j - nStates) * SilkConstants.MAX_LPC_ORDER + i];
                     }
                 }
                 else if (i > 0)
@@ -585,14 +581,14 @@ namespace Concentus.Silk
                         prev_out_Q10[ind_max_min] = prev_out_Q10[ind_min_max + SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
                         RD_min_Q25[ind_max_min] = 0;
                         RD_max_Q25[ind_min_max] = int.MaxValue;
-                        Buffer.BlockCopy(ind[ind_min_max], 0, ind[ind_max_min], 0, order * sizeof(sbyte));
+                        ind.Slice((ind_min_max) * SilkConstants.MAX_LPC_ORDER, order).CopyTo(ind.Slice((ind_max_min) * SilkConstants.MAX_LPC_ORDER));
                     }
 
                     // increment index if it comes from the upper half
                     for (j = 0; j < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; j++)
                     {
                         var x = (sbyte)Inlines.silk_RSHIFT(ind_sort[j], SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2);
-                        ind[j][i] += x;
+                        ind[(j) * SilkConstants.MAX_LPC_ORDER + i] += x;
                     }
                 }
                 else
@@ -616,7 +612,7 @@ namespace Concentus.Silk
 
             for (j = 0; j < order; j++)
             {
-                indices[j] = ind[ind_tmp & (SilkConstants.NLSF_QUANT_DEL_DEC_STATES - 1)][j];
+                indices[j] = ind[(ind_tmp & (SilkConstants.NLSF_QUANT_DEL_DEC_STATES - 1)) * SilkConstants.MAX_LPC_ORDER + j];
                 Inlines.OpusAssert(indices[j] >= 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
                 Inlines.OpusAssert(indices[j] <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
             }
@@ -649,7 +645,6 @@ namespace Concentus.Silk
         {
             int i, s, ind1, prob_Q8, bits_q7;
             int W_tmp_Q9;
-            sbyte[][] tempIndices2;
             Span<short> res_Q15 = stackalloc short[MAX_LPC_ORDER];
             Span<short> res_Q10 = stackalloc short[MAX_LPC_ORDER];
             Span<short> NLSF_tmp_Q15 = stackalloc short[MAX_LPC_ORDER];
@@ -677,7 +672,7 @@ namespace Concentus.Silk
             Sort.silk_insertion_sort_increasing(err_Q26, tempIndices1, psNLSF_CB.nVectors, nSurvivors);
 
             Span<int> RD_Q25 = stackalloc int[nSurvivors];
-            tempIndices2 = Arrays.InitTwoDimensionalArray<sbyte>(nSurvivors, SilkConstants.MAX_LPC_ORDER); 
+            Span<sbyte> tempIndices2 = stackalloc sbyte[nSurvivors * SilkConstants.MAX_LPC_ORDER]; // [porting note] [nSurvivors][MAX_LPC_ORDER]
             
 
             // Loop over survivors
@@ -715,7 +710,7 @@ namespace Concentus.Silk
 
                 // Trellis quantizer
                 RD_Q25[s] = silk_NLSF_del_dec_quant(
-                    tempIndices2[s],
+                    tempIndices2.Slice((s) * SilkConstants.MAX_LPC_ORDER, SilkConstants.MAX_LPC_ORDER),
                     res_Q10,
                     W_adj_Q5,
                     pred_Q8,
@@ -747,7 +742,7 @@ namespace Concentus.Silk
             Sort.silk_insertion_sort_increasing(RD_Q25, bestIndex, nSurvivors, 1);
 
             NLSFIndices[0] = (sbyte)tempIndices1[bestIndex[0]];
-            Arrays.MemCopy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
+            Arrays.MemCopy(tempIndices2.Slice(bestIndex[0] * SilkConstants.MAX_LPC_ORDER, SilkConstants.MAX_LPC_ORDER), 0, NLSFIndices, 1, psNLSF_CB.order);
 
             // Decode
             silk_NLSF_decode(pNLSF_Q15, NLSFIndices, psNLSF_CB);
