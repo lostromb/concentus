@@ -52,27 +52,27 @@ namespace Concentus.Silk
             Span<int> pred_Q13)
         {
             int n;
-            int[][] ix = Arrays.InitTwoDimensionalArray<int>(2, 3);
+            Span<int> ix = stackalloc int[2 * 3]; // [porting note] [2][3]
             int low_Q13, step_Q13;
 
             // Entropy decoding
             n = psRangeDec.dec_icdf(encodedData, Tables.silk_stereo_pred_joint_iCDF, 8);
-            ix[0][2] = Inlines.silk_DIV32_16(n, 5);
-            ix[1][2] = n - 5 * ix[0][2];
+            ix[(0) * 3 + 2] = Inlines.silk_DIV32_16(n, 5);
+            ix[(1) * 3 + 2] = n - 5 * ix[(0) * 3 + 2];
             for (n = 0; n < 2; n++)
             {
-                ix[n][0] = psRangeDec.dec_icdf(encodedData, Tables.silk_uniform3_iCDF, 8);
-                ix[n][1] = psRangeDec.dec_icdf(encodedData, Tables.silk_uniform5_iCDF, 8);
+                ix[(n) * 3 + 0] = psRangeDec.dec_icdf(encodedData, Tables.silk_uniform3_iCDF, 8);
+                ix[(n) * 3 + 1] = psRangeDec.dec_icdf(encodedData, Tables.silk_uniform5_iCDF, 8);
             }
 
             // Dequantize
             for (n = 0; n < 2; n++)
             {
-                ix[n][0] += 3 * ix[n][2];
-                low_Q13 = Tables.silk_stereo_pred_quant_Q13[ix[n][0]];
-                step_Q13 = Inlines.silk_SMULWB(Tables.silk_stereo_pred_quant_Q13[ix[n][0] + 1] - low_Q13,
+                ix[(n) * 3 + 0] += 3 * ix[(n) * 3 + 2];
+                low_Q13 = Tables.silk_stereo_pred_quant_Q13[ix[(n) * 3 + 0]];
+                step_Q13 = Inlines.silk_SMULWB(Tables.silk_stereo_pred_quant_Q13[ix[(n) * 3 + 0] + 1] - low_Q13,
                     ((int)((0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(0.5f / SilkConstants.STEREO_QUANT_SUB_STEPS, 16)*/);
-                pred_Q13[n] = Inlines.silk_SMLABB(low_Q13, step_Q13, 2 * ix[n][1] + 1);
+                pred_Q13[n] = Inlines.silk_SMLABB(low_Q13, step_Q13, 2 * ix[(n) * 3 + 1] + 1);
             }
 
             /* Subtract second from first predictor (helps when actually applying these) */

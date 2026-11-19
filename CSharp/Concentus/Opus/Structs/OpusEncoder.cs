@@ -107,7 +107,7 @@ namespace Concentus.Structs
         // of padding: not s_rp, which an outer call holds the 20 ms frames of while they are padded
         private readonly OpusRepacketizer s_rp_pad = new OpusRepacketizer();
         private byte[] s_tmp_data;
-        private short[] s_pcm_buf, s_pcm_silk, s_tmp_prefill;
+        private short[] s_pcm_buf, s_pcm_silk, s_tmp_prefill, s_float_input;
         internal OpusBandwidth detected_bandwidth;
         internal uint rangeFinal;
 
@@ -1578,7 +1578,7 @@ namespace Concentus.Structs
                     internal_frame_size, in_pcm.Length));
             }
 
-            input = new short[internal_frame_size * this.channels];
+            input = Arrays.Scratch(ref this.s_float_input, internal_frame_size * this.channels);
 
             for (i = 0; i < internal_frame_size * this.channels; i++)
                 input[i] = Inlines.FLOAT2INT16(in_pcm[i]);

@@ -210,6 +210,7 @@ namespace Concentus.Silk
 
                 if (lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL)
                 {
+                    Span<short> pulses = stackalloc short[SilkConstants.MAX_FRAME_LENGTH]; // of the loop's frames, not of each
                     /* Regular decoding: skip all LBRR data */
                     for (i = 0; i < channel_state[0].nFramesPerPacket; i++)
                     {
@@ -217,7 +218,7 @@ namespace Concentus.Silk
                         {
                             if (channel_state[n].LBRR_flags[i] != 0)
                             {
-                                short[] pulses = new short[SilkConstants.MAX_FRAME_LENGTH];
+                                pulses.Clear();
                                 int condCoding;
 
                                 if (decControl.nChannelsInternal == 2 && n == 0)
