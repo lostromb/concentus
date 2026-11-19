@@ -42,6 +42,7 @@ namespace Concentus.Celt
     using Concentus.Enums;
     using System;
     using System.Diagnostics;
+    using System.Numerics;
 
     internal class CeltCommon
     {
@@ -1266,17 +1267,44 @@ namespace Concentus.Celt
             return ret;
         }
 
+#if NET7_0_OR_GREATER
+        /// <summary>
+        /// Inlines.MULT16_32_Q15 of each lane: the same 32-bit operations, so the same results
+        /// </summary>
+        private static Vector<int> MULT16_32_Q15(Vector<int> a, Vector<int> b)
+        {
+            return Vector.ShiftLeft(a * Vector.ShiftRightArithmetic(b, 16), 1) + Vector.ShiftRightArithmetic(a * (b & new Vector<int>(0xFFFF)), 15);
+        }
+#endif
+
         internal static void comb_filter_const(Span<int> y, int y_ptr, Span<int> x, int x_ptr, int T, int N,
               int g10, int g11, int g12)
         {
             int x0, x1, x2, x3, x4;
             int i;
             int xpt = x_ptr - T;
-            x4 = x[xpt - 2];
-            x3 = x[xpt - 1];
-            x2 = x[xpt];
-            x1 = x[xpt + 1];
-            for (i = 0; i < N; i++)
+            i = 0;
+#if NET7_0_OR_GREATER
+            // y may be x: a block of lanes reads x only T - 2 or more back, before the block, written as
+            // the scalar loop has written it - so lanes no more than T - 2 (T is at least COMBFILTER_MINPERIOD)
+            if (Vector.IsHardwareAccelerated && Vector<int>.Count <= T - 2)
+            {
+                Vector<int> vg10 = new Vector<int>(g10), vg11 = new Vector<int>(g11), vg12 = new Vector<int>(g12);
+                for (; i <= N - Vector<int>.Count; i += Vector<int>.Count)
+                {
+                    Vector<int> v = new Vector<int>(x.Slice(x_ptr + i))
+                        + MULT16_32_Q15(vg10, new Vector<int>(x.Slice(xpt + i)))
+                        + MULT16_32_Q15(vg11, new Vector<int>(x.Slice(xpt + i + 1)) + new Vector<int>(x.Slice(xpt + i - 1)))
+                        + MULT16_32_Q15(vg12, new Vector<int>(x.Slice(xpt + i + 2)) + new Vector<int>(x.Slice(xpt + i - 2)));
+                    v.CopyTo(y.Slice(y_ptr + i));
+                }
+            }
+#endif
+            x4 = x[xpt + i - 2];
+            x3 = x[xpt + i - 1];
+            x2 = x[xpt + i];
+            x1 = x[xpt + i + 1];
+            for (; i < N; i++)
             {
                 x0 = x[xpt + i + 2];
                 y[y_ptr + i] = x[x_ptr + i]
