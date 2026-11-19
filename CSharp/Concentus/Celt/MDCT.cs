@@ -51,8 +51,6 @@ namespace Concentus.Celt
         {
             int i;
             int N, N2, N4;
-            int[] f;
-            int[] f2;
             FFTState st = l.kfft[shift];
             short[] trig;
             int trig_ptr = 0;
@@ -71,8 +69,8 @@ namespace Concentus.Celt
             N2 = N >> 1;
             N4 = N >> 2;
 
-            f = new int[N2];
-            f2 = new int[N4 * 2];
+            Span<int> f = stackalloc int[N2];
+            Span<int> f2 = stackalloc int[N4 * 2];
 
             /* Consider the input to be composed of four blocks: [a, b, c, d] */
             /* Window, shuffle, fold */

@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -56,7 +57,7 @@ namespace Concentus.Silk
 };
 
         internal static void silk_apply_sine_window(
-            short[] px_win,           /* O    Pointer to windowed signal                                  */
+            Span<short> px_win,           /* O    Pointer to windowed signal                                  */
             int px_win_ptr,
             short[] px,               /* I    Pointer to input signal                                     */
             int px_ptr,

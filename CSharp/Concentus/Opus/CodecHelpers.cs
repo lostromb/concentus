@@ -84,8 +84,8 @@ namespace Concentus
 
         internal static void hp_cutoff(ReadOnlySpan<short> input, int input_ptr, int cutoff_Hz, Span<short> output, int output_ptr, int[] hp_mem, int len, int channels, int Fs)
         {
-            int[] B_Q28 = new int[3];
-            int[] A_Q28 = new int[2];
+            Span<int> B_Q28 = stackalloc int[3];
+            Span<int> A_Q28 = stackalloc int[2];
             int Fc_Q19, r_Q28, r_Q22;
 
             Inlines.OpusAssert(cutoff_Hz <= int.MaxValue / ((int)((1.5f * 3.14159f / 1000) * ((long)1 << (19)) + 0.5))/*Inlines.SILK_CONST(1.5f * 3.14159f / 1000, 19)*/);

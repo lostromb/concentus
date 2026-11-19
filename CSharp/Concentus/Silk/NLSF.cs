@@ -64,7 +64,7 @@ namespace Concentus.Silk
         /// <param name="pCB_Q8">(I) Codebook vectors [K*LPC_order]</param>
         /// <param name="K">(I) Number of codebook vectors</param>
         /// <param name="LPC_order">(I) Number of LPCs</param>
-        internal static void silk_NLSF_VQ(int[] err_Q26, short[] in_Q15, byte[] pCB_Q8, int K, int LPC_order)
+        internal static void silk_NLSF_VQ(Span<int> err_Q26, Span<short> in_Q15, byte[] pCB_Q8, int K, int LPC_order)
         {
             int diff_Q15, sum_error_Q30, sum_error_Q26;
             int pCB_idx = 0;
@@ -211,7 +211,7 @@ namespace Concentus.Silk
         /// <param name="NLSF_Q15">(I/O) Unstable/stabilized normalized LSF vector in Q15 [L]</param>
         /// <param name="NDeltaMin_Q15">(I) Min distance vector, NDeltaMin_Q15[L] must be >= 1 [L+1]</param>
         /// <param name="L">(I) Number of NLSF parameters in the input vector</param>
-        internal static void silk_NLSF_stabilize(short[] NLSF_Q15, short[] NDeltaMin_Q15, int L)
+        internal static void silk_NLSF_stabilize(Span<short> NLSF_Q15, short[] NDeltaMin_Q15, int L)
         {
             int i, I = 0, k, loops;
             short center_freq_Q15;
@@ -325,7 +325,7 @@ namespace Concentus.Silk
         /// <param name="pNLSF_Q15">(O) Quantized NLSF vector [ LPC_ORDER ]</param>
         /// <param name="NLSFIndices">(I) Codebook path vector [ LPC_ORDER + 1 ]</param>
         /// <param name="psNLSF_CB">(I) Codebook object</param>
-        internal static void silk_NLSF_decode(short[] pNLSF_Q15, sbyte[] NLSFIndices, NLSFCodebook psNLSF_CB)
+        internal static void silk_NLSF_decode(Span<short> pNLSF_Q15, sbyte[] NLSFIndices, NLSFCodebook psNLSF_CB)
         {
             int i;
             Span<byte> pred_Q8 = stackalloc byte[MAX_LPC_ORDER];
@@ -384,7 +384,7 @@ namespace Concentus.Silk
         /// <returns>RD value in Q25</returns>
         /// Fixme: Optimize this method!
         internal static int silk_NLSF_del_dec_quant(
-            sbyte[] indices,
+            Span<sbyte> indices,
             Span<short> x_Q10,
             Span<short> w_Q5,
             Span<byte> pred_coef_Q8,
@@ -399,11 +399,7 @@ namespace Concentus.Silk
             int pred_Q10, diff_Q10, out0_Q10, out1_Q10, rate0_Q5, rate1_Q5;
             int RD_tmp_Q25, min_Q25, min_max_Q25, max_min_Q25, pred_coef_Q16;
             Span<int> ind_sort = stackalloc int[SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
-            sbyte[][] ind = new sbyte[SilkConstants.NLSF_QUANT_DEL_DEC_STATES][];
-            for (i = 0; i < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; i++)
-            {
-                ind[i] = new sbyte[SilkConstants.MAX_LPC_ORDER];
-            }
+            Span<sbyte> ind = stackalloc sbyte[SilkConstants.NLSF_QUANT_DEL_DEC_STATES * SilkConstants.MAX_LPC_ORDER]; // [porting note] [NLSF_QUANT_DEL_DEC_STATES][MAX_LPC_ORDER]
 
             Span<short> prev_out_Q10 = stackalloc short[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
             Span<int> RD_Q25 = stackalloc int[2 * SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
@@ -459,7 +455,7 @@ namespace Concentus.Silk
                     res_Q10 = Inlines.silk_SUB16((short)(in_Q10), (short)(pred_Q10));
                     ind_tmp = Inlines.silk_SMULWB((int)inv_quant_step_size_Q6, res_Q10);
                     ind_tmp = Inlines.silk_LIMIT(ind_tmp, 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT, SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT - 1);
-                    ind[j][i] = (sbyte)ind_tmp;
+                    ind[(j) * SilkConstants.MAX_LPC_ORDER + i] = (sbyte)ind_tmp;
                     rates_Q5 = ec_ix[i] + ind_tmp;
 
                     // compute outputs for ind_tmp and ind_tmp + 1
@@ -516,13 +512,13 @@ namespace Concentus.Silk
                     // double number of states and copy
                     for (j = 0; j < nStates; j++)
                     {
-                        ind[j + nStates][i] = (sbyte)(ind[j][i] + 1);
+                        ind[(j + nStates) * SilkConstants.MAX_LPC_ORDER + i] = (sbyte)(ind[(j) * SilkConstants.MAX_LPC_ORDER + i] + 1);
                     }
                     nStates = Inlines.silk_LSHIFT(nStates, 1);
 
                     for (j = nStates; j < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; j++)
                     {
-                        ind[j][i] = ind[j - nStates][i];
+                        ind[(j) * SilkConstants.MAX_LPC_ORDER + i] = ind[(j - nStates) * SilkConstants.MAX_LPC_ORDER + i];
                     }
                 }
                 else if (i > 0)
@@ -585,14 +581,14 @@ namespace Concentus.Silk
                         prev_out_Q10[ind_max_min] = prev_out_Q10[ind_min_max + SilkConstants.NLSF_QUANT_DEL_DEC_STATES];
                         RD_min_Q25[ind_max_min] = 0;
                         RD_max_Q25[ind_min_max] = int.MaxValue;
-                        Buffer.BlockCopy(ind[ind_min_max], 0, ind[ind_max_min], 0, order * sizeof(sbyte));
+                        ind.Slice((ind_min_max) * SilkConstants.MAX_LPC_ORDER, order).CopyTo(ind.Slice((ind_max_min) * SilkConstants.MAX_LPC_ORDER));
                     }
 
                     // increment index if it comes from the upper half
                     for (j = 0; j < SilkConstants.NLSF_QUANT_DEL_DEC_STATES; j++)
                     {
                         var x = (sbyte)Inlines.silk_RSHIFT(ind_sort[j], SilkConstants.NLSF_QUANT_DEL_DEC_STATES_LOG2);
-                        ind[j][i] += x;
+                        ind[(j) * SilkConstants.MAX_LPC_ORDER + i] += x;
                     }
                 }
                 else
@@ -616,7 +612,7 @@ namespace Concentus.Silk
 
             for (j = 0; j < order; j++)
             {
-                indices[j] = ind[ind_tmp & (SilkConstants.NLSF_QUANT_DEL_DEC_STATES - 1)][j];
+                indices[j] = ind[(ind_tmp & (SilkConstants.NLSF_QUANT_DEL_DEC_STATES - 1)) * SilkConstants.MAX_LPC_ORDER + j];
                 Inlines.OpusAssert(indices[j] >= 0 - SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
                 Inlines.OpusAssert(indices[j] <= SilkConstants.NLSF_QUANT_MAX_AMPLITUDE_EXT);
             }
@@ -640,19 +636,15 @@ namespace Concentus.Silk
         /// <returns>RD value in Q25</returns>
         internal static int silk_NLSF_encode(
             sbyte[] NLSFIndices,
-            short[] pNLSF_Q15,
+            Span<short> pNLSF_Q15,
             NLSFCodebook psNLSF_CB,
-            short[] pW_QW,
+            Span<short> pW_QW,
             int NLSF_mu_Q20,
             int nSurvivors,
             int signalType)
         {
             int i, s, ind1, prob_Q8, bits_q7;
             int W_tmp_Q9;
-            int[] err_Q26;
-            int[] RD_Q25;
-            int[] tempIndices1;
-            sbyte[][] tempIndices2;
             Span<short> res_Q15 = stackalloc short[MAX_LPC_ORDER];
             Span<short> res_Q10 = stackalloc short[MAX_LPC_ORDER];
             Span<short> NLSF_tmp_Q15 = stackalloc short[MAX_LPC_ORDER];
@@ -672,15 +664,15 @@ namespace Concentus.Silk
             silk_NLSF_stabilize(pNLSF_Q15, psNLSF_CB.deltaMin_Q15, psNLSF_CB.order);
 
             // First stage: VQ
-            err_Q26 = new int[psNLSF_CB.nVectors];
+            Span<int> err_Q26 = stackalloc int[psNLSF_CB.nVectors];
             silk_NLSF_VQ(err_Q26, pNLSF_Q15, psNLSF_CB.CB1_NLSF_Q8, psNLSF_CB.nVectors, psNLSF_CB.order);
 
             // Sort the quantization errors
-            tempIndices1 = new int[nSurvivors];
+            Span<int> tempIndices1 = stackalloc int[nSurvivors];
             Sort.silk_insertion_sort_increasing(err_Q26, tempIndices1, psNLSF_CB.nVectors, nSurvivors);
 
-            RD_Q25 = new int[nSurvivors];
-            tempIndices2 = Arrays.InitTwoDimensionalArray<sbyte>(nSurvivors, SilkConstants.MAX_LPC_ORDER); 
+            Span<int> RD_Q25 = stackalloc int[nSurvivors];
+            Span<sbyte> tempIndices2 = stackalloc sbyte[nSurvivors * SilkConstants.MAX_LPC_ORDER]; // [porting note] [nSurvivors][MAX_LPC_ORDER]
             
 
             // Loop over survivors
@@ -718,7 +710,7 @@ namespace Concentus.Silk
 
                 // Trellis quantizer
                 RD_Q25[s] = silk_NLSF_del_dec_quant(
-                    tempIndices2[s],
+                    tempIndices2.Slice((s) * SilkConstants.MAX_LPC_ORDER, SilkConstants.MAX_LPC_ORDER),
                     res_Q10,
                     W_adj_Q5,
                     pred_Q8,
@@ -746,11 +738,11 @@ namespace Concentus.Silk
             }
 
             // Find the lowest rate-distortion error
-            int[] bestIndex = new int[1];
+            Span<int> bestIndex = stackalloc int[1];
             Sort.silk_insertion_sort_increasing(RD_Q25, bestIndex, nSurvivors, 1);
 
             NLSFIndices[0] = (sbyte)tempIndices1[bestIndex[0]];
-            Arrays.MemCopy(tempIndices2[bestIndex[0]], 0, NLSFIndices, 1, psNLSF_CB.order);
+            Arrays.MemCopy(tempIndices2.Slice(bestIndex[0] * SilkConstants.MAX_LPC_ORDER, SilkConstants.MAX_LPC_ORDER), 0, NLSFIndices, 1, psNLSF_CB.order);
 
             // Decode
             silk_NLSF_decode(pNLSF_Q15, NLSFIndices, psNLSF_CB);
@@ -765,7 +757,7 @@ namespace Concentus.Silk
         /// <param name="cLSF">(I) vector of interleaved 2*cos(LSFs), QA [d]</param>
         /// <param name="dd">(I) polynomial order (= 1/2 * filter order)</param>
         internal static void silk_NLSF2A_find_poly(
-            int[] o,
+            Span<int> o,
             Span<int> cLSF,
             int dd)
         {
@@ -798,17 +790,17 @@ namespace Concentus.Silk
         /// <param name="NLSF">(I) normalized line spectral frequencies in Q15, [ d ]</param>
         /// <param name="d">(I) filter order (should be even)</param>
         internal static void silk_NLSF2A(
-            short[] a_Q12,
-            short[] NLSF,
+            Span<short> a_Q12,
+            Span<short> NLSF,
             int d)
         {
             
             byte[] ordering;
             int k, i, dd;
-            int[] cos_LSF_QA = new int[d];
-            int[] P = new int[d / 2 + 1];
-            int[] Q = new int[d / 2 + 1];
-            int[] a32_QA1 = new int[d];
+            Span<int> cos_LSF_QA = stackalloc int[d];
+            Span<int> P = stackalloc int[d / 2 + 1];
+            Span<int> Q = stackalloc int[d / 2 + 1];
+            Span<int> a32_QA1 = stackalloc int[d];
 
             int Ptmp, Qtmp, f_int, f_frac, cos_val, delta;
             int maxabs, absval, idx = 0, sc_Q16;
@@ -843,8 +835,8 @@ namespace Concentus.Silk
             dd = Inlines.silk_RSHIFT(d, 1);
 
             /* generate even and odd polynomials using convolution */
-            silk_NLSF2A_find_poly(P, cos_LSF_QA.AsSpan(), dd);
-            silk_NLSF2A_find_poly(Q, cos_LSF_QA.AsSpan().Slice(1), dd);
+            silk_NLSF2A_find_poly(P, cos_LSF_QA, dd);
+            silk_NLSF2A_find_poly(Q, cos_LSF_QA.Slice(1), dd);
 
             /* convert even and odd polynomials to opus_int32 Q12 filter coefs */
             for (k = 0; k < dd; k++)
@@ -930,7 +922,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="p">(I/O) Polynomial</param>
         /// <param name="dd">(I) Polynomial order (= filter order / 2 )</param>
-        internal static void silk_A2NLSF_trans_poly(int[] p, int dd)
+        internal static void silk_A2NLSF_trans_poly(Span<int> p, int dd)
         {
             int k, n;
 
@@ -951,7 +943,7 @@ namespace Concentus.Silk
         /// <param name="x">(I) Evaluation point, Q12</param>
         /// <param name="dd">(I) Order</param>
         /// <returns>the polynomial evaluation, in Q16</returns>
-        internal static int silk_A2NLSF_eval_poly(int[] p, int x, int dd)
+        internal static int silk_A2NLSF_eval_poly(Span<int> p, int x, int dd)
         {
             int n;
             int x_Q16, y32;
@@ -982,9 +974,9 @@ namespace Concentus.Silk
         }
 
         internal static void silk_A2NLSF_init(
-             int[] a_Q16,
-             int[] P,
-             int[] Q,
+             Span<int> a_Q16,
+             Span<int> P,
+             Span<int> Q,
              int dd)
         {
             int k;
@@ -1019,20 +1011,15 @@ namespace Concentus.Silk
         /// <param name="NLSF">(O) Normalized Line Spectral Frequencies in Q15 (0..2^15-1) [d]</param>
         /// <param name="a_Q16">(I/O) Monic whitening filter coefficients in Q16 [d]</param>
         /// <param name="d">(I) Filter order (must be even)</param>
-        internal static void silk_A2NLSF(short[] NLSF, int[] a_Q16, int d)
+        internal static void silk_A2NLSF(Span<short> NLSF, Span<int> a_Q16, int d)
         {
             int i, k, m, dd, root_ix, ffrac;
             int xlo, xhi, xmid;
             int ylo, yhi, ymid, thr;
             int nom, den;
-            int[] P = new int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
-            int[] Q = new int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
-            int[][] PQ = new int[2][];
-            int[] p;
-
-            /* Store pointers to array */
-            PQ[0] = P;
-            PQ[1] = Q;
+            Span<int> P = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
+            Span<int> Q = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC / 2 + 1];
+            Span<int> p = P; /* Pointer to polynomial */
 
             dd = Inlines.silk_RSHIFT(d, 1);
 
@@ -1127,7 +1114,7 @@ namespace Concentus.Silk
                     }
 
                     /* Alternate pointer to polynomial */
-                    p = PQ[root_ix & 1];
+                    p = (root_ix & 1) == 0 ? P : Q;
 
                     /* Evaluate polynomial */
                     xlo = Tables.silk_LSFCosTab_Q12[k - 1]; /* Q12*/
@@ -1189,16 +1176,16 @@ namespace Concentus.Silk
         internal static void silk_process_NLSFs(
             SilkChannelEncoder psEncC,
             short[][] PredCoef_Q12,
-            short[] pNLSF_Q15,
+            Span<short> pNLSF_Q15,
             short[] prev_NLSFq_Q15)
         {
             int i;
             bool doInterpolate;
             int NLSF_mu_Q20;
             int i_sqr_Q15;
-            short[] pNLSF0_temp_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
-            short[] pNLSFW_QW = new short[SilkConstants.MAX_LPC_ORDER];
-            short[] pNLSFW0_temp_QW = new short[SilkConstants.MAX_LPC_ORDER];
+            Span<short> pNLSF0_temp_Q15 = stackalloc short[SilkConstants.MAX_LPC_ORDER];
+            Span<short> pNLSFW_QW = stackalloc short[SilkConstants.MAX_LPC_ORDER];
+            Span<short> pNLSFW0_temp_QW = stackalloc short[SilkConstants.MAX_LPC_ORDER];
 
             Inlines.OpusAssert(psEncC.speech_activity_Q8 >= 0);
             Inlines.OpusAssert(psEncC.speech_activity_Q8 <= ((int)((1.0f) * ((long)1 << (8)) + 0.5))/*Inlines.SILK_CONST(1.0f, 8)*/);

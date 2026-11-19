@@ -51,10 +51,10 @@ namespace Concentus.Silk
 
         /* Compute reflection coefficients from input signal */
         internal static void silk_burg_modified(
-            BoxedValueInt res_nrg,           /* O    Residual energy                                             */
-            BoxedValueInt res_nrg_Q,         /* O    Residual energy Q value                                     */
-            int[] A_Q16,            /* O    Prediction coefficients (length order)                      */
-            short[] x,                /* I    Input signal, length: nb_subfr * ( D + subfr_length )       */
+            ref int res_nrg,           /* O    Residual energy                                             */
+            ref int res_nrg_Q,         /* O    Residual energy Q value                                     */
+            Span<int> A_Q16,            /* O    Prediction coefficients (length order)                      */
+            Span<short> x,                /* I    Input signal, length: nb_subfr * ( D + subfr_length )       */
             int x_ptr,
             int minInvGain_Q30,     /* I    Inverse of max prediction gain                              */
             int subfr_length,       /* I    Input signal subframe length (incl. D preceding samples)    */
@@ -65,12 +65,12 @@ namespace Concentus.Silk
             int k, n, s, lz, rshifts, reached_max_gain;
             int C0, num, nrg, rc_Q31, invGain_Q30, Atmp_QA, Atmp1, tmp1, tmp2, x1, x2;
             int x_offset;
-            int[] C_first_row = new int[SilkConstants.SILK_MAX_ORDER_LPC];
-            int[] C_last_row = new int[SilkConstants.SILK_MAX_ORDER_LPC];
-            int[] Af_QA = new int[SilkConstants.SILK_MAX_ORDER_LPC];
-            int[] CAf = new int[SilkConstants.SILK_MAX_ORDER_LPC + 1];
-            int[] CAb = new int[SilkConstants.SILK_MAX_ORDER_LPC + 1];
-            int[] xcorr = new int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> C_first_row = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> C_last_row = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> Af_QA = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> CAf = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC + 1];
+            Span<int> CAb = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC + 1];
+            Span<int> xcorr = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
             long C0_64;
 
             Inlines.OpusAssert(subfr_length * nb_subfr <= MAX_FRAME_SIZE);
@@ -300,8 +300,8 @@ namespace Concentus.Silk
                     }
                 }
                 /* Approximate residual energy */
-                res_nrg.Val = Inlines.silk_LSHIFT(Inlines.silk_SMMUL(invGain_Q30, C0), 2);
-                res_nrg_Q.Val = 0 - rshifts;
+                res_nrg = Inlines.silk_LSHIFT(Inlines.silk_SMMUL(invGain_Q30, C0), 2);
+                res_nrg_Q = 0 - rshifts;
             }
             else {
                 /* Return residual energy */
@@ -314,8 +314,8 @@ namespace Concentus.Silk
                     tmp1 = Inlines.silk_SMLAWW(tmp1, Atmp1, Atmp1);                                               /* Q16 */
                     A_Q16[k] = -Atmp1;
                 }
-                res_nrg.Val = Inlines.silk_SMLAWW(nrg, Inlines.silk_SMMUL(((int)((TuningParameters.FIND_LPC_COND_FAC) * ((long)1 << (32)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32)*/, C0), -tmp1);/* Q( -rshifts ) */
-                res_nrg_Q.Val = -rshifts;
+                res_nrg = Inlines.silk_SMLAWW(nrg, Inlines.silk_SMMUL(((int)((TuningParameters.FIND_LPC_COND_FAC) * ((long)1 << (32)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.FIND_LPC_COND_FAC, 32)*/, C0), -tmp1);/* Q( -rshifts ) */
+                res_nrg_Q = -rshifts;
             }
         }
 

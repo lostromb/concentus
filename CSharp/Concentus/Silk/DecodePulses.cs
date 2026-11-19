@@ -47,15 +47,15 @@ namespace Concentus.Silk
         internal static void silk_decode_pulses(
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
             ReadOnlySpan<byte> frameData,
-            short[] pulses,                       /* O    Excitation signal                           */
+            Span<short> pulses,                       /* O    Excitation signal                           */
             int signalType,                     /* I    Sigtype                                     */
             int quantOffsetType,                /* I    quantOffsetType                             */
             int frame_length                    /* I    Frame length                                */
             )
         {
             int i, j, k, iter, abs_q, nLS, RateLevelIndex;
-            int[] sum_pulses = new int[SilkConstants.MAX_NB_SHELL_BLOCKS];
-            int[] nLshifts = new int[SilkConstants.MAX_NB_SHELL_BLOCKS];
+            Span<int> sum_pulses = stackalloc int[SilkConstants.MAX_NB_SHELL_BLOCKS];
+            Span<int> nLshifts = stackalloc int[SilkConstants.MAX_NB_SHELL_BLOCKS];
             int pulses_ptr;
 
             /*********************/

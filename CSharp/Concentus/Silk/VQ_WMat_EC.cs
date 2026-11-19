@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -42,12 +43,12 @@ namespace Concentus.Silk
     {
         /* Entropy constrained matrix-weighted VQ, hard-coded to 5-element vectors, for a single input data vector */
         internal static void silk_VQ_WMat_EC(
-            BoxedValueSbyte ind,                           /* O    index of best codebook vector               */
-            BoxedValueInt rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
-            BoxedValueInt gain_Q7,                       /* O    sum of absolute LTP coefficients            */
+            ref sbyte ind,                           /* O    index of best codebook vector               */
+            ref int rate_dist_Q14,                 /* O    best weighted quant error + mu * rate       */
+            ref int gain_Q7,                       /* O    sum of absolute LTP coefficients            */
             short[] in_Q14,                        /* I    input vector to be quantized                */
             int in_Q14_ptr,
-            int[] W_Q18,                         /* I    weighting matrix                            */
+            Span<int> W_Q18,                         /* I    weighting matrix                            */
             int W_Q18_ptr,
             sbyte[][] cb_Q7,                         /* I    codebook                                    */
             byte[] cb_gain_Q7,                    /* I    codebook effective gain                     */
@@ -60,11 +61,11 @@ namespace Concentus.Silk
             int k, gain_tmp_Q7;
             sbyte[] cb_row_Q7;
             int cb_row_Q7_ptr = 0;
-            short[] diff_Q14 = new short[5];
+            Span<short> diff_Q14 = stackalloc short[5];
             int sum1_Q14, sum2_Q16;
 
             /* Loop over codebook */
-            rate_dist_Q14.Val = int.MaxValue;
+            rate_dist_Q14 = int.MaxValue;
             for (k = 0; k < L; k++)
             {
                 /* Go to next cbk vector */
@@ -122,11 +123,11 @@ namespace Concentus.Silk
                 Inlines.OpusAssert(sum1_Q14 >= 0);
 
                 /* find best */
-                if (sum1_Q14 < rate_dist_Q14.Val)
+                if (sum1_Q14 < rate_dist_Q14)
                 {
-                    rate_dist_Q14.Val = sum1_Q14;
-                    ind.Val = (sbyte)k;
-                    gain_Q7.Val = gain_tmp_Q7;
+                    rate_dist_Q14 = sum1_Q14;
+                    ind = (sbyte)k;
+                    gain_Q7 = gain_tmp_Q7;
                 }
             }
         }

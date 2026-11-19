@@ -45,6 +45,39 @@ namespace Concentus.Common.CPlusPlus
             return returnVal;
         }
 
+        /// <summary>
+        /// A zeroed array of exactly this length, as new T[length], from a buffer kept by the caller:
+        /// allocated only when the length changes, so a stream of one frame size allocates nothing.
+        /// </summary>
+        internal static T[] Scratch<T>(ref T[] buffer, int length)
+        {
+            // of none: the buffer kept for the next that needs it
+            if (length == 0)
+                return Empty<T>.Array;
+            if (buffer == null || buffer.Length != length)
+                buffer = new T[length];
+            else
+                Array.Clear(buffer, 0, length);
+            return buffer;
+        }
+
+        /// <summary>
+        /// As InitTwoDimensionalArray, from a buffer kept by the caller.
+        /// </summary>
+        internal static T[][] Scratch<T>(ref T[][] buffer, int x, int y)
+        {
+            if (buffer == null || buffer.Length != x)
+                buffer = new T[x][];
+            for (int c = 0; c < x; c++)
+                Scratch(ref buffer[c], y);
+            return buffer;
+        }
+
+        private static class Empty<T>
+        {
+            internal static readonly T[] Array = new T[0];
+        }
+
         internal static Pointer<Pointer<T>> InitTwoDimensionalArrayPointer<T>(int x, int y)
         {
             Pointer<Pointer<T>> returnVal = Pointer.Malloc<Pointer<T>>(x);
@@ -81,9 +114,14 @@ namespace Concentus.Common.CPlusPlus
             array.AsSpan(0, length).Fill(value);
         }
 
-        internal static void MemSetShort(short[] array, short value, int length)
+        internal static void MemSetInt(Span<int> array, int value, int length)
         {
-            array.AsSpan(0, length).Fill(value);
+            array.Slice(0, length).Fill(value);
+        }
+
+        internal static void MemSetShort(Span<short> array, short value, int length)
+        {
+            array.Slice(0, length).Fill(value);
         }
 
         internal static void MemSetFloat(float[] array, float value, int length)
@@ -161,6 +199,26 @@ namespace Concentus.Common.CPlusPlus
                 return;
 
             Buffer.BlockCopy(src, src_idx * sizeof(int), dst, dst_idx * sizeof(int), length * sizeof(int));
+        }
+
+        internal static void MemCopy(ReadOnlySpan<int> src, int src_idx, Span<int> dst, int dst_idx, int length)
+        {
+            src.Slice(src_idx, length).CopyTo(dst.Slice(dst_idx));
+        }
+
+        internal static void MemCopy(ReadOnlySpan<short> src, int src_idx, Span<short> dst, int dst_idx, int length)
+        {
+            src.Slice(src_idx, length).CopyTo(dst.Slice(dst_idx));
+        }
+
+        internal static void MemCopy(ReadOnlySpan<sbyte> src, int src_idx, Span<sbyte> dst, int dst_idx, int length)
+        {
+            src.Slice(src_idx, length).CopyTo(dst.Slice(dst_idx));
+        }
+
+        internal static void MemCopy(ReadOnlySpan<byte> src, int src_idx, Span<byte> dst, int dst_idx, int length)
+        {
+            src.Slice(src_idx, length).CopyTo(dst.Slice(dst_idx));
         }
 
         internal static void MemCopy(short[] src, int src_idx, short[] dst, int dst_idx, int length)

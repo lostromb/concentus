@@ -55,7 +55,7 @@ namespace Concentus.Silk
         internal static void silk_gains_quant(
             sbyte[] ind,
             int[] gain_Q16,
-            BoxedValueSbyte prev_ind,
+            ref sbyte prev_ind,
             int conditional,
             int nb_subfr)
         {
@@ -68,7 +68,7 @@ namespace Concentus.Silk
                 ind[k] = (sbyte)(Inlines.silk_SMULWB(SCALE_Q16, Inlines.silk_lin2log(gain_Q16[k]) - OFFSET));
 
                 /* Round towards previous quantized gain (hysteresis) */
-                if (ind[k] < prev_ind.Val)
+                if (ind[k] < prev_ind)
                 {
                     ind[k]++;
                 }
@@ -79,16 +79,16 @@ namespace Concentus.Silk
                 if (k == 0 && conditional == 0)
                 {
                     /* Full index */
-                    ind[k] = (sbyte)(Inlines.silk_LIMIT_int(ind[k], prev_ind.Val + SilkConstants.MIN_DELTA_GAIN_QUANT, SilkConstants.N_LEVELS_QGAIN - 1));
-                    prev_ind.Val = ind[k];
+                    ind[k] = (sbyte)(Inlines.silk_LIMIT_int(ind[k], prev_ind + SilkConstants.MIN_DELTA_GAIN_QUANT, SilkConstants.N_LEVELS_QGAIN - 1));
+                    prev_ind = ind[k];
                 }
                 else
                 {
                     /* Delta index */
-                    ind[k] = (sbyte)(ind[k] - prev_ind.Val);
+                    ind[k] = (sbyte)(ind[k] - prev_ind);
 
                     /* Double the quantization step size for large gain increases, so that the max gain level can be reached */
-                    double_step_size_threshold = 2 * SilkConstants.MAX_DELTA_GAIN_QUANT - SilkConstants.N_LEVELS_QGAIN + prev_ind.Val;
+                    double_step_size_threshold = 2 * SilkConstants.MAX_DELTA_GAIN_QUANT - SilkConstants.N_LEVELS_QGAIN + prev_ind;
                     if (ind[k] > double_step_size_threshold)
                     {
                         ind[k] = (sbyte)(double_step_size_threshold + Inlines.silk_RSHIFT(ind[k] - double_step_size_threshold + 1, 1));
@@ -99,11 +99,11 @@ namespace Concentus.Silk
                     /* Accumulate deltas */
                     if (ind[k] > double_step_size_threshold)
                     {
-                        prev_ind.Val += (sbyte)(Inlines.silk_LSHIFT(ind[k], 1) - double_step_size_threshold);
+                        prev_ind += (sbyte)(Inlines.silk_LSHIFT(ind[k], 1) - double_step_size_threshold);
                     }
                     else
                     {
-                        prev_ind.Val += ind[k];
+                        prev_ind += ind[k];
                     }
 
                     /* Shift to make non-negative */
@@ -112,7 +112,7 @@ namespace Concentus.Silk
                 }
 
                 /* Scale and convert to linear scale */
-                gain_Q16[k] = Inlines.silk_log2lin(Inlines.silk_min_32(Inlines.silk_SMULWB(INV_SCALE_Q16, prev_ind.Val) + OFFSET, 3967)); /* 3967 = 31 in Q7 */
+                gain_Q16[k] = Inlines.silk_log2lin(Inlines.silk_min_32(Inlines.silk_SMULWB(INV_SCALE_Q16, prev_ind) + OFFSET, 3967)); /* 3967 = 31 in Q7 */
             }
         }
 
@@ -127,7 +127,7 @@ namespace Concentus.Silk
         internal static void silk_gains_dequant(
             int[] gain_Q16,
             sbyte[] ind,
-            BoxedValueSbyte prev_ind,
+            ref sbyte prev_ind,
             int conditional,
             int nb_subfr)
         {
@@ -138,7 +138,7 @@ namespace Concentus.Silk
                 if (k == 0 && conditional == 0)
                 {
                     /* Gain index is not allowed to go down more than 16 steps (~21.8 dB) */
-                    prev_ind.Val = (sbyte)(Inlines.silk_max_int(ind[k], prev_ind.Val - 16));
+                    prev_ind = (sbyte)(Inlines.silk_max_int(ind[k], prev_ind - 16));
                 }
                 else
                 {
@@ -146,21 +146,21 @@ namespace Concentus.Silk
                     ind_tmp = ind[k] + SilkConstants.MIN_DELTA_GAIN_QUANT;
 
                     /* Accumulate deltas */
-                    double_step_size_threshold = 2 * SilkConstants.MAX_DELTA_GAIN_QUANT - SilkConstants.N_LEVELS_QGAIN + prev_ind.Val;
+                    double_step_size_threshold = 2 * SilkConstants.MAX_DELTA_GAIN_QUANT - SilkConstants.N_LEVELS_QGAIN + prev_ind;
                     if (ind_tmp > double_step_size_threshold)
                     {
-                        prev_ind.Val += (sbyte)(Inlines.silk_LSHIFT(ind_tmp, 1) - double_step_size_threshold);
+                        prev_ind += (sbyte)(Inlines.silk_LSHIFT(ind_tmp, 1) - double_step_size_threshold);
                     }
                     else
                     {
-                        prev_ind.Val += (sbyte)(ind_tmp);
+                        prev_ind += (sbyte)(ind_tmp);
                     }
                 }
 
-                prev_ind.Val = (sbyte)(Inlines.silk_LIMIT_int(prev_ind.Val, 0, SilkConstants.N_LEVELS_QGAIN - 1));
+                prev_ind = (sbyte)(Inlines.silk_LIMIT_int(prev_ind, 0, SilkConstants.N_LEVELS_QGAIN - 1));
 
                 /* Scale and convert to linear scale */
-                gain_Q16[k] = Inlines.silk_log2lin(Inlines.silk_min_32(Inlines.silk_SMULWB(INV_SCALE_Q16, prev_ind.Val) + OFFSET, 3967)); /* 3967 = 31 in Q7 */
+                gain_Q16[k] = Inlines.silk_log2lin(Inlines.silk_min_32(Inlines.silk_SMULWB(INV_SCALE_Q16, prev_ind) + OFFSET, 3967)); /* 3967 = 31 in Q7 */
             }
         }
 

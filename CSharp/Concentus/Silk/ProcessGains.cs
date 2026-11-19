@@ -110,10 +110,10 @@ namespace Concentus.Silk
             psEncCtrl.lastGainIndexPrev = psShapeSt.LastGainIndex;
 
             /* Quantize gains */
-            BoxedValueSbyte boxed_lastGainIndex = new BoxedValueSbyte(psShapeSt.LastGainIndex);
+            sbyte boxed_lastGainIndex = psShapeSt.LastGainIndex;
             GainQuantization.silk_gains_quant(psEnc.indices.GainsIndices, psEncCtrl.Gains_Q16,
-                boxed_lastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.nb_subfr);
-            psShapeSt.LastGainIndex = boxed_lastGainIndex.Val;
+                ref boxed_lastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psEnc.nb_subfr);
+            psShapeSt.LastGainIndex = boxed_lastGainIndex;
 
             /* Set quantizer offset for voiced signals. Larger offset when LTP coding gain is low or tilt is high (ie low-pass) */
             if (psEnc.indices.signalType == SilkConstants.TYPE_VOICED)

@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -42,13 +43,13 @@ namespace Concentus.Silk
     {
         /* Step up function, converts reflection coefficients to prediction coefficients */
         internal static void silk_k2a(
-            int[] A_Q24,             /* O    Prediction coefficients [order] Q24                         */
-            short[] rc_Q15,            /* I    Reflection coefficients [order] Q15                         */
+            Span<int> A_Q24,             /* O    Prediction coefficients [order] Q24                         */
+            Span<short> rc_Q15,            /* I    Reflection coefficients [order] Q15                         */
             int order               /* I    Prediction order                                            */
         )
         {
             int k, n;
-            int[] Atmp = new int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> Atmp = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
 
             for (k = 0; k < order; k++)
             {
@@ -66,13 +67,13 @@ namespace Concentus.Silk
 
         /* Step up function, converts reflection coefficients to prediction coefficients */
         internal static void silk_k2a_Q16(
-            int[] A_Q24,             /* O    Prediction coefficients [order] Q24                         */
-            int[] rc_Q16,            /* I    Reflection coefficients [order] Q16                         */
+            Span<int> A_Q24,             /* O    Prediction coefficients [order] Q24                         */
+            Span<int> rc_Q16,            /* I    Reflection coefficients [order] Q16                         */
             int order               /* I    Prediction order                                            */
         )
         {
             int k, n;
-            int[] Atmp = new int[SilkConstants.SILK_MAX_ORDER_LPC];
+            Span<int> Atmp = stackalloc int[SilkConstants.SILK_MAX_ORDER_LPC];
 
             for (k = 0; k < order; k++)
             {

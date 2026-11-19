@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -45,9 +46,9 @@ namespace Concentus.Silk
         internal static void silk_residual_energy(
             int[] nrgs,                   /* O    Residual energy per subframe  [MAX_NB_SUBFR]                                              */
             int[] nrgsQ,                  /* O    Q value per subframe   [MAX_NB_SUBFR]                                                     */
-            short[] x,                                    /* I    Input signal                                                                */
+            Span<short> x,                                    /* I    Input signal                                                                */
             short[][] a_Q12,            /* I    AR coefs for each frame half [2][MAX_LPC_ORDER]                                                */
-            int[] gains,                  /* I    Quantization gains [SilkConstants.MAX_NB_SUBFR]                                                         */
+            Span<int> gains,                  /* I    Quantization gains [SilkConstants.MAX_NB_SUBFR]                                                         */
             int subfr_length,                           /* I    Subframe length                                                             */
             int nb_subfr,                               /* I    Number of subframes                                                         */
             int LPC_order                              /* I    LPC order                                                                   */
@@ -56,7 +57,6 @@ namespace Concentus.Silk
             int offset, i, j, lz1, lz2;
             int rshift, energy;
             int LPC_res_ptr;
-            short[] LPC_res;
             int x_ptr;
             int tmp32;
             
@@ -64,7 +64,7 @@ namespace Concentus.Silk
             offset = LPC_order + subfr_length;
 
             /* Filter input to create the LPC residual for each frame half, and measure subframe energies */
-            LPC_res = new short[(SilkConstants.MAX_NB_SUBFR >> 1) * offset];
+            Span<short> LPC_res = stackalloc short[(SilkConstants.MAX_NB_SUBFR >> 1) * offset];
             Inlines.OpusAssert((nb_subfr >> 1) * (SilkConstants.MAX_NB_SUBFR >> 1) == nb_subfr);
             for (i = 0; i < nb_subfr >> 1; i++)
             {
@@ -112,9 +112,9 @@ namespace Concentus.Silk
         internal static int silk_residual_energy16_covar(
             short[] c,                                     /* I    Prediction vector                                                           */
             int c_ptr,
-            int[] wXX,                                   /* I    Correlation matrix                                                          */
+            Span<int> wXX,                                   /* I    Correlation matrix                                                          */
             int wXX_ptr,
-            int[] wXx,                                   /* I    Correlation vector                                                          */
+            Span<int> wXx,                                   /* I    Correlation vector                                                          */
             int wxx,                                    /* I    Signal energy                                                               */
             int D,                                      /* I    Dimension                                                                   */
             int cQ                                      /* I    Q value for c vector 0 - 15                                                 */
@@ -122,7 +122,7 @@ namespace Concentus.Silk
         {
             int i, j, lshifts, Qxtra;
             int c_max, w_max, tmp, tmp2, nrg;
-            int[] cn = new int[D]; //SilkConstants.MAX_MATRIX_SIZE
+            Span<int> cn = stackalloc int[D]; //SilkConstants.MAX_MATRIX_SIZE
             int pRow;
 
             /* Safety checks */

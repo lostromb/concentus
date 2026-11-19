@@ -269,9 +269,9 @@ namespace Concentus.Silk
         /// <param name="input">I    Input signal [ len ]</param>
         /// <param name="inLen">I    Number of input samples</param>
         internal static void silk_resampler_down2(
-            int[] S,
-            short[] output,
-            short[] input,
+            Span<int> S,
+            Span<short> output,
+            Span<short> input,
             int inLen)
         {
             int k, len2 = Inlines.silk_RSHIFT32(inLen, 1);
@@ -315,13 +315,13 @@ namespace Concentus.Silk
         /// <param name="input">I    Input signal [ inLen ]</param>
         /// <param name="inLen">I    Number of input samples</param>
         internal static void silk_resampler_down2_3(
-            int[] S,
-            short[] output,
-            short[] input,
+            Span<int> S,
+            Span<short> output,
+            Span<short> input,
             int inLen)
         {
             int nSamplesIn, counter, res_Q6;
-            int[] buf = new int[SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR];
+            Span<int> buf = stackalloc int[SilkConstants.RESAMPLER_MAX_BATCH_SIZE_IN + ORDER_FIR];
             int buf_ptr;
             int input_ptr = 0;
             int output_ptr = 0;
@@ -415,7 +415,7 @@ namespace Concentus.Silk
         internal static int silk_resampler_private_down_FIR_INTERPOL(
             Span<short> output,
             int output_ptr,
-            int[] buf,
+            Span<int> buf,
             Span<short> FIR_Coefs,
             int FIR_Coefs_ptr,
             int FIR_Order,
@@ -544,7 +544,7 @@ namespace Concentus.Silk
         {
             int nSamplesIn;
             int max_index_Q16, index_increment_Q16;
-            int[] buf = new int[S.batchSize + S.FIR_Order];
+            Span<int> buf = stackalloc int[S.batchSize + S.FIR_Order];
 
             /* Copy buffered samples to start of buffer */
             Arrays.MemCopy(S.sFIR_i32, 0, buf, 0, S.FIR_Order);
@@ -585,7 +585,7 @@ namespace Concentus.Silk
         internal static int silk_resampler_private_IIR_FIR_INTERPOL(
             Span<short> output,
             int output_ptr,
-            short[] buf,
+            Span<short> buf,
             int max_index_Q16,
             int index_increment_Q16)
         {
@@ -630,7 +630,7 @@ namespace Concentus.Silk
             int nSamplesIn;
             int max_index_Q16, index_increment_Q16;
 
-            short[] buf = new short[2 * S.batchSize + SilkConstants.RESAMPLER_ORDER_FIR_12];
+            Span<short> buf = stackalloc short[2 * S.batchSize + SilkConstants.RESAMPLER_ORDER_FIR_12];
 
             /* Copy buffered samples to start of buffer */
             Arrays.MemCopy(S.sFIR_i16, 0, buf, 0, SilkConstants.RESAMPLER_ORDER_FIR_12);

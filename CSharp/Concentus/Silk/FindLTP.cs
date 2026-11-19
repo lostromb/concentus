@@ -59,15 +59,15 @@ namespace Concentus.Silk
         /// <param name="corr_rshifts"></param>
         internal static void silk_find_LTP(
              short[] b_Q14,      /* O    LTP coefs [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER]                                                                  */
-             int[] WLTP, /* O    Weight for LTP quantization [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER]                                          */
-             BoxedValueInt LTPredCodGain_Q7,                      /* O    LTP coding gain                                                             */
-             short[] r_lpc,                                /* I    residual signal after LPC signal + state for first 10 ms                    */
+             Span<int> WLTP, /* O    Weight for LTP quantization [SilkConstants.MAX_NB_SUBFR * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER]                                          */
+             ref int LTPredCodGain_Q7,                      /* O    LTP coding gain                                                             */
+             Span<short> r_lpc,                                /* I    residual signal after LPC signal + state for first 10 ms                    */
              int[] lag,                    /* I    LTP lags   [SilkConstants.MAX_NB_SUBFR]                                                                 */
-             int[] Wght_Q15,               /* I    weights [SilkConstants.MAX_NB_SUBFR]                                                                    */
+             Span<int> Wght_Q15,               /* I    weights [SilkConstants.MAX_NB_SUBFR]                                                                    */
              int subfr_length,                           /* I    subframe length                                                             */
              int nb_subfr,                               /* I    number of subframes                                                         */
              int mem_offset,                             /* I    number of samples in LTP memory                                             */
-             int[] corr_rshifts           /* O    right shifts applied to correlations  [SilkConstants.MAX_NB_SUBFR]                                      */
+             Span<int> corr_rshifts           /* O    right shifts applied to correlations  [SilkConstants.MAX_NB_SUBFR]                                      */
          )
         {
             int i, k, lshift;
@@ -77,20 +77,20 @@ namespace Concentus.Silk
 
             int regu;
             int WLTP_ptr;
-            int[] b_Q16 = new int[SilkConstants.LTP_ORDER];
-            int[] delta_b_Q14 = new int[SilkConstants.LTP_ORDER];
-            int[] d_Q14 = new int[SilkConstants.MAX_NB_SUBFR];
-            int[] nrg = new int[SilkConstants.MAX_NB_SUBFR];
+            Span<int> b_Q16 = stackalloc int[SilkConstants.LTP_ORDER];
+            Span<int> delta_b_Q14 = stackalloc int[SilkConstants.LTP_ORDER];
+            Span<int> d_Q14 = stackalloc int[SilkConstants.MAX_NB_SUBFR];
+            Span<int> nrg = stackalloc int[SilkConstants.MAX_NB_SUBFR];
             int g_Q26;
-            int[] w = new int[SilkConstants.MAX_NB_SUBFR];
+            Span<int> w = stackalloc int[SilkConstants.MAX_NB_SUBFR];
             int WLTP_max, max_abs_d_Q14, max_w_bits;
 
             int temp32, denom32;
             int extra_shifts;
             int rr_shifts, maxRshifts, maxRshifts_wxtra, LZs;
             int LPC_res_nrg, LPC_LTP_res_nrg, div_Q16;
-            int[] Rr = new int[SilkConstants.LTP_ORDER];
-            int[] rr = new int[SilkConstants.MAX_NB_SUBFR];
+            Span<int> Rr = stackalloc int[SilkConstants.LTP_ORDER];
+            Span<int> rr = stackalloc int[SilkConstants.MAX_NB_SUBFR];
             int wd, m_Q12;
 
             b_Q14_ptr = 0;
@@ -110,9 +110,9 @@ namespace Concentus.Silk
                     rr_shifts += (LTP_CORRS_HEAD_ROOM - LZs);
                 }
                 corr_rshifts[k] = rr_shifts;
-                BoxedValueInt boxed_shifts = new BoxedValueInt(corr_rshifts[k]);
-                CorrelateMatrix.silk_corrMatrix(r_lpc, lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP, WLTP_ptr, boxed_shifts);  /* WLTP_ptr in Q( -corr_rshifts[ k ] ) */
-                corr_rshifts[k] = boxed_shifts.Val;
+                int boxed_shifts = corr_rshifts[k];
+                CorrelateMatrix.silk_corrMatrix(r_lpc, lag_ptr, subfr_length, SilkConstants.LTP_ORDER, LTP_CORRS_HEAD_ROOM, WLTP, WLTP_ptr, ref boxed_shifts);  /* WLTP_ptr in Q( -corr_rshifts[ k ] ) */
+                corr_rshifts[k] = boxed_shifts;
 
                 /* The correlation vector always has lower max abs value than rr and/or RR so head room is assured */
                 CorrelateMatrix.silk_corrVector(r_lpc, lag_ptr, r_lpc, r_ptr, subfr_length, SilkConstants.LTP_ORDER, Rr, corr_rshifts[k]);  /* Rr_ptr   in Q( -corr_rshifts[ k ] ) */
@@ -175,7 +175,7 @@ namespace Concentus.Silk
             }
 
             /* Compute LTP coding gain */
-            if (LTPredCodGain_Q7 != null)
+            // [porting note] of the C's optional pointer, always given here
             {
                 LPC_LTP_res_nrg = 0;
                 LPC_res_nrg = 0;
@@ -188,9 +188,9 @@ namespace Concentus.Silk
                 LPC_LTP_res_nrg = Inlines.silk_max(LPC_LTP_res_nrg, 1); /* avoid division by zero */
 
                 div_Q16 = Inlines.silk_DIV32_varQ(LPC_res_nrg, LPC_LTP_res_nrg, 16);
-                LTPredCodGain_Q7.Val = (int)Inlines.silk_SMULBB(3, Inlines.silk_lin2log(div_Q16) - (16 << 7));
+                LTPredCodGain_Q7 = (int)Inlines.silk_SMULBB(3, Inlines.silk_lin2log(div_Q16) - (16 << 7));
 
-                Inlines.OpusAssert(LTPredCodGain_Q7.Val == (int)Inlines.silk_SAT16(Inlines.silk_MUL(3, Inlines.silk_lin2log(div_Q16) - (16 << 7))));
+                Inlines.OpusAssert(LTPredCodGain_Q7 == (int)Inlines.silk_SAT16(Inlines.silk_MUL(3, Inlines.silk_lin2log(div_Q16) - (16 << 7))));
             }
 
             /* smoothing */
@@ -281,7 +281,7 @@ namespace Concentus.Silk
         /// <param name="LTP_coefs_Q14">[SilkConstants.LTP_ORDER]</param>
         /// <param name="LTP_coefs_Q14_ptr"></param>
         internal static void silk_fit_LTP(
-            int[] LTP_coefs_Q16,
+            Span<int> LTP_coefs_Q16,
             Span<short> LTP_coefs_Q14,
             int LTP_coefs_Q14_ptr)
         {

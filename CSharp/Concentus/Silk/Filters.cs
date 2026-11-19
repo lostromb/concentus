@@ -44,7 +44,7 @@ namespace Concentus.Silk
     {
         internal static void silk_warped_LPC_analysis_filter(
             int[] state,                    /* I/O  State [order + 1]                   */
-            int[] res_Q2,                   /* O    Residual signal [length]            */
+            Span<int> res_Q2,                   /* O    Residual signal [length]            */
             short[] coef_Q13,                 /* I    Coefficients [order]                */
             int coef_Q13_ptr,
             short[] input,                    /* I    Input signal [length]               */
@@ -91,7 +91,7 @@ namespace Concentus.Silk
         internal static void silk_prefilter(
             SilkChannelEncoder psEnc,                                 /* I/O  Encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I    Encoder control                                                             */
-            int[] xw_Q3,                                /* O    Weighted signal                                                             */
+            Span<int> xw_Q3,                                /* O    Weighted signal                                                             */
             short[] x,                                     /* I    Speech signal                                                               */
             int x_ptr
 )
@@ -104,16 +104,14 @@ namespace Concentus.Silk
             int pxw_Q3;
             int HarmShapeGain_Q12, Tilt_Q14;
             int HarmShapeFIRPacked_Q12, LF_shp_Q14;
-            int[] x_filt_Q12;
-            int[] st_res_Q2;
             Span<short> B_Q10 = stackalloc short[2];
 
             /* Set up pointers */
             px = x_ptr;
             pxw_Q3 = 0;
             lag = P.lagPrev;
-            x_filt_Q12 = new int[psEnc.subfr_length];
-            st_res_Q2 = new int[psEnc.subfr_length];
+            Span<int> x_filt_Q12 = stackalloc int[psEnc.subfr_length];
+            Span<int> st_res_Q2 = stackalloc int[psEnc.subfr_length];
             for (k = 0; k < psEnc.nb_subfr; k++)
             {
                 /* Update Variables that change per sub frame */
@@ -162,8 +160,8 @@ namespace Concentus.Silk
         /* Prefilter for finding Quantizer input signal */
         static void silk_prefilt(
             SilkPrefilterState P,                         /* I/O  state                               */
-            int[] st_res_Q12,               /* I    short term residual signal          */
-            int[] xw_Q3,                    /* O    prefiltered signal                  */
+            Span<int> st_res_Q12,               /* I    short term residual signal          */
+            Span<int> xw_Q3,                    /* O    prefiltered signal                  */
             int xw_Q3_ptr,
             int HarmShapeFIRPacked_Q12,     /* I    Harmonic shaping coeficients        */
             int Tilt_Q14,                   /* I    Tilt shaping coeficient             */
@@ -229,8 +227,8 @@ namespace Concentus.Silk
         internal static void silk_biquad_alt(
             ReadOnlySpan<short> input,
             int input_ptr,
-            int[] B_Q28,
-            int[] A_Q28,
+            Span<int> B_Q28,
+            Span<int> A_Q28,
             int[] S,
             Span<short> output,
             int output_ptr,
@@ -269,8 +267,8 @@ namespace Concentus.Silk
         internal static void silk_biquad_alt(
             ReadOnlySpan<short> input,
             int input_ptr,
-            int[] B_Q28,
-            int[] A_Q28,
+            Span<int> B_Q28,
+            Span<int> A_Q28,
             Span<int> S,
             int S_ptr,
             Span<short> output,
@@ -324,7 +322,7 @@ namespace Concentus.Silk
             Span<short> input,
             int input_ptr,
             int[] S,
-            short[] outL,
+            Span<short> outL,
             Span<short> outH,
             int outH_ptr,
             int N)
@@ -365,7 +363,7 @@ namespace Concentus.Silk
         /// <param name="ar">I/O  AR filter to be expanded (without leading 1)</param>
         /// <param name="d">I    Length of ar</param>
         /// <param name="chirp_Q16">I    Chirp factor in Q16</param>
-        internal static void silk_bwexpander_32(int[] ar, int d, int chirp_Q16)
+        internal static void silk_bwexpander_32(Span<int> ar, int d, int chirp_Q16)
         {
             int i;
             int chirp_minus_one_Q16 = chirp_Q16 - 65536;
@@ -390,8 +388,8 @@ namespace Concentus.Silk
         /// <param name="ind"></param>
         /// <param name="fac_Q16"></param>
         internal static void silk_LP_interpolate_filter_taps(
-            int[] B_Q28,
-            int[] A_Q28,
+            Span<int> B_Q28,
+            Span<int> A_Q28,
             int ind,
             int fac_Q16)
         {
@@ -516,18 +514,18 @@ namespace Concentus.Silk
         /// Compute inverse of LPC prediction gain, and
         /// test if LPC coefficients are stable (all poles within unit circle)
         /// </summary>
-        /// <param name="A_QA">Prediction coefficients, order [2][SILK_MAX_ORDER_LPC]</param>
+        /// <param name="A_QA0">Prediction coefficients of even orders, [SILK_MAX_ORDER_LPC]</param>
+        /// <param name="A_QA1">Prediction coefficients of odd orders, [SILK_MAX_ORDER_LPC]</param>
         /// <param name="order">Prediction order</param>
         /// <returns>inverse prediction gain in energy domain, Q30</returns>
         internal static int LPC_inverse_pred_gain_QA(
-            int[][] A_QA,
+            Span<int> A_QA0, Span<int> A_QA1,
             int order)
         {
             int k, n, mult2Q;
             int invGain_Q30, rc_Q31, rc_mult1_Q30, rc_mult2, tmp_QA;
-            int[] Aold_QA, Anew_QA;
-
-            Anew_QA = A_QA[order & 1];
+            Span<int> Anew_QA = (order & 1) == 0 ? A_QA0 : A_QA1;
+            Span<int> Aold_QA = Anew_QA;
 
             invGain_Q30 = (int)1 << 30;
             for (k = order - 1; k > 0; k--)
@@ -558,7 +556,7 @@ namespace Concentus.Silk
 
                 /* Swap pointers */
                 Aold_QA = Anew_QA;
-                Anew_QA = A_QA[k & 1];
+                Anew_QA = (k & 1) == 0 ? A_QA0 : A_QA1;
 
                 /* Update AR coefficient */
                 for (n = 0; n < k; n++)
@@ -595,16 +593,13 @@ namespace Concentus.Silk
         /// <param name="A_Q12">Prediction coefficients, Q12 [order]</param>
         /// <param name="order">I   Prediction order</param>
         /// <returns>inverse prediction gain in energy domain, Q30</returns>
-        internal static int silk_LPC_inverse_pred_gain(short[] A_Q12, int order)
+        internal static int silk_LPC_inverse_pred_gain(Span<short> A_Q12, int order)
         {
             int k;
-            int[][] Atmp_QA = new int[2][];
-            Atmp_QA[0] = new int[order];
-            Atmp_QA[1] = new int[order];
-            int[] Anew_QA;
+            Span<int> Atmp_QA0 = stackalloc int[order];
+            Span<int> Atmp_QA1 = stackalloc int[order];
             int DC_resp = 0;
-
-            Anew_QA = Atmp_QA[order & 1];
+            Span<int> Anew_QA = (order & 1) == 0 ? Atmp_QA0 : Atmp_QA1;
 
             /* Increase Q domain of the AR coefficients */
             for (k = 0; k < order; k++)
@@ -619,7 +614,7 @@ namespace Concentus.Silk
                 return 0;
             }
 
-            return LPC_inverse_pred_gain_QA(Atmp_QA, order);
+            return LPC_inverse_pred_gain_QA(Atmp_QA0, Atmp_QA1, order);
         }
     }
 }

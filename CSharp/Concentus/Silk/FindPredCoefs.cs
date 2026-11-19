@@ -44,22 +44,21 @@ namespace Concentus.Silk
         internal static void silk_find_pred_coefs(
             SilkChannelEncoder psEnc,                                 /* I/O  encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I/O  encoder control                                                             */
-            short[] res_pitch,                            /* I    Residual from pitch analysis                                                */
+            Span<short> res_pitch,                            /* I    Residual from pitch analysis                                                */
             short[] x,                                    /* I    Speech signal                                                               */
             int x_ptr,
             int condCoding                              /* I    The type of conditional coding to use                                       */
         )
         {
             int i;
-            int[] invGains_Q16 = new int[SilkConstants.MAX_NB_SUBFR];
-            int[] local_gains = new int[SilkConstants.MAX_NB_SUBFR];
-            int[] Wght_Q15 = new int[SilkConstants.MAX_NB_SUBFR];
-            short[] NLSF_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
+            Span<int> invGains_Q16 = stackalloc int[SilkConstants.MAX_NB_SUBFR];
+            Span<int> local_gains = stackalloc int[SilkConstants.MAX_NB_SUBFR];
+            Span<int> Wght_Q15 = stackalloc int[SilkConstants.MAX_NB_SUBFR];
+            Span<short> NLSF_Q15 = stackalloc short[SilkConstants.MAX_LPC_ORDER];
             int x_ptr2;
             int x_pre_ptr;
-            short[] LPC_in_pre;
             int tmp, min_gain_Q16, minInvGain_Q30;
-            int[] LTP_corrs_rshift = new int[SilkConstants.MAX_NB_SUBFR];
+            Span<int> LTP_corrs_rshift = stackalloc int[SilkConstants.MAX_NB_SUBFR];
             
             /* weighting for weighted least squares */
             min_gain_Q16 = int.MaxValue >> 6;
@@ -86,33 +85,32 @@ namespace Concentus.Silk
                 local_gains[i] = Inlines.silk_DIV32(((int)1 << 16), invGains_Q16[i]);
             }
 
-            LPC_in_pre = new short[psEnc.nb_subfr * psEnc.predictLPCOrder + psEnc.frame_length];
+            Span<short> LPC_in_pre = stackalloc short[psEnc.nb_subfr * psEnc.predictLPCOrder + psEnc.frame_length];
             if (psEnc.indices.signalType == SilkConstants.TYPE_VOICED)
             {
-                int[] WLTP;
 
                 /**********/
                 /* VOICED */
                 /**********/
                 Inlines.OpusAssert(psEnc.ltp_mem_length - psEnc.predictLPCOrder >= psEncCtrl.pitchL[0] + SilkConstants.LTP_ORDER / 2);
 
-                WLTP = new int[psEnc.nb_subfr * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER];
+                Span<int> WLTP = stackalloc int[psEnc.nb_subfr * SilkConstants.LTP_ORDER * SilkConstants.LTP_ORDER];
 
                 /* LTP analysis */
-                BoxedValueInt boxed_codgain = new BoxedValueInt(psEncCtrl.LTPredCodGain_Q7);
-                FindLTP.silk_find_LTP(psEncCtrl.LTPCoef_Q14, WLTP, boxed_codgain,
+                int boxed_codgain = psEncCtrl.LTPredCodGain_Q7;
+                FindLTP.silk_find_LTP(psEncCtrl.LTPCoef_Q14, WLTP, ref boxed_codgain,
                     res_pitch, psEncCtrl.pitchL, Wght_Q15, psEnc.subfr_length,
                     psEnc.nb_subfr, psEnc.ltp_mem_length, LTP_corrs_rshift);
-                psEncCtrl.LTPredCodGain_Q7 = boxed_codgain.Val;
+                psEncCtrl.LTPredCodGain_Q7 = boxed_codgain;
 
                 /* Quantize LTP gain parameters */
-                BoxedValueSbyte boxed_periodicity = new BoxedValueSbyte(psEnc.indices.PERIndex);
-                BoxedValueInt boxed_gain = new BoxedValueInt(psEnc.sum_log_gain_Q7);
-                QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex, boxed_periodicity,
-                    boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr
+                sbyte boxed_periodicity = psEnc.indices.PERIndex;
+                int boxed_gain = psEnc.sum_log_gain_Q7;
+                QuantizeLTPGains.silk_quant_LTP_gains(psEncCtrl.LTPCoef_Q14, psEnc.indices.LTPIndex, ref boxed_periodicity,
+                    ref boxed_gain, WLTP, psEnc.mu_LTP_Q9, psEnc.LTPQuantLowComplexity, psEnc.nb_subfr
                     );
-                psEnc.indices.PERIndex = boxed_periodicity.Val;
-                psEnc.sum_log_gain_Q7 = boxed_gain.Val;
+                psEnc.indices.PERIndex = boxed_periodicity;
+                psEnc.sum_log_gain_Q7 = boxed_gain;
 
                 /* Control LTP scaling */
                 LTPScaleControl.silk_LTP_scale_ctrl(psEnc, psEncCtrl, condCoding);

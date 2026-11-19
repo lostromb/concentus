@@ -49,15 +49,15 @@ namespace Concentus.Silk
         )
         {
             int i, k, Ix;
-            short[] pNLSF_Q15 = new short[psDec.LPC_order];
-            short[] pNLSF0_Q15 = new short[psDec.LPC_order];
+            Span<short> pNLSF_Q15 = stackalloc short[psDec.LPC_order];
+            Span<short> pNLSF0_Q15 = stackalloc short[psDec.LPC_order];
             sbyte[][] cbk_ptr_Q7;
 
             /* Dequant Gains */
-            BoxedValueSbyte boxedLastGainIndex = new BoxedValueSbyte(psDec.LastGainIndex);
+            sbyte boxedLastGainIndex = psDec.LastGainIndex;
             GainQuantization.silk_gains_dequant(psDecCtrl.Gains_Q16, psDec.indices.GainsIndices,
-                boxedLastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psDec.nb_subfr);
-            psDec.LastGainIndex = boxedLastGainIndex.Val;
+                ref boxedLastGainIndex, condCoding == SilkConstants.CODE_CONDITIONALLY ? 1 : 0, psDec.nb_subfr);
+            psDec.LastGainIndex = boxedLastGainIndex;
 
             /****************/
             /* Decode NLSFs */

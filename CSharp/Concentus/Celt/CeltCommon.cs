@@ -42,6 +42,7 @@ namespace Concentus.Celt
     using Concentus.Enums;
     using System;
     using System.Diagnostics;
+    using System.Numerics;
 
     internal class CeltCommon
     {
@@ -166,7 +167,6 @@ namespace Concentus.Celt
                                   out int tf_estimate, out int tf_chan)
         {
             int i;
-            int[] tmp;
             int mem0, mem1;
             int is_transient = 0;
             int mask_metric = 0;
@@ -174,7 +174,7 @@ namespace Concentus.Celt
             int tf_max;
             int len2;
             tf_chan = 0;
-            tmp = new int[len];
+            Span<int> tmp = stackalloc int[len];
 
             len2 = len / 2;
             for (c = 0; c < C; c++)
@@ -284,7 +284,7 @@ namespace Concentus.Celt
         {
             int i, c;
             int mean_diff = 0;
-            int[] spread_old = new int[26];
+            Span<int> spread_old = stackalloc int[26];
             /* Apply an aggressive (-6 dB/Bark) spreading function to the old frame to
                avoid false detection caused by irrelevant bands */
             if (C == 1)
@@ -424,7 +424,7 @@ namespace Concentus.Celt
         }
 
         internal static void celt_preemphasis(short[] pcmp, Span<int> inp, int inp_ptr,
-                                int N, int CC, int upsample, int[] coef, BoxedValueInt mem, int clip)
+                                int N, int CC, int upsample, int[] coef, ref int mem, int clip)
         {
             int i;
             int coef0;
@@ -432,7 +432,7 @@ namespace Concentus.Celt
             int Nu;
 
             coef0 = coef[0];
-            m = mem.Val;
+            m = mem;
 
             /* Fast path for the normal 48kHz case and no clipping */
             if (coef[1] == 0 && upsample == 1 && clip == 0)
@@ -445,7 +445,7 @@ namespace Concentus.Celt
                     inp[inp_ptr + i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                     m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
                 }
-                mem.Val = m;
+                mem = m;
                 return;
             }
 
@@ -467,15 +467,23 @@ namespace Concentus.Celt
                 m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
             }
 
-            mem.Val = m;
+            mem = m;
         }
 
-        internal static int l1_metric(int[] tmp, int N, int LM, int bias)
+        internal static int l1_metric(Span<int> tmp, int N, int LM, int bias)
         {
-            int i;
+            int i = 0;
             int L1;
             L1 = 0;
-            for (i = 0; i < N; i++)
+            if (Vector.IsHardwareAccelerated && N >= Vector<int>.Count)
+            {
+                // Vector.Abs wraps as ABS32 does; wrapping sums of any order are the same
+                Vector<int> acc = Vector<int>.Zero;
+                for (; i <= N - Vector<int>.Count; i += Vector<int>.Count)
+                    acc += Vector.Abs(System.Runtime.InteropServices.MemoryMarshal.Read<Vector<int>>(System.Runtime.InteropServices.MemoryMarshal.AsBytes(tmp.Slice(i))));
+                L1 = Vector.Dot(acc, Vector<int>.One);
+            }
+            for (; i < N; i++)
             {
                 L1 += Inlines.EXTEND32(Inlines.ABS32(tmp[i]));
             }
@@ -491,15 +499,10 @@ namespace Concentus.Celt
               out int tf_sum, int tf_estimate, int tf_chan)
         {
             int i;
-            int[] metric;
             int cost0;
             int cost1;
-            int[] path0;
-            int[] path1;
-            int[] tmp;
-            int[] tmp_1;
             int sel;
-            int[] selcost = new int[2];
+            Span<int> selcost = stackalloc int[2];
             int tf_select = 0;
             int bias;
 
@@ -507,11 +510,11 @@ namespace Concentus.Celt
             bias = Inlines.MULT16_16_Q14(((short)(0.5 + (.04f) * (((int)1) << (15))))/*Inlines.QCONST16(.04f, 15)*/, Inlines.MAX16((short)(0 - ((short)(0.5 + (.25f) * (((int)1) << (14))))/*Inlines.QCONST16(.25f, 14)*/), (((short)(0.5 + (.5f) * (((int)1) << (14))))/*Inlines.QCONST16(.5f, 14)*/ - tf_estimate)));
             /*printf("%f ", bias);*/
 
-            metric = new int[len];
-            tmp = new int[(m.eBands[len] - m.eBands[len - 1]) << LM];
-            tmp_1 = new int[(m.eBands[len] - m.eBands[len - 1]) << LM];
-            path0 = new int[len];
-            path1 = new int[len];
+            Span<int> metric = stackalloc int[len];
+            Span<int> tmp = stackalloc int[(m.eBands[len] - m.eBands[len - 1]) << LM];
+            Span<int> tmp_1 = stackalloc int[(m.eBands[len] - m.eBands[len - 1]) << LM];
+            Span<int> path0 = stackalloc int[len];
+            Span<int> path1 = stackalloc int[len];
 
             tf_sum = 0;
             for (i = 0; i < len; i++)
@@ -878,8 +881,9 @@ namespace Concentus.Celt
             int i, c;
             int tot_boost = 0;
             int maxDepth;
-            int[][] follower = Arrays.InitTwoDimensionalArray<int>(2, nbEBands);
-            int[] noise_floor = new int[C * nbEBands]; // opt: partitioned array
+            Span<int> follower0 = stackalloc int[nbEBands];
+            Span<int> follower1 = stackalloc int[nbEBands];
+            Span<int> noise_floor = stackalloc int[C * nbEBands]; // opt: partitioned array
 
             Arrays.MemSetInt(offsets, 0, nbEBands);
             /* Dynamic allocation code */
@@ -905,7 +909,7 @@ namespace Concentus.Celt
                 {
                     int offset;
                     int tmp;
-                    int[] f = follower[c];
+                    Span<int> f = c == 0 ? follower0 : follower1;
                     f[0] = bandLogE2[c][0];
                     for (i = 1; i < end; i++)
                     {
@@ -940,24 +944,24 @@ namespace Concentus.Celt
                     for (i = start; i < end; i++)
                     {
                         /* Consider 24 dB "cross-talk" */
-                        follower[1][i] = Inlines.MAX16(follower[1][i], follower[0][i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
-                        follower[0][i] = Inlines.MAX16(follower[0][i], follower[1][i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
-                        follower[0][i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[0][i] - follower[0][i]) + Inlines.MAX16(0, bandLogE[1][i] - follower[1][i]));
+                        follower1[i] = Inlines.MAX16(follower1[i], follower0[i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
+                        follower0[i] = Inlines.MAX16(follower0[i], follower1[i] - ((short)(0.5 + (4.0f) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4.0f, CeltConstants.DB_SHIFT)*/);
+                        follower0[i] = Inlines.HALF16(Inlines.MAX16(0, bandLogE[0][i] - follower0[i]) + Inlines.MAX16(0, bandLogE[1][i] - follower1[i]));
                     }
                 }
                 else {
                     for (i = start; i < end; i++)
                     {
-                        follower[0][i] = Inlines.MAX16(0, bandLogE[0][i] - follower[0][i]);
+                        follower0[i] = Inlines.MAX16(0, bandLogE[0][i] - follower0[i]);
                     }
                 }
                 for (i = start; i < end; i++)
-                    follower[0][i] = Inlines.MAX16(follower[0][i], surround_dynalloc[i]);
+                    follower0[i] = Inlines.MAX16(follower0[i], surround_dynalloc[i]);
                 /* For non-transient CBR/CVBR frames, halve the dynalloc contribution */
                 if ((vbr == 0 || constrained_vbr != 0) && isTransient == 0)
                 {
                     for (i = start; i < end; i++)
-                        follower[0][i] = Inlines.HALF16(follower[0][i]);
+                        follower0[i] = Inlines.HALF16(follower0[i]);
                 }
                 for (i = start; i < end; i++)
                 {
@@ -966,24 +970,24 @@ namespace Concentus.Celt
                     int boost_bits;
 
                     if (i < 8)
-                        follower[0][i] *= 2;
+                        follower0[i] *= 2;
                     if (i >= 12)
-                        follower[0][i] = Inlines.HALF16(follower[0][i]);
-                    follower[0][i] = Inlines.MIN16(follower[0][i], ((short)(0.5 + (4) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4, CeltConstants.DB_SHIFT)*/);
+                        follower0[i] = Inlines.HALF16(follower0[i]);
+                    follower0[i] = Inlines.MIN16(follower0[i], ((short)(0.5 + (4) * (((int)1) << (CeltConstants.DB_SHIFT))))/*Inlines.QCONST16(4, CeltConstants.DB_SHIFT)*/);
 
                     width = C * (eBands[i + 1] - eBands[i]) << LM;
                     if (width < 6)
                     {
-                        boost = (int)Inlines.SHR32((follower[0][i]), CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower0[i]), CeltConstants.DB_SHIFT);
                         boost_bits = boost * width << EntropyCoder.BITRES;
                     }
                     else if (width > 48)
                     {
-                        boost = (int)Inlines.SHR32((follower[0][i]) * 8, CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower0[i]) * 8, CeltConstants.DB_SHIFT);
                         boost_bits = (boost * width << EntropyCoder.BITRES) / 8;
                     }
                     else {
-                        boost = (int)Inlines.SHR32((follower[0][i]) * width / 6, CeltConstants.DB_SHIFT);
+                        boost = (int)Inlines.SHR32((follower0[i]) * width / 6, CeltConstants.DB_SHIFT);
                         boost_bits = boost * 6 << EntropyCoder.BITRES;
                     }
                     /* For CBR and non-transient CVBR frames, limit dynalloc to 1/4 of the bits */
@@ -1022,7 +1026,7 @@ namespace Concentus.Celt
                 return;
             }
 
-            int[] scratch = new int[N];
+            Span<int> scratch = stackalloc int[N];
             coef0 = coef[0];
             Nd = N / downsample;
             c = 0; do
@@ -1130,12 +1134,11 @@ namespace Concentus.Celt
             int shift;
             int nbEBands;
             int overlap;
-            int[] freq;
 
             overlap = mode.overlap;
             nbEBands = mode.nbEBands;
             N = mode.shortMdctSize << LM;
-            freq = new int[N]; /*< Interleaved signal MDCTs */
+            Span<int> freq = stackalloc int[N]; /*< Interleaved signal MDCTs */
             M = 1 << LM;
 
             if (isTransient != 0)
@@ -1233,7 +1236,7 @@ namespace Concentus.Celt
         internal static int celt_plc_pitch_search(int[][] decode_mem, int C)
         {
             int pitch_index;
-            int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
+            Span<int> lp_pitch_buf = stackalloc int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
             Pitch.pitch_downsample(decode_mem, lp_pitch_buf,
                   CeltConstants.DECODE_BUFFER_SIZE, C);
             Pitch.pitch_search(lp_pitch_buf, CeltConstants.PLC_PITCH_LAG_MAX >> 1, lp_pitch_buf,
@@ -1272,17 +1275,44 @@ namespace Concentus.Celt
             return ret;
         }
 
+#if NET7_0_OR_GREATER
+        /// <summary>
+        /// Inlines.MULT16_32_Q15 of each lane: the same 32-bit operations, so the same results
+        /// </summary>
+        private static Vector<int> MULT16_32_Q15(Vector<int> a, Vector<int> b)
+        {
+            return Vector.ShiftLeft(a * Vector.ShiftRightArithmetic(b, 16), 1) + Vector.ShiftRightArithmetic(a * (b & new Vector<int>(0xFFFF)), 15);
+        }
+#endif
+
         internal static void comb_filter_const(Span<int> y, int y_ptr, Span<int> x, int x_ptr, int T, int N,
               int g10, int g11, int g12)
         {
             int x0, x1, x2, x3, x4;
             int i;
             int xpt = x_ptr - T;
-            x4 = x[xpt - 2];
-            x3 = x[xpt - 1];
-            x2 = x[xpt];
-            x1 = x[xpt + 1];
-            for (i = 0; i < N; i++)
+            i = 0;
+#if NET7_0_OR_GREATER
+            // y may be x: a block of lanes reads x only T - 2 or more back, before the block, written as
+            // the scalar loop has written it - so lanes no more than T - 2 (T is at least COMBFILTER_MINPERIOD)
+            if (Vector.IsHardwareAccelerated && Vector<int>.Count <= T - 2)
+            {
+                Vector<int> vg10 = new Vector<int>(g10), vg11 = new Vector<int>(g11), vg12 = new Vector<int>(g12);
+                for (; i <= N - Vector<int>.Count; i += Vector<int>.Count)
+                {
+                    Vector<int> v = new Vector<int>(x.Slice(x_ptr + i))
+                        + MULT16_32_Q15(vg10, new Vector<int>(x.Slice(xpt + i)))
+                        + MULT16_32_Q15(vg11, new Vector<int>(x.Slice(xpt + i + 1)) + new Vector<int>(x.Slice(xpt + i - 1)))
+                        + MULT16_32_Q15(vg12, new Vector<int>(x.Slice(xpt + i + 2)) + new Vector<int>(x.Slice(xpt + i - 2)));
+                    v.CopyTo(y.Slice(y_ptr + i));
+                }
+            }
+#endif
+            x4 = x[xpt + i - 2];
+            x3 = x[xpt + i - 1];
+            x2 = x[xpt + i];
+            x1 = x[xpt + i + 1];
+            for (; i < N; i++)
             {
                 x0 = x[xpt + i + 2];
                 y[y_ptr + i] = x[x_ptr + i]

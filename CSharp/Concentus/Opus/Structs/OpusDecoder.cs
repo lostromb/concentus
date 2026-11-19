@@ -81,6 +81,18 @@ namespace Concentus.Structs
         internal SilkDecoder SilkDecoder = new SilkDecoder();
         internal CeltDecoder Celt_Decoder = new CeltDecoder();
 
+        /// <summary>
+        /// The temporaries of opus_decode_frame, kept: a frame allocates nothing. One of each nesting,
+        /// as it calls itself for the PLC of a transition, and of a lost packet longer than 20 ms
+        /// </summary>
+        private class FrameScratch
+        {
+            internal readonly EntropyCoder dec = new EntropyCoder();
+            internal short[] pcm_silk, pcm_transition_silk, pcm_transition_celt, redundant_audio;
+        }
+        private readonly FrameScratch[] s_frame = { new FrameScratch(), new FrameScratch(), new FrameScratch() };
+        private short[] s_output;
+
         // Used by multistream decoder
         internal OpusDecoder() { }
 
@@ -196,12 +208,14 @@ namespace Concentus.Structs
         private static readonly byte[] SILENCE = { 0xFF, 0xFF };
 
         internal int opus_decode_frame(ReadOnlySpan<byte> data, int data_ptr,
-      int len, Span<short> pcm, int pcm_ptr, int frame_size, int decode_fec)
+      int len, Span<short> pcm, int pcm_ptr, int frame_size, int decode_fec, int depth = 0)
         {
+            FrameScratch scratch = depth < s_frame.Length ? s_frame[depth] : new FrameScratch();
             SilkDecoder silk_dec;
             CeltDecoder celt_dec;
             int i, silk_ret = 0, celt_ret = 0;
-            EntropyCoder dec = new EntropyCoder(); // porting note: stack var
+            EntropyCoder dec = scratch.dec; // porting note: stack var
+            dec.Reset();
             int silk_frame_size;
             int pcm_silk_size;
             short[] pcm_silk;
@@ -272,7 +286,7 @@ namespace Concentus.Structs
                 {
                     do
                     {
-                        int ret = opus_decode_frame(null, 0, 0, pcm, pcm_ptr, Inlines.IMIN(audiosize, F20), 0);
+                        int ret = opus_decode_frame(null, 0, 0, pcm, pcm_ptr, Inlines.IMIN(audiosize, F20), 0, depth + 1);
                         if (ret < 0)
                         {
 
@@ -311,11 +325,11 @@ namespace Concentus.Structs
                 else
                     pcm_transition_silk_size = F5 * this.channels;
             }
-            pcm_transition_celt = new short[pcm_transition_celt_size];
+            pcm_transition_celt = Arrays.Scratch(ref scratch.pcm_transition_celt, pcm_transition_celt_size);
             if (transition != 0 && mode == OpusMode.MODE_CELT_ONLY)
             {
                 pcm_transition = pcm_transition_celt;
-                opus_decode_frame(null, 0, 0, pcm_transition, 0, Inlines.IMIN(F5, audiosize), 0);
+                opus_decode_frame(null, 0, 0, pcm_transition, 0, Inlines.IMIN(F5, audiosize), 0, depth + 1);
             }
             if (audiosize > frame_size)
             {
@@ -330,7 +344,7 @@ namespace Concentus.Structs
 
             /* Don't allocate any memory when in CELT-only mode */
             pcm_silk_size = (mode != OpusMode.MODE_CELT_ONLY && (celt_accum == 0)) ? Inlines.IMAX(F10, frame_size) * this.channels : 0;
-            pcm_silk = new short[pcm_silk_size];
+            pcm_silk = Arrays.Scratch(ref scratch.pcm_silk, pcm_silk_size);
 
             /* SILK processing */
             if (mode != OpusMode.MODE_CELT_ONLY)
@@ -475,17 +489,17 @@ namespace Concentus.Structs
                 pcm_transition_silk_size = 0;
             }
 
-            pcm_transition_silk = new short[pcm_transition_silk_size];
+            pcm_transition_silk = Arrays.Scratch(ref scratch.pcm_transition_silk, pcm_transition_silk_size);
 
             if (transition != 0 && mode != OpusMode.MODE_CELT_ONLY)
             {
                 pcm_transition = pcm_transition_silk;
-                opus_decode_frame(null, 0, 0, pcm_transition, 0, Inlines.IMIN(F5, audiosize), 0);
+                opus_decode_frame(null, 0, 0, pcm_transition, 0, Inlines.IMIN(F5, audiosize), 0, depth + 1);
             }
 
             /* Only allocation memory for redundancy if/when needed */
             redundant_audio_size = redundancy != 0 ? F5 * this.channels : 0;
-            redundant_audio = new short[redundant_audio_size];
+            redundant_audio = Arrays.Scratch(ref scratch.redundant_audio, redundant_audio_size);
 
             /* 5 ms redundant frame for CELT->SILK*/
             if (redundancy != 0 && celt_to_silk != 0)
@@ -613,7 +627,7 @@ namespace Concentus.Structs
             OpusMode packet_mode;
             /* 48 x 2.5 ms = 120 ms */
             // fixme: make sure these values can fit in an int16
-            short[] size = new short[48];
+            Span<short> size = stackalloc short[48];
             if (decode_fec < 0 || decode_fec > 1)
                 return OpusError.OPUS_BAD_ARG;
             /* For FEC/PLC, frame_size has to be to have a multiple of 2.5 ms */
@@ -860,7 +874,7 @@ namespace Concentus.Structs
                 else
                     throw new OpusException("An invalid packet was provided (unable to parse # of samples)", OpusError.OPUS_INVALID_PACKET);
             }
-            output = new short[frame_size * this.channels];
+            output = Arrays.Scratch(ref this.s_output, frame_size * this.channels);
 
             try
             {

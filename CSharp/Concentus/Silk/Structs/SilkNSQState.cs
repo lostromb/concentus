@@ -56,6 +56,9 @@ namespace Concentus.Silk.Structs
         internal int prev_gain_Q16 = 0;
         internal int rewhite_flag = 0;
 
+        // the delayed decision states of silk_NSQ_del_dec, kept: a frame allocates nothing
+        private NSQ_del_dec_struct[] s_psDelDec;
+
         internal void Reset()
         {
             Arrays.MemSetShort(xq, 0, 2 * SilkConstants.MAX_FRAME_LENGTH);
@@ -106,6 +109,27 @@ namespace Concentus.Silk.Structs
                 sAR2_Q14 = new int[shapingOrder];
             }
 
+            /// <summary>
+            /// As new NSQ_del_dec_struct(shapingOrder)
+            /// </summary>
+            internal void Reset(int shapingOrder)
+            {
+                Array.Clear(sLPC_Q14, 0, sLPC_Q14.Length);
+                Array.Clear(RandState, 0, RandState.Length);
+                Array.Clear(Q_Q10, 0, Q_Q10.Length);
+                Array.Clear(Xq_Q14, 0, Xq_Q14.Length);
+                Array.Clear(Pred_Q15, 0, Pred_Q15.Length);
+                Array.Clear(Shape_Q14, 0, Shape_Q14.Length);
+                if (sAR2_Q14.Length != shapingOrder)
+                    sAR2_Q14 = new int[shapingOrder];
+                else
+                    Array.Clear(sAR2_Q14, 0, sAR2_Q14.Length);
+                LF_AR_Q14 = 0;
+                Seed = 0;
+                SeedInit = 0;
+                RD_Q10 = 0;
+            }
+
             internal void PartialCopyFrom(NSQ_del_dec_struct other, int q14Offset)
             {
                 Buffer.BlockCopy(other.sLPC_Q14, q14Offset * sizeof(int), sLPC_Q14, q14Offset * sizeof(int), (SilkConstants.MAX_SUB_FRAME_LENGTH + SilkConstants.NSQ_LPC_BUF_LENGTH - q14Offset) * sizeof(int));
@@ -151,7 +175,7 @@ namespace Concentus.Silk.Structs
             (
                 SilkChannelEncoder psEncC,                                    /* I/O  Encoder State                   */
                 SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
-                int[] x_Q3,                                     /* I    Prefiltered input signal        */
+                Span<int> x_Q3,                                     /* I    Prefiltered input signal        */
                 sbyte[] pulses,                                   /* O    Quantized pulse signal          */
                 short[][] PredCoef_Q12,          /* I    Short term prediction coefs [2][SilkConstants.MAX_LPC_ORDER]    */
                 short[] LTPCoef_Q14,    /* I    Long term prediction coefs [SilkConstants.LTP_ORDER * MAX_NB_SUBFR]     */
@@ -168,11 +192,8 @@ namespace Concentus.Silk.Structs
             int k, lag, start_idx, LSF_interpolation_flag;
             int A_Q12, B_Q14, AR_shp_Q13;
             int pxq;
-            int[] sLTP_Q15;
-            short[] sLTP;
             int HarmShapeFIRPacked_Q14;
             int offset_Q10;
-            int[] x_sc_Q10;
             int pulses_ptr = 0;
             int x_Q3_ptr = 0;
 
@@ -193,9 +214,9 @@ namespace Concentus.Silk.Structs
                 LSF_interpolation_flag = 1;
             }
 
-            sLTP_Q15 = new int[psEncC.ltp_mem_length + psEncC.frame_length];
-            sLTP = new short[psEncC.ltp_mem_length + psEncC.frame_length];
-            x_sc_Q10 = new int[psEncC.subfr_length];
+            Span<int> sLTP_Q15 = stackalloc int[psEncC.ltp_mem_length + psEncC.frame_length];
+            Span<short> sLTP = stackalloc short[psEncC.ltp_mem_length + psEncC.frame_length];
+            Span<int> x_sc_Q10 = stackalloc int[psEncC.subfr_length];
             /* Set up pointers to start of sub frame */
             this.sLTP_shp_buf_idx = psEncC.ltp_mem_length;
             this.sLTP_buf_idx = psEncC.ltp_mem_length;
@@ -276,12 +297,12 @@ namespace Concentus.Silk.Structs
         /***********************************/
         private void silk_noise_shape_quantizer(
                 int signalType,             /* I    Signal type                     */
-                int[] x_sc_Q10,             /* I [length]                                   */
+                Span<int> x_sc_Q10,             /* I [length]                                   */
                 sbyte[] pulses,               /* O [length]                                    */
                 int pulses_ptr,
                 short[] xq,                   /* O [length]                                    */
                 int xq_ptr,
-                int[] sLTP_Q15,             /* I/O  LTP state                       */
+                Span<int> sLTP_Q15,             /* I/O  LTP state                       */
                 short[] a_Q12,                /* I    Short term prediction coefs     */
                 short[] b_Q14,                /* I    Long term prediction coefs      */
                 int b_Q14_ptr,
@@ -495,11 +516,11 @@ namespace Concentus.Silk.Structs
 
         private void silk_nsq_scale_states(
                 SilkChannelEncoder psEncC,           /* I    Encoder State                   */
-                int[] x_Q3,                 /* I    input in Q3                     */
+                Span<int> x_Q3,                 /* I    input in Q3                     */
                 int x_Q3_ptr,
-                int[] x_sc_Q10,             /* O    input scaled with 1/Gain        */
-                short[] sLTP,                 /* I    re-whitened LTP state in Q0     */
-                int[] sLTP_Q15,             /* O    LTP state matching scaled input */
+                Span<int> x_sc_Q10,             /* O    input scaled with 1/Gain        */
+                Span<short> sLTP,                 /* I    re-whitened LTP state in Q0     */
+                Span<int> sLTP_Q15,             /* O    LTP state matching scaled input */
                 int subfr,                  /* I    subframe number                 */
                 int LTP_scale_Q14,          /* I                                    */
                 int[] Gains_Q16, /* I [MAX_NB_SUBFR]                                */
@@ -583,7 +604,7 @@ namespace Concentus.Silk.Structs
         internal void silk_NSQ_del_dec(
             SilkChannelEncoder psEncC,                                    /* I  Encoder State                   */
             SideInfoIndices psIndices,                                 /* I/O  Quantization Indices            */
-            int[] x_Q3,                                     /* I    Prefiltered input signal        */
+            Span<int> x_Q3,                                     /* I    Prefiltered input signal        */
             sbyte[] pulses,                                   /* O    Quantized pulse signal          */
             short[][] PredCoef_Q12,          /* I    Short term prediction coefs [2 * MAX_LPC_ORDER]    */
             short[] LTPCoef_Q14,    /* I    Long term prediction coefs LTP_ORDER * MAX_NB_SUBFR]     */
@@ -602,13 +623,9 @@ namespace Concentus.Silk.Structs
             int A_Q12;
             int pulses_ptr = 0;
             int pxq;
-            int[] sLTP_Q15;
-            short[] sLTP;
             int HarmShapeFIRPacked_Q14;
             int offset_Q10;
             int RDmin_Q10, Gain_Q10;
-            int[] x_sc_Q10;
-            int[] delayedGain_Q10;
             int x_Q3_ptr = 0;
             NSQ_del_dec_struct[] psDelDec;
             NSQ_del_dec_struct psDD;
@@ -618,12 +635,19 @@ namespace Concentus.Silk.Structs
 
             Inlines.OpusAssert(this.prev_gain_Q16 != 0);
 
-            /* Initialize delayed decision states */
-            psDelDec = new NSQ_del_dec_struct[psEncC.nStatesDelayedDecision];
-            for (int c = 0; c < psEncC.nStatesDelayedDecision; c++)
+            /* Initialize delayed decision states: kept, each as new */
+            if (this.s_psDelDec == null || this.s_psDelDec.Length != psEncC.nStatesDelayedDecision)
             {
-                psDelDec[c] = new NSQ_del_dec_struct(psEncC.shapingLPCOrder);
+                this.s_psDelDec = new NSQ_del_dec_struct[psEncC.nStatesDelayedDecision];
+                for (int c = 0; c < psEncC.nStatesDelayedDecision; c++)
+                    this.s_psDelDec[c] = new NSQ_del_dec_struct(psEncC.shapingLPCOrder);
             }
+            else
+            {
+                for (int c = 0; c < psEncC.nStatesDelayedDecision; c++)
+                    this.s_psDelDec[c].Reset(psEncC.shapingLPCOrder);
+            }
+            psDelDec = this.s_psDelDec;
 
             for (k = 0; k < psEncC.nStatesDelayedDecision; k++)
             {
@@ -665,10 +689,10 @@ namespace Concentus.Silk.Structs
                 LSF_interpolation_flag = 1;
             }
 
-            sLTP_Q15 = new int[psEncC.ltp_mem_length + psEncC.frame_length];
-            sLTP = new short[psEncC.ltp_mem_length + psEncC.frame_length];
-            x_sc_Q10 = new int[psEncC.subfr_length];
-            delayedGain_Q10 = new int[SilkConstants.DECISION_DELAY];
+            Span<int> sLTP_Q15 = stackalloc int[psEncC.ltp_mem_length + psEncC.frame_length];
+            Span<short> sLTP = stackalloc short[psEncC.ltp_mem_length + psEncC.frame_length];
+            Span<int> x_sc_Q10 = stackalloc int[psEncC.subfr_length];
+            Span<int> delayedGain_Q10 = stackalloc int[SilkConstants.DECISION_DELAY];
 
             /* Set up pointers to start of sub frame */
             pxq = psEncC.ltp_mem_length;
@@ -759,7 +783,7 @@ namespace Concentus.Silk.Structs
                     psIndices.signalType,
                     decisionDelay);
 
-                BoxedValueInt smpl_buf_idx_boxed = new BoxedValueInt(smpl_buf_idx);
+                int smpl_buf_idx_boxed = smpl_buf_idx;
                 silk_noise_shape_quantizer_del_dec(
                     psDelDec,
                     psIndices.signalType,
@@ -788,10 +812,10 @@ namespace Concentus.Silk.Structs
                     psEncC.predictLPCOrder,
                     psEncC.warping_Q16,
                     psEncC.nStatesDelayedDecision,
-                    smpl_buf_idx_boxed,
+                    ref smpl_buf_idx_boxed,
                     decisionDelay);
 
-                smpl_buf_idx = smpl_buf_idx_boxed.Val;
+                smpl_buf_idx = smpl_buf_idx_boxed;
 
                 x_Q3_ptr += psEncC.subfr_length;
                 pulses_ptr += psEncC.subfr_length;
@@ -842,13 +866,13 @@ namespace Concentus.Silk.Structs
         private void silk_noise_shape_quantizer_del_dec(
             NSQ_del_dec_struct[] psDelDec,             /* I/O  Delayed decision states             */
             int signalType,             /* I    Signal type                         */
-            int[] x_Q10,                /* I                                        */
+            Span<int> x_Q10,                /* I                                        */
             sbyte[] pulses,               /* O                                        */
             int pulses_ptr,
             short[] xq,                   /* O                                        */
             int xq_ptr,
-            int[] sLTP_Q15,             /* I/O  LTP filter state                    */
-            int[] delayedGain_Q10,      /* I/O  Gain delay buffer                   */
+            Span<int> sLTP_Q15,             /* I/O  LTP filter state                    */
+            Span<int> delayedGain_Q10,      /* I/O  Gain delay buffer                   */
             short[] a_Q12,                /* I    Short term prediction coefs         */
             short[] b_Q14,                /* I    Long term prediction coefs          */
             int b_Q14_ptr,
@@ -867,7 +891,7 @@ namespace Concentus.Silk.Structs
             int predictLPCOrder,        /* I    Prediction filter order             */
             int warping_Q16,            /* I                                        */
             int nStatesDelayedDecision, /* I    Number of states in decision tree   */
-            BoxedValueInt smpl_buf_idx,          /* I    Index to newest samples in buffers  */
+            ref int smpl_buf_idx,          /* I    Index to newest samples in buffers  */
             int decisionDelay           /* I                                        */
         )
         {
@@ -878,18 +902,12 @@ namespace Concentus.Silk.Structs
             int q1_Q0, q1_Q10, q2_Q10, exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
             int tmp1, tmp2, sLF_AR_shp_Q14;
             int pred_lag_ptr, shp_lag_ptr, psLPC_Q14;
-            NSQ_sample_struct[] sampleStates;
             NSQ_del_dec_struct psDD;
             int SS_left;
             int SS_right;
 
             Inlines.OpusAssert(nStatesDelayedDecision > 0);
-            sampleStates = new NSQ_sample_struct[2 * nStatesDelayedDecision];
-            // [porting note] structs must be initialized manually here
-            for (int c = 0; c < 2 * nStatesDelayedDecision; c++)
-            {
-                sampleStates[c] = new NSQ_sample_struct();
-            }
+            Span<NSQ_sample_struct> sampleStates = stackalloc NSQ_sample_struct[2 * nStatesDelayedDecision];
 
             shp_lag_ptr = this.sLTP_shp_buf_idx - lag + SilkConstants.HARM_SHAPE_FIR_TAPS / 2;
             pred_lag_ptr = this.sLTP_buf_idx - lag + SilkConstants.LTP_ORDER / 2;
@@ -999,7 +1017,7 @@ namespace Concentus.Silk.Structs
                     n_AR_Q14 = Inlines.silk_SMLAWB(n_AR_Q14, psDD.LF_AR_Q14, Tilt_Q14);              /* Q12 */
                     n_AR_Q14 = Inlines.silk_LSHIFT(n_AR_Q14, 2);                                      /* Q12 . Q14 */
 
-                    n_LF_Q14 = Inlines.silk_SMULWB(psDD.Shape_Q14[smpl_buf_idx.Val], LF_shp_Q14);     /* Q12 */
+                    n_LF_Q14 = Inlines.silk_SMULWB(psDD.Shape_Q14[smpl_buf_idx], LF_shp_Q14);     /* Q12 */
                     n_LF_Q14 = Inlines.silk_SMLAWT(n_LF_Q14, psDD.LF_AR_Q14, LF_shp_Q14);            /* Q12 */
                     n_LF_Q14 = Inlines.silk_LSHIFT(n_LF_Q14, 2);                                      /* Q12 . Q14 */
 
@@ -1112,8 +1130,8 @@ namespace Concentus.Silk.Structs
                     sampleStates[SS_right].xq_Q14 = xq_Q14;
                 }
 
-                smpl_buf_idx.Val = (smpl_buf_idx.Val - 1) & SilkConstants.DECISION_DELAY_MASK;                   /* Index to newest samples              */
-                last_smple_idx = (smpl_buf_idx.Val + decisionDelay) & SilkConstants.DECISION_DELAY_MASK;       /* Index to decisionDelay old samples   */
+                smpl_buf_idx = (smpl_buf_idx - 1) & SilkConstants.DECISION_DELAY_MASK;                   /* Index to newest samples              */
+                last_smple_idx = (smpl_buf_idx + decisionDelay) & SilkConstants.DECISION_DELAY_MASK;       /* Index to decisionDelay old samples   */
 
                 /* Find winner */
                 RDmin_Q10 = sampleStates[0].RD_Q10;
@@ -1189,15 +1207,15 @@ namespace Concentus.Silk.Structs
                     SS_left = k * 2;
                     psDD.LF_AR_Q14 = sampleStates[SS_left].LF_AR_Q14;
                     psDD.sLPC_Q14[SilkConstants.NSQ_LPC_BUF_LENGTH + i] = sampleStates[SS_left].xq_Q14;
-                    psDD.Xq_Q14[smpl_buf_idx.Val] = sampleStates[SS_left].xq_Q14;
-                    psDD.Q_Q10[smpl_buf_idx.Val] = sampleStates[SS_left].Q_Q10;
-                    psDD.Pred_Q15[smpl_buf_idx.Val] = Inlines.silk_LSHIFT32(sampleStates[SS_left].LPC_exc_Q14, 1);
-                    psDD.Shape_Q14[smpl_buf_idx.Val] = sampleStates[SS_left].sLTP_shp_Q14;
+                    psDD.Xq_Q14[smpl_buf_idx] = sampleStates[SS_left].xq_Q14;
+                    psDD.Q_Q10[smpl_buf_idx] = sampleStates[SS_left].Q_Q10;
+                    psDD.Pred_Q15[smpl_buf_idx] = Inlines.silk_LSHIFT32(sampleStates[SS_left].LPC_exc_Q14, 1);
+                    psDD.Shape_Q14[smpl_buf_idx] = sampleStates[SS_left].sLTP_shp_Q14;
                     psDD.Seed = Inlines.silk_ADD32_ovflw(psDD.Seed, Inlines.silk_RSHIFT_ROUND(sampleStates[SS_left].Q_Q10, 10));
-                    psDD.RandState[smpl_buf_idx.Val] = psDD.Seed;
+                    psDD.RandState[smpl_buf_idx] = psDD.Seed;
                     psDD.RD_Q10 = sampleStates[SS_left].RD_Q10;
                 }
-                delayedGain_Q10[smpl_buf_idx.Val] = Gain_Q10;
+                delayedGain_Q10[smpl_buf_idx] = Gain_Q10;
             }
 
             /* Update LPC states */
@@ -1211,11 +1229,11 @@ namespace Concentus.Silk.Structs
         private void silk_nsq_del_dec_scale_states(
                 SilkChannelEncoder psEncC,               /* I    Encoder State                       */
                 NSQ_del_dec_struct[] psDelDec,                 /* I/O  Delayed decision states             */
-                int[] x_Q3,                     /* I    Input in Q3                         */
+                Span<int> x_Q3,                     /* I    Input in Q3                         */
                 int x_Q3_ptr,
-                int[] x_sc_Q10,                 /* O    Input scaled with 1/Gain in Q10     */
-                short[] sLTP,                     /* I    Re-whitened LTP state in Q0         */
-                int[] sLTP_Q15,                 /* O    LTP state matching scaled input     */
+                Span<int> x_sc_Q10,                 /* O    Input scaled with 1/Gain in Q10     */
+                Span<short> sLTP,                     /* I    Re-whitened LTP state in Q0         */
+                Span<int> sLTP_Q15,                 /* O    LTP state matching scaled input     */
                 int subfr,                      /* I    Subframe number                     */
                 int nStatesDelayedDecision,     /* I    Number of del dec states            */
                 int LTP_scale_Q14,              /* I    LTP state scaling                   */

@@ -71,6 +71,7 @@ namespace Concentus.Common
     public class SpeexResampler : IResampler
     {
         private const int FIXED_STACK_ALLOC = 8192;
+        private float[] ystack_buffer;
 
         #region Encoder state
 
@@ -771,7 +772,10 @@ namespace Concentus.Common
             int x = channel_index * this.mem_alloc_size;
             int xlen = this.mem_alloc_size - (this.filt_len - 1);
             int ylen = (olen < FIXED_STACK_ALLOC) ? olen : FIXED_STACK_ALLOC;
-            float[] ystack = new float[ylen];
+            // kept, as large as the largest chunk yet: every value read of it is written of this chunk first
+            if (this.ystack_buffer == null || this.ystack_buffer.Length < ylen)
+                this.ystack_buffer = new float[ylen];
+            Span<float> ystack = this.ystack_buffer.AsSpan(0, ylen);
 
             this.out_stride = 1;
 

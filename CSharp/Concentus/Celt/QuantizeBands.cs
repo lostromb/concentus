@@ -76,7 +76,7 @@ namespace Concentus.Celt
         {
             int i, c;
             int badness = 0;
-            int[] prev = { 0, 0 };
+            Span<int> prev = stackalloc int[2];
             int coef;
             int beta;
 
@@ -171,13 +171,14 @@ namespace Concentus.Celt
         internal static void quant_coarse_energy(CeltMode m, int start, int end, int effEnd,
               int[][] eBands, int[][] oldEBands, uint budget,
               int[][] error, EntropyCoder enc, Span<byte> encodedData, int C, int LM, int nbAvailableBytes,
-              int force_intra, ref int delayedIntra, int two_pass, int loss_rate, int lfe)
+              int force_intra, ref int delayedIntra, int two_pass, int loss_rate, int lfe, CeltEncoder st)
         {
             int intra;
             int max_decay;
             int[][] oldEBands_intra;
             int[][] error_intra;
-            EntropyCoder enc_start_state = new EntropyCoder(); // [porting note] stack variable
+            // [porting note] stack variables, kept by the encoder
+            EntropyCoder enc_start_state = st.s_enc_start_state;
             uint tell;
             int badness1 = 0;
             int intra_bias;
@@ -203,8 +204,8 @@ namespace Concentus.Celt
             }
             enc_start_state.Assign(enc);
 
-            oldEBands_intra = Arrays.InitTwoDimensionalArray<int>(C, m.nbEBands);
-            error_intra = Arrays.InitTwoDimensionalArray<int>(C, m.nbEBands);
+            oldEBands_intra = Arrays.Scratch(ref st.s_oldEBands_intra, C, m.nbEBands);
+            error_intra = Arrays.Scratch(ref st.s_error_intra, C, m.nbEBands);
             Arrays.MemCopy(oldEBands[0], 0, oldEBands_intra[0], 0, m.nbEBands);
             if (C == 2)
                 Arrays.MemCopy(oldEBands[1], 0, oldEBands_intra[1], 0, m.nbEBands);
@@ -218,13 +219,12 @@ namespace Concentus.Celt
             if (intra == 0)
             {
                 int intra_buf;
-                EntropyCoder enc_intra_state = new EntropyCoder(); // [porting note] stack variable
+                EntropyCoder enc_intra_state = st.s_enc_intra_state;
                 int tell_intra;
                 uint nstart_bytes;
                 uint nintra_bytes;
                 uint save_bytes;
                 int badness2;
-                byte[] intra_bits = null;
 
                 tell_intra = (int)enc.tell_frac();
 
@@ -235,12 +235,9 @@ namespace Concentus.Celt
                 intra_buf = (int)nstart_bytes;
                 save_bytes = nintra_bytes - nstart_bytes;
 
-                if (save_bytes != 0)
-                {
-                    intra_bits = new byte[(int)save_bytes];
-                    /* Copy bits from intra bit-stream */
-                    encodedData.Slice(intra_buf, (int)save_bytes).CopyTo(intra_bits);
-                }
+                Span<byte> intra_bits = stackalloc byte[(int)save_bytes];
+                /* Copy bits from intra bit-stream */
+                encodedData.Slice(intra_buf, (int)save_bytes).CopyTo(intra_bits);
 
                 enc.Assign(enc_start_state);
 
@@ -251,10 +248,7 @@ namespace Concentus.Celt
                 {
                     enc.Assign(enc_intra_state);
                     /* Copy intra bits to bit-stream */
-                    if (intra_bits != null)
-                    {
-                        intra_bits.AsSpan(0, (int)(nintra_bytes - nstart_bytes)).CopyTo(encodedData.Slice(intra_buf));
-                    }
+                    intra_bits.Slice(0, (int)(nintra_bytes - nstart_bytes)).CopyTo(encodedData.Slice(intra_buf));
                     Arrays.MemCopy(oldEBands_intra[0], 0, oldEBands[0], 0, m.nbEBands);
                     Arrays.MemCopy(error_intra[0], 0, error[0], 0, m.nbEBands);
                     if (C == 2)
@@ -364,7 +358,7 @@ namespace Concentus.Celt
         {
             byte[] prob_model = Tables.e_prob_model[LM][intra];
             int i, c;
-            int[] prev = { 0, 0 };
+            Span<int> prev = stackalloc int[2];
             int coef;
             int beta;
             int budget;

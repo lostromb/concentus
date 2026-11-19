@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -42,16 +43,16 @@ namespace Concentus.Silk
     {
         /* Solves Ax = b, assuming A is symmetric */
         internal static void silk_solve_LDL(
-            int[] A,                                     /* I    Pointer to symetric square matrix A                                         */
+            Span<int> A,                                     /* I    Pointer to symetric square matrix A                                         */
             int A_ptr,
             int M,                                      /* I    Size of matrix                                                              */
-            int[] b,                                     /* I    Pointer to b vector                                                         */
-            int[] x_Q16                                  /* O    Pointer to x solution vector                                                */
+            Span<int> b,                                     /* I    Pointer to b vector                                                         */
+            Span<int> x_Q16                                  /* O    Pointer to x solution vector                                                */
             )
         {
             Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
-            int[] L_Q16 = new int[M * M];
-            int[] Y = new int[SilkConstants.MAX_MATRIX_SIZE];
+            Span<int> L_Q16 = stackalloc int[M * M];
+            Span<int> Y = stackalloc int[SilkConstants.MAX_MATRIX_SIZE];
 
             // [Porting note] This is an interleaved array. Formerly it was an array of data structures laid out thus:
             //private struct inv_D_t
@@ -59,7 +60,7 @@ namespace Concentus.Silk
             //    int Q36_part;
             //    int Q48_part;
             //}
-            int[] inv_D = new int[SilkConstants.MAX_MATRIX_SIZE * 2];
+            Span<int> inv_D = stackalloc int[SilkConstants.MAX_MATRIX_SIZE * 2];
             
             /***************************************************
             Factorize A by LDL such that A = L*D*L',
@@ -88,21 +89,22 @@ namespace Concentus.Silk
 
         /* Factorize square matrix A into LDL form */
         private static void silk_LDL_factorize(
-            int[] A,         /* I/O Pointer to Symetric Square Matrix                            */
+            Span<int> A,         /* I/O Pointer to Symetric Square Matrix                            */
             int A_ptr,
             int M,          /* I   Size of Matrix                                               */
-            int[] L_Q16,     /* I/O Pointer to Square Upper triangular Matrix                    */
-            int[] inv_D      /* I/O Pointer to vector holding inverted diagonal elements of D    */
+            Span<int> L_Q16,     /* I/O Pointer to Square Upper triangular Matrix                    */
+            Span<int> inv_D      /* I/O Pointer to vector holding inverted diagonal elements of D    */
         )
         {
             int i, j, k, status, loop_count;
-            int[] scratch1;
             int scratch1_ptr;
-            int[] scratch2;
             int scratch2_ptr;
             int diag_min_value, tmp_32, err;
-            int[] v_Q0 = new int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
-            int[] D_Q0 = new int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
+            Span<int> v_Q0 = stackalloc int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
+            Span<int> D_Q0 = stackalloc int[M]; /*SilkConstants.MAX_MATRIX_SIZE*/
+            // [porting note] pointers: of the stack's scope, as they point at it too
+            Span<int> scratch1 = v_Q0;
+            Span<int> scratch2 = v_Q0;
             int one_div_diag_Q36, one_div_diag_Q40, one_div_diag_Q48;
 
             Inlines.OpusAssert(M <= SilkConstants.MAX_MATRIX_SIZE);
@@ -175,8 +177,8 @@ namespace Concentus.Silk
         }
 
         private static void silk_LS_divide_Q16(
-            int[] T,        /* I/O  Numenator vector                                            */
-            int[] inv_D,     /* I    1 / D vector                                                */
+            Span<int> T,        /* I/O  Numenator vector                                            */
+            Span<int> inv_D,     /* I    1 / D vector                                                */
             int M           /* I    dimension                                                   */
         )
         {
@@ -196,10 +198,10 @@ namespace Concentus.Silk
 
         /* Solve Lx = b, when L is lower triangular and has ones on the diagonal */
         private static void silk_LS_SolveFirst(
-            int[] L_Q16,     /* I    Pointer to Lower Triangular Matrix                          */
+            Span<int> L_Q16,     /* I    Pointer to Lower Triangular Matrix                          */
             int M,          /* I    Dim of Matrix equation                                      */
-            int[] b,         /* I    b Vector                                                    */
-            int[] x_Q16      /* O    x Vector                                                    */
+            Span<int> b,         /* I    b Vector                                                    */
+            Span<int> x_Q16      /* O    x Vector                                                    */
             )
         {
             int i, j;
@@ -220,10 +222,10 @@ namespace Concentus.Silk
 
         /* Solve L^t*x = b, where L is lower triangular with ones on the diagonal */
         private static void silk_LS_SolveLast(
-            int[] L_Q16,     /* I    Pointer to Lower Triangular Matrix                          */
+            Span<int> L_Q16,     /* I    Pointer to Lower Triangular Matrix                          */
             int M,          /* I    Dim of Matrix equation                                      */
-            int[] b,         /* I    b Vector                                                    */
-            int[] x_Q16      /* O    x Vector                                                    */
+            Span<int> b,         /* I    b Vector                                                    */
+            Span<int> x_Q16      /* O    x Vector                                                    */
         )
         {
             int i, j;

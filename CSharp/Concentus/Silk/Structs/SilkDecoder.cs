@@ -47,6 +47,9 @@ namespace Concentus.Silk.Structs
         internal int nChannelsInternal = 0;
         internal int prev_decode_only_middle = 0;
 
+        // the temporaries of silk_Decode, kept: a frame allocates nothing
+        internal short[] s_samplesOut1_tmp_storage1, s_samplesOut1_tmp_storage2;
+
         internal SilkDecoder()
         {
             for (int c = 0; c < SilkConstants.DECODER_NUM_CHANNELS; c++)

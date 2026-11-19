@@ -97,6 +97,17 @@ namespace Concentus.Structs
         internal int[] energy_masking;
         internal readonly StereoWidthState width_mem = new StereoWidthState();
         internal readonly short[] delay_buffer = new short[OpusConstants.MAX_ENCODER_BUFFER * 2];
+
+        // the temporaries of a frame, kept: a frame allocates nothing. Frames longer than 20 ms are
+        // encoded by calls to opus_encode_native of each 20 ms, which the outer call then only repacketizes
+        private readonly EntropyCoder s_enc = new EntropyCoder();
+        private readonly AnalysisInfo s_analysis_info = new AnalysisInfo();
+        private readonly EncControlState s_dummy = new EncControlState();
+        private readonly OpusRepacketizer s_rp = new OpusRepacketizer();
+        // of padding: not s_rp, which an outer call holds the 20 ms frames of while they are padded
+        private readonly OpusRepacketizer s_rp_pad = new OpusRepacketizer();
+        private byte[] s_tmp_data;
+        private short[] s_pcm_buf, s_pcm_silk, s_tmp_prefill, s_float_input;
         internal OpusBandwidth detected_bandwidth;
         internal uint rangeFinal;
 
@@ -360,7 +371,7 @@ namespace Concentus.Structs
             int i;
             int ret = 0;
             int nBytes;
-            EntropyCoder enc = new EntropyCoder(); // porting note: stack var
+            EntropyCoder enc = this.s_enc; // porting note: stack var, initialized by enc_init
             int bytes_target;
             int prefill = 0;
             int start_band = 0;
@@ -383,7 +394,8 @@ namespace Concentus.Structs
             int total_buffer;
             int stereo_width;
             CeltMode celt_mode;
-            AnalysisInfo analysis_info = new AnalysisInfo(); // porting note: stack var
+            AnalysisInfo analysis_info = this.s_analysis_info; // porting note: stack var
+            analysis_info.Reset();
             int analysis_read_pos_bak = -1;
             int analysis_read_subframe_bak = -1;
             short[] tmp_prefill;
@@ -499,7 +511,7 @@ namespace Concentus.Structs
                 ret = 1;
                 if (this.use_vbr == 0)
                 {
-                    ret = OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes);
+                    ret = OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes, this.s_rp_pad);
                     if (ret == OpusError.OPUS_OK)
                         ret = max_data_bytes;
                 }
@@ -671,7 +683,7 @@ namespace Concentus.Structs
 
             if (this.mode != OpusMode.MODE_CELT_ONLY && this.prev_mode == OpusMode.MODE_CELT_ONLY)
             {
-                EncControlState dummy = new EncControlState();
+                EncControlState dummy = this.s_dummy;
                 EncodeAPI.silk_InitEncoder(silk_enc, dummy);
                 prefill = 1;
             }
@@ -681,7 +693,7 @@ namespace Concentus.Structs
             {
                 int[] voice_bandwidth_thresholds;
                 int[] music_bandwidth_thresholds;
-                int[] bandwidth_thresholds = new int[8];
+                Span<int> bandwidth_thresholds = stackalloc int[8];
                 OpusBandwidth bandwidth = OpusBandwidth.OPUS_BANDWIDTH_FULLBAND;
                 int equiv_rate2;
 
@@ -804,9 +816,10 @@ namespace Concentus.Structs
                 nb_frames = frame_size > this.Fs / 25 ? 3 : 2;
                 bytes_per_frame = Inlines.IMIN(1276, (out_data_bytes - 3) / nb_frames);
 
-                tmp_data = new byte[nb_frames * bytes_per_frame];
+                tmp_data = Arrays.Scratch(ref this.s_tmp_data, nb_frames * bytes_per_frame);
 
-                rp = new OpusRepacketizer();
+                rp = this.s_rp;
+                rp.Reset();
 
                 bak_mode = this.user_forced_mode;
                 bak_bandwidth = this.user_bandwidth;
@@ -875,7 +888,7 @@ namespace Concentus.Structs
 
             enc.enc_init((uint)(max_data_bytes - 1));
 
-            pcm_buf = new short[(total_buffer + frame_size) * this.channels];
+            pcm_buf = Arrays.Scratch(ref this.s_pcm_buf, (total_buffer + frame_size) * this.channels);
             Arrays.MemCopy(this.delay_buffer, ((this.encoder_buffer - total_buffer) * this.channels), pcm_buf, 0, total_buffer * this.channels);
 
             if (this.mode == OpusMode.MODE_CELT_ONLY)
@@ -902,7 +915,7 @@ namespace Concentus.Structs
             if (this.mode != OpusMode.MODE_CELT_ONLY)
             {
                 int total_bitRate, celt_rate;
-                short[] pcm_silk = new short[this.channels * frame_size];
+                short[] pcm_silk = Arrays.Scratch(ref this.s_pcm_silk, this.channels * frame_size);
 
                 /* Distribute bits between SILK and CELT */
                 total_bitRate = 8 * bytes_target * frame_rate;
@@ -1046,7 +1059,7 @@ namespace Concentus.Structs
 
                 if (prefill != 0)
                 {
-                    BoxedValueInt zero = new BoxedValueInt(0);
+                    int zero = 0;
                     int prefill_offset;
 
                     /* Use a smooth onset for the SILK prefill to avoid the encoder trying to encode
@@ -1061,14 +1074,12 @@ namespace Concentus.Structs
                     Arrays.MemSetShort(this.delay_buffer, 0, prefill_offset);
                     Arrays.MemCopy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
-                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, data.Slice(data_ptr), zero, 1);
+                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, data.Slice(data_ptr), ref zero, 1);
                 }
 
                 Arrays.MemCopy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
 
-                BoxedValueInt boxed_silkBytes = new BoxedValueInt(nBytes);
-                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, data.Slice(data_ptr), boxed_silkBytes, 0);
-                nBytes = boxed_silkBytes.Val;
+                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, data.Slice(data_ptr), ref nBytes, 0);
 
                 if (ret != 0)
                 {
@@ -1189,7 +1200,7 @@ namespace Concentus.Structs
             }
 
 
-            tmp_prefill = new short[this.channels * this.Fs / 400];
+            tmp_prefill = Arrays.Scratch(ref this.s_tmp_prefill, this.channels * this.Fs / 400);
             if (this.mode != OpusMode.MODE_SILK_ONLY && this.mode != this.prev_mode && this.prev_mode > 0)
             {
                 Arrays.MemCopy(this.delay_buffer, ((this.encoder_buffer - total_buffer - this.Fs / 400) * this.channels), tmp_prefill, 0, this.channels * this.Fs / 400);
@@ -1383,7 +1394,7 @@ namespace Concentus.Structs
             ret += 1 + redundancy_bytes;
             if (this.use_vbr == 0)
             {
-                if (OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes) != OpusError.OPUS_OK)
+                if (OpusRepacketizer.PadPacket(data, data_ptr, ret, max_data_bytes, this.s_rp_pad) != OpusError.OPUS_OK)
                 {
                     return OpusError.OPUS_INTERNAL_ERROR;
                 }
@@ -1567,7 +1578,7 @@ namespace Concentus.Structs
                     internal_frame_size, in_pcm.Length));
             }
 
-            input = new short[internal_frame_size * this.channels];
+            input = Arrays.Scratch(ref this.s_float_input, internal_frame_size * this.channels);
 
             for (i = 0; i < internal_frame_size * this.channels; i++)
                 input[i] = Inlines.FLOAT2INT16(in_pcm[i]);

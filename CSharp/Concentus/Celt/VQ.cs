@@ -134,7 +134,7 @@ namespace Concentus.Celt
 
         /** Takes the pitch vector and the decoded residual vector, computes the gain
             that will give ||p+g*y||=1 and mixes the residual with the pitch. */
-        internal static void normalise_residual(int[] iy, Span<int> X, int X_ptr,
+        internal static void normalise_residual(Span<int> iy, Span<int> X, int X_ptr,
               int N, int Ryy, int gain)
         {
             int i;
@@ -152,7 +152,7 @@ namespace Concentus.Celt
             while (++i < N);
         }
 
-        internal static uint extract_collapse_mask(int[] iy, int N, int B)
+        internal static uint extract_collapse_mask(Span<int> iy, int N, int B)
         {
             uint collapse_mask;
             int N0;
@@ -182,9 +182,9 @@ namespace Concentus.Celt
 
         internal static uint alg_quant(Span<int> X, int X_ptr, int N, int K, int spread, int B, EntropyCoder enc, Span<byte> encodedData)
         {
-            int[] y = new int[N];
-            int[] iy = new int[N];
-            int[] signx = new int[N];
+            Span<int> y = stackalloc int[N];
+            Span<int> iy = stackalloc int[N];
+            Span<int> signx = stackalloc int[N];
             int i, j;
             int s;
             int pulsesLeft;
@@ -339,7 +339,7 @@ namespace Concentus.Celt
         {
             int Ryy;
             uint collapse_mask;
-            int[] iy = new int[N];
+            Span<int> iy = stackalloc int[N];
             Inlines.OpusAssert(K > 0, "alg_unquant() needs at least one pulse");
             Inlines.OpusAssert(N > 1, "alg_unquant() needs at least two dimensions");
             Ryy = CWRS.decode_pulses(iy, N, K, dec, encodedData);

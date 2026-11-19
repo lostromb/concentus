@@ -46,7 +46,7 @@ namespace Concentus.Silk
         /* Note: A monic filter is one with the first coefficient equal to 1.0. In Silk we omit the first */
         /* coefficient in an array of coefficients, for monic filters.                                    */
         internal static int warped_gain( /* gain in Q16*/
-            int[] coefs_Q24,
+            Span<int> coefs_Q24,
             int lambda_Q16,
             int order
         )
@@ -67,8 +67,8 @@ namespace Concentus.Silk
         /* Convert warped filter coefficients to monic pseudo-warped coefficients and limit maximum     */
         /* amplitude of monic warped coefficients by using bandwidth expansion on the true coefficients */
         internal static void limit_warped_coefs(
-            int[] coefs_syn_Q24,
-            int[] coefs_ana_Q24,
+            Span<int> coefs_syn_Q24,
+            Span<int> coefs_ana_Q24,
             int lambda_Q16,
             int limit_Q24,
             int order
@@ -165,7 +165,7 @@ namespace Concentus.Silk
         internal static void silk_noise_shape_analysis(
             SilkChannelEncoder psEnc,                                 /* I/O  Encoder state FIX                                                           */
             SilkEncoderControl psEncCtrl,                             /* I/O  Encoder control FIX                                                         */
-            short[] pitch_res,                             /* I    LPC residual from pitch analysis                                            */
+            Span<short> pitch_res,                             /* I    LPC residual from pitch analysis                                            */
             int pitch_res_ptr,
             short[] x,                                     /* I    Input signal [ frame_length + la_shape ]                                    */
             int x_ptr
@@ -176,11 +176,10 @@ namespace Concentus.Silk
             int SNR_adj_dB_Q7, HarmBoost_Q16, HarmShapeGain_Q16, Tilt_Q16, tmp32;
             int nrg, pre_nrg_Q30, log_energy_Q7, log_energy_prev_Q7, energy_variation_Q7;
             int delta_Q16, BWExp1_Q16, BWExp2_Q16, gain_mult_Q16, gain_add_Q16, strength_Q16, b_Q8;
-            int[] auto_corr = new int[SilkConstants.MAX_SHAPE_LPC_ORDER + 1];
-            int[] refl_coef_Q16 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
-            int[] AR1_Q24 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
-            int[] AR2_Q24 = new int[SilkConstants.MAX_SHAPE_LPC_ORDER];
-            short[] x_windowed;
+            Span<int> auto_corr = stackalloc int[SilkConstants.MAX_SHAPE_LPC_ORDER + 1];
+            Span<int> refl_coef_Q16 = stackalloc int[SilkConstants.MAX_SHAPE_LPC_ORDER];
+            Span<int> AR1_Q24 = stackalloc int[SilkConstants.MAX_SHAPE_LPC_ORDER];
+            Span<int> AR2_Q24 = stackalloc int[SilkConstants.MAX_SHAPE_LPC_ORDER];
             int pitch_res_ptr2;
             int x_ptr2;
             
@@ -294,7 +293,7 @@ namespace Concentus.Silk
             /********************************************/
             /* Compute noise shaping AR coefs and gains */
             /********************************************/
-            x_windowed = new short[psEnc.shapeWinLength];
+            Span<short> x_windowed = stackalloc short[psEnc.shapeWinLength];
             for (k = 0; k < psEnc.nb_subfr; k++)
             {
                 /* Apply window: sine slope followed by flat part followed by cosine slope */

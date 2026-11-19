@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -43,25 +44,25 @@ namespace Concentus.Silk
         /* Finds LPC vector from correlations, and converts to NLSF */
         internal static void silk_find_LPC(
             SilkChannelEncoder psEncC,                                /* I/O  Encoder state                                                               */
-            short[] NLSF_Q15,                             /* O    NLSFs                                                                       */
-            short[] x,                                    /* I    Input signal                                                                */
+            Span<short> NLSF_Q15,                             /* O    NLSFs                                                                       */
+            Span<short> x,                                    /* I    Input signal                                                                */
             int minInvGain_Q30                          /* I    Inverse of max prediction gain                                              */
         )
         {
             int k, subfr_length;
-            int[] a_Q16 = new int[SilkConstants.MAX_LPC_ORDER];
+            Span<int> a_Q16 = stackalloc int[SilkConstants.MAX_LPC_ORDER];
             int isInterpLower, shift;
             int res_nrg0, res_nrg1;
             int rshift0, rshift1;
-            BoxedValueInt scratch_box1 = new BoxedValueInt();
-            BoxedValueInt scratch_box2 = new BoxedValueInt();
+            int scratch_box1 = 0;
+            int scratch_box2 = 0;
 
             /* Used only for LSF interpolation */
-            int[] a_tmp_Q16 = new int[SilkConstants.MAX_LPC_ORDER];
+            Span<int> a_tmp_Q16 = stackalloc int[SilkConstants.MAX_LPC_ORDER];
             int res_nrg_interp, res_nrg, res_tmp_nrg;
             int res_nrg_interp_Q, res_nrg_Q, res_tmp_nrg_Q;
-            short[] a_tmp_Q12 = new short[SilkConstants.MAX_LPC_ORDER];
-            short[] NLSF0_Q15 = new short[SilkConstants.MAX_LPC_ORDER];
+            Span<short> a_tmp_Q12 = stackalloc short[SilkConstants.MAX_LPC_ORDER];
+            Span<short> NLSF0_Q15 = stackalloc short[SilkConstants.MAX_LPC_ORDER];
             
             subfr_length = psEncC.subfr_length + psEncC.predictLPCOrder;
 
@@ -69,18 +70,17 @@ namespace Concentus.Silk
             psEncC.indices.NLSFInterpCoef_Q2 = 4;
 
             /* Burg AR analysis for the full frame */
-            BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_Q16, x, 0, minInvGain_Q30, subfr_length, psEncC.nb_subfr, psEncC.predictLPCOrder);
-            res_nrg = scratch_box1.Val;
-            res_nrg_Q = scratch_box2.Val;
+            BurgModified.silk_burg_modified(ref scratch_box1, ref scratch_box2, a_Q16, x, 0, minInvGain_Q30, subfr_length, psEncC.nb_subfr, psEncC.predictLPCOrder);
+            res_nrg = scratch_box1;
+            res_nrg_Q = scratch_box2;
 
             if (psEncC.useInterpolatedNLSFs != 0 && psEncC.first_frame_after_reset == 0 && psEncC.nb_subfr == SilkConstants.MAX_NB_SUBFR)
             {
-                short[] LPC_res;
 
                 /* Optimal solution for last 10 ms */
-                BurgModified.silk_burg_modified(scratch_box1, scratch_box2, a_tmp_Q16, x, (2 * subfr_length), minInvGain_Q30, subfr_length, 2, psEncC.predictLPCOrder);
-                res_tmp_nrg = scratch_box1.Val;
-                res_tmp_nrg_Q = scratch_box2.Val;
+                BurgModified.silk_burg_modified(ref scratch_box1, ref scratch_box2, a_tmp_Q16, x, (2 * subfr_length), minInvGain_Q30, subfr_length, 2, psEncC.predictLPCOrder);
+                res_tmp_nrg = scratch_box1;
+                res_tmp_nrg_Q = scratch_box2;
 
                 /* subtract residual energy here, as that's easier than adding it to the    */
                 /* residual energy of the first 10 ms in each iteration of the search below */
@@ -101,7 +101,7 @@ namespace Concentus.Silk
                 /* Convert to NLSFs */
                 NLSF.silk_A2NLSF(NLSF_Q15, a_tmp_Q16, psEncC.predictLPCOrder);
 
-               LPC_res = new short[2 * subfr_length];
+               Span<short> LPC_res = stackalloc short[2 * subfr_length];
 
                 /* Search over interpolation indices to find the one with lowest residual energy */
                 for (k = 3; k >= 0; k--)

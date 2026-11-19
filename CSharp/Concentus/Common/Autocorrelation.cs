@@ -40,9 +40,9 @@ namespace Concentus.Common
     {
         /* Compute autocorrelation */
         internal static void silk_autocorr(
-            int[] results,           /* O    Result (length correlationCount)                            */
+            Span<int> results,           /* O    Result (length correlationCount)                            */
             out int scale,             /* O    Scaling of the correlation vector                           */
-            short[] inputData,         /* I    Input data to correlate                                     */
+            Span<short> inputData,         /* I    Input data to correlate                                     */
             int inputDataSize,      /* I    Length of input                                             */
             int correlationCount   /* I    Number of correlation taps to compute                       */
         )
@@ -52,8 +52,8 @@ namespace Concentus.Common
         }
 
         internal static int _celt_autocorr(
-                  short[] x,   /*  in: [0...n-1] samples x   */
-                   int[] ac,  /* out: [0...lag-1] ac values */
+                  Span<short> x,   /*  in: [0...n-1] samples x   */
+                   Span<int> ac,  /* out: [0...lag-1] ac values */
                    int lag,
                    int n
                   )
@@ -62,8 +62,8 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            short[] xptr;
-            short[] xx = new short[n];
+            Span<short> xx = stackalloc short[n];
+            Span<short> xptr = xx;
             Inlines.OpusAssert(n > 0);
             xptr = x;
 
@@ -128,8 +128,8 @@ namespace Concentus.Common
         }
 
         internal static int _celt_autocorr(
-                           int[] x,   /*  in: [0...n-1] samples x   */
-                           int[] ac,  /* out: [0...lag-1] ac values */
+                           Span<int> x,   /*  in: [0...n-1] samples x   */
+                           Span<int> ac,  /* out: [0...lag-1] ac values */
                            int[] window,
                            int overlap,
                            int lag,
@@ -139,8 +139,8 @@ namespace Concentus.Common
             int i, k;
             int fastN = n - lag;
             int shift;
-            int[] actualX;
-            int[] xx = new int[n];
+            Span<int> xx = stackalloc int[n];
+            Span<int> actualX = xx;
 
             Inlines.OpusAssert(n > 0);
             Inlines.OpusAssert(overlap >= 0);
@@ -222,9 +222,9 @@ namespace Concentus.Common
 
         /* Autocorrelations for a warped frequency axis */
         internal static void silk_warped_autocorrelation(
-                  int[] corr,                                  /* O    Result [order + 1]                                                          */
+                  Span<int> corr,                                  /* O    Result [order + 1]                                                          */
                   out int scale,                                 /* O    Scaling of the correlation vector                                           */
-                    short[] input,                                 /* I    Input data to correlate                                                     */
+                    Span<short> input,                                 /* I    Input data to correlate                                                     */
                     int warping_Q16,                            /* I    Warping coefficient                                                         */
                     int length,                                 /* I    Length of input                                                             */
                     int order                                   /* I    Correlation order (even)                                                    */
@@ -232,8 +232,8 @@ namespace Concentus.Common
         {
             int n, i, lsh;
             int tmp1_QS, tmp2_QS;
-            Span<int> state_QS = new int[order + 1];// = { 0 };
-            Span<long> corr_QC = new long[order + 1];// = { 0 };
+            Span<int> state_QS = stackalloc int[order + 1];// = { 0 };
+            Span<long> corr_QC = stackalloc long[order + 1];// = { 0 };
 
             /* Order must be even */
             Inlines.OpusAssert((order & 1) == 0);

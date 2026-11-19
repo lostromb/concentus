@@ -44,16 +44,16 @@ namespace Concentus.Silk
         internal static void silk_quant_LTP_gains(
             short[] B_Q14,          /* I/O  (un)quantized LTP gains [MAX_NB_SUBFR * LTP_ORDER]        */
             sbyte[] cbk_index,                  /* O    Codebook Index [MAX_NB_SUBFR]                 */
-            BoxedValueSbyte periodicity_index,                         /* O    Periodicity Index               */
-            BoxedValueInt sum_log_gain_Q7,                           /* I/O  Cumulative max prediction gain  */
-            int[] W_Q18,  /* I    Error Weights in Q18 [MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER]           */
+            ref sbyte periodicity_index,                         /* O    Periodicity Index               */
+            ref int sum_log_gain_Q7,                           /* I/O  Cumulative max prediction gain  */
+            Span<int> W_Q18,  /* I    Error Weights in Q18 [MAX_NB_SUBFR * LTP_ORDER * LTP_ORDER]           */
             int mu_Q9,                                      /* I    Mu value (R/D tradeoff)         */
             int lowComplexity,                              /* I    Flag for low complexity         */
             int nb_subfr                                   /* I    number of subframes             */
             )
         {
             int j, k, cbk_size;
-            sbyte[] temp_idx = new sbyte[SilkConstants.MAX_NB_SUBFR];
+            Span<sbyte> temp_idx = stackalloc sbyte[SilkConstants.MAX_NB_SUBFR];
             byte[] cl_ptr_Q5;
             sbyte[][] cbk_ptr_Q7;
             byte[] cbk_gain_ptr_Q7;
@@ -84,18 +84,18 @@ namespace Concentus.Silk
                 b_Q14_ptr = 0;
 
                 rate_dist_Q14 = 0;
-                sum_log_gain_tmp_Q7 = sum_log_gain_Q7.Val;
+                sum_log_gain_tmp_Q7 = sum_log_gain_Q7;
                 for (j = 0; j < nb_subfr; j++)
                 {
                     max_gain_Q7 = Inlines.silk_log2lin((((int)((TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(TuningParameters.MAX_SUM_LOG_GAIN_DB / 6.0f, 7)*/ - sum_log_gain_tmp_Q7)
                                                 + ((int)((7) * ((long)1 << (7)) + 0.5))/*Inlines.SILK_CONST(7, 7)*/) - gain_safety;
                     
-                    BoxedValueSbyte temp_idx_box = new BoxedValueSbyte(temp_idx[j]);
-                    BoxedValueInt rate_dist_Q14_subfr_box = new BoxedValueInt();
-                    BoxedValueInt gain_Q7_box = new BoxedValueInt();
+                    sbyte temp_idx_box = temp_idx[j];
+                    int rate_dist_Q14_subfr_box = 0;
+                    int gain_Q7_box = 0;
                     VQ_WMat_EC.silk_VQ_WMat_EC(
-                        temp_idx_box,         /* O    index of best codebook vector                           */
-                        rate_dist_Q14_subfr_box,   /* O    best weighted quantization error + mu * rate            */
+                        ref temp_idx_box,         ref /* O    index of best codebook vector                           */
+                        rate_dist_Q14_subfr_box,   ref /* O    best weighted quantization error + mu * rate            */
                         gain_Q7_box,               /* O    sum of absolute LTP coefficients                        */
                         B_Q14,
                         b_Q14_ptr,              /* I    input vector to be quantized                            */
@@ -108,9 +108,9 @@ namespace Concentus.Silk
                         max_gain_Q7,            /* I    maximum sum of absolute LTP coefficients                */
                         cbk_size               /* I    number of vectors in codebook                           */
                     );
-                    rate_dist_Q14_subfr = rate_dist_Q14_subfr_box.Val;
-                    gain_Q7 = gain_Q7_box.Val;
-                    temp_idx[j] = temp_idx_box.Val;
+                    rate_dist_Q14_subfr = rate_dist_Q14_subfr_box;
+                    gain_Q7 = gain_Q7_box;
+                    temp_idx[j] = temp_idx_box;
 
                     rate_dist_Q14 = Inlines.silk_ADD_POS_SAT32(rate_dist_Q14, rate_dist_Q14_subfr);
                     sum_log_gain_tmp_Q7 = Inlines.silk_max(0, sum_log_gain_tmp_Q7
@@ -126,7 +126,7 @@ namespace Concentus.Silk
                 if (rate_dist_Q14 < min_rate_dist_Q14)
                 {
                     min_rate_dist_Q14 = rate_dist_Q14;
-                    periodicity_index.Val = (sbyte)k;
+                    periodicity_index = (sbyte)k;
                     Arrays.MemCopy(temp_idx, 0, cbk_index, 0, nb_subfr);
                     best_sum_log_gain_Q7 = sum_log_gain_tmp_Q7;
                 }
@@ -138,7 +138,7 @@ namespace Concentus.Silk
                 }
             }
 
-            cbk_ptr_Q7 = Tables.silk_LTP_vq_ptrs_Q7[periodicity_index.Val];
+            cbk_ptr_Q7 = Tables.silk_LTP_vq_ptrs_Q7[periodicity_index];
             for (j = 0; j < nb_subfr; j++)
             {
                 for (k = 0; k < SilkConstants.LTP_ORDER; k++)
@@ -147,7 +147,7 @@ namespace Concentus.Silk
                 }
             }
 
-            sum_log_gain_Q7.Val = best_sum_log_gain_Q7;
+            sum_log_gain_Q7 = best_sum_log_gain_Q7;
         }
     }
 }

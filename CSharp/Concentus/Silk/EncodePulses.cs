@@ -79,8 +79,8 @@ namespace Concentus.Silk
         /// <param name="len">I    number of output values</param>
         /// <returns>return ok</returns>
         internal static int combine_and_check(
-            int[] pulses_comb,
-            int[] pulses_in,
+            Span<int> pulses_comb,
+            Span<int> pulses_in,
             int max_pulses,
             int len)
         {
@@ -114,10 +114,7 @@ namespace Concentus.Silk
         {
             int i, k, j, iter, bit, nLS, scale_down, RateLevelIndex = 0;
             int abs_q, minSumBits_Q5, sumBits_Q5;
-            int[] abs_pulses;
-            int[] sum_pulses;
-            int[] nRshifts;
-            int[] pulses_comb = new int[8];
+            Span<int> pulses_comb = stackalloc int[8];
             int abs_pulses_ptr;
             int pulses_ptr;
             byte[] nBits_ptr;
@@ -138,7 +135,7 @@ namespace Concentus.Silk
             }
 
             /* Take the absolute value of the pulses */
-            abs_pulses = new int[iter * SilkConstants.SHELL_CODEC_FRAME_LENGTH];
+            Span<int> abs_pulses = stackalloc int[iter * SilkConstants.SHELL_CODEC_FRAME_LENGTH];
             Inlines.OpusAssert((SilkConstants.SHELL_CODEC_FRAME_LENGTH & 3) == 0);
             
             // unrolled loop
@@ -151,8 +148,8 @@ namespace Concentus.Silk
             }
 
             /* Calc sum pulses per shell code frame */
-            sum_pulses = new int[iter];
-            nRshifts = new int[iter];
+            Span<int> sum_pulses = stackalloc int[iter];
+            Span<int> nRshifts = stackalloc int[iter];
             abs_pulses_ptr = 0;
             for (i = 0; i < iter; i++)
             {

@@ -123,7 +123,7 @@ namespace Concentus.Silk
             int nSamplesIn,
             EntropyCoder psRangeEnc,
             Span<byte> encodedDataOut,
-            BoxedValueInt nBytesOut,
+            ref int nBytesOut,
             int prefillFlag)
         {
             int ret = SilkError.SILK_NO_ERROR;
@@ -132,10 +132,9 @@ namespace Concentus.Silk
             int nSamplesFromInput = 0, nSamplesFromInputMax;
             int speech_act_thr_for_switch_Q8;
             int TargetRate_bps, channelRate_bps, LBRR_symbol, sum;
-            int[] MStargetRates_bps = new int[2];
-            short[] buf;
+            Span<int> MStargetRates_bps = stackalloc int[2];
             int transition, curr_block, tot_blocks;
-            nBytesOut.Val = 0;
+            nBytesOut = 0;
 
             if (encControl.reducedDependency != 0)
             {
@@ -256,7 +255,8 @@ namespace Concentus.Silk
                                        psEnc.state_Fxx[0].API_fs_Hz,
                                    (short)(psEnc.state_Fxx[0].fs_kHz * 1000));
 
-            buf = new short[nSamplesFromInputMax];
+            Span<short> buf = stackalloc short[nSamplesFromInputMax];
+            Span<byte> iCDF = stackalloc byte[2]; // of the loop's frames, not of each: a stackalloc in a loop grows the stack
 
             int samplesIn_ptr = 0;
             while (true)
@@ -377,7 +377,7 @@ namespace Concentus.Silk
                     if (psEnc.state_Fxx[0].nFramesEncoded == 0 && prefillFlag == 0)
                     {
                         /* Create space at start of payload for VAD and FEC flags */
-                        byte[] iCDF = { 0, 0 };
+                        iCDF.Clear();
                         iCDF[0] = (byte)(256 - Inlines.silk_RSHIFT(256, (psEnc.state_Fxx[0].nFramesPerPacket + 1) * encControl.nChannelsInternal));
                         psRangeEnc.enc_icdf(encodedDataOut, 0, iCDF, 8);
 
@@ -483,14 +483,14 @@ namespace Concentus.Silk
                     /* Convert Left/Right to Mid/Side */
                     if (encControl.nChannelsInternal == 2)
                     {
-                        BoxedValueSbyte midOnlyFlagBoxed = new BoxedValueSbyte(psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded]);
+                        sbyte midOnlyFlagBoxed = psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded];
                         Stereo.silk_stereo_LR_to_MS(psEnc.sStereo,
                             psEnc.state_Fxx[0].inputBuf,
                             2,
                             psEnc.state_Fxx[1].inputBuf,
                             2,
                             psEnc.sStereo.predIx[psEnc.state_Fxx[0].nFramesEncoded],
-                            midOnlyFlagBoxed,
+                            ref midOnlyFlagBoxed,
                             MStargetRates_bps,
                             TargetRate_bps,
                             psEnc.state_Fxx[0].speech_activity_Q8,
@@ -498,9 +498,9 @@ namespace Concentus.Silk
                             psEnc.state_Fxx[0].fs_kHz,
                             psEnc.state_Fxx[0].frame_length);
 
-                        psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded] = midOnlyFlagBoxed.Val;
+                        psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded] = midOnlyFlagBoxed;
 
-                        if (midOnlyFlagBoxed.Val == 0)
+                        if (midOnlyFlagBoxed == 0)
                         {
                             /* Reset side channel encoder memory for first frame with side coding */
                             if (psEnc.prev_decode_only_middle == 1)
@@ -607,7 +607,7 @@ namespace Concentus.Silk
                                 condCoding = SilkConstants.CODE_CONDITIONALLY;
                             }
 
-                            ret += psEnc.state_Fxx[n].silk_encode_frame(nBytesOut, psRangeEnc, encodedDataOut, condCoding, maxBits, useCBR);
+                            ret += psEnc.state_Fxx[n].silk_encode_frame(ref nBytesOut, psRangeEnc, encodedDataOut, condCoding, maxBits, useCBR);
                             Inlines.OpusAssert(ret == SilkError.SILK_NO_ERROR);
                         }
 
@@ -619,7 +619,7 @@ namespace Concentus.Silk
                     psEnc.prev_decode_only_middle = psEnc.sStereo.mid_only_flags[psEnc.state_Fxx[0].nFramesEncoded - 1];
 
                     /* Insert VAD and FEC flags at beginning of bitstream */
-                    if (nBytesOut.Val > 0 && psEnc.state_Fxx[0].nFramesEncoded == psEnc.state_Fxx[0].nFramesPerPacket)
+                    if (nBytesOut > 0 && psEnc.state_Fxx[0].nFramesEncoded == psEnc.state_Fxx[0].nFramesPerPacket)
                     {
                         flags = 0;
                         for (n = 0; n < encControl.nChannelsInternal; n++)
@@ -641,10 +641,10 @@ namespace Concentus.Silk
                         /* Return zero bytes if all channels DTXed */
                         if (psEnc.state_Fxx[0].inDTX != 0 && (encControl.nChannelsInternal == 1 || psEnc.state_Fxx[1].inDTX != 0))
                         {
-                            nBytesOut.Val = 0;
+                            nBytesOut = 0;
                         }
 
-                        psEnc.nBitsExceeded += nBytesOut.Val * 8;
+                        psEnc.nBitsExceeded += nBytesOut * 8;
                         psEnc.nBitsExceeded -= Inlines.silk_DIV32_16(Inlines.silk_MUL(encControl.bitRate, encControl.payloadSize_ms), 1000);
                         psEnc.nBitsExceeded = Inlines.silk_LIMIT(psEnc.nBitsExceeded, 0, 10000);
 

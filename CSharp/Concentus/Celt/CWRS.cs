@@ -182,7 +182,7 @@ namespace Concentus.Celt
             return (CELT_PVQ_U(_n, _k) + CELT_PVQ_U(_n, (_k) + 1));
         }
 
-        internal static uint icwrs(int _n, int[] _y)
+        internal static uint icwrs(int _n, Span<int> _y)
         {
             uint i;
             int j;
@@ -202,13 +202,13 @@ namespace Concentus.Celt
             return i;
         }
 
-        internal static void encode_pulses(int[] _y, int _n, int _k, EntropyCoder _enc, Span<byte> encodedData)
+        internal static void encode_pulses(Span<int> _y, int _n, int _k, EntropyCoder _enc, Span<byte> encodedData)
         {
             Inlines.OpusAssert(_k > 0);
             _enc.enc_uint(encodedData, icwrs(_n, _y), CELT_PVQ_V(_n, _k));
         }
 
-        internal static int cwrsi(int _n, int _k, uint _i, int[] _y)
+        internal static int cwrsi(int _n, int _k, uint _i, Span<int> _y)
         {
             uint p;
             int s;
@@ -312,7 +312,7 @@ namespace Concentus.Celt
             return yy;
         }
 
-        internal static int decode_pulses(int[] _y, int _n, int _k, EntropyCoder _dec, ReadOnlySpan<byte> encodedData)
+        internal static int decode_pulses(Span<int> _y, int _n, int _k, EntropyCoder _dec, ReadOnlySpan<byte> encodedData)
         {
             return cwrsi(_n, _k, _dec.dec_uint(encodedData, CELT_PVQ_V(_n, _k)), _y);
         }

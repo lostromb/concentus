@@ -67,10 +67,10 @@ namespace Concentus.Silk
             int length,
             int signalType,
             int quantOffsetType,
-            int[] sum_pulses)
+            Span<int> sum_pulses)
         {
             int i, j, p;
-            byte[] icdf = new byte[2];
+            Span<byte> icdf = stackalloc byte[2];
             int q_ptr;
             byte[] sign_icdf = Tables.silk_sign_iCDF;
             int icdf_ptr;
@@ -111,14 +111,14 @@ namespace Concentus.Silk
         internal static void silk_decode_signs(
             EntropyCoder psRangeDec,
             ReadOnlySpan<byte> encodedData,
-            short[] pulses,
+            Span<short> pulses,
             int length,
             int signalType,
             int quantOffsetType,
-            int[] sum_pulses)
+            Span<int> sum_pulses)
         {
             int i, j, p;
-            byte[] icdf = new byte[2];
+            Span<byte> icdf = stackalloc byte[2];
             int q_ptr;
             byte[] icdf_table = Tables.silk_sign_iCDF;
             int icdf_ptr;
