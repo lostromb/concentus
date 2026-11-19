@@ -472,10 +472,18 @@ namespace Concentus.Celt
 
         internal static int l1_metric(Span<int> tmp, int N, int LM, int bias)
         {
-            int i;
+            int i = 0;
             int L1;
             L1 = 0;
-            for (i = 0; i < N; i++)
+            if (Vector.IsHardwareAccelerated && N >= Vector<int>.Count)
+            {
+                // Vector.Abs wraps as ABS32 does; wrapping sums of any order are the same
+                Vector<int> acc = Vector<int>.Zero;
+                for (; i <= N - Vector<int>.Count; i += Vector<int>.Count)
+                    acc += Vector.Abs(System.Runtime.InteropServices.MemoryMarshal.Read<Vector<int>>(System.Runtime.InteropServices.MemoryMarshal.AsBytes(tmp.Slice(i))));
+                L1 = Vector.Dot(acc, Vector<int>.One);
+            }
+            for (; i < N; i++)
             {
                 L1 += Inlines.EXTEND32(Inlines.ABS32(tmp[i]));
             }

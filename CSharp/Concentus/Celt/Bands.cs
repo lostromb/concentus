@@ -41,6 +41,7 @@ namespace Concentus.Celt
     using Concentus.Common.CPlusPlus;
     using System;
     using System.Diagnostics;
+    using System.Numerics;
 
     internal static class Bands
     {
@@ -628,9 +629,27 @@ namespace Concentus.Celt
         {
             int i, j;
             N0 >>= 1;
-            for (i = 0; i < stride; i++)
+            // the pairs in the order of memory, not of i first: each pair is of its own two values alone
+            for (j = 0; j < N0; j++)
             {
-                for (j = 0; j < N0; j++)
+                i = 0;
+#if NET7_0_OR_GREATER
+                if (Vector.IsHardwareAccelerated && stride >= Vector<int>.Count)
+                {
+                    Vector<int> q = new Vector<int>(((short)(0.5 + (.70710678f) * (((int)1) << (15)))));
+                    Vector<int> round = new Vector<int>(1 << 14);
+                    for (; i <= stride - Vector<int>.Count; i += Vector<int>.Count)
+                    {
+                        int at = i + (stride * 2 * j);
+                        Vector<int> tmp1 = q * new Vector<int>(X.Slice(at));
+                        Vector<int> tmp2 = q * new Vector<int>(X.Slice(at + stride));
+                        // EXTRACT16(PSHR32(x, 15)): rounded, shifted, then of its low 16 bits sign extended
+                        Vector.ShiftRightArithmetic(Vector.ShiftLeft(Vector.ShiftRightArithmetic(tmp1 + tmp2 + round, 15), 16), 16).CopyTo(X.Slice(at));
+                        Vector.ShiftRightArithmetic(Vector.ShiftLeft(Vector.ShiftRightArithmetic(tmp1 - tmp2 + round, 15), 16), 16).CopyTo(X.Slice(at + stride));
+                    }
+                }
+#endif
+                for (; i < stride; i++)
                 {
                     int tmpidx = i + (stride * 2 * j);
                     int tmp1, tmp2;
