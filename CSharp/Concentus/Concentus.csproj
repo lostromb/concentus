@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net452;netstandard1.1;netstandard2.0;net8.0</TargetFrameworks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <!-- not every member is documented, nor every parameter of a documented one; netstandard1.1 is kept for older consumers -->
+    <NoWarn>$(NoWarn);CS1591;CS1573;NETSDK1215</NoWarn>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	<SignAssembly>True</SignAssembly>
 	<AssemblyOriginatorKeyFile>..\Concentus.snk</AssemblyOriginatorKeyFile>
