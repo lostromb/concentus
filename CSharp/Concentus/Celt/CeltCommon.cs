@@ -423,7 +423,7 @@ namespace Concentus.Celt
         }
 
         internal static void celt_preemphasis(short[] pcmp, Span<int> inp, int inp_ptr,
-                                int N, int CC, int upsample, int[] coef, BoxedValueInt mem, int clip)
+                                int N, int CC, int upsample, int[] coef, ref int mem, int clip)
         {
             int i;
             int coef0;
@@ -431,7 +431,7 @@ namespace Concentus.Celt
             int Nu;
 
             coef0 = coef[0];
-            m = mem.Val;
+            m = mem;
 
             /* Fast path for the normal 48kHz case and no clipping */
             if (coef[1] == 0 && upsample == 1 && clip == 0)
@@ -444,7 +444,7 @@ namespace Concentus.Celt
                     inp[inp_ptr + i] = Inlines.SHL32(x, CeltConstants.SIG_SHIFT) - m;
                     m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
                 }
-                mem.Val = m;
+                mem = m;
                 return;
             }
 
@@ -466,7 +466,7 @@ namespace Concentus.Celt
                 m = Inlines.SHR32(Inlines.MULT16_16(coef0, x), 15 - CeltConstants.SIG_SHIFT);
             }
 
-            mem.Val = m;
+            mem = m;
         }
 
         internal static int l1_metric(Span<int> tmp, int N, int LM, int bias)

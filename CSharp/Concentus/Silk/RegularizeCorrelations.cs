@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -42,9 +43,9 @@ namespace Concentus.Silk
     {
         /* Add noise to matrix diagonal */
         internal static void silk_regularize_correlations(
-            int[] XX,                                    /* I/O  Correlation matrices                                                        */
+            Span<int> XX,                                    /* I/O  Correlation matrices                                                        */
             int XX_ptr,
-            int[] xx,                                    /* I/O  Correlation values                                                          */
+            Span<int> xx,                                    /* I/O  Correlation values                                                          */
             int xx_ptr,
             int noise,                                  /* I    Noise to add                                                                */
             int D                                       /* I    Dimension of XX                                                             */

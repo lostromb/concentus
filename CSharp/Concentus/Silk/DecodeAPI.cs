@@ -82,14 +82,11 @@ namespace Concentus.Silk
         {
             int i, n, decode_only_middle = 0, ret = SilkError.SILK_NO_ERROR;
             int LBRR_symbol;
-            BoxedValueInt nSamplesOutDec = new BoxedValueInt();
+            int nSamplesOutDec = 0;
             Span<short> samplesOut_tmp;
-            int[] samplesOut_tmp_ptrs = new int[2];
-            short[] samplesOut1_tmp_storage1;
-            short[] samplesOut1_tmp_storage2;
-            short[] samplesOut2_tmp;
-            int[] MS_pred_Q13 = new int[] { 0, 0 };
-            Span<short> resample_out;
+            Span<int> samplesOut_tmp_ptrs = stackalloc int[2];
+            Span<int> MS_pred_Q13 = stackalloc int[2];
+            Span<short> resample_out = stackalloc short[0]; // [porting note] a pointer, of the stack's scope as it may point at it
             int resample_out_ptr;
             SilkChannelDecoder[] channel_state = psDec.channel_state;
             int has_side;
@@ -228,9 +225,9 @@ namespace Concentus.Silk
                                     Stereo.silk_stereo_decode_pred(psRangeDec, frameData, MS_pred_Q13);
                                     if (channel_state[1].LBRR_flags[i] == 0)
                                     {
-                                        BoxedValueInt decodeOnlyMiddleBoxed = new BoxedValueInt(decode_only_middle);
-                                        Stereo.silk_stereo_decode_mid_only(psRangeDec, frameData, decodeOnlyMiddleBoxed);
-                                        decode_only_middle = decodeOnlyMiddleBoxed.Val;
+                                        int decodeOnlyMiddleBoxed = decode_only_middle;
+                                        Stereo.silk_stereo_decode_mid_only(psRangeDec, frameData, ref decodeOnlyMiddleBoxed);
+                                        decode_only_middle = decodeOnlyMiddleBoxed;
                                     }
                                 }
                                 /* Use conditional coding if previous frame available */
@@ -262,9 +259,9 @@ namespace Concentus.Silk
                     if ((lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL && channel_state[1].VAD_flags[channel_state[0].nFramesDecoded] == 0) ||
                         (lostFlag == DecoderAPIFlag.FLAG_DECODE_LBRR && channel_state[1].LBRR_flags[channel_state[0].nFramesDecoded] == 0))
                     {
-                        BoxedValueInt decodeOnlyMiddleBoxed = new BoxedValueInt(decode_only_middle);
-                        Stereo.silk_stereo_decode_mid_only(psRangeDec, frameData, decodeOnlyMiddleBoxed);
-                        decode_only_middle = decodeOnlyMiddleBoxed.Val;
+                        int decodeOnlyMiddleBoxed = decode_only_middle;
+                        Stereo.silk_stereo_decode_mid_only(psRangeDec, frameData, ref decodeOnlyMiddleBoxed);
+                        decode_only_middle = decodeOnlyMiddleBoxed;
                     }
                     else
                     {
@@ -305,7 +302,7 @@ namespace Concentus.Silk
             }
             else
             {
-                samplesOut1_tmp_storage1 = new short[decControl.nChannelsInternal * (channel_state[0].frame_length + 2)];
+                short[] samplesOut1_tmp_storage1 = Arrays.Scratch(ref psDec.s_samplesOut1_tmp_storage1, decControl.nChannelsInternal * (channel_state[0].frame_length + 2));
                 samplesOut_tmp = samplesOut1_tmp_storage1;
                 samplesOut_tmp_ptrs[0] = 0;
                 samplesOut_tmp_ptrs[1] = channel_state[0].frame_length + 2;
@@ -351,11 +348,11 @@ namespace Concentus.Silk
                         condCoding = SilkConstants.CODE_CONDITIONALLY;
                     }
 
-                    ret += channel_state[n].silk_decode_frame(psRangeDec, frameData, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec, lostFlag, condCoding);
+                    ret += channel_state[n].silk_decode_frame(psRangeDec, frameData, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 2, ref nSamplesOutDec, lostFlag, condCoding);
                 }
                 else
                 {
-                    Arrays.MemSetWithOffset<short>(samplesOut_tmp, 0, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec.Val);
+                    Arrays.MemSetWithOffset<short>(samplesOut_tmp, 0, samplesOut_tmp_ptrs[n] + 2, nSamplesOutDec);
                 }
                 channel_state[n].nFramesDecoded++;
             }
@@ -363,22 +360,22 @@ namespace Concentus.Silk
             if (decControl.nChannelsAPI == 2 && decControl.nChannelsInternal == 2)
             {
                 /* Convert Mid/Side to Left/Right */
-                Stereo.silk_stereo_MS_to_LR(psDec.sStereo, samplesOut_tmp, samplesOut_tmp_ptrs[0], samplesOut_tmp, samplesOut_tmp_ptrs[1], MS_pred_Q13, channel_state[0].fs_kHz, nSamplesOutDec.Val);
+                Stereo.silk_stereo_MS_to_LR(psDec.sStereo, samplesOut_tmp, samplesOut_tmp_ptrs[0], samplesOut_tmp, samplesOut_tmp_ptrs[1], MS_pred_Q13, channel_state[0].fs_kHz, nSamplesOutDec);
             }
             else
             {
                 /* Buffering */
                 psDec.sStereo.sMid.AsSpan(0, 2).CopyTo(samplesOut_tmp.Slice(samplesOut_tmp_ptrs[0]));
-                samplesOut_tmp.Slice(samplesOut_tmp_ptrs[0] + nSamplesOutDec.Val, 2).CopyTo(psDec.sStereo.sMid);
+                samplesOut_tmp.Slice(samplesOut_tmp_ptrs[0] + nSamplesOutDec, 2).CopyTo(psDec.sStereo.sMid);
             }
 
             /* Number of output samples */
-            nSamplesOut = Inlines.silk_DIV32(nSamplesOutDec.Val * decControl.API_sampleRate, Inlines.silk_SMULBB(channel_state[0].fs_kHz, 1000));
+            nSamplesOut = Inlines.silk_DIV32(nSamplesOutDec * decControl.API_sampleRate, Inlines.silk_SMULBB(channel_state[0].fs_kHz, 1000));
 
             /* Set up pointers to temp buffers */
             if (decControl.nChannelsAPI == 2)
             {
-                samplesOut2_tmp = new short[nSamplesOut];
+                Span<short> samplesOut2_tmp = stackalloc short[nSamplesOut];
                 resample_out = samplesOut2_tmp;
                 resample_out_ptr = 0;
             }
@@ -389,7 +386,7 @@ namespace Concentus.Silk
             
             if (delay_stack_alloc != 0)
             {
-                samplesOut1_tmp_storage2 = new short[decControl.nChannelsInternal * (channel_state[0].frame_length + 2)];
+                short[] samplesOut1_tmp_storage2 = Arrays.Scratch(ref psDec.s_samplesOut1_tmp_storage2, decControl.nChannelsInternal * (channel_state[0].frame_length + 2));
                 samplesOut.Slice(samplesOut_ptr, decControl.nChannelsInternal * (channel_state[0].frame_length + 2)).CopyTo(samplesOut1_tmp_storage2);
                 samplesOut_tmp = samplesOut1_tmp_storage2;
                 samplesOut_tmp_ptrs[0] = 0;
@@ -399,7 +396,7 @@ namespace Concentus.Silk
             {
 
                 /* Resample decoded signal to API_sampleRate */
-                ret += Resampler.silk_resampler(channel_state[n].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 1, nSamplesOutDec.Val);
+                ret += Resampler.silk_resampler(channel_state[n].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp, samplesOut_tmp_ptrs[n] + 1, nSamplesOutDec);
 
                 /* Interleave if stereo output and stereo stream */
                 if (decControl.nChannelsAPI == 2)
@@ -419,7 +416,7 @@ namespace Concentus.Silk
                 {
                     /* Resample right channel for newly collapsed stereo just in case
                        we weren't doing collapsing when switching to mono */
-                    ret += Resampler.silk_resampler(channel_state[1].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp, samplesOut_tmp_ptrs[0] + 1, nSamplesOutDec.Val);
+                    ret += Resampler.silk_resampler(channel_state[1].resampler_state, resample_out, resample_out_ptr, samplesOut_tmp, samplesOut_tmp_ptrs[0] + 1, nSamplesOutDec);
 
                     for (i = 0; i < nSamplesOut; i++)
                     {

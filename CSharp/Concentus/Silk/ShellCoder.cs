@@ -50,7 +50,7 @@ namespace Concentus.Silk
         /// <param name="input">I    input vector       [2 * len]</param>
         /// <param name="len">I    number of OUTPUT samples</param>
         internal static void combine_pulses(
-            int[] output,
+            Span<int> output,
             Span<int> input,
             int input_ptr,
             int len)
@@ -68,8 +68,8 @@ namespace Concentus.Silk
         /// <param name="input">I    input vector       [2 * len]</param>
         /// <param name="len">I    number of OUTPUT samples</param>
         internal static void combine_pulses(
-            int[] output,
-            int[] input,
+            Span<int> output,
+            Span<int> input,
             int len)
         {
             int k;
@@ -102,7 +102,7 @@ namespace Concentus.Silk
         /// <param name="p">I    pulse amplitude of current subframe</param>
         /// <param name="shell_table">I    table of shell cdfs</param>
         internal static void decode_split(
-            short[] p_child1,
+            Span<short> p_child1,
             int child1_ptr,
             Span<short> p_child2,
             int p_child2_ptr,
@@ -130,10 +130,10 @@ namespace Concentus.Silk
         /// <param name="pulses0">I    data: nonnegative pulse amplitudes</param>
         internal static void silk_shell_encoder(EntropyCoder psRangeEnc, Span<byte> encodedData, Span<int> pulses0, int pulses0_ptr)
         {
-            int[] pulses1 = new int[8];
-            int[] pulses2 = new int[4];
-            int[] pulses3 = new int[2];
-            int[] pulses4 = new int[1];
+            Span<int> pulses1 = stackalloc int[8];
+            Span<int> pulses2 = stackalloc int[4];
+            Span<int> pulses3 = stackalloc int[2];
+            Span<int> pulses4 = stackalloc int[1];
 
             /* this function operates on one shell code frame of 16 pulses */
             Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);
@@ -170,16 +170,16 @@ namespace Concentus.Silk
 
         /* Shell decoder, operates on one shell code frame of 16 pulses */
         internal static void silk_shell_decoder(
-            short[] pulses0,                       /* O    data: nonnegative pulse amplitudes          */
+            Span<short> pulses0,                       /* O    data: nonnegative pulse amplitudes          */
             int pulses0_ptr,
             EntropyCoder psRangeDec,                    /* I/O  Compressor data structure                   */
             ReadOnlySpan<byte> encodedData,
             int pulses4                         /* I    number of pulses per pulse-subframe         */
         )
         {
-            short[] pulses1 = new short[8];
-            short[] pulses2 = new short[4];
-            short[] pulses3 = new short[2];
+            Span<short> pulses1 = stackalloc short[8];
+            Span<short> pulses2 = stackalloc short[4];
+            Span<short> pulses3 = stackalloc short[2];
 
             /* this function operates on one shell code frame of 16 pulses */
             Inlines.OpusAssert(SilkConstants.SHELL_CODEC_FRAME_LENGTH == 16);

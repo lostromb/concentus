@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -41,19 +42,19 @@ namespace Concentus.Silk
     internal static class LTPAnalysisFilter
     {
         internal static void silk_LTP_analysis_filter(
-            short[] LTP_res,                               /* O    LTP residual signal of length SilkConstants.MAX_NB_SUBFR * ( pre_length + subfr_length )  */
+            Span<short> LTP_res,                               /* O    LTP residual signal of length SilkConstants.MAX_NB_SUBFR * ( pre_length + subfr_length )  */
             short[] x,                                     /* I    Pointer to input signal with at least max( pitchL ) preceding samples       */
             int x_ptr,
             short[] LTPCoef_Q14,/* I     LTP_ORDER LTP coefficients for each MAX_NB_SUBFR subframe  [SilkConstants.LTP_ORDER * SilkConstants.MAX_NB_SUBFR]                 */
             int[] pitchL,                 /* I    Pitch lag, one for each subframe [SilkConstants.MAX_NB_SUBFR]                                           */
-            int[] invGains_Q16,           /* I    Inverse quantization gains, one for each subframe [SilkConstants.MAX_NB_SUBFR]                           */
+            Span<int> invGains_Q16,           /* I    Inverse quantization gains, one for each subframe [SilkConstants.MAX_NB_SUBFR]                           */
             int subfr_length,                           /* I    Length of each subframe                                                     */
             int nb_subfr,                               /* I    Number of subframes                                                         */
             int pre_length                              /* I    Length of the preceding samples starting at &x[0] for each subframe         */
 )
         {
             int x_ptr2, x_lag_ptr;
-            short[] Btmp_Q14 = new short[SilkConstants.LTP_ORDER];
+            Span<short> Btmp_Q14 = stackalloc short[SilkConstants.LTP_ORDER];
             int LTP_res_ptr;
             int k, i;
             int LTP_est;

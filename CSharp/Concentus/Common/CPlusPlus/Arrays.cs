@@ -119,9 +119,9 @@ namespace Concentus.Common.CPlusPlus
             array.Slice(0, length).Fill(value);
         }
 
-        internal static void MemSetShort(short[] array, short value, int length)
+        internal static void MemSetShort(Span<short> array, short value, int length)
         {
-            array.AsSpan(0, length).Fill(value);
+            array.Slice(0, length).Fill(value);
         }
 
         internal static void MemSetFloat(float[] array, float value, int length)
@@ -207,6 +207,16 @@ namespace Concentus.Common.CPlusPlus
         }
 
         internal static void MemCopy(ReadOnlySpan<short> src, int src_idx, Span<short> dst, int dst_idx, int length)
+        {
+            src.Slice(src_idx, length).CopyTo(dst.Slice(dst_idx));
+        }
+
+        internal static void MemCopy(ReadOnlySpan<sbyte> src, int src_idx, Span<sbyte> dst, int dst_idx, int length)
+        {
+            src.Slice(src_idx, length).CopyTo(dst.Slice(dst_idx));
+        }
+
+        internal static void MemCopy(ReadOnlySpan<byte> src, int src_idx, Span<byte> dst, int dst_idx, int length)
         {
             src.Slice(src_idx, length).CopyTo(dst.Slice(dst_idx));
         }

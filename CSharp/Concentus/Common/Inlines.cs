@@ -2231,9 +2231,39 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
+        internal static void MatrixSet(Span<int> Matrix_base_adr, int Matrix_ptr, int row, int column, int N, int value)
+        {
+            Matrix_base_adr[Matrix_ptr + (row * N) + column] = value;
+        }
+
+        [MethodImpl(INLINE_ATTR)]
+        internal static void MatrixSet(Span<short> Matrix_base_adr, int Matrix_ptr, int row, int column, int N, short value)
+        {
+            Matrix_base_adr[Matrix_ptr + (row * N) + column] = value;
+        }
+
+        [MethodImpl(INLINE_ATTR)]
         internal static void MatrixSet<T>(T[] Matrix_base_adr, int Matrix_ptr, int row, int column, int N, T value)
         {
             Matrix_base_adr[Matrix_ptr + (row * N) + column] = value;
+        }
+
+        [MethodImpl(INLINE_ATTR)]
+        internal static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
+        {
+            return Matrix_base_adr[((row) * (N)) + (column)];
+        }
+
+        [MethodImpl(INLINE_ATTR)]
+        internal static T MatrixGet<T>(T[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
+        {
+            return Matrix_base_adr[matrix_ptr + (row * N) + column];
+        }
+
+        [MethodImpl(INLINE_ATTR)]
+        internal static void MatrixSet<T>(T[] Matrix_base_adr, int row, int column, int N, T value)
+        {
+            Matrix_base_adr[((row) * (N)) + (column)] = value;
         }
 
         [MethodImpl(INLINE_ATTR)]
@@ -2243,18 +2273,35 @@ namespace Concentus.Common
         }
 
         [MethodImpl(INLINE_ATTR)]
-        internal static T MatrixGet<T>(T[] Matrix_base_adr, int row, int column, int N)
+        internal static int MatrixGet(Span<int> Matrix_base_adr, int row, int column, int N)
         {
             return Matrix_base_adr[((row) * (N)) + (column)];
         }
 
-        internal static T MatrixGet<T>(T[] Matrix_base_adr, int matrix_ptr, int row, int column, int N)
+        [MethodImpl(INLINE_ATTR)]
+        internal static short MatrixGet(Span<short> Matrix_base_adr, int row, int column, int N)
+        {
+            return Matrix_base_adr[((row) * (N)) + (column)];
+        }
+
+        internal static int MatrixGet(Span<int> Matrix_base_adr, int matrix_ptr, int row, int column, int N)
+        {
+            return Matrix_base_adr[matrix_ptr + (row * N) + column];
+        }
+
+        internal static short MatrixGet(Span<short> Matrix_base_adr, int matrix_ptr, int row, int column, int N)
         {
             return Matrix_base_adr[matrix_ptr + (row * N) + column];
         }
 
         [MethodImpl(INLINE_ATTR)]
-        internal static void MatrixSet<T>(T[] Matrix_base_adr, int row, int column, int N, T value)
+        internal static void MatrixSet(Span<int> Matrix_base_adr, int row, int column, int N, int value)
+        {
+            Matrix_base_adr[((row) * (N)) + (column)] = value;
+        }
+
+        [MethodImpl(INLINE_ATTR)]
+        internal static void MatrixSet(Span<short> Matrix_base_adr, int row, int column, int N, short value)
         {
             Matrix_base_adr[((row) * (N)) + (column)] = value;
         }
@@ -2467,9 +2514,9 @@ namespace Concentus.Common
         /// <param name="d">(I) number of parameters</param>
         [MethodImpl(INLINE_ATTR)]
         internal static void silk_interpolate(
-            short[] xi,
+            Span<short> xi,
             short[] x0,
-            short[] x1,
+            Span<short> x1,
             int ifact_Q2,
             int d)
         {
@@ -2494,8 +2541,8 @@ namespace Concentus.Common
         /// <returns></returns>
         [MethodImpl(INLINE_ATTR)]
         internal static int silk_inner_prod_aligned_scale(
-            short[] inVec1,
-            short[] inVec2,
+            Span<short> inVec1,
+            Span<short> inVec2,
             int scale,
             int len)
         {
@@ -2528,7 +2575,7 @@ namespace Concentus.Common
         /* Multiply a vector by a constant */
         [MethodImpl(INLINE_ATTR)]
         internal static void silk_scale_vector32_Q26_lshift_18(
-            int[] data1,             /* I/O  Q0/Q18                                                      */
+            Span<int> data1,             /* I/O  Q0/Q18                                                      */
             int data1_ptr,
             int gain_Q26,           /* I    Q26                                                         */
             int dataSize            /* I    length                                                      */
@@ -2543,9 +2590,9 @@ namespace Concentus.Common
         /* sum = for(i=0;i<len;i++)inVec1[i]*inVec2[i];      ---        inner product   */
         [MethodImpl(INLINE_ATTR)]
         internal static int silk_inner_prod(
-            short[] inVec1,             /*    I input vector 1                                              */
+            Span<short> inVec1,             /*    I input vector 1                                              */
             int inVec1_ptr,
-            short[] inVec2,             /*    I input vector 2                                              */
+            Span<short> inVec2,             /*    I input vector 2                                              */
             int inVec2_ptr,
             int len                /*    I vector lengths                                              */
         )
@@ -2559,7 +2606,7 @@ namespace Concentus.Common
 
         [MethodImpl(INLINE_ATTR)]
         internal static int silk_inner_prod_self(
-            short[] inVec,             /*    I input vector 1 (will be crossed with itself)                                             */
+            Span<short> inVec,             /*    I input vector 1 (will be crossed with itself)                                             */
             int inVec_ptr,
             int len                /*    I vector lengths                                              */
         )
@@ -2573,9 +2620,9 @@ namespace Concentus.Common
 
         [MethodImpl(INLINE_ATTR)]
         internal static long silk_inner_prod16_aligned_64(
-            short[] inVec1,             /*    I input vector 1                                              */
+            Span<short> inVec1,             /*    I input vector 1                                              */
             int inVec1_ptr,
-            short[] inVec2,             /*    I input vector 2                                              */
+            Span<short> inVec2,             /*    I input vector 2                                              */
             int inVec2_ptr,
             int len                 /*    I vector lengths                                              */
         )

@@ -118,7 +118,7 @@ namespace Concentus.Silk
         {
             int i, subfr;
             int sum_Q6, max_Gain_Q16, gain_Q16;
-            short[] A_Q12 = new short[psDec.LPC_order];
+            Span<short> A_Q12 = stackalloc short[psDec.LPC_order];
             CNGState psCNG = psDec.sCNG;
 
             if (psDec.fs_kHz != psCNG.fs_kHz)
@@ -164,7 +164,7 @@ namespace Concentus.Silk
             /* Add CNG when packet is lost or during DTX */
             if (psDec.lossCnt != 0)
             {
-                int[] CNG_sig_Q10 = new int[length + SilkConstants.MAX_LPC_ORDER];
+                Span<int> CNG_sig_Q10 = stackalloc int[length + SilkConstants.MAX_LPC_ORDER];
 
                 /* Generate CNG excitation */
                 gain_Q16 = Inlines.silk_SMULWW(psDec.sPLC.randScale_Q14, psDec.sPLC.prevGain_Q16[1]);

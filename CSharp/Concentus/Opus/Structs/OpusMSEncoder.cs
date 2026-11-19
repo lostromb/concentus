@@ -234,9 +234,7 @@ namespace Concentus.Structs
             {
                 Arrays.MemCopy(mem, c * overlap, input, 0, overlap);
                 copy_channel_in(x, 0, 1, pcm, channels, c, len);
-                BoxedValueInt boxed_preemph = new BoxedValueInt(preemph_mem[c]);
-                CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, boxed_preemph, 0);
-                preemph_mem[c] = boxed_preemph.Val;
+                CeltCommon.celt_preemphasis(x, input, overlap, frame_size, 1, upsample, celt_mode.preemph, ref preemph_mem[c], 0);
 
                 MDCT.clt_mdct_forward(
                     celt_mode.mdct,
@@ -460,32 +458,32 @@ namespace Concentus.Structs
             return st;
         }
 
-        internal static void GetStreamCount(int channels, int mapping_family, BoxedValueInt nb_streams, BoxedValueInt nb_coupled_streams)
+        internal static void GetStreamCount(int channels, int mapping_family, ref int nb_streams, ref int nb_coupled_streams)
         {
             if (mapping_family == 0)
             {
                 if (channels == 1)
                 {
-                    nb_streams.Val = 1;
-                    nb_coupled_streams.Val = 0;
+                    nb_streams = 1;
+                    nb_coupled_streams = 0;
                 }
                 else if (channels == 2)
                 {
-                    nb_streams.Val = 1;
-                    nb_coupled_streams.Val = 1;
+                    nb_streams = 1;
+                    nb_coupled_streams = 1;
                 }
                 else
                     throw new ArgumentException("More than 2 channels requires custom mappings");
             }
             else if (mapping_family == 1 && channels <= 8 && channels >= 1)
             {
-                nb_streams.Val = VorbisLayout.vorbis_mappings[channels - 1].nb_streams;
-                nb_coupled_streams.Val = VorbisLayout.vorbis_mappings[channels - 1].nb_coupled_streams;
+                nb_streams = VorbisLayout.vorbis_mappings[channels - 1].nb_streams;
+                nb_coupled_streams = VorbisLayout.vorbis_mappings[channels - 1].nb_coupled_streams;
             }
             else if (mapping_family == 255)
             {
-                nb_streams.Val = channels;
-                nb_coupled_streams.Val = 0;
+                nb_streams = channels;
+                nb_coupled_streams = 0;
             }
             else
                 throw new ArgumentException("Invalid mapping family");
@@ -518,11 +516,11 @@ namespace Concentus.Structs
             {
                 throw new ArgumentException("Invalid channel count or application");
             }
-            BoxedValueInt nb_streams = new BoxedValueInt();
-            BoxedValueInt nb_coupled_streams = new BoxedValueInt();
-            GetStreamCount(channels, mapping_family, nb_streams, nb_coupled_streams);
+            int nb_streams = 0;
+            int nb_coupled_streams = 0;
+            GetStreamCount(channels, mapping_family, ref nb_streams, ref nb_coupled_streams);
 
-            st = new OpusMSEncoder(nb_streams.Val, nb_coupled_streams.Val);
+            st = new OpusMSEncoder(nb_streams, nb_coupled_streams);
             ret = st.opus_multistream_surround_encoder_init(Fs, channels, mapping_family, out streams, out coupled_streams, mapping, application);
             if (ret != OpusError.OPUS_OK)
             {

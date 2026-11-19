@@ -106,10 +106,10 @@ namespace Concentus.Silk
             int sumSquared = 0, smooth_coef_Q16;
             short HPstateTmp;
             short[] X;
-            int[] Xnrg = new int[SilkConstants.VAD_N_BANDS];
-            int[] NrgToNoiseRatio_Q8 = new int[SilkConstants.VAD_N_BANDS];
+            Span<int> Xnrg = stackalloc int[SilkConstants.VAD_N_BANDS];
+            Span<int> NrgToNoiseRatio_Q8 = stackalloc int[SilkConstants.VAD_N_BANDS];
             int speech_nrg, x_tmp;
-            int[] X_offset = new int[SilkConstants.VAD_N_BANDS];
+            Span<int> X_offset = stackalloc int[SilkConstants.VAD_N_BANDS];
             int ret = 0;
             SilkVADState psSilk_VAD = psEncC.sVAD;
 
@@ -340,7 +340,7 @@ namespace Concentus.Silk
         /// <param name="pX">I    subband energies [VAD_N_BANDS]</param>
         /// <param name="psSilk_VAD">I/O  Pointer to Silk VAD state</param>
         internal static void silk_VAD_GetNoiseLevels(
-            int[] pX,
+            Span<int> pX,
             SilkVADState psSilk_VAD)
         {
             int k;

@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -147,7 +148,7 @@ namespace Concentus.Silk
         }
 
         internal static int silk_LPC_inverse_pred_gain_Q24(          /* O    Returns inverse prediction gain in energy domain, Q30       */
-            int[] A_Q24,             /* I    Prediction coefficients [order]                             */
+            Span<int> A_Q24,             /* I    Prediction coefficients [order]                             */
             int order               /* I    Prediction order                                            */
         )
         {

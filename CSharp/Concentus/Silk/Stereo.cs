@@ -49,7 +49,7 @@ namespace Concentus.Silk
         internal static void silk_stereo_decode_pred(
             EntropyCoder psRangeDec,
             ReadOnlySpan<byte> encodedData,
-            int[] pred_Q13)
+            Span<int> pred_Q13)
         {
             int n;
             int[][] ix = Arrays.InitTwoDimensionalArray<int>(2, 3);
@@ -87,11 +87,11 @@ namespace Concentus.Silk
         internal static void silk_stereo_decode_mid_only(
             EntropyCoder psRangeDec,
             ReadOnlySpan<byte> encodedData,
-            BoxedValueInt decode_only_mid
+            ref int decode_only_mid
         )
         {
             /* Decode flag that only mid channel is coded */
-            decode_only_mid.Val = psRangeDec.dec_icdf(encodedData, Tables.silk_stereo_only_code_mid_iCDF, 8);
+            decode_only_mid = psRangeDec.dec_icdf(encodedData, Tables.silk_stereo_only_code_mid_iCDF, 8);
         }
 
         /// <summary>
@@ -138,9 +138,9 @@ namespace Concentus.Silk
         /// <param name="smooth_coef_Q16">I    Smoothing coefficient</param>
         /// <returns>O    Returns predictor in Q13</returns>
         internal static int silk_stereo_find_predictor(
-            BoxedValueInt ratio_Q14,
-            short[] x,
-            short[] y,
+            ref int ratio_Q14,
+            Span<short> x,
+            Span<short> y,
             Span<int> mid_res_amp_Q0,
             int mid_res_amp_Q0_ptr,
             int length,
@@ -178,8 +178,8 @@ namespace Concentus.Silk
                 Inlines.silk_LSHIFT(Inlines.silk_SQRT_APPROX(nrgy), scale) - mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1], smooth_coef_Q16);
 
             /* Ratio of smoothed residual and mid norms */
-            ratio_Q14.Val = Inlines.silk_DIV32_varQ(mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1], Inlines.silk_max(mid_res_amp_Q0[mid_res_amp_Q0_ptr], 1), 14);
-            ratio_Q14.Val = Inlines.silk_LIMIT(ratio_Q14.Val, 0, 32767);
+            ratio_Q14 = Inlines.silk_DIV32_varQ(mid_res_amp_Q0[mid_res_amp_Q0_ptr + 1], Inlines.silk_max(mid_res_amp_Q0[mid_res_amp_Q0_ptr], 1), 14);
+            ratio_Q14 = Inlines.silk_LIMIT(ratio_Q14, 0, 32767);
 
             return pred_Q13;
         }
@@ -205,8 +205,8 @@ namespace Concentus.Silk
             Span<short> x2,
             int x2_ptr,
             sbyte[][] ix,
-            BoxedValueSbyte mid_only_flag,
-            int[] mid_side_rates_bps,
+            ref sbyte mid_only_flag,
+            Span<int> mid_side_rates_bps,
             int total_rate_bps,
             int prev_speech_act_Q8,
             int toMono,
@@ -215,18 +215,13 @@ namespace Concentus.Silk
         {
             int n, is10msFrame, denom_Q16, delta0_Q13, delta1_Q13;
             int sum, diff, smooth_coef_Q16, pred0_Q13, pred1_Q13;
-            int[] pred_Q13 = new int[2];
+            Span<int> pred_Q13 = stackalloc int[2];
             int frac_Q16, frac_3_Q16, min_mid_rate_bps, width_Q14, w_Q24, deltaw_Q24;
-            BoxedValueInt LP_ratio_Q14 = new BoxedValueInt();
-            BoxedValueInt HP_ratio_Q14 = new BoxedValueInt();
-            short[] side;
-            short[] LP_mid;
-            short[] HP_mid;
-            short[] LP_side;
-            short[] HP_side;
+            int LP_ratio_Q14 = 0;
+            int HP_ratio_Q14 = 0;
             int mid = x1_ptr - 2;
 
-            side = new short[frame_length + 2];
+            Span<short> side = stackalloc short[frame_length + 2];
 
             /* Convert to basic mid/side signals */
             for (n = 0; n < frame_length + 2; n++)
@@ -244,8 +239,8 @@ namespace Concentus.Silk
             Arrays.MemCopy(side, frame_length, state.sSide, 0, 2);
 
             /* LP and HP filter mid signal */
-            LP_mid = new short[frame_length];
-            HP_mid = new short[frame_length];
+            Span<short> LP_mid = stackalloc short[frame_length];
+            Span<short> HP_mid = stackalloc short[frame_length];
             for (n = 0; n < frame_length; n++)
             {
                 sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(x1[mid + n] + x1[mid + n + 2], x1[mid + n + 1], 1), 2);
@@ -254,8 +249,8 @@ namespace Concentus.Silk
             }
 
             /* LP and HP filter side signal */
-            LP_side = new short[frame_length];
-            HP_side = new short[frame_length];
+            Span<short> LP_side = stackalloc short[frame_length];
+            Span<short> HP_side = stackalloc short[frame_length];
             for (n = 0; n < frame_length; n++)
             {
                 sum = Inlines.silk_RSHIFT_ROUND(Inlines.silk_ADD_LSHIFT32(side[n] + side[n + 2], side[n + 1], 1), 2);
@@ -270,11 +265,11 @@ namespace Concentus.Silk
                 ((int)((SilkConstants.STEREO_RATIO_SMOOTH_COEF) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(SilkConstants.STEREO_RATIO_SMOOTH_COEF, 16)*/;
             smooth_coef_Q16 = Inlines.silk_SMULWB(Inlines.silk_SMULBB(prev_speech_act_Q8, prev_speech_act_Q8), smooth_coef_Q16);
 
-            pred_Q13[0] = silk_stereo_find_predictor(LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0, 0, frame_length, smooth_coef_Q16);
-            pred_Q13[1] = silk_stereo_find_predictor(HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0, 2, frame_length, smooth_coef_Q16);
+            pred_Q13[0] = silk_stereo_find_predictor(ref LP_ratio_Q14, LP_mid, LP_side, state.mid_side_amp_Q0, 0, frame_length, smooth_coef_Q16);
+            pred_Q13[1] = silk_stereo_find_predictor(ref HP_ratio_Q14, HP_mid, HP_side, state.mid_side_amp_Q0, 2, frame_length, smooth_coef_Q16);
             
             /* Ratio of the norms of residual and mid signals */
-            frac_Q16 = Inlines.silk_SMLABB(HP_ratio_Q14.Val, LP_ratio_Q14.Val, 3);
+            frac_Q16 = Inlines.silk_SMLABB(HP_ratio_Q14, LP_ratio_Q14, 3);
             frac_Q16 = Inlines.silk_min(frac_Q16, ((int)((1) * ((long)1 << (16)) + 0.5))/*Inlines.SILK_CONST(1, 16)*/);
 
             /* Determine bitrate distribution between mid and side, and possibly reduce stereo width */
@@ -307,7 +302,7 @@ namespace Concentus.Silk
             state.smth_width_Q14 = (short)Inlines.silk_SMLAWB(state.smth_width_Q14, width_Q14 - state.smth_width_Q14, smooth_coef_Q16);
 
             /* At very low bitrates or for inputs that are nearly amplitude panned, switch to panned-mono coding */
-            mid_only_flag.Val = 0;
+            mid_only_flag = 0;
             if (toMono != 0)
             {
                 /* Last frame before stereo.mono transition; collapse stereo width */
@@ -330,7 +325,7 @@ namespace Concentus.Silk
                 pred_Q13[1] = 0;
                 mid_side_rates_bps[0] = total_rate_bps;
                 mid_side_rates_bps[1] = 0;
-                mid_only_flag.Val = 1;
+                mid_only_flag = 1;
             }
             else if (state.width_prev_Q14 != 0 &&
               (8 * total_rate_bps < 11 * min_mid_rate_bps || Inlines.silk_SMULWB(frac_Q16, state.smth_width_Q14) < ((int)((0.02f) * ((long)1 << (14)) + 0.5))/*Inlines.SILK_CONST(0.02f, 14)*/))
@@ -361,12 +356,12 @@ namespace Concentus.Silk
             }
 
             /* Make sure to keep on encoding until the tapered output has been transmitted */
-            if (mid_only_flag.Val == 1)
+            if (mid_only_flag == 1)
             {
                 state.silent_side_len += (short)(frame_length - SilkConstants.STEREO_INTERP_LEN_MS * fs_kHz);
                 if (state.silent_side_len < SilkConstants.LA_SHAPE_MS * fs_kHz)
                 {
-                    mid_only_flag.Val = 0;
+                    mid_only_flag = 0;
                 }
                 else {
                     /* Limit to avoid wrapping around */
@@ -377,7 +372,7 @@ namespace Concentus.Silk
                 state.silent_side_len = 0;
             }
 
-            if (mid_only_flag.Val == 0 && mid_side_rates_bps[1] < 1)
+            if (mid_only_flag == 0 && mid_side_rates_bps[1] < 1)
             {
                 mid_side_rates_bps[1] = 1;
                 mid_side_rates_bps[0] = Inlines.silk_max_int(1, total_rate_bps - mid_side_rates_bps[1]);
@@ -432,7 +427,7 @@ namespace Concentus.Silk
             int x1_ptr,
             Span<short> x2,
             int x2_ptr,
-            int[] pred_Q13,
+            Span<int> pred_Q13,
             int fs_kHz,
             int frame_length)
         {
@@ -488,7 +483,7 @@ namespace Concentus.Silk
         /// <param name="pred_Q13">I/O  Predictors (out: quantized)</param>
         /// <param name="ix">O    Quantization indices [ 2 ][ 3 ]</param>
         internal static void silk_stereo_quant_pred(
-                            int[] pred_Q13,
+                            Span<int> pred_Q13,
                             sbyte[][] ix)
         {
             sbyte i, j; // [porting note] these were originally ints

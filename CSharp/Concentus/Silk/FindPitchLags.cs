@@ -45,7 +45,7 @@ namespace Concentus.Silk
         internal static void silk_find_pitch_lags(
             SilkChannelEncoder psEnc,                                 /* I/O  encoder state                                                               */
             SilkEncoderControl psEncCtrl,                             /* I/O  encoder control                                                             */
-            short[] res,                                  /* O    residual                                                                    */
+            Span<short> res,                                  /* O    residual                                                                    */
             short[] x,                                    /* I    Speech signal                                                               */
             int x_ptr
         )
@@ -53,12 +53,11 @@ namespace Concentus.Silk
             int buf_len, i, scale;
             int thrhld_Q13, res_nrg;
             int x_buf, x_buf_ptr;
-            short[] Wsig;
             int Wsig_ptr;
-            int[] auto_corr = new int[SilkConstants.MAX_FIND_PITCH_LPC_ORDER + 1];
-            short[] rc_Q15 = new short[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
-            int[] A_Q24 = new int[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
-            short[] A_Q12 = new short[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
+            Span<int> auto_corr = stackalloc int[SilkConstants.MAX_FIND_PITCH_LPC_ORDER + 1];
+            Span<short> rc_Q15 = stackalloc short[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
+            Span<int> A_Q24 = stackalloc int[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
+            Span<short> A_Q12 = stackalloc short[SilkConstants.MAX_FIND_PITCH_LPC_ORDER];
 
 
             /******************************************/
@@ -77,7 +76,7 @@ namespace Concentus.Silk
 
             /* Calculate windowed signal */
 
-            Wsig = new short[psEnc.pitch_LPC_win_length];
+            Span<short> Wsig = stackalloc short[psEnc.pitch_LPC_win_length];
 
             /* First LA_LTP samples */
             x_buf_ptr = x_buf + buf_len - psEnc.pitch_LPC_win_length;
@@ -136,11 +135,11 @@ namespace Concentus.Silk
                 /*****************************************/
                 /* Call pitch estimator                  */
                 /*****************************************/
-                BoxedValueShort boxed_lagIndex = new BoxedValueShort(psEnc.indices.lagIndex);
-                BoxedValueSbyte boxed_contourIndex = new BoxedValueSbyte(psEnc.indices.contourIndex);
-                BoxedValueInt boxed_LTPcorr = new BoxedValueInt(psEnc.LTPCorr_Q15);
-                if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL, boxed_lagIndex, boxed_contourIndex,
-                        boxed_LTPcorr, psEnc.prevLag, psEnc.pitchEstimationThreshold_Q16,
+                short boxed_lagIndex = psEnc.indices.lagIndex;
+                sbyte boxed_contourIndex = psEnc.indices.contourIndex;
+                int boxed_LTPcorr = psEnc.LTPCorr_Q15;
+                if (PitchAnalysisCore.silk_pitch_analysis_core(res, psEncCtrl.pitchL, ref boxed_lagIndex, ref boxed_contourIndex,
+                        ref boxed_LTPcorr, psEnc.prevLag, psEnc.pitchEstimationThreshold_Q16,
                         (int)thrhld_Q13, psEnc.fs_kHz, psEnc.pitchEstimationComplexity, psEnc.nb_subfr) == 0)
                 {
                     psEnc.indices.signalType = SilkConstants.TYPE_VOICED;
@@ -149,9 +148,9 @@ namespace Concentus.Silk
                     psEnc.indices.signalType = SilkConstants.TYPE_UNVOICED;
                 }
 
-                psEnc.indices.lagIndex = boxed_lagIndex.Val;
-                psEnc.indices.contourIndex = boxed_contourIndex.Val;
-                psEnc.LTPCorr_Q15 = boxed_LTPcorr.Val;
+                psEnc.indices.lagIndex = boxed_lagIndex;
+                psEnc.indices.contourIndex = boxed_contourIndex;
+                psEnc.LTPCorr_Q15 = boxed_LTPcorr;
             }
             else {
                 Arrays.MemSetInt(psEncCtrl.pitchL, 0, SilkConstants.MAX_NB_SUBFR);

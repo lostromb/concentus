@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk.Structs
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -74,8 +75,8 @@ namespace Concentus.Silk.Structs
             int frame_length                    /* I    Frame length                                */
             )
         {
-            int[] B_Q28 = new int[SilkConstants.TRANSITION_NB];
-            int[] A_Q28 = new int[SilkConstants.TRANSITION_NA];
+            Span<int> B_Q28 = stackalloc int[SilkConstants.TRANSITION_NB];
+            Span<int> A_Q28 = stackalloc int[SilkConstants.TRANSITION_NA];
             int fac_Q16 = 0;
             int ind = 0;
 

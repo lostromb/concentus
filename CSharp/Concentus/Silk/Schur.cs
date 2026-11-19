@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -43,8 +44,8 @@ namespace Concentus.Silk
         /* Faster than schur64(), but much less accurate.                       */
         /* uses SMLAWB(), requiring armv5E and higher.                          */
         internal static int silk_schur(                              /* O    Returns residual energy                                     */
-            short[] rc_Q15,            /* O    reflection coefficients [order] Q15                         */
-            int[] c,                 /* I    correlations [order+1]                                      */
+            Span<short> rc_Q15,            /* O    reflection coefficients [order] Q15                         */
+            Span<int> c,                 /* I    correlations [order+1]                                      */
             int order               /* I    prediction order                                            */
         )
         {
@@ -130,8 +131,8 @@ namespace Concentus.Silk
         /* Slower than schur(), but more accurate.                              */
         /* Uses SMULL(), available on armv4                                     */
         internal static int silk_schur64(                            /* O    returns residual energy                                     */
-            int[] rc_Q16,           /* O    Reflection coefficients [order] Q16                         */
-            int[] c,                /* I    Correlations [order+1]                                      */
+            Span<int> rc_Q16,           /* O    Reflection coefficients [order] Q16                         */
+            Span<int> c,                /* I    Correlations [order+1]                                      */
             int order               /* I    Prediction order                                            */
         )
         {

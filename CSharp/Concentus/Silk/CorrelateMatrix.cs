@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -45,13 +46,13 @@ namespace Concentus.Silk
     {
         /* Calculates correlation vector X'*t */
         internal static void silk_corrVector(
-            short[] x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
+            Span<short> x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
             int x_ptr,
-            short[] t,                                     /* I    Target vector [L]                                                           */
+            Span<short> t,                                     /* I    Target vector [L]                                                           */
             int t_ptr,
             int L,                                      /* I    Length of vectors                                                           */
             int order,                                  /* I    Max lag for correlation                                                     */
-            int[] Xt,                                    /* O    Pointer to X'*t correlation vector [order]                                  */
+            Span<int> Xt,                                    /* O    Pointer to X'*t correlation vector [order]                                  */
             int rshifts                                /* I    Right shifts of correlations                                                */
         )
         {
@@ -89,14 +90,14 @@ namespace Concentus.Silk
 
         /* Calculates correlation matrix X'*X */
         internal static void silk_corrMatrix(
-            short[] x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
+            Span<short> x,                                     /* I    x vector [L + order - 1] used to form data matrix X                         */
             int x_ptr,
             int L,                                      /* I    Length of vectors                                                           */
             int order,                                  /* I    Max lag for correlation                                                     */
             int head_room,                              /* I    Desired headroom                                                            */
-            int[] XX,                                    /* O    Pointer to X'*X correlation matrix [ order x order ]                        */
+            Span<int> XX,                                    /* O    Pointer to X'*X correlation matrix [ order x order ]                        */
             int XX_ptr,
-            BoxedValueInt rshifts                               /* I/O  Right shifts of correlations                                                */
+            ref int rshifts                               /* I/O  Right shifts of correlations                                                */
         )
         {
             int i, j, lag, head_room_rshifts;
@@ -117,11 +118,11 @@ namespace Concentus.Silk
             {
                 energy -= Inlines.silk_RSHIFT32(Inlines.silk_SMULBB(x[i], x[i]), rshifts_local);
             }
-            if (rshifts_local < rshifts.Val)
+            if (rshifts_local < rshifts)
             {
                 /* Adjust energy */
-                energy = Inlines.silk_RSHIFT32(energy, rshifts.Val - rshifts_local);
-                rshifts_local = rshifts.Val;
+                energy = Inlines.silk_RSHIFT32(energy, rshifts - rshifts_local);
+                rshifts_local = rshifts;
             }
 
             /* Calculate energy of remaining columns of X: X[:,j]'*X[:,j] */
@@ -179,7 +180,7 @@ namespace Concentus.Silk
                     ptr2--;/* Update pointer to first sample of next column (lag) in X */
                 }
             }
-            rshifts.Val = rshifts_local;
+            rshifts = rshifts_local;
         }
 
     }

@@ -319,7 +319,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        internal int dec_icdf(ReadOnlySpan<byte> buf, byte[] _icdf, uint _ftb)
+        internal int dec_icdf(ReadOnlySpan<byte> buf, Span<byte> _icdf, uint _ftb)
         {
             uint r;
             uint d;
@@ -342,7 +342,7 @@ namespace Concentus.Common
             return ret;
         }
 
-        internal int dec_icdf(ReadOnlySpan<byte> buf, byte[] _icdf, int _icdf_offset, uint _ftb)
+        internal int dec_icdf(ReadOnlySpan<byte> buf, Span<byte> _icdf, int _icdf_offset, uint _ftb)
         {
             uint r;
             uint d;
@@ -541,7 +541,7 @@ namespace Concentus.Common
             enc_normalize(buf);
         }
 
-        internal void enc_icdf(Span<byte> buf, int _s, byte[] _icdf, uint _ftb)
+        internal void enc_icdf(Span<byte> buf, int _s, Span<byte> _icdf, uint _ftb)
         {
             uint r;
             r = this.rng >> (int)_ftb;
@@ -557,7 +557,7 @@ namespace Concentus.Common
             enc_normalize(buf);
         }
 
-        internal void enc_icdf(Span<byte> buf, int _s, byte[] _icdf, int icdf_ptr, uint _ftb)
+        internal void enc_icdf(Span<byte> buf, int _s, Span<byte> _icdf, int icdf_ptr, uint _ftb)
         {
             uint r;
             r = this.rng >> (int)_ftb;

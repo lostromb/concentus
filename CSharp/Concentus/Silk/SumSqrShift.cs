@@ -121,7 +121,7 @@ namespace Concentus.Silk
         internal static void silk_sum_sqr_shift(
             out int energy,
             out int shift,
-            short[] x,
+            Span<short> x,
             int len)
         {
             int i, shft;

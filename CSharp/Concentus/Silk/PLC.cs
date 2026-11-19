@@ -193,13 +193,13 @@ namespace Concentus.Silk
             out int energy2,
             out int shift2,
             int[] exc_Q14,
-            int[] prevGain_Q10,
+            Span<int> prevGain_Q10,
             int subfr_length,
             int nb_subfr)
         {
             int i, k;
             int exc_buf_ptr = 0;
-            short[] exc_buf = new short[2 * subfr_length];
+            Span<short> exc_buf = stackalloc short[2 * subfr_length];
 
             /* Find random noise component */
             /* Scale previous excitation signal */
@@ -235,10 +235,10 @@ namespace Concentus.Silk
             short rand_scale_Q14;
             short[] B_Q14;
             int sLPC_Q14_ptr;
-            short[] sLTP = new short[psDec.ltp_mem_length];
-            int[] sLTP_Q14 = new int[psDec.ltp_mem_length + psDec.frame_length];
+            Span<short> sLTP = stackalloc short[psDec.ltp_mem_length];
+            Span<int> sLTP_Q14 = stackalloc int[psDec.ltp_mem_length + psDec.frame_length];
             PLCStruct psPLC = psDec.sPLC;
-            int[] prevGain_Q10 = new int[2];
+            Span<int> prevGain_Q10 = stackalloc int[2];
 
             prevGain_Q10[0] = Inlines.silk_RSHIFT(psPLC.prevGain_Q16[0], 6);
             prevGain_Q10[1] = Inlines.silk_RSHIFT(psPLC.prevGain_Q16[1], 6);

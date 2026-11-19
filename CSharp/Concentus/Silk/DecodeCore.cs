@@ -49,7 +49,7 @@ namespace Concentus.Silk
                 SilkDecoderControl psDecCtrl,                     /* I    Decoder control                             */
                 Span<short> xq,                           /* O    Decoded speech                              */
                 int xq_ptr,
-                short[] pulses     /* I    Pulse signal [MAX_FRAME_LENGTH]                               */
+                Span<short> pulses     /* I    Pulse signal [MAX_FRAME_LENGTH]                               */
             )
         {
             int i, k, lag = 0, start_idx, sLTP_buf_idx, NLSF_interpolation_flag, signalType;
@@ -57,22 +57,18 @@ namespace Concentus.Silk
             short[] B_Q14 = psDecCtrl.LTPCoef_Q14;
             int B_Q14_ptr;
             int pxq;
-            short[] sLTP;
-            int[] sLTP_Q15;
             int LTP_pred_Q13, LPC_pred_Q10, Gain_Q10, inv_gain_Q31, gain_adj_Q16, rand_seed, offset_Q10;
             int pred_lag_ptr;
             int pexc_Q14;
-            int[] pres_Q14;
+            Span<int> pres_Q14 = stackalloc int[0]; // [porting note] a pointer, of the stack's scope as it points at it
             int pres_Q14_ptr;
-            int[] res_Q14;
-            int[] sLPC_Q14;
 
             Inlines.OpusAssert(psDec.prev_gain_Q16 != 0);
 
-            sLTP= new short[psDec.ltp_mem_length];
-            sLTP_Q15 = new int[psDec.ltp_mem_length + psDec.frame_length];
-            res_Q14 = new int[psDec.subfr_length];
-            sLPC_Q14 = new int[psDec.subfr_length + SilkConstants.MAX_LPC_ORDER];
+            Span<short> sLTP = stackalloc short[psDec.ltp_mem_length];
+            Span<int> sLTP_Q15 = stackalloc int[psDec.ltp_mem_length + psDec.frame_length];
+            Span<int> res_Q14 = stackalloc int[psDec.subfr_length];
+            Span<int> sLPC_Q14 = stackalloc int[psDec.subfr_length + SilkConstants.MAX_LPC_ORDER];
 
             offset_Q10 = Tables.silk_Quantization_Offsets_Q10[psDec.indices.signalType >> 1][psDec.indices.quantOffsetType];
 

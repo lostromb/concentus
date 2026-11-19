@@ -40,9 +40,9 @@ namespace Concentus.Common
     {
         /* Compute autocorrelation */
         internal static void silk_autocorr(
-            int[] results,           /* O    Result (length correlationCount)                            */
+            Span<int> results,           /* O    Result (length correlationCount)                            */
             out int scale,             /* O    Scaling of the correlation vector                           */
-            short[] inputData,         /* I    Input data to correlate                                     */
+            Span<short> inputData,         /* I    Input data to correlate                                     */
             int inputDataSize,      /* I    Length of input                                             */
             int correlationCount   /* I    Number of correlation taps to compute                       */
         )
@@ -222,9 +222,9 @@ namespace Concentus.Common
 
         /* Autocorrelations for a warped frequency axis */
         internal static void silk_warped_autocorrelation(
-                  int[] corr,                                  /* O    Result [order + 1]                                                          */
+                  Span<int> corr,                                  /* O    Result [order + 1]                                                          */
                   out int scale,                                 /* O    Scaling of the correlation vector                                           */
-                    short[] input,                                 /* I    Input data to correlate                                                     */
+                    Span<short> input,                                 /* I    Input data to correlate                                                     */
                     int warping_Q16,                            /* I    Warping coefficient                                                         */
                     int length,                                 /* I    Length of input                                                             */
                     int order                                   /* I    Correlation order (even)                                                    */

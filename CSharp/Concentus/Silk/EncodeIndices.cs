@@ -59,8 +59,8 @@ namespace Concentus.Silk
         {
             int i, k, typeOffset;
             int encode_absolute_lagIndex, delta_lagIndex;
-            short[] ec_ix = new short[SilkConstants.MAX_LPC_ORDER];
-            byte[] pred_Q8 = new byte[SilkConstants.MAX_LPC_ORDER];
+            Span<short> ec_ix = stackalloc short[SilkConstants.MAX_LPC_ORDER];
+            Span<byte> pred_Q8 = stackalloc byte[SilkConstants.MAX_LPC_ORDER];
             SideInfoIndices psIndices;
 
             if (encode_LBRR != 0)

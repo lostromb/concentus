@@ -104,7 +104,6 @@ namespace Concentus.Structs
         private readonly AnalysisInfo s_analysis_info = new AnalysisInfo();
         private readonly EncControlState s_dummy = new EncControlState();
         private readonly OpusRepacketizer s_rp = new OpusRepacketizer();
-        private readonly BoxedValueInt s_zero = new BoxedValueInt(0), s_silkBytes = new BoxedValueInt(0);
         private byte[] s_tmp_data;
         private short[] s_pcm_buf, s_pcm_silk, s_tmp_prefill;
         internal OpusBandwidth detected_bandwidth;
@@ -1058,8 +1057,7 @@ namespace Concentus.Structs
 
                 if (prefill != 0)
                 {
-                    BoxedValueInt zero = this.s_zero;
-                    zero.Val = 0;
+                    int zero = 0;
                     int prefill_offset;
 
                     /* Use a smooth onset for the SILK prefill to avoid the encoder trying to encode
@@ -1074,15 +1072,12 @@ namespace Concentus.Structs
                     Arrays.MemSetShort(this.delay_buffer, 0, prefill_offset);
                     Arrays.MemCopy(this.delay_buffer, 0, pcm_silk, 0, this.encoder_buffer * this.channels);
 
-                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, data.Slice(data_ptr), zero, 1);
+                    EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, this.encoder_buffer, null, data.Slice(data_ptr), ref zero, 1);
                 }
 
                 Arrays.MemCopy(pcm_buf, total_buffer * this.channels, pcm_silk, 0, frame_size * this.channels);
 
-                BoxedValueInt boxed_silkBytes = this.s_silkBytes;
-                boxed_silkBytes.Val = nBytes;
-                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, data.Slice(data_ptr), boxed_silkBytes, 0);
-                nBytes = boxed_silkBytes.Val;
+                ret = EncodeAPI.silk_Encode(silk_enc, this.silk_mode, pcm_silk, frame_size, enc, data.Slice(data_ptr), ref nBytes, 0);
 
                 if (ret != 0)
                 {

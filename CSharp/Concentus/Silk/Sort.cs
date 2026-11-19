@@ -32,6 +32,7 @@
 
 namespace Concentus.Silk
 {
+    using System;
     using Concentus.Common;
     using Concentus.Common.CPlusPlus;
     using Concentus.Silk.Enums;
@@ -47,7 +48,7 @@ namespace Concentus.Silk
         /// <param name="idx">(O) Index vector for the sorted elements</param>
         /// <param name="L">(I) Vector length</param>
         /// <param name="K">(I) Number of correctly sorted positions</param>
-        internal static void silk_insertion_sort_increasing(int[] a, int[] idx, int L, int K)
+        internal static void silk_insertion_sort_increasing(Span<int> a, Span<int> idx, int L, int K)
         {
             int value;
             int i, j;
@@ -105,7 +106,7 @@ namespace Concentus.Silk
         /// </summary>
         /// <param name="a">(I/O) Unsorted / Sorted vector</param>
         /// <param name="L">(I) Vector length</param>
-        internal static void silk_insertion_sort_increasing_all_values_int16(short[] a, int L)
+        internal static void silk_insertion_sort_increasing_all_values_int16(Span<short> a, int L)
         {
             // FIXME: Could just use Array.Sort(a.Array, a.Offset, L);
 
@@ -130,8 +131,8 @@ namespace Concentus.Silk
 
         /* This function is only used by the fixed-point build */
         internal static void silk_insertion_sort_decreasing_int16(
-            short[] a,                 /* I/O   Unsorted / Sorted vector                                   */
-            int[] idx,               /* O     Index vector for the sorted elements                       */
+            Span<short> a,                 /* I/O   Unsorted / Sorted vector                                   */
+            Span<int> idx,               /* O     Index vector for the sorted elements                       */
     int L,                  /* I     Vector length                                              */
     int K                   /* I     Number of correctly sorted positions                       */
 )

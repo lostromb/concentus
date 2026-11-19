@@ -273,7 +273,7 @@ namespace Concentus.Silk.Structs
             ReadOnlySpan<byte> frameData,
             Span<short> pOut,                         /* O    Pointer to output speech frame              */
             int pOut_ptr,
-            BoxedValueInt pN,                            /* O    Pointer to size of output frame             */
+            ref int pN,                            /* O    Pointer to size of output frame             */
             int lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
             int condCoding                     /* I    The type of conditional coding to use       */
         )
@@ -290,7 +290,7 @@ namespace Concentus.Silk.Structs
             if (lostFlag == DecoderAPIFlag.FLAG_DECODE_NORMAL ||
                 (lostFlag == DecoderAPIFlag.FLAG_DECODE_LBRR && this.LBRR_flags[this.nFramesDecoded] == 1))
             {
-                short[] pulses = new short[(L + SilkConstants.SHELL_CODEC_FRAME_LENGTH - 1) & ~(SilkConstants.SHELL_CODEC_FRAME_LENGTH - 1)];
+                Span<short> pulses = stackalloc short[(L + SilkConstants.SHELL_CODEC_FRAME_LENGTH - 1) & ~(SilkConstants.SHELL_CODEC_FRAME_LENGTH - 1)];
                 /*********************************************/
                 /* Decode quantization indices of side info  */
                 /*********************************************/
@@ -352,7 +352,7 @@ namespace Concentus.Silk.Structs
             this.lagPrev = thisCtrl.pitchL[this.nb_subfr - 1];
 
             /* Set output frame length */
-            pN.Val = L;
+            pN = L;
 
             return ret;
         }
