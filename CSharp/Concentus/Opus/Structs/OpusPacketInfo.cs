@@ -390,25 +390,25 @@ namespace Concentus.Structs
             }
         }
 
-        internal static int parse_size(ReadOnlySpan<byte> data, int data_ptr, int len, BoxedValueShort size)
+        internal static int parse_size(ReadOnlySpan<byte> data, int data_ptr, int len, out short size)
         {
             if (len < 1)
             {
-                size.Val = -1;
+                size = -1;
                 return -1;
             }
             else if (data[data_ptr] < 252)
             {
-                size.Val = data[data_ptr];
+                size = data[data_ptr];
                 return 1;
             }
             else if (len < 2)
             {
-                size.Val = -1;
+                size = -1;
                 return -1;
             }
             else {
-                size.Val = (short)(4 * data[data_ptr + 1] + data[data_ptr]);
+                size = (short)(4 * data[data_ptr + 1] + data[data_ptr]);
                 return 2;
             }
         }
@@ -463,9 +463,9 @@ namespace Concentus.Structs
                 /* Two VBR frames */
                 case 2:
                     count = 2;
-                    BoxedValueShort boxed_size = new BoxedValueShort(sizes[sizes_ptr]);
-                    bytes = parse_size(data, data_ptr, len, boxed_size);
-                    sizes[sizes_ptr] = boxed_size.Val;
+                    short parsed_size;
+                    bytes = parse_size(data, data_ptr, len, out parsed_size);
+                    sizes[sizes_ptr] = parsed_size;
                     len -= bytes;
                     if (sizes[sizes_ptr] < 0 || sizes[sizes_ptr] > len)
                         return OpusError.OPUS_INVALID_PACKET;
@@ -508,9 +508,9 @@ namespace Concentus.Structs
                         last_size = len;
                         for (i = 0; i < count - 1; i++)
                         {
-                            boxed_size = new BoxedValueShort(sizes[sizes_ptr + i]);
-                            bytes = parse_size(data, data_ptr, len, boxed_size);
-                            sizes[sizes_ptr + i] = boxed_size.Val;
+                            short parsed_size_i;
+                            bytes = parse_size(data, data_ptr, len, out parsed_size_i);
+                            sizes[sizes_ptr + i] = parsed_size_i;
                             len -= bytes;
                             if (sizes[sizes_ptr + i] < 0 || sizes[sizes_ptr + i] > len)
                                 return OpusError.OPUS_INVALID_PACKET;
@@ -535,9 +535,9 @@ namespace Concentus.Structs
             /* Self-delimited framing has an extra size for the last frame. */
             if (self_delimited != 0)
             {
-                BoxedValueShort boxed_size = new BoxedValueShort(sizes[sizes_ptr + count - 1]);
-                bytes = parse_size(data, data_ptr, len, boxed_size);
-                sizes[sizes_ptr + count - 1] = boxed_size.Val;
+                short parsed_size;
+                bytes = parse_size(data, data_ptr, len, out parsed_size);
+                sizes[sizes_ptr + count - 1] = parsed_size;
                 len -= bytes;
                 if (sizes[sizes_ptr + count - 1] < 0 || sizes[sizes_ptr + count - 1] > len)
                     return OpusError.OPUS_INVALID_PACKET;
@@ -569,9 +569,10 @@ namespace Concentus.Structs
             {
                 if (frames != null)
                 {
-                    byte[] newFrame = new byte[data.Length];
-                    data.CopyTo(newFrame.AsSpan());
-                    frames[frames_ptr + i] = newFrame;
+                    // the frame's buffer kept, as large as the largest packet yet: a repacketizer copies nothing new of each packet
+                    if (frames[frames_ptr + i] == null || frames[frames_ptr + i].Length < data.Length)
+                        frames[frames_ptr + i] = new byte[data.Length];
+                    data.CopyTo(frames[frames_ptr + i].AsSpan());
                 }
                 if (!frames_ptrs.IsEmpty)
                     frames_ptrs[frames_ptr + i] = data_ptr;

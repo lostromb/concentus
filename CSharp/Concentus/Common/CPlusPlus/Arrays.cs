@@ -51,6 +51,9 @@ namespace Concentus.Common.CPlusPlus
         /// </summary>
         internal static T[] Scratch<T>(ref T[] buffer, int length)
         {
+            // of none: the buffer kept for the next that needs it
+            if (length == 0)
+                return Empty<T>.Array;
             if (buffer == null || buffer.Length != length)
                 buffer = new T[length];
             else
@@ -68,6 +71,11 @@ namespace Concentus.Common.CPlusPlus
             for (int c = 0; c < x; c++)
                 Scratch(ref buffer[c], y);
             return buffer;
+        }
+
+        private static class Empty<T>
+        {
+            internal static readonly T[] Array = new T[0];
         }
 
         internal static Pointer<Pointer<T>> InitTwoDimensionalArrayPointer<T>(int x, int y)

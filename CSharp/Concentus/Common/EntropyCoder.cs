@@ -171,6 +171,7 @@ namespace Concentus.Common
             end_offs = 0;
             end_window = 0;
             nend_bits = 0;
+            nbits_total = 0;
             offs = 0;
             rng = 0;
             val = 0;

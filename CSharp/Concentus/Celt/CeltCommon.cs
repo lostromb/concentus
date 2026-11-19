@@ -1125,12 +1125,11 @@ namespace Concentus.Celt
             int shift;
             int nbEBands;
             int overlap;
-            int[] freq;
 
             overlap = mode.overlap;
             nbEBands = mode.nbEBands;
             N = mode.shortMdctSize << LM;
-            freq = new int[N]; /*< Interleaved signal MDCTs */
+            Span<int> freq = stackalloc int[N]; /*< Interleaved signal MDCTs */
             M = 1 << LM;
 
             if (isTransient != 0)
@@ -1228,7 +1227,7 @@ namespace Concentus.Celt
         internal static int celt_plc_pitch_search(int[][] decode_mem, int C)
         {
             int pitch_index;
-            int[] lp_pitch_buf = new int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
+            Span<int> lp_pitch_buf = stackalloc int[CeltConstants.DECODE_BUFFER_SIZE >> 1];
             Pitch.pitch_downsample(decode_mem, lp_pitch_buf,
                   CeltConstants.DECODE_BUFFER_SIZE, C);
             Pitch.pitch_search(lp_pitch_buf, CeltConstants.PLC_PITCH_LAG_MAX >> 1, lp_pitch_buf,

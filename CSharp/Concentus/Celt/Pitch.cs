@@ -140,7 +140,7 @@ namespace Concentus.Celt
         }
 
 
-        internal static void pitch_downsample(int[][] x, int[] x_lp, int len, int C)
+        internal static void pitch_downsample(int[][] x, Span<int> x_lp, int len, int C)
         {
             int i;
             Span<int> ac = stackalloc int[5];
